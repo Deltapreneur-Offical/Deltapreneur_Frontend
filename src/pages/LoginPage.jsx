@@ -29,7 +29,7 @@ export default function LoginPage() {
   const from =
     location.state?.from ||
     localStorage.getItem('redirectAfterLogin') ||
-    '/dashboard';
+    '/';
 
 
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
     if (!loading && user) {
 
-      navigate(user.profileComplete ? '/dashboard' : '/complete-profile', { replace: true });
+      navigate(user.profileComplete ? '/' : '/complete-profile', { replace: true });
 
     }
 
@@ -64,14 +64,17 @@ export default function LoginPage() {
   // ── Show OAuth error if redirected back with ?error= ─────────────────────
 
   useEffect(() => {
-
-    if (searchParams.get('error') === 'oauth_failed') {
-
+    const err = searchParams.get('error');
+    if (err === 'oauth_failed') {
       setError(t('googleSignInFailed'));
-
+    } else if (err === 'oauth_profile') {
+      setError(t('googleSignInFailed'));
+    } else if (err === 'verification_failed') {
+      setError(t('verificationLinkInvalid'));
+    } else if (err === 'account_unavailable') {
+      setError(t('accountUnavailable'));
     }
-
-  }, []);
+  }, [searchParams, t]);
 
 
 
@@ -104,7 +107,7 @@ export default function LoginPage() {
     const redirectPath =
       localStorage.getItem('redirectAfterLogin') ||
       (typeof from === 'string' ? from : from?.pathname) ||
-      '/dashboard';
+      '/';
     localStorage.removeItem('redirectAfterLogin');
 
     navigate(
@@ -131,9 +134,13 @@ export default function LoginPage() {
       await handleLoginSuccess(data);
 
     } catch (err) {
-
-      setError(err.response?.data?.error || err.message || t('invalidEmailOrPassword'));
-
+      const body = err.response?.data;
+      setError(
+        body?.error ||
+        body?.message ||
+        err.message ||
+        t('invalidEmailOrPassword'),
+      );
     } finally { setBusy(false); }
 
   };
@@ -157,9 +164,12 @@ export default function LoginPage() {
       setInfo(`${t('otpSentTo')} ${form.email}`);
 
     } catch (err) {
-
-      setError(err.response?.data?.error || t('failedToSendOtp'));
-
+      const body = err.response?.data;
+      setError(
+        body?.error ||
+        body?.message ||
+        t('failedToSendOtp'),
+      );
     } finally { setBusy(false); }
 
   };
@@ -181,9 +191,12 @@ export default function LoginPage() {
       await handleLoginSuccess(data);
 
     } catch (err) {
-
-      setError(err.response?.data?.error || t('invalidOtp'));
-
+      const body = err.response?.data;
+      setError(
+        body?.error ||
+        body?.message ||
+        t('invalidOtp'),
+      );
     } finally { setBusy(false); }
 
   };
@@ -193,9 +206,12 @@ export default function LoginPage() {
   // ── Google OAuth ─────────────────────────────────────────────────────────────
 
   const handleGoogleLogin = () => {
-
-    window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
-
+    // In dev, go through Vite proxy (same origin + http) so Chrome does not navigate to
+    // https://127.0.0.1:8000/... (HTTPS-first / mixed-origin upgrades break plain Uvicorn).
+    const startUrl = import.meta.env.DEV
+      ? `${window.location.origin}/oauth2/authorization/google`
+      : `${String(API_ORIGIN).replace(/\/$/, '')}/oauth2/authorization/google`;
+    window.location.href = startUrl;
   };
 
 
@@ -282,141 +298,143 @@ export default function LoginPage() {
 
           </svg>
 
-          Continue with Google
+          {t('continueWithGoogle')}
 
         </button>
 
-{/* 
-
-        <div className="auth-divider"><span>or</span></div>
-
-
-
-        <div className="auth-mode-toggle">
-
-          <button
-
-            className={mode === 'password' ? 'active' : ''}
-
-            onClick={() => { setMode('password'); setError(''); setStep(1); }}
-
-          >Password</button>
-
-          <button
-
-            className={mode === 'otp' ? 'active' : ''}
-
-            onClick={() => { setMode('otp'); setError(''); setStep(1); }}
-
-          >OTP Login</button>
-
+        <div className="auth-divider my-5 sm:my-6">
+          <span className="text-gray-400 text-xs uppercase tracking-wide">or</span>
         </div>
 
-
-
-        {error && <div className="form-error">{error}</div>}
-
-        {info  && <div className="form-info">{info}</div>}
-
-
+        {error && (
+          <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-600 text-sm mb-4">
+            {error}
+          </div>
+        )}
+        {info && (
+          <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-[10px] text-emerald-700 text-sm mb-4">
+            {info}
+          </div>
+        )}
 
         {mode === 'password' && (
-
-          <form onSubmit={handlePasswordLogin} className="auth-form">
-
-            <div className="form-group">
-
-              <label>Email</label>
-
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required />
-
+          <form onSubmit={handlePasswordLogin} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">{t('emailLabel', 'Email')}</label>
+              <input
+                name="email"
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder={t('emailPlaceholder')}
+                required
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+              />
             </div>
-
-            <div className="form-group">
-
-              <label>Password</label>
-
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="••••••••" required />
-
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">{t('passwordLabel', 'Password')}</label>
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder={t('passwordPlaceholder', '••••••••')}
+                required
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+              />
             </div>
-
-            <button type="submit" className="btn-primary full-width" disabled={busy}>
-
-              {busy ? <span className="btn-spinner" /> : 'Sign In'}
-
+            <button type="submit" className="btn-glow w-full" disabled={busy}>
+              {busy ? (
+                <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
+              ) : (
+                t('signIn')
+              )}
             </button>
-
           </form>
-
         )}
-
-
 
         {mode === 'otp' && step === 1 && (
-
-          <form onSubmit={handleSendOtp} className="auth-form">
-
-            <div className="form-group">
-
-              <label>Email</label>
-
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required />
-
+          <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">{t('emailLabel', 'Email')}</label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder={t('emailPlaceholder')}
+                required
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+              />
             </div>
-
-            <button type="submit" className="btn-primary full-width" disabled={busy}>
-
-              {busy ? <span className="btn-spinner" /> : 'Send OTP'}
-
+            <button type="submit" className="btn-glow w-full" disabled={busy}>
+              {busy ? (
+                <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
+              ) : (
+                'Send OTP'
+              )}
             </button>
-
+            <button
+              type="button"
+              className="text-sm text-gray-500 hover:text-purple-600"
+              onClick={() => { setMode('password'); setError(''); setInfo(''); }}
+            >
+              ← {t('signIn')} with password
+            </button>
           </form>
-
         )}
-
-
 
         {mode === 'otp' && step === 2 && (
-
-          <form onSubmit={handleVerifyOtp} className="auth-form">
-
-            <div className="form-group">
-
-              <label>Enter OTP sent to {form.email}</label>
-
-              <input name="otpCode" value={form.otpCode} onChange={handleChange}
-
-                placeholder="6-digit code" maxLength={6} className="otp-input" required />
-
+          <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">
+                Enter OTP sent to {form.email}
+              </label>
+              <input
+                name="otpCode"
+                value={form.otpCode}
+                onChange={handleChange}
+                placeholder="6-digit code"
+                maxLength={6}
+                className="otp-input w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+                required
+              />
             </div>
-
-            <button type="submit" className="btn-primary full-width" disabled={busy}>
-
-              {busy ? <span className="btn-spinner" /> : 'Verify & Sign In'}
-
+            <button type="submit" className="btn-glow w-full" disabled={busy}>
+              {busy ? (
+                <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
+              ) : (
+                'Verify & Sign In'
+              )}
             </button>
-
-            <button type="button" className="btn-ghost full-width"
-
-              onClick={() => { setStep(1); setInfo(''); setForm(f => ({ ...f, otpCode: '' })); }}>
-
+            <button
+              type="button"
+              className="text-sm text-gray-500 hover:text-purple-600"
+              onClick={() => { setStep(1); setInfo(''); setForm(f => ({ ...f, otpCode: '' })); }}
+            >
               ← Back
-
             </button>
-
           </form>
-
         )}
 
+        {mode === 'password' && (
+          <button
+            type="button"
+            className="mt-3 w-full text-sm text-gray-500 hover:text-purple-600"
+            onClick={() => { setMode('otp'); setError(''); setStep(1); }}
+          >
+            Sign in with OTP instead
+          </button>
+        )}
 
-
-        <div className="auth-links">
-
-          <span>Don't have an account?</span>
-
-          <Link to="/register">Register</Link>
-
-        </div> */}
+        <div className="flex gap-2 justify-center mt-6 text-sm text-gray-500">
+          <span>{t('dontHaveAccount', "Don't have an account?")}</span>
+          <Link to="/register" className="text-purple-600 font-medium hover:underline">
+            {t('registerTitle', 'Register')}
+          </Link>
+        </div>
 
       </div>
 

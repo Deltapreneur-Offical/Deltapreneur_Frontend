@@ -30,9 +30,11 @@ export function AuthProvider({ children }) {
       setUser(userData);
       return userData;
     } catch (err) {
-      // 401 = token invalid/expired — clear everything
+      // 401 = token invalid/expired — clear auth keys only (avoid wiping unrelated keys
+      // and racing OAuth callback which may have just written new tokens).
       if (err?.response?.status === 401) {
-        localStorage.clear();
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         setUser(null);
       }
       return null;

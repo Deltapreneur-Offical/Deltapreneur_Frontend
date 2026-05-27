@@ -16,6 +16,18 @@ function refreshBaseURL() {
   return PRODUCTION_API_ORIGIN;
 }
 
+/** Backend may set `csrf_token` (readable) + HttpOnly refresh cookie; refresh then requires X-CSRF-Token. */
+function csrfHeader() {
+  if (typeof document === 'undefined') return {};
+  const m = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+  if (!m?.[1]) return {};
+  try {
+    return { 'X-CSRF-Token': decodeURIComponent(m[1]) };
+  } catch {
+    return { 'X-CSRF-Token': m[1] };
+  }
+}
+
 // Attach access token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
@@ -35,7 +47,11 @@ api.interceptors.response.use(
       }
       original._retry = true;
       try {
-        const { data } = await axios.post('/api/v1/auth/refresh', { refreshToken }, { baseURL: refreshBaseURL() });
+        const { data } = await axios.post(
+          '/api/v1/auth/refresh',
+          { refreshToken },
+          { baseURL: refreshBaseURL(), headers: { ...csrfHeader() } },
+        );
         const newToken = data.data.accessToken;
         localStorage.setItem('accessToken', newToken);
         original.headers.Authorization = `Bearer ${newToken}`;
@@ -43,7 +59,8 @@ api.interceptors.response.use(
       } catch {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        if (!window.location.pathname.startsWith('/login')) {
+        const path = window.location.pathname;
+        if (!path.startsWith('/login') && !path.startsWith('/auth/callback')) {
           window.location.href = '/login';
         }
       }

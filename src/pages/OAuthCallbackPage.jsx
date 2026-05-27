@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
@@ -8,9 +9,9 @@ import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
  *   /auth/callback?token=JWT&refreshToken=...&profileComplete=true/false
  *
  * Strategy:
- *  1. Store tokens in localStorage directly (don't go through login() yet)
- *  2. Call refreshUser() which hits /profile/me with the stored token
- *  3. Navigate based on the real profileComplete value from the DB
+ *  1. useLayoutEffect: persist tokens ASAP (before other effects can /me with stale creds)
+ *  2. refreshUser() → /profile/me
+ *  3. flushSync(login(..., user)) then navigate on next tick so ProtectedRoute sees user
  */
 export default function OAuthCallbackPage() {
   const [params] = useSearchParams();
@@ -18,50 +19,62 @@ export default function OAuthCallbackPage() {
   const navigate = useNavigate();
   const called = useRef(false);
 
+  useLayoutEffect(() => {
+    const qs = new URLSearchParams(window.location.search);
+    const error = qs.get('error');
+    const token = qs.get('token');
+    const refreshToken = qs.get('refreshToken');
+    if (error || !token || !refreshToken) return;
+    localStorage.setItem('accessToken', token);
+    localStorage.setItem('refreshToken', refreshToken);
+  }, []);
+
   useEffect(() => {
     if (called.current) return;
     called.current = true;
 
-    const token          = params.get('token');
-    const refreshToken   = params.get('refreshToken');
-    // URL param as fallback if /profile/me fails
+    const token = params.get('token');
+    const refreshToken = params.get('refreshToken');
     const profileCompleteParam = params.get('profileComplete') === 'true';
-    const error          = params.get('error');
+    const error = params.get('error');
 
-    // ── Validate ─────────────────────────────────────────────────────────
     if (error || !token || !refreshToken) {
-      console.error('[OAuth] Missing tokens or error:', { error, token: !!token, refreshToken: !!refreshToken });
+      console.error('[OAuth] Missing tokens or error:', {
+        error,
+        token: !!token,
+        refreshToken: !!refreshToken,
+      });
       navigate('/login?error=oauth_failed', { replace: true });
       return;
     }
 
-    // ── Step 1: store tokens BEFORE calling any API ───────────────────────
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('refreshToken', refreshToken);
-
-    // ── Step 2: seed empty user so ProtectedRoute doesn't bounce ─────────
     login({ accessToken: token, refreshToken }, null);
 
-    // ── Step 3: fetch real user profile ───────────────────────────────────
     refreshUser()
       .then((fetchedUser) => {
-        const isComplete = fetchedUser?.profileComplete ?? profileCompleteParam;
+        if (!fetchedUser) {
+          navigate('/login?error=oauth_profile', { replace: true });
+          return;
+        }
+        const isComplete = fetchedUser.profileComplete ?? profileCompleteParam;
         const redirectPath = consumeRedirectAfterLogin();
-        console.log('[OAuth] profileComplete:', isComplete, 'user:', fetchedUser?.email);
         const destination = isComplete
-          ? (redirectPath || '/dashboard')
+          ? redirectPath || '/'
           : '/complete-profile';
-        navigate(destination, { replace: true });
+
+        flushSync(() => {
+          login({ accessToken: token, refreshToken }, fetchedUser);
+        });
+
+        setTimeout(() => {
+          navigate(destination, { replace: true });
+        }, 0);
       })
       .catch((err) => {
         console.error('[OAuth] refreshUser failed:', err);
-        const redirectPath = consumeRedirectAfterLogin();
-        const destination = profileCompleteParam
-          ? (redirectPath || '/dashboard')
-          : '/complete-profile';
-        navigate(destination, { replace: true });
+        navigate('/login?error=oauth_profile', { replace: true });
       });
-  }, []);
+  }, [login, navigate, params, refreshUser]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-indigo-50 text-purple-600 gap-6">

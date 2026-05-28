@@ -343,7 +343,16 @@ function SoftwareForm({ onSaved, onCancel }) {
       });
       setSavedSoftware(data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to list Technology.');
+      const status = err.response?.status;
+      const msg =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        err.response?.data?.message;
+      if (status === 401) {
+        setError(msg || 'Please sign in again to list Technology.');
+      } else {
+        setError(msg || 'Failed to list Technology.');
+      }
     } finally { setLoading(false); }
   };
 
@@ -912,8 +921,22 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
             )}
 
             <div className="flex gap-3 mt-6 flex-wrap items-center">
-              {!isOwner && d.softwareStatus === 'AVAILABLE' && (
+              {!isOwner
+                && d.softwareStatus === 'AVAILABLE'
+                && d.purchaseType !== 'AUCTION'
+                && d.auctionApprovalStatus !== 'PENDING_APPROVAL' && (
                 <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
+              )}
+              {!isOwner
+                && d.purchaseType === 'AUCTION'
+                && d.auctionApprovalStatus === 'APPROVED'
+                && d.auctionId && (
+                <button
+                  className="btn-glow btn-glow-sm"
+                  onClick={() => window.location.assign(`/cocreation/auction/${d.auctionId}`)}
+                >
+                  Place Bid →
+                </button>
               )}
               <LikeButton liked={likeState?.liked} count={likeState?.count}
                           onToggle={onLike} size="md" />

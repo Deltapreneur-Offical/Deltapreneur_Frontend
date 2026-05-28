@@ -55,18 +55,13 @@ export function AuthProvider({ children }) {
   // ── fetchMe: reads token, hits /profile/me, normalises response ──────────
   const fetchMe = useCallback(async () => {
     const token = getAccessToken();
-    if (!token) {
-      setUser(null);
-      setHasAccessToken(false);
-      setLoading(false);
-      return null;
-    }
-    setHasAccessToken(true);
+    if (token) setHasAccessToken(true);
     try {
       const { data } = await profileAPI.getMe();
       // Backend may return FastAPI { data }, Java { user }, or the user object directly.
       const userData = normalizeUserPayload(data);
       setUser(userData);
+      setHasAccessToken(true);
       return userData;
     } catch (err) {
       // 401 = token invalid/expired — clear auth keys only (avoid wiping unrelated keys
@@ -87,12 +82,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const syncAuthState = () => {
       const token = getAccessToken();
-      if (!token) {
-        setHasAccessToken(false);
-        setUser(null);
-        return;
-      }
-      setHasAccessToken(true);
+      if (token) setHasAccessToken(true);
     };
 
     const onAuthCleared = () => {

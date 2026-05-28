@@ -7,8 +7,21 @@ import ListingBrowseFooter from './ListingBrowseFooter';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
+  PENDING: { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
   SOLD: { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
+
+function isDirectPurchase(item) {
+  return (
+    item.softwareStatus === 'AVAILABLE'
+    && item.purchaseType !== 'AUCTION'
+    && item.auctionApprovalStatus !== 'PENDING_APPROVAL'
+  );
+}
+
+function isLiveAuction(item) {
+  return item.purchaseType === 'AUCTION' && item.auctionApprovalStatus === 'APPROVED' && item.auctionId;
+}
 
 export default function TechnologyListingCard({
   item,
@@ -134,7 +147,7 @@ export default function TechnologyListingCard({
               >
                 Remove
               </button>
-              {item.softwareStatus === 'AVAILABLE' && (
+              {isDirectPurchase(item) && (
                 <button
                   type="button"
                   className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"
@@ -156,7 +169,9 @@ export default function TechnologyListingCard({
                   🔨 Auction
                 </button>
               )}
-              {auctionStatus?.approvalStatus === 'PENDING_APPROVAL' && (
+              {(auctionStatus?.approvalStatus === 'PENDING_APPROVAL'
+                || item.auctionApprovalStatus === 'PENDING_APPROVAL'
+                || item.softwareStatus === 'PENDING') && (
                 <span
                   style={{
                     fontSize: '0.72rem',
@@ -170,12 +185,15 @@ export default function TechnologyListingCard({
                   ⏳ Auction Pending
                 </span>
               )}
-              {auctionStatus?.approvalStatus === 'APPROVED' && (
+              {(auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED') && (
                 <button
                   type="button"
                   className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
                   style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
-                  onClick={(e) => { e.stopPropagation(); navigate(`/cocreation/auction/${auctionStatus.id}`); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/cocreation/auction/${item.auctionId || auctionStatus?.id}`);
+                  }}
                 >
                   🟢 View Auction
                 </button>
@@ -198,7 +216,19 @@ export default function TechnologyListingCard({
                 Remove
               </button>
             </div>
-          ) : item.softwareStatus === 'AVAILABLE' ? (
+          ) : isLiveAuction(item) ? (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+              style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/cocreation/auction/${item.auctionId}`);
+              }}
+            >
+              Place Bid →
+            </button>
+          ) : isDirectPurchase(item) ? (
             <button
               type="button"
               className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"

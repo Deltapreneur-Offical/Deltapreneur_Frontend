@@ -43,6 +43,15 @@ function getStoredRefreshToken() {
   return localStorage.getItem('refreshToken');
 }
 
+/** True when the backend may have set HttpOnly refresh (csrf_token is readable). */
+function hasCookieRefreshSession() {
+  return Boolean(csrfHeader()['X-CSRF-Token']);
+}
+
+function canAttemptRefresh() {
+  return Boolean(getStoredRefreshToken()) || hasCookieRefreshSession();
+}
+
 function notifyAuthCleared() {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event('auth:cleared'));
@@ -54,6 +63,7 @@ function extractAuthPayload(data) {
 
 function shouldAttemptRefresh(error, original) {
   if (original?._retry) return false;
+  if (!canAttemptRefresh()) return false;
   const status = error.response?.status;
   if (status !== 401 && status !== 403) return false;
 
@@ -83,14 +93,11 @@ api.interceptors.response.use(
     const original = error.config;
     if (shouldAttemptRefresh(error, original)) {
       const refreshToken = getStoredRefreshToken();
-      if (!refreshToken) {
-        return Promise.reject(error);
-      }
       original._retry = true;
       try {
         const { data } = await axios.post(
           '/api/v1/auth/refresh',
-          { refreshToken },
+          refreshToken ? { refreshToken } : {},
           {
             baseURL: refreshBaseURL(),
             headers: { ...csrfHeader() },

@@ -5,12 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
 
 /**
- * Spring Boot OAuth2 success handler redirects here:
- *   /auth/callback?token=JWT&refreshToken=...&profileComplete=true/false
+ * OAuth success redirects here:
+ *   Legacy: /auth/callback?token=JWT&refreshToken=...&profileComplete=...
+ *   Cookie session: /auth/callback?success=1&newUser=... (HttpOnly cookies on API origin)
  *
  * Strategy:
- *  1. useLayoutEffect: persist tokens ASAP (before other effects can /me with stale creds)
- *  2. refreshUser() → /profile/me
+ *  1. useLayoutEffect: persist URL tokens when present
+ *  2. refreshUser() → GET /api/v1/auth/me (Bearer or session cookies)
  *  3. flushSync(login(..., user)) then navigate on next tick so ProtectedRoute sees user
  */
 export default function OAuthCallbackPage() {
@@ -24,9 +25,11 @@ export default function OAuthCallbackPage() {
     const error = qs.get('error');
     const token = qs.get('token');
     const refreshToken = qs.get('refreshToken');
-    if (error || !token || !refreshToken) return;
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('refreshToken', refreshToken);
+    if (error) return;
+    if (token && refreshToken) {
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('refreshToken', refreshToken);
+    }
   }, []);
 
   useEffect(() => {
@@ -36,9 +39,15 @@ export default function OAuthCallbackPage() {
     const token = params.get('token');
     const refreshToken = params.get('refreshToken');
     const profileCompleteParam = params.get('profileComplete') === 'true';
+    const cookieSession = params.get('success') === '1';
     const error = params.get('error');
 
-    if (error || !token || !refreshToken) {
+    if (error) {
+      navigate('/login?error=oauth_failed', { replace: true });
+      return;
+    }
+
+    if (!cookieSession && (!token || !refreshToken)) {
       console.error('[OAuth] Missing tokens or error:', {
         error,
         token: !!token,
@@ -48,7 +57,9 @@ export default function OAuthCallbackPage() {
       return;
     }
 
-    login({ accessToken: token, refreshToken }, null);
+    if (token && refreshToken) {
+      login({ accessToken: token, refreshToken }, null);
+    }
 
     refreshUser()
       .then((fetchedUser) => {
@@ -63,7 +74,11 @@ export default function OAuthCallbackPage() {
           : '/complete-profile';
 
         flushSync(() => {
-          login({ accessToken: token, refreshToken }, fetchedUser);
+          if (token && refreshToken) {
+            login({ accessToken: token, refreshToken }, fetchedUser);
+          } else {
+            login({}, fetchedUser);
+          }
         });
 
         setTimeout(() => {

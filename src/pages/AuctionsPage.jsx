@@ -4,6 +4,7 @@ import { auctionAPI, ventureAPI, ventureAuctionAPI, communityAuctionAPI } from '
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import { asArray } from '../utils/asArray';
+import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 
 const toNum = (value, fallback = 0) => {
   const n = Number(value);
@@ -20,7 +21,8 @@ const normalizeAuction = (raw) => {
     currentHighestBid: toNum(raw.currentHighestBid ?? raw.current_highest_bid, 0),
     totalBids: toNum(raw.totalBids ?? raw.total_bids, 0),
     startTime: raw.startTime ?? raw.start_time ?? null,
-    endTime: raw.endTime ?? raw.end_time ?? null,
+    endTime: resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null,
+    duration: raw.duration ?? null,
     domain: {
       ...domainRaw,
       domainName: domainRaw.domainName ?? domainRaw.domain_name ?? '',
@@ -47,7 +49,11 @@ const normalizeListedVentureAuction = (ventureRaw) => {
     currentHighestBid: toNum(auction.currentHighestBid ?? auction.current_highest_bid, 0),
     totalBids: toNum(auction.totalBids ?? auction.total_bids, 0),
     startTime: auction.startTime ?? auction.start_time ?? null,
-    endTime: auction.endTime ?? auction.end_time ?? null,
+    endTime: resolveAuctionEndTime(
+      auction,
+      ventureRaw.auctionDuration ?? ventureRaw.auction_duration,
+    ),
+    duration: auction.duration ?? ventureRaw.auctionDuration ?? ventureRaw.auction_duration ?? null,
     venture: {
       id: ventureRaw.id,
       stage: ventureRaw.stage,
@@ -73,25 +79,14 @@ const asItems = (data) => (
 );
 // Live countdown per card
 function useCountdown(endTime) {
-  const [timeLeft, setTimeLeft]   = useState('');
-  const [isUrgent, setIsUrgent]   = useState(false);
-  const [pct, setPct]             = useState(0); // % of time elapsed
+  const [timeLeft, setTimeLeft] = useState('—');
+  const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
-    if (!endTime) return;
-    const end = new Date(endTime.endsWith('Z') ? endTime : endTime + 'Z');
-
     const tick = () => {
-      const diff = end - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setIsUrgent(diff < 300000);
-      if (d > 0)      setTimeLeft(`${d}d ${h}h ${m}m`);
-      else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
-      else            setTimeLeft(`${m}m ${s}s`);
+      const { timeLeft: next, isUrgent: urgent } = formatCountdown(endTime);
+      setTimeLeft(next);
+      setIsUrgent(urgent);
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -143,8 +138,13 @@ export default function AuctionsPage() {
 
   const applyFilter = (list) => list.filter(a => {
     if (filter === 'ending_soon') {
-      const diff = new Date(a.endTime?.endsWith('Z') ? a.endTime : a.endTime + 'Z') - Date.now();
-      return diff < 86400000;
+      const { timeLeft } = formatCountdown(a.endTime);
+      if (timeLeft === 'Ended' || timeLeft === 'Awaiting schedule' || timeLeft === '—') {
+        return false;
+      }
+      const end = parseAuctionDate(a.endTime);
+      if (!end) return false;
+      return end.getTime() - Date.now() < 86400000;
     }
     if (filter === 'no_bids') return a.totalBids === 0;
     return true;

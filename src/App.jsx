@@ -12,8 +12,11 @@ import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
+import PasswordSecurityPage from './pages/PasswordSecurityPage';
 import DashboardPage from './pages/DashboardPage';
 import NewVenturePage from './pages/NewVenturePage';
 import EditVenturePage from './pages/EditVenturePage';
@@ -63,6 +66,8 @@ export default function App() {
             <Route path="/join-form" element={<JoinForm />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/careers" element={<Navigate to="/contact" replace />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -312,6 +317,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <FeeRequestsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/security/password"
+              element={
+                <ProtectedRoute>
+                  <PasswordSecurityPage />
                 </ProtectedRoute>
               }
             />

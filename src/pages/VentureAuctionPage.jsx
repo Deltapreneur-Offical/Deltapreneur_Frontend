@@ -4,15 +4,60 @@ import { useAuth } from '../context/AuthContext';
 import { useVentureAuction } from '../hooks/useVentureAuction';
 import { ventureAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+
+const parseAuctionDate = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  if (typeof value === 'number') {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const hasTimezone = /([zZ]|[+\-]\d{2}:\d{2})$/.test(trimmed);
+    const normalized = hasTimezone ? trimmed : `${trimmed}Z`;
+    const d = new Date(normalized);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+};
+
+const addDurationToDate = (startDate, duration) => {
+  if (!startDate || !(startDate instanceof Date) || Number.isNaN(startDate.getTime())) return null;
+  const key = String(duration || '').toUpperCase();
+  const byHours = {
+    ONE_HOUR: 1,
+    SIX_HOURS: 6,
+    TWELVE_HOURS: 12,
+  };
+  const byDays = {
+    ONE_DAY: 1,
+    THREE_DAYS: 3,
+    SEVEN_DAYS: 7,
+    FIFTEEN_DAYS: 15,
+    THIRTY_DAYS: 30,
+  };
+  if (byHours[key]) return new Date(startDate.getTime() + byHours[key] * 60 * 60 * 1000);
+  if (byDays[key]) return new Date(startDate.getTime() + byDays[key] * 24 * 60 * 60 * 1000);
+  return null;
+};
 
 function useCountdown(endTime) {
-  const [timeLeft, setTimeLeft] = useState('');
+  const [timeLeft, setTimeLeft] = useState('—');
   const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
-    if (!endTime) return;
+    const end = parseAuctionDate(endTime);
+    if (!end) {
+      setTimeLeft('Awaiting schedule');
+      setIsUrgent(false);
+      return;
+    }
     const tick = () => {
-      const end  = new Date(endTime);
       const diff = end - Date.now();
       if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
       const d = Math.floor(diff / 86400000);
@@ -38,7 +83,6 @@ export default function VentureAuctionPage() {
   const navigate       = useNavigate();
   const { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid }
                        = useVentureAuction(auctionId);
-  const { timeLeft, isUrgent } = useCountdown(auction?.endTime);
 
   const [bidAmount, setBidAmount]           = useState('');
   const [bidLoading, setBidLoading]         = useState(false);
@@ -46,11 +90,81 @@ export default function VentureAuctionPage() {
   const [bidSuccess, setBidSuccess]         = useState('');
   const [flashBid, setFlashBid]             = useState(false);
   const [reAuctionModal, setReAuctionModal] = useState(false);
+  const [participation, setParticipation] = useState({ loading: true, paid: false, fee: 0 });
+  const [participationError, setParticipationError] = useState('');
+  const [payingParticipation, setPayingParticipation] = useState(false);
   const bidListRef = useRef(null);
 
   const isOwner  = auction?.venture?.listedBy?.id === user?.id;
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isEnded  = auction?.status === 'ENDED'  || auction?.status === 'UNSOLD';
+  const resolvedEndTime = (() => {
+    const direct = parseAuctionDate(auction?.endTime);
+    if (direct) return direct.toISOString();
+    const original = parseAuctionDate(auction?.originalEndTime);
+    if (original) return original.toISOString();
+    const start = parseAuctionDate(auction?.startTime);
+    const fromDuration = addDurationToDate(start, auction?.duration);
+    if (fromDuration) return fromDuration.toISOString();
+    const created = parseAuctionDate(auction?.createdAt ?? auction?.created_at);
+    const fromCreated = addDurationToDate(created, auction?.duration);
+    if (fromCreated) return fromCreated.toISOString();
+    return null;
+  })();
+  const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
+
+  useEffect(() => {
+    if (!auction?.id || !user || isOwner || !isActive) {
+      setParticipation({ loading: false, paid: true, fee: 0 });
+      return;
+    }
+    setParticipation((p) => ({ ...p, loading: true }));
+    ventureAuctionAPI.participationStatus(auction.id)
+      .then(({ data }) => {
+        setParticipation({
+          loading: false,
+          paid: Boolean(data?.paid),
+          fee: Number(data?.participationFeeInr || 0),
+        });
+      })
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
+  }, [auction?.id, user?.id, isOwner, isActive]);
+
+  const handlePayParticipation = async () => {
+    if (!auction?.id || !user) return;
+    setPayingParticipation(true);
+    setParticipationError('');
+    try {
+      const { data: orderData } = await ventureAuctionAPI.participationCreateOrder(auction.id);
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: `Venture auction participation fee`,
+        onSuccess: async (response) => {
+          try {
+            await ventureAuctionAPI.participationVerify(auction.id, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            setParticipation((p) => ({ ...p, paid: true }));
+          } catch {
+            setParticipationError('Payment verification failed. Please retry.');
+          } finally {
+            setPayingParticipation(false);
+          }
+        },
+        onFailure: async () => {
+          setParticipationError('Participation payment failed. Please retry.');
+          setPayingParticipation(false);
+        },
+        onDismiss: async () => setPayingParticipation(false),
+      });
+    } catch (err) {
+      setParticipationError(err?.response?.data?.error || 'Failed to start payment.');
+      setPayingParticipation(false);
+    }
+  };
 
   useEffect(() => {
     if (lastUpdate?.type === 'BID_PLACED') {
@@ -65,6 +179,10 @@ export default function VentureAuctionPage() {
   }, [bids.length]);
 
   const handleBid = async () => {
+    if (!participation.paid) {
+      setBidError('Please pay participation fee first.');
+      return;
+    }
     const amount = parseFloat(bidAmount);
     if (!amount || amount < minNextBid) {
       setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN')}`);
@@ -90,69 +208,53 @@ export default function VentureAuctionPage() {
 
   const venture = auction.venture || {};
   const brand   = venture.brandDetails || {};
+  const ownerName =
+    venture?.listedBy?.name
+    || `${venture?.listedBy?.firstname || ''} ${venture?.listedBy?.lastname || ''}`.trim()
+    || venture?.listedBy?.email
+    || 'Venture Owner';
+  const ownerInitial = (ownerName || 'V').trim().charAt(0).toUpperCase();
 
   return (
     <AppLayout>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1rem' }}>
-
-        <div style={{ marginBottom: '2rem' }}>
-          <button className="btn-ghost btn-sm" onClick={() => navigate('/ventures')}
-            style={{ marginBottom: '1rem' }}>
-            ← Back to Ventures
+      <div className="max-w-[1100px] mx-auto px-4">
+        <div className="mb-8">
+          <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4" onClick={() => navigate('/auctions')}>
+            ← Back to Auctions
           </button>
-          <div style={{ display: 'flex', alignItems: 'flex-start',
-                        justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem',
-                            flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2.25rem',
-                             fontWeight: 700, color: '#e0e0f0', margin: 0 }}>
+              <div className="flex items-center gap-3 flex-wrap mb-2">
+                <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
                   {brand.brandName || 'Venture Auction'}
                 </h1>
                 {venture.verified && (
-                  <span style={{ padding: '0.25rem 0.6rem', borderRadius: 6,
-                                 fontSize: '0.75rem', fontWeight: 700, color: '#6ec896',
-                                 background: 'rgba(110,200,150,0.1)',
-                                 border: '1px solid rgba(110,200,150,0.3)' }}>
+                  <span className="px-2.5 py-1 rounded-md text-xs font-bold text-green-600 bg-green-100 border border-green-300">
                     ✓ GSTIN Verified
                   </span>
                 )}
-                <span style={{ padding: '0.2rem 0.55rem', borderRadius: 20,
-                               fontSize: '0.7rem', fontWeight: 700, color: '#a06ec8',
-                               background: 'rgba(160,110,200,0.1)',
-                               border: '1px solid rgba(160,110,200,0.25)' }}>
-                  🔨 Equity Auction
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200">
+                  Equity Auction
                 </span>
                 <StatusBadge status={auction.status} />
               </div>
-              {brand.industry && (
-                <div style={{ fontSize: '0.82rem', color: '#d0d0e0', marginBottom: '0.4rem' }}>
-                  {brand.industry.replace(/_/g, ' ')}
-                  {venture.stage && ` · ${venture.stage.replace(/_/g, ' ')}`}
-                </div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%',
-                               background: connected ? '#6ec896' : '#c86e6e',
-                               display: 'inline-block' }} />
-                <span style={{ fontSize: '0.78rem', color: connected ? '#6ec896' : '#c86e6e' }}>
-                  {connected ? 'Live' : 'Reconnecting…'}
+              <div className="text-sm text-gray-500 mb-1">
+                {brand.industry ? brand.industry.replace(/_/g, ' ') : '—'}
+                {venture.stage ? ` · ${venture.stage.replace(/_/g, ' ')}` : ''}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-amber-500'}`} />
+                <span className={`text-xs ${connected ? 'text-green-600' : 'text-amber-600'}`}>
+                  {connected ? 'Live' : 'Reconnecting...'}
                 </span>
               </div>
             </div>
-
             {isActive && (
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.72rem', color: '#888', marginBottom: '0.25rem',
-                              textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {auction.status === 'EXTENDED' ? '⚡ Extended — Ends in' : 'Ends in'}
+              <div className="text-right">
+                <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">
+                  {auction.status === 'EXTENDED' ? 'Extended - Ends in' : 'Ends in'}
                 </div>
-                <div style={{
-                  fontFamily: 'Cormorant Garamond, serif',
-                  fontSize: '2rem', fontWeight: 700,
-                  color: isUrgent ? '#c86e6e' : '#c8a96e',
-                  animation: isUrgent ? 'pulse 1s infinite' : 'none',
-                }}>
+                <div className={`font-display text-3xl font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-indigo-600'}`}>
                   {timeLeft}
                 </div>
               </div>
@@ -160,137 +262,120 @@ export default function VentureAuctionPage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px',
-                      gap: '1.5rem', alignItems: 'start' }}>
+        <div className="mb-4 p-5 bg-white border border-gray-200 rounded-[14px]">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xl flex items-center justify-center">
+              {ownerInitial}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display text-2xl font-semibold text-gray-900 m-0 truncate">
+                  {brand.brandName || 'Venture Listing'}
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200">
+                  Equity Auction
+                </span>
+              </div>
+              <div className="mt-1 text-sm text-gray-600">
+                Owner: <span className="font-semibold text-gray-800">{ownerName}</span>
+              </div>
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {venture.stage && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-gray-700 bg-gray-100 border border-gray-200">
+                    {String(venture.stage).replace(/_/g, ' ')}
+                  </span>
+                )}
+                {brand.ventureType && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200">
+                    {String(brand.ventureType).replace(/_/g, ' ')}
+                  </span>
+                )}
+                {venture.verified && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-green-700 bg-green-50 border border-green-200">
+                    GSTIN Verified
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-            <div style={{
-              padding: '1.5rem',
-              background: flashBid ? 'rgba(110,200,150,0.08)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${flashBid ? 'rgba(110,200,150,0.4)' : 'rgba(255,255,255,0.08)'}`,
-              borderRadius: 14, transition: 'all 0.3s',
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-                            gap: '1.5rem' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
+          <div className="flex flex-col gap-4">
+            <div className={`p-6 border rounded-[14px] transition-all duration-300 ${flashBid ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
+              <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <div style={statLabel}>Current Highest Bid</div>
-                  <div style={{
-                    fontFamily: 'Cormorant Garamond, serif', fontSize: '2rem', fontWeight: 700,
-                    color: auction.currentHighestBid > 0 ? '#6ec896' : '#888',
-                  }}>
-                    {auction.currentHighestBid > 0
-                      ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
-                      : 'No bids yet'}
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Current Highest Bid</div>
+                  <div className={`font-display text-[2rem] font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                    {auction.currentHighestBid > 0 ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}` : 'No bids yet'}
                   </div>
                   {auction.currentWinnerName && (
-                    <div style={{ fontSize: '0.78rem', color: '#c0c0d0', marginTop: '0.25rem' }}>
-                      Leading: {auction.currentWinnerName}
-                    </div>
+                    <div className="text-[0.78rem] text-gray-500 mt-1">Leading: {auction.currentWinnerName}</div>
                   )}
                 </div>
                 <div>
-                  <div style={statLabel}>Starting Bid</div>
-                  <div style={{ fontFamily: 'Cormorant Garamond, serif',
-                                fontSize: '1.5rem', fontWeight: 700, color: '#c8a96e' }}>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Starting Bid</div>
+                  <div className="font-display text-[1.5rem] font-bold text-amber-600">
                     ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
                   </div>
                 </div>
                 <div>
-                  <div style={statLabel}>Total Bids</div>
-                  <div style={{ fontFamily: 'Cormorant Garamond, serif',
-                                fontSize: '2rem', fontWeight: 700, color: '#e0e0f0' }}>
-                    {auction.totalBids}
-                  </div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Total Bids</div>
+                  <div className="font-display text-[2rem] font-bold text-gray-900">{auction.totalBids}</div>
                 </div>
               </div>
-
               {isActive && auction.currentHighestBid > 0 && (
-                <div style={{ marginTop: '1rem', padding: '0.75rem 1rem',
-                              background: 'rgba(200,169,110,0.08)',
-                              border: '1px solid rgba(200,169,110,0.2)', borderRadius: 8,
-                              fontSize: '0.82rem', color: '#c8a96e' }}>
-                  Next minimum bid:{' '}
-                  <strong>₹{Number(minNextBid).toLocaleString('en-IN')}</strong>
-                  <span style={{ color: '#c0c0d0', marginLeft: '0.5rem' }}>(5% above current)</span>
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
+                  Next minimum bid: <strong>₹{Number(minNextBid).toLocaleString('en-IN')}</strong>
+                  <span className="text-gray-500 ml-2">(5% above current)</span>
                 </div>
               )}
             </div>
 
             {brand.description && (
-              <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.02)',
-                            border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12 }}>
-                <div style={statLabel}>About the Venture</div>
-                <p style={{ color: '#d0d0e0', fontSize: '0.875rem', lineHeight: 1.7, margin: '0.5rem 0 0' }}>
-                  {brand.description}
-                </p>
-                {venture.stage && (
-                  <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a06ec8',
-                                   background: 'rgba(160,110,200,0.1)',
-                                   border: '1px solid rgba(160,110,200,0.2)',
-                                   padding: '0.2rem 0.55rem', borderRadius: 20 }}>
-                      {venture.stage.replace(/_/g, ' ')}
-                    </span>
-                    {brand.ventureType && (
-                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6eadc8',
-                                     background: 'rgba(110,173,200,0.1)',
-                                     border: '1px solid rgba(110,173,200,0.2)',
-                                     padding: '0.2rem 0.55rem', borderRadius: 20 }}>
-                        {brand.ventureType.replace(/_/g,' ')}
-                      </span>
-                    )}
-                  </div>
-                )}
+              <div className="p-5 bg-white border border-gray-200 rounded-[14px]">
+                <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">About the Venture</div>
+                <p className="text-[0.9rem] text-gray-600 leading-relaxed m-0">{brand.description}</p>
               </div>
             )}
 
-            <div style={{ background: 'rgba(255,255,255,0.03)',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: 14, overflow: 'hidden' }}>
-              <div style={{ padding: '1rem 1.25rem',
-                            borderBottom: '1px solid rgba(255,255,255,0.07)',
-                            fontWeight: 600, color: '#e0e0f0', fontSize: '0.9rem' }}>
+            <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 text-[0.9rem]">
                 Bid History
-                <span style={{ color: '#c0c0d0', fontWeight: 400, marginLeft: '0.5rem', fontSize: '0.8rem' }}>
-                  ({bids.length} bids)
-                </span>
+                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">({bids.length} bids)</span>
               </div>
-              <div ref={bidListRef} style={{ maxHeight: 360, overflowY: 'auto', padding: '0.5rem 0' }}>
+              <div ref={bidListRef} className="max-h-[360px] overflow-y-auto py-2">
                 {bids.length === 0 ? (
-                  <div style={{ padding: '2rem', textAlign: 'center',
-                                color: '#d0d0e0', fontSize: '0.875rem' }}>
-                    No bids yet. Be the first to bid!
-                  </div>
+                  <div className="p-8 text-center text-gray-400 text-[0.875rem]">No bids yet. Be the first to bid!</div>
                 ) : (
                   bids.map((bid, i) => (
-                    <BidRow key={i} bid={bid} isLatest={i === 0}
-                            isWinner={bid.isWinningBid || bid.winningBid} />
+                    <BidRow key={i} bid={bid} isLatest={i === 0} isWinner={bid.isWinningBid || bid.winningBid} />
                   ))
                 )}
               </div>
             </div>
 
             {isOwner && auction.status === 'UNSOLD' && (
-              <div style={{ padding: '1.25rem', background: 'rgba(200,169,110,0.06)',
-                            border: '1px solid rgba(200,169,110,0.2)', borderRadius: 12 }}>
-                <div style={{ fontWeight: 600, color: '#c8a96e', marginBottom: '0.5rem' }}>
-                  Auction ended with no bids
-                </div>
-                <p style={{ color: '#d0d0e0', fontSize: '0.875rem', marginBottom: '1rem' }}>
+              <div className="p-5 bg-amber-50 border border-amber-200 rounded-[12px]">
+                <div className="font-semibold text-amber-700 mb-2">Auction ended with no bids</div>
+                <p className="text-gray-500 text-[0.875rem] mb-4">
                   You can re-auction with new settings, or close the listing.
                 </p>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button className="btn-primary" onClick={() => setReAuctionModal(true)}>
+                <div className="flex gap-3">
+                  <button className="btn-glow" onClick={() => setReAuctionModal(true)}>
                     ↺ Re-Auction
                   </button>
-                  <button className="btn-danger"
+                  <button
+                    className="btn-glow"
                     onClick={async () => {
                       try {
                         await ventureAuctionAPI.close(auction.id);
                         navigate('/ventures/dashboard');
-                      } catch { alert('Failed to close auction.'); }
-                    }}>
+                      } catch {
+                        alert('Failed to close auction.');
+                      }
+                    }}
+                  >
                     Close Auction
                   </button>
                 </div>
@@ -298,56 +383,54 @@ export default function VentureAuctionPage() {
             )}
 
             {auction.status === 'ENDED' && (
-              <div style={{ padding: '1.5rem', textAlign: 'center',
-                            background: 'rgba(110,200,150,0.06)',
-                            border: '1px solid rgba(110,200,150,0.2)', borderRadius: 14 }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏆</div>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem',
-                             color: '#6ec896', marginBottom: '0.5rem' }}>
-                  Auction Won!
-                </h3>
-                <p style={{ color: '#a0a0b0' }}>
-                  <strong style={{ color: '#e0e0f0' }}>{auction.currentWinnerName || 'A bidder'}</strong>
-                  {' '}won with a bid of{' '}
-                  <strong style={{ color: '#6ec896' }}>
-                    ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
-                  </strong>
+              <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
+                <div className="text-[2.5rem] mb-2">🏆</div>
+                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">Auction Won!</h3>
+                <p className="text-gray-500">
+                  <strong className="text-gray-900">{auction.currentWinnerName || 'A bidder'}</strong>{' '}
+                  won with a bid of{' '}
+                  <strong className="text-green-700">₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}</strong>
                 </p>
-                <p style={{ fontSize: '0.82rem', color: '#d0d0e0', marginTop: '0.5rem' }}>
+                <p className="text-[0.82rem] text-gray-500 mt-2">
                   Our admin team will coordinate the equity transfer.
                 </p>
               </div>
             )}
           </div>
 
-          <div style={{ position: 'sticky', top: '1.5rem',
-                        display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
+          <div className="sticky top-6 flex flex-col gap-4">
             {isActive && !isOwner && (
-              <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14 }}>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.25rem',
-                             marginBottom: '1.25rem', color: '#e0e0f0' }}>
-                  Place Your Bid
-                </h3>
+              <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
+                <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">Place Your Bid</h3>
+                {!participation.loading && !participation.paid && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="text-sm text-amber-800 mb-2">
+                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                    </div>
+                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
+                      {payingParticipation ? 'Processing...' : 'Pay Participation Fee →'}
+                    </button>
+                    {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
+                  </div>
+                )}
 
                 {minNextBid > 0 && (
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div style={statLabel}>Quick Bid</div>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                      {[1, 1.1, 1.25].map(mult => {
-                        const quickAmount = Math.ceil(minNextBid * mult / 100) * 100;
-                        const selected    = bidAmount === String(quickAmount);
+                  <div className="mb-4">
+                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Bid</div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[1, 1.1, 1.25].map((mult) => {
+                        const quickAmount = Math.ceil((minNextBid * mult) / 100) * 100;
+                        const selected = bidAmount === String(quickAmount);
                         return (
-                          <button key={mult} onClick={() => setBidAmount(String(quickAmount))}
-                            style={{
-                              padding: '0.4rem 0.75rem', borderRadius: 8,
-                              fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600,
-                              background: selected ? 'rgba(200,169,110,0.2)' : 'rgba(255,255,255,0.05)',
-                              border: `1px solid ${selected ? 'rgba(200,169,110,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                              color: selected ? '#c8a96e' : '#a0a0b0',
-                              transition: 'all 0.15s',
-                            }}>
+                          <button
+                            key={mult}
+                            onClick={() => setBidAmount(String(quickAmount))}
+                            className={`px-3 py-1.5 rounded-lg text-[0.78rem] cursor-pointer font-semibold transition-all ${
+                              selected
+                                ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
+                                : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
+                            }`}
+                          >
                             ₹{Number(quickAmount).toLocaleString('en-IN')}
                           </button>
                         );
@@ -356,84 +439,88 @@ export default function VentureAuctionPage() {
                   </div>
                 )}
 
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label style={{ fontSize: '0.78rem', color: '#c0c0d0',
-                                  marginBottom: '0.5rem', display: 'block' }}>
+                <div className="flex flex-col gap-1.5 mb-4">
+                  <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
                     Your Bid Amount (₹)
                   </label>
                   <input
                     type="number"
                     value={bidAmount}
-                    onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
+                    onChange={(e) => {
+                      setBidAmount(e.target.value);
+                      setBidError('');
+                    }}
                     placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
                     min={minNextBid}
-                    style={{ fontSize: '1.1rem', fontWeight: 600 }}
-                    onKeyDown={e => e.key === 'Enter' && handleBid()}
+                    className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
+                    onKeyDown={(e) => e.key === 'Enter' && handleBid()}
                   />
                 </div>
 
                 {bidError && (
-                  <div style={{ padding: '0.75rem', background: 'rgba(200,110,110,0.08)',
-                                border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
-                                marginBottom: '1rem', fontSize: '0.82rem', color: '#c86e6e' }}>
-                    {bidError}
-                  </div>
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4 text-[0.82rem] text-red-600">{bidError}</div>
                 )}
                 {bidSuccess && (
-                  <div style={{ padding: '0.75rem', background: 'rgba(110,200,150,0.08)',
-                                border: '1px solid rgba(110,200,150,0.25)', borderRadius: 8,
-                                marginBottom: '1rem', fontSize: '0.82rem', color: '#6ec896' }}>
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4 text-[0.82rem] text-green-700">
                     ✓ {bidSuccess}
                   </div>
                 )}
 
-                <button className="btn-primary" onClick={handleBid}
-                  disabled={bidLoading || !bidAmount}
-                  style={{ width: '100%', fontSize: '1rem', padding: '0.75rem' }}>
-                  {bidLoading ? <span className="btn-spinner" /> :
-                    `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`}
+                <button className="btn-glow w-full" onClick={handleBid} disabled={bidLoading || !bidAmount || !participation.paid}>
+                  {bidLoading ? (
+                    <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+                  ) : (
+                    `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`
+                  )}
                 </button>
 
-                <p style={{ fontSize: '0.72rem', color: '#c0c0d0', marginTop: '0.75rem',
-                            textAlign: 'center', lineHeight: 1.5 }}>
-                  By bidding you commit to acquiring the equity/stake if you win.
+                <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
+                  By bidding you commit to acquiring this equity stake if you win.
                   Each bid must be at least 5% above the current highest bid.
                 </p>
               </div>
             )}
 
             {isOwner && isActive && (
-              <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14,
-                            textAlign: 'center' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👑</div>
-                <p style={{ color: '#d0d0e0', fontSize: '0.875rem' }}>
-                  This is your auction. You cannot bid on your own venture.
+              <div className="p-5 bg-white border border-gray-200 rounded-[14px] text-center">
+                <div className="text-[1.5rem] mb-2">👑</div>
+                <p className="text-gray-500 text-[0.875rem]">
+                  This is your auction. You cannot bid on your own listing.
                 </p>
               </div>
             )}
 
-            <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)',
-                          border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14 }}>
-              <div style={statLabel}>Auction Info</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '0.75rem' }}>
+            <div className="p-5 bg-white border border-gray-200 rounded-[14px]">
+              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">Auction Info</div>
+              <div className="flex flex-col gap-2.5">
                 <InfoRow label="Duration" value={auction.duration?.replace(/_/g, ' ')} />
-                <InfoRow label="Started"
-                  value={auction.startTime
-                    ? new Date(auction.startTime.endsWith('Z') ? auction.startTime : auction.startTime + 'Z')
-                        .toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : '—'} />
-                <InfoRow label="Ends"
-                  value={auction.endTime
-                    ? new Date(auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z')
-                        .toLocaleDateString('en-IN', { day: 'numeric', month: 'short',
-                          hour: '2-digit', minute: '2-digit' })
-                    : '—'} />
+                <InfoRow
+                  label="Started"
+                  value={
+                    auction.startTime
+                      ? parseAuctionDate(auction.startTime)?.toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        }) || '—'
+                      : '—'
+                  }
+                />
+                <InfoRow
+                  label="Ends"
+                  value={
+                    auction.endTime
+                      ? parseAuctionDate(auction.endTime)?.toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }) || '—'
+                      : '—'
+                  }
+                />
                 {auction.status === 'EXTENDED' && (
-                  <div style={{ padding: '0.5rem 0.75rem',
-                                background: 'rgba(200,169,110,0.08)',
-                                border: '1px solid rgba(200,169,110,0.25)',
-                                borderRadius: 6, fontSize: '0.75rem', color: '#c8a96e' }}>
+                  <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
                     ⚡ Extended due to last-minute bid
                   </div>
                 )}
@@ -465,32 +552,26 @@ function BidRow({ bid, isLatest, isWinner }) {
     : '';
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '1rem',
-      padding: '0.75rem 1.25rem',
-      background: isLatest ? 'rgba(110,200,150,0.04)' : 'transparent',
-      borderLeft: isLatest ? '3px solid #6ec896' : '3px solid transparent',
-      transition: 'all 0.3s',
-    }}>
-      <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: isWinner ? 'rgba(200,169,110,0.15)' : 'rgba(255,255,255,0.06)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.75rem', fontWeight: 700,
-                    color: isWinner ? '#c8a96e' : '#888' }}>
+    <div className={`flex items-center gap-4 px-5 py-3 transition-all ${
+      isLatest ? 'bg-green-50 border-l-[3px] border-l-green-400' : 'bg-transparent border-l-[3px] border-l-transparent'
+    }`}>
+      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${
+        isWinner ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+      }`}>
         {isWinner ? '🏆' : bid.bidderName?.[0]?.toUpperCase() || '?'}
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#e0e0f0' }}>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-[0.875rem] text-gray-900">
           {bid.bidderName || 'Anonymous'}
           {isWinner && (
-            <span style={{ marginLeft: '0.4rem', fontSize: '0.68rem',
-                           color: '#c8a96e', fontWeight: 700 }}>WINNER</span>
+            <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">WINNER</span>
           )}
         </div>
-        <div style={{ fontSize: '0.72rem', color: '#c0c0d0' }}>{bidTimeStr}</div>
+        <div className="text-[0.72rem] text-gray-500">
+          {bidTimeStr ? `${bidTimeStr} · Bidder` : 'Bidder'}
+        </div>
       </div>
-      <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem',
-                    fontWeight: 700, color: isLatest ? '#6ec896' : '#c8a96e', flexShrink: 0 }}>
+      <div className={`font-display text-[1.1rem] font-bold flex-shrink-0 ${isLatest ? 'text-green-600' : 'text-amber-600'}`}>
         ₹{Number(bid.amount).toLocaleString('en-IN')}
       </div>
     </div>
@@ -509,8 +590,12 @@ function StatusBadge({ status }) {
 
   return (
     <span style={{
-      padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700,
-      color: config.color, background: config.color + '18',
+      padding: '0.3rem 0.75rem',
+      borderRadius: 20,
+      fontSize: '0.78rem',
+      fontWeight: 700,
+      color: config.color,
+      background: config.color + '18',
       border: `1px solid ${config.color}33`,
     }}>
       {config.label}
@@ -520,9 +605,9 @@ function StatusBadge({ status }) {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-      <span style={{ color: '#c0c0d0' }}>{label}</span>
-      <span style={{ color: '#e0e0f0', fontWeight: 500 }}>{value || '—'}</span>
+    <div className="flex justify-between text-[0.82rem]">
+      <span className="text-gray-500">{label}</span>
+      <span className="text-gray-900 font-semibold">{value || '—'}</span>
     </div>
   );
 }
@@ -590,7 +675,3 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
   );
 }
 
-const statLabel = {
-  fontSize: '0.72rem', fontWeight: 600, color: '#c0c0d0',
-  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem',
-};

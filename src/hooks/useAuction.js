@@ -4,6 +4,40 @@ import SockJS from 'sockjs-client';
 import { auctionAPI } from '../api/services';
 import { API_ORIGIN } from '../config/urls';
 
+function toNum(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeAuctionPayload(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  return {
+    ...payload,
+    id: payload.id ?? null,
+    status: payload.status ?? null,
+    domain: payload.domain ?? null,
+    minBidPrice: toNum(payload.minBidPrice ?? payload.min_bid_price, 0),
+    currentHighestBid: toNum(payload.currentHighestBid ?? payload.current_highest_bid, 0),
+    totalBids: toNum(payload.totalBids ?? payload.total_bids, 0),
+    duration: payload.duration ?? null,
+    startTime: payload.startTime ?? payload.start_time ?? null,
+    endTime: payload.endTime ?? payload.end_time ?? null,
+    currentWinnerName:
+      payload.currentWinnerName ?? payload.current_winner_name ?? payload.winner?.name ?? null,
+  };
+}
+
+function normalizeBidPayload(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  return {
+    ...raw,
+    bidTime: raw.bidTime ?? raw.created_at ?? raw.createdAt ?? null,
+    bidderName: raw.bidderName ?? raw.bidder_name ?? null,
+    isWinningBid: Boolean(raw.isWinningBid ?? raw.is_winning_bid ?? raw.winningBid ?? false),
+    amount: toNum(raw.amount, 0),
+  };
+}
+
 export function useAuction(auctionId) {
   const [auction, setAuction]       = useState(null);
   const [bids, setBids]             = useState([]);
@@ -34,7 +68,7 @@ export function useAuction(auctionId) {
       } : prev);
       setMinNextBid(msg.currentHighestBid * 1.05);
       if (msg.latestBid) {
-        setBids(prev => [msg.latestBid, ...prev]);
+        setBids(prev => [normalizeBidPayload(msg.latestBid), ...prev]);
       }
     } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
       setAuction(prev => prev ? { ...prev, status: msg.status } : prev);
@@ -61,12 +95,24 @@ export function useAuction(auctionId) {
     setLoading(true);
     auctionAPI.get(auctionId)
       .then(({ data }) => {
-        // FIX #12: normalize endTime from initial load too
-        const a = data.auction;
+        const root = data?.auction && typeof data.auction === 'object' ? data.auction : data;
+        const a = normalizeAuctionPayload(root);
         if (a?.endTime && !a.endTime.endsWith('Z')) a.endTime = a.endTime + 'Z';
         setAuction(a);
-        setBids(data.bids || []);
-        setMinNextBid(data.minNextBid || 0);
+
+        const bidList = Array.isArray(data?.bids)
+          ? data.bids
+          : Array.isArray(data?.recent_bids)
+            ? data.recent_bids
+            : Array.isArray(root?.recent_bids)
+              ? root.recent_bids
+              : [];
+        setBids(bidList.map(normalizeBidPayload));
+
+        const minNext = data?.minNextBid
+          ?? data?.min_next_bid
+          ?? (a?.currentHighestBid > 0 ? a.currentHighestBid * 1.05 : a?.minBidPrice ?? 0);
+        setMinNextBid(toNum(minNext, 0));
       })
       .catch(() => {})
       .finally(() => setLoading(false));

@@ -20,13 +20,13 @@ function FullScreenSpinner() {
  * Not logged in: redirects to /login.
  */
 export function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, hasAccessToken } = useAuth();
   const location = useLocation();
 
   
 
   if (loading) return <FullScreenSpinner />;
-  if (!user)   return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!user || !hasAccessToken)   return <Navigate to="/login" state={{ from: location }} replace />;
   return children;
 }
 
@@ -39,9 +39,10 @@ export function ProtectedRoute({ children }) {
  * Logged in but profile incomplete: → /complete-profile
  */
 export function ProfileGuard({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, hasAccessToken } = useAuth();
+  const location = useLocation();
   if (loading) return <FullScreenSpinner />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user || !hasAccessToken) return <Navigate to="/login" state={{ from: location }} replace />;
 
   // CoBrother can only access /cobrother
   if (user.role === 'COBROTHER') return <Navigate to="/cobrother" replace />;
@@ -52,9 +53,9 @@ export function ProfileGuard({ children }) {
 
 
 export function AdminGuard({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, hasAccessToken } = useAuth();
   if (loading) return <FullScreenSpinner />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user || !hasAccessToken) return <Navigate to="/login" replace />;
   const roleUpper = (user.role ?? '').toString().toUpperCase();
   if (roleUpper !== 'ADMIN' && roleUpper !== 'ROLE_ADMIN') {
     return <Navigate to="/dashboard" replace />;
@@ -63,9 +64,9 @@ export function AdminGuard({ children }) {
 }
 
 export function CoBrotherGuard({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, hasAccessToken } = useAuth();
   if (loading) return <FullScreenSpinner />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user || !hasAccessToken) return <Navigate to="/login" replace />;
   if (user.role !== 'COBROTHER') return <Navigate to="/dashboard" replace />;
   return children;
 }

@@ -30,7 +30,7 @@ const AUCTION_ELIGIBLE_STAGES = ['REVENUE_GENERATING', 'SCALING'];
 
 const EMPTY = {
   brandDetails: {
-    brandName: '', description: '', website: 'https://', videoUrl: '',
+    brandName: '', description: '', website: '', videoUrl: '',
     industry: '', dealValue: '', referenceImageUrl: '', ventureType: '',
   },
   contactInfo: { email: '', phoneNumber: '' },

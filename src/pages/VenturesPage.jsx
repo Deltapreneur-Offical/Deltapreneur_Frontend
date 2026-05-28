@@ -6,11 +6,12 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import { VENTURE_EQUITY_TYPE_LABELS } from '../constants/ventureLabels';
 import { useTranslation } from 'react-i18next';
-import { ventureAPI, ventureAuctionAPI } from '../api/services';
+import { coVentureAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import CoVentureModal from '../components/venture/CoVentureModal';
+import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
@@ -23,6 +24,7 @@ import VentureLogo from '../assets/Coventure_logo.png';
 import { APP_BASE_URL } from '../config/urls';
 import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
+import { asArray } from '../utils/asArray';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
@@ -33,9 +35,11 @@ export default function VenturesPage() {
   const [allVentures, setAllVentures]       = useState([]);
   const [loading, setLoading]               = useState(true);
   const [applyTarget, setApplyTarget]       = useState(null);
+  const [verifyTarget, setVerifyTarget]     = useState(null);
   const [detailTarget, setDetailTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget]     = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
+  const [appliedVentureIds, setAppliedVentureIds] = useState(() => new Set());
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', allVentures);
 
@@ -62,9 +66,23 @@ export default function VenturesPage() {
   useEffect(() => {
     setLoading(true);
     ventureAPI.getAll()
-      .then(({ data }) => setAllVentures(Array.isArray(data) ? data : (data?.data ?? [])))
+      .then(({ data }) => setAllVentures(asArray(data)))
       .catch(() => setAllVentures([]))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    coVentureAPI.getMyApplications()
+      .then(({ data }) => {
+        const items = asArray(data);
+        const ids = new Set(
+          items
+            .map((item) => item?.ventureId || item?.venture_id || item?.venture?.id)
+            .filter(Boolean),
+        );
+        setAppliedVentureIds(ids);
+      })
+      .catch(() => setAppliedVentureIds(new Set()));
   }, []);
 
   // Re-fetch when switching to 'mine' tab
@@ -72,7 +90,7 @@ export default function VenturesPage() {
     if (filterTab !== 'mine') return;
     setLoading(true);
     ventureAPI.getMyVentures()
-      .then(({ data }) => setAllVentures(Array.isArray(data) ? data : (data?.data ?? [])))
+      .then(({ data }) => setAllVentures(asArray(data)))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [filterTab]);
@@ -100,8 +118,7 @@ export default function VenturesPage() {
 
   const refreshVentures = () => {
     const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
-    req.then(({ data }) =>
-      setAllVentures(Array.isArray(data) ? data : (data?.data ?? [])));
+    req.then(({ data }) => setAllVentures(asArray(data)));
   };
 
   return (
@@ -209,10 +226,13 @@ export default function VenturesPage() {
                 <VentureListingCard
                   venture={v}
                   isOwner={v.listedBy?.id === user?.id}
+                  hasApplied={appliedVentureIds.has(v.id)}
+                  showVerifyButton={false}
                   likeState={getLike(v.id)}
                   onLike={() => toggleLike(v.id)}
                   onView={() => setDetailTarget(v)}
                   onApply={() => setApplyTarget(v)}
+                  onVerify={() => setVerifyTarget(v)}
                   onEdit={() => navigate(`/ventures/${v.id}/edit`)}
                   onDelete={() => setDeleteTarget(v.id)}
                 />
@@ -231,6 +251,7 @@ export default function VenturesPage() {
         <VentureDetailModal
           venture={detailTarget}
           isOwner={detailTarget.listedBy?.id === user?.id}
+          hasApplied={appliedVentureIds.has(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshVentures(); }}
           onApply={() => { setApplyTarget(detailTarget); closeListingDetail(); }}
           onEdit={() => { navigate(`/ventures/${detailTarget.id}/edit`); closeListingDetail(); }}
@@ -239,7 +260,29 @@ export default function VenturesPage() {
       )}
 
       {applyTarget && (
-        <CoVentureModal venture={applyTarget} onClose={() => setApplyTarget(null)} />
+        <CoVentureModal
+          venture={applyTarget}
+          onClose={() => setApplyTarget(null)}
+          onApplied={(ventureId) => {
+            if (!ventureId) return;
+            setAppliedVentureIds((prev) => {
+              const next = new Set(prev);
+              next.add(ventureId);
+              return next;
+            });
+          }}
+        />
+      )}
+
+      {verifyTarget && (
+        <VentureGstinVerificationModal
+          venture={verifyTarget}
+          onClose={() => setVerifyTarget(null)}
+          onVerified={() => {
+            setVerifyTarget(null);
+            refreshVentures();
+          }}
+        />
       )}
 
       <ConfirmDialog
@@ -257,7 +300,7 @@ export default function VenturesPage() {
 
 
 // ─── Venture Detail Modal ─────────────────────────────────────────────────────
-function VentureDetailModal({ venture, isOwner, onClose, onApply, onEdit, onDelete }) {
+function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onApply, onEdit, onDelete }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -274,6 +317,7 @@ function VentureDetailModal({ venture, isOwner, onClose, onApply, onEdit, onDele
 
   const b = (detail || venture)?.brandDetails || {};
   const c = (detail || venture)?.contactInfo  || {};
+  const isGstinVerified = Boolean((detail || venture)?.verified || (detail || venture)?.gstinVerified);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -417,7 +461,26 @@ function VentureDetailModal({ venture, isOwner, onClose, onApply, onEdit, onDele
                   <button className="px-5 py-2 bg-red-500 border border-red-500 text-white rounded-[10px] text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-red-600" onClick={onDelete}>Delete</button>
                 </>
               ) : (
-                <button className="btn-glow btn-glow-sm" onClick={onApply}>Co-Venture →</button>
+                <button
+                  className={
+                    hasApplied
+                      ? 'px-5 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-sm font-semibold cursor-not-allowed'
+                      : isGstinVerified
+                        ? 'btn-glow btn-glow-sm'
+                        : 'px-5 py-2 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-sm font-semibold cursor-not-allowed'
+                  }
+                  onClick={isGstinVerified && !hasApplied ? onApply : undefined}
+                  disabled={!isGstinVerified || hasApplied}
+                  title={
+                    hasApplied
+                      ? 'You already applied'
+                      : !isGstinVerified
+                        ? 'GST verification required'
+                        : undefined
+                  }
+                >
+                  {hasApplied ? 'Applied' : isGstinVerified ? 'Co-Venture →' : 'GST Pending'}
+                </button>
               )}
               <button className="px-5 py-2 bg-white border-2 border-gray-300 text-gray-600 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50" onClick={onClose}>Close</button>
             </div>

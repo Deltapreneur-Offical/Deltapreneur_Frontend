@@ -5,6 +5,7 @@ import { authAPI, profileAPI } from '../api/services';
 const authContextDefault = {
   user: null,
   loading: false,
+  hasAccessToken: false,
   login: () => {},
   logout: async () => {},
   refreshUser: async () => null,
@@ -12,29 +13,67 @@ const authContextDefault = {
 
 const AuthContext = createContext(authContextDefault);
 
+function getAccessToken() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('accessToken') || localStorage.getItem('token');
+}
+
+function clearAuthTokens() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+}
+
+function normalizeUserPayload(data) {
+  return data?.data ?? data?.user ?? data ?? null;
+}
+
+function shouldClearAuth(error) {
+  const status = error?.response?.status;
+  if (status !== 401) return false;
+  const detail = String(
+    error.response?.data?.detail ||
+    error.response?.data?.message ||
+    error.response?.data?.error ||
+    '',
+  ).toLowerCase();
+  return (
+    !detail ||
+    detail.includes('invalid') ||
+    detail.includes('expired') ||
+    detail.includes('not authenticated') ||
+    detail.includes('missing') ||
+    detail.includes('token')
+  );
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hasAccessToken, setHasAccessToken] = useState(() => Boolean(getAccessToken()));
 
   // ── fetchMe: reads token, hits /profile/me, normalises response ──────────
   const fetchMe = useCallback(async () => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     if (!token) {
+      setUser(null);
+      setHasAccessToken(false);
       setLoading(false);
       return null;
     }
+    setHasAccessToken(true);
     try {
       const { data } = await profileAPI.getMe();
-      // Backend may return { data: {...} } or the user object directly
-      const userData = data?.data ?? data;
+      // Backend may return FastAPI { data }, Java { user }, or the user object directly.
+      const userData = normalizeUserPayload(data);
       setUser(userData);
       return userData;
     } catch (err) {
       // 401 = token invalid/expired — clear auth keys only (avoid wiping unrelated keys
       // and racing OAuth callback which may have just written new tokens).
-      if (err?.response?.status === 401) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+      if (shouldClearAuth(err)) {
+        clearAuthTokens();
+        setHasAccessToken(false);
         setUser(null);
       }
       return null;
@@ -45,10 +84,41 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { fetchMe(); }, [fetchMe]);
 
+  useEffect(() => {
+    const syncAuthState = () => {
+      const token = getAccessToken();
+      if (!token) {
+        setHasAccessToken(false);
+        setUser(null);
+        return;
+      }
+      setHasAccessToken(true);
+    };
+
+    const onAuthCleared = () => {
+      setHasAccessToken(false);
+      setUser(null);
+    };
+
+    window.addEventListener('storage', syncAuthState);
+    window.addEventListener('focus', syncAuthState);
+    window.addEventListener('auth:cleared', onAuthCleared);
+
+    return () => {
+      window.removeEventListener('storage', syncAuthState);
+      window.removeEventListener('focus', syncAuthState);
+      window.removeEventListener('auth:cleared', onAuthCleared);
+    };
+  }, []);
+
   // ── login: called from OAuthCallbackPage and password/OTP login ──────────
   // Stores tokens FIRST, then optionally seeds user state
   const login = useCallback((tokens, userData) => {
-    if (tokens?.accessToken)  localStorage.setItem('accessToken',  tokens.accessToken);
+    if (tokens?.accessToken) {
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('token', tokens.accessToken);
+      setHasAccessToken(true);
+    }
     if (tokens?.refreshToken) localStorage.setItem('refreshToken', tokens.refreshToken);
     // Only seed user if we have real data (not empty {})
     if (userData && Object.keys(userData).length > 0) {
@@ -59,6 +129,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try { await authAPI.logout(); } catch {}
     localStorage.clear();
+    setHasAccessToken(false);
     setUser(null);
   };
 
@@ -66,7 +137,7 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(() => fetchMe(), [fetchMe]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, hasAccessToken, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

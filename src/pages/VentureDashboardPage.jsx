@@ -5,6 +5,7 @@ import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import EditActionLabel from '../components/common/EditActionLabel';
+import { asArray } from '../utils/asArray';
 
 const STATUS_META = {
   PENDING:  { label: 'Pending',  color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', icon: '⏳' },
@@ -88,14 +89,14 @@ function MyListings() {
 
   const loadVentures = useCallback(() => {
     ventureAPI.getMyVentures()
-      .then(({ data }) => setVentures(Array.isArray(data) ? data : (data?.data ?? [])))
+      .then(({ data }) => setVentures(asArray(data)))
       .catch(() => setVentures([]));
   }, []);
 
   useEffect(() => {
     setLoading(true);
     ventureAPI.getMyVentures()
-      .then(({ data }) => setVentures(Array.isArray(data) ? data : (data?.data ?? [])))
+      .then(({ data }) => setVentures(asArray(data)))
       .catch(() => setVentures([]))
       .finally(() => setLoading(false));
   }, []);
@@ -153,6 +154,7 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
   const auction    = venture.auction;
   const auctionId  = auction?.id;
   const isInactive = venture.status === false;
+  const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
 
   const handleReactivate = async () => {
     try {
@@ -200,7 +202,7 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
           {venture.status ? '● Active' : '○ Inactive'}
         </span>
 
-        {venture.verified && (
+        {isGstinVerified && (
           <span className="text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-2.5 py-1 rounded-md">
             ✓ GSTIN Verified
           </span>
@@ -230,10 +232,10 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
           </button>
         )}
 
-        {isAuction && !venture.verified && auction?.status === 'DRAFT' && !isInactive && (
+        {!isGstinVerified && !isInactive && (!isAuction || auction?.status === 'DRAFT') && (
           <button className="btn-glow btn-glow-sm"
             onClick={onVerify}>
-            🔍 Verify GSTIN (Starts Auction)
+            {isAuction ? '🔍 Verify GSTIN (Starts Auction)' : '🔍 Verify GSTIN'}
           </button>
         )}
 
@@ -522,7 +524,7 @@ function LikesReceived() {
   useEffect(() => {
     ventureAPI.getMyVentures()
       .then(async ({ data }) => {
-        const list = Array.isArray(data) ? data : (data?.data ?? []);
+        const list = asArray(data);
         setVentures(list);
         if (list.length > 0) {
           const ids = list.map(v => v.id);

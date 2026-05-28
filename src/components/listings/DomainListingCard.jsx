@@ -5,6 +5,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
+import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
 import '../../styles/domain-listing-cards.css';
@@ -29,6 +30,9 @@ export default function DomainListingCard({
   const isHighValue = isPremiumDomain(domain);
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+  const auctionStartBid = Number(auction?.minBidPrice ?? 0);
+  const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
+  const showPriceBox = !isAuction || Boolean(auction);
   const display = resolveDomainDisplay(domain);
   const domainInitials = (display.name || '')
     .replace(/[^a-zA-Z0-9]/g, '')
@@ -103,16 +107,23 @@ export default function DomainListingCard({
           {domain.verified && (
             <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
           )}
-          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-            <div className="domain-listing-card__price-label">
-              {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+          {showPriceBox ? (
+            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+              <div className="domain-listing-card__price-label">
+                {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+              </div>
+              <div className="domain-listing-card__price-value">
+                {isAuction
+                  ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
+                  : formatPrice(domain.askingPrice)}
+              </div>
             </div>
-            <div className="domain-listing-card__price-value">
-              {isAuction && auction
-                ? formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)
-                : formatPrice(domain.askingPrice)}
+          ) : (
+            <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
+              <div className="domain-listing-card__price-label">Starting bid</div>
+              <div className="domain-listing-card__price-value">Verification pending</div>
             </div>
-          </div>
+          )}
         </div>
         <ListingBrowseFooter
           className="domain-listing-card__footer border-t-0 pt-0"
@@ -172,16 +183,23 @@ export default function DomainListingCard({
         {domain.verified && (
           <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
         )}
-        <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-          <div className="domain-listing-card__price-label">
-            {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+        {showPriceBox ? (
+          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+            <div className="domain-listing-card__price-label">
+              {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+            </div>
+            <div className="domain-listing-card__price-value">
+              {isAuction
+                ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
+                : formatPrice(domain.askingPrice)}
+            </div>
           </div>
-          <div className="domain-listing-card__price-value">
-            {isAuction && auction
-              ? formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)
-              : formatPrice(domain.askingPrice)}
+        ) : (
+          <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
+            <div className="domain-listing-card__price-label">Starting bid</div>
+            <div className="domain-listing-card__price-value">Verification pending</div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="domain-listing-card__footer">
@@ -211,11 +229,16 @@ export default function DomainListingCard({
                 )}
               </div>
             </>
-          ) : isAuction && auctionLive ? (
+          ) : isAuction ? (
             <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onViewAuction?.(); }}>
-              <Gavel size={14} /> Join auction
+              <Gavel size={14} /> {auctionLive ? 'Join auction' : 'View auction'}
             </button>
           ) : statusKey === 'AVAILABLE' ? (
+            REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !domain.verified ? (
+              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
+                Verification pending
+              </span>
+            ) : (
             isHighValue ? (
               <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onEnquire?.(); }}>
                 <MessageSquare size={14} /> Enquire
@@ -224,6 +247,7 @@ export default function DomainListingCard({
               <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
                 <ShoppingCart size={14} /> Buy now
               </button>
+            )
             )
           ) : (
             <span className="text-xs text-slate-400 font-medium px-2">{statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}</span>

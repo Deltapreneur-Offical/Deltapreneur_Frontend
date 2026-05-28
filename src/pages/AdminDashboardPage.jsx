@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
-import { adminAPI, meetingAPI } from '../api/services';
+import { adminAPI, meetingAPI, auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import VentureIcon from '../assets/Coventure_logo.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -32,6 +32,13 @@ export default function AdminDashboardPage() {
   const [forwardModal, setForwardModal]     = useState(null);
   const [takeDownTarget, setTakeDownTarget] = useState(null);
   const [softwareAuctions, setSoftwareAuctions] = useState([]);
+  const [participationFees, setParticipationFees] = useState({
+    domainParticipationFeeInr: '',
+    ventureParticipationFeeInr: '',
+    softwareParticipationFeeInr: '',
+    communityParticipationFeeInr: '',
+  });
+  const [savingFees, setSavingFees] = useState(false);
 
   const fetchers = {
     coventures:         adminAPI.getCoVentures,
@@ -79,6 +86,19 @@ export default function AdminDashboardPage() {
       .catch(() => {});
     adminAPI.getCoBrotherRequests()
       .then(({ data }) => setRequests(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    auctionAPI.getParticipationFees()
+      .then(({ data }) => {
+        setParticipationFees({
+          domainParticipationFeeInr: String(data?.domainParticipationFeeInr ?? ''),
+          ventureParticipationFeeInr: String(data?.ventureParticipationFeeInr ?? ''),
+          softwareParticipationFeeInr: String(data?.softwareParticipationFeeInr ?? ''),
+          communityParticipationFeeInr: String(data?.communityParticipationFeeInr ?? ''),
+        });
+      })
       .catch(() => {});
   }, []);
 
@@ -140,6 +160,23 @@ export default function AdminDashboardPage() {
     { id: 'addon-orders',       label: 'Addon Orders', icon: PurchaseIcon     },
   ];
 
+  const handleSaveParticipationFees = async () => {
+    setSavingFees(true);
+    try {
+      await auctionAPI.updateParticipationFees({
+        domainParticipationFeeInr: Number(participationFees.domainParticipationFeeInr),
+        ventureParticipationFeeInr: Number(participationFees.ventureParticipationFeeInr),
+        softwareParticipationFeeInr: Number(participationFees.softwareParticipationFeeInr),
+        communityParticipationFeeInr: Number(participationFees.communityParticipationFeeInr),
+      });
+      alert('Participation fees updated.');
+    } catch (e) {
+      alert(e?.response?.data?.error || 'Failed to update participation fees.');
+    } finally {
+      setSavingFees(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="admin-page w-full min-w-0 max-w-7xl mx-auto">
@@ -181,6 +218,35 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden">
+          {(tab === 'auctions' || tab === 'venture-auctions' || tab === 'software-auctions') && (
+            <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f9fafb' }}>
+              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Participation Fees (INR)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(120px,1fr))', gap: '0.6rem' }}>
+                {[
+                  ['Domain', 'domainParticipationFeeInr'],
+                  ['Venture', 'ventureParticipationFeeInr'],
+                  ['Software', 'softwareParticipationFeeInr'],
+                  ['Community', 'communityParticipationFeeInr'],
+                ].map(([label, key]) => (
+                  <div key={key}>
+                    <div style={{ fontSize: '0.72rem', color: '#6b7280', marginBottom: '0.2rem' }}>{label}</div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={participationFees[key]}
+                      onChange={(e) => setParticipationFees((p) => ({ ...p, [key]: e.target.value }))}
+                      style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: '1px solid #d1d5db' }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <button className="btn-secondary btn-sm" onClick={handleSaveParticipationFees} disabled={savingFees}>
+                  {savingFees ? 'Saving…' : 'Save Fees'}
+                </button>
+              </div>
+            </div>
+          )}
           {loading ? (
             <div className="flex items-center justify-center py-16 md:py-20">
               <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />

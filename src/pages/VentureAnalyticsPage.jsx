@@ -6,6 +6,22 @@ import {
 } from 'recharts';
 import { analyticsAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import { asArray } from '../utils/asArray';
+
+function normalizeAnalyticsPayload(payload) {
+  const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
+  return {
+    totalViews: Number(source?.totalViews ?? 0),
+    totalApplications: Number(source?.totalApplications ?? 0),
+    conversionRate: Number(source?.conversionRate ?? 0),
+    avgHoursToApply: Number(source?.avgHoursToApply ?? 0),
+    viewsByDay: source?.viewsByDay && typeof source.viewsByDay === 'object' ? source.viewsByDay : {},
+    byIndustry: source?.byIndustry && typeof source.byIndustry === 'object' ? source.byIndustry : {},
+    byRole: source?.byRole && typeof source.byRole === 'object' ? source.byRole : {},
+    applicantSkills: source?.applicantSkills && typeof source.applicantSkills === 'object' ? source.applicantSkills : {},
+    byStatus: source?.byStatus && typeof source.byStatus === 'object' ? source.byStatus : {},
+  };
+}
 
 const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
   <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl flex flex-col gap-1.5">
@@ -46,7 +62,7 @@ export default function VentureAnalyticsPage() {
   useEffect(() => {
     analyticsAPI.getMyVentures()
       .then(({ data }) => {
-        const list = Array.isArray(data) ? data : [];
+        const list = asArray(data);
         setVentures(list);
         if (list.length > 0) setSelected(list[0].id);
       })
@@ -58,7 +74,7 @@ export default function VentureAnalyticsPage() {
     if (!selected) return;
     setLoading(true); setError('');
     analyticsAPI.getVentureAnalytics(selected)
-      .then(({ data }) => setAnalytics(data))
+      .then(({ data }) => setAnalytics(normalizeAnalyticsPayload(data)))
       .catch(() => setError('Failed to load analytics.'))
       .finally(() => setLoading(false));
   }, [selected]);

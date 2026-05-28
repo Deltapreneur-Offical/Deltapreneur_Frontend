@@ -193,6 +193,13 @@ export default function HomeTopNavActions() {
                 >
                   {t('updateProfile')}
                 </a>
+                <a
+                  href="/security/password"
+                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
+                  onClick={() => setProfileDropdownOpen(false)}
+                >
+                  Password & Security
+                </a>
                 <div className="border-t border-gray-100">
                   <button
                     type="button"

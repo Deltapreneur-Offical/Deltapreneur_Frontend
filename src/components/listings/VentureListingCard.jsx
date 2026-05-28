@@ -11,9 +11,12 @@ import ListingBrowseFooter from './ListingBrowseFooter';
 export default function VentureListingCard({
   venture,
   isOwner,
+  hasApplied = false,
+  showVerifyButton = true,
   browseMode = false,
   onView,
   onApply,
+  onVerify,
   onEdit,
   onDelete,
   likeState,
@@ -29,6 +32,8 @@ export default function VentureListingCard({
   const shortDesc = `${b.description?.slice(0, 130) || ''}${b.description?.length > 130 ? '…' : ''}`;
   const isAuction = venture.saleType === 'AUCTION';
   const auction = venture.auction;
+  const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
+  const canApply = !isOwner && isGstinVerified && !isAuction && !hasApplied;
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -97,6 +102,16 @@ export default function VentureListingCard({
               {isOwner && (
                 <span className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✦ Owner
+                </span>
+              )}
+              {isAuction && isGstinVerified && (
+                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                  ✓ GSTIN
+                </span>
+              )}
+              {!isAuction && isGstinVerified && (
+                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                  ✓ Verified
                 </span>
               )}
             </div>
@@ -211,24 +226,35 @@ export default function VentureListingCard({
             Website ↗
           </a>
           {isOwner ? (
-            <div className="relative flex-1" ref={optionsRef}>
-              <button
-                type="button"
-                className="w-full py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded transition-all hover:bg-gray-800 flex items-center justify-center gap-1"
-                onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}
-              >
-                Options ▼
-              </button>
-              {optionsOpen && (
-                <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[100px]">
-                  <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView?.(); }}>View</button>
-                  <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left inline-flex items-center" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onEdit?.(); }}>
-                    <EditActionLabel iconSize={14}>Edit</EditActionLabel>
-                  </button>
-                  <button type="button" className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete?.(); }}>Delete</button>
-                </div>
+            <>
+              {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
+                <button
+                  type="button"
+                  className="flex-1 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold rounded transition-all hover:bg-amber-200"
+                  onClick={(e) => { e.stopPropagation(); onVerify?.(); }}
+                >
+                  {isAuction ? '🔍 Verify GSTIN' : '🔍 Verify Business GSTIN'}
+                </button>
               )}
-            </div>
+              <div className="relative flex-1" ref={optionsRef}>
+                <button
+                  type="button"
+                  className="w-full py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded transition-all hover:bg-gray-800 flex items-center justify-center gap-1"
+                  onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}
+                >
+                  Options ▼
+                </button>
+                {optionsOpen && (
+                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[100px]">
+                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView?.(); }}>View</button>
+                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left inline-flex items-center" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onEdit?.(); }}>
+                      <EditActionLabel iconSize={14}>Edit</EditActionLabel>
+                    </button>
+                    <button type="button" className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete?.(); }}>Delete</button>
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
             <>
               {isAuction && auction?.id && auction.status !== 'DRAFT' ? (
@@ -240,13 +266,33 @@ export default function VentureListingCard({
                   🔨 Bid
                 </button>
               ) : !isAuction ? (
-                <button
-                  type="button"
-                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
-                  onClick={() => onApply?.()}
-                >
-                  Apply
-                </button>
+                canApply ? (
+                  <button
+                    type="button"
+                    className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
+                    onClick={() => onApply?.()}
+                  >
+                    Apply
+                  </button>
+                ) : hasApplied ? (
+                  <button
+                    type="button"
+                    className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded cursor-not-allowed"
+                    title="You already applied"
+                    disabled
+                  >
+                    Applied
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed"
+                    title="GST verification required"
+                    disabled
+                  >
+                    GST Pending
+                  </button>
+                )
               ) : (
                 <button type="button" className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed">View</button>
               )}

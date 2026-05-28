@@ -4,6 +4,38 @@ import SockJS from 'sockjs-client';
 import { ventureAuctionAPI } from '../api/services';
 import { API_ORIGIN } from '../config/urls';
 
+const toNum = (value, fallback = 0) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const withUtcIfNeeded = (value) => {
+  if (!value || typeof value !== 'string') return value ?? null;
+  return value.endsWith('Z') ? value : `${value}Z`;
+};
+
+const normalizeBid = (bid) => ({
+  ...bid,
+  amount: toNum(bid?.amount, 0),
+  bidderName: bid?.bidderName ?? bid?.bidder_name ?? '',
+  bidTime: withUtcIfNeeded(bid?.bidTime ?? bid?.bid_time ?? null),
+  isWinningBid: Boolean(bid?.isWinningBid ?? bid?.is_winning_bid ?? false),
+});
+
+const normalizeAuction = (a) => {
+  if (!a || typeof a !== 'object') return null;
+  return {
+    ...a,
+    minBidPrice: toNum(a.minBidPrice ?? a.min_bid_price, 0),
+    currentHighestBid: toNum(a.currentHighestBid ?? a.current_highest_bid, 0),
+    totalBids: toNum(a.totalBids ?? a.total_bids, 0),
+    startTime: withUtcIfNeeded(a.startTime ?? a.start_time ?? null),
+    endTime: withUtcIfNeeded(a.endTime ?? a.end_time ?? null),
+    originalEndTime: withUtcIfNeeded(a.originalEndTime ?? a.original_end_time ?? null),
+    currentWinnerName: a.currentWinnerName ?? '',
+  };
+};
+
 export function useVentureAuction(auctionId) {
   const [auction, setAuction]       = useState(null);
   const [bids, setBids]             = useState([]);
@@ -14,22 +46,32 @@ export function useVentureAuction(auctionId) {
   const clientRef                   = useRef(null);
   const handleUpdateRef             = useRef(null);
 
+  const fetchAuctionDetail = useCallback(async () => {
+    if (!auctionId) return;
+    const { data } = await ventureAuctionAPI.get(auctionId);
+    const normalizedAuction = normalizeAuction(data?.auction);
+    const normalizedBids = Array.isArray(data?.bids) ? data.bids.map(normalizeBid) : [];
+    setAuction(normalizedAuction);
+    setBids(normalizedBids);
+    setMinNextBid(toNum(data?.minNextBid ?? data?.min_next_bid, 0));
+  }, [auctionId]);
+
   const handleUpdate = useCallback((msg) => {
     setLastUpdate(msg);
 
     if (msg.type === 'BID_PLACED') {
       setAuction(prev => prev ? {
         ...prev,
-        currentHighestBid:  msg.currentHighestBid,
-        totalBids:          msg.totalBids,
+        currentHighestBid:  toNum(msg.currentHighestBid, prev.currentHighestBid),
+        totalBids:          toNum(msg.totalBids, prev.totalBids),
         endTime:            msg.endTime
             ? (msg.endTime.endsWith('Z') ? msg.endTime : msg.endTime + 'Z')
             : prev.endTime,
         status:             msg.status,
         currentWinnerName:  msg.currentWinnerName,
       } : prev);
-      setMinNextBid(msg.currentHighestBid * 1.05);
-      if (msg.latestBid) setBids(prev => [msg.latestBid, ...prev]);
+      setMinNextBid(toNum(msg.currentHighestBid, 0) * 1.05);
+      if (msg.latestBid) setBids(prev => [normalizeBid(msg.latestBid), ...prev]);
     } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
       setAuction(prev => prev ? { ...prev, status: msg.status } : prev);
     } else if (msg.type === 'AUCTION_EXTENDED') {
@@ -50,17 +92,10 @@ export function useVentureAuction(auctionId) {
   useEffect(() => {
     if (!auctionId) return;
     setLoading(true);
-    ventureAuctionAPI.get(auctionId)
-      .then(({ data }) => {
-        const a = data.auction;
-        if (a?.endTime && !a.endTime.endsWith('Z')) a.endTime = a.endTime + 'Z';
-        setAuction(a);
-        setBids(data.bids || []);
-        setMinNextBid(data.minNextBid || 0);
-      })
+    fetchAuctionDetail()
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [auctionId]);
+  }, [auctionId, fetchAuctionDetail]);
 
   useEffect(() => {
     if (!auctionId) return;
@@ -90,8 +125,11 @@ export function useVentureAuction(auctionId) {
   }, [auctionId]);
 
   const placeBid = useCallback(async (amount) => {
-    return ventureAuctionAPI.placeBid(auctionId, amount);
-  }, [auctionId]);
+    const res = await ventureAuctionAPI.placeBid(auctionId, amount);
+    // WebSocket can be temporarily disconnected; force-refresh to keep UI accurate.
+    await fetchAuctionDetail();
+    return res;
+  }, [auctionId, fetchAuctionDetail]);
 
   return { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid };
 }

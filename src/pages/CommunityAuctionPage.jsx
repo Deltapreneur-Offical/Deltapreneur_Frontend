@@ -5,6 +5,7 @@ import { useCommunityAuction } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import MeetingDateTimePicker from '../components/common/MeetingDateTimePicker';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -50,6 +51,9 @@ export default function CommunityAuctionPage() {
   const [bidSuccess, setBidSuccess] = useState('');
   const [flashBid, setFlashBid]     = useState(false);
   const bidListRef                  = useRef(null);
+  const [participation, setParticipation] = useState({ loading: true, paid: false, fee: 0 });
+  const [payingParticipation, setPayingParticipation] = useState(false);
+  const [participationError, setParticipationError] = useState('');
 
   // Meetings state
   const [meetings, setMeetings]           = useState([]);
@@ -65,6 +69,61 @@ export default function CommunityAuctionPage() {
   const isActive  = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isEnded   = auction?.status === 'ENDED';
   const isUnsold  = auction?.status === 'UNSOLD';
+
+  useEffect(() => {
+    if (!auction?.id || !user || isOwner || !isActive) {
+      setParticipation({ loading: false, paid: true, fee: 0 });
+      return;
+    }
+    setParticipation((p) => ({ ...p, loading: true }));
+    communityAuctionAPI.participationStatus(auction.id)
+      .then(({ data }) => {
+        const body = data?.data ?? data;
+        setParticipation({
+          loading: false,
+          paid: Boolean(body?.paid),
+          fee: Number(body?.participationFeeInr || 0),
+        });
+      })
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
+  }, [auction?.id, user?.id, isOwner, isActive]);
+
+  const handlePayParticipation = async () => {
+    if (!auction?.id || !user) return;
+    setPayingParticipation(true);
+    setParticipationError('');
+    try {
+      const { data: res } = await communityAuctionAPI.participationCreateOrder(auction.id);
+      const orderData = res?.data ?? res;
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: `Community auction participation fee`,
+        onSuccess: async (response) => {
+          try {
+            await communityAuctionAPI.participationVerify(auction.id, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            setParticipation((p) => ({ ...p, paid: true }));
+          } catch {
+            setParticipationError('Payment verification failed. Please retry.');
+          } finally {
+            setPayingParticipation(false);
+          }
+        },
+        onFailure: async () => {
+          setParticipationError('Participation payment failed. Please retry.');
+          setPayingParticipation(false);
+        },
+        onDismiss: async () => setPayingParticipation(false),
+      });
+    } catch (err) {
+      setParticipationError(err?.response?.data?.error || err?.response?.data?.message || 'Failed to start payment.');
+      setPayingParticipation(false);
+    }
+  };
 
   // Flash on new bid
   useEffect(() => {
@@ -97,6 +156,10 @@ export default function CommunityAuctionPage() {
 
   // Place bid
   const handleBid = async () => {
+    if (!participation.paid) {
+      setBidError('Please pay participation fee first.');
+      return;
+    }
     const amount = parseFloat(bidAmount);
     if (!amount || amount < minNextBid) {
       setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN')}`);
@@ -327,6 +390,17 @@ export default function CommunityAuctionPage() {
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
                   Place Your Bid
                 </h3>
+                {!participation.loading && !participation.paid && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="text-sm text-amber-800 mb-2">
+                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                    </div>
+                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
+                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+                    </button>
+                    {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
+                  </div>
+                )}
 
                 {minNextBid > 0 && (
                   <div className="mb-4">
@@ -378,7 +452,7 @@ export default function CommunityAuctionPage() {
                 )}
 
                 <button className="btn-glow w-full" onClick={handleBid}
-                  disabled={bidLoading || !bidAmount}>
+                  disabled={bidLoading || !bidAmount || !participation.paid}>
                   {bidLoading
                     ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
                     : `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`}

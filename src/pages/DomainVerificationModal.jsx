@@ -3,7 +3,7 @@ import { domainAPI } from '../api/services';
 
 const METHODS = [
   {
-    id: 'DNS_TXT',
+    id: 'DNS',
     label: 'DNS TXT Record',
     icon: '🌐',
     desc: 'Most reliable. Add a TXT record to your DNS. Works for all domains.',
@@ -28,6 +28,16 @@ const METHODS = [
   },
 ];
 
+const readError = (err, fallback) => {
+  const payload = err?.response?.data;
+  if (typeof payload === 'string') return payload;
+  if (payload?.error) return payload.error;
+  if (payload?.message) return payload.message;
+  if (Array.isArray(payload?.detail)) return payload.detail.map(x => x?.msg || String(x)).join(', ');
+  if (typeof payload?.detail === 'string') return payload.detail;
+  return fallback;
+};
+
 export default function DomainVerificationModal({ domain, onClose, onVerified }) {
   const [step, setStep]           = useState('choose');   // choose | instructions | check | done
   const [method, setMethod]       = useState(null);
@@ -45,10 +55,13 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
     try {
       const { data } = await domainAPI.verifyInit(domain.id, selectedMethod);
       setMethod(selectedMethod);
-      setInstructions(data);
+      setInstructions({
+        ...data,
+        instructions: data?.instructions || (data?.message ? [data.message] : []),
+      });
       setStep('instructions');
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data || 'Failed to initiate verification.');
+      setError(readError(err, 'Failed to initiate verification.'));
     } finally { setLoading(false); }
   };
 
@@ -61,12 +74,14 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
         method === 'WHOIS_EMAIL' ? otpCode : null
       );
       setCheckResult(data);
-      if (data.verified) {
+      if (data?.success) {
         setStep('done');
         onVerified();
+      } else {
+        setCheckResult(data);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Verification check failed.');
+      setError(readError(err, 'Verification check failed.'));
     } finally { setLoading(false); }
   };
 
@@ -88,8 +103,12 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
             <div className="relative z-10 px-8 pb-8 flex flex-col gap-3">
               {METHODS.map(m => (
                 <div key={m.id}
-                  onClick={() => !loading && handleInit(m.id)}
-                  className={`p-4 rounded-[10px] border border-gray-200 bg-gray-50 transition-all duration-150 hover:bg-gray-50 hover:border-gray-400 ${loading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  onClick={() => !loading && !m.disabled && handleInit(m.id)}
+                  className={`p-4 rounded-[10px] border border-gray-200 bg-gray-50 transition-all duration-150 ${
+                    loading || m.disabled
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer hover:bg-gray-50 hover:border-gray-400'
+                  }`}
                 >
                   <div className="flex items-center gap-3 mb-1">
                     <span className="text-xl">{m.icon}</span>
@@ -123,7 +142,7 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
 
             {/* Step-by-step instructions */}
             <div className="relative z-10 px-8 flex flex-col gap-2.5">
-              {instructions.instructions?.map((line, i) => (
+              {(instructions.instructions || []).map((line, i) => (
                 <div key={i} className="flex gap-3 items-start">
                   <span className="w-[22px] h-[22px] rounded-full bg-purple-100 border border-purple-200 text-purple-600 text-xs font-bold flex-shrink-0 flex items-center justify-center">
                     {i + 1}
@@ -134,26 +153,25 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
             </div>
 
             {/* DNS TXT copy box */}
-            {method === 'DNS_TXT' && (
+            {method === 'DNS' && (
               <div className="relative z-10 px-8 mb-5">
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">TXT Record Value</div>
-                <CopyBox value={instructions.recordValue} />
+                <CopyBox value={instructions.dns_record || ''} />
               </div>
             )}
 
-            {/* Meta tag copy box */}
             {method === 'META_TAG' && (
               <div className="relative z-10 px-8 mb-5 flex flex-col gap-3">
                 <div>
                   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Meta Tag</div>
-                  <CopyBox value={instructions.metaTag} mono />
+                  <CopyBox value={instructions.meta_tag || ''} mono />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">OR — File Path & Content</div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">OR — Verification File</div>
                   <div className="text-sm text-gray-500 mb-1">
-                    Upload to: <code className="text-purple-600">{instructions.filePath}</code>
+                    Serve this file at: <code className="text-purple-600">{instructions.file_path}</code>
                   </div>
-                  <CopyBox value={instructions.fileContent} />
+                  <CopyBox value={instructions.file_content || ''} />
                 </div>
               </div>
             )}
@@ -162,9 +180,7 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
             {method === 'WHOIS_EMAIL' && (
               <div className="relative z-10 px-8 mb-5">
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Enter Verification Code</div>
-                <p className="text-sm text-gray-500 mb-3">
-                  Sent to: <strong className="text-purple-600">{instructions.maskedEmail}</strong>
-                </p>
+                <p className="text-sm text-gray-500 mb-3">{instructions.message}</p>
                 <input
                   value={otpCode}
                   onChange={e => setOtpCode(e.target.value.toUpperCase())}
@@ -175,10 +191,10 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
               </div>
             )}
 
-            {checkResult && !checkResult.verified && (
+            {checkResult && !checkResult.success && (
               <div className="relative z-10 px-8 mb-4">
                 <div className="p-3.5 bg-red-500/8 border border-red-500/25 rounded-lg text-xs text-red-400">
-                  {checkResult.message}
+                  {checkResult.message || 'Verification not completed yet.'}
                 </div>
               </div>
             )}
@@ -199,7 +215,7 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
 
             {method !== 'WHOIS_EMAIL' && (
               <p className="relative z-10 px-8 pb-8 text-xs text-gray-600 text-center">
-                {method === 'DNS_TXT'
+                {method === 'DNS'
                   ? 'DNS changes can take a few minutes to propagate. If it fails, wait 5 mins and try again.'
                   : 'Make sure your website is publicly accessible before checking.'}
               </p>

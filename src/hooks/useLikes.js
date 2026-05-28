@@ -28,7 +28,7 @@ export function useLikes(type, items) {
     let cancelled = false;
     setLoading(true);
     likeAPI
-      .bulkStatus(type, ids.map((id) => Number(id)))
+      .bulkStatus(type, ids.map((id) => String(id)))
       .then(({ data }) => {
         if (!cancelled) setLikeMap(data ?? {});
       })

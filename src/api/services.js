@@ -4,6 +4,11 @@ import api from './axios';
 export const authAPI = {
   register:           (data)          => api.post('/api/v1/auth/register', data),
   login:              (data)          => api.post('/api/v1/auth/login', data),
+  forgotPassword:     (email)         => api.post('/api/v1/auth/forgot-password', { email }),
+  resetPassword:      (token, password)=> api.post('/api/v1/auth/reset-password', { token, password }),
+  changePassword:     (currentPassword, newPassword) =>
+    api.post('/api/v1/auth/change-password', { currentPassword, newPassword }),
+  setPassword:        (newPassword)   => api.post('/api/v1/auth/set-password', { newPassword }),
   sendOtp:            (email)         => api.post('/api/v1/auth/otp/send', { email }),
   verifyOtp:          (email, otp)    => api.post('/api/v1/auth/otp/verify', { email, otpCode: otp }),
   verifyEmail:        (token)         => api.get(`/api/v1/auth/verify-email?token=${token}`),
@@ -15,8 +20,8 @@ export const authAPI = {
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 export const profileAPI = {
-  // /profile/me is the primary source — returns AppUser with profileComplete
-  getMe:    ()     => api.get('/api/v1/profile/me'),
+  // /auth/me is the active profile source; /profile/me is only a backend compat redirect.
+  getMe:    ()     => api.get('/api/v1/auth/me'),
   complete: (data) => api.put('/api/v1/profile/complete', data),
 };
 
@@ -25,7 +30,7 @@ export const ventureAPI = {
   getAll:       ()        => api.get('/api/v1/venture/all'),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
-  create:       (data)    => api.post('/api/v1/venture', data),
+  create:       (data)    => api.post('/api/v1/venture/', data),
   update:       (id, data)=> api.put(`/api/v1/venture/${id}`, data),
   delete:       (id)      => api.delete(`/api/v1/venture/${id}`),
   // Add to ventureAPI:
@@ -57,6 +62,9 @@ export const ventureAuctionAPI = {
   reAuction:     (auctionId, data)    => api.post(`/api/v1/venture-auction/${auctionId}/re-auction`, data),
   close:         (auctionId)          => api.post(`/api/v1/venture-auction/${auctionId}/close`),
   getActive:     ()                   => api.get('/api/v1/venture-auction/active'),
+  participationStatus: (auctionId)    => api.get(`/api/v1/venture-auction/${auctionId}/participation/status`),
+  participationCreateOrder: (auctionId) => api.post(`/api/v1/venture-auction/${auctionId}/participation/create-order`),
+  participationVerify: (auctionId, data) => api.post(`/api/v1/venture-auction/${auctionId}/participation/verify`, data),
   adminGetAll:   ()                   => api.get('/api/v1/venture-auction/admin/all'),
 };
 // ─── Community ───────────────────────────────────────────────────────────────
@@ -80,16 +88,16 @@ export const domainAPI = {
   getAll:          ()        => api.get('/api/v1/domain/all'),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
   getMyPurchases:  ()        => api.get('/api/v1/domain/my-purchases'),
-  get:             (id)      => api.get(`/api/v1/domain/${id}`),
-  create:          (data)    => api.post('/api/v1/domain', data),
-  update:          (id, data)=> api.put(`/api/v1/domain/${id}`, data),
-  delete:          (id)      => api.delete(`/api/v1/domain/${id}`),
+  get:             (id)      => api.get(`/api/v1/domain/listings/${id}`),
+  create:          (data)    => api.post('/api/v1/domain/listings', data),
+  update:          (id, data)=> api.put(`/api/v1/domain/listings/${id}`, data),
+  delete:          (id)      => api.delete(`/api/v1/domain/listings/${id}`),
   check: (name) => api.get(`/api/v1/domain/check?name=${name}`),
-  createOrder: (id, data) => api.post(`/api/v1/domain/${id}/purchase/create-order`, data),
-  verifyPayment:   (id, data)=> api.post(`/api/v1/domain/${id}/purchase/verify`, data),
-  handleFailure:   (id)      => api.post(`/api/v1/domain/${id}/purchase/failure`),
-  verifyInit:  (id, method) => api.post(`/api/v1/domain/${id}/verify/init?method=${method}`),
-  verifyCheck: (id, code)   => api.post(`/api/v1/domain/${id}/verify/check`, code ? { code } : {}),
+  createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
+  verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
+  handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),
+  verifyInit:  (id, method) => api.post(`/api/v1/domain/listings/${id}/verification/init`, { method }),
+  verifyCheck: (id, token)   => api.post(`/api/v1/domain/listings/${id}/verification/check`, token ? { token } : {}),
   uploadImage: (id, formData) =>
     api.post(`/api/v1/domain/${id}/image`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -197,6 +205,11 @@ export const auctionAPI = {
   close:        (auctionId)         => api.post(`/api/v1/auction/${auctionId}/close`),
   adminGetAll:  ()                  => api.get('/api/v1/auction/admin/all'),
   getActive: () => api.get('/api/v1/auction/active'),
+  participationStatus: (auctionId) => api.get(`/api/v1/auction/${auctionId}/participation/status`),
+  participationCreateOrder: (auctionId) => api.post(`/api/v1/auction/${auctionId}/participation/create-order`),
+  participationVerify: (auctionId, data) => api.post(`/api/v1/auction/${auctionId}/participation/verify`, data),
+  getParticipationFees: () => api.get('/api/v1/auction/participation-fees'),
+  updateParticipationFees: (data) => api.put('/api/v1/auction/admin/participation-fees', data),
 };
 
 export const feedbackAPI = {
@@ -214,6 +227,9 @@ export const communityAuctionAPI = {
   getActive:           ()                  => api.get('/api/v1/community-auction/active'),
   getMyAuctions:       ()                  => api.get('/api/v1/community-auction/my'),
   placeBid:            (auctionId, amount) => api.post(`/api/v1/community-auction/${auctionId}/bid`, { amount }),
+  participationStatus: (auctionId)         => api.get(`/api/v1/community-auctions/${auctionId}/participation/status`),
+  participationCreateOrder: (auctionId)    => api.post(`/api/v1/community-auctions/${auctionId}/participation/create-order`),
+  participationVerify: (auctionId, data)   => api.post(`/api/v1/community-auctions/${auctionId}/participation/verify`, data),
   reAuction:           (auctionId, data)   => api.post(`/api/v1/community-auction/${auctionId}/re-auction`, data),
   close:               (auctionId)         => api.post(`/api/v1/community-auction/${auctionId}/close`),
   adminGetAll:         ()                  => api.get('/api/v1/community-auction/admin/all'),
@@ -224,6 +240,9 @@ export const softwareAuctionAPI = {
   get:             (auctionId)          => api.get(`/api/v1/software-auction/${auctionId}`),
   getBySoftware:   (softwareId)         => api.get(`/api/v1/software-auction/software/${softwareId}`),
   placeBid:        (auctionId, amount)  => api.post(`/api/v1/software-auction/${auctionId}/bid`, { amount }),
+  participationStatus: (auctionId)      => api.get(`/api/v1/software-auction/${auctionId}/participation/status`),
+  participationCreateOrder: (auctionId) => api.post(`/api/v1/software-auction/${auctionId}/participation/create-order`),
+  participationVerify: (auctionId, data)=> api.post(`/api/v1/software-auction/${auctionId}/participation/verify`, data),
   reAuction:       (auctionId, data)    => api.post(`/api/v1/software-auction/${auctionId}/re-auction`, data),
   close:           (auctionId)          => api.post(`/api/v1/software-auction/${auctionId}/close`),
   getActive:       ()                   => api.get('/api/v1/software-auction/active'),

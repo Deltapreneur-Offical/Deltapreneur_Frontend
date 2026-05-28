@@ -32,11 +32,23 @@ import { asArray } from '../utils/asArray';
 import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
+import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdapter';
+import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
   PENDING:   { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
   SOLD:      { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
+};
+
+const readApiError = (err, fallback) => {
+  const payload = err?.response?.data;
+  if (typeof payload === 'string') return payload;
+  if (payload?.error) return payload.error;
+  if (payload?.message) return payload.message;
+  if (typeof payload?.detail === 'string') return payload.detail;
+  if (Array.isArray(payload?.detail)) return payload.detail.map(x => x?.msg || String(x)).join(', ');
+  return fallback;
 };
 
 function buildDomainFormState(domain, navCurrency) {
@@ -76,12 +88,13 @@ export default function DomainsPage() {
   const [enquireSuccess, setEnquireSuccess] = useState(false);
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
+  const [globalNotice, setGlobalNotice]     = useState('');
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
   const domainRows = asArray(allDomains);
   const visibleDomains = filterTab === 'mine'
-    ? domainRows.filter(d => d.listedBy?.id === user?.id)
+    ? domainRows.filter(d => (d.listedBy?.id ?? d.listedByUserId) === user?.id)
     : domainRows.filter(d => !d.takenDown && !isPremiumDomain(d));
 
   const {
@@ -103,9 +116,7 @@ export default function DomainsPage() {
   const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
 
   req
-    .then(({ data }) =>
-      setAllDomains(asArray(data))
-    )
+    .then(({ data }) => setAllDomains(extractDomainList(data)))
     .catch(() => setAllDomains([]))
     .finally(() => setLoading(false));
 }, [filterTab]);
@@ -116,7 +127,7 @@ export default function DomainsPage() {
     setDetail: setDetailTarget,
     fetchById: async (id) => {
       const { data } = await domainAPI.get(id);
-      return data?.data ?? data;
+      return normalizeDomainRecord(data?.data ?? data);
     },
   });
 
@@ -132,9 +143,7 @@ export default function DomainsPage() {
  const refreshDomains = () =>
   domainAPI.getAll()
     .then(({ data }) => {
-      console.log('DOMAINS API RESPONSE:', data);
-
-      setAllDomains(asArray(data));
+      setAllDomains(extractDomainList(data));
     });
   return (
     <AppLayout>
@@ -171,20 +180,28 @@ export default function DomainsPage() {
             onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
 
+        {globalNotice && (
+          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            {globalNotice}
+          </div>
+        )}
+
         {(showForm || editTarget) && (
           <div className="mb-6">
             <DomainForm
               editDomain={editTarget}
               onSaved={d => {
+                const normalizedSaved = normalizeDomainRecord(d);
                 const snap = captureAppLayoutScroll();
                 flushSync(() => {
                   if (editTarget) {
-                    setAllDomains(prev => prev.map(x => (x.id === d.id ? { ...x, ...d } : x)));
+                    setAllDomains(prev => prev.map(x => (x.id === normalizedSaved.id ? { ...x, ...normalizedSaved } : x)));
                     setEditTarget(null);
                   } else {
-                    setAllDomains(prev => [d, ...prev]);
+                    setAllDomains(prev => [normalizedSaved, ...prev]);
                     setShowForm(false);
                     setShowConfetti(true);
+                    setGlobalNotice(d?._warning || '');
                   }
                 });
                 scheduleRestoreAppLayoutScroll(snap);
@@ -245,14 +262,14 @@ export default function DomainsPage() {
                 <ListingCardShell key={d.id}>
                 <DomainListingCard
                   domain={d}
-                  isOwner={d.listedBy?.id === user?.id}
+                  isOwner={(d.listedBy?.id ?? d.listedByUserId) === user?.id}
                   likeState={getLike(d.id)}
                   onLike={() => toggleLike(d.id)}
                   onView={() => setDetailTarget(d)}
                   onEdit={() => { setEditTarget(d); setShowForm(false); }}
                   onBuy={() => setBuyTarget(d)}
                   onEnquire={() => setEnquireTarget(d)}
-                  onViewAuction={() => navigate(`/auction/${d.auction?.id}`)}
+                  onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
                   onDelete={() => setDeleteTarget(d.id)}
                 />
                 </ListingCardShell>
@@ -269,9 +286,10 @@ export default function DomainsPage() {
           domain={buyTarget}
           onClose={() => setBuyTarget(null)}
           onSuccess={d => {
-            setSuccessDomain(d);
+            const normalized = normalizeDomainRecord(d);
+            setSuccessDomain(normalized);
             setBuyTarget(null);
-            setAllDomains(prev => prev.map(x => x.id === d.id ? d : x));
+            setAllDomains(prev => prev.map(x => x.id === normalized.id ? normalized : x));
           }}
         />
       )}
@@ -283,14 +301,14 @@ export default function DomainsPage() {
       {detailTarget && (
         <DomainDetailModal
           domain={detailTarget}
-          isOwner={detailTarget.listedBy?.id === user?.id}
+          isOwner={(detailTarget.listedBy?.id ?? detailTarget.listedByUserId) === user?.id}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshDomains(); }}
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
           onEnquire={() => { setEnquireTarget(detailTarget); closeListingDetail(); }}
           onViewAuction={() => {
-            navigate(`/auction/${detailTarget.auction?.id}`);
+            navigate(detailTarget.auction?.id ? `/auction/${detailTarget.auction.id}` : '/auctions');
             closeListingDetail();
           }}
           onEdit={() => {
@@ -344,6 +362,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const [warning, setWarning] = useState('');
 
   const [imageFile, setImageFile]       = useState(null);
   const [imagePreview, setImagePreview] = useState(() => editDomain?.logo ?? null);
@@ -353,6 +372,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   useEffect(() => {
     setForm(buildDomainFormState(editDomain, navCurrency));
     setError('');
+    setWarning('');
     setImageFile(null);
     setImagePreview(editDomain?.logo ?? null);
     setImageError('');
@@ -377,7 +397,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
       setError('Please enter a valid minimum bid price.');
       return;
     }
-    setLoading(true); setError('');
+    setLoading(true); setError(''); setWarning('');
     try {
       const payload = {
         domainName:      form.domainName.trim(),
@@ -397,23 +417,39 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           agreement: form.agreement,
         };
         const { data: domain } = await domainAPI.create(createPayload);
-        saved = domain;
-        if (form.saleType === 'AUCTION' && domain.id) {
-          await auctionAPI.create(domain.id, {
-            minBidPrice: parseFloat(form.minBidPrice),
-            duration:    form.auctionDuration,
-          });
+        saved = domain?.data ?? domain;
+        if (form.saleType === 'AUCTION' && saved?.id) {
+          try {
+            await auctionAPI.create(saved.id, {
+              domain_id: saved.id,
+              minBidPrice: parseFloat(form.minBidPrice),
+              duration:    form.auctionDuration,
+            });
+          } catch (auctionErr) {
+            const msg = readApiError(
+              auctionErr,
+              'Listing created, but auction setup failed. Please edit this listing and create auction again.',
+            );
+            setWarning(msg);
+            saved = { ...saved, _warning: msg };
+          }
         }
       }
+      let uploadWarning = '';
       if (imageFile && saved?.id) {
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        const { data } = await domainAPI.uploadImage(saved.id, formData);
-        saved = { ...saved, logo: data.logoUrl };
+        try {
+          const formData = new FormData();
+          formData.append('file', imageFile);
+          const { data } = await domainAPI.uploadImage(saved.id, formData);
+          saved = { ...saved, logo: data.logoUrl };
+        } catch {
+          uploadWarning = 'Domain listed successfully, but logo upload is not available right now.';
+          setWarning(uploadWarning);
+        }
       }
-      onSaved(saved);
+      onSaved(uploadWarning ? { ...saved, _warning: uploadWarning } : saved);
     } catch (err) {
-      setError(err.response?.data?.error || (isEdit ? 'Failed to update domain.' : 'Failed to list domain.'));
+      setError(readApiError(err, isEdit ? 'Failed to update domain.' : 'Failed to list domain.'));
     } finally { setLoading(false); }
   };
 
@@ -574,10 +610,12 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                 <label className={labelCls}>Auction Duration <span className="text-red-500">*</span></label>
                 <select className={inputCls} value={form.auctionDuration}
                   onChange={e => setForm(f => ({ ...f, auctionDuration: e.target.value }))}>
+                  <option value="ONE_HOUR">1 Hour</option>
+                  <option value="SIX_HOURS">6 Hours</option>
+                  <option value="TWELVE_HOURS">12 Hours</option>
                   <option value="ONE_DAY">1 Day</option>
+                  <option value="THREE_DAYS">3 Days</option>
                   <option value="SEVEN_DAYS">7 Days</option>
-                  <option value="FIFTEEN_DAYS">15 Days</option>
-                  <option value="THIRTY_DAYS">30 Days</option>
                 </select>
               </div>
             </div>
@@ -668,6 +706,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         )}
 
         {error && <div className="text-sm text-red-500">{error}</div>}
+        {warning && <div className="text-sm text-amber-600">{warning}</div>}
 
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
@@ -732,7 +771,10 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           setLoading(false);
         },
       });
-    } catch (err) { setError(err.response?.data || 'Failed to initiate payment.'); setLoading(false); }
+    } catch (err) {
+      setError(readApiError(err, 'Failed to initiate payment.'));
+      setLoading(false);
+    }
   };
 
   return (
@@ -829,7 +871,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
     if (hasFetched.current) return;
     hasFetched.current = true;
     domainAPI.get(domain.id)
-      .then(({ data }) => setDetail(data?.data ?? data))
+      .then(({ data }) => setDetail(normalizeDomainRecord(data?.data ?? data)))
       .catch(() => setDetail(domain))
       .finally(() => setLoading(false));
   }, [domain.id]);
@@ -971,14 +1013,17 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
               )}
               {!isOwner && (
                 isAuction ? (
-                  auctionLive ? (
-                    <button
-                      onClick={onViewAuction}
-                      className="btn-glow btn-glow-sm">
-                      🔨 Go to Auction →
-                    </button>
-                  ) : null
+                  <button
+                    onClick={onViewAuction}
+                    className="btn-glow btn-glow-sm">
+                    🔨 {auctionLive ? 'Go to Auction' : 'View Auction'} →
+                  </button>
                 ) : d.domainStatus === 'AVAILABLE' ? (
+                  REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
+                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+                      Verification pending
+                    </span>
+                  ) : (
                   isHighValue ? (
                     <button
                       onClick={onEnquire}
@@ -987,6 +1032,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                     </button>
                   ) : (
                     <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
+                  )
                   )
                 ) : null
               )}

@@ -6,6 +6,7 @@ import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainVerificationModal from './DomainVerificationModal';
 import { APP_BASE_URL } from '../config/urls';
+import { extractDomainList } from '../utils/domainApiAdapter';
 
 
 const STATUS_COLORS = {
@@ -33,8 +34,8 @@ export default function DomainsDashboardPage() {
   useEffect(() => {
     Promise.all([domainAPI.getMyListings(), domainAPI.getMyPurchases()])
       .then(([l, p]) => {
-        setListings(Array.isArray(l.data) ? l.data : (l.data?.data ?? []));
-        setPurchases(Array.isArray(p.data) ? p.data : (p.data?.data ?? []));
+        setListings(extractDomainList(l.data));
+        setPurchases(extractDomainList(p.data));
       })
       .catch(() => {})
       .finally(() => setLoading(false));

@@ -4,6 +4,7 @@ import { API_BASE_URL, PRODUCTION_API_ORIGIN } from '../config/urls';
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 function refreshBaseURL() {
@@ -28,9 +29,49 @@ function csrfHeader() {
   }
 }
 
+function getStoredAccessToken() {
+  if (typeof window === 'undefined') return null;
+  return (
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('token') ||
+    null
+  );
+}
+
+function getStoredRefreshToken() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('refreshToken');
+}
+
+function notifyAuthCleared() {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event('auth:cleared'));
+}
+
+function extractAuthPayload(data) {
+  return data?.data ?? data ?? {};
+}
+
+function shouldAttemptRefresh(error, original) {
+  if (original?._retry) return false;
+  const status = error.response?.status;
+  if (status !== 401 && status !== 403) return false;
+
+  const detail = String(
+    error.response?.data?.detail ||
+    error.response?.data?.message ||
+    error.response?.data?.error ||
+    '',
+  ).toLowerCase();
+
+  if (status === 401) return true;
+  return detail.includes('not authenticated') || detail.includes('missing');
+}
+
 // Attach access token to every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
+  const token = getStoredAccessToken();
+  config.headers = config.headers || {};
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -40,8 +81,8 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
-      const refreshToken = localStorage.getItem('refreshToken');
+    if (shouldAttemptRefresh(error, original)) {
+      const refreshToken = getStoredRefreshToken();
       if (!refreshToken) {
         return Promise.reject(error);
       }
@@ -50,15 +91,29 @@ api.interceptors.response.use(
         const { data } = await axios.post(
           '/api/v1/auth/refresh',
           { refreshToken },
-          { baseURL: refreshBaseURL(), headers: { ...csrfHeader() } },
+          {
+            baseURL: refreshBaseURL(),
+            headers: { ...csrfHeader() },
+            withCredentials: true,
+          },
         );
-        const newToken = data.data.accessToken;
+        const payload = extractAuthPayload(data);
+        const newToken = payload.accessToken || payload.token;
+        const newRefreshToken = payload.refreshToken;
+        if (!newToken) {
+          throw new Error('Refresh response did not include an access token');
+        }
         localStorage.setItem('accessToken', newToken);
+        localStorage.setItem('token', newToken);
+        if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
+        original.headers = original.headers || {};
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+        notifyAuthCleared();
         const path = window.location.pathname;
         if (!path.startsWith('/login') && !path.startsWith('/auth/callback')) {
           window.location.href = '/login';

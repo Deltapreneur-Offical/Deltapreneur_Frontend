@@ -12,6 +12,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import { asArray } from '../utils/asArray';
+import { extractDomainList } from '../utils/domainApiAdapter';
 
 export default function PurchasesPage() {
   const { formatPrice } = useCurrency();
@@ -33,12 +34,17 @@ export default function PurchasesPage() {
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
       cocreationAPI.getMyPurchases().catch(() => ({ data: [] })),
     ]).then(([d, s]) => {
-      setDomains(asArray(d.data));
+      setDomains(extractDomainList(d.data));
       setSwPurchases(asArray(s.data));
     }).finally(() => setLoading(false));
   }, []);
 
-  const completedDomains  = asArray(domains).filter(d => d.paymentStatus === 'COMPLETED');
+  const completedDomains  = asArray(domains).filter(d =>
+    d.paymentStatus === 'COMPLETED' ||
+    d.domainStatus === 'SOLD' ||
+    d.purchasedByUserId ||
+    d.purchased_by_user_id
+  );
   const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
   const totalItems        = completedDomains.length + completedSoftware.length;
 
@@ -104,7 +110,6 @@ export default function PurchasesPage() {
                 <DomainPurchaseRow
                   key={'d-' + item.id}
                   domain={item}
-                  onDownloadInvoice={() => generateInvoice({ type: 'domain', item, user })}
                 />
               ) : (
                 <SoftwarePurchaseRow
@@ -157,7 +162,7 @@ export default function PurchasesPage() {
 /* ─────────────────────────────────────────────────────────
    Domain Purchase Row
 ───────────────────────────────────────────────────────── */
-function DomainPurchaseRow({ domain, onDownloadInvoice }) {
+function DomainPurchaseRow({ domain }) {
   const { formatPrice } = useCurrency();
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -176,12 +181,7 @@ function DomainPurchaseRow({ domain, onDownloadInvoice }) {
           <div className="font-display text-xl font-bold text-green-600">
             {formatPrice(domain.askingPrice)}
           </div>
-          <div className="text-xs text-gray-600">✓ Payment Confirmed</div>
-          <InvoiceDownloadButton onClick={onDownloadInvoice} />
         </div>
-      </div>
-      <div className="mt-3.5 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-900">
-        ⏳ Domain transfer in progress — seller will initiate within 24 hours.
       </div>
     </div>
   );

@@ -4,6 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+
+const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
+const FINAL_WINNER_STATUSES = new Set(['ENDED', 'PAYMENT_PENDING', 'COMPLETED']);
 
 // FIX #12: countdown uses ISO string with Z suffix (normalized in useAuction)
 function useCountdown(endTime) {
@@ -51,13 +55,16 @@ export default function AuctionPage() {
   const [bidSuccess, setBidSuccess]       = useState('');
   const [flashBid, setFlashBid]           = useState(false);
   const [reAuctionModal, setReAuctionModal] = useState(false);
+  const [participation, setParticipation] = useState({ loading: true, paid: false, fee: 0 });
+  const [participationError, setParticipationError] = useState('');
+  const [payingParticipation, setPayingParticipation] = useState(false);
   const bidListRef = useRef(null);
 
   // FIX #13: access domain.listedBy safely — it comes through because
   // @JsonIgnoreProperties on domain only strips {"auction","hibernateLazyInitializer"}
   const isOwner  = auction?.domain?.listedBy?.id === user?.id;
-  const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
-  const isEnded  = auction?.status === 'ENDED'  || auction?.status === 'UNSOLD';
+  const isActive = LIVE_AUCTION_STATUSES.has(auction?.status);
+  const hasFinalWinner = FINAL_WINNER_STATUSES.has(auction?.status);
 
   // Flash on new bid
   useEffect(() => {
@@ -74,7 +81,65 @@ export default function AuctionPage() {
     if (bidListRef.current) bidListRef.current.scrollTop = 0;
   }, [bids.length]);
 
+  useEffect(() => {
+    if (!auction?.id || !user || isOwner || !isActive) {
+      setParticipation({ loading: false, paid: true, fee: 0 });
+      return;
+    }
+    setParticipation((p) => ({ ...p, loading: true }));
+    auctionAPI.participationStatus(auction.id)
+      .then(({ data }) => {
+        const fee = Number(data?.participationFeeInr || 0);
+        setParticipation({
+          loading: false,
+          paid: Boolean(data?.paid),
+          fee,
+        });
+      })
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
+  }, [auction?.id, user?.id, isOwner, isActive]);
+
+  const handlePayParticipation = async () => {
+    if (!auction?.id || !user) return;
+    setPayingParticipation(true);
+    setParticipationError('');
+    try {
+      const { data: orderData } = await auctionAPI.participationCreateOrder(auction.id);
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: `Auction participation fee`,
+        onSuccess: async (response) => {
+          try {
+            await auctionAPI.participationVerify(auction.id, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            setParticipation((p) => ({ ...p, paid: true }));
+          } catch {
+            setParticipationError('Payment verification failed. Please try again.');
+          } finally {
+            setPayingParticipation(false);
+          }
+        },
+        onFailure: async () => {
+          setParticipationError('Participation payment failed. Please retry.');
+          setPayingParticipation(false);
+        },
+        onDismiss: async () => setPayingParticipation(false),
+      });
+    } catch (err) {
+      setParticipationError(err?.response?.data?.error || 'Failed to start payment.');
+      setPayingParticipation(false);
+    }
+  };
+
   const handleBid = async () => {
+    if (!participation.paid) {
+      setBidError('Please pay participation fee first.');
+      return;
+    }
     const amount = parseFloat(bidAmount);
     if (!amount || amount < minNextBid) {
       setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN')}`);
@@ -107,6 +172,13 @@ export default function AuctionPage() {
   );
 
   const domain = auction.domain || {};
+  const ownerName =
+    domain?.listedBy?.name
+    || domain?.listedBy?.fullName
+    || domain?.listedBy?.username
+    || domain?.listedBy?.email
+    || 'Domain Owner';
+  const ownerInitial = (ownerName || 'D').trim().charAt(0).toUpperCase();
 
   return (
     <AppLayout>
@@ -114,8 +186,8 @@ export default function AuctionPage() {
 
         {/* ── Header ── */}
         <div className="mb-8">
-          <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4" onClick={() => navigate('/domains')}>
-            ← Back to Domains
+          <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4" onClick={() => navigate('/auctions')}>
+            ← Back to Auctions
           </button>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
@@ -131,9 +203,9 @@ export default function AuctionPage() {
                 <StatusBadge status={auction.status} />
               </div>
               <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-red-600'}`} />
-                <span className={`text-xs ${connected ? 'text-green-600' : 'text-red-600'}`}>
-                  {connected ? 'Live' : 'Reconnecting…'}
+                <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-amber-500'}`} />
+                <span className={`text-xs ${connected ? 'text-green-600' : 'text-amber-600'}`}>
+                  {connected ? 'Live' : 'Live updates paused'}
                 </span>
               </div>
             </div>
@@ -149,6 +221,44 @@ export default function AuctionPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="mb-4 p-5 bg-white border border-gray-200 rounded-[14px]">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xl flex items-center justify-center">
+              {ownerInitial}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display text-2xl font-semibold text-gray-900 m-0 truncate">
+                  {domain.domainName || 'Domain Listing'}{domain.domainExtension || ''}
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200">
+                  Domain Auction
+                </span>
+              </div>
+              <div className="mt-1 text-sm text-gray-600">
+                Owner: <span className="font-semibold text-gray-800">{ownerName}</span>
+              </div>
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {domain.domainStatus && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-gray-700 bg-gray-100 border border-gray-200">
+                    {String(domain.domainStatus).replace(/_/g, ' ')}
+                  </span>
+                )}
+                {domain.saleType && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200">
+                    {String(domain.saleType).replace(/_/g, ' ')}
+                  </span>
+                )}
+                {domain.verified && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-green-700 bg-green-50 border border-green-200">
+                    Verified
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -210,7 +320,8 @@ export default function AuctionPage() {
                 ) : (
                   bids.map((bid, i) => (
                     <BidRow key={i} bid={bid} isLatest={i === 0}
-                            isWinner={bid.isWinningBid || bid.winningBid} />
+                            isWinner={hasFinalWinner && (bid.isWinningBid || bid.winningBid)}
+                            isLeading={isActive && (bid.isWinningBid || bid.winningBid)} />
                   ))
                 )}
               </div>
@@ -244,7 +355,7 @@ export default function AuctionPage() {
             )}
 
             {/* ENDED — winner announcement */}
-            {auction.status === 'ENDED' && (
+            {hasFinalWinner && (
               <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
                 <div className="text-[2.5rem] mb-2">🏆</div>
                 <h3 className="font-display text-[1.5rem] text-green-700 mb-2">Auction Won!</h3>
@@ -271,6 +382,17 @@ export default function AuctionPage() {
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
                   Place Your Bid
                 </h3>
+                {!participation.loading && !participation.paid && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="text-sm text-amber-800 mb-2">
+                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                    </div>
+                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
+                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+                    </button>
+                    {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
+                  </div>
+                )}
 
                 {/* Quick bid buttons */}
                 {minNextBid > 0 && (
@@ -324,7 +446,7 @@ export default function AuctionPage() {
                 )}
 
                 <button className="btn-glow w-full" onClick={handleBid}
-                  disabled={bidLoading || !bidAmount}>
+                  disabled={bidLoading || !bidAmount || !participation.paid}>
                   {bidLoading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
                     `Place Bid${bidAmount
                       ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}`
@@ -403,7 +525,7 @@ export default function AuctionPage() {
 }
 
 // ─── Bid Row ──────────────────────────────────────────────────────────────────
-function BidRow({ bid, isLatest, isWinner }) {
+function BidRow({ bid, isLatest, isWinner, isLeading }) {
   // FIX #12: normalize bidTime
   const bidTimeStr = bid.bidTime
     ? new Date(bid.bidTime.endsWith('Z') ? bid.bidTime : bid.bidTime + 'Z')
@@ -416,9 +538,13 @@ function BidRow({ bid, isLatest, isWinner }) {
       isLatest ? 'bg-green-50 border-l-[3px] border-l-green-400' : 'bg-transparent border-l-[3px] border-l-transparent'
     }`}>
       <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${
-        isWinner ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+        isWinner
+          ? 'bg-amber-100 text-amber-700'
+          : isLeading
+            ? 'bg-green-100 text-green-700'
+            : 'bg-gray-100 text-gray-600'
       }`}>
-        {isWinner ? '🏆' : bid.bidderName?.[0]?.toUpperCase() || '?'}
+        {isWinner ? '🏆' : isLeading ? '1' : bid.bidderName?.[0]?.toUpperCase() || '?'}
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-[0.875rem] text-gray-900">
@@ -426,8 +552,13 @@ function BidRow({ bid, isLatest, isWinner }) {
           {isWinner && (
             <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">WINNER</span>
           )}
+          {!isWinner && isLeading && (
+            <span className="ml-1.5 text-[0.68rem] text-green-600 font-bold">LEADING</span>
+          )}
         </div>
-        <div className="text-[0.72rem] text-gray-400">{bidTimeStr}</div>
+        <div className="text-[0.72rem] text-gray-500">
+          {bidTimeStr ? `${bidTimeStr} · Bidder` : 'Bidder'}
+        </div>
       </div>
       <div className={`font-display text-[1.1rem] font-bold flex-shrink-0 ${
         isLatest ? 'text-green-600' : 'text-amber-600'
@@ -445,7 +576,10 @@ function StatusBadge({ status }) {
     ACTIVE:   { color: '#6ec896', label: '🟢 Live'     },
     EXTENDED: { color: '#c8a96e', label: '⚡ Extended' },
     ENDED:    { color: '#a06ec8', label: 'Ended'       },
+    PAYMENT_PENDING: { color: '#c8a96e', label: 'Payment Pending' },
+    COMPLETED: { color: '#6ec896', label: 'Completed' },
     UNSOLD:   { color: '#c86e6e', label: 'Unsold'      },
+    CANCELLED:{ color: '#888',    label: 'Cancelled'   },
     CLOSED:   { color: '#666',    label: 'Closed'      },
   }[status] || { color: '#888', label: status };
 
@@ -514,10 +648,12 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
             <label className="text-sm font-medium text-gray-700">Auction Duration <span className="text-red-500">*</span></label>
             <select className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" value={form.duration}
               onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}>
+              <option value="ONE_HOUR">1 Hour</option>
+              <option value="SIX_HOURS">6 Hours</option>
+              <option value="TWELVE_HOURS">12 Hours</option>
               <option value="ONE_DAY">1 Day</option>
+              <option value="THREE_DAYS">3 Days</option>
               <option value="SEVEN_DAYS">7 Days</option>
-              <option value="FIFTEEN_DAYS">15 Days</option>
-              <option value="THIRTY_DAYS">30 Days</option>
             </select>
           </div>
           {error && <div className="text-sm text-red-500">{error}</div>}

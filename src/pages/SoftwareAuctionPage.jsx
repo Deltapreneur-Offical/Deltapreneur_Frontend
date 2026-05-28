@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSoftwareAuction } from '../hooks/useSoftwareAuction';
 import { useAuth } from '../context/AuthContext';
+import { softwareAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { Gavel, Clock, Wifi, WifiOff, TrendingUp, Code, Wrench, FileText } from 'lucide-react';
 
 function Countdown({ endTime, status }) {
@@ -59,12 +61,69 @@ export default function SoftwareAuctionPage() {
   const [bidError, setBidError]             = useState('');
   const [bidSuccess, setBidSuccess]         = useState('');
   const [placing, setPlacing]               = useState(false);
+  const [participation, setParticipation]   = useState({ loading: true, paid: false, fee: 0 });
+  const [payingParticipation, setPayingParticipation] = useState(false);
+  const [participationError, setParticipationError] = useState('');
 
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isOwner  = user && auction?.software?.listedBy?.id === user.id;
   const statusStyle = STATUS_STYLES[auction?.status] || STATUS_STYLES.DRAFT;
 
+  useEffect(() => {
+    if (!auction?.id || !user || isOwner || !isActive) {
+      setParticipation({ loading: false, paid: true, fee: 0 });
+      return;
+    }
+    setParticipation((p) => ({ ...p, loading: true }));
+    softwareAuctionAPI.participationStatus(auction.id)
+      .then(({ data }) => {
+        setParticipation({
+          loading: false,
+          paid: Boolean(data?.paid),
+          fee: Number(data?.participationFeeInr || 0),
+        });
+      })
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
+  }, [auction?.id, user?.id, isOwner, isActive]);
+
+  const handlePayParticipation = async () => {
+    if (!auction?.id || !user) return;
+    setPayingParticipation(true);
+    setParticipationError('');
+    try {
+      const { data: orderData } = await softwareAuctionAPI.participationCreateOrder(auction.id);
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: `Software auction participation fee`,
+        onSuccess: async (response) => {
+          try {
+            await softwareAuctionAPI.participationVerify(auction.id, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            setParticipation((p) => ({ ...p, paid: true }));
+          } catch {
+            setParticipationError('Payment verification failed. Please retry.');
+          } finally {
+            setPayingParticipation(false);
+          }
+        },
+        onFailure: async () => {
+          setParticipationError('Participation payment failed. Please retry.');
+          setPayingParticipation(false);
+        },
+        onDismiss: async () => setPayingParticipation(false),
+      });
+    } catch (err) {
+      setParticipationError(err?.response?.data?.error || 'Failed to start payment.');
+      setPayingParticipation(false);
+    }
+  };
+
   const handleBid = async () => {
+    if (!participation.paid) { setBidError('Please pay participation fee first'); return; }
     const amt = parseFloat(bidAmount);
     if (isNaN(amt) || amt <= 0) { setBidError('Enter a valid amount'); return; }
     if (amt < minNextBid) {
@@ -433,6 +492,17 @@ export default function SoftwareAuctionPage() {
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1.25rem' }}>
                   Minimum: ₹{Number(minNextBid).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                 </p>
+                {!participation.loading && !participation.paid && (
+                  <div style={{ marginBottom: '0.8rem', padding: '0.65rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#8a6d1f', marginBottom: '0.4rem' }}>
+                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                    </div>
+                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
+                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+                    </button>
+                    {participationError && <div style={{ fontSize: '0.74rem', color: '#c86e6e', marginTop: '0.35rem' }}>{participationError}</div>}
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <div style={{ position: 'relative', flex: 1 }}>
@@ -444,7 +514,7 @@ export default function SoftwareAuctionPage() {
                       placeholder={Number(minNextBid).toFixed(0)}
                       style={{ paddingLeft: '1.75rem', width: '100%' }} />
                   </div>
-                  <button className="btn-glow" onClick={handleBid} disabled={placing}
+                  <button className="btn-glow" onClick={handleBid} disabled={placing || !participation.paid}
                     style={{ whiteSpace: 'nowrap', minWidth: 80 }}>
                     {placing ? <span className="btn-spinner" /> : 'Bid →'}
                   </button>

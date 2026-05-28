@@ -1,17 +1,46 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
+import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureForm from '../components/venture/VentureForm';
 import Confetti from '../components/common/Confetti';
 
 export default function NewVenturePage() {
   const navigate = useNavigate();
+  const { hasAccessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
 
+  const readApiError = (err) => {
+    const body = err?.response?.data;
+    const firstValidation = Array.isArray(body?.data) ? body.data[0] : null;
+    if (firstValidation?.field && firstValidation?.message) {
+      return `${firstValidation.field}: ${firstValidation.message}`;
+    }
+    return (
+      body?.error ||
+      body?.detail ||
+      body?.message ||
+      'Failed to create venture.'
+    );
+  };
+
+  const clearAuthAndGoLogin = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    window.dispatchEvent(new Event('auth:cleared'));
+    navigate('/login', { state: { from: { pathname: '/ventures/new' } }, replace: true });
+  };
+
   const handleSubmit = async (form, imageFile) => {
+    if (!hasAccessToken) {
+      setError('Please sign in again before creating a venture.');
+      clearAuthAndGoLogin();
+      return;
+    }
     setLoading(true); setError('');
     try {
         const { data } = await ventureAPI.create(form);
@@ -24,7 +53,13 @@ export default function NewVenturePage() {
         setShowConfetti(true);
         setTimeout(() => navigate('/ventures'), 2200);
       } catch (err) {
-          setError(err.response?.data?.error || 'Failed to create venture.');
+          const status = err.response?.status;
+          if (status === 401 || status === 403) {
+            setError('Your session expired. Please sign in again.');
+            clearAuthAndGoLogin();
+            return;
+          }
+          setError(readApiError(err));
       } finally { setLoading(false); }
   };
 

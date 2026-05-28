@@ -35,6 +35,7 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
   };
 
   const b = venture?.brandDetails || {};
+  const isAuction = venture?.saleType === 'AUCTION';
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -112,14 +113,21 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
                 color: '#000000',
                 lineHeight: 1.6,
               }}>
-                🎉 <strong style={{ color: '#6ec896' }}>{b.brandName}</strong>'s auction is now 
-                <strong style={{ 
-                  color: '#6ec896',
-                  fontSize: '1.1rem',
-                  display: 'inline-block',
-                  marginLeft: '0.25rem',
-                  animation: 'pulse 2s ease-in-out infinite',
-                }}> LIVE</strong> and ready for bidding!
+                🎉 <strong style={{ color: '#6ec896' }}>{b.brandName}</strong>
+                {isAuction ? (
+                  <>
+                    {" "}auction is now
+                    <strong style={{
+                      color: '#6ec896',
+                      fontSize: '1.1rem',
+                      display: 'inline-block',
+                      marginLeft: '0.25rem',
+                      animation: 'pulse 2s ease-in-out infinite',
+                    }}> LIVE</strong> and ready for bidding!
+                  </>
+                ) : (
+                  <> is now GST verified successfully.</>
+                )}
               </p>
             </div>
 
@@ -178,7 +186,7 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
                 e.target.style.boxShadow = '0 4px 16px rgba(110, 200, 150, 0.3)';
               }}
             >
-              View Auction →
+              {isAuction ? 'View Auction →' : 'Done →'}
             </button>
 
             {/* CSS Animations */}
@@ -214,10 +222,12 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
         ) : (
           <>
             <div className="modal-header">
-              <div className="modal-badge">🔨 Venture Auction Verification</div>
+              <div className="modal-badge">{isAuction ? '🔨 Venture Auction Verification' : '✅ Venture GST Verification'}</div>
               <h2>{b.brandName}</h2>
               <p style={{ fontSize: '0.82rem', color: '#888' }}>
-                Verify your GSTIN to activate the equity auction
+                {isAuction
+                  ? 'Verify your GSTIN to activate the equity auction'
+                  : 'Verify your GSTIN to validate your venture listing'}
               </p>
             </div>
 
@@ -294,7 +304,9 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
               onClick={handleVerify}
               disabled={loading || gstin.trim().length !== 15}
             >
-              {loading ? <span className="btn-spinner" /> : 'Verify GSTIN & Activate Auction →'}
+              {loading
+                ? <span className="btn-spinner" />
+                : (isAuction ? 'Verify GSTIN & Activate Auction →' : 'Verify GSTIN →')}
             </button>
           </>
         )}

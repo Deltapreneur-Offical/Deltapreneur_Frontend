@@ -214,6 +214,28 @@ export default function LoginPage() {
     window.location.href = startUrl;
   };
 
+  const handleResendVerification = async () => {
+    if (!form.email) {
+      setError('Enter your email first to resend verification link.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setInfo('');
+    try {
+      const { data } = await authAPI.resendVerification(form.email);
+      setInfo(
+        data?.message ||
+          'If this email is pending verification, you will receive a link shortly.',
+      );
+    } catch (err) {
+      const body = err.response?.data;
+      setError(body?.error || body?.message || 'Unable to resend verification link.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
 
 
   // Don't flash login page if already loading auth state
@@ -352,6 +374,19 @@ export default function LoginPage() {
                 t('signIn')
               )}
             </button>
+            <div className="flex items-center justify-between text-sm">
+              <Link to="/forgot-password" className="text-gray-500 hover:text-purple-600">
+                Forgot password?
+              </Link>
+              <button
+                type="button"
+                className="text-gray-500 hover:text-purple-600"
+                onClick={handleResendVerification}
+                disabled={busy}
+              >
+                Resend verification
+              </button>
+            </div>
           </form>
         )}
 

@@ -9,7 +9,7 @@ const STATUS_LABEL = {
 
 
 
-export default function CoVentureModal({ venture, onClose }) {
+export default function CoVentureModal({ venture, onClose, onApplied }) {
   const [form, setForm]       = useState({ fullName: '', phone: '', location: '', gstNo: '', description: ''  });
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true); // checking prior application on mount
@@ -45,6 +45,7 @@ export default function CoVentureModal({ venture, onClose }) {
     try {
       await coVentureAPI.apply(venture.id, form);
       setSuccess(true);
+      onApplied?.(venture?.id);
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || '';
       // Catch backend duplicate rejection gracefully

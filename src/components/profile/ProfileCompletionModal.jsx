@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { profileAPI } from '../../api/services';
+import { authAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { readApiError } from '../../utils/apiError';
 
 
 export default function ProfileCompletionModal({ forceOpen = false }) {
@@ -43,11 +44,17 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
     setLoading(true);
     setError('');
     try {
-      await profileAPI.complete(form);
+      const payload = {
+        firstname: form.firstname.trim(),
+        lastname: form.lastname.trim(),
+        phoneNumber: form.phoneNumber.trim() || undefined,
+        address: form.address.trim() || undefined,
+      };
+      await authAPI.completeProfile(payload);
       await refreshUser();
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to complete profile. Please try again.');
+      setError(readApiError(err, 'Failed to complete profile. Please try again.'));
     } finally {
       setLoading(false);
     }

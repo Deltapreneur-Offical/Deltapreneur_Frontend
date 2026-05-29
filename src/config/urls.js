@@ -34,15 +34,31 @@ const isLocalBackend =
   !remoteApiBase ||
   /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
+function isSameOriginAsApp(apiBase) {
+  if (import.meta.env.DEV || typeof window === 'undefined') return false;
+  const base = String(apiBase || '').replace(/\/$/, '');
+  if (!base || base === '/') return true;
+  try {
+    return new URL(base).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * In dev with a local backend, use same-origin relative URLs so Vite proxies /api → :8000.
- * Avoids cross-origin preflight (OPTIONS) failures and oauth_profile errors after Google login.
+ * On Vercel, vercel.json also proxies /api → Render when base URL is same-origin.
  */
 function resolveApiBaseUrl() {
   if (import.meta.env.DEV && isLocalBackend) {
     return '';
   }
-  return remoteApiBase || PRODUCTION_API_ORIGIN;
+  const configured = remoteApiBase || PRODUCTION_API_ORIGIN;
+  if (isSameOriginAsApp(configured)) {
+    // Vercel: relative /api is rewritten to Render (see vercel.json)
+    return '';
+  }
+  return configured;
 }
 
 function resolveApiOrigin() {
@@ -51,7 +67,13 @@ function resolveApiOrigin() {
       ? window.location.origin
       : 'http://127.0.0.1:5173';
   }
-  return remoteApiBase || PRODUCTION_API_ORIGIN;
+  const configured = remoteApiBase || PRODUCTION_API_ORIGIN;
+  if (isSameOriginAsApp(configured)) {
+    return typeof window !== 'undefined'
+      ? window.location.origin
+      : PRODUCTION_APP_URL;
+  }
+  return configured;
 }
 
 /** Spring Boot origin for OAuth redirects and SockJS. */

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
@@ -6,12 +7,9 @@ import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
-function buildRegisterUrl(name, ext) {
-  return `https://cp.openprovider.eu/domain/register?domain=${encodeURIComponent(name)}&tld=${encodeURIComponent(ext)}`;
-}
-
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [tld, setTld] = useState('com');
   const [results, setResults] = useState([]);
@@ -79,7 +77,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const goRegister = (name, ext) => {
-    window.open(buildRegisterUrl(name, ext), '_blank', 'noopener,noreferrer');
+    navigate(`/storefront?domain=${encodeURIComponent(`${name}.${ext}`)}`);
   };
 
   const best   = results.find(r => r.status === 'marketplace')

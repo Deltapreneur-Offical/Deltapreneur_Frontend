@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield } from 'lucide-react';
+import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
@@ -16,6 +16,7 @@ import { getAppBackTarget } from '../../utils/appNavigation';
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
   { icon: Globe, labelKey: 'domains', to: '/domains', isImage: false },
+  { icon: Store, labelKey: 'storefront', to: '/storefront', isImage: false },
   { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },
   { icon: TechnologyIcon, labelKey: 'technology', to: '/cocreation', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
   {

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Home, Handshake, Users, Globe, Zap, Gavel, ShoppingBag, Settings, Bell, LogOut, Menu, X, Shield } from 'lucide-react';
+import { Home, Handshake, Users, Globe, Zap, Gavel, ShoppingBag, Settings, Bell, LogOut, Menu, X, Shield, Store } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import TopNavbar from '../common/TopNavbar';
@@ -8,6 +8,7 @@ import TopNavbar from '../common/TopNavbar';
 const sidebarItems = [
   { icon: Home, label: 'Dashboard', to: '/dashboard' },
   { icon: Globe, label: 'Domains', to: '/domains' },
+  { icon: Store, label: 'Storefront', to: '/storefront' },
   { icon: Handshake, label: 'Ventures', to: '/ventures' },
   { icon: Zap, label: 'Technology', to: '/cocreation' },
   { icon: Users, label: 'Disruptor', to: '/community' },

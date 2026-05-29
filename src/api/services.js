@@ -104,6 +104,16 @@ export const domainAPI = {
     }),
 };
 
+/** Domain registration storefront (OpenProvider + Razorpay) — new domain checkout */
+export const domainStorefrontAPI = {
+  getConfig: () => api.get('/api/v1/domain/storefront/config'),
+  createOrder: (body) => api.post('/api/v1/domain/storefront/order', body),
+  verifyOrder: (body) => api.post('/api/v1/domain/storefront/order/verify', body),
+  listOrders: () => api.get('/api/v1/domain/storefront/orders'),
+  getOrder: (orderId) => api.get(`/api/v1/domain/storefront/orders/${orderId}`),
+  retryProvision: (orderId) => api.post(`/api/v1/domain/storefront/orders/${orderId}/retry`),
+};
+
 export const analyticsAPI = {
   getVentureAnalytics: (id) => api.get(`/api/v1/analytics/venture/${id}`),
   getProfileAnalytics: ()    => api.get('/api/v1/analytics/profile'),

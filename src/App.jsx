@@ -49,6 +49,7 @@ const DomainsPage = lazy(() => import('./pages/DomainsPage'));
 const CoCreationPage = lazy(() => import('./pages/CoCreationPage'));
 const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const AuctionsPage = lazy(() => import('./pages/AuctionsPage'));
+const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
 
 export default function App() {
   return (
@@ -220,6 +221,17 @@ export default function App() {
                 <ProfileGuard>
                   <DomainsDashboardPage />
                 </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/storefront"
+              element={
+                <Suspense fallback={<div className="p-6">Loading...</div>}>
+                  <ProfileGuard>
+                    <DomainStorefrontPage />
+                  </ProfileGuard>
+                </Suspense>
               }
             />
 

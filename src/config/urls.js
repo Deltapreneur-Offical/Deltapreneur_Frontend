@@ -9,8 +9,8 @@
  *   VITE_API_URL=https://backend.cobrother.com
  *   VITE_APP_URL=https://cobrother.com
  */
-export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
-export const PRODUCTION_APP_URL = 'https://cobrother.com';
+export const PRODUCTION_API_ORIGIN = 'https://cobrother-backend.onrender.com';
+export const PRODUCTION_APP_URL = 'https://co-brother-frontend.vercel.app';
 
 /**
  * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` (or https://localhost:8000)

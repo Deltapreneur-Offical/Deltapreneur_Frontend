@@ -96,6 +96,7 @@ export const domainAPI = {
   createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),
+  verifyOptions: () => api.get('/api/v1/domain/verification/options'),
   verifyInit:  (id, method) => api.post(`/api/v1/domain/listings/${id}/verification/init`, { method }),
   verifyCheck: (id, token)   => api.post(`/api/v1/domain/listings/${id}/verification/check`, token ? { token } : {}),
   uploadImage: (id, formData) =>

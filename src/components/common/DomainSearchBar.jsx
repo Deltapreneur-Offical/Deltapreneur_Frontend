@@ -7,6 +7,23 @@ import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
+function registrarPriceSymbol(currency) {
+  const code = String(currency || 'INR').toUpperCase();
+  const map = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+  return map[code] || `${code} `;
+}
+
+function formatRegistrarPrice(amount, currency) {
+  const sym = registrarPriceSymbol(currency);
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return '';
+  const formatted = n.toLocaleString('en-IN', {
+    minimumFractionDigits: n % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  return `${sym}${formatted}`;
+}
+
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -21,7 +38,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     if (!q) return null;
     const dot = q.indexOf('.');
     if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    return [{ name: q, ext: tld }];
+    // No TLD typed: check selected extension first, then others (prices differ per TLD)
+    const ordered = [tld, ...TLDS.filter((ext) => ext !== tld)];
+    return ordered.map((ext) => ({ name: q, ext }));
   };
 
   const doSearch = async (raw) => {
@@ -36,6 +55,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       ext,
       status:  'loading',
       price:   null,
+      priceCurrency: null,
+      minPeriodYears: 1,
       listing: null,
     })));
 
@@ -46,7 +67,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         // Backend returns: { status: 'marketplace'|'available'|'taken', price, listing }
         setResults(prev => prev.map(r =>
           r.domain === fullDomain
-            ? { ...r, status: data.status, price: data.price ?? null, listing: data.listing ?? null }
+            ? {
+                ...r,
+                status: data.status,
+                price: data.price ?? null,
+                priceCurrency: data.priceCurrency ?? null,
+                minPeriodYears: data.minPeriodYears ?? 1,
+                listing: data.listing ?? null,
+              }
             : r
         ));
       } catch {
@@ -105,15 +133,25 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const Price = ({ result, large }) => {
     if (!result.price) return null;
     const p = Number(result.price);
+    const currency = result.priceCurrency;
+    const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
+    const periodLabel = years > 1 ? `/${years} yrs` : '/yr';
     return (
       <div className="mb-4">
         <p className={`text-gray-400 line-through ${large ? 'text-base' : 'text-xs'}`}>
-          ₹{Math.round(p * 1.8).toLocaleString('en-IN')}
+          {formatRegistrarPrice(p * 1.8, currency)}
         </p>
         <p className={`font-extrabold text-gray-900 ${large ? 'text-3xl' : 'text-xl'}`}>
-          ₹{p.toLocaleString('en-IN')}
-          <span className={`font-normal text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>/yr</span>
+          {formatRegistrarPrice(p, currency)}
+          <span className={`font-normal text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>
+            {periodLabel}
+          </span>
         </p>
+        {result.status === 'available' && (
+          <p className={`text-gray-500 mt-1 ${large ? 'text-xs' : 'text-[11px]'}`}>
+            Registrar create price for .{result.ext} (per OpenProvider; same for any available name on this extension)
+          </p>
+        )}
       </div>
     );
   };

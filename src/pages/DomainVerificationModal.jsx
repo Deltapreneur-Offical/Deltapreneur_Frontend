@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../api/services';
+import { readApiError } from '../utils/apiError';
 
 const ALL_METHODS = [
   {
@@ -28,16 +29,6 @@ const ALL_METHODS = [
     badgeColor: '#6eadc8',
   },
 ];
-
-const readError = (err, fallback) => {
-  const payload = err?.response?.data;
-  if (typeof payload === 'string') return payload;
-  if (payload?.error) return payload.error;
-  if (payload?.message) return payload.message;
-  if (Array.isArray(payload?.detail)) return payload.detail.map(x => x?.msg || String(x)).join(', ');
-  if (typeof payload?.detail === 'string') return payload.detail;
-  return fallback;
-};
 
 export default function DomainVerificationModal({ domain, onClose, onVerified }) {
   const { t } = useTranslation();
@@ -101,7 +92,7 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
       });
       setStep('instructions');
     } catch (err) {
-      setError(readError(err, t('domainVerifyInitFailed')));
+      setError(readApiError(err, t('domainVerifyInitFailed')));
     } finally { setLoading(false); }
   };
 
@@ -120,7 +111,7 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
         setCheckResult(data);
       }
     } catch (err) {
-      setError(readError(err, t('domainVerifyCheckFailed')));
+      setError(readApiError(err, t('domainVerifyCheckFailed')));
     } finally { setLoading(false); }
   };
 

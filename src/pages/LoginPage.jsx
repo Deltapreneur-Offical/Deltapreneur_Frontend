@@ -8,7 +8,7 @@ import { authAPI } from '../api/services';
 
 import { useAuth } from '../context/AuthContext';
 
-import { API_ORIGIN } from '../config/urls';
+import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 
@@ -206,12 +206,13 @@ export default function LoginPage() {
   // ── Google OAuth ─────────────────────────────────────────────────────────────
 
   const handleGoogleLogin = () => {
-    // In dev, go through Vite proxy (same origin + http) so Chrome does not navigate to
-    // https://127.0.0.1:8000/... (HTTPS-first / mixed-origin upgrades break plain Uvicorn).
-    const startUrl = import.meta.env.DEV
-      ? `${window.location.origin}/oauth2/authorization/google`
-      : `${String(API_ORIGIN).replace(/\/$/, '')}/oauth2/authorization/google`;
-    window.location.href = startUrl;
+    // OAuth must start on the backend host (same host as GOOGLE_OAUTH_REDIRECT_URI callback).
+    // Do not use the Vercel SPA origin — oauth_state cookie would not be sent on callback.
+    const backend = (import.meta.env.DEV
+      ? window.location.origin
+      : API_ORIGIN || PRODUCTION_API_ORIGIN
+    ).replace(/\/$/, '');
+    window.location.href = `${backend}/oauth2/authorization/google`;
   };
 
   const handleResendVerification = async () => {

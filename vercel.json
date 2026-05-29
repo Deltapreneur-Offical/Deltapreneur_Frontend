@@ -5,10 +5,6 @@
       "destination": "https://cobrother-backend.onrender.com/api/:path*"
     },
     {
-      "source": "/oauth2/:path*",
-      "destination": "https://cobrother-backend.onrender.com/oauth2/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

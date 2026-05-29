@@ -2,19 +2,18 @@
  * API / backend origin resolution.
  *
  * **Production defaults** (switch to local before local dev):
- *   Backend: https://backend.cobrother.com
- *   App:     https://cobrother.com
+ *   Backend: https://cobrother-backend.onrender.com
+ *   App:     https://co-brother-frontend.vercel.app
  *
- * **Override** — set in `.env`:
- *   VITE_API_URL=https://backend.cobrother.com
- *   VITE_APP_URL=https://cobrother.com
+ * **Override** — set in `.env` / Vercel:
+ *   VITE_API_URL=https://cobrother-backend.onrender.com
+ *   VITE_APP_URL=https://co-brother-frontend.vercel.app
  */
 export const PRODUCTION_API_ORIGIN = 'https://cobrother-backend.onrender.com';
 export const PRODUCTION_APP_URL = 'https://co-brother-frontend.vercel.app';
 
 /**
- * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` (or https://localhost:8000)
- * causes ERR_SSL_PROTOCOL_ERROR. Some .env examples or Chrome upgrades use https by mistake.
+ * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` causes ERR_SSL_PROTOCOL_ERROR.
  */
 function normalizeLocalApiBase(url) {
   if (!url || typeof url !== 'string') return url;
@@ -34,52 +33,49 @@ const isLocalBackend =
   !remoteApiBase ||
   /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
-function isSameOriginAsApp(apiBase) {
-  if (import.meta.env.DEV || typeof window === 'undefined') return false;
-  const base = String(apiBase || '').replace(/\/$/, '');
-  if (!base || base === '/') return true;
+function isFrontendOrigin(url) {
+  if (!url || typeof window === 'undefined') return false;
   try {
-    return new URL(base).origin === window.location.origin;
+    return new URL(url).origin === window.location.origin;
   } catch {
     return false;
   }
 }
 
 /**
- * In dev with a local backend, use same-origin relative URLs so Vite proxies /api → :8000.
- * On Vercel, vercel.json also proxies /api → Render when base URL is same-origin.
+ * Real backend host for OAuth, WebSockets, and Google redirect URI parity.
+ * Never the Vercel SPA origin — oauth_state cookies must be set on the same host as the callback.
+ */
+export function resolveBackendOrigin() {
+  if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
+    return remoteApiBase.replace(/\/$/, '');
+  }
+  return PRODUCTION_API_ORIGIN;
+}
+
+/**
+ * Axios baseURL.
+ * - Dev + local backend: '' (Vite proxies /api → :8000)
+ * - Prod without cross-origin VITE_API_URL: '' (vercel.json proxies /api → Render)
+ * - Prod with VITE_API_URL pointing at Render: direct calls
  */
 function resolveApiBaseUrl() {
   if (import.meta.env.DEV && isLocalBackend) {
     return '';
   }
-  const configured = remoteApiBase || PRODUCTION_API_ORIGIN;
-  if (isSameOriginAsApp(configured)) {
-    // Vercel: relative /api is rewritten to Render (see vercel.json)
+  if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
+    return remoteApiBase.replace(/\/$/, '');
+  }
+  if (!import.meta.env.DEV) {
     return '';
   }
-  return configured;
+  return PRODUCTION_API_ORIGIN;
 }
 
-function resolveApiOrigin() {
-  if (import.meta.env.DEV && isLocalBackend) {
-    return typeof window !== 'undefined'
-      ? window.location.origin
-      : 'http://127.0.0.1:5173';
-  }
-  const configured = remoteApiBase || PRODUCTION_API_ORIGIN;
-  if (isSameOriginAsApp(configured)) {
-    return typeof window !== 'undefined'
-      ? window.location.origin
-      : PRODUCTION_APP_URL;
-  }
-  return configured;
-}
+/** OAuth + SockJS — always the backend origin, not the SPA. */
+export const API_ORIGIN = resolveBackendOrigin();
 
-/** Spring Boot origin for OAuth redirects and SockJS. */
-export const API_ORIGIN = resolveApiOrigin();
-
-/** Axios baseURL — empty in local dev uses Vite proxy (see vite.config.js). */
+/** Axios baseURL */
 export const API_BASE_URL = resolveApiBaseUrl();
 
 export const APP_BASE_URL =
@@ -87,4 +83,3 @@ export const APP_BASE_URL =
   (typeof window !== 'undefined'
     ? window.location.origin
     : PRODUCTION_APP_URL);
-

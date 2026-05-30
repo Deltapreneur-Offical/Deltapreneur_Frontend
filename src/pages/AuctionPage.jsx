@@ -5,11 +5,19 @@ import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import {
+  formatAuctionDate,
+  formatAuctionDateTime,
+  formatAuctionTime,
+  formatCountdown,
+  resolveAuctionEndTime,
+} from '../utils/auctionDate';
+import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
+import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
 const FINAL_WINNER_STATUSES = new Set(['ENDED', 'PAYMENT_PENDING', 'COMPLETED']);
 
-// FIX #12: countdown uses ISO string with Z suffix (normalized in useAuction)
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
@@ -18,19 +26,9 @@ function useCountdown(endTime) {
     if (!endTime) return;
 
     const tick = () => {
-      const end  = new Date(endTime); // endTime already has Z suffix from hook
-      const diff = end - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
-
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-
-      setIsUrgent(diff < 300000); // last 5 mins
-      if (d > 0)      setTimeLeft(`${d}d ${h}h ${m}m`);
-      else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
-      else            setTimeLeft(`${m}m ${s}s`);
+      const next = formatCountdown(endTime);
+      setTimeLeft(next.timeLeft);
+      setIsUrgent(next.isUrgent);
     };
 
     tick();
@@ -45,9 +43,9 @@ export default function AuctionPage() {
   const { auctionId }  = useParams();
   const { user }       = useAuth();
   const navigate       = useNavigate();
-  const { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid }
+  const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid }
                        = useAuction(auctionId);
-  const { timeLeft, isUrgent } = useCountdown(auction?.endTime);
+  const { timeLeft, isUrgent } = useCountdown(resolveAuctionEndTime(auction));
 
   const [bidAmount, setBidAmount]         = useState('');
   const [bidLoading, setBidLoading]       = useState(false);
@@ -62,7 +60,10 @@ export default function AuctionPage() {
 
   // FIX #13: access domain.listedBy safely — it comes through because
   // @JsonIgnoreProperties on domain only strips {"auction","hibernateLazyInitializer"}
-  const isOwner  = auction?.domain?.listedBy?.id === user?.id;
+  const isOwner = resolveAuctionLister(
+    isDomainAuctionLister(auction, user?.id),
+    participation,
+  );
   const isActive = LIVE_AUCTION_STATUSES.has(auction?.status);
   const hasFinalWinner = FINAL_WINNER_STATUSES.has(auction?.status);
 
@@ -82,22 +83,23 @@ export default function AuctionPage() {
   }, [bids.length]);
 
   useEffect(() => {
-    if (!auction?.id || !user || isOwner || !isActive) {
-      setParticipation({ loading: false, paid: true, fee: 0 });
+    if (!auction?.id || !user || !isActive) {
+      setParticipation({ loading: false, paid: false, fee: 0, isOwner: false });
       return;
     }
     setParticipation((p) => ({ ...p, loading: true }));
     auctionAPI.participationStatus(auction.id)
       .then(({ data }) => {
-        const fee = Number(data?.participationFeeInr || 0);
+        const body = data?.data ?? data;
         setParticipation({
           loading: false,
-          paid: Boolean(data?.paid),
-          fee,
+          paid: Boolean(body?.paid),
+          fee: Number(body?.participationFeeInr || 0),
+          isOwner: Boolean(body?.isOwner),
         });
       })
-      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
-  }, [auction?.id, user?.id, isOwner, isActive]);
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0, isOwner: false }));
+  }, [auction?.id, user?.id, isActive]);
 
   const handlePayParticipation = async () => {
     if (!auction?.id || !user) return;
@@ -141,8 +143,9 @@ export default function AuctionPage() {
       return;
     }
     const amount = parseFloat(bidAmount);
-    if (!amount || amount < minNextBid) {
-      setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN')}`);
+    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    if (bidErrorMsg) {
+      setBidError(bidErrorMsg);
       return;
     }
     setBidLoading(true); setBidError(''); setBidSuccess('');
@@ -299,8 +302,7 @@ export default function AuctionPage() {
 
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
-                  Next minimum bid:{' '}
-                  <strong>₹{Number(minNextBid).toLocaleString('en-IN')}</strong>
+                  Allowed bid range: <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
                   <span className="text-gray-500 ml-2">(5% above current)</span>
                 </div>
               )}
@@ -428,6 +430,7 @@ export default function AuctionPage() {
                     onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
                     placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
                     min={minNextBid}
+                    max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
                     onKeyDown={e => e.key === 'Enter' && handleBid()}
                   />
@@ -477,24 +480,13 @@ export default function AuctionPage() {
                 <InfoRow label="Duration"
                   value={auction.duration?.replace(/_/g, ' ')} />
                 <InfoRow label="Started"
-                  value={auction.startTime
-                    ? new Date(
-                        auction.startTime.endsWith('Z')
-                          ? auction.startTime
-                          : auction.startTime + 'Z'
-                      ).toLocaleDateString('en-IN',
-                        { day: 'numeric', month: 'short', year: 'numeric' })
-                    : '—'} />
+                  value={formatAuctionDate(auction.startTime, {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })} />
                 <InfoRow label="Ends"
-                  value={auction.endTime
-                    ? new Date(
-                        auction.endTime.endsWith('Z')
-                          ? auction.endTime
-                          : auction.endTime + 'Z'
-                      ).toLocaleDateString('en-IN',
-                        { day: 'numeric', month: 'short',
-                          hour: '2-digit', minute: '2-digit' })
-                    : '—'} />
+                  value={formatAuctionDateTime(auction.endTime, {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                  })} />
                 {auction.status === 'EXTENDED' && (
                   <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
                     ⚡ Extended due to last-minute bid
@@ -527,11 +519,9 @@ export default function AuctionPage() {
 // ─── Bid Row ──────────────────────────────────────────────────────────────────
 function BidRow({ bid, isLatest, isWinner, isLeading }) {
   // FIX #12: normalize bidTime
-  const bidTimeStr = bid.bidTime
-    ? new Date(bid.bidTime.endsWith('Z') ? bid.bidTime : bid.bidTime + 'Z')
-        .toLocaleTimeString('en-IN',
-          { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    : '';
+  const bidTimeStr = formatAuctionTime(bid.bidTime, {
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }, '');
 
   return (
     <div className={`flex items-center gap-4 px-5 py-3 transition-all ${

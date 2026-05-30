@@ -10,6 +10,17 @@ import CommunityProfileIcon from '../assets/Community-profileicon.png';
 
 const COLORS = ['#c8a96e','#6e9ec8','#6ec896','#c86e6e','#9b6ec8','#c8b06e'];
 
+function normalizeAnalyticsPayload(payload) {
+  const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
+  return {
+    totalViews: Number(source?.totalViews ?? 0),
+    viewsThisWeek: Number(source?.viewsThisWeek ?? 0),
+    viewsByDay: source?.viewsByDay && typeof source.viewsByDay === 'object' ? source.viewsByDay : {},
+    byIndustry: source?.byIndustry && typeof source.byIndustry === 'object' ? source.byIndustry : {},
+    byRole: source?.byRole && typeof source.byRole === 'object' ? source.byRole : {},
+  };
+}
+
 const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
   <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl">
     <div className="text-xs text-gray-600 font-semibold uppercase tracking-wider">{label}</div>
@@ -45,8 +56,8 @@ export default function ProfileAnalyticsPage() {
 
   useEffect(() => {
     analyticsAPI.getProfileAnalytics()
-      .then(({ data }) => setAnalytics(data))
-      .catch(() => setError('No community profile found. Connect LinkedIn first.'))
+      .then(({ data }) => setAnalytics(normalizeAnalyticsPayload(data)))
+      .catch(() => setError('No creator profile found. Connect LinkedIn first.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -68,9 +79,9 @@ export default function ProfileAnalyticsPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display text-4xl font-bold text-gold m-0">Profile Analytics</h1>
-            <p className="text-gray-600 mt-1">See who's viewing your community profile.</p>
+            <p className="text-gray-600 mt-1">See who's viewing your creator profile.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/community')}>← Back</button>
+          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/creator')}>← Back</button>
         </div>
 
         {loading ? (

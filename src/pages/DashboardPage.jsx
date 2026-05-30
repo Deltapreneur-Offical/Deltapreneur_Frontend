@@ -47,7 +47,7 @@ export default function DashboardPage() {
       icon: CommunityIcon,
       title: t('disruptors'),
       desc: t('communityDesc'),
-      to: '/community',
+      to: '/creator',
       cta: t('exploreDisruptors'),
     },
     {
@@ -61,16 +61,16 @@ export default function DashboardPage() {
       icon: TechnologyIcon,
       title: t('technology'),
       desc: t('technologyDesc'),
-      to: '/cocreation',
+      to: '/technology',
       cta: t('distributeSoftware'),
     },
   ];
 
   const quickActions = [
     { to: '/ventures/new', label: t('dashboardListVenturesQuick'), icon: <span className="text-lg font-semibold leading-none">+</span> },
-    { to: '/community', label: t('dashboardViewDisruptorsQuick'), icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/creator', label: t('dashboardViewDisruptorsQuick'), icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
     { to: '/domains', label: t('dashboardManageDomainsQuick'), icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
-    { to: '/cocreation', label: t('dashboardExploreTechnologyQuick'), icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/technology', label: t('dashboardExploreTechnologyQuick'), icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
   ];
 
   const roleUpper = (user?.role ?? '').toString().toUpperCase();

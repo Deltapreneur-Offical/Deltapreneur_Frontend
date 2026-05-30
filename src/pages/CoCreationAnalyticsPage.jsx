@@ -1,7 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { cocreationAPI } from '../api/services';
+import { technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+
+function normalizeTechnologyAnalytics(payload) {
+  const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
+  return {
+    softwareName: source?.softwareName ?? source?.software_name ?? 'Software',
+    totalViews: Number(source?.totalViews ?? 0),
+    totalSales: Number(source?.totalSales ?? 0),
+    totalRevenue: Number(source?.totalRevenue ?? 0),
+    completionStatus: source?.completionStatus ?? source?.completion_status ?? 'N/A',
+    viewsByDay: source?.viewsByDay && typeof source.viewsByDay === 'object' ? source.viewsByDay : {},
+    byIndustry: source?.byIndustry && typeof source.byIndustry === 'object' ? source.byIndustry : {},
+    byRole: source?.byRole && typeof source.byRole === 'object' ? source.byRole : {},
+  };
+}
 
 export default function CoCreationAnalyticsPage() {
   const { id } = useParams();
@@ -11,8 +25,8 @@ export default function CoCreationAnalyticsPage() {
   const [error, setError]   = useState('');
 
   useEffect(() => {
-    cocreationAPI.getAnalytics(id)
-      .then(({ data }) => setData(data))
+    technologyAPI.getAnalytics(id)
+      .then(({ data }) => setData(normalizeTechnologyAnalytics(data)))
       .catch(() => setError('Failed to load analytics.'))
       .finally(() => setLoading(false));
   }, [id]);
@@ -35,7 +49,7 @@ export default function CoCreationAnalyticsPage() {
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{data.softwareName}</h1>
             <p className="text-gray-600 mt-1">Analytics overview for this software listing.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation/dashboard')}>
+          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology/dashboard')}>
             ← Dashboard
           </button>
         </div>

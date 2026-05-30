@@ -50,14 +50,71 @@ export function addDurationToDate(startDate, duration) {
   return null;
 }
 
+function toISOStringSafe(date) {
+  if (!date || Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
 export function resolveAuctionEndTime(auction, ventureDuration) {
   if (!auction || typeof auction !== 'object') return null;
   const direct = parseAuctionDate(auction.endTime ?? auction.end_time);
-  if (direct) return direct.toISOString();
+  if (direct) return toISOStringSafe(direct);
+  const original = parseAuctionDate(auction.originalEndTime ?? auction.original_end_time);
+  if (original) return toISOStringSafe(original);
   const start = parseAuctionDate(auction.startTime ?? auction.start_time);
   const duration = auction.duration ?? ventureDuration;
-  const inferred = addDurationToDate(start, duration);
-  return inferred ? inferred.toISOString() : null;
+  const fromDuration = addDurationToDate(start, duration);
+  if (fromDuration) return toISOStringSafe(fromDuration);
+  const created = parseAuctionDate(auction.createdAt ?? auction.created_at);
+  const fromCreated = addDurationToDate(created, duration);
+  return fromCreated ? toISOStringSafe(fromCreated) : null;
+}
+
+/** Show parsed date, or raw text when API sends free-form strings (e.g. "Immediately"). */
+export function formatDateOrText(value, options, fallback = '—') {
+  const d = parseAuctionDate(value);
+  if (d) return d.toLocaleDateString('en-IN', options);
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  return fallback;
+}
+
+/** Safe display date — never throws RangeError on bad API values. */
+export function formatAuctionDate(value, options, fallback = '—') {
+  const d = parseAuctionDate(value);
+  if (!d) return fallback;
+  return d.toLocaleDateString('en-IN', options);
+}
+
+/** Safe display date + time. */
+export function formatAuctionDateTime(value, options, fallback = '—') {
+  const d = parseAuctionDate(value);
+  if (!d) return fallback;
+  return d.toLocaleString('en-IN', options);
+}
+
+/** Safe display time only. */
+export function formatAuctionTime(value, options, fallback = '—') {
+  const d = parseAuctionDate(value);
+  if (!d) return fallback;
+  return d.toLocaleTimeString('en-IN', options);
+}
+
+/** Value for `<input type="datetime-local" />` min/max — must use local wall time, not UTC ISO slice. */
+export function toDatetimeLocalInput(value) {
+  const d = parseAuctionDate(value);
+  if (!d) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Display expected rate — supports numeric values and free-form strings (e.g. "500/hr"). */
+export function formatExpectedRate(value, fallback = '—') {
+  if (value == null || value === '') return fallback;
+  const str = String(value).trim();
+  const n = Number(str);
+  if (Number.isFinite(n)) return `₹${n.toLocaleString('en-IN')}`;
+  if (/^\d/.test(str)) return str.startsWith('₹') ? str : `₹${str}`;
+  return str;
 }
 
 export function formatCountdown(endTime) {

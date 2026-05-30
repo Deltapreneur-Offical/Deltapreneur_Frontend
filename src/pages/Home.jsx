@@ -224,7 +224,7 @@ export default function Home() {
 
       descKey: 'technologyDesc',
 
-      link: '/cocreation'
+      link: '/technology'
 
     },
 
@@ -242,13 +242,13 @@ export default function Home() {
 
     {
 
-      icon: <img src={cobrotherProfile} alt="Disruptors" className="community-profile-icon" />,
+      icon: <img src={cobrotherProfile} alt="Creators" className="community-profile-icon" />,
 
       titleKey: 'disruptorsTitle',
 
       descKey: 'disruptorsDesc',
 
-      link: '/community'
+      link: '/creator'
 
     }
 

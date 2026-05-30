@@ -3,6 +3,7 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { ventureAuctionAPI } from '../api/services';
 import { API_ORIGIN } from '../config/urls';
+import { resolveAuctionBidLimits } from '../utils/auctionBidLimits';
 
 const toNum = (value, fallback = 0) => {
   const n = Number(value);
@@ -40,6 +41,7 @@ export function useVentureAuction(auctionId) {
   const [auction, setAuction]       = useState(null);
   const [bids, setBids]             = useState([]);
   const [minNextBid, setMinNextBid] = useState(0);
+  const [maxBidPrice, setMaxBidPrice] = useState(0);
   const [connected, setConnected]   = useState(false);
   const [loading, setLoading]       = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -51,26 +53,44 @@ export function useVentureAuction(auctionId) {
     const { data } = await ventureAuctionAPI.get(auctionId);
     const normalizedAuction = normalizeAuction(data?.auction);
     const normalizedBids = Array.isArray(data?.bids) ? data.bids.map(normalizeBid) : [];
-    setAuction(normalizedAuction);
+    const limits = resolveAuctionBidLimits({
+      minNextBid: data?.minNextBid ?? data?.min_next_bid,
+      maxBidPrice: data?.maxBidPrice ?? data?.max_bid_price,
+      currentHighestBid: normalizedAuction?.currentHighestBid,
+      minBidPrice: normalizedAuction?.minBidPrice,
+    });
+    setAuction(normalizedAuction ? { ...normalizedAuction, ...limits } : normalizedAuction);
     setBids(normalizedBids);
-    setMinNextBid(toNum(data?.minNextBid ?? data?.min_next_bid, 0));
+    setMinNextBid(limits.minNextBid);
+    setMaxBidPrice(limits.maxBidPrice);
   }, [auctionId]);
 
   const handleUpdate = useCallback((msg) => {
     setLastUpdate(msg);
 
     if (msg.type === 'BID_PLACED') {
-      setAuction(prev => prev ? {
-        ...prev,
-        currentHighestBid:  toNum(msg.currentHighestBid, prev.currentHighestBid),
-        totalBids:          toNum(msg.totalBids, prev.totalBids),
-        endTime:            msg.endTime
+      setAuction(prev => {
+        if (!prev) return prev;
+        const next = {
+          ...prev,
+          currentHighestBid: toNum(msg.currentHighestBid, prev.currentHighestBid),
+          totalBids: toNum(msg.totalBids, prev.totalBids),
+          endTime: msg.endTime
             ? (msg.endTime.endsWith('Z') ? msg.endTime : msg.endTime + 'Z')
             : prev.endTime,
-        status:             msg.status,
-        currentWinnerName:  msg.currentWinnerName,
-      } : prev);
-      setMinNextBid(toNum(msg.currentHighestBid, 0) * 1.05);
+          status: msg.status,
+          currentWinnerName: msg.currentWinnerName,
+        };
+        const limits = resolveAuctionBidLimits({
+          maxBidPrice: prev.maxBidPrice,
+          minNextBid: prev.minNextBid,
+          currentHighestBid: next.currentHighestBid,
+          minBidPrice: next.minBidPrice,
+        });
+        setMinNextBid(limits.minNextBid);
+        setMaxBidPrice(limits.maxBidPrice);
+        return { ...next, ...limits };
+      });
       if (msg.latestBid) setBids(prev => [normalizeBid(msg.latestBid), ...prev]);
     } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
       setAuction(prev => prev ? { ...prev, status: msg.status } : prev);
@@ -131,5 +151,5 @@ export function useVentureAuction(auctionId) {
     return res;
   }, [auctionId, fetchAuctionDetail]);
 
-  return { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid };
+  return { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid };
 }

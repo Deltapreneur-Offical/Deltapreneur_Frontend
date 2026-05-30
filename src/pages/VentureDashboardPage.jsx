@@ -6,6 +6,7 @@ import AppLayout from '../components/layout/AppLayout';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import EditActionLabel from '../components/common/EditActionLabel';
 import { asArray } from '../utils/asArray';
+import { pickMediaUrl } from '../utils/mediaUrl';
 
 const STATUS_META = {
   PENDING:  { label: 'Pending',  color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', icon: '⏳' },
@@ -483,10 +484,11 @@ function MyApplications() {
       {applications.map(app => {
         const b = app.venture?.brandDetails || {};
         const s = STATUS_META[app.status] || STATUS_META.PENDING;
+        const brandImage = pickMediaUrl(b);
         return (
           <div key={app.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4 flex-wrap shadow-sm">
-            {b.logoUrl
-              ? <img src={b.logoUrl} alt={b.brandName} className="w-10 h-10 rounded-lg object-cover" />
+            {brandImage
+              ? <img src={brandImage} alt={b.brandName} className="w-10 h-10 rounded-lg object-cover" />
               : <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center font-bold text-purple-600">{b.brandName?.[0] || '?'}</div>
             }
             <div className="flex-1 min-w-0">

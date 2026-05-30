@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Boxes, IndianRupee, ShoppingCart, CreditCard, Clock3 } from 'lucide-react';
-import { cocreationAPI } from '../api/services';
+import { technologyAPI, softwareAuctionAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
+import { formatAuctionDate } from '../utils/auctionDate';
+import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
+import {
+  canRequestTechnologyAuction,
+  isTechnologyAuctionLive,
+  isTechnologyAuctionPending,
+  technologyAuctionId,
+} from '../utils/technologyAuctionUi';
 
 export default function CoCreationDashboardPage() {
   const { formatPrice } = useCurrency();
@@ -14,12 +22,14 @@ export default function CoCreationDashboardPage() {
   const [loading, setLoading]           = useState(true);
   const [confirmingId, setConfirmingId] = useState(null); // purchaseId being confirmed
   const [githubModal, setGithubModal]   = useState(null); // { link, softwareName }
+  const [auctionTarget, setAuctionTarget] = useState(null);
+  const [auctionStatuses, setAuctionStatuses] = useState({});
 
   const load = () => {
     setLoading(true);
     Promise.all([
-      cocreationAPI.getMyListings(),
-      cocreationAPI.getMyPurchases(),
+      technologyAPI.getMyListings(),
+      technologyAPI.getMyPurchases(),
     ]).then(([l, p]) => {
       setListings(Array.isArray(l.data) ? l.data : (l.data?.data ?? []));
       setPurchases(Array.isArray(p.data) ? p.data : (p.data?.data ?? []));
@@ -28,10 +38,41 @@ export default function CoCreationDashboardPage() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    if (listings.length === 0) return;
+    listings.forEach((item) => {
+      softwareAuctionAPI.getBySoftware(item.id)
+        .then(({ data }) => {
+          setAuctionStatuses(prev => ({
+            ...prev,
+            [item.id]: data?.auction ?? data?.data?.auction ?? null,
+          }));
+        })
+        .catch(() => {});
+    });
+  }, [listings]);
+
+  const handleAuctionSubmitted = () => {
+    const targetId = auctionTarget?.id;
+    setAuctionTarget(null);
+    alert('Auction request submitted! Admin will review it shortly.');
+    if (targetId) {
+      softwareAuctionAPI.getBySoftware(targetId)
+        .then(({ data }) => {
+          setAuctionStatuses(prev => ({
+            ...prev,
+            [targetId]: data?.auction ?? data?.data?.auction ?? null,
+          }));
+        })
+        .catch(() => {});
+    }
+    load();
+  };
+
   const handleConfirm = async (purchaseId, softwareName) => {
     setConfirmingId(purchaseId);
     try {
-      const { data } = await cocreationAPI.confirmPurchase(purchaseId);
+      const { data } = await technologyAPI.confirmPurchase(purchaseId);
       if (data.githubLink) {
         setGithubModal({ link: data.githubLink, softwareName });
       }
@@ -52,10 +93,10 @@ export default function CoCreationDashboardPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">CoCreation Dashboard</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology Dashboard</h1>
             <p className="text-gray-600 mt-1">Manage your software listings and purchases.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation')}>
+          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
             <ArrowLeft size={16} /> Back to Technology
           </button>
         </div>
@@ -99,7 +140,7 @@ export default function CoCreationDashboardPage() {
             <div className="text-center py-20">
               <div className="text-6xl mb-4">⟁</div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No listings yet</h3>
-              <button className="btn-glow" onClick={() => navigate('/cocreation')}>
+              <button className="btn-glow" onClick={() => navigate('/technology')}>
                 List Software
               </button>
             </div>
@@ -109,7 +150,10 @@ export default function CoCreationDashboardPage() {
                 <ListingRow
                   key={s.id}
                   item={s}
-                  onAnalytics={() => navigate(`/cocreation/${s.id}/analytics`)}
+                  auctionStatus={auctionStatuses[s.id]}
+                  onAnalytics={() => navigate(`/technology/${s.id}/analytics`)}
+                  onAuction={() => setAuctionTarget(s)}
+                  onViewAuction={(auctionId) => navigate(`/technology/auction/${auctionId}`)}
                 />
               ))}
             </div>
@@ -119,7 +163,7 @@ export default function CoCreationDashboardPage() {
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🛒</div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No purchases yet</h3>
-              <button className="btn-glow" onClick={() => navigate('/cocreation')}>
+              <button className="btn-glow" onClick={() => navigate('/technology')}>
                 Browse Software
               </button>
             </div>
@@ -137,6 +181,14 @@ export default function CoCreationDashboardPage() {
           )
         )}
       </div>
+
+      {auctionTarget && (
+        <SoftwareAuctionRequestModal
+          software={auctionTarget}
+          onClose={() => setAuctionTarget(null)}
+          onSubmitted={handleAuctionSubmitted}
+        />
+      )}
 
       {/* GitHub link reveal modal */}
       {githubModal && (
@@ -172,7 +224,7 @@ export default function CoCreationDashboardPage() {
 }
 
 // ─── Listing Row (seller view) ────────────────────────────────────────────────
-function ListingRow({ item, onAnalytics }) {
+function ListingRow({ item, auctionStatus, onAnalytics, onAuction, onViewAuction }) {
   const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const sales = item.purchaseCount || 0;
@@ -225,6 +277,31 @@ function ListingRow({ item, onAnalytics }) {
           <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50" onClick={onAnalytics}>
             📊 Analytics
           </button>
+          {canRequestTechnologyAuction(item, auctionStatus) && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+              style={{ background: 'rgba(200,169,110,0.12)', color: '#c8a96e', border: '1px solid rgba(200,169,110,0.35)' }}
+              onClick={onAuction}
+            >
+              🔨 Put to Auction
+            </button>
+          )}
+          {isTechnologyAuctionPending(item, auctionStatus) && (
+            <span className="text-xs font-semibold text-amber-700 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg">
+              ⏳ Auction Pending
+            </span>
+          )}
+          {technologyAuctionId(item, auctionStatus) && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+              style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
+              onClick={() => onViewAuction(technologyAuctionId(item, auctionStatus))}
+            >
+              {isTechnologyAuctionLive(item, auctionStatus) ? '🟢 View Live Auction' : 'View Auction'}
+            </button>
+          )}
           <span className="text-[0.78rem] text-gray-400">
             👁 {item.views || 0} views · ✦ {sales} paid
             {sales > 0 && ` · Revenue: ${formatPrice(item.price * sales)}`}
@@ -270,10 +347,9 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
           </div>
           <div className="text-[0.78rem] text-gray-400 mt-0.5">
             {sw.category?.replace(/_/g, ' ')} · Purchased{' '}
-            {purchase.soldAt
-              ? new Date(purchase.soldAt).toLocaleDateString('en-IN',
-                  { day: 'numeric', month: 'short', year: 'numeric' })
-              : ''}
+            {formatAuctionDate(purchase.soldAt, {
+              day: 'numeric', month: 'short', year: 'numeric',
+            }, '')}
           </div>
         </div>
 

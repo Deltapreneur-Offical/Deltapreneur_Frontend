@@ -2,8 +2,8 @@
 const LISTING_PATHS = {
   domain: '/domains',
   venture: '/ventures',
-  software: '/cocreation',
-  community: '/community',
+  software: '/technology',
+  community: '/creator',
 };
 
 export function getListingBrowsePath(type, id) {

@@ -6,26 +6,32 @@ import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import MeetingDateTimePicker from '../components/common/MeetingDateTimePicker';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import {
+  isCommunityAuctionLister,
+  resolveAuctionLister,
+} from '../utils/auctionLister';
+import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import {
+  formatAuctionDate,
+  formatAuctionDateTime,
+  formatAuctionTime,
+  formatCountdown,
+  formatDateOrText,
+  formatExpectedRate,
+  resolveAuctionEndTime,
+  toDatetimeLocalInput,
+} from '../utils/auctionDate';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
-  const [timeLeft, setTimeLeft] = useState('');
+  const [timeLeft, setTimeLeft] = useState('—');
   const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
-    if (!endTime) return;
     const tick = () => {
-      const end  = new Date(endTime);
-      const diff = end - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setIsUrgent(diff < 300000);
-      if (d > 0)      setTimeLeft(`${d}d ${h}h ${m}m`);
-      else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
-      else            setTimeLeft(`${m}m ${s}s`);
+      const next = formatCountdown(endTime);
+      setTimeLeft(next.timeLeft);
+      setIsUrgent(next.isUrgent);
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -40,9 +46,10 @@ export default function CommunityAuctionPage() {
   const { auctionId } = useParams();
   const { user }      = useAuth();
   const navigate      = useNavigate();
-  const { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid }
+  const { auction, bids, minNextBid, maxBidPrice, wsState, loading, lastUpdate, placeBid, refresh }
                       = useCommunityAuction(auctionId);
-  const { timeLeft, isUrgent } = useCountdown(auction?.endTime);
+  const resolvedEndTime = resolveAuctionEndTime(auction);
+  const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
 
   // Bid state
   const [bidAmount, setBidAmount]   = useState('');
@@ -54,6 +61,8 @@ export default function CommunityAuctionPage() {
   const [participation, setParticipation] = useState({ loading: true, paid: false, fee: 0 });
   const [payingParticipation, setPayingParticipation] = useState(false);
   const [participationError, setParticipationError] = useState('');
+  const [payingWinnerBid, setPayingWinnerBid] = useState(false);
+  const [winnerPaymentError, setWinnerPaymentError] = useState('');
 
   // Meetings state
   const [meetings, setMeetings]           = useState([]);
@@ -65,14 +74,24 @@ export default function CommunityAuctionPage() {
   const [reAuctionModal, setReAuctionModal] = useState(false);
 
   const community = auction?.community || {};
-  const isOwner   = community?.appUser?.id === user?.id;
+  const isOwner = resolveAuctionLister(
+    isCommunityAuctionLister(auction, user?.id),
+    participation,
+  );
   const isActive  = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isEnded   = auction?.status === 'ENDED';
+  const isCompleted = auction?.status === 'COMPLETED';
   const isUnsold  = auction?.status === 'UNSOLD';
+  const isWinner = Boolean(
+    user?.id && auction?.currentWinnerId
+    && String(user.id) === String(auction.currentWinnerId),
+  );
+  const hasFinalWinner = (isEnded || isCompleted) && Number(auction?.currentHighestBid) > 0;
+  const awaitingWinnerPayment = isEnded && isWinner && !auction?.winnerPaymentPaid;
 
   useEffect(() => {
-    if (!auction?.id || !user || isOwner || !isActive) {
-      setParticipation({ loading: false, paid: true, fee: 0 });
+    if (!auction?.id || !user || !isActive) {
+      setParticipation({ loading: false, paid: false, fee: 0, isOwner: false });
       return;
     }
     setParticipation((p) => ({ ...p, loading: true }));
@@ -83,10 +102,11 @@ export default function CommunityAuctionPage() {
           loading: false,
           paid: Boolean(body?.paid),
           fee: Number(body?.participationFeeInr || 0),
+          isOwner: Boolean(body?.isOwner),
         });
       })
-      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
-  }, [auction?.id, user?.id, isOwner, isActive]);
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0, isOwner: false }));
+  }, [auction?.id, user?.id, isActive]);
 
   const handlePayParticipation = async () => {
     if (!auction?.id || !user) return;
@@ -98,7 +118,7 @@ export default function CommunityAuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Community auction participation fee`,
+        description: `Creator auction participation fee`,
         onSuccess: async (response) => {
           try {
             await communityAuctionAPI.participationVerify(auction.id, {
@@ -161,8 +181,9 @@ export default function CommunityAuctionPage() {
       return;
     }
     const amount = parseFloat(bidAmount);
-    if (!amount || amount < minNextBid) {
-      setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN')}`);
+    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    if (bidErrorMsg) {
+      setBidError(bidErrorMsg);
       return;
     }
     setBidLoading(true); setBidError(''); setBidSuccess('');
@@ -190,12 +211,53 @@ export default function CommunityAuctionPage() {
     }
   };
 
+  const handlePayWinningBid = async () => {
+    if (!auction?.id || !user) return;
+    setPayingWinnerBid(true);
+    setWinnerPaymentError('');
+    try {
+      const { data: res } = await communityAuctionAPI.winnerPaymentCreateOrder(auction.id);
+      const orderData = res?.data ?? res;
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: `Winning bid for ${auction.auctionTitle || 'profile auction'}`,
+        onSuccess: async (response) => {
+          try {
+            await communityAuctionAPI.winnerPaymentVerify(auction.id, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            await refresh();
+          } catch {
+            setWinnerPaymentError('Payment verification failed. Please retry.');
+          } finally {
+            setPayingWinnerBid(false);
+          }
+        },
+        onFailure: async () => {
+          setWinnerPaymentError('Payment failed. Please retry.');
+          setPayingWinnerBid(false);
+        },
+        onDismiss: async () => setPayingWinnerBid(false),
+      });
+    } catch (err) {
+      setWinnerPaymentError(
+        err?.response?.data?.error
+        || err?.response?.data?.message
+        || 'Failed to start payment.',
+      );
+      setPayingWinnerBid(false);
+    }
+  };
+
   // Close / re-auction
   const handleClose = async () => {
     if (!window.confirm('Are you sure you want to close this auction?')) return;
     try {
       await communityAuctionAPI.close(auction.id);
-      navigate('/community');
+      navigate('/creator');
     } catch (e) {
       alert('Failed to close auction.');
     }
@@ -241,9 +303,9 @@ export default function CommunityAuctionPage() {
                 {auction.workType && ` · ${auction.workType.replace(/_/g, ' ')}`}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-red-600'}`} />
-                <span className={`text-xs ${connected ? 'text-green-600' : 'text-red-600'}`}>
-                  {connected ? 'Live' : 'Reconnecting…'}
+                <span className={`w-2 h-2 rounded-full ${wsState === 'live' ? 'bg-green-600' : wsState === 'connecting' ? 'bg-amber-500' : 'bg-red-600'}`} />
+                <span className={`text-xs ${wsState === 'live' ? 'text-green-600' : wsState === 'connecting' ? 'text-amber-600' : 'text-red-600'}`}>
+                  {wsState === 'live' ? 'Live' : wsState === 'connecting' ? 'Connecting…' : 'Live updates paused'}
                 </span>
               </div>
             </div>
@@ -302,8 +364,8 @@ export default function CommunityAuctionPage() {
 
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
-                  Next minimum bid:{' '}
-                  <strong>₹{Number(minNextBid).toLocaleString('en-IN')}</strong>
+                  Allowed bid range:{' '}
+                  <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
                   <span className="text-gray-500 ml-2">(5% above current)</span>
                 </div>
               )}
@@ -347,11 +409,13 @@ export default function CommunityAuctionPage() {
               </div>
             )}
 
-            {/* ENDED — winner announcement */}
-            {isEnded && (
+            {/* ENDED / COMPLETED — winner announcement */}
+            {hasFinalWinner && (
               <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
-                <div className="text-[2.5rem] mb-2">🏆</div>
-                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">Auction Won!</h3>
+                <div className="text-[2.5rem] mb-2">{isCompleted ? '✅' : '🏆'}</div>
+                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">
+                  {isCompleted ? 'Auction Complete' : 'Auction Won!'}
+                </h3>
                 <p className="text-gray-500">
                   <strong className="text-gray-900">{auction.currentWinnerName || 'A bidder'}</strong>
                   {' '}won with a bid of{' '}
@@ -359,9 +423,39 @@ export default function CommunityAuctionPage() {
                     ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
                   </strong>
                 </p>
-                <p className="text-[0.82rem] text-gray-500 mt-2">
-                  Our team will coordinate next steps with the winner and the profile owner.
-                </p>
+                {awaitingWinnerPayment && (
+                  <div className="mt-4 p-4 bg-white border border-green-200 rounded-lg text-left">
+                    <div className="text-sm text-gray-700 mb-3">
+                      You won this auction. Pay your winning bid amount to finalize.
+                    </div>
+                    <button
+                      className="btn-glow w-full"
+                      onClick={handlePayWinningBid}
+                      disabled={payingWinnerBid}>
+                      {payingWinnerBid
+                        ? 'Processing…'
+                        : `Pay Winning Bid — ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`}
+                    </button>
+                    {winnerPaymentError && (
+                      <div className="text-xs text-red-600 mt-2">{winnerPaymentError}</div>
+                    )}
+                  </div>
+                )}
+                {isCompleted && (
+                  <p className="text-[0.82rem] text-green-700 mt-2 font-semibold">
+                    Payment received. Our team will coordinate next steps with you and the profile owner.
+                  </p>
+                )}
+                {isEnded && !isWinner && (
+                  <p className="text-[0.82rem] text-gray-500 mt-2">
+                    Waiting for the winner to complete payment.
+                  </p>
+                )}
+                {isEnded && isOwner && (
+                  <p className="text-[0.82rem] text-gray-500 mt-2">
+                    The winner must pay their bid amount to finalize the auction.
+                  </p>
+                )}
               </div>
             )}
 
@@ -374,6 +468,12 @@ export default function CommunityAuctionPage() {
               isOwner={isOwner}
               isActive={isActive}
               user={user}
+              participationPaid={participation.paid}
+              participationLoading={participation.loading}
+              participationFee={participation.fee}
+              payingParticipation={payingParticipation}
+              participationError={participationError}
+              onPayParticipation={handlePayParticipation}
               onAction={meetingAction}
               onMeetingRequested={loadMeetings}
               showMeetingForm={showMeetingForm}
@@ -435,6 +535,7 @@ export default function CommunityAuctionPage() {
                     onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
                     placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
                     min={minNextBid}
+                    max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
                     onKeyDown={e => e.key === 'Enter' && handleBid()}
                   />
@@ -484,21 +585,19 @@ export default function CommunityAuctionPage() {
                 <InfoRow label="Duration"
                   value={auction.duration?.replace(/_/g, ' ')} />
                 <InfoRow label="Expected Rate"
-                  value={auction.expectedRate ? `₹${Number(auction.expectedRate).toLocaleString('en-IN')}` : '—'} />
+                  value={formatExpectedRate(auction.expectedRate)} />
                 <InfoRow label="Available From"
-                  value={auction.availableFrom
-                    ? new Date(auction.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : '—'} />
+                  value={formatDateOrText(auction.availableFrom, {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })} />
                 <InfoRow label="Started"
-                  value={auction.startTime
-                    ? new Date(auction.startTime.endsWith('Z') ? auction.startTime : auction.startTime + 'Z')
-                        .toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : '—'} />
+                  value={formatAuctionDate(auction.startTime, {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })} />
                 <InfoRow label="Ends"
-                  value={auction.endTime
-                    ? new Date(auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z')
-                        .toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                    : '—'} />
+                  value={formatAuctionDateTime(auction.endTime, {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                  })} />
                 {auction.status === 'EXTENDED' && (
                   <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
                     ⚡ Extended due to last-minute bid
@@ -507,8 +606,8 @@ export default function CommunityAuctionPage() {
               </div>
             </div>
 
-            {/* Request meeting shortcut — non-owner, active */}
-            {isActive && !isOwner && (
+            {/* Request meeting shortcut — non-owner, active, participation paid */}
+            {isActive && !isOwner && participation.paid && (
               <button
                 className="btn-glow w-full"
                 onClick={() => {
@@ -519,6 +618,11 @@ export default function CommunityAuctionPage() {
                 }}>
                 📅 Schedule a Meeting
               </button>
+            )}
+            {isActive && !isOwner && !participation.loading && !participation.paid && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                Pay the participation fee to request a meeting with this profile owner.
+              </div>
             )}
           </div>
         </div>
@@ -594,14 +698,16 @@ function ProfileInfoCard({ community, auction }) {
         {auction.expectedRate && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-0.5">Expected Rate</div>
-            <div className="text-sm font-bold text-green-800">₹{Number(auction.expectedRate).toLocaleString('en-IN')}</div>
+            <div className="text-sm font-bold text-green-800">{formatExpectedRate(auction.expectedRate)}</div>
           </div>
         )}
         {auction.availableFrom && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-xs text-blue-500 font-semibold uppercase tracking-wider mb-0.5">Available From</div>
             <div className="text-sm font-bold text-blue-800">
-              {new Date(auction.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {formatDateOrText(auction.availableFrom, {
+                day: 'numeric', month: 'short', year: 'numeric',
+              })}
             </div>
           </div>
         )}
@@ -633,12 +739,19 @@ function ProfileInfoCard({ community, auction }) {
 // ─── Meetings Section ─────────────────────────────────────────────────────────
 function MeetingsSection({
   auction, meetings, meetingsLoading, meetingActionLoading,
-  isOwner, isActive, user, onAction, onMeetingRequested, showMeetingForm, setShowMeetingForm,
+  isOwner, isActive, user,
+  participationPaid, participationLoading, participationFee,
+  payingParticipation, participationError, onPayParticipation,
+  onAction, onMeetingRequested, showMeetingForm, setShowMeetingForm,
 }) {
+  const userId = user?.id != null ? String(user.id) : null;
   const pendingMeetings   = meetings.filter(m => m.status === 'PENDING');
   const confirmedMeetings = meetings.filter(m => m.status === 'CONFIRMED');
   const pastMeetings      = meetings.filter(m => m.status === 'CANCELLED' || m.status === 'COMPLETED');
-  const myPendingRequest  = meetings.find(m => m.status === 'PENDING' && m.requester?.id === user?.id);
+  const myPendingRequest  = meetings.find(m =>
+    m.status === 'PENDING'
+    && (String(m.requester?.id ?? m.requesterId ?? '') === userId)
+  );
 
   return (
     <div id="meeting-section" className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
@@ -651,7 +764,7 @@ function MeetingsSection({
             {meetings.length} meeting{meetings.length !== 1 ? 's' : ''}
           </div>
         </div>
-        {isActive && !isOwner && !myPendingRequest && (
+        {isActive && !isOwner && !myPendingRequest && participationPaid && (
           <button
             className="btn-glow btn-glow-sm"
             onClick={() => setShowMeetingForm(v => !v)}>
@@ -660,11 +773,24 @@ function MeetingsSection({
         )}
       </div>
 
+      {isActive && !isOwner && !participationLoading && !participationPaid && (
+        <div className="px-5 py-4 bg-amber-50 border-b border-amber-200">
+          <div className="text-sm text-amber-800 mb-2">
+            Participation fee required to request a meeting:{' '}
+            <strong>₹{Number(participationFee || 0).toLocaleString('en-IN')}</strong>
+          </div>
+          <button className="btn-glow btn-glow-sm w-full sm:w-auto" onClick={onPayParticipation} disabled={payingParticipation}>
+            {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+          </button>
+          {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
+        </div>
+      )}
+
       {/* Request meeting form */}
-      {showMeetingForm && isActive && !isOwner && (
+      {showMeetingForm && isActive && !isOwner && participationPaid && (
         <MeetingRequestForm
           auctionId={auction.id}
-          auctionEndTime={auction.endTime}
+          auctionEndTime={resolveAuctionEndTime(auction) ?? auction.endTime}
           onSuccess={() => { setShowMeetingForm(false); onMeetingRequested(); }}
           onCancel={() => setShowMeetingForm(false)}
         />
@@ -749,13 +875,8 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
   const [error, setError]     = useState('');
 
   // Min datetime = now + 1 hour
-  const minDateTime = new Date(Date.now() + 60 * 60 * 1000)
-    .toISOString().slice(0, 16);
-  // Max datetime = auction end
-  const maxDateTime = auctionEndTime
-    ? new Date(auctionEndTime.endsWith('Z') ? auctionEndTime : auctionEndTime + 'Z')
-        .toISOString().slice(0, 16)
-    : '';
+  const minDateTime = toDatetimeLocalInput(Date.now() + 60 * 60 * 1000);
+  const maxDateTime = toDatetimeLocalInput(auctionEndTime);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -778,7 +899,13 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to request meeting.');
+      const data = err.response?.data;
+      const detail = typeof data?.detail === 'string'
+        ? data.detail
+        : Array.isArray(data?.detail)
+          ? data.detail.map((e) => e?.msg || e).join(', ')
+          : null;
+      setError(data?.error || data?.message || detail || 'Failed to request meeting.');
     } finally { setLoading(false); }
   };
 
@@ -854,7 +981,7 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
   const [showCancelPrompt, setShowCancelPrompt] = useState(false);
   const [cancelReason, setCancelReason]         = useState('');
 
-  const isRequester = meeting.requester?.id === userId;
+  const isRequester = String(meeting.requester?.id ?? meeting.requesterId ?? '') === String(userId);
   const statusConfig = {
     PENDING:   { color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200',  label: '⏳ Pending'   },
     CONFIRMED: { color: 'text-green-700',  bg: 'bg-green-50',  border: 'border-green-200',  label: '✅ Confirmed' },
@@ -880,12 +1007,15 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
           )}
           {!isOwner && (
             <div className="text-xs text-gray-500 mt-1">
-              With: <span className="font-semibold text-gray-700">{meeting.lister?.firstName || 'Profile Owner'}</span>
+              With: <span className="font-semibold text-gray-700">{meeting.lister?.firstName || 'Profile Owner'} {meeting.lister?.lastName || ''}</span>
             </div>
           )}
           {isOwner && (
             <div className="text-xs text-gray-500 mt-1">
-              From: <span className="font-semibold text-gray-700">{meeting.requester?.firstName || 'Unknown'} {meeting.requester?.lastName || ''}</span>
+              With: <span className="font-semibold text-gray-700">{meeting.requester?.firstName || 'Bidder'} {meeting.requester?.lastName || ''}</span>
+              {meeting.requester?.email && (
+                <span className="text-gray-400"> · {meeting.requester.email}</span>
+              )}
             </div>
           )}
 
@@ -1039,7 +1169,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
             Re-Auction
           </div>
           <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Start a New Auction</h2>
-          <p className="text-sm text-gray-500">Set new parameters for your community profile auction.</p>
+          <p className="text-sm text-gray-500">Set new parameters for your creator profile auction.</p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -1074,10 +1204,9 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
 
 // ─── Helper Components ────────────────────────────────────────────────────────
 function BidRow({ bid, isLatest, isWinner }) {
-  const bidTimeStr = bid.bidTime
-    ? new Date(bid.bidTime.endsWith('Z') ? bid.bidTime : bid.bidTime + 'Z')
-        .toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    : '';
+  const bidTimeStr = formatAuctionTime(bid.bidTime, {
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }, '');
   return (
     <div className={`flex items-center gap-4 px-5 py-3 transition-all ${
       isLatest ? 'bg-green-50 border-l-[3px] border-l-green-400' : 'bg-transparent border-l-[3px] border-l-transparent'
@@ -1107,6 +1236,7 @@ function StatusBadge({ status }) {
     ACTIVE:          { color: '#6ec896', label: '🟢 Live'         },
     EXTENDED:        { color: '#c8a96e', label: '⚡ Extended'     },
     ENDED:           { color: '#a06ec8', label: 'Ended'           },
+    COMPLETED:       { color: '#6ec896', label: 'Completed'       },
     UNSOLD:          { color: '#c86e6e', label: 'Unsold'          },
     CLOSED:          { color: '#666',    label: 'Closed'          },
   }[status] || { color: '#888', label: status };
@@ -1130,10 +1260,8 @@ function InfoRow({ label, value }) {
 }
 
 function formatDateTime(dt) {
-  if (!dt) return '—';
-  return new Date(dt.endsWith('Z') ? dt : dt + 'Z')
-    .toLocaleString('en-IN', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+  return formatAuctionDateTime(dt, {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
 }

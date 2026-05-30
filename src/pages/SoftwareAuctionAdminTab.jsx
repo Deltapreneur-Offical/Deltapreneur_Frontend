@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { softwareAuctionAPI } from '../api/services';
+import { formatAuctionDate, formatAuctionDateTime } from '../utils/auctionDate';
 
 const APPROVAL_COLORS = {
   PENDING_APPROVAL: { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', label: '⏳ Pending Review' },
@@ -210,15 +211,14 @@ function SoftwareAuctionAdminRow({ auction, bids, software, onRefresh }) {
                 <div style={labelStyle}>Timeline</div>
                 <div style={{ fontSize: '0.82rem', color: '#374151' }}>
                   {auction.startTime
-                    ? `Started: ${new Date(auction.startTime).toLocaleDateString('en-IN')}`
+                    ? `Started: ${formatAuctionDate(auction.startTime)}`
                     : 'Not started yet'}
                 </div>
                 {auction.endTime && (
                   <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
-                    Ends: {new Date(auction.endTime.endsWith('Z')
-                      ? auction.endTime : auction.endTime + 'Z'
-                    ).toLocaleString('en-IN', { day: 'numeric', month: 'short',
-                                               hour: '2-digit', minute: '2-digit' })}
+                    Ends: {formatAuctionDateTime(auction.endTime, {
+                      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                    })}
                   </div>
                 )}
               </div>
@@ -292,7 +292,7 @@ function SoftwareAuctionAdminRow({ auction, bids, software, onRefresh }) {
                 </p>
                 {auction.reviewedAt && (
                   <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: '0.4rem' }}>
-                    Reviewed: {new Date(auction.reviewedAt).toLocaleString('en-IN')}
+                    Reviewed: {formatAuctionDateTime(auction.reviewedAt)}
                   </div>
                 )}
               </div>
@@ -315,10 +315,9 @@ function SoftwareAuctionAdminRow({ auction, bids, software, onRefresh }) {
                         {bid.isWinningBid && ' 🏆'}
                       </span>
                       <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                        {bid.bidTime
-                          ? new Date(bid.bidTime).toLocaleString('en-IN',
-                              { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })
-                          : ''}
+                        {formatAuctionDateTime(bid.bidTime, {
+                          hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
+                        }, '')}
                       </span>
                     </div>
                   ))}
@@ -350,10 +349,9 @@ function SoftwareAuctionAdminRow({ auction, bids, software, onRefresh }) {
                 </button>
                 <div style={{ flex: 1 }} />
                 <div style={{ fontSize: '0.78rem', color: '#9ca3af', alignSelf: 'center' }}>
-                  Submitted: {auction.createdAt
-                    ? new Date(auction.createdAt).toLocaleDateString('en-IN',
-                        { day: 'numeric', month: 'short', year: 'numeric' })
-                    : '—'}
+                  Submitted: {formatAuctionDate(auction.createdAt, {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  }, '—')}
                 </div>
               </div>
             )}

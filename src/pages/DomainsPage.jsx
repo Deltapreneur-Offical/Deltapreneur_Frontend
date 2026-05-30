@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
+import { formatAuctionDateTime } from '../utils/auctionDate';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
@@ -441,7 +443,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           const formData = new FormData();
           formData.append('file', imageFile);
           const { data } = await domainAPI.uploadImage(saved.id, formData);
-          saved = { ...saved, logo: data.logoUrl };
+          saved = { ...saved, logo: pickMediaUrl(data) };
         } catch {
           uploadWarning = 'Domain listed successfully, but logo upload is not available right now.';
           setWarning(uploadWarning);
@@ -963,10 +965,9 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                   <DetailItem label="Duration" value={auction.duration?.replace(/_/g, ' ')} />
                   {auction.endTime && (
                     <DetailItem label="Ends"
-                      value={new Date(
-                        auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z'
-                      ).toLocaleDateString('en-IN',
-                        { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} />
+                      value={formatAuctionDateTime(auction.endTime, {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                      })} />
                   )}
                   {auction.currentHighestBid > 0 && (
                     <DetailItem label="Next Min Bid"

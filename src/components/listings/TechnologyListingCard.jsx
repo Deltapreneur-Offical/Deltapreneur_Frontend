@@ -1,9 +1,16 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
+import {
+  canRequestTechnologyAuction,
+  isTechnologyAuctionLive,
+  isTechnologyAuctionPending,
+  technologyAuctionId,
+} from '../../utils/technologyAuctionUi';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -11,16 +18,13 @@ const STATUS_COLORS = {
   SOLD: { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
 
-function isDirectPurchase(item) {
+function isDirectPurchase(item, auctionStatus) {
+  if (isTechnologyAuctionLive(item, auctionStatus)) return false;
   return (
     item.softwareStatus === 'AVAILABLE'
     && item.purchaseType !== 'AUCTION'
     && item.auctionApprovalStatus !== 'PENDING_APPROVAL'
   );
-}
-
-function isLiveAuction(item) {
-  return item.purchaseType === 'AUCTION' && item.auctionApprovalStatus === 'APPROVED' && item.auctionId;
 }
 
 export default function TechnologyListingCard({
@@ -38,6 +42,7 @@ export default function TechnologyListingCard({
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [imgFailed, setImgFailed] = useState(false);
   const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
   const owner = isOwner ?? item.listedBy?.id === user?.id;
 
@@ -50,8 +55,13 @@ export default function TechnologyListingCard({
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="w-[42px] h-[42px] bg-indigo-50 border border-indigo-200 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+          {item.imageUrl && !imgFailed ? (
+            <img
+              src={item.imageUrl}
+              alt={item.name}
+              className="w-full h-full object-cover"
+              onError={() => setImgFailed(true)}
+            />
           ) : (
             '⧁'
           )}
@@ -147,7 +157,7 @@ export default function TechnologyListingCard({
               >
                 Remove
               </button>
-              {isDirectPurchase(item) && (
+              {isDirectPurchase(item, auctionStatus) && (
                 <button
                   type="button"
                   className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"
@@ -159,19 +169,17 @@ export default function TechnologyListingCard({
             </>
           ) : owner ? (
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-              {!auctionStatus && item.softwareStatus === 'AVAILABLE' && onAuction && (
+              {canRequestTechnologyAuction(item, auctionStatus) && onAuction && (
                 <button
                   type="button"
                   className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
                   style={{ background: 'rgba(200,169,110,0.12)', color: '#c8a96e', border: '1px solid rgba(200,169,110,0.35)' }}
                   onClick={() => onAuction()}
                 >
-                  🔨 Auction
+                  🔨 {String(item.auctionApprovalStatus || auctionStatus?.approvalStatus || '').toUpperCase() === 'REJECTED' ? 'Re-submit Auction' : 'Put to Auction'}
                 </button>
               )}
-              {(auctionStatus?.approvalStatus === 'PENDING_APPROVAL'
-                || item.auctionApprovalStatus === 'PENDING_APPROVAL'
-                || item.softwareStatus === 'PENDING') && (
+              {isTechnologyAuctionPending(item, auctionStatus) && (
                 <span
                   style={{
                     fontSize: '0.72rem',
@@ -185,27 +193,18 @@ export default function TechnologyListingCard({
                   ⏳ Auction Pending
                 </span>
               )}
-              {(auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED') && (
+              {(auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED')
+                && technologyAuctionId(item, auctionStatus) && (
                 <button
                   type="button"
                   className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
                   style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/cocreation/auction/${item.auctionId || auctionStatus?.id}`);
+                    navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
                   }}
                 >
-                  🟢 View Auction
-                </button>
-              )}
-              {auctionStatus?.approvalStatus === 'REJECTED' && onAuction && (
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
-                  style={{ background: 'rgba(200,110,110,0.1)', color: '#c86e6e', border: '1px solid rgba(200,110,110,0.3)' }}
-                  onClick={() => onAuction()}
-                >
-                  ↻ Re-submit Auction
+                  {isTechnologyAuctionLive(item, auctionStatus) ? '🟢 View Auction' : 'View Auction'}
                 </button>
               )}
               <button
@@ -216,19 +215,19 @@ export default function TechnologyListingCard({
                 Remove
               </button>
             </div>
-          ) : isLiveAuction(item) ? (
+          ) : isTechnologyAuctionLive(item, auctionStatus) ? (
             <button
               type="button"
               className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
               style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/cocreation/auction/${item.auctionId}`);
+                navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
               }}
             >
               Place Bid →
             </button>
-          ) : isDirectPurchase(item) ? (
+          ) : isDirectPurchase(item, auctionStatus) ? (
             <button
               type="button"
               className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"

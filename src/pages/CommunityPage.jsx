@@ -34,6 +34,21 @@ const DURATIONS = [
   { value: 'THIRTY_DAYS',  label: '30 Days'  },
 ];
 
+function apiErrorMessage(err, fallback) {
+  const data = err?.response?.data;
+  if (!data) return err?.message || fallback;
+  if (data.error) return data.error;
+  if (data.detail && typeof data.detail === 'string') return data.detail;
+  if (data.message) {
+    if (Array.isArray(data.data) && data.data.length) {
+      const fields = data.data.map(e => e.message || e.field).filter(Boolean).join('; ');
+      return fields ? `${data.message}: ${fields}` : data.message;
+    }
+    return data.message;
+  }
+  return fallback;
+}
+
 export default function CommunityPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -100,12 +115,11 @@ export default function CommunityPage() {
         const list = Array.isArray(data) ? data : (data?.data ?? []);
         setProfiles(list);
         const mine = list.find(p => p.appUser?.id === user?.id);
-        if (mine && !myProfile) {
-          setMyProfile(mine);
-          // Fetch my auction status
+        if (mine) {
+          setMyProfile(prev => prev ?? mine);
           communityAuctionAPI.getByCommunity(mine.id)
             .then(({ data: ad }) => setMyAuction(ad?.auction ?? ad))
-            .catch(() => {});
+            .catch(() => setMyAuction(null));
         }
       })
       .catch(() => {})
@@ -161,7 +175,9 @@ export default function CommunityPage() {
     if (s === 'ACTIVE')          return { text: '🟢 Auction live!',           color: 'green' };
     if (s === 'EXTENDED')        return { text: '⚡ Auction extended',         color: 'amber' };
     if (s === 'ENDED')           return { text: '🏆 Auction ended',            color: 'purple' };
+    if (s === 'COMPLETED')       return { text: '✅ Auction completed',         color: 'purple' };
     if (s === 'UNSOLD')          return { text: 'Auction ended — no bids',     color: 'red' };
+    if (s === 'CLOSED')          return { text: 'Auction closed',              color: 'red' };
     return null;
   };
   const auctionBadge = auctionStatusLabel();
@@ -181,7 +197,7 @@ export default function CommunityPage() {
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Disruptor</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Creator</h1>
             <p className="text-gray-600 mt-1">Connect with founders, investors, and operators.</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
@@ -197,12 +213,21 @@ export default function CommunityPage() {
                       'bg-red-50 text-red-600 border-red-300'
                     }`}>{auctionBadge.text}</span>
                     <button className="btn-glow btn-glow-sm"
-                      onClick={() => navigate(`/community-auction/${myAuction.id}`)}>
+                      onClick={() => navigate(`/creator-auction/${myAuction.id}`)}>
                       View Auction →
                     </button>
                   </div>
                 ) : (
-                  <button className="btn-glow btn-glow-sm" onClick={() => setShowAuctionModal(true)}>
+                  <button
+                    className="btn-glow btn-glow-sm"
+                    onClick={() => {
+                      if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
+                        navigate(`/creator-auction/${myAuction.id}`);
+                        return;
+                      }
+                      setShowAuctionModal(true);
+                    }}
+                  >
                     🔨 Put Profile to Auction
                   </button>
                 )}
@@ -231,7 +256,7 @@ export default function CommunityPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search disruptors by name, skills, industry..."
+              placeholder="Search creators by name, skills, industry..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
@@ -265,10 +290,10 @@ export default function CommunityPage() {
         ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
-              <img src={DisruptorIcon} alt="Disruptors" className="w-16 h-16 opacity-50" />
+              <img src={DisruptorIcon} alt="Creators" className="w-16 h-16 opacity-50" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {searchQuery ? 'No disruptors found' : 'No Disruptors yet'}
+              {searchQuery ? 'No creators found' : 'No Creators yet'}
             </h3>
             <p className="text-gray-600 mb-6">
               {searchQuery ? 'Try adjusting your search terms.' : 'Connect your LinkedIn to join.'}
@@ -303,7 +328,7 @@ export default function CommunityPage() {
           isMe={detailProfile.appUser?.id === user?.id}
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
-          onViewAuction={(auctionId) => navigate(`/community-auction/${auctionId}`)}
+          onViewAuction={(auctionId) => navigate(`/creator-auction/${auctionId}`)}
         />
       )}
 
@@ -359,7 +384,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
       setAuctionId(auction.id);
       setStep('payment');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create auction. Please try again.');
+      setError(apiErrorMessage(err, 'Failed to create auction. Please try again.'));
     } finally { setLoading(false); }
   };
 
@@ -712,7 +737,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
           <div className="mt-2.5 text-xs text-blue-500">✓ Name and photo imported from LinkedIn</div>
         </div>
       )}
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">Complete Your Community Profile</h3>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">Complete Your Creator Profile</h3>
       <p className="text-gray-500 text-sm mt-1">Help others understand what you bring to the table.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="grid grid-cols-2 gap-4">

@@ -244,7 +244,7 @@ export const feedbackAPI = {
 
 // ─── Creator Auction ─────────────────────────────────────────────────────────
 export const creatorAuctionAPI = {
-  create:              (communityId, data) => api.post(`/api/v1/creator-auction/?communityId=${communityId}`, data),
+  create:              (communityId, data) => api.post(`/api/v1/creator-auction?communityId=${communityId}`, data),
   createListingOrder:  (auctionId, data = {}) =>
     api.post(`/api/v1/creator-auction/${auctionId}/listing-fee/create-order`, data),
   verifyListingFee:    (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/listing-fee/verify`, data),

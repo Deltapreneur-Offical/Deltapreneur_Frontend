@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/v1/creator-auction/",
+      "destination": "https://cobrother-backend.onrender.com/api/v1/creator-auction"
+    },
+    {
+      "source": "/api/v1/community-auction/",
+      "destination": "https://cobrother-backend.onrender.com/api/v1/community-auction"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://cobrother-backend.onrender.com/api/:path*"
     },

@@ -83,6 +83,22 @@ export function filterFeaturedListings(items, type = 'domain') {
   return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
 }
 
+/** Homepage hero rows: featured first, then other active listings (max 5). */
+export const HOMEPAGE_PREVIEW_LIMIT = 5;
+
+export function pickHomepagePreviewListings(
+  items,
+  type = 'domain',
+  limit = HOMEPAGE_PREVIEW_LIMIT,
+) {
+  const active = filterHomepageListings(items, type);
+  if (active.length === 0) return [];
+
+  const featured = active.filter((item) => Boolean(item.featured));
+  const rest = active.filter((item) => !item.featured);
+  return [...featured, ...rest].slice(0, limit);
+}
+
 /** @deprecated Use filterFeaturedListings — kept for callers not yet migrated */
 export function filterFeaturedGuestListings(items, type = 'domain') {
   return filterFeaturedListings(items, type);

@@ -5,34 +5,23 @@ import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { formatCountdown } from '../utils/auctionDate';
+import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
 const FINAL_WINNER_STATUSES = new Set(['ENDED', 'PAYMENT_PENDING', 'COMPLETED']);
 
-// FIX #12: countdown uses ISO string with Z suffix (normalized in useAuction)
+// Countdown uses shared auctionDate helpers (handles +00:00 and missing endTime)
 function useCountdown(endTime) {
-  const [timeLeft, setTimeLeft] = useState('');
+  const [timeLeft, setTimeLeft] = useState('—');
   const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
-    if (!endTime) return;
-
     const tick = () => {
-      const end  = new Date(endTime); // endTime already has Z suffix from hook
-      const diff = end - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
-
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-
-      setIsUrgent(diff < 300000); // last 5 mins
-      if (d > 0)      setTimeLeft(`${d}d ${h}h ${m}m`);
-      else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
-      else            setTimeLeft(`${m}m ${s}s`);
+      const { timeLeft: next, isUrgent: urgent } = formatCountdown(endTime);
+      setTimeLeft(next);
+      setIsUrgent(urgent);
     };
-
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
@@ -65,6 +54,7 @@ export default function AuctionPage() {
   const isOwner  = auction?.domain?.listedBy?.id === user?.id;
   const isActive = LIVE_AUCTION_STATUSES.has(auction?.status);
   const hasFinalWinner = FINAL_WINNER_STATUSES.has(auction?.status);
+  const biddingBlocked = REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !auction?.domain?.verified;
 
   // Flash on new bid
   useEffect(() => {
@@ -172,8 +162,16 @@ export default function AuctionPage() {
   );
 
   const domain = auction.domain || {};
-  const ownerName =
-    domain?.listedBy?.name
+  const domainTitle = (
+    auction.domainDisplayName
+    || domain.fullDomain
+    || `${domain.domainName || ''}${domain.domainExtension || ''}`.trim()
+    || 'Unnamed domain'
+  );
+  const ownerName = domain?.listedBy
+    ? `${domain.listedBy.firstname || ''} ${domain.listedBy.lastname || ''}`.trim()
+      || domain.listedBy.email
+    : domain?.listedBy?.name
     || domain?.listedBy?.fullName
     || domain?.listedBy?.username
     || domain?.listedBy?.email
@@ -193,11 +191,15 @@ export default function AuctionPage() {
             <div>
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
-                  {domain.domainName}{domain.domainExtension}
+                  {domainTitle}
                 </h1>
-                {domain.verified && (
+                {domain.verified ? (
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold text-green-600 bg-green-100 border border-green-300">
                     ✓ Verified
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-md text-xs font-bold text-amber-700 bg-amber-100 border border-amber-300">
+                    Verification pending
                   </span>
                 )}
                 <StatusBadge status={auction.status} />
@@ -232,7 +234,7 @@ export default function AuctionPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-display text-2xl font-semibold text-gray-900 m-0 truncate">
-                  {domain.domainName || 'Domain Listing'}{domain.domainExtension || ''}
+                  {domainTitle}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200">
                   Domain Auction
@@ -252,9 +254,13 @@ export default function AuctionPage() {
                     {String(domain.saleType).replace(/_/g, ' ')}
                   </span>
                 )}
-                {domain.verified && (
+                {domain.verified ? (
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-green-700 bg-green-50 border border-green-200">
                     Verified
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200">
+                    Verification pending
                   </span>
                 )}
               </div>
@@ -382,6 +388,12 @@ export default function AuctionPage() {
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
                   Place Your Bid
                 </h3>
+                {biddingBlocked ? (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    Bidding is unavailable until the domain owner completes verification.
+                  </div>
+                ) : (
+                <>
                 {!participation.loading && !participation.paid && (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="text-sm text-amber-800 mb-2">
@@ -457,6 +469,8 @@ export default function AuctionPage() {
                   By bidding you commit to purchasing this domain if you win.
                   Each bid must be at least 5% above the current highest bid.
                 </p>
+                </>
+                )}
               </div>
             )}
 

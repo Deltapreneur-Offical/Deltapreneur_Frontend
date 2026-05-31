@@ -14,6 +14,7 @@ export default function VentureListingCard({
   hasApplied = false,
   showVerifyButton = true,
   browseMode = false,
+  compact = false,
   onView,
   onApply,
   onVerify,
@@ -63,8 +64,8 @@ export default function VentureListingCard({
     : 'from-indigo-600 via-blue-500 to-cyan-400';
 
   const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full${
-    browseMode ? '' : ' cursor-pointer'
-  }`;
+    compact ? ' listing-card--compact' : ''
+  }${browseMode ? '' : ' cursor-pointer'}`;
 
   return (
     <div

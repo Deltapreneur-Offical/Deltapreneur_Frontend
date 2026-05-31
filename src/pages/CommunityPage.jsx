@@ -7,7 +7,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
-import DisruptorIcon from '../assets/Cobrother_Profile.png';
+import CreatorIcon from '../assets/Cobrother_Profile.png';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
@@ -15,6 +15,7 @@ import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUr
 import CommunityListingCard from '../components/listings/CommunityListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
+import { useTranslation } from 'react-i18next';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -35,6 +36,7 @@ const DURATIONS = [
 ];
 
 export default function CommunityPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -181,8 +183,8 @@ export default function CommunityPage() {
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Disruptor</h1>
-            <p className="text-gray-600 mt-1">Connect with founders, investors, and operators.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('communityTitle')}</h1>
+            <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
             {myProfile ? (
@@ -231,7 +233,7 @@ export default function CommunityPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search disruptors by name, skills, industry..."
+              placeholder={t('searchCreatorsPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
@@ -265,10 +267,10 @@ export default function CommunityPage() {
         ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
-              <img src={DisruptorIcon} alt="Disruptors" className="w-16 h-16 opacity-50" />
+              <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {searchQuery ? 'No disruptors found' : 'No Disruptors yet'}
+              {searchQuery ? t('noCreatorsFound') : t('noCreatorsYet')}
             </h3>
             <p className="text-gray-600 mb-6">
               {searchQuery ? 'Try adjusting your search terms.' : 'Connect your LinkedIn to join.'}
@@ -669,6 +671,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction })
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({ initial, onSaved, onCancel }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     role: initial?.role || '', skills: initial?.skills || '',
     industry: initial?.industry || '', location: initial?.location || '',
@@ -712,7 +715,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
           <div className="mt-2.5 text-xs text-blue-500">✓ Name and photo imported from LinkedIn</div>
         </div>
       )}
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">Complete Your Community Profile</h3>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">{t('completeCreatorProfile')}</h3>
       <p className="text-gray-500 text-sm mt-1">Help others understand what you bring to the table.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="grid grid-cols-2 gap-4">

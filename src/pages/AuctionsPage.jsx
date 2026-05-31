@@ -5,6 +5,8 @@ import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import { asArray } from '../utils/asArray';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
+import { useTranslation } from 'react-i18next';
+import { normalizeDomainExtension } from '../utils/domainDisplay';
 
 const toNum = (value, fallback = 0) => {
   const n = Number(value);
@@ -23,14 +25,27 @@ const normalizeAuction = (raw) => {
     startTime: raw.startTime ?? raw.start_time ?? null,
     endTime: resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null,
     duration: raw.duration ?? null,
+    domainDisplayName: raw.domainDisplayName ?? raw.domain_display_name ?? null,
     domain: {
       ...domainRaw,
+      fullDomain: domainRaw.fullDomain ?? domainRaw.full_domain ?? '',
       domainName: domainRaw.domainName ?? domainRaw.domain_name ?? '',
       domainExtension: domainRaw.domainExtension ?? domainRaw.domain_extension ?? '',
       verified: Boolean(domainRaw.verified ?? domainRaw.is_verified ?? false),
+      listedBy: domainRaw.listedBy ?? domainRaw.listed_by ?? null,
     },
   };
 };
+
+function resolveAuctionDomainTitle(auction) {
+  const domain = auction?.domain || {};
+  return (
+    auction?.domainDisplayName
+    || domain.fullDomain
+    || `${domain.domainName || ''}${domain.domainExtension || ''}`.trim()
+    || null
+  );
+}
 
 const normalizeListedVentureAuction = (ventureRaw) => {
   if (!ventureRaw || typeof ventureRaw !== 'object') return null;
@@ -97,6 +112,7 @@ function useCountdown(endTime) {
 }
 
 export default function AuctionsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [domainAuctions, setDomainAuctions]       = useState([]);
   const [ventureAuctions, setVentureAuctions]     = useState([]); // active + listed
@@ -175,7 +191,7 @@ export default function AuctionsPage() {
             { id: 'all',       label: `All (${totalLive})` },
             { id: 'ventures',  label: `🔨 Ventures (${ventureAuctions.length})` },
             { id: 'domains',   label: `◇ Domains (${domainAuctions.length})` },
-            { id: 'community', label: `👤 Profiles (${communityAuctions.length})` },
+            { id: 'community', label: `👤 ${t('communityTitle')} (${communityAuctions.length})` },
           ].map(t => (
             <button key={t.id}
               className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
@@ -265,7 +281,7 @@ export default function AuctionsPage() {
             {shownCommunity.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-teal-600 m-0">👤 Community Profiles</h2>
+                  <h2 className="text-base font-bold text-teal-600 m-0">👤 {t('creatorProfileAuctions')}</h2>
                   <span className="text-xs text-gray-500 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
                     {shownCommunity.length} live
                   </span>
@@ -378,6 +394,8 @@ function VentureAuctionCard({ auction, onClick }) {
 function DomainAuctionCard({ auction, onClick }) {
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const domain                  = auction.domain || {};
+  const domainTitle             = resolveAuctionDomainTitle(auction);
+  const extMeta                 = normalizeDomainExtension(domain.domainExtension);
   const isExtended              = auction.status === 'EXTENDED';
   const highestBid = toNum(auction.currentHighestBid, 0);
   const minBid = toNum(auction.minBidPrice, 0);
@@ -400,12 +418,12 @@ function DomainAuctionCard({ auction, onClick }) {
 
       {/* Domain info */}
       <div className="flex items-center gap-3 mb-4 pr-20">
-        <div className="w-11 h-11 rounded-[10px] flex items-center justify-center text-lg font-bold text-purple-600 bg-purple-100 border border-purple-200">
-          {domain.domainExtension || '.?'}
+        <div className="w-11 h-11 rounded-[10px] flex items-center justify-center text-xs font-bold text-purple-600 bg-purple-100 border border-purple-200 px-1">
+          {extMeta?.label || (domainTitle?.includes('.') ? domainTitle.slice(domainTitle.lastIndexOf('.')) : '.?')}
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">
-            {(domain.domainName || 'Domain')}{domain.domainExtension || ''}
+            {domainTitle || 'Unnamed domain'}
           </h3>
           <span className="text-xs text-purple-600 font-semibold">
             🔨 Auction

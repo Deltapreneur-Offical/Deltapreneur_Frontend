@@ -35,7 +35,7 @@ export default function CoCreationAnalyticsPage() {
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{data.softwareName}</h1>
             <p className="text-gray-600 mt-1">Analytics overview for this software listing.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation/dashboard')}>
+          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology/dashboard')}>
             ← Dashboard
           </button>
         </div>

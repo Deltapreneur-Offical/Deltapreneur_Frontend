@@ -52,10 +52,10 @@ export default function CoCreationDashboardPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">CoCreation Dashboard</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology Dashboard</h1>
             <p className="text-gray-600 mt-1">Manage your software listings and purchases.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation')}>
+          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
             <ArrowLeft size={16} /> Back to Technology
           </button>
         </div>
@@ -99,7 +99,7 @@ export default function CoCreationDashboardPage() {
             <div className="text-center py-20">
               <div className="text-6xl mb-4">⟁</div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No listings yet</h3>
-              <button className="btn-glow" onClick={() => navigate('/cocreation')}>
+              <button className="btn-glow" onClick={() => navigate('/technology')}>
                 List Software
               </button>
             </div>
@@ -109,7 +109,7 @@ export default function CoCreationDashboardPage() {
                 <ListingRow
                   key={s.id}
                   item={s}
-                  onAnalytics={() => navigate(`/cocreation/${s.id}/analytics`)}
+                  onAnalytics={() => navigate(`/technology/${s.id}/analytics`)}
                 />
               ))}
             </div>
@@ -119,8 +119,8 @@ export default function CoCreationDashboardPage() {
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🛒</div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No purchases yet</h3>
-              <button className="btn-glow" onClick={() => navigate('/cocreation')}>
-                Browse Software
+              <button className="btn-glow" onClick={() => navigate('/technology')}>
+                Browse Technology
               </button>
             </div>
           ) : (

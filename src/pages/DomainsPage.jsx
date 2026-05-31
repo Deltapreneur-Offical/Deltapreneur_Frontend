@@ -95,7 +95,7 @@ export default function DomainsPage() {
   const domainRows = asArray(allDomains);
   const visibleDomains = filterTab === 'mine'
     ? domainRows.filter(d => (d.listedBy?.id ?? d.listedByUserId) === user?.id)
-    : domainRows.filter(d => !d.takenDown && !isPremiumDomain(d));
+    : domainRows.filter(d => !d.takenDown && d.status !== false);
 
   const {
     paginated, totalCount,
@@ -201,7 +201,13 @@ export default function DomainsPage() {
                     setAllDomains(prev => [normalizedSaved, ...prev]);
                     setShowForm(false);
                     setShowConfetti(true);
-                    setGlobalNotice(d?._warning || '');
+                    setFilterTab('mine');
+                    setGlobalNotice(
+                      d?._warning
+                        || (isPremiumDomain(normalizedSaved)
+                          ? 'Listed successfully. Premium domains (above ₹5,00,000) also appear on the homepage when featured by admin.'
+                          : ''),
+                    );
                   }
                 });
                 scheduleRestoreAppLayoutScroll(snap);
@@ -1013,11 +1019,17 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
               )}
               {!isOwner && (
                 isAuction ? (
+                  REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
+                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+                      Verification pending
+                    </span>
+                  ) : (
                   <button
                     onClick={onViewAuction}
                     className="btn-glow btn-glow-sm">
                     🔨 {auctionLive ? 'Go to Auction' : 'View Auction'} →
                   </button>
+                  )
                 ) : d.domainStatus === 'AVAILABLE' ? (
                   REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
                     <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">

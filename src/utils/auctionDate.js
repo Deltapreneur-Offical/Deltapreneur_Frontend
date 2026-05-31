@@ -50,6 +50,12 @@ export function addDurationToDate(startDate, duration) {
   return null;
 }
 
+/** Normalize API timestamps to a stable ISO string for countdown/UI. */
+export function normalizeAuctionTimestamp(value) {
+  const parsed = parseAuctionDate(value);
+  return parsed ? parsed.toISOString() : null;
+}
+
 export function resolveAuctionEndTime(auction, ventureDuration) {
   if (!auction || typeof auction !== 'object') return null;
   const direct = parseAuctionDate(auction.endTime ?? auction.end_time);

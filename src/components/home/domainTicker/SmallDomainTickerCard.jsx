@@ -5,17 +5,19 @@ import RoundInkStamp from '../domainHeroCarousel/RoundInkStamp';
 const statusStyles = {
   sold: 'border-emerald-200/90 bg-emerald-50/95 text-emerald-700 shadow-[0_8px_18px_rgba(16,185,129,0.14)]',
   unsold: 'border-rose-200/90 bg-rose-50/95 text-rose-700 shadow-[0_8px_18px_rgba(244,63,94,0.14)]',
+  live: 'border-indigo-200/90 bg-indigo-50/95 text-indigo-700 shadow-[0_8px_18px_rgba(99,102,241,0.14)]',
 };
 
 const statusLabels = {
   sold: 'SOLD',
   unsold: 'UNSOLD',
+  live: 'LIVE',
 };
 
 const STATUS_REVEAL_DELAY_MS = 3750;
 
 function StatusStamp({ status }) {
-  const variant = status === 'sold' ? 'sold' : 'unsold';
+  const variant = status === 'sold' ? 'sold' : status === 'live' ? 'live' : 'unsold';
 
   return (
     <div className="pointer-events-none absolute inset-y-2 right-3 z-20 flex w-[94px] items-center justify-center sm:right-4 sm:w-[104px]">
@@ -107,13 +109,18 @@ const SmallDomainTickerCard = memo(function SmallDomainTickerCard({
   useEffect(() => {
     if (!focused || statusVisible) return undefined;
 
+    if (item.status === 'live') {
+      onStatusReveal?.(slotId);
+      return undefined;
+    }
+
     setStampRunId((current) => current + 1);
     const statusTimer = window.setTimeout(() => {
       onStatusReveal?.(slotId);
     }, STATUS_REVEAL_DELAY_MS);
 
     return () => window.clearTimeout(statusTimer);
-  }, [focused, onStatusReveal, slotId, statusVisible]);
+  }, [focused, item.status, onStatusReveal, slotId, statusVisible]);
 
   return (
     <motion.article
@@ -124,7 +131,9 @@ const SmallDomainTickerCard = memo(function SmallDomainTickerCard({
       transition={{ duration: 0.45, delay: Math.min(index, 5) * 0.06, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-white" />
-      {focused && !statusVisible ? <StatusStamp key={stampRunId} status={item.status} /> : null}
+      {focused && !statusVisible && item.status !== 'live' ? (
+        <StatusStamp key={stampRunId} status={item.status} />
+      ) : null}
 
       <div className="relative min-w-0 flex-1 pr-1">
         <p className="whitespace-nowrap text-[13px] font-bold leading-tight text-slate-900 sm:text-[15px]">

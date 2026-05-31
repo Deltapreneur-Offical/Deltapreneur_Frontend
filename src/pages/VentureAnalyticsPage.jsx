@@ -7,19 +7,22 @@ import {
 import { analyticsAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { asArray } from '../utils/asArray';
+import { unwrapApiData } from '../utils/apiResponse';
 
-function normalizeAnalyticsPayload(payload) {
-  const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
+const COLORS = ['#c8a96e', '#6ec896', '#6e9ec8', '#c86e6e', '#9ec86e', '#c86ec8', '#6ec8c8', '#c8c86e'];
+
+function normalizeAnalyticsPayload(response) {
+  const source = unwrapApiData(response) || {};
   return {
-    totalViews: Number(source?.totalViews ?? 0),
-    totalApplications: Number(source?.totalApplications ?? 0),
-    conversionRate: Number(source?.conversionRate ?? 0),
-    avgHoursToApply: Number(source?.avgHoursToApply ?? 0),
-    viewsByDay: source?.viewsByDay && typeof source.viewsByDay === 'object' ? source.viewsByDay : {},
-    byIndustry: source?.byIndustry && typeof source.byIndustry === 'object' ? source.byIndustry : {},
-    byRole: source?.byRole && typeof source.byRole === 'object' ? source.byRole : {},
-    applicantSkills: source?.applicantSkills && typeof source.applicantSkills === 'object' ? source.applicantSkills : {},
-    byStatus: source?.byStatus && typeof source.byStatus === 'object' ? source.byStatus : {},
+    totalViews: Number(source?.totalViews ?? source?.total_views ?? 0),
+    totalApplications: Number(source?.totalApplications ?? source?.total_applications ?? 0),
+    conversionRate: Number(source?.conversionRate ?? source?.conversion_rate ?? 0),
+    avgHoursToApply: Number(source?.avgHoursToApply ?? source?.avg_hours_to_apply ?? 0),
+    viewsByDay: source?.viewsByDay ?? source?.views_by_day ?? {},
+    byIndustry: source?.byIndustry ?? source?.by_industry ?? {},
+    byRole: source?.byRole ?? source?.by_role ?? {},
+    applicantSkills: source?.applicantSkills ?? source?.applicant_skills ?? {},
+    byStatus: source?.byStatus ?? source?.by_status ?? {},
   };
 }
 
@@ -74,7 +77,7 @@ export default function VentureAnalyticsPage() {
     if (!selected) return;
     setLoading(true); setError('');
     analyticsAPI.getVentureAnalytics(selected)
-      .then(({ data }) => setAnalytics(normalizeAnalyticsPayload(data)))
+      .then((response) => setAnalytics(normalizeAnalyticsPayload(response)))
       .catch(() => setError('Failed to load analytics.'))
       .finally(() => setLoading(false));
   }, [selected]);

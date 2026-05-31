@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
+import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -16,11 +17,34 @@ function isDirectPurchase(item) {
     item.softwareStatus === 'AVAILABLE'
     && item.purchaseType !== 'AUCTION'
     && item.auctionApprovalStatus !== 'PENDING_APPROVAL'
+    && (!REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE || item.verified)
   );
+}
+
+function isPurchaseBlockedByVerification(item) {
+  return (
+    REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE
+    && !item.verified
+    && item.softwareStatus === 'AVAILABLE'
+    && item.purchaseType !== 'AUCTION'
+  );
+}
+
+function isAuctionBlockedByVerification(item) {
+  return REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !item.verified && item.purchaseType === 'AUCTION';
 }
 
 function isLiveAuction(item) {
   return item.purchaseType === 'AUCTION' && item.auctionApprovalStatus === 'APPROVED' && item.auctionId;
+}
+
+function VerificationChip({ owner, verified }) {
+  if (!REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE || verified) return null;
+  return (
+    <span className="inline-flex items-center max-w-full px-2 py-0.5 rounded-md text-[0.68rem] font-semibold leading-tight text-amber-800 bg-amber-50 border border-amber-200 whitespace-normal">
+      {owner ? 'Pending admin review' : 'Verification pending'}
+    </span>
+  );
 }
 
 export default function TechnologyListingCard({
@@ -40,6 +64,8 @@ export default function TechnologyListingCard({
   const { user } = useAuth();
   const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
   const owner = isOwner ?? item.listedBy?.id === user?.id;
+  const showVerificationNotice =
+    REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !item.verified;
 
   return (
     <div
@@ -48,35 +74,58 @@ export default function TechnologyListingCard({
       }`}
       onClick={browseMode ? undefined : onView}
     >
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="w-[42px] h-[42px] bg-indigo-50 border border-indigo-200 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-          ) : (
-            '⧁'
-          )}
+      <div className="flex flex-col gap-2 mb-1">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="w-[42px] h-[42px] bg-indigo-50 border border-indigo-200 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
+            {item.imageUrl ? (
+              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+            ) : (
+              '⧁'
+            )}
+          </div>
+          <div className="flex-1 min-w-0 pt-0.5">
+            <div className="text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wider truncate">
+              {item.category?.replace(/_/g, ' ') || 'Technology'}
+            </div>
+            {item.pricingDemand && (
+              <div className="text-xs text-gray-500 truncate mt-0.5">
+                {String(item.pricingDemand).replace(/_/g, ' ')}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <span className="text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wider">
-            {item.category?.replace(/_/g, ' ')}
-          </span>
-          <span className="text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
-            {item.pricingDemand}
-          </span>
-        </div>
-        {owner && (
-          <div className="ml-auto px-2 py-0.5 bg-green-100 border border-green-300 rounded text-[0.7rem] font-semibold text-green-700 flex-shrink-0">
-            ✓ Owner
+
+        {(owner || item.official || item.verified || showVerificationNotice) && (
+          <div className="flex flex-wrap items-center gap-1.5 w-full">
+            {owner && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-semibold text-green-700 bg-green-50 border border-green-200 whitespace-nowrap">
+                ✓ Owner
+              </span>
+            )}
+            {item.official && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-bold text-amber-700 bg-amber-50 border border-amber-200 whitespace-nowrap">
+                ✦ Official
+              </span>
+            )}
+            {item.verified && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 whitespace-nowrap">
+                ✓ Verified
+              </span>
+            )}
+            {!owner && showVerificationNotice && (
+              <VerificationChip owner={false} verified={item.verified} />
+            )}
           </div>
         )}
-        {item.official && (
-          <div className="px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-[0.68rem] font-bold text-amber-600 flex-shrink-0">
-            ✦ Official
-          </div>
+
+        {owner && showVerificationNotice && (
+          <p className="w-full rounded-lg bg-amber-50/80 border border-amber-200 px-2.5 py-2 text-[0.72rem] leading-snug text-amber-900 m-0">
+            Awaiting admin verification.
+          </p>
         )}
       </div>
 
-      <h3 className="font-display text-[1.15rem] font-semibold text-gray-900 leading-tight mt-1">{item.name}</h3>
+      <h3 className="font-display text-[1.15rem] font-semibold text-gray-900 leading-tight mt-0">{item.name}</h3>
 
       <p className="text-[0.82rem] text-gray-500 my-1 leading-relaxed line-clamp-2">
         {item.description}
@@ -92,13 +141,10 @@ export default function TechnologyListingCard({
         </div>
       )}
 
-      <div className="mb-1">
+      <div className="mb-1 flex flex-wrap items-center gap-1.5">
         <span
+          className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[0.75rem] font-semibold"
           style={{
-            padding: '0.25rem 0.6rem',
-            borderRadius: 6,
-            fontSize: '0.75rem',
-            fontWeight: 600,
             color: s.color,
             background: s.bg,
             border: `1px solid ${s.border}`,
@@ -106,6 +152,11 @@ export default function TechnologyListingCard({
         >
           {item.softwareStatus}
         </span>
+        {!owner && showVerificationNotice && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-medium text-amber-800 bg-amber-50 border border-amber-200">
+            Not available to buy yet
+          </span>
+        )}
       </div>
 
       <div className="font-display text-[1.1rem] font-bold text-indigo-600 mt-1">{formatPrice(item.price)}</div>
@@ -192,7 +243,7 @@ export default function TechnologyListingCard({
                   style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/cocreation/auction/${item.auctionId || auctionStatus?.id}`);
+                    navigate(`/technology/auction/${item.auctionId || auctionStatus?.id}`);
                   }}
                 >
                   🟢 View Auction
@@ -217,17 +268,23 @@ export default function TechnologyListingCard({
               </button>
             </div>
           ) : isLiveAuction(item) ? (
+            isAuctionBlockedByVerification(item) ? (
+              <span className="inline-flex items-center text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md whitespace-nowrap">
+                Verification pending
+              </span>
+            ) : (
             <button
               type="button"
               className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
               style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/cocreation/auction/${item.auctionId}`);
+                navigate(`/technology/auction/${item.auctionId}`);
               }}
             >
               Place Bid →
             </button>
+            )
           ) : isDirectPurchase(item) ? (
             <button
               type="button"
@@ -236,6 +293,10 @@ export default function TechnologyListingCard({
             >
               Buy Now →
             </button>
+          ) : isPurchaseBlockedByVerification(item) ? (
+            <span className="inline-flex items-center text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md whitespace-nowrap">
+              Verification pending
+            </span>
           ) : (
             <span className="text-xs text-gray-400 italic">Sold</span>
           )}

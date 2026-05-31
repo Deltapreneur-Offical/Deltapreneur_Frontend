@@ -1,8 +1,10 @@
+import { hasAuthSession } from './authSession';
+
 /** Browse-page paths; detail opens via ?id= on each list page. */
 const LISTING_PATHS = {
   domain: '/domains',
   venture: '/ventures',
-  software: '/cocreation',
+  software: '/technology',
   community: '/community',
 };
 
@@ -12,7 +14,7 @@ export function getListingBrowsePath(type, id) {
 }
 
 export function isLoggedIn() {
-  return Boolean(localStorage.getItem('accessToken'));
+  return hasAuthSession();
 }
 
 /** Logged in → list page with detail modal; otherwise → login with return path. */

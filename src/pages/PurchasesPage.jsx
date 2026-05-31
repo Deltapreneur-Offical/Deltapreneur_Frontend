@@ -100,7 +100,7 @@ export default function PurchasesPage() {
             <p className="text-gray-600 mb-6">Browse domains and software to make your first purchase.</p>
             <div className="flex gap-3 justify-center">
               <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>Browse Domains</button>
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation')}>Browse Software</button>
+              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>Browse Technology</button>
             </div>
           </div>
         ) : (

@@ -12,6 +12,7 @@ export default function ListingBrowseFooter({
         type="button"
         className="listing-browse-footer__cta btn-glow btn-glow-sm"
         onClick={(e) => {
+          e.preventDefault();
           e.stopPropagation();
           onViewDetails?.();
         }}

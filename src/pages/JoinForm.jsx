@@ -47,7 +47,7 @@ const JoinForm = () => {
     email: '',
     whatsapp: '',
     cityPincode: '',
-    topSkill: 'CRM',
+    topSkill: 'WEB_DEV',
     hasEquipment: false
   });
   const [errors, setErrors] = useState({});
@@ -105,7 +105,7 @@ const JoinForm = () => {
         email: formData.email,
         phoneNumber: formData.whatsapp,
         pinCode: formData.cityPincode,
-        skill: SKILL_ENUM_MAP[formData.topSkill],
+        skill: formData.topSkill,
         equipment: formData.hasEquipment,
       };
       
@@ -122,7 +122,7 @@ const JoinForm = () => {
         email: '',
         whatsapp: '',
         cityPincode: '',
-        topSkill: 'CRM',
+        topSkill: 'WEB_DEV',
         hasEquipment: false
       });
     } catch (error) {

@@ -27,6 +27,7 @@ import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUr
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import { COCREATION_CATEGORIES, COCREATION_CATEGORY_OPTIONS } from '../constants/listingCategories';
+import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -140,7 +141,7 @@ export default function CoCreationPage() {
             <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
           </div>
           <div className="flex gap-2 md:gap-3">
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/cocreation/dashboard')}>
+            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/technology/dashboard')}>
               <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
             {user && (
@@ -395,6 +396,9 @@ function SoftwareForm({ onSaved, onCancel }) {
         <p className="text-gray-500 text-sm mt-1">
           Upload a cover image or logo for <strong className="text-indigo-600">{savedSoftware.name}</strong>. You can also do this later.
         </p>
+        <p className="text-amber-700 text-sm mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          Your listing is pending admin verification. Other users can buy it only after it is approved.
+        </p>
         <div className="mt-5">
           <div
             onClick={() => fileInputRef.current?.click()}
@@ -433,7 +437,7 @@ function SoftwareForm({ onSaved, onCancel }) {
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
       <h3 className="font-display text-2xl text-gray-900 font-semibold">List Technology</h3>
-      <p className="text-gray-500 text-sm mt-1">Add a new technology product to the CoCreation marketplace.</p>
+      <p className="text-gray-500 text-sm mt-1">Add a new technology product to the Technology marketplace.</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="flex flex-col gap-1.5">
@@ -925,7 +929,13 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
                 && d.softwareStatus === 'AVAILABLE'
                 && d.purchaseType !== 'AUCTION'
                 && d.auctionApprovalStatus !== 'PENDING_APPROVAL' && (
+                REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
+                  <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+                    Verification pending — available to buy after admin approval
+                  </span>
+                ) : (
                 <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
+                )
               )}
               {!isOwner
                 && d.purchaseType === 'AUCTION'
@@ -933,7 +943,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
                 && d.auctionId && (
                 <button
                   className="btn-glow btn-glow-sm"
-                  onClick={() => window.location.assign(`/cocreation/auction/${d.auctionId}`)}
+                  onClick={() => window.location.assign(`/technology/auction/${d.auctionId}`)}
                 >
                   Place Bid →
                 </button>

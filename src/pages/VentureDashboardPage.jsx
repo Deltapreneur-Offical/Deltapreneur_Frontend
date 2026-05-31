@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coVentureAPI, likeAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
+import { unwrapApiData } from '../utils/apiResponse';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
@@ -521,15 +522,31 @@ function LikesReceived() {
   const [likeData, setLikeData] = useState({});
   const [loading, setLoading]   = useState(true);
 
+  const mapLikePayload = (payload) => {
+    const next = {};
+    Object.entries(payload || {}).forEach(([entityId, value]) => {
+      const key = String(entityId).toLowerCase();
+      if (typeof value === 'number') {
+        next[key] = { liked: false, count: value };
+        return;
+      }
+      next[key] = {
+        liked: Boolean(value?.liked),
+        count: value?.count ?? value?.total_likes ?? 0,
+      };
+    });
+    return next;
+  };
+
   useEffect(() => {
     ventureAPI.getMyVentures()
       .then(async ({ data }) => {
         const list = asArray(data);
         setVentures(list);
         if (list.length > 0) {
-          const ids = list.map(v => v.id);
-          const { data: likes } = await likeAPI.bulkStatus('VENTURE', ids);
-          setLikeData(likes);
+          const ids = list.map((v) => String(v.id));
+          const response = await likeAPI.bulkStatus('VENTURE', ids);
+          setLikeData(mapLikePayload(unwrapApiData(response)));
         }
       })
       .catch(() => {})
@@ -549,7 +566,7 @@ function LikesReceived() {
     <div className="flex flex-col gap-3">
       {ventures.map(v => {
         const b = v.brandDetails || {};
-        const ls = likeData[String(v.id)] || { liked: false, count: 0 };
+        const ls = likeData[String(v.id).toLowerCase()] || { liked: false, count: 0 };
         return (
           <div key={v.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-[10px] flex-wrap gap-2 shadow-sm">
             <div>

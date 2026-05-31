@@ -55,7 +55,7 @@ function getDisplayNameFromUser(user) {
 
 export default function HomeTopNavActions() {
   const { t } = useTranslation();
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -91,10 +91,12 @@ export default function HomeTopNavActions() {
   }, []);
 
   useEffect(() => {
-    if (profileDropdownOpen && refreshUser) {
+    // Only refresh an existing session — do not fetch /me for guests or a
+    // stale token will populate user state and look like a surprise login.
+    if (profileDropdownOpen && refreshUser && userKey) {
       refreshUser();
     }
-  }, [profileDropdownOpen, refreshUser]);
+  }, [profileDropdownOpen, refreshUser, userKey]);
 
   useEffect(() => {
     if (!userKey) {
@@ -117,6 +119,11 @@ export default function HomeTopNavActions() {
     await logout();
     navigate('/');
   }, [logout, navigate]);
+
+  const goToLogin = useCallback(() => {
+    setProfileDropdownOpen(false);
+    navigate('/login', { state: { showLoginForm: true } });
+  }, [navigate]);
 
   const toggleProfileDropdown = useCallback(() => {
     setProfileDropdownOpen((prev) => !prev);
@@ -213,15 +220,17 @@ export default function HomeTopNavActions() {
                   </button>
                 </div>
               </>
+            ) : authLoading ? (
+              <div className="px-4 py-2.5 text-sm text-gray-400">…</div>
             ) : (
               <>
-                <a
-                  href="/login"
-                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
-                  onClick={() => setProfileDropdownOpen(false)}
+                <button
+                  type="button"
+                  className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={goToLogin}
                 >
                   {t('signIn')}
-                </a>
+                </button>
                 <a
                   href="/contact"
                   className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline xl:hidden"

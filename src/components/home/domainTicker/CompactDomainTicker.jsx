@@ -13,7 +13,7 @@ import {
   useReducedMotion,
 } from 'framer-motion';
 import SmallDomainTickerCard from './SmallDomainTickerCard';
-import { DOMAIN_TICKER_ITEMS } from './mockDomainTickerData';
+import { fetchFeaturedDomainTickerItems } from '../../../utils/featuredDomainTicker';
 
 const CARD_GAP_PX = 12;
 const DESKTOP_CARD_WIDTH = 292;
@@ -25,6 +25,7 @@ const CENTER_TOLERANCE = 24;
 function TickerSlot({
   item,
   slotIndex,
+  sourceLength,
   x,
   wrapWidth,
   cardWidth,
@@ -61,7 +62,7 @@ function TickerSlot({
       <SmallDomainTickerCard
         item={item}
         slotId={slotIndex}
-        index={slotIndex % DOMAIN_TICKER_ITEMS.length}
+        index={sourceLength ? slotIndex % sourceLength : slotIndex}
         focused={focused}
         statusVisible={statusVisible}
         onStatusReveal={onStatusReveal}
@@ -79,6 +80,8 @@ export default function CompactDomainTicker({ className = '' }) {
   const [cardWidth, setCardWidth] = useState(DESKTOP_CARD_WIDTH);
   const [focusedSlot, setFocusedSlot] = useState(null);
   const [revealedSlots, setRevealedSlots] = useState(() => new Set());
+  const [sourceItems, setSourceItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const focusedSlotRef = useRef(null);
   const pauseUntilRef = useRef(0);
   const armedRef = useRef(true);
@@ -86,11 +89,30 @@ export default function CompactDomainTicker({ className = '' }) {
   const cardWidthRef = useRef(cardWidth);
   const stepRef = useRef(cardWidth + CARD_GAP_PX);
 
-  const tickerItems = useMemo(
-    () => [...DOMAIN_TICKER_ITEMS, ...DOMAIN_TICKER_ITEMS, ...DOMAIN_TICKER_ITEMS],
-    [],
-  );
-  const segment = (cardWidth + CARD_GAP_PX) * DOMAIN_TICKER_ITEMS.length;
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchFeaturedDomainTickerItems()
+      .then((items) => {
+        if (!cancelled) setSourceItems(items);
+      })
+      .catch(() => {
+        if (!cancelled) setSourceItems([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const tickerItems = useMemo(() => {
+    if (sourceItems.length === 0) return [];
+    return [...sourceItems, ...sourceItems, ...sourceItems];
+  }, [sourceItems]);
+
+  const segment = (cardWidth + CARD_GAP_PX) * sourceItems.length;
 
   wrapWidthRef.current = wrapWidth;
   cardWidthRef.current = cardWidth;
@@ -114,12 +136,13 @@ export default function CompactDomainTicker({ className = '' }) {
   }, []);
 
   useEffect(() => {
+    if (sourceItems.length === 0) return;
     x.set(-segment);
     setFocusedSlot(null);
     setRevealedSlots(new Set());
     pauseUntilRef.current = 0;
     armedRef.current = true;
-  }, [segment, x]);
+  }, [segment, sourceItems.length, x]);
 
   const onStatusReveal = useCallback((slotIndex) => {
     setRevealedSlots((prev) => {
@@ -159,6 +182,7 @@ export default function CompactDomainTicker({ className = '' }) {
   }, [tickerItems.length]);
 
   useEffect(() => {
+    if (sourceItems.length === 0) return undefined;
     if (reduceMotion) {
       x.set(0);
       return undefined;
@@ -194,13 +218,17 @@ export default function CompactDomainTicker({ className = '' }) {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [findCenteredSlot, reduceMotion, segment, x]);
+  }, [findCenteredSlot, reduceMotion, segment, sourceItems.length, x]);
+
+  if (loading || sourceItems.length === 0) {
+    return null;
+  }
 
   return (
     <section
       ref={wrapRef}
       className={`domain-ticker-viewport relative flex min-w-0 items-end border-0 bg-transparent ${className}`.trim()}
-      aria-label="Recently sold premium domains"
+      aria-label="Featured domain listings"
     >
       <motion.div
         className="domain-ticker-track relative z-0 flex w-max transform-gpu items-end gap-3 py-0 will-change-transform"
@@ -211,6 +239,7 @@ export default function CompactDomainTicker({ className = '' }) {
             key={`${item.id}-${index}`}
             item={item}
             slotIndex={index}
+            sourceLength={sourceItems.length}
             x={x}
             wrapWidth={wrapWidth}
             focused={focusedSlot === index}

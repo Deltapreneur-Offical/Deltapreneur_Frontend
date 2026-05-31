@@ -3,7 +3,7 @@ export const APP_HUB_ROUTES = new Set([
   '/dashboard',
   '/ventures',
   '/domains',
-  '/cocreation',
+  '/technology',
   '/community',
   '/auctions',
   '/purchases',
@@ -17,14 +17,14 @@ export const APP_HUB_ROUTES = new Set([
 /** Pages that already render their own back control in content */
 const PAGE_OWN_BACK = [
   /^\/domains\/dashboard$/,
-  /^\/cocreation\/dashboard$/,
+  /^\/technology\/dashboard$/,
   /^\/ventures\/dashboard$/,
   /^\/auction\//,
   /^\/venture-auction\//,
   /^\/community-auction\//,
   /^\/software-auction/,
   /^\/ventures\/analytics$/,
-  /^\/cocreation\/[^/]+\/analytics$/,
+  /^\/technology\/[^/]+\/analytics$/,
 ];
 
 const BACK_RULES = [
@@ -32,10 +32,10 @@ const BACK_RULES = [
   { test: (p) => p.startsWith('/venture-auction'), to: '/auctions', label: 'Auctions' },
   { test: (p) => p.startsWith('/domains'), to: '/domains', label: 'Domains' },
   { test: (p) => p.startsWith('/auction/'), to: '/auctions', label: 'Auctions' },
-  { test: (p) => p.startsWith('/cocreation'), to: '/cocreation', label: 'Technology' },
-  { test: (p) => p.startsWith('/software-auction'), to: '/cocreation', label: 'Technology' },
+  { test: (p) => p.startsWith('/technology'), to: '/technology', label: 'Technology' },
+  { test: (p) => p.startsWith('/software-auction'), to: '/technology', label: 'Technology' },
   { test: (p) => p.startsWith('/community-auction'), to: '/auctions', label: 'Auctions' },
-  { test: (p) => p.startsWith('/community'), to: '/community', label: 'Disruptors' },
+  { test: (p) => p.startsWith('/community'), to: '/community', label: 'Creators' },
   { test: (p) => p.startsWith('/admin'), to: '/admin', label: 'Admin' },
   { test: (p) => p.startsWith('/purchases'), to: '/purchases', label: 'Purchases' },
   { test: (p) => p.startsWith('/fee-requests'), to: '/fee-requests', label: 'Fee requests' },

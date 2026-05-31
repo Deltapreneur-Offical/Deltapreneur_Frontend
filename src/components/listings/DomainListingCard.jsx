@@ -130,7 +130,11 @@ export default function DomainListingCard({
           onViewDetails={onView}
         >
           <span>👁 {domain.views || 0}</span>
-          {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
+          {onLike && (
+            <div onClick={stop} onMouseDown={stop} role="presentation">
+              <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
+            </div>
+          )}
         </ListingBrowseFooter>
       </article>
     );
@@ -203,9 +207,11 @@ export default function DomainListingCard({
       </div>
 
       <div className="domain-listing-card__footer">
-        <div className="domain-listing-card__stats">
+        <div className="domain-listing-card__stats" onClick={stop} onMouseDown={stop} role="presentation">
           <span>👁 {domain.views || 0}</span>
-          {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
+          {onLike && (
+            <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
+          )}
         </div>
         <div className="domain-listing-card__actions">
           {isOwner ? (
@@ -230,9 +236,15 @@ export default function DomainListingCard({
               </div>
             </>
           ) : isAuction ? (
+            REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !domain.verified ? (
+              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
+                Verification pending
+              </span>
+            ) : (
             <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onViewAuction?.(); }}>
               <Gavel size={14} /> {auctionLive ? 'Join auction' : 'View auction'}
             </button>
+            )
           ) : statusKey === 'AVAILABLE' ? (
             REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !domain.verified ? (
               <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">

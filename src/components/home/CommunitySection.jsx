@@ -1,14 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { publicAPI } from '../../api/services';
-import { filterFeaturedListings } from '../../utils/homepageListings';
-import { navigateToListingDetail, isLoggedIn } from '../../utils/listingNavigation';
+import { communityAPI } from '../../api/services';
+import { pickHomepagePreviewListings } from '../../utils/homepageListings';
+import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { asArray } from '../../utils/asArray';
 import { useLikes } from '../../hooks/useLikes';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
+import HomeSectionHeader from './HomeSectionHeader';
+import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
@@ -20,10 +22,10 @@ export default function CommunitySection() {
     const fetchCommunities = async () => {
       try {
         setLoading(true);
-        const response = await publicAPI.getCommunities();
+        const response = await communityAPI.getAll();
         setCommunities(asArray(response.data));
-      } catch (error) {
-        console.error('Failed to fetch communities:', error);
+      } catch {
+        setCommunities([]);
       } finally {
         setLoading(false);
       }
@@ -31,54 +33,44 @@ export default function CommunitySection() {
     fetchCommunities();
   }, []);
 
-  const featuredCommunities = useMemo(
-    () => filterFeaturedListings(communities, 'community'),
+  const previewCommunities = useMemo(
+    () => pickHomepagePreviewListings(communities, 'community'),
     [communities],
   );
 
-  const loggedIn = isLoggedIn();
-  const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', featuredCommunities);
+  const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', previewCommunities);
 
   const handleViewProfile = (communityId) => {
     navigateToListingDetail(navigate, 'community', communityId);
   };
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('disruptors')} />;
-  }
-
-  if (featuredCommunities.length === 0) {
-    return (
-      <section className="bg-white py-4 md:py-6 ">
-        <div className="w-full">
-          <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-            {t('disruptors')}
-          </h3>
-          <p className="text-center text-gray-500 py-12">{t('noDisruptors')}</p>
-        </div>
-      </section>
-    );
+    return <HomeSectionCardSkeleton title={t('disruptors')} to="/community" />;
   }
 
   return (
-    <section className="bg-white py-4 md:py-6 ">
+    <section className="bg-white py-4 md:py-6">
       <div className="w-full">
-        <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-          {t('disruptors')}
-        </h3>
-        <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {featuredCommunities.slice(0, 8).map((item) => (
-            <ListingCardShell key={item.id}>
-            <CommunityListingCard
-              browseMode
-              profile={item}
-              likeState={getLike(item.id)}
-              onLike={loggedIn ? () => toggleLike(item.id) : undefined}
-              onView={() => handleViewProfile(item.id)}
-            />
-            </ListingCardShell>
-          ))}
-        </div>
+        <HomeSectionHeader title={t('disruptors')} to="/community" />
+        {previewCommunities.length === 0 ? (
+          <p className="text-center text-gray-500 py-8">{t('noDisruptors')}</p>
+        ) : (
+          <HomePreviewRow>
+            {previewCommunities.map((item) => (
+              <HomePreviewRowItem key={item.id}>
+                <ListingCardShell>
+                  <CommunityListingCard
+                    browseMode
+                    profile={item}
+                    likeState={getLike(item.id)}
+                    onLike={() => toggleLike(item.id)}
+                    onView={() => handleViewProfile(item.id)}
+                  />
+                </ListingCardShell>
+              </HomePreviewRowItem>
+            ))}
+          </HomePreviewRow>
+        )}
       </div>
     </section>
   );

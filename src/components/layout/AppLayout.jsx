@@ -1,9 +1,11 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
+import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
+import { useNotificationSocket } from '../../hooks/useNotificationSocket';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
 import CommunityIcon from '../../assets/Community-profileicon-gray.png';
@@ -18,7 +20,7 @@ const sidebarItems = [
   { icon: Globe, labelKey: 'domains', to: '/domains', isImage: false },
   { icon: Store, labelKey: 'storefront', to: '/storefront', isImage: false },
   { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },
-  { icon: TechnologyIcon, labelKey: 'technology', to: '/cocreation', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
+  { icon: TechnologyIcon, labelKey: 'technology', to: '/technology', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
   {
     icon: CommunityIcon,
     labelKey: 'disruptor',
@@ -69,24 +71,48 @@ export default function AppLayout({ children }) {
   const backTarget = getAppBackTarget(location.pathname);
   
   const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
+  const userId = user?.id ?? user?.userId ?? null;
+
+  const refreshUnreadCount = useCallback(() => {
+    if (!userId) {
+      setUnreadCount(0);
+      return Promise.resolve();
+    }
+    return notificationAPI
+      .getUnreadCount()
+      .then((response) => setUnreadCount(unwrapApiData(response)?.count ?? 0))
+      .catch(() => {});
+  }, [userId]);
+
+  const handleLiveNotification = useCallback((notification) => {
+    if (!notification?.id) return;
+    setNotifications((items) => {
+      const exists = items.some((item) => item.id === notification.id);
+      if (exists) return items;
+      return [notification, ...items].slice(0, 15);
+    });
+    if (!notification.read) {
+      setUnreadCount((count) => count + 1);
+    }
+  }, []);
+
+  useNotificationSocket(userId, handleLiveNotification);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  // Fetch unread count on mount
   useEffect(() => {
-    const fetchCount = () =>
-      notificationAPI
-        .getUnreadCount()
-        .then(({ data }) => setUnreadCount(data.count))
-        .catch(() => {});
-
-    fetchCount();
-    const interval = setInterval(fetchCount, 30000);
+    if (!userId) {
+      setUnreadCount(0);
+      setNotifications([]);
+      return undefined;
+    }
+    refreshUnreadCount();
+    const interval = setInterval(refreshUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [userId, refreshUnreadCount]);
 
   // Close bell dropdown on outside click
   useEffect(() => {
@@ -110,13 +136,17 @@ export default function AppLayout({ children }) {
   }, [sidebarCollapsed]);
 
   const handleBellOpen = async () => {
-    if (!bellOpen) {
+    const opening = !bellOpen;
+    if (opening && userId) {
       try {
-        const { data } = await notificationAPI.getRecent();
-        setNotifications(Array.isArray(data) ? data : []);
-      } catch {}
+        const items = unwrapApiList(await notificationAPI.getRecent());
+        setNotifications(items);
+        await refreshUnreadCount();
+      } catch {
+        // keep existing panel state
+      }
     }
-    setBellOpen((v) => !v);
+    setBellOpen(opening);
   };
 
   const handleMarkAllRead = async () => {
@@ -491,17 +521,21 @@ export default function AppLayout({ children }) {
                           onClick={() => handleNotificationClick(notification)}
                         >
                           <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
-                            {notification.type?.includes('VENTURE') ? '🤝' : 
-                             notification.type?.includes('DOMAIN') ? '🌐' : 
-                             notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
+                            {notification.type?.includes('LIKE') ? '❤️'
+                             : notification.type?.includes('VERIFIED') ? '✓'
+                             : notification.type?.includes('VENTURE') ? '🤝'
+                             : notification.type?.includes('DOMAIN') ? '🌐'
+                             : notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-gray-900 mb-0.5">
-                              {notification.title}
+                              {notification.title || notification.message}
                             </div>
+                            {notification.title && notification.message && notification.message !== notification.title && (
                             <div className="text-xs text-gray-500 line-clamp-2">
                               {notification.message}
                             </div>
+                            )}
                             <div className="text-[10px] text-gray-400 mt-1">
                               {timeAgo(notification.createdAt)}
                             </div>

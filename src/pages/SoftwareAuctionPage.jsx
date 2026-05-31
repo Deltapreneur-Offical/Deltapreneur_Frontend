@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { softwareAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import { Gavel, Clock, Wifi, WifiOff, TrendingUp, Code, Wrench, FileText } from 'lucide-react';
 
 function Countdown({ endTime, status }) {
@@ -67,6 +68,7 @@ export default function SoftwareAuctionPage() {
 
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isOwner  = user && auction?.software?.listedBy?.id === user.id;
+  const biddingBlocked = REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !auction?.software?.verified;
   const statusStyle = STATUS_STYLES[auction?.status] || STATUS_STYLES.DRAFT;
 
   useEffect(() => {
@@ -156,7 +158,7 @@ export default function SoftwareAuctionPage() {
     <AppLayout>
       <div className="text-center py-24">
         <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">Auction not found</h2>
-        <button className="btn-ghost mt-4" onClick={() => navigate('/cocreation')}>← Back to Technology</button>
+        <button className="btn-ghost mt-4" onClick={() => navigate('/technology')}>← Back to Technology</button>
       </div>
     </AppLayout>
   );
@@ -169,7 +171,7 @@ export default function SoftwareAuctionPage() {
 
         {/* Back */}
         <button className="btn-ghost mb-4" style={{ fontSize: '0.85rem' }}
-          onClick={() => navigate('/cocreation')}>
+          onClick={() => navigate('/technology')}>
           ← Technology
         </button>
 
@@ -476,7 +478,7 @@ export default function SoftwareAuctionPage() {
                   Your auction ended without bids. You can re-list with a new price/duration.
                 </p>
                 <button className="btn-glow w-full"
-                  onClick={() => navigate(`/cocreation`)}>
+                  onClick={() => navigate(`/technology`)}>
                   Manage Listing
                 </button>
               </div>
@@ -492,6 +494,12 @@ export default function SoftwareAuctionPage() {
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1.25rem' }}>
                   Minimum: ₹{Number(minNextBid).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                 </p>
+                {biddingBlocked ? (
+                  <div style={{ padding: '0.75rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a', fontSize: '0.82rem', color: '#8a6d1f' }}>
+                    Bidding is unavailable until the technology listing is verified by an admin.
+                  </div>
+                ) : (
+                <>
                 {!participation.loading && !participation.paid && (
                   <div style={{ marginBottom: '0.8rem', padding: '0.65rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a' }}>
                     <div style={{ fontSize: '0.8rem', color: '#8a6d1f', marginBottom: '0.4rem' }}>
@@ -551,6 +559,8 @@ export default function SoftwareAuctionPage() {
                 <p style={{ fontSize: '0.72rem', color: '#9ca3af', margin: 0, lineHeight: 1.5 }}>
                   Each bid must be at least 5% above the current highest. Last-minute bids extend the auction by 5 minutes.
                 </p>
+                </>
+                )}
               </div>
             ) : isActive && isOwner ? (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',

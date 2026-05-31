@@ -1,0 +1,83 @@
+/* Homepage listing previews — same card UI as marketplace pages, scaled down */
+
+.home-preview-row {
+  --home-preview-design-width: 300px;
+  --home-preview-zoom: 0.76;
+  --home-preview-zoom-lg: 0.9;
+  --home-preview-item-width: calc(var(--home-preview-design-width) * var(--home-preview-zoom));
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.home-preview-row__item {
+  flex-shrink: 0;
+  width: var(--home-preview-item-width);
+  snap-align: start;
+}
+
+.home-preview-row__card {
+  width: var(--home-preview-design-width);
+  max-width: none;
+  zoom: var(--home-preview-zoom);
+}
+
+@media (min-width: 1024px) {
+  .home-preview-row__item {
+    width: auto;
+    min-width: 0;
+  }
+
+  .home-preview-row__card {
+    width: 100%;
+    zoom: var(--home-preview-zoom-lg);
+  }
+}
+
+@supports not (zoom: 1) {
+  .home-preview-row__card {
+    transform: scale(var(--home-preview-zoom));
+    transform-origin: top center;
+  }
+
+  @media (min-width: 1024px) {
+    .home-preview-row__card {
+      transform: scale(var(--home-preview-zoom-lg));
+    }
+  }
+}
+
+.home-preview-row .listing-card-glow-shell {
+  padding: 4px 2px;
+  height: 100%;
+}
+
+.home-preview-row .listing-card-glow-shell::before {
+  inset: 2px;
+  border-radius: 16px;
+  filter: blur(12px);
+}
+
+.home-preview-row .listing-card-glow-shell > * {
+  width: 100%;
+}
+
+.home-preview-row .domain-listing-card,
+.home-preview-row .venture-listing-card,
+.home-preview-row .technology-listing-card,
+.home-preview-row .community-listing-card {
+  height: 100%;
+}
+
+.home-preview-row .card-glow-hover:hover {
+  transform: translateY(-2px) translateZ(0);
+}
+
+.home-preview-row .listing-browse-footer {
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.home-preview-row .listing-browse-footer__cta {
+  min-height: 2rem;
+  font-size: 0.72rem;
+}

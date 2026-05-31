@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { domainAPI } from '../api/services';
+import { adminAPI, domainAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
 
 const ALL_METHODS = [
@@ -84,7 +84,9 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
     }
     setLoading(true); setError('');
     try {
-      const { data } = await domainAPI.verifyInit(domain.id, selectedMethod);
+      const { data } = adminMode
+        ? await adminAPI.domainVerifyInit(domain.id, selectedMethod)
+        : await domainAPI.verifyInit(domain.id, selectedMethod);
       setMethod(selectedMethod);
       setInstructions({
         ...data,
@@ -99,10 +101,10 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
   const handleCheck = async () => {
     setLoading(true); setError(''); setCheckResult(null);
     try {
-      const { data } = await domainAPI.verifyCheck(
-        domain.id,
-        method === 'WHOIS_EMAIL' ? otpCode : null
-      );
+      const token = method === 'WHOIS_EMAIL' ? otpCode : null;
+      const { data } = adminMode
+        ? await adminAPI.domainVerifyCheck(domain.id, token)
+        : await domainAPI.verifyCheck(domain.id, token);
       setCheckResult(data);
       if (data?.success) {
         setStep('done');
@@ -253,7 +255,6 @@ export default function DomainVerificationModal({ domain, onClose, onVerified })
                 {loading
                   ? <><span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> {t('domainVerifyChecking')}</>
                   : method === 'WHOIS_EMAIL' ? t('domainVerifyVerifyCode') : t('domainVerifyCheck')}
-                }
               </button>
               <button className="btn-glow" onClick={() => { setStep('choose'); setCheckResult(null); setError(''); }}>
                 ← {t('domainVerifyBack')}

@@ -123,6 +123,8 @@ a:hover {
   text-decoration: none;
 }
 .btn-secondary:hover { background: rgba(200,169,110,0.1); color: var(--gold); }
+.btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-secondary:disabled:hover { background: transparent; color: var(--gold); }
 
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 0.4rem;

@@ -41,6 +41,7 @@ import SoftwareAuctionPage from './pages/SoftwareAuctionPage';
 import AboutUsPage from './pages/AboutUsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
 /* Lazy Loaded Pages */
 const VenturesPage = lazy(() => import('./pages/VenturesPage'));
@@ -235,9 +236,11 @@ export default function App() {
               }
             />
 
-            {/* CoCreation */}
+            {/* Technology (software marketplace) */}
+            <Route path="/cocreation/*" element={<CocreationLegacyRedirect />} />
+
             <Route
-              path="/cocreation"
+              path="/technology"
               element={
                 <Suspense fallback={<div className="p-6">Loading...</div>}>
                   <ProfileGuard>
@@ -248,12 +251,12 @@ export default function App() {
             />
 
             <Route
-              path="/cocreation/auction/:auctionId"
+              path="/technology/auction/:auctionId"
               element={<SoftwareAuctionPage />}
             />
 
             <Route
-              path="/cocreation/dashboard"
+              path="/technology/dashboard"
               element={
                 <ProfileGuard>
                   <CoCreationDashboardPage />
@@ -262,7 +265,7 @@ export default function App() {
             />
 
             <Route
-              path="/cocreation/:id/analytics"
+              path="/technology/:id/analytics"
               element={
                 <ProfileGuard>
                   <CoCreationAnalyticsPage />

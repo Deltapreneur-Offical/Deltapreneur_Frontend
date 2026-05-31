@@ -60,7 +60,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState(null);
 
@@ -74,8 +74,8 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     setOpenDropdown(openDropdown === id ? null : id);
   };
 
-  const go = (path) => {
-    navigate(path);
+  const go = (path, state) => {
+    navigate(path, state ? { state } : undefined);
     closeMobileMenu();
   };
 
@@ -101,10 +101,15 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const authButton = !user ? (
-    <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login')}>
-      {t('signIn')}
-    </button>
+  const authButtons = !authLoading && !user ? (
+    <>
+      <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/join-form')}>
+        {t('joinCoBrother')}
+      </button>
+      <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
+        {t('signIn')}
+      </button>
+    </>
   ) : null;
 
   return (
@@ -162,7 +167,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 open={openDropdown === 'technology'}
                 onToggle={() => toggleDesktopDropdown('technology')}
               >
-                <DropdownLink onClick={() => go('/cocreation')}>{t('exploreTechnology')}</DropdownLink>
+                <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
               </NavDropdown>
 
               <NavDropdown
@@ -199,9 +204,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <BackButton to="/" label={t('Home')} variant="pill" />
               </div>
             )}
-            {authButton ? (
+            {authButtons ? (
               <div className="home-nav-desktop-cta home-nav-cta-group">
-                {authButton}
+                {authButtons}
               </div>
             ) : null}
           </div>
@@ -263,7 +268,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 open={mobileAccordion === 'technology'}
                 onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
               >
-                <button type="button" className="home-mobile-link" onClick={() => go('/cocreation')}>{t('exploreTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>{t('exploreTechnology')}</button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -281,10 +286,15 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               {showBack && (
                 <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
               )}
-              {!user ? (
-                <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login')}>
-                  {t('signIn')}
-                </button>
+              {!authLoading && !user ? (
+                <div className="flex flex-col gap-3 w-full">
+                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
+                    {t('joinCoBrother')}
+                  </button>
+                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
+                    {t('signIn')}
+                  </button>
+                </div>
               ) : null}
             </div>
           </aside>

@@ -13,3 +13,8 @@ export function asArray(payload) {
   }
   return [];
 }
+
+/** Admin list endpoints: array, { data }, or axios body nested under .data */
+export function extractAdminList(responseData) {
+  return asArray(responseData);
+}

@@ -7,5 +7,14 @@ export const REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE_RAW = normalizedEnvValu
 export const REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE =
   typeof normalizedEnvValue === 'string'
     ? normalizedEnvValue === 'true'
-    : !import.meta.env.DEV;
+    : true;
+
+const techEnvValue = import.meta.env.VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE;
+const normalizedTechEnvValue =
+  typeof techEnvValue === 'string' ? techEnvValue.trim().toLowerCase() : undefined;
+
+export const REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE =
+  typeof normalizedTechEnvValue === 'string'
+    ? normalizedTechEnvValue === 'true'
+    : true;
 

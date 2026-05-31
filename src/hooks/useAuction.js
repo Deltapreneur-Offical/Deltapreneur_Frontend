@@ -3,6 +3,7 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { auctionAPI } from '../api/services';
 import { API_ORIGIN } from '../config/urls';
+import { normalizeAuctionTimestamp, resolveAuctionEndTime } from '../utils/auctionDate';
 
 function toNum(value, fallback = 0) {
   const n = Number(value);
@@ -11,17 +12,32 @@ function toNum(value, fallback = 0) {
 
 function normalizeAuctionPayload(payload) {
   if (!payload || typeof payload !== 'object') return null;
+  const domainRaw = payload.domain || {};
   return {
     ...payload,
     id: payload.id ?? null,
     status: payload.status ?? null,
-    domain: payload.domain ?? null,
+    domainDisplayName:
+      payload.domainDisplayName
+      ?? payload.domain_display_name
+      ?? domainRaw.fullDomain
+      ?? null,
+    domain: domainRaw.domainName || domainRaw.domain_name || domainRaw.fullDomain
+      ? {
+          ...domainRaw,
+          fullDomain: domainRaw.fullDomain ?? domainRaw.full_domain ?? '',
+          domainName: domainRaw.domainName ?? domainRaw.domain_name ?? '',
+          domainExtension: domainRaw.domainExtension ?? domainRaw.domain_extension ?? '',
+          verified: Boolean(domainRaw.verified ?? domainRaw.is_verified ?? false),
+          listedBy: domainRaw.listedBy ?? domainRaw.listed_by ?? null,
+        }
+      : null,
     minBidPrice: toNum(payload.minBidPrice ?? payload.min_bid_price, 0),
     currentHighestBid: toNum(payload.currentHighestBid ?? payload.current_highest_bid, 0),
     totalBids: toNum(payload.totalBids ?? payload.total_bids, 0),
     duration: payload.duration ?? null,
-    startTime: payload.startTime ?? payload.start_time ?? null,
-    endTime: payload.endTime ?? payload.end_time ?? null,
+    startTime: normalizeAuctionTimestamp(payload.startTime ?? payload.start_time),
+    endTime: resolveAuctionEndTime(payload) ?? normalizeAuctionTimestamp(payload.endTime ?? payload.end_time),
     currentWinnerName:
       payload.currentWinnerName ?? payload.current_winner_name ?? payload.winner?.name ?? null,
   };
@@ -60,9 +76,7 @@ export function useAuction(auctionId) {
         currentHighestBid: msg.currentHighestBid,
         totalBids:         msg.totalBids,
         // FIX #12: normalize endTime — append Z if missing so JS parses as UTC
-        endTime:           msg.endTime
-            ? (msg.endTime.endsWith('Z') ? msg.endTime : msg.endTime + 'Z')
-            : prev.endTime,
+        endTime: normalizeAuctionTimestamp(msg.endTime ?? msg.end_time) ?? prev.endTime,
         status:            msg.status,
         currentWinnerName: msg.currentWinnerName,
       } : prev);
@@ -74,10 +88,10 @@ export function useAuction(auctionId) {
       setAuction(prev => prev ? { ...prev, status: msg.status } : prev);
     } else if (msg.type === 'AUCTION_EXTENDED' || msg.type === 'BID_PLACED') {
       // endTime update already handled above — also handle standalone EXTENDED message
-      if (msg.endTime) {
+      if (msg.endTime || msg.end_time) {
         setAuction(prev => prev ? {
           ...prev,
-          endTime: msg.endTime.endsWith('Z') ? msg.endTime : msg.endTime + 'Z',
+          endTime: normalizeAuctionTimestamp(msg.endTime ?? msg.end_time) ?? prev.endTime,
           status: msg.status,
         } : prev);
       }
@@ -97,7 +111,6 @@ export function useAuction(auctionId) {
       .then(({ data }) => {
         const root = data?.auction && typeof data.auction === 'object' ? data.auction : data;
         const a = normalizeAuctionPayload(root);
-        if (a?.endTime && !a.endTime.endsWith('Z')) a.endTime = a.endTime + 'Z';
         setAuction(a);
 
         const bidList = Array.isArray(data?.bids)

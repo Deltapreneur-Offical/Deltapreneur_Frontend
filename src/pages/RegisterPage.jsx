@@ -30,7 +30,13 @@ export default function RegisterPage() {
       await authAPI.register({ email: form.email, password: form.password });
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.error || t('registrationFailed'));
+      const status = err.response?.status;
+      const body = err.response?.data;
+      if (status === 409) {
+        setError(body?.error || body?.message || t('emailAlreadyRegistered', 'This email is already registered. Sign in or use Forgot password.'));
+      } else {
+        setError(body?.error || body?.message || t('registrationFailed'));
+      }
     } finally {
       setLoading(false);
     }

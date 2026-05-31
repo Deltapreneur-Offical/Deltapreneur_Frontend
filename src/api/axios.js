@@ -61,8 +61,21 @@ function extractAuthPayload(data) {
   return data?.data ?? data ?? {};
 }
 
+/** Login/register 401 means bad credentials — not an expired access token. */
+function isPublicAuthRequest(config) {
+  const url = String(config?.url || '');
+  return (
+    url.includes('/auth/login') ||
+    url.includes('/auth/register') ||
+    url.includes('/auth/otp/') ||
+    url.includes('/auth/forgot-password') ||
+    url.includes('/auth/reset-password')
+  );
+}
+
 function shouldAttemptRefresh(error, original) {
   if (original?._retry) return false;
+  if (isPublicAuthRequest(original)) return false;
   if (!canAttemptRefresh()) return false;
   const status = error.response?.status;
   if (status !== 401 && status !== 403) return false;
@@ -72,7 +85,10 @@ function shouldAttemptRefresh(error, original) {
     error.response?.data?.message ||
     error.response?.data?.error ||
     '',
-  ).toLowerCase();
+  ).lowerCase();
+
+  if (detail.includes('invalid email or password')) return false;
+  if (detail.includes('invalid email or code')) return false;
 
   if (status === 401) return true;
   return detail.includes('not authenticated') || detail.includes('missing');

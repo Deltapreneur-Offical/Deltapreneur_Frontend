@@ -31,6 +31,8 @@ export default function LoginPage() {
     localStorage.getItem('redirectAfterLogin') ||
     '/';
 
+  const showLoginForm = location.state?.showLoginForm === true;
+
 
 
   const [mode, setMode]   = useState('password');
@@ -51,13 +53,17 @@ export default function LoginPage() {
 
   useEffect(() => {
 
-    if (!loading && user) {
+    if (!loading && user && !showLoginForm) {
 
-      navigate(user.profileComplete ? '/' : '/complete-profile', { replace: true });
+      const destination = user.profileComplete
+        ? (from && from !== '/login' ? from : '/')
+        : '/complete-profile';
+      navigate(destination, { replace: true });
+      localStorage.removeItem('redirectAfterLogin');
 
     }
 
-  }, [user, loading]);
+  }, [user, loading, showLoginForm, navigate, from]);
 
 
 
@@ -135,12 +141,17 @@ export default function LoginPage() {
 
     } catch (err) {
       const body = err.response?.data;
-      setError(
-        body?.error ||
-        body?.message ||
-        err.message ||
-        t('invalidEmailOrPassword'),
-      );
+      if (body?.emailVerified === false) {
+        setError(body?.error || body?.message || t('verifyEmailBeforeLogin', 'Please verify your email before logging in.'));
+        setInfo(t('verifyEmailResendHint', 'Use “Resend verification” below, or sign in with OTP to verify instantly.'));
+      } else {
+        setError(
+          body?.error ||
+          body?.message ||
+          err.message ||
+          t('invalidEmailOrPassword'),
+        );
+      }
     } finally { setBusy(false); }
 
   };

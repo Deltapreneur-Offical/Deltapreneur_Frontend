@@ -146,7 +146,7 @@ export default function AboutUsPage() {
             className="cb-display mt-6 text-5xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 leading-[1.04] tracking-tight"
           >
             We don't just build businesses.{' '}
-            <span className="cb-accent-word">We build disruptors.</span>
+            <span className="cb-accent-word">We build creators.</span>
           </motion.h1>
 
           {/* Sub */}
@@ -237,7 +237,7 @@ export default function AboutUsPage() {
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
                 <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoBrother" />{' '}
                 exists to bridge these gaps with one unified, execution-first
-                ecosystem featuring Domains, Ventures, Disruptors, and Technology — so founders spend their energy on growth, not setup.
+                ecosystem featuring Domains, Ventures, Creators, and Technology — so founders spend their energy on growth, not setup.
               </p>
             </Reveal>
           </div>
@@ -394,9 +394,9 @@ export default function AboutUsPage() {
                 accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
               {
-                num: '03', icon: Users, title: 'Disruptors',
+                num: '03', icon: Users, title: 'Creators',
                 sub: 'A community that challenges the norm',
-                body: "Growth doesn't come from comfort zones. Disruptors is our community of builders, innovators, and forward-thinkers. They collaborate, share real opportunities, and solve genuine problems together. This isn't just a network — it's a movement.",
+                body: "Growth doesn't come from comfort zones. Creators is our community of builders, innovators, and forward-thinkers. They collaborate, share real opportunities, and solve genuine problems together. This isn't just a network — it's a movement.",
                 points: ['Challenge conventional models', 'Collaborate on real problems', 'Share insights & resources', 'Be part of a movement'],
                 accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
@@ -477,7 +477,7 @@ export default function AboutUsPage() {
               { icon: Zap,         title: 'Speed is a core feature',                  desc: 'Our execution-first approach means founders launch faster, iterate sooner, and grow without getting stuck in setup mode.' },
               { icon: Shield,      title: 'You own everything',                       desc: 'Your brand, your IP, your business. We power the infrastructure — you keep complete ownership and control.' },
               { icon: Globe,       title: "Built for India's builders",               desc: 'Designed for the grassroots entrepreneur, the first-time founder, and the scaling startup — not just the well-funded few.' },
-              { icon: TrendingUp,  title: 'Collaboration as a growth lever',          desc: "The Disruptors community isn't a side feature. It's a core growth driver — real connections, real opportunities." },
+              { icon: TrendingUp,  title: 'Collaboration as a growth lever',          desc: "The Creators community isn't a side feature. It's a core growth driver — real connections, real opportunities." },
               { icon: Sparkles,    title: 'Technology without the complexity',        desc: "Done-For-Me tech that works from day one. No lengthy setup, no steep learning curve — just results." },
             ].map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={i * 0.07}>
@@ -577,7 +577,7 @@ export default function AboutUsPage() {
           <div className="mt-7 space-y-4 max-w-2xl">
             <Reveal delay={0.16}>
               <p className="text-base sm:text-xl text-slate-600 leading-relaxed">
-                Our goal is to produce a generation of disruptors — businesses and
+                Our goal is to produce a generation of creators — businesses and
                 individuals who don't just follow markets, but reshape them. People who
                 build with purpose, move with speed, and grow without artificial limits.
               </p>

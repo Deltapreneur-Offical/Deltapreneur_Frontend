@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { ventureAuctionAPI } from '../../api/services';
 
-export default function VentureGstinVerificationModal({ venture, onClose, onVerified }) {
+export default function VentureGstinVerificationModal({ venture, onClose, onVerified, adminMode = false }) {
   const [gstin, setGstin]       = useState(venture?.gstin || '');
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
-  const [tradeName, setTradeName] = useState(null);
   const [result, setResult]     = useState(null);
 
   const handleVerify = async () => {
     setError('');
-    setTradeName(null);
     const trimmed = gstin.trim().toUpperCase();
     if (trimmed.length !== 15) {
       setError('GSTIN must be exactly 15 characters.');
@@ -18,17 +16,18 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
     }
     setLoading(true);
     try {
-      const { data } = await ventureAuctionAPI.verifyGstin(venture.id, trimmed);
+      const verifyCall = adminMode
+        ? ventureAuctionAPI.adminVerifyGstin
+        : ventureAuctionAPI.verifyGstin;
+      const { data } = await verifyCall(venture.id, trimmed);
       if (data.verified) {
         setResult({ legalName: data.legalName });
       } else {
         setError(data.error || 'GSTIN verification failed. Please check and try again.');
-        if (data.tradeName) setTradeName(data.tradeName);
       }
     } catch (err) {
       const d = err.response?.data;
       setError(d?.error || 'Verification failed. Please try again.');
-      if (d?.tradeName) setTradeName(d.tradeName);
     } finally {
       setLoading(false);
     }
@@ -241,8 +240,7 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
               registered, active business — giving bidders confidence before placing large bids.
               <br />
               <span style={{ color: '#c8a96e', marginTop: '0.35rem', display: 'block' }}>
-                ⚠ Your venture's <strong>brand name</strong> must match the GSTIN trade name exactly
-                (case-insensitive).
+                ⚠ Use the GSTIN registered for the same business as your venture name above.
               </span>
             </div>
 
@@ -261,7 +259,7 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
               </label>
               <input
                 value={gstin}
-                onChange={e => { setGstin(e.target.value.toUpperCase()); setError(''); setTradeName(null); }}
+                onChange={e => { setGstin(e.target.value.toUpperCase()); setError(''); }}
                 placeholder="e.g. 22AAAAA0000A1Z5"
                 maxLength={15}
                 style={{ fontFamily: 'monospace', fontSize: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}
@@ -279,23 +277,6 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
                 fontSize: '0.82rem', color: '#c86e6e', lineHeight: 1.6,
               }}>
                 {error}
-                {tradeName && (
-                  <div style={{
-                    marginTop: '0.75rem', padding: '0.75rem',
-                    background: 'rgba(200,169,110,0.08)',
-                    border: '1px solid rgba(200,169,110,0.25)',
-                    borderRadius: 7, color: '#c8a96e', fontSize: '0.8rem',
-                  }}>
-                    <div style={{ marginBottom: '0.3rem', fontWeight: 700 }}>GSTIN trade name found:</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: '0.92rem', color: '#e0e0f0', marginBottom: '0.4rem' }}>
-                      {tradeName}
-                    </div>
-                    <div>
-                      Please go to <strong>Edit Venture</strong> and set your brand name to exactly
-                      <strong style={{ color: '#e0e0f0' }}> "{tradeName}"</strong>, then come back and verify.
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 

@@ -13,7 +13,7 @@
       "destination": "https://cobrother-backend.onrender.com/api/v1/venture"
     },
     {
-      "source": "/api/v1/venture/",
+      "source": "/api/v1/venture",
       "destination": "https://cobrother-backend.onrender.com/api/v1/venture"
     },
     {

@@ -30,7 +30,7 @@ export const ventureAPI = {
   getAll:       ()        => api.get('/api/v1/venture/all'),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
-  create:       (data)    => api.post('/api/v1/venture', data),
+  create:       (data)    => api.post('/api/v1/venture/', data),
   update:       (id, data)=> api.put(`/api/v1/venture/${id}`, data),
   delete:       (id)      => api.delete(`/api/v1/venture/${id}`),
   // Add to ventureAPI:

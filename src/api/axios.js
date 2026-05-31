@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, PRODUCTION_API_ORIGIN } from '../config/urls';
+import { API_BASE_URL, API_ORIGIN } from '../config/urls';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,10 +11,7 @@ function refreshBaseURL() {
   if (api.defaults.baseURL && String(api.defaults.baseURL).length > 0) {
     return api.defaults.baseURL;
   }
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-  return PRODUCTION_API_ORIGIN;
+  return API_ORIGIN;
 }
 
 /** Backend may set `csrf_token` (readable) + HttpOnly refresh cookie; refresh then requires X-CSRF-Token. */

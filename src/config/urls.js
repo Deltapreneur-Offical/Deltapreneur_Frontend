@@ -56,8 +56,8 @@ export function resolveBackendOrigin() {
 /**
  * Axios baseURL.
  * - Dev + local backend: '' (Vite proxies /api → :8000)
- * - Prod without cross-origin VITE_API_URL: '' (vercel.json proxies /api → Render)
- * - Prod with VITE_API_URL pointing at Render: direct calls
+ * - Prod: direct calls to Render (avoids Vercel POST redirects that strip Authorization)
+ * - Override with VITE_API_URL when needed
  */
 function resolveApiBaseUrl() {
   if (import.meta.env.DEV && isLocalBackend) {
@@ -67,9 +67,9 @@ function resolveApiBaseUrl() {
     return remoteApiBase.replace(/\/$/, '');
   }
   if (!import.meta.env.DEV) {
-    return '';
+    return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
   }
-  return PRODUCTION_API_ORIGIN;
+  return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
 }
 
 /** OAuth + SockJS — always the backend origin, not the SPA. */

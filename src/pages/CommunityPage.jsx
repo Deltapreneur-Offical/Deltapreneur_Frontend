@@ -35,6 +35,21 @@ const DURATIONS = [
   { value: 'THIRTY_DAYS',  label: '30 Days'  },
 ];
 
+function apiErrorMessage(err, fallback) {
+  const data = err?.response?.data;
+  if (!data) return err?.message || fallback;
+  if (data.error) return data.error;
+  if (data.detail && typeof data.detail === 'string') return data.detail;
+  if (data.message) {
+    if (Array.isArray(data.data) && data.data.length) {
+      const fields = data.data.map(e => e.message || e.field).filter(Boolean).join('; ');
+      return fields ? `${data.message}: ${fields}` : data.message;
+    }
+    return data.message;
+  }
+  return fallback;
+}
+
 export default function CommunityPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -102,12 +117,11 @@ export default function CommunityPage() {
         const list = Array.isArray(data) ? data : (data?.data ?? []);
         setProfiles(list);
         const mine = list.find(p => p.appUser?.id === user?.id);
-        if (mine && !myProfile) {
-          setMyProfile(mine);
-          // Fetch my auction status
+        if (mine) {
+          setMyProfile(prev => prev ?? mine);
           communityAuctionAPI.getByCommunity(mine.id)
             .then(({ data: ad }) => setMyAuction(ad?.auction ?? ad))
-            .catch(() => {});
+            .catch(() => setMyAuction(null));
         }
       })
       .catch(() => {})
@@ -163,7 +177,9 @@ export default function CommunityPage() {
     if (s === 'ACTIVE')          return { text: '🟢 Auction live!',           color: 'green' };
     if (s === 'EXTENDED')        return { text: '⚡ Auction extended',         color: 'amber' };
     if (s === 'ENDED')           return { text: '🏆 Auction ended',            color: 'purple' };
+    if (s === 'COMPLETED')       return { text: '✅ Auction completed',         color: 'purple' };
     if (s === 'UNSOLD')          return { text: 'Auction ended — no bids',     color: 'red' };
+    if (s === 'CLOSED')          return { text: 'Auction closed',              color: 'red' };
     return null;
   };
   const auctionBadge = auctionStatusLabel();
@@ -199,12 +215,21 @@ export default function CommunityPage() {
                       'bg-red-50 text-red-600 border-red-300'
                     }`}>{auctionBadge.text}</span>
                     <button className="btn-glow btn-glow-sm"
-                      onClick={() => navigate(`/community-auction/${myAuction.id}`)}>
+                      onClick={() => navigate(`/creator-auction/${myAuction.id}`)}>
                       View Auction →
                     </button>
                   </div>
                 ) : (
-                  <button className="btn-glow btn-glow-sm" onClick={() => setShowAuctionModal(true)}>
+                  <button
+                    className="btn-glow btn-glow-sm"
+                    onClick={() => {
+                      if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
+                        navigate(`/creator-auction/${myAuction.id}`);
+                        return;
+                      }
+                      setShowAuctionModal(true);
+                    }}
+                  >
                     🔨 Put Profile to Auction
                   </button>
                 )}
@@ -305,7 +330,7 @@ export default function CommunityPage() {
           isMe={detailProfile.appUser?.id === user?.id}
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
-          onViewAuction={(auctionId) => navigate(`/community-auction/${auctionId}`)}
+          onViewAuction={(auctionId) => navigate(`/creator-auction/${auctionId}`)}
         />
       )}
 
@@ -361,7 +386,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
       setAuctionId(auction.id);
       setStep('payment');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create auction. Please try again.');
+      setError(apiErrorMessage(err, 'Failed to create auction. Please try again.'));
     } finally { setLoading(false); }
   };
 

@@ -248,7 +248,7 @@ export default function Home() {
 
       descKey: 'disruptorsDesc',
 
-      link: '/community'
+      link: '/creator'
 
     }
 

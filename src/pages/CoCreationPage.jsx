@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus } from 'lucide-react';
-import { cocreationAPI } from '../api/services';
+import { technologyAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
@@ -26,8 +26,14 @@ import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
-import { COCREATION_CATEGORIES, COCREATION_CATEGORY_OPTIONS } from '../constants/listingCategories';
+import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS } from '../constants/listingCategories';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
+import {
+  canRequestTechnologyAuction,
+  isTechnologyAuctionLive,
+  isTechnologyAuctionPending,
+  technologyAuctionId,
+} from '../utils/technologyAuctionUi';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -72,7 +78,7 @@ export default function CoCreationPage() {
 
   useEffect(() => {
     setLoading(true);
-    const req = filterTab === 'mine' ? cocreationAPI.getMyListings() : cocreationAPI.getAll();
+    const req = filterTab === 'mine' ? technologyAPI.getMyListings() : technologyAPI.getAll();
     req
       .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(() => setAllSoftware([]))
@@ -84,7 +90,7 @@ export default function CoCreationPage() {
     loading,
     setDetail: setDetailTarget,
     fetchById: async (id) => {
-      const { data } = await cocreationAPI.get(id);
+      const { data } = await technologyAPI.get(id);
       return data?.data ?? data;
     },
   });
@@ -95,7 +101,7 @@ export default function CoCreationPage() {
     myListings.forEach(s => {
       softwareAuctionAPI.getBySoftware(s.id)
         .then(({ data }) => {
-          setAuctionStatuses(prev => ({ ...prev, [s.id]: data.auction }));
+          setAuctionStatuses(prev => ({ ...prev, [s.id]: data?.auction ?? data?.data?.auction ?? null }));
         })
         .catch(() => {});
     });
@@ -104,7 +110,7 @@ export default function CoCreationPage() {
 
   const handleDelete = async () => {
     try {
-      await cocreationAPI.delete(deleteTarget);
+      await technologyAPI.delete(deleteTarget);
       setAllSoftware(s => s.filter(x => x.id !== deleteTarget));
     } catch (e) {
       alert(e.response?.data?.error || 'Failed to remove listing.');
@@ -112,21 +118,27 @@ export default function CoCreationPage() {
   };
 
   const handleAuctionSubmitted = () => {
+    const targetId = auctionTarget?.id;
     setAuctionTarget(null);
     alert('Auction request submitted! Admin will review it shortly.');
-    // Reload auction statuses
-    if (auctionTarget) {
-      softwareAuctionAPI.getBySoftware(auctionTarget.id)
+    if (targetId) {
+      softwareAuctionAPI.getBySoftware(targetId)
         .then(({ data }) => {
-          setAuctionStatuses(prev => ({ ...prev, [auctionTarget.id]: data.auction }));
+          setAuctionStatuses(prev => ({ ...prev, [targetId]: data?.auction ?? data?.data?.auction ?? null }));
         })
+        .catch(() => {});
+      const refreshListings = filterTab === 'mine'
+        ? technologyAPI.getMyListings()
+        : technologyAPI.getAll();
+      refreshListings
+        .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
         .catch(() => {});
     }
   };
 
 
   const refreshSoftware = () =>
-    cocreationAPI.getAll()
+    technologyAPI.getAll()
       .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])));
 
   return (
@@ -178,7 +190,7 @@ export default function CoCreationPage() {
         <FilterBar
           search={search}           onSearch={handleSearch}
           category={category}       onCategory={handleCategory}
-          categoryOptions={COCREATION_CATEGORY_OPTIONS}
+          categoryOptions={TECHNOLOGY_CATEGORY_OPTIONS}
           minPrice={minPrice}       onMinPrice={handleMinPrice}
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
@@ -273,6 +285,8 @@ export default function CoCreationPage() {
           onLike={() => toggleLike(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshSoftware(); }}
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
+          onAuction={() => { setAuctionTarget(detailTarget); closeListingDetail(); }}
+          auctionStatus={auctionStatuses[detailTarget.id]}
         />
       )}
 
@@ -338,7 +352,7 @@ function SoftwareForm({ onSaved, onCancel }) {
     }
 
     try {
-      const { data } = await cocreationAPI.create({
+      const { data } = await technologyAPI.create({
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
       });
@@ -374,10 +388,15 @@ function SoftwareForm({ onSaved, onCancel }) {
     try {
       const formData = new FormData();
       formData.append('file', imageFile);
-      const { data } = await cocreationAPI.uploadImage(savedSoftware.id, formData);
-      onSaved({ ...savedSoftware, imageUrl: data.imageUrl });
+      const { data } = await technologyAPI.uploadImage(savedSoftware.id, formData);
+      const payload = data?.data ?? data;
+      onSaved({
+        ...savedSoftware,
+        imageUrl: payload?.imageUrl ?? payload?.image_url,
+      });
+      setImageUploading(false);
     } catch (err) {
-      setImageError(err.response?.data?.error || 'Upload failed. You can add an image later.');
+      setImageError(err.response?.data?.error || err.response?.data?.message || 'Upload failed. You can add an image later.');
       setImageUploading(false);
     }
   };
@@ -470,7 +489,7 @@ function SoftwareForm({ onSaved, onCancel }) {
             <label className={labelCls}>Category <span className="text-red-500">*</span></label>
             <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)} required>
               <option value="">Select category</option>
-              {COCREATION_CATEGORIES.map(c => (
+              {TECHNOLOGY_CATEGORIES.map(c => (
                 <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>
               ))}
             </select>
@@ -579,7 +598,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
     setLoading(true); setError('');
     try {
       // Pass both buyer info AND coBrotherOptIn to backend
-      const { data: orderData } = await cocreationAPI.createOrder(item.id, {
+      const { data: orderData } = await technologyAPI.createOrder(item.id, {
         ...form,
         coBrotherOptIn,
         services: addons,
@@ -593,7 +612,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
         themeColor: '#a06ec8',
         onSuccess: async (response) => {
           try {
-            const { data: verifyData } = await cocreationAPI.verifyPayment(item.id, {
+            const { data: verifyData } = await technologyAPI.verifyPayment(item.id, {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId:   response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
@@ -614,12 +633,12 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           }
         },
         onFailure: async () => {
-          await cocreationAPI.handleFailure(item.id);
+          await technologyAPI.handleFailure(item.id);
           setError('Payment failed. Please try again.');
           setLoading(false);
         },
         onDismiss: async () => {
-          await cocreationAPI.handleFailure(item.id);
+          await technologyAPI.handleFailure(item.id);
           setLoading(false);
         },
       });
@@ -799,7 +818,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 }
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
-function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike }) {
+function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onAuction, auctionStatus, likeState, onLike }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -808,7 +827,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
-    cocreationAPI.get(item.id)
+    technologyAPI.get(item.id)
       .then(({ data }) => setDetail(data?.data ?? data))
       .catch(() => setDetail(item))
       .finally(() => setLoading(false));
@@ -925,6 +944,25 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
             )}
 
             <div className="flex gap-3 mt-6 flex-wrap items-center">
+              {isOwner && canRequestTechnologyAuction(d, auctionStatus) && onAuction && (
+                <button className="btn-glow btn-glow-sm" onClick={onAuction}>
+                  🔨 Put to Auction
+                </button>
+              )}
+              {isOwner && isTechnologyAuctionPending(d, auctionStatus) && (
+                <span className="text-sm font-semibold text-amber-700 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
+                  ⏳ Auction pending admin review
+                </span>
+              )}
+              {isOwner && (auctionStatus?.approvalStatus === 'APPROVED' || d.auctionApprovalStatus === 'APPROVED')
+                && technologyAuctionId(d, auctionStatus) && (
+                <button
+                  className="btn-glow btn-glow-sm"
+                  onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
+                >
+                  View Auction →
+                </button>
+              )}
               {!isOwner
                 && d.softwareStatus === 'AVAILABLE'
                 && d.purchaseType !== 'AUCTION'
@@ -937,13 +975,10 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
                 <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
                 )
               )}
-              {!isOwner
-                && d.purchaseType === 'AUCTION'
-                && d.auctionApprovalStatus === 'APPROVED'
-                && d.auctionId && (
+              {!isOwner && isTechnologyAuctionLive(d, auctionStatus) && (
                 <button
                   className="btn-glow btn-glow-sm"
-                  onClick={() => window.location.assign(`/technology/auction/${d.auctionId}`)}
+                  onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
                 >
                   Place Bid →
                 </button>

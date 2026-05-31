@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import { auctionAPI } from '../api/services';
 import { API_ORIGIN } from '../config/urls';
 import { normalizeAuctionTimestamp, resolveAuctionEndTime } from '../utils/auctionDate';
+import { resolveAuctionBidLimits } from '../utils/auctionBidLimits';
 
 function toNum(value, fallback = 0) {
   const n = Number(value);
@@ -58,6 +59,7 @@ export function useAuction(auctionId) {
   const [auction, setAuction]       = useState(null);
   const [bids, setBids]             = useState([]);
   const [minNextBid, setMinNextBid] = useState(0);
+  const [maxBidPrice, setMaxBidPrice] = useState(0);
   const [connected, setConnected]   = useState(false);
   const [loading, setLoading]       = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -71,16 +73,26 @@ export function useAuction(auctionId) {
     setLastUpdate(msg);
 
     if (msg.type === 'BID_PLACED') {
-      setAuction(prev => prev ? {
-        ...prev,
-        currentHighestBid: msg.currentHighestBid,
-        totalBids:         msg.totalBids,
-        // FIX #12: normalize endTime — append Z if missing so JS parses as UTC
-        endTime: normalizeAuctionTimestamp(msg.endTime ?? msg.end_time) ?? prev.endTime,
-        status:            msg.status,
-        currentWinnerName: msg.currentWinnerName,
-      } : prev);
-      setMinNextBid(msg.currentHighestBid * 1.05);
+      setAuction(prev => {
+        if (!prev) return prev;
+        const next = {
+          ...prev,
+          currentHighestBid: msg.currentHighestBid,
+          totalBids:         msg.totalBids,
+          endTime: normalizeAuctionTimestamp(msg.endTime ?? msg.end_time) ?? prev.endTime,
+          status:            msg.status,
+          currentWinnerName: msg.currentWinnerName,
+        };
+        const limits = resolveAuctionBidLimits({
+          maxBidPrice: prev.maxBidPrice,
+          minNextBid: prev.minNextBid,
+          currentHighestBid: next.currentHighestBid,
+          minBidPrice: next.minBidPrice,
+        });
+        setMinNextBid(limits.minNextBid);
+        setMaxBidPrice(limits.maxBidPrice);
+        return { ...next, ...limits };
+      });
       if (msg.latestBid) {
         setBids(prev => [normalizeBidPayload(msg.latestBid), ...prev]);
       }
@@ -111,7 +123,19 @@ export function useAuction(auctionId) {
       .then(({ data }) => {
         const root = data?.auction && typeof data.auction === 'object' ? data.auction : data;
         const a = normalizeAuctionPayload(root);
-        setAuction(a);
+        const limits = resolveAuctionBidLimits({
+          maxBidPrice: data?.maxBidPrice ?? data?.max_bid_price,
+          minNextBid: data?.minNextBid ?? data?.min_next_bid,
+          currentHighestBid: a?.currentHighestBid,
+          minBidPrice: a?.minBidPrice,
+        });
+        setMinNextBid(limits.minNextBid);
+        setMaxBidPrice(limits.maxBidPrice);
+        if (a) {
+          setAuction({ ...a, ...limits });
+        } else {
+          setAuction(a);
+        }
 
         const bidList = Array.isArray(data?.bids)
           ? data.bids
@@ -121,11 +145,6 @@ export function useAuction(auctionId) {
               ? root.recent_bids
               : [];
         setBids(bidList.map(normalizeBidPayload));
-
-        const minNext = data?.minNextBid
-          ?? data?.min_next_bid
-          ?? (a?.currentHighestBid > 0 ? a.currentHighestBid * 1.05 : a?.minBidPrice ?? 0);
-        setMinNextBid(toNum(minNext, 0));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -170,5 +189,5 @@ export function useAuction(auctionId) {
     return auctionAPI.placeBid(auctionId, amount);
   }, [auctionId]);
 
-  return { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid };
+  return { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid };
 }

@@ -15,6 +15,7 @@ import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import DomainVerificationModal from './DomainVerificationModal';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
+import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 
 
 function formatAdminRequestType(type) {
@@ -81,7 +82,7 @@ export default function AdminDashboardPage() {
   const fetchers = {
     domains:            adminAPI.getDomains,
     'domain-enquiries': adminAPI.getDomainEnquiries,
-    cocreations:        adminAPI.getSoftwares,
+    cocreations:        adminAPI.getTechnologies,
     auctions:           adminAPI.getAllAuctions,
     'venture-auctions': adminAPI.getAllVentureAuctions,
     meetings:           meetingAPI.adminGetAll, 
@@ -95,7 +96,7 @@ export default function AdminDashboardPage() {
       ventures:            adminAPI.getVentures,
       domains:             adminAPI.getDomains,
       'domain-enquiries':  adminAPI.getDomainEnquiries,
-      cocreations:         adminAPI.getSoftwares,
+      cocreations:         adminAPI.getTechnologies,
       auctions:            adminAPI.getAllAuctions,
       'venture-auctions':  adminAPI.getAllVentureAuctions,
       meetings:            meetingAPI.adminGetAll,
@@ -953,10 +954,9 @@ function AuctionAdminRow({ auction, bids }) {
                       {(bid.isWinningBid || bid.is_winning_bid) && ' 🏆'}
                     </span>
                     <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                      {(bid.bidTime || bid.bid_time || bid.createdAt)
-                        ? new Date(bid.bidTime || bid.bid_time || bid.createdAt).toLocaleString('en-IN',
-                            { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })
-                        : ''}
+                      {formatAuctionDateTime(bid.bidTime ?? bid.bid_time ?? bid.createdAt, {
+                        hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
+                      }, '')}
                     </span>
                   </div>
                 ))}
@@ -1152,7 +1152,7 @@ function VentureAuctionAdminRow({ auction, bids }) {
                 Duration: {auction.duration?.replace(/_/g, ' ') || '—'}
               </div>
               <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
-                {auction.startTime ? `Start: ${new Date(auction.startTime).toLocaleDateString('en-IN')}` : ''}
+                {auction.startTime ? `Start: ${formatAuctionDate(auction.startTime)}` : ''}
               </div>
             </div>
           </div>
@@ -1173,10 +1173,9 @@ function VentureAuctionAdminRow({ auction, bids }) {
                       {bid.isWinningBid && ' 🏆'}
                     </span>
                     <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                      {bid.bidTime
-                        ? new Date(bid.bidTime).toLocaleString('en-IN',
-                            { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })
-                        : ''}
+                      {formatAuctionDateTime(bid.bidTime, {
+                        hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
+                      }, '')}
                     </span>
                   </div>
                 ))}
@@ -1458,7 +1457,8 @@ function MeetingsAdminTab({ meetings }) {
 
   const categorise = (m) => {
     if (m.status !== 'CONFIRMED') return 'other';
-    const start = new Date(m.scheduledAt.endsWith('Z') ? m.scheduledAt : m.scheduledAt + 'Z').getTime();
+    const start = parseAuctionDate(m.scheduledAt)?.getTime();
+    if (!start) return 'other';
     const end   = start + (m.durationMinutes || 30) * 60_000;
     if (start > now)         return 'upcoming';
     if (start <= now && now < end) return 'ongoing';
@@ -1569,11 +1569,10 @@ function MeetingsAdminTab({ meetings }) {
                   {/* Right: time info + meet link */}
                   <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 140 }}>
                     <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>
-                      {m.scheduledAt
-                        ? new Date(m.scheduledAt.endsWith('Z') ? m.scheduledAt : m.scheduledAt + 'Z')
-                            .toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric',
-                                                        hour: '2-digit', minute: '2-digit' })
-                        : '—'}
+                      {formatAuctionDateTime(m.scheduledAt, {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit',
+                      })}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#6b7280', marginTop: '0.2rem' }}>
                       {m.durationMinutes} min
@@ -1663,7 +1662,7 @@ function AddonOrderRow({ order, statusColor }) {
           </div>
           <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
             {services.length} service{services.length !== 1 ? 's' : ''} · ₹{Number(order.totalAmount || 0).toLocaleString('en-IN')}
-            {order.createdAt && ` · ${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+            {order.createdAt && ` · ${formatAuctionDate(order.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>

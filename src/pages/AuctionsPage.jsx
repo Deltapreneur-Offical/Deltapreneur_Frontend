@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auctionAPI, ventureAPI, ventureAuctionAPI, communityAuctionAPI } from '../api/services';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  auctionAPI,
+  ventureAPI,
+  ventureAuctionAPI,
+  communityAuctionAPI,
+  softwareAuctionAPI,
+} from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import { asArray } from '../utils/asArray';
-import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
+import { formatCountdown, parseAuctionDate, resolveAuctionEndTime, formatAuctionDateTime } from '../utils/auctionDate';
 import { useTranslation } from 'react-i18next';
 import { normalizeDomainExtension } from '../utils/domainDisplay';
+import { pickMediaUrl } from '../utils/mediaUrl';
 
 const toNum = (value, fallback = 0) => {
   const n = Number(value);
@@ -47,6 +54,24 @@ function resolveAuctionDomainTitle(auction) {
   );
 }
 
+const normalizeSoftwareAuction = (raw) => {
+  if (!raw || typeof raw !== 'object') return raw;
+  const software = raw.software || {};
+  let endTime = resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null;
+  if (typeof endTime === 'string' && endTime && !endTime.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(endTime)) {
+    endTime = `${endTime}Z`;
+  }
+  return {
+    ...normalizeAuction(raw),
+    endTime,
+    auctionTitle: raw.name || software.name || 'Technology',
+    name: raw.name || software.name,
+    imageUrl: pickMediaUrl(raw) || pickMediaUrl(software) || raw.imageUrl || software.imageUrl,
+    category: raw.category || software.category,
+    software,
+  };
+};
+
 const normalizeListedVentureAuction = (ventureRaw) => {
   if (!ventureRaw || typeof ventureRaw !== 'object') return null;
   if (ventureRaw.status === false || ventureRaw.takenDown === true || ventureRaw.taken_down === true) {
@@ -77,6 +102,8 @@ const normalizeListedVentureAuction = (ventureRaw) => {
       brandDetails: {
         brandName: brand.brandName ?? brand.brand_name ?? '',
         industry: brand.industry ?? null,
+        ventureImageUrl: pickMediaUrl(brand),
+        logoUrl: pickMediaUrl(brand),
       },
       listedBy: ventureRaw.listedBy ?? null,
     },
@@ -89,9 +116,15 @@ const isVisibleVentureAuction = (auctionRaw) => {
   return ['ACTIVE', 'EXTENDED', 'DRAFT'].includes(status);
 };
 
-const asItems = (data) => (
-  (Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : [])).map(normalizeAuction)
-);
+/** Backend may return a raw array, `{ data: [] }`, or `{ items: [] }`. */
+const extractActiveList = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
+};
+
+const asItems = (data) => extractActiveList(data).map(normalizeAuction);
 // Live countdown per card
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
@@ -111,15 +144,26 @@ function useCountdown(endTime) {
   return { timeLeft, isUrgent };
 }
 
+const SECTION_IDS = new Set(['all', 'ventures', 'domains', 'community', 'technology']);
+
 export default function AuctionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [domainAuctions, setDomainAuctions]       = useState([]);
   const [ventureAuctions, setVentureAuctions]     = useState([]); // active + listed
   const [communityAuctions, setCommunityAuctions] = useState([]);
+  const [softwareAuctions, setSoftwareAuctions] = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [section, setSection]   = useState('all'); // all | ventures | domains | community
+  const [section, setSection]   = useState('all'); // all | ventures | domains | community | technology
   const [filter, setFilter]     = useState('all'); // all | ending_soon | no_bids
+
+  useEffect(() => {
+    const fromUrl = searchParams.get('section');
+    if (fromUrl && SECTION_IDS.has(fromUrl)) {
+      setSection(fromUrl);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setLoading(true);
@@ -137,7 +181,10 @@ export default function AuctionsPage() {
           .filter(Boolean))
         .catch(() => []),
       communityAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-    ]).then(([domains, activeVentures, allListedVentures, myListedVentures, community]) => {
+      softwareAuctionAPI.getActive()
+        .then(({ data }) => extractActiveList(data).map(normalizeSoftwareAuction))
+        .catch(() => []),
+    ]).then(([domains, activeVentures, allListedVentures, myListedVentures, community, software]) => {
       const mergedVentures = new Map();
       activeVentures.forEach((a) => mergedVentures.set(String(a.id), a));
       allListedVentures.forEach((a) => {
@@ -149,6 +196,7 @@ export default function AuctionsPage() {
       setDomainAuctions(domains);
       setVentureAuctions(Array.from(mergedVentures.values()).filter(isVisibleVentureAuction));
       setCommunityAuctions(community);
+      setSoftwareAuctions(software);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -166,10 +214,11 @@ export default function AuctionsPage() {
     return true;
   });
 
-  const shownDomains    = (section === 'ventures' || section === 'community') ? [] : applyFilter(domainAuctions);
-  const shownVentures   = (section === 'domains'  || section === 'community') ? [] : applyFilter(ventureAuctions);
-  const shownCommunity  = (section === 'ventures' || section === 'domains')   ? [] : applyFilter(communityAuctions);
-  const totalLive       = domainAuctions.length + ventureAuctions.length + communityAuctions.length;
+  const shownDomains    = (section === 'ventures' || section === 'community' || section === 'technology') ? [] : applyFilter(domainAuctions);
+  const shownVentures   = (section === 'domains' || section === 'community' || section === 'technology') ? [] : applyFilter(ventureAuctions);
+  const shownCommunity  = (section === 'ventures' || section === 'domains' || section === 'technology') ? [] : applyFilter(communityAuctions);
+  const shownSoftware   = (section === 'ventures' || section === 'domains' || section === 'community') ? [] : applyFilter(softwareAuctions);
+  const totalLive       = domainAuctions.length + ventureAuctions.length + communityAuctions.length + softwareAuctions.length;
 
   return (
     <AppLayout>
@@ -188,14 +237,18 @@ export default function AuctionsPage() {
         {/* ── Section tabs ── */}
         <div className="flex gap-2 mb-3 flex-wrap">
           {[
-            { id: 'all',       label: `All (${totalLive})` },
-            { id: 'ventures',  label: `🔨 Ventures (${ventureAuctions.length})` },
-            { id: 'domains',   label: `◇ Domains (${domainAuctions.length})` },
-            { id: 'community', label: `👤 ${t('communityTitle')} (${communityAuctions.length})` },
+            { id: 'all',        label: `All (${totalLive})` },
+            { id: 'ventures',   label: `🔨 Ventures (${ventureAuctions.length})` },
+            { id: 'domains',    label: `◇ Domains (${domainAuctions.length})` },
+            { id: 'technology', label: `💻 Technology (${softwareAuctions.length})` },
+            { id: 'community',  label: `👤 ${t('communityTitle')} (${communityAuctions.length})` },
           ].map(t => (
             <button key={t.id}
               className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setSection(t.id)}>
+              onClick={() => {
+                setSection(t.id);
+                navigate(t.id === 'all' ? '/auctions' : `/auctions?section=${t.id}`, { replace: true });
+              }}>
               {t.label}
             </button>
           ))}
@@ -220,13 +273,21 @@ export default function AuctionsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => <AuctionSkeleton key={i} />)}
           </div>
-        ) : (shownDomains.length === 0 && shownVentures.length === 0 && shownCommunity.length === 0) ? (
+        ) : (shownDomains.length === 0 && shownVentures.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
               <img src={AuctionImg} alt="Auction" className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
             </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No auctions match your filters</h3>
-            <p className="text-gray-600 mb-6">Check back soon — new auctions go live regularly.</p>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {section === 'technology'
+                ? 'No live technology auctions'
+                : 'No auctions match your filters'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {section === 'technology'
+                ? 'Approved technology listings appear here once their auction is active. Check Technology after admin verification.'
+                : 'Check back soon — new auctions go live regularly.'}
+            </p>
             {(section !== 'all' || filter !== 'all') && (
               <button className="btn-glow btn-glow-sm" onClick={() => { setSection('all'); setFilter('all'); }}>
                 View All Auctions
@@ -277,9 +338,30 @@ export default function AuctionsPage() {
               </div>
             )}
 
-            {/* ── Community Profile Auctions section ── */}
+            {/* ── Technology Auctions section ── */}
+            {shownSoftware.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <h2 className="text-base font-bold text-indigo-600 m-0">💻 Technology Auctions</h2>
+                  <span className="text-xs text-gray-500 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-semibold">
+                    {shownSoftware.length} live
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {shownSoftware.map(auction => (
+                    <SoftwareAuctionCard
+                      key={auction.id}
+                      auction={auction}
+                      onClick={() => navigate(`/technology/auction/${auction.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Creator Profile Auctions section ── */}
             {shownCommunity.length > 0 && (
-              <div>
+              <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
                   <h2 className="text-base font-bold text-teal-600 m-0">👤 {t('creatorProfileAuctions')}</h2>
                   <span className="text-xs text-gray-500 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
@@ -291,7 +373,7 @@ export default function AuctionsPage() {
                     <CommunityAuctionCard
                       key={auction.id}
                       auction={auction}
-                      onClick={() => navigate(`/community-auction/${auction.id}`)}
+                      onClick={() => navigate(`/creator-auction/${auction.id}`)}
                     />
                   ))}
                 </div>
@@ -309,6 +391,7 @@ function VentureAuctionCard({ auction, onClick }) {
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const venture  = auction.venture || {};
   const brand    = venture.brandDetails || {};
+  const brandImage = pickMediaUrl(brand);
   const isExtended = auction.status === 'EXTENDED';
   const isDraft = auction.status === 'DRAFT';
   const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
@@ -324,9 +407,17 @@ function VentureAuctionCard({ auction, onClick }) {
       </div>
 
       <div className="flex items-center gap-3 mb-4 pr-20">
+        {brandImage ? (
+          <img
+            src={brandImage}
+            alt={brand.brandName || 'Venture'}
+            className="w-11 h-11 rounded-[10px] object-cover border border-purple-200 flex-shrink-0"
+          />
+        ) : (
         <div className="w-11 h-11 rounded-[10px] flex items-center justify-center text-lg font-bold text-purple-600 bg-purple-100 border border-purple-200">
           {brand.brandName?.[0] || '?'}
         </div>
+        )}
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{brand.brandName || '—'}</h3>
           <div className="flex gap-1.5 flex-wrap items-center">
@@ -525,7 +616,99 @@ const bone = (style) => ({
   ...style,
 });
 
-// ─── Community Profile Auction Card ──────────────────────────────────────────
+// ─── Software / Technology Auction Card ─────────────────────────────────────
+function SoftwareAuctionCard({ auction, onClick }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const software = auction.software || {};
+  const isExtended = auction.status === 'EXTENDED';
+  const title = auction.auctionTitle || auction.name || software.name || 'Technology';
+  const category = auction.category || software.category;
+  const imageSrc = pickMediaUrl(auction) || pickMediaUrl(software) || auction.imageUrl || software.imageUrl;
+
+  return (
+    <div
+      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative"
+      onClick={onClick}
+    >
+      <div
+        className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold"
+        style={{
+          color: isExtended ? '#c8a96e' : '#6ec896',
+          background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
+          border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
+        }}
+      >
+        {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
+      </div>
+
+      <div className="flex items-center gap-3 mb-3 pr-20">
+        {imageSrc && !imgFailed ? (
+          <img
+            src={imageSrc}
+            alt={title}
+            className="w-11 h-11 rounded-[10px] object-cover border-2 border-indigo-200 flex-shrink-0"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="w-11 h-11 rounded-[10px] bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center text-lg font-bold text-indigo-600 flex-shrink-0">
+            {title[0]?.toUpperCase() || '💻'}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-bold text-gray-900 m-0 truncate">{title}</h3>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs text-indigo-600 font-semibold">💻 Technology Auction</span>
+            {category && (
+              <span className="text-xs text-gray-500">
+                · {String(category).replace(/_/g, ' ')}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 my-3">
+        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+          </div>
+          <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+          </div>
+        </div>
+        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+          <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
+        </div>
+      </div>
+
+      {auction.currentHighestBid > 0 && (
+        <div className="text-sm text-gray-700 mb-3 font-semibold">
+          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
+        <div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
+          <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
+            {timeLeft}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onClick(); }}
+          className="btn-glow btn-glow-sm"
+        >
+          Bid Now →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Creator Profile Auction Card ────────────────────────────────────────────
 function CommunityAuctionCard({ auction, onClick }) {
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const community  = auction.community || {};

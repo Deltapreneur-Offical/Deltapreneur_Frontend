@@ -8,7 +8,7 @@ const SECTION_LABELS = {
   domain: 'Featured Domains',
   venture: 'Featured Ventures',
   software: 'Featured Software',
-  community: 'Featured Communities',
+  community: 'Featured Creators',
 };
 
 const EMPTY_LABELS = {
@@ -24,7 +24,7 @@ function getTitle(item, type) {
   if (type === 'domain') return `${item.domainName || ''}${item.domainExtension || ''}`;
   if (type === 'venture') return item.brandDetails?.brandName || `Venture #${item.id}`;
   if (type === 'software') return item.name || `Software #${item.id}`;
-  if (type === 'community') return item.name || `Community #${item.id}`;
+  if (type === 'community') return item.name || `Creator #${item.id}`;
   return '';
 }
 

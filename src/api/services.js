@@ -37,7 +37,7 @@ export const ventureAPI = {
   uploadImage: (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`api/v1/venture/${id}/image`, formData, {
+    return api.post(`/api/v1/venture/${id}/image`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
@@ -68,14 +68,17 @@ export const ventureAuctionAPI = {
   participationVerify: (auctionId, data) => api.post(`/api/v1/venture-auction/${auctionId}/participation/verify`, data),
   adminGetAll:   ()                   => api.get('/api/v1/venture-auction/admin/all'),
 };
-// ─── Community ───────────────────────────────────────────────────────────────
-export const communityAPI = {
-  getAll:           ()        => api.get('/api/v1/community/all'),
-  getOne:           (id)      => api.get(`/api/v1/community/${id}`),
-  update:           (id, data)=> api.put(`/api/v1/community/${id}`, data),
-  linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth'),
-  linkedInCallback: (code)    => api.get(`/api/v1/community/linkedin/callback?code=${code}`),
+// ─── Creator (community profiles) ────────────────────────────────────────────
+export const creatorAPI = {
+  getAll:           ()        => api.get('/api/v1/creator/all'),
+  getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
+  update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
+  linkedInAuthUrl:  ()        => api.get('/api/v1/creator/linkedin/auth'),
+  linkedInCallback: (code)    => api.get(`/api/v1/creator/linkedin/callback?code=${code}`),
 };
+
+/** @deprecated Use creatorAPI */
+export const communityAPI = creatorAPI;
 
 
 
@@ -122,27 +125,30 @@ export const analyticsAPI = {
   getMyVentures:       ()    => api.get('/api/v1/venture/my'),
 };
 
-export const cocreationAPI = {
-  getAll:          ()         => api.get('/api/v1/cocreation/all'),
-  getMyListings:   ()         => api.get('/api/v1/cocreation/my-listings'),
-  getMyPurchases:  ()         => api.get('/api/v1/cocreation/my-purchases'),
-  get:             (id)       => api.get(`/api/v1/cocreation/${id}`),
-  create:          (data)     => api.post('/api/v1/cocreation', data),
-  update:          (id, data) => api.put(`/api/v1/cocreation/${id}`, data),
-  delete:          (id)       => api.delete(`/api/v1/cocreation/${id}`),
-  createOrder:     (id, data) => api.post(`/api/v1/cocreation/${id}/purchase/create-order`, data),
-  verifyPayment:   (id, data) => api.post(`/api/v1/cocreation/${id}/purchase/verify`, data),
-  handleFailure:   (id)       => api.post(`/api/v1/cocreation/${id}/purchase/failure`),
-  confirmPurchase: (purchaseId) => api.post(`/api/v1/cocreation/purchase/${purchaseId}/confirm`),
-  getAnalytics:    (id)       => api.get(`/api/v1/cocreation/${id}/analytics`),
+export const technologyAPI = {
+  getAll:          ()         => api.get('/api/v1/technology/all'),
+  getMyListings:   ()         => api.get('/api/v1/technology/my-listings'),
+  getMyPurchases:  ()         => api.get('/api/v1/technology/my-purchases'),
+  get:             (id)       => api.get(`/api/v1/technology/${id}`),
+  create:          (data)     => api.post('/api/v1/technology', data),
+  update:          (id, data) => api.put(`/api/v1/technology/${id}`, data),
+  delete:          (id)       => api.delete(`/api/v1/technology/${id}`),
+  createOrder:     (id, data) => api.post(`/api/v1/technology/${id}/purchase/create-order`, data),
+  verifyPayment:   (id, data) => api.post(`/api/v1/technology/${id}/purchase/verify`, data),
+  handleFailure:   (id)       => api.post(`/api/v1/technology/${id}/purchase/failure`),
+  confirmPurchase: (purchaseId) => api.post(`/api/v1/technology/purchase/${purchaseId}/confirm`),
+  getAnalytics:    (id)       => api.get(`/api/v1/technology/${id}/analytics`),
   payCoBrotherHelp:    (purchaseId, data = {}) =>
-    api.post(`/api/v1/cocreation/purchase/${purchaseId}/cobrother-help/create-order`, data),
-  verifyCoBrotherHelp: (purchaseId, data) => api.post(`/api/v1/cocreation/purchase/${purchaseId}/cobrother-help/verify`, data),
+    api.post(`/api/v1/technology/purchase/${purchaseId}/cobrother-help/create-order`, data),
+  verifyCoBrotherHelp: (purchaseId, data) => api.post(`/api/v1/technology/purchase/${purchaseId}/cobrother-help/verify`, data),
   uploadImage: (id, formData) =>
-    api.post(`/api/v1/cocreation/${id}/image`, formData, {
+    api.post(`/api/v1/technology/${id}/image`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 };
+
+/** @deprecated Use technologyAPI */
+export const cocreationAPI = technologyAPI;
 
 export const notificationAPI = {
   getRecent:     () => api.get('/api/v1/notifications/recent'),
@@ -169,11 +175,14 @@ export const adminAPI = {
   getDomains:           ()              => api.get('/api/v1/admin/domains'),
   getSoftwares:         ()              => api.get('/api/v1/admin/softwares'),
   getCommunities:       ()              => api.get('/api/v1/admin/communities'),
-  getCoCreations:       ()              => api.get('/api/v1/admin/cocreations'),
+  getCreators:          ()              => api.get('/api/v1/admin/communities'),
+  getTechnologies:      ()              => api.get('/api/v1/admin/technologies'),
+  /** @deprecated Use getTechnologies */
+  getCoCreations:       ()              => api.get('/api/v1/admin/technologies'),
   getCoBrotherRequests: ()              => api.get('/api/v1/admin/cobrother-requests'),
   getCoBrothers:        ()              => api.get('/api/v1/admin/cobrothers'),
   forward:              (data)          => api.post('/api/v1/admin/forward', data),
-  listOfficialSoftware: (data)          => api.post('/api/v1/admin/cocreation', data),
+  listOfficialSoftware: (data)          => api.post('/api/v1/admin/technology', data),
   getAllAuctions: () => api.get('/api/v1/auction/admin/all'),
   getAddonOrders: () => api.get('/api/v1/addon/admin/all'),
   getAllVentureAuctions: () => api.get('/api/v1/venture-auction/admin/all'),
@@ -233,24 +242,29 @@ export const feedbackAPI = {
   submit: (payload) => api.post('/api/v1/feedback', payload),
 };
 
-// ─── Community Auction ────────────────────────────────────────────────────────
-export const communityAuctionAPI = {
-  create:              (communityId, data) => api.post(`/api/v1/community-auction/?communityId=${communityId}`, data),
+// ─── Creator Auction ─────────────────────────────────────────────────────────
+export const creatorAuctionAPI = {
+  create:              (communityId, data) => api.post(`/api/v1/creator-auction/?communityId=${communityId}`, data),
   createListingOrder:  (auctionId, data = {}) =>
-    api.post(`/api/v1/community-auction/${auctionId}/listing-fee/create-order`, data),
-  verifyListingFee:    (auctionId, data)   => api.post(`/api/v1/community-auction/${auctionId}/listing-fee/verify`, data),
-  get:                 (auctionId)         => api.get(`/api/v1/community-auction/${auctionId}`),
-  getByCommunity:      (communityId)       => api.get(`/api/v1/community-auction/community/${communityId}`),
-  getActive:           ()                  => api.get('/api/v1/community-auction/active'),
-  getMyAuctions:       ()                  => api.get('/api/v1/community-auction/my'),
-  placeBid:            (auctionId, amount) => api.post(`/api/v1/community-auction/${auctionId}/bid`, { amount }),
-  participationStatus: (auctionId)         => api.get(`/api/v1/community-auctions/${auctionId}/participation/status`),
-  participationCreateOrder: (auctionId)    => api.post(`/api/v1/community-auctions/${auctionId}/participation/create-order`),
-  participationVerify: (auctionId, data)   => api.post(`/api/v1/community-auctions/${auctionId}/participation/verify`, data),
-  reAuction:           (auctionId, data)   => api.post(`/api/v1/community-auction/${auctionId}/re-auction`, data),
-  close:               (auctionId)         => api.post(`/api/v1/community-auction/${auctionId}/close`),
-  adminGetAll:         ()                  => api.get('/api/v1/community-auction/admin/all'),
+    api.post(`/api/v1/creator-auction/${auctionId}/listing-fee/create-order`, data),
+  verifyListingFee:    (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/listing-fee/verify`, data),
+  get:                 (auctionId)         => api.get(`/api/v1/creator-auction/${auctionId}`),
+  getByCommunity:      (communityId)       => api.get(`/api/v1/creator-auction/community/${communityId}`),
+  getActive:           ()                  => api.get('/api/v1/creator-auction/active'),
+  getMyAuctions:       ()                  => api.get('/api/v1/creator-auction/my'),
+  placeBid:            (auctionId, amount) => api.post(`/api/v1/creator-auction/${auctionId}/bid`, { amount }),
+  participationStatus: (auctionId)         => api.get(`/api/v1/creator-auctions/${auctionId}/participation/status`),
+  participationCreateOrder: (auctionId)    => api.post(`/api/v1/creator-auctions/${auctionId}/participation/create-order`),
+  participationVerify: (auctionId, data)   => api.post(`/api/v1/creator-auctions/${auctionId}/participation/verify`, data),
+  reAuction:           (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/re-auction`, data),
+  close:               (auctionId)         => api.post(`/api/v1/creator-auction/${auctionId}/close`),
+  winnerPaymentCreateOrder: (auctionId)    => api.post(`/api/v1/creator-auction/${auctionId}/winner-payment/create-order`),
+  winnerPaymentVerify: (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/winner-payment/verify`, data),
+  adminGetAll:         ()                  => api.get('/api/v1/creator-auction/admin/all'),
 };
+
+/** @deprecated Use creatorAuctionAPI */
+export const communityAuctionAPI = creatorAuctionAPI;
 
 export const softwareAuctionAPI = {
   create:          (softwareId, data)   => api.post(`/api/v1/software-auction/software/${softwareId}`, data),

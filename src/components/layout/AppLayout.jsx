@@ -23,8 +23,8 @@ const sidebarItems = [
   { icon: TechnologyIcon, labelKey: 'technology', to: '/technology', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
   {
     icon: CommunityIcon,
-    labelKey: 'disruptor',
-    to: '/community',
+    labelKey: 'creator',
+    to: '/creator',
     isImage: true,
     iconImgClass: 'app-sidebar-icon-img--disruptor',
   },

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
@@ -52,6 +52,26 @@ const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const AuctionsPage = lazy(() => import('./pages/AuctionsPage'));
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
 
+function RedirectLegacyCocreationAuction() {
+  const { auctionId } = useParams();
+  return <Navigate to={`/technology/auction/${auctionId}`} replace />;
+}
+
+function RedirectLegacyCocreationAnalytics() {
+  const { id } = useParams();
+  return <Navigate to={`/technology/${id}/analytics`} replace />;
+}
+
+function RedirectLegacyCommunityAuction() {
+  const { auctionId } = useParams();
+  return <Navigate to={`/creator-auction/${auctionId}`} replace />;
+}
+
+function RedirectLegacySoftwareAuction() {
+  const { auctionId } = useParams();
+  return <Navigate to={`/technology/auction/${auctionId}`} replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -97,12 +117,17 @@ export default function App() {
             />
 
             <Route
-              path="/community-auction/:auctionId"
+              path="/creator-auction/:auctionId"
               element={
                 <ProfileGuard>
                   <CommunityAuctionPage />
                 </ProfileGuard>
               }
+            />
+
+            <Route
+              path="/community-auction/:auctionId"
+              element={<RedirectLegacyCommunityAuction />}
             />
 
             <Route
@@ -192,9 +217,9 @@ export default function App() {
               }
             />
 
-            {/* Community */}
+            {/* Creator */}
             <Route
-              path="/community"
+              path="/creator"
               element={
                 <Suspense fallback={<div className="p-6">Loading...</div>}>
                   <ProfileGuard>
@@ -203,6 +228,10 @@ export default function App() {
                 </Suspense>
               }
             />
+
+            {/* Legacy Community / Disruptor URLs → Creator */}
+            <Route path="/community" element={<Navigate to="/creator" replace />} />
+            <Route path="/disruptors" element={<Navigate to="/auctions" replace />} />
 
             {/* Domains */}
             <Route
@@ -252,7 +281,16 @@ export default function App() {
 
             <Route
               path="/technology/auction/:auctionId"
-              element={<SoftwareAuctionPage />}
+              element={
+                <ProfileGuard>
+                  <SoftwareAuctionPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/software-auction/:auctionId"
+              element={<RedirectLegacySoftwareAuction />}
             />
 
             <Route
@@ -272,6 +310,12 @@ export default function App() {
                 </ProfileGuard>
               }
             />
+
+            {/* Legacy CoCreation URLs → Technology */}
+            <Route path="/cocreation" element={<Navigate to="/technology" replace />} />
+            <Route path="/cocreation/dashboard" element={<Navigate to="/technology/dashboard" replace />} />
+            <Route path="/cocreation/auction/:auctionId" element={<RedirectLegacyCocreationAuction />} />
+            <Route path="/cocreation/:id/analytics" element={<RedirectLegacyCocreationAnalytics />} />
 
             {/* Notifications */}
             <Route

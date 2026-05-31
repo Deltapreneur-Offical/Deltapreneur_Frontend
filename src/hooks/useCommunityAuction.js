@@ -3,37 +3,123 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { communityAuctionAPI } from '../api/services';
 import { API_ORIGIN } from '../config/urls';
+import { resolveAuctionEndTime } from '../utils/auctionDate';
+import { resolveAuctionBidLimits } from '../utils/auctionBidLimits';
+
+const toNum = (value, fallback = 0) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const withUtcIfNeeded = (value) => {
+  if (!value || typeof value !== 'string') return value ?? null;
+  return value.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(value) ? value : `${value}Z`;
+};
+
+const normalizeBid = (bid) => ({
+  ...bid,
+  amount: toNum(bid?.amount, 0),
+  bidderName: bid?.bidderName ?? bid?.bidder_name ?? '',
+  bidTime: withUtcIfNeeded(bid?.bidTime ?? bid?.bid_time ?? null),
+  isWinningBid: Boolean(bid?.isWinningBid ?? bid?.is_winning_bid ?? false),
+});
+
+const normalizeAuction = (a) => {
+  if (!a || typeof a !== 'object') return null;
+  const normalized = {
+    ...a,
+    minBidPrice: toNum(a.minBidPrice ?? a.min_bid_price, 0),
+    currentHighestBid: toNum(a.currentHighestBid ?? a.current_highest_bid, 0),
+    totalBids: toNum(a.totalBids ?? a.total_bids, 0),
+    startTime: withUtcIfNeeded(a.startTime ?? a.start_time ?? null),
+    endTime: withUtcIfNeeded(a.endTime ?? a.end_time ?? null),
+    originalEndTime: withUtcIfNeeded(a.originalEndTime ?? a.original_end_time ?? null),
+    expectedRate: a.expectedRate ?? a.expected_rate ?? null,
+    availableFrom: a.availableFrom ?? a.available_from ?? null,
+    currentWinnerName: a.currentWinnerName ?? a.current_winner_name ?? '',
+    currentWinnerId: a.currentWinnerId ?? a.current_winner_id ?? null,
+    winnerPaymentPaid: Boolean(a.winnerPaymentPaid ?? a.winner_payment_paid ?? false),
+    createdBy: a.createdBy ?? a.created_by ?? null,
+    community: a.community ?? null,
+  };
+  const resolvedEnd = resolveAuctionEndTime(normalized);
+  if (resolvedEnd) normalized.endTime = resolvedEnd;
+  return normalized;
+};
 
 export function useCommunityAuction(auctionId) {
-  const [auction, setAuction]       = useState(null);
-  const [bids, setBids]             = useState([]);
+  const [auction, setAuction] = useState(null);
+  const [bids, setBids] = useState([]);
   const [minNextBid, setMinNextBid] = useState(0);
-  const [connected, setConnected]   = useState(false);
-  const [loading, setLoading]       = useState(true);
+  const [maxBidPrice, setMaxBidPrice] = useState(0);
+  const [connected, setConnected] = useState(false);
+  const [wsState, setWsState] = useState('connecting');
+  const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const clientRef                   = useRef(null);
-  const handleUpdateRef             = useRef(null);
+  const clientRef = useRef(null);
+  const handleUpdateRef = useRef(null);
+
+  const fetchAuctionDetail = useCallback(async () => {
+    if (!auctionId) return;
+    const { data } = await communityAuctionAPI.get(auctionId);
+    const normalizedAuction = normalizeAuction({
+      ...data?.auction,
+      community: data?.auction?.community ?? data?.community ?? null,
+    });
+    const normalizedBids = Array.isArray(data?.bids) ? data.bids.map(normalizeBid) : [];
+    const limits = resolveAuctionBidLimits({
+      minNextBid: data?.minNextBid ?? data?.min_next_bid,
+      maxBidPrice: data?.maxBidPrice ?? data?.max_bid_price,
+      currentHighestBid: normalizedAuction?.currentHighestBid,
+      minBidPrice: normalizedAuction?.minBidPrice,
+    });
+    setAuction(normalizedAuction ? { ...normalizedAuction, ...limits } : normalizedAuction);
+    setBids(normalizedBids);
+    setMinNextBid(limits.minNextBid);
+    setMaxBidPrice(limits.maxBidPrice);
+  }, [auctionId]);
 
   const handleUpdate = useCallback((msg) => {
     setLastUpdate(msg);
 
     if (msg.type === 'BID_PLACED') {
+      setAuction(prev => {
+        if (!prev) return prev;
+        const next = {
+          ...prev,
+          currentHighestBid: toNum(msg.currentHighestBid, prev.currentHighestBid),
+          totalBids: toNum(msg.totalBids, prev.totalBids),
+          endTime: msg.endTime
+            ? (msg.endTime.endsWith('Z') ? msg.endTime : msg.endTime + 'Z')
+            : prev.endTime,
+          status: msg.status,
+          currentWinnerName: msg.currentWinnerName,
+        };
+        const limits = resolveAuctionBidLimits({
+          currentHighestBid: next.currentHighestBid,
+          minBidPrice: next.minBidPrice,
+        });
+        setMinNextBid(limits.minNextBid);
+        setMaxBidPrice(limits.maxBidPrice);
+        return { ...next, ...limits };
+      });
+      if (msg.latestBid) setBids(prev => [normalizeBid(msg.latestBid), ...prev]);
+    } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
       setAuction(prev => prev ? {
         ...prev,
-        currentHighestBid: msg.currentHighestBid,
-        totalBids:         msg.totalBids,
-        endTime:           msg.endTime
-          ? (msg.endTime.endsWith('Z') ? msg.endTime : msg.endTime + 'Z')
-          : prev.endTime,
-        status:            msg.status,
-        currentWinnerName: msg.currentWinnerName,
+        status: msg.status,
+        currentHighestBid: toNum(msg.currentHighestBid, prev.currentHighestBid),
+        currentWinnerName: msg.currentWinnerName ?? prev.currentWinnerName,
+        winnerPaymentPaid: Boolean(msg.winnerPaymentPaid ?? prev.winnerPaymentPaid),
       } : prev);
-      setMinNextBid(msg.currentHighestBid * 1.05);
-      if (msg.latestBid) {
-        setBids(prev => [msg.latestBid, ...prev]);
-      }
-    } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
-      setAuction(prev => prev ? { ...prev, status: msg.status } : prev);
+      fetchAuctionDetail().catch(() => {});
+    } else if (msg.type === 'PAYMENT_COMPLETED') {
+      setAuction(prev => prev ? {
+        ...prev,
+        status: msg.status ?? 'COMPLETED',
+        winnerPaymentPaid: true,
+      } : prev);
+      fetchAuctionDetail().catch(() => {});
     } else if (msg.type === 'AUCTION_EXTENDED') {
       if (msg.endTime) {
         setAuction(prev => prev ? {
@@ -45,35 +131,32 @@ export function useCommunityAuction(auctionId) {
     } else if (msg.type === 'AUCTION_STARTED') {
       setAuction(prev => prev ? { ...prev, status: 'ACTIVE' } : prev);
     }
-  }, []);
+  }, [fetchAuctionDetail]);
 
   handleUpdateRef.current = handleUpdate;
 
-  // Initial load
   useEffect(() => {
     if (!auctionId) return;
     setLoading(true);
-    communityAuctionAPI.get(auctionId)
-      .then(({ data }) => {
-        const a = data.auction;
-        if (a?.endTime && !a.endTime.endsWith('Z')) a.endTime = a.endTime + 'Z';
-        setAuction(a);
-        setBids(data.bids || []);
-        setMinNextBid(data.minNextBid || 0);
-      })
+    fetchAuctionDetail()
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [auctionId]);
+  }, [auctionId, fetchAuctionDetail]);
 
-  // WebSocket — subscribes to community auction topic
   useEffect(() => {
-    if (!auctionId) return;
+    if (!auctionId) return undefined;
+
+    setWsState('connecting');
+    setConnected(false);
 
     const client = new Client({
       webSocketFactory: () => new SockJS(`${API_ORIGIN.replace(/\/$/, '')}/ws`),
       reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
       onConnect: () => {
         setConnected(true);
+        setWsState('live');
         client.subscribe(`/topic/community-auction/${auctionId}`, (frame) => {
           try {
             const msg = JSON.parse(frame.body);
@@ -83,8 +166,15 @@ export function useCommunityAuction(auctionId) {
           }
         });
       },
-      onDisconnect: () => setConnected(false),
-      onStompError: () => setConnected(false),
+      onDisconnect: () => {
+        setConnected(false);
+        setWsState('reconnecting');
+      },
+      onStompError: (frame) => {
+        console.error('STOMP error:', frame);
+        setConnected(false);
+        setWsState('reconnecting');
+      },
     });
 
     client.activate();
@@ -93,12 +183,15 @@ export function useCommunityAuction(auctionId) {
     return () => {
       client.deactivate();
       setConnected(false);
+      setWsState('connecting');
     };
   }, [auctionId]);
 
   const placeBid = useCallback(async (amount) => {
-    return communityAuctionAPI.placeBid(auctionId, amount);
-  }, [auctionId]);
+    const res = await communityAuctionAPI.placeBid(auctionId, amount);
+    await fetchAuctionDetail();
+    return res;
+  }, [auctionId, fetchAuctionDetail]);
 
-  return { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid };
+  return { auction, bids, minNextBid, maxBidPrice, connected, wsState, loading, lastUpdate, placeBid, refresh: fetchAuctionDetail };
 }

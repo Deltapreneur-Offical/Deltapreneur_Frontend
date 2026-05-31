@@ -5,69 +5,30 @@ import { useVentureAuction } from '../hooks/useVentureAuction';
 import { ventureAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-
-const parseAuctionDate = (value) => {
-  if (!value) return null;
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-  if (typeof value === 'number') {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    const hasTimezone = /([zZ]|[+\-]\d{2}:\d{2})$/.test(trimmed);
-    const normalized = hasTimezone ? trimmed : `${trimmed}Z`;
-    const d = new Date(normalized);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  return null;
-};
-
-const addDurationToDate = (startDate, duration) => {
-  if (!startDate || !(startDate instanceof Date) || Number.isNaN(startDate.getTime())) return null;
-  const key = String(duration || '').toUpperCase();
-  const byHours = {
-    ONE_HOUR: 1,
-    SIX_HOURS: 6,
-    TWELVE_HOURS: 12,
-  };
-  const byDays = {
-    ONE_DAY: 1,
-    THREE_DAYS: 3,
-    SEVEN_DAYS: 7,
-    FIFTEEN_DAYS: 15,
-    THIRTY_DAYS: 30,
-  };
-  if (byHours[key]) return new Date(startDate.getTime() + byHours[key] * 60 * 60 * 1000);
-  if (byDays[key]) return new Date(startDate.getTime() + byDays[key] * 24 * 60 * 60 * 1000);
-  return null;
-};
+import {
+  formatAuctionDate,
+  formatAuctionDateTime,
+  formatAuctionTime,
+  formatCountdown,
+  resolveAuctionEndTime,
+} from '../utils/auctionDate';
+import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import { pickMediaUrl } from '../utils/mediaUrl';
 
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
   const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
-    const end = parseAuctionDate(endTime);
-    if (!end) {
+    if (!endTime) {
       setTimeLeft('Awaiting schedule');
       setIsUrgent(false);
       return;
     }
     const tick = () => {
-      const diff = end - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setIsUrgent(diff < 300000);
-      if (d > 0)      setTimeLeft(`${d}d ${h}h ${m}m`);
-      else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
-      else            setTimeLeft(`${m}m ${s}s`);
+      const next = formatCountdown(endTime);
+      setTimeLeft(next.timeLeft);
+      setIsUrgent(next.isUrgent);
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -81,7 +42,7 @@ export default function VentureAuctionPage() {
   const { auctionId }  = useParams();
   const { user }       = useAuth();
   const navigate       = useNavigate();
-  const { auction, bids, minNextBid, connected, loading, lastUpdate, placeBid }
+  const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid }
                        = useVentureAuction(auctionId);
 
   const [bidAmount, setBidAmount]           = useState('');
@@ -95,40 +56,33 @@ export default function VentureAuctionPage() {
   const [payingParticipation, setPayingParticipation] = useState(false);
   const bidListRef = useRef(null);
 
-  const isOwner  = auction?.venture?.listedBy?.id === user?.id;
+  const isOwner = resolveAuctionLister(
+    isVentureAuctionLister(auction, user?.id),
+    participation,
+  );
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isEnded  = auction?.status === 'ENDED'  || auction?.status === 'UNSOLD';
-  const resolvedEndTime = (() => {
-    const direct = parseAuctionDate(auction?.endTime);
-    if (direct) return direct.toISOString();
-    const original = parseAuctionDate(auction?.originalEndTime);
-    if (original) return original.toISOString();
-    const start = parseAuctionDate(auction?.startTime);
-    const fromDuration = addDurationToDate(start, auction?.duration);
-    if (fromDuration) return fromDuration.toISOString();
-    const created = parseAuctionDate(auction?.createdAt ?? auction?.created_at);
-    const fromCreated = addDurationToDate(created, auction?.duration);
-    if (fromCreated) return fromCreated.toISOString();
-    return null;
-  })();
+  const resolvedEndTime = resolveAuctionEndTime(auction);
   const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
 
   useEffect(() => {
-    if (!auction?.id || !user || isOwner || !isActive) {
-      setParticipation({ loading: false, paid: true, fee: 0 });
+    if (!auction?.id || !user || !isActive) {
+      setParticipation({ loading: false, paid: false, fee: 0, isOwner: false });
       return;
     }
     setParticipation((p) => ({ ...p, loading: true }));
     ventureAuctionAPI.participationStatus(auction.id)
       .then(({ data }) => {
+        const body = data?.data ?? data;
         setParticipation({
           loading: false,
-          paid: Boolean(data?.paid),
-          fee: Number(data?.participationFeeInr || 0),
+          paid: Boolean(body?.paid),
+          fee: Number(body?.participationFeeInr || 0),
+          isOwner: Boolean(body?.isOwner),
         });
       })
-      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
-  }, [auction?.id, user?.id, isOwner, isActive]);
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0, isOwner: false }));
+  }, [auction?.id, user?.id, isActive]);
 
   const handlePayParticipation = async () => {
     if (!auction?.id || !user) return;
@@ -184,8 +138,9 @@ export default function VentureAuctionPage() {
       return;
     }
     const amount = parseFloat(bidAmount);
-    if (!amount || amount < minNextBid) {
-      setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN')}`);
+    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    if (bidErrorMsg) {
+      setBidError(bidErrorMsg);
       return;
     }
     setBidLoading(true); setBidError(''); setBidSuccess('');
@@ -214,6 +169,7 @@ export default function VentureAuctionPage() {
     || venture?.listedBy?.email
     || 'Venture Owner';
   const ownerInitial = (ownerName || 'V').trim().charAt(0).toUpperCase();
+  const brandImage = pickMediaUrl(brand);
 
   return (
     <AppLayout>
@@ -264,9 +220,17 @@ export default function VentureAuctionPage() {
 
         <div className="mb-4 p-5 bg-white border border-gray-200 rounded-[14px]">
           <div className="flex items-start gap-4">
+            {brandImage ? (
+              <img
+                src={brandImage}
+                alt={brand.brandName || 'Venture'}
+                className="w-14 h-14 rounded-full object-cover border border-indigo-200 flex-shrink-0"
+              />
+            ) : (
             <div className="w-14 h-14 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xl flex items-center justify-center">
               {ownerInitial}
             </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-display text-2xl font-semibold text-gray-900 m-0 truncate">
@@ -326,7 +290,7 @@ export default function VentureAuctionPage() {
               </div>
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
-                  Next minimum bid: <strong>₹{Number(minNextBid).toLocaleString('en-IN')}</strong>
+                  Next bid range: <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
                   <span className="text-gray-500 ml-2">(5% above current)</span>
                 </div>
               )}
@@ -452,6 +416,7 @@ export default function VentureAuctionPage() {
                     }}
                     placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
                     min={minNextBid}
+                    max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
                     onKeyDown={(e) => e.key === 'Enter' && handleBid()}
                   />
@@ -496,28 +461,15 @@ export default function VentureAuctionPage() {
                 <InfoRow label="Duration" value={auction.duration?.replace(/_/g, ' ')} />
                 <InfoRow
                   label="Started"
-                  value={
-                    auction.startTime
-                      ? parseAuctionDate(auction.startTime)?.toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        }) || '—'
-                      : '—'
-                  }
+                  value={formatAuctionDate(auction.startTime, {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })}
                 />
                 <InfoRow
                   label="Ends"
-                  value={
-                    auction.endTime
-                      ? parseAuctionDate(auction.endTime)?.toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }) || '—'
-                      : '—'
-                  }
+                  value={formatAuctionDateTime(auction.endTime, {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                  })}
                 />
                 {auction.status === 'EXTENDED' && (
                   <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
@@ -546,10 +498,9 @@ export default function VentureAuctionPage() {
 }
 
 function BidRow({ bid, isLatest, isWinner }) {
-  const bidTimeStr = bid.bidTime
-    ? new Date(bid.bidTime.endsWith('Z') ? bid.bidTime : bid.bidTime + 'Z')
-        .toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    : '';
+  const bidTimeStr = formatAuctionTime(bid.bidTime, {
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }, '');
 
   return (
     <div className={`flex items-center gap-4 px-5 py-3 transition-all ${

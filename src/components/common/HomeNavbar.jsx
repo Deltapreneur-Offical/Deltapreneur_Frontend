@@ -157,9 +157,10 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 open={openDropdown === 'auctions'}
                 onToggle={() => toggleDesktopDropdown('auctions')}
               >
-                <DropdownLink onClick={() => go('/auctions')}>{t('auctionDomain')}</DropdownLink>
-                <DropdownLink onClick={() => go('/venture-auction')}>{t('auctionVenture')}</DropdownLink>
-                <DropdownLink onClick={() => go('/disruptors')}>{t('auctionDisruptor')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</DropdownLink>
               </NavDropdown>
 
               <NavDropdown
@@ -168,16 +169,18 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => toggleDesktopDropdown('technology')}
               >
                 <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
+                <DropdownLink onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('bidTechnology')}</DropdownLink>
               </NavDropdown>
 
               <NavDropdown
                 label={t('disruptors')}
-                open={openDropdown === 'disruptors'}
-                onToggle={() => toggleDesktopDropdown('disruptors')}
+                open={openDropdown === 'creators'}
+                onToggle={() => toggleDesktopDropdown('creators')}
               >
                 <DropdownLink onClick={() => go('/join-form')}>{t('beTheDisruptors')}</DropdownLink>
-                <DropdownLink onClick={() => go('/community')}>{t('exploreDisruptors')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions')}>{t('bidDisruptors')}</DropdownLink>
+                <DropdownLink onClick={() => go('/creator')}>{t('exploreDisruptors')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions?section=community')}>{t('bidDisruptors')}</DropdownLink>
               </NavDropdown>
             </div>
           </div>
@@ -258,9 +261,10 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 open={mobileAccordion === 'auctions'}
                 onToggle={() => setMobileAccordion((v) => (v === 'auctions' ? null : 'auctions'))}
               >
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('auctionDomain')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/venture-auction')}>{t('auctionVenture')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/disruptors')}>{t('auctionDisruptor')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -269,16 +273,18 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>{t('exploreTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=technology')}>{t('bidTechnology')}</button>
               </MobileAccordion>
 
               <MobileAccordion
                 title={t('disruptors')}
-                open={mobileAccordion === 'disruptors'}
-                onToggle={() => setMobileAccordion((v) => (v === 'disruptors' ? null : 'disruptors'))}
+                open={mobileAccordion === 'creators'}
+                onToggle={() => setMobileAccordion((v) => (v === 'creators' ? null : 'creators'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/join-form')}>{t('beTheDisruptors')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/community')}>{t('exploreDisruptors')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('bidDisruptors')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/creator')}>{t('exploreDisruptors')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=community')}>{t('bidDisruptors')}</button>
               </MobileAccordion>
             </div>
 

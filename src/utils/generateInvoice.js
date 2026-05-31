@@ -6,6 +6,8 @@
  * No external dependencies required.
  */
 
+import { formatAuctionDate } from './auctionDate';
+
 function formatINR(amount) {
     return '₹' + Number(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
   }
@@ -38,7 +40,7 @@ function formatINR(amount) {
     /* ── Derive fields ─────────────────────────────────────── */
     const invNo   = invoiceNumber(item.id);
     const invDate = item.createdAt
-      ? new Date(item.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
+      ? formatAuctionDate(item.createdAt, { day: '2-digit', month: 'long', year: 'numeric' }, today())
       : today();
   
     let productName, productDesc, baseAmount, extraLines = [];

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { domainAPI, cocreationAPI } from '../api/services';
+import { domainAPI, technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -32,7 +32,7 @@ export default function PurchasesPage() {
     setLoading(true);
     Promise.all([
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
-      cocreationAPI.getMyPurchases().catch(() => ({ data: [] })),
+      technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
     ]).then(([d, s]) => {
       setDomains(extractDomainList(d.data));
       setSwPurchases(asArray(s.data));
@@ -295,7 +295,7 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   const handlePay = async () => {
     setLoading(true); setError('');
     try {
-      const { data: orderData } = await cocreationAPI.payCoBrotherHelp(purchase.id, {
+      const { data: orderData } = await technologyAPI.payCoBrotherHelp(purchase.id, {
         ...buildOrderCurrencyPayload(currency),
       });
       openRazorpayCheckout({
@@ -305,7 +305,7 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
         themeColor: '#7c3aed',
         onSuccess: async (response) => {
           try {
-            await cocreationAPI.verifyCoBrotherHelp(purchase.id, {
+            await technologyAPI.verifyCoBrotherHelp(purchase.id, {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId:   response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,

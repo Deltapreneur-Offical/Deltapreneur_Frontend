@@ -11,7 +11,7 @@ const sidebarItems = [
   { icon: Store, label: 'Storefront', to: '/storefront' },
   { icon: Handshake, label: 'Ventures', to: '/ventures' },
   { icon: Zap, label: 'Technology', to: '/technology' },
-  { icon: Users, label: 'Creator', to: '/community' },
+  { icon: Users, label: 'Creator', to: '/creator' },
   { icon: Gavel, label: 'Auctions', to: '/auctions' },
   { icon: ShoppingBag, label: 'Purchases', to: '/purchases' },
 ];

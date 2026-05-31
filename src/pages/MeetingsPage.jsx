@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
+import { formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 
 /**
  * MeetingsPage — Two independent sections:
@@ -353,7 +354,7 @@ function ListerMeetingCard({ meeting, actionLoading, onAction, navigate }) {
       {/* View auction link */}
       {meeting.auction?.id && (
         <button
-          onClick={() => navigate(`/community-auction/${meeting.auction.id}`)}
+          onClick={() => navigate(`/creator-auction/${meeting.auction.id}`)}
           className="text-xs text-indigo-500 hover:text-indigo-700 font-semibold mt-1 block">
           View Auction ↗
         </button>
@@ -476,7 +477,7 @@ function RequesterMeetingCard({ meeting, actionLoading, onAction, navigate }) {
       {/* View auction */}
       {meeting.auction?.id && (
         <button
-          onClick={() => navigate(`/community-auction/${meeting.auction.id}`)}
+          onClick={() => navigate(`/creator-auction/${meeting.auction.id}`)}
           className="text-xs text-indigo-500 hover:text-indigo-700 font-semibold mt-1 block">
           View Auction ↗
         </button>
@@ -577,7 +578,7 @@ function EmptyState({ navigate }) {
       <div className="text-5xl mb-4">📅</div>
       <h3 className="font-display text-xl font-bold text-gray-900 mb-2">No meetings yet</h3>
       <p className="text-gray-500 text-sm mb-6">
-        Browse active community profile auctions to schedule a Google Meet session.
+        Browse active creator profile auctions to schedule a Google Meet session.
       </p>
       <button className="btn-glow" onClick={() => navigate('/auctions')}>
         Browse Auctions →
@@ -587,19 +588,14 @@ function EmptyState({ navigate }) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function normalizeDate(dt) {
-  if (!dt) return dt;
-  return dt.endsWith('Z') ? dt : dt + 'Z';
-}
-
 function isFuture(dt) {
-  if (!dt) return false;
-  return new Date(normalizeDate(dt)) > Date.now();
+  const d = parseAuctionDate(dt);
+  if (!d) return false;
+  return d.getTime() > Date.now();
 }
 
 function formatDateTime(dt) {
-  if (!dt) return '—';
-  return new Date(normalizeDate(dt)).toLocaleString('en-IN', {
+  return formatAuctionDateTime(dt, {
     weekday: 'short', day: 'numeric', month: 'short',
     year: 'numeric', hour: '2-digit', minute: '2-digit',
   });

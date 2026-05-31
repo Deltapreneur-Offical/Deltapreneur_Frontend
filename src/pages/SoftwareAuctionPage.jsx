@@ -7,24 +7,24 @@ import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import { Gavel, Clock, Wifi, WifiOff, TrendingUp, Code, Wrench, FileText } from 'lucide-react';
+import { formatAuctionDateTime, formatCountdown, resolveAuctionEndTime } from '../utils/auctionDate';
+import { isSoftwareAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
+import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 
 function Countdown({ endTime, status }) {
   const [timeLeft, setTimeLeft] = useState('');
+  const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
     if (!endTime || (status !== 'ACTIVE' && status !== 'EXTENDED')) {
       setTimeLeft('');
+      setIsUrgent(false);
       return;
     }
     const tick = () => {
-      const diff = new Date(endTime) - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); return; }
-      const h = Math.floor(diff / 3_600_000);
-      const m = Math.floor((diff % 3_600_000) / 60_000);
-      const s = Math.floor((diff % 60_000) / 1_000);
-      setTimeLeft(h > 0
-        ? `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`
-        : `${m}m ${String(s).padStart(2,'0')}s`);
+      const next = formatCountdown(endTime);
+      setTimeLeft(next.timeLeft === 'Awaiting schedule' ? '' : next.timeLeft);
+      setIsUrgent(next.isUrgent);
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -32,7 +32,6 @@ function Countdown({ endTime, status }) {
   }, [endTime, status]);
 
   if (!timeLeft) return null;
-  const isUrgent = timeLeft.startsWith('0m') || timeLeft.startsWith('1m') || timeLeft.startsWith('2m');
   return (
     <span style={{ color: isUrgent ? '#c86e6e' : '#6ec896', fontFamily: 'monospace',
                    fontWeight: 700, fontSize: '1.1rem' }}>
@@ -55,8 +54,9 @@ export default function SoftwareAuctionPage() {
   const { auctionId }                       = useParams();
   const { user }                            = useAuth();
   const navigate                            = useNavigate();
-  const { auction, bids, minNextBid,
-          connected, loading, placeBid }    = useSoftwareAuction(Number(auctionId));
+  const { auction, bids, minNextBid, maxBidPrice,
+          wsState, loading, loadError, placeBid } = useSoftwareAuction(auctionId);
+  const resolvedEndTime = resolveAuctionEndTime(auction);
 
   const [bidAmount, setBidAmount]           = useState('');
   const [bidError, setBidError]             = useState('');
@@ -67,33 +67,39 @@ export default function SoftwareAuctionPage() {
   const [participationError, setParticipationError] = useState('');
 
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
-  const isOwner  = user && auction?.software?.listedBy?.id === user.id;
+  const isOwner = resolveAuctionLister(
+    isSoftwareAuctionLister(auction, user?.id),
+    participation,
+  );
   const biddingBlocked = REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !auction?.software?.verified;
   const statusStyle = STATUS_STYLES[auction?.status] || STATUS_STYLES.DRAFT;
 
   useEffect(() => {
-    if (!auction?.id || !user || isOwner || !isActive) {
-      setParticipation({ loading: false, paid: true, fee: 0 });
+    if (!auction?.id || !user || !isActive) {
+      setParticipation({ loading: false, paid: false, fee: 0, isOwner: false });
       return;
     }
     setParticipation((p) => ({ ...p, loading: true }));
     softwareAuctionAPI.participationStatus(auction.id)
       .then(({ data }) => {
+        const status = data?.data ?? data;
         setParticipation({
           loading: false,
-          paid: Boolean(data?.paid),
-          fee: Number(data?.participationFeeInr || 0),
+          paid: Boolean(status?.paid),
+          fee: Number(status?.participationFeeInr ?? status?.participation_fee_inr ?? 0),
+          isOwner: Boolean(status?.isOwner),
         });
       })
-      .catch(() => setParticipation({ loading: false, paid: false, fee: 0 }));
-  }, [auction?.id, user?.id, isOwner, isActive]);
+      .catch(() => setParticipation({ loading: false, paid: false, fee: 0, isOwner: false }));
+  }, [auction?.id, user?.id, isActive]);
 
   const handlePayParticipation = async () => {
     if (!auction?.id || !user) return;
     setPayingParticipation(true);
     setParticipationError('');
     try {
-      const { data: orderData } = await softwareAuctionAPI.participationCreateOrder(auction.id);
+      const { data: res } = await softwareAuctionAPI.participationCreateOrder(auction.id);
+      const orderData = res?.data ?? res;
       openRazorpayCheckout({
         orderData,
         user,
@@ -105,7 +111,14 @@ export default function SoftwareAuctionPage() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
             });
-            setParticipation((p) => ({ ...p, paid: true }));
+            const { data: statusRes } = await softwareAuctionAPI.participationStatus(auction.id);
+            const status = statusRes?.data ?? statusRes;
+            setParticipation({
+              loading: false,
+              paid: Boolean(status?.paid ?? status?.canBid ?? true),
+              fee: Number(status?.participationFeeInr ?? status?.participation_fee_inr ?? participation.fee),
+            });
+            setBidError('');
           } catch {
             setParticipationError('Payment verification failed. Please retry.');
           } finally {
@@ -128,8 +141,9 @@ export default function SoftwareAuctionPage() {
     if (!participation.paid) { setBidError('Please pay participation fee first'); return; }
     const amt = parseFloat(bidAmount);
     if (isNaN(amt) || amt <= 0) { setBidError('Enter a valid amount'); return; }
-    if (amt < minNextBid) {
-      setBidError(`Minimum bid is ₹${Number(minNextBid).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);
+    const bidErrorMsg = validateBidAmount(amt, { minNextBid, maxBidPrice });
+    if (bidErrorMsg) {
+      setBidError(bidErrorMsg);
       return;
     }
     setBidError(''); setBidSuccess('');
@@ -140,7 +154,13 @@ export default function SoftwareAuctionPage() {
       setBidAmount('');
       setTimeout(() => setBidSuccess(''), 4000);
     } catch (e) {
-      setBidError(e.response?.data?.error || 'Failed to place bid');
+      const data = e.response?.data;
+      setBidError(
+        data?.error
+        || data?.message
+        || (typeof data?.detail === 'string' ? data.detail : null)
+        || 'Failed to place bid',
+      );
     } finally {
       setPlacing(false);
     }
@@ -158,6 +178,9 @@ export default function SoftwareAuctionPage() {
     <AppLayout>
       <div className="text-center py-24">
         <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">Auction not found</h2>
+        {loadError && (
+          <p className="text-red-600 text-sm mt-2 max-w-md mx-auto">{loadError}</p>
+        )}
         <button className="btn-ghost mt-4" onClick={() => navigate('/technology')}>← Back to Technology</button>
       </div>
     </AppLayout>
@@ -207,13 +230,19 @@ export default function SoftwareAuctionPage() {
                                  padding: '0.2rem 0.6rem', borderRadius: 4 }}>
                     {statusStyle.label}
                   </span>
-                  {!connected && isActive && (
+                  {wsState === 'reconnecting' && isActive && (
                     <span style={{ fontSize: '0.72rem', color: '#c86e6e',
                                    display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <WifiOff size={11} /> Reconnecting…
+                      <WifiOff size={11} /> Live updates paused
                     </span>
                   )}
-                  {connected && isActive && (
+                  {wsState === 'connecting' && isActive && (
+                    <span style={{ fontSize: '0.72rem', color: '#c8a96e',
+                                   display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <Wifi size={11} /> Connecting…
+                    </span>
+                  )}
+                  {wsState === 'live' && isActive && (
                     <span style={{ fontSize: '0.72rem', color: '#6ec896',
                                    display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <Wifi size={11} /> Live
@@ -231,7 +260,7 @@ export default function SoftwareAuctionPage() {
                               marginBottom: '0.3rem' }}>
                   <Clock size={11} style={{ marginRight: 4 }} />Time Left
                 </div>
-                <Countdown endTime={auction.endTime} status={auction.status} />
+                <Countdown endTime={resolvedEndTime} status={auction.status} />
                 {auction.status === 'EXTENDED' && (
                   <div style={{ fontSize: '0.72rem', color: '#c8a96e', marginTop: '0.25rem' }}>
                     ⚡ Extended (anti-snipe)
@@ -421,11 +450,10 @@ export default function SoftwareAuctionPage() {
                           ₹{Number(bid.amount).toLocaleString('en-IN')}
                         </div>
                         <div style={{ fontSize: '0.72rem', color: '#9ca3af' }}>
-                          {bid.bidTime
-                            ? new Date(bid.bidTime.endsWith('Z') ? bid.bidTime : bid.bidTime + 'Z')
-                                .toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit',
-                                                           day: 'numeric', month: 'short' })
-                            : ''}
+                          {formatAuctionDateTime(bid.bidTime, {
+                            hour: '2-digit', minute: '2-digit',
+                            day: 'numeric', month: 'short',
+                          }, '')}
                         </div>
                       </div>
                     </div>
@@ -492,7 +520,7 @@ export default function SoftwareAuctionPage() {
                   Place a Bid
                 </h3>
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1.25rem' }}>
-                  Minimum: ₹{Number(minNextBid).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                  Allowed range: {formatBidRangeLabel({ minNextBid, maxBidPrice })}
                 </p>
                 {biddingBlocked ? (
                   <div style={{ padding: '0.75rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a', fontSize: '0.82rem', color: '#8a6d1f' }}>

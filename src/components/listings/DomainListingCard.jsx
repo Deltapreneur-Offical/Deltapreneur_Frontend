@@ -5,7 +5,6 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
-import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
 import '../../styles/domain-listing-cards.css';
@@ -41,6 +40,8 @@ export default function DomainListingCard({
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed';
+  const needsVerification = !domain.verified;
+  const purchaseBlocked = needsVerification;
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -101,11 +102,18 @@ export default function DomainListingCard({
             {isAuction && (
               <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
             )}
+            {needsVerification && (
+              <span className="domain-listing-card__chip domain-listing-card__chip--pending">
+                Verification pending
+              </span>
+            )}
           </div>
         </div>
         <div className="domain-listing-card__body">
-          {domain.verified && (
+          {domain.verified ? (
             <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
+          ) : (
+            <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
           )}
           {showPriceBox ? (
             <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
@@ -180,12 +188,19 @@ export default function DomainListingCard({
           {isAuction && (
             <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
           )}
+          {needsVerification && (
+            <span className="domain-listing-card__chip domain-listing-card__chip--pending">
+              Verification pending
+            </span>
+          )}
         </div>
       </div>
 
       <div className="domain-listing-card__body">
-        {domain.verified && (
+        {domain.verified ? (
           <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
+        ) : (
+          <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
         )}
         {showPriceBox ? (
           <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
@@ -236,7 +251,7 @@ export default function DomainListingCard({
               </div>
             </>
           ) : isAuction ? (
-            REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !domain.verified ? (
+            purchaseBlocked ? (
               <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
                 Verification pending
               </span>
@@ -246,7 +261,7 @@ export default function DomainListingCard({
             </button>
             )
           ) : statusKey === 'AVAILABLE' ? (
-            REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !domain.verified ? (
+            purchaseBlocked ? (
               <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
                 Verification pending
               </span>

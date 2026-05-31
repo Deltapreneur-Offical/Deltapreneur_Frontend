@@ -14,6 +14,7 @@ import {
 } from '../utils/auctionDate';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 import { pickMediaUrl } from '../utils/mediaUrl';
+import { isVentureAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
@@ -61,6 +62,7 @@ export default function VentureAuctionPage() {
     participation,
   );
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+  const isDraft  = auction?.status === 'DRAFT';
   const isEnded  = auction?.status === 'ENDED'  || auction?.status === 'UNSOLD';
   const resolvedEndTime = resolveAuctionEndTime(auction);
   const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
@@ -363,6 +365,18 @@ export default function VentureAuctionPage() {
           </div>
 
           <div className="sticky top-6 flex flex-col gap-4">
+            {isDraft && (
+              <div className="p-5 bg-amber-50 border border-amber-200 rounded-[14px] text-center">
+                <div className="text-[1.5rem] mb-2">📝</div>
+                <p className="font-semibold text-amber-800 mb-2">Auction not started yet</p>
+                <p className="text-gray-600 text-[0.875rem] m-0">
+                  {venture.verified || venture.gstinVerified
+                    ? 'This auction is awaiting activation by the owner.'
+                    : 'GSTIN verification is pending. Bidding opens after the venture owner completes verification.'}
+                </p>
+              </div>
+            )}
+
             {isActive && !isOwner && (
               <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">Place Your Bid</h3>

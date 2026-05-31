@@ -109,9 +109,14 @@ export default function AdminDashboardPage() {
     setLoading(true);
     fetchers[currentTab]()
       .then(({ data }) => {
-        const rows = extractAdminList(data);
+        let rows = extractAdminList(data);
+        if (currentTab === 'ventures') {
+          rows = rows.filter(
+            (v) => v.saleType !== 'AUCTION' && v.sale_type !== 'AUCTION',
+          );
+        }
         setData(rows);
-        setListCount(typeof data?.count === 'number' ? data.count : rows.length);
+        setListCount(rows.length);
       })
       .catch((e) => {
         setData([]);

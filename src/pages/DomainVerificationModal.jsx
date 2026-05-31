@@ -30,7 +30,7 @@ const ALL_METHODS = [
   },
 ];
 
-export default function DomainVerificationModal({ domain, onClose, onVerified }) {
+export default function DomainVerificationModal({ domain, onClose, onVerified, adminMode = false }) {
   const { t } = useTranslation();
   const [step, setStep]           = useState('choose');
   const [method, setMethod]       = useState(null);

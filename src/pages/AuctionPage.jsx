@@ -5,20 +5,15 @@ import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-import {
-  formatAuctionDate,
-  formatAuctionDateTime,
-  formatAuctionTime,
-  formatCountdown,
-  resolveAuctionEndTime,
-} from '../utils/auctionDate';
-import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
+import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctionTime, resolveAuctionEndTime } from '../utils/auctionDate';
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
 const FINAL_WINNER_STATUSES = new Set(['ENDED', 'PAYMENT_PENDING', 'COMPLETED']);
 
+// Countdown uses shared auctionDate helpers (handles +00:00 and missing endTime)
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
   const [isUrgent, setIsUrgent] = useState(false);
@@ -87,18 +82,52 @@ export default function AuctionPage() {
       return;
     }
     setParticipation((p) => ({ ...p, loading: true }));
+
+    const parseParticipation = (body) => ({
+      loading: false,
+      paid: Boolean(body?.paid),
+      fee: Number(
+        body?.participationFeeInr ??
+        body?.participation_fee_inr ??
+        0,
+      ),
+      isOwner: Boolean(body?.isOwner ?? body?.is_owner),
+      biddingBlocked: Boolean(body?.biddingBlocked ?? body?.bidding_blocked),
+      biddingBlockedReason:
+        body?.biddingBlockedReason ??
+        body?.bidding_blocked_reason ??
+        null,
+    });
+
     auctionAPI.participationStatus(auction.id)
       .then(({ data }) => {
         const body = data?.data ?? data;
-        setParticipation({
-          loading: false,
-          paid: Boolean(body?.paid),
-          fee: Number(body?.participationFeeInr || 0),
-          isOwner: Boolean(body?.isOwner),
-        });
+        setParticipation(parseParticipation(body));
       })
-      .catch(() => setParticipation({ loading: false, paid: false, fee: 0, isOwner: false }));
-  }, [auction?.id, user?.id, isActive]);
+      .catch(async () => {
+        try {
+          const { data } = await auctionAPI.getParticipationFees();
+          const fees = data?.data ?? data;
+          setParticipation({
+            loading: false,
+            paid: false,
+            fee: Number(fees?.domainParticipationFeeInr ?? fees?.domain_participation_fee_inr ?? 118),
+            isOwner: false,
+            biddingBlocked: biddingBlocked,
+            biddingBlockedReason: null,
+          });
+        } catch {
+          setParticipation({
+            loading: false,
+            paid: false,
+            fee: 118,
+            isOwner: false,
+            biddingBlocked: biddingBlocked,
+            biddingBlockedReason: null,
+          });
+        }
+      });
+  }, [auction?.id, user?.id, isActive, biddingBlocked]);
 
   const handlePayParticipation = async () => {
     if (!auction?.id || !user) return;
@@ -399,9 +428,10 @@ export default function AuctionPage() {
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
                   Place Your Bid
                 </h3>
-                {biddingBlocked ? (
+                {(biddingBlocked || participation.biddingBlocked) ? (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                    Bidding is unavailable until the domain owner completes verification.
+                    {participation.biddingBlockedReason ||
+                      'Bidding is unavailable until the domain owner completes verification.'}
                   </div>
                 ) : (
                 <>

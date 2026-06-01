@@ -110,7 +110,9 @@ export default function DomainsPage() {
     priceField:    'askingPrice',
     categoryField: 'pricingDemand',
     dateField:     'createdAt',
-  }, 20);
+  }, 20, {
+    getLikeCount: (item) => getLike(item.id).count,
+  });
 
   useEffect(() => {
   setLoading(true);
@@ -735,18 +737,42 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
   const [addons, setAddons]   = useState([]);
+  const [buyer, setBuyer] = useState({
+    buyerFullName: `${user?.firstname || user?.firstName || ''} ${user?.lastname || user?.lastName || ''}`.trim(),
+    buyerEmail: user?.email || '',
+    buyerPhone: (user?.phoneNumber || user?.phone || '').replace(/\D/g, '').slice(-10),
+  });
 
   const addonExtra  = addonTotal(addons);
   const domainPrice = Number(domain.askingPrice);
   const totalPrice  = domainPrice + addonExtra;
 
+  const handlePhoneChange = (e) => {
+    setBuyer(b => ({ ...b, buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }));
+  };
+
   const handleBuy = async () => {
+    if (!/^\d{10}$/.test(buyer.buyerPhone.trim())) {
+      setError('A valid 10-digit phone number is required.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       const { data: orderData } = await domainAPI.createOrder(domain.id, {
         services: addons,
+        ...buyer,
         ...buildOrderCurrencyPayload(currency),
       });
+      if (orderData?.contactOnly) {
+        onSuccess({
+          ...domain,
+          domainStatus: 'SOLD',
+          paymentStatus: orderData.paymentStatus || 'CONTACT_PENDING',
+          _addons: addons,
+        });
+        setLoading(false);
+        return;
+      }
       openRazorpayCheckout({
         orderData,
         user,
@@ -799,6 +825,44 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
 
         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800 leading-relaxed mb-4">
           ⏳ After payment, you will be updated within <strong>24 hours</strong> with transfer details.
+        </div>
+
+        <div className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-gray-500 font-medium">Full Name</label>
+            <input
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+              value={buyer.buyerFullName}
+              onChange={e => setBuyer(b => ({ ...b, buyerFullName: e.target.value }))}
+              placeholder="Your full name"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-gray-500 font-medium">Email</label>
+              <input
+                type="email"
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+                value={buyer.buyerEmail}
+                onChange={e => setBuyer(b => ({ ...b, buyerEmail: e.target.value }))}
+                placeholder="your@email.com"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-gray-500 font-medium">
+                Phone <span className="text-red-500">*</span>
+              </label>
+              <input
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+                value={buyer.buyerPhone}
+                onChange={handlePhoneChange}
+                placeholder="10-digit number"
+                maxLength={10}
+                inputMode="numeric"
+                required
+              />
+            </div>
+          </div>
         </div>
 
         {/* ── Add-on selector ── */}

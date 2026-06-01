@@ -256,9 +256,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
           {/* Best match */}
           {best && (
-            <div className={`mb-8 bg-white rounded-3xl p-8 shadow-xl border-2 transition-all ${
-              best.status === 'marketplace' ? 'border-indigo-400' :
-              best.status === 'available'   ? 'border-emerald-400' :
+            <div className={`domain-search-card domain-search-card--featured mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
+              best.status === 'marketplace' ? 'border-indigo-300 ring-1 ring-indigo-100' :
+              best.status === 'available'   ? 'border-emerald-300 ring-1 ring-emerald-50' :
               best.status === 'loading'     ? 'border-gray-200'   :
                                               'border-red-200'
             }`}>
@@ -291,11 +291,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           {others.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {others.map((item, i) => (
-                <div key={i} className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all ${
+                <div key={i} className={`domain-search-card bg-white border rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 ${
                   item.status === 'taken'       ? 'border-gray-100 opacity-60' :
                   item.status === 'error'       ? 'border-gray-100 opacity-60' :
-                  item.status === 'marketplace' ? 'border-indigo-200'          :
-                  item.status === 'available'   ? 'border-emerald-200'         :
+                  item.status === 'marketplace' ? 'border-indigo-200 ring-1 ring-indigo-50' :
+                  item.status === 'available'   ? 'border-emerald-200 ring-1 ring-emerald-50' :
                                                   'border-gray-200'
                 }`}>
                   <Badge status={item.status} />

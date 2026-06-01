@@ -3,6 +3,8 @@ import { lazy, Suspense } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
+import PageLoader from './components/common/PageLoader';
+import AppErrorBoundary from './components/common/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { CurrencyProvider } from './context/CurrencyContext';
@@ -10,40 +12,39 @@ import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import OAuthCallbackPage from './pages/OAuthCallbackPage';
-import CompleteProfilePage from './pages/CompleteProfilePage';
-import PasswordSecurityPage from './pages/PasswordSecurityPage';
-import DashboardPage from './pages/DashboardPage';
-import NewVenturePage from './pages/NewVenturePage';
-import EditVenturePage from './pages/EditVenturePage';
-import VentureDashboardPage from './pages/VentureDashboardPage';
-import VentureAnalyticsPage from './pages/VentureAnalyticsPage';
-import ProfileAnalyticsPage from './pages/ProfileAnalyticsPage';
-import DomainsDashboardPage from './pages/DomainsDashboardPage';
-import CoCreationDashboardPage from './pages/CoCreationDashboardPage';
-import CoCreationAnalyticsPage from './pages/CoCreationAnalyticsPage';
-import NotificationsPage from './pages/NotificationsPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import CoBrotherDashboardPage from './pages/CoBrotherDashboardPage';
-import FeeRequestsPage from './pages/FeeRequestsPage';
-import AuctionPage from './pages/AuctionPage';
-import VentureAuctionPage from './pages/VentureAuctionPage';
-import CommunityAuctionPage from './pages/CommunityAuctionPage';
-import MeetingsPage from './pages/MeetingsPage';
 import Home from './pages/Home';
-import JoinForm from './pages/JoinForm';
-import ContactPage from './pages/ContactPage';
-import SoftwareAuctionPage from './pages/SoftwareAuctionPage';
-import AboutUsPage from './pages/AboutUsPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import LoginPage from './pages/LoginPage';
+import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
-/* Lazy Loaded Pages */
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
+const PasswordSecurityPage = lazy(() => import('./pages/PasswordSecurityPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const NewVenturePage = lazy(() => import('./pages/NewVenturePage'));
+const EditVenturePage = lazy(() => import('./pages/EditVenturePage'));
+const VentureDashboardPage = lazy(() => import('./pages/VentureDashboardPage'));
+const VentureAnalyticsPage = lazy(() => import('./pages/VentureAnalyticsPage'));
+const ProfileAnalyticsPage = lazy(() => import('./pages/ProfileAnalyticsPage'));
+const DomainsDashboardPage = lazy(() => import('./pages/DomainsDashboardPage'));
+const CoCreationDashboardPage = lazy(() => import('./pages/CoCreationDashboardPage'));
+const CoCreationAnalyticsPage = lazy(() => import('./pages/CoCreationAnalyticsPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const CoBrotherDashboardPage = lazy(() => import('./pages/CoBrotherDashboardPage'));
+const FeeRequestsPage = lazy(() => import('./pages/FeeRequestsPage'));
+const AuctionPage = lazy(() => import('./pages/AuctionPage'));
+const VentureAuctionPage = lazy(() => import('./pages/VentureAuctionPage'));
+const CommunityAuctionPage = lazy(() => import('./pages/CommunityAuctionPage'));
+const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
+const JoinForm = lazy(() => import('./pages/JoinForm'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const SoftwareAuctionPage = lazy(() => import('./pages/SoftwareAuctionPage'));
+const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
 const VenturesPage = lazy(() => import('./pages/VenturesPage'));
 const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const DomainsPage = lazy(() => import('./pages/DomainsPage'));
@@ -81,7 +82,9 @@ export default function App() {
             <AuthProvider>
               <SiteGradientBorder />
               <CookieConsentBanner />
-              <Routes>
+              <AppErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
 
             {/* Public */}
             <Route path="/" element={<Home />} />
@@ -182,11 +185,9 @@ export default function App() {
             <Route
               path="/ventures"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <VenturesPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <VenturesPage />
+                </ProfileGuard>
               }
             />
 
@@ -221,11 +222,9 @@ export default function App() {
             <Route
               path="/creator"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <CommunityPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <CommunityPage />
+                </ProfileGuard>
               }
             />
 
@@ -237,11 +236,9 @@ export default function App() {
             <Route
               path="/domains"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <DomainsPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <DomainsPage />
+                </ProfileGuard>
               }
             />
 
@@ -257,11 +254,9 @@ export default function App() {
             <Route
               path="/storefront"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <DomainStorefrontPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <DomainStorefrontPage />
+                </ProfileGuard>
               }
             />
 
@@ -271,11 +266,9 @@ export default function App() {
             <Route
               path="/technology"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <CoCreationPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <CoCreationPage />
+                </ProfileGuard>
               }
             />
 
@@ -331,11 +324,9 @@ export default function App() {
             <Route
               path="/auctions"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <AuctionsPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <AuctionsPage />
+                </ProfileGuard>
               }
             />
 
@@ -343,11 +334,9 @@ export default function App() {
             <Route
               path="/purchases"
               element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <PurchasesPage />
-                  </ProfileGuard>
-                </Suspense>
+                <ProfileGuard>
+                  <PurchasesPage />
+                </ProfileGuard>
               }
             />
 
@@ -391,7 +380,9 @@ export default function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/login" replace />} />
 
-              </Routes>
+                  </Routes>
+                </Suspense>
+              </AppErrorBoundary>
             </AuthProvider>
           </CookieConsentProvider>
         </CurrencyProvider>

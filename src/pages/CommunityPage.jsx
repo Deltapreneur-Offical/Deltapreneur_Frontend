@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
@@ -15,6 +15,7 @@ import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUr
 import CommunityListingCard from '../components/listings/CommunityListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
 const ROLES = [
@@ -34,6 +35,16 @@ const DURATIONS = [
   { value: 'FIFTEEN_DAYS', label: '15 Days'  },
   { value: 'THIRTY_DAYS',  label: '30 Days'  },
 ];
+
+function profileMatchesUser(profile, currentUser) {
+  if (!profile || !currentUser?.id) return false;
+  const uid = String(currentUser.id);
+  return (
+    String(profile.appUser?.id) === uid
+    || String(profile.appUserId) === uid
+    || String(profile.user?.id) === uid
+  );
+}
 
 function apiErrorMessage(err, fallback) {
   const data = err?.response?.data;
@@ -67,9 +78,29 @@ export default function CommunityPage() {
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInError, setLinkedInError]     = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading]         = useState(false);
 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const applyProfilesList = (list, { preferProfile } = {}) => {
+    setProfiles(list);
+    const mine = preferProfile || list.find(p => profileMatchesUser(p, user));
+    if (mine) {
+      setMyProfile(mine);
+      communityAuctionAPI.getByCommunity(mine.id)
+        .then(({ data: ad }) => setMyAuction(ad?.auction ?? ad))
+        .catch(() => setMyAuction(null));
+    }
+  };
+
+  const reloadProfiles = async ({ preferProfile } = {}) => {
+    const { data } = await communityAPI.getAll();
+    const list = Array.isArray(data) ? data : (data?.data ?? []);
+    applyProfilesList(list, { preferProfile });
+    return list;
+  };
 
   // Filter profiles based on search
   const filteredProfiles = profiles.filter(p => {
@@ -85,6 +116,16 @@ export default function CommunityPage() {
     );
   });
 
+  const profilesForDisplay = useMemo(() => {
+    if (!myProfile) return filteredProfiles;
+    if (filteredProfiles.some(p => String(p.id) === String(myProfile.id))) {
+      return filteredProfiles;
+    }
+    return [myProfile, ...filteredProfiles];
+  }, [filteredProfiles, myProfile]);
+
+  const showEmptyCreators = !loading && profilesForDisplay.length === 0 && !myProfile;
+
   // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
     const status    = searchParams.get('linkedin');
@@ -97,13 +138,25 @@ export default function CommunityPage() {
 
     if (status === 'success' && profileId) {
       setLinkedInLoading(true);
+      setLinkedInError('');
       communityAPI.getOne(profileId)
-        .then(({ data }) => {
+        .then(async ({ data }) => {
           const profile = data?.data ?? data;
           setMyProfile(profile);
-          setLinkedInSuccess('LinkedIn connected! Complete your profile below.');
           setShowForm(true);
-          setProfiles(prev => prev.find(p => p.id === profile.id) ? prev : [profile, ...prev]);
+          const hasUrl = Boolean(profile?.linkedInProfileUrl?.trim());
+          setLinkedInSuccess(
+            hasUrl
+              ? 'LinkedIn connected! Your profile link was imported — complete the details below.'
+              : 'LinkedIn connected! Add your public LinkedIn URL below to finish your profile.',
+          );
+          try {
+            await reloadProfiles({ preferProfile: profile });
+          } catch {
+            setProfiles(prev => (
+              prev.find(p => String(p.id) === String(profile.id)) ? prev : [profile, ...prev]
+            ));
+          }
         })
         .catch(() => setLinkedInError('LinkedIn connected but failed to load profile. Please refresh.'))
         .finally(() => setLinkedInLoading(false));
@@ -112,18 +165,7 @@ export default function CommunityPage() {
 
   // ── Load all profiles + my auction ───────────────────────────────────────
   useEffect(() => {
-    communityAPI.getAll()
-      .then(({ data }) => {
-        const list = Array.isArray(data) ? data : (data?.data ?? []);
-        setProfiles(list);
-        const mine = list.find(p => p.appUser?.id === user?.id);
-        if (mine) {
-          setMyProfile(prev => prev ?? mine);
-          communityAuctionAPI.getByCommunity(mine.id)
-            .then(({ data: ad }) => setMyAuction(ad?.auction ?? ad))
-            .catch(() => setMyAuction(null));
-        }
-      })
+    reloadProfiles()
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user]);
@@ -167,6 +209,27 @@ export default function CommunityPage() {
   const handleAuctionCreated = (auction) => {
     setMyAuction(auction);
     setShowAuctionModal(false);
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!myProfile?.id) return;
+    setDeleteLoading(true);
+    setLinkedInError('');
+    try {
+      await communityAPI.delete(myProfile.id);
+      setProfiles(prev => prev.filter(p => p.id !== myProfile.id));
+      setMyProfile(null);
+      setMyAuction(null);
+      setShowForm(false);
+      setShowDeleteConfirm(false);
+      setLinkedInSuccess('');
+      closeListingDetail();
+    } catch (err) {
+      setLinkedInError(apiErrorMessage(err, 'Failed to delete profile. Please try again.'));
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   // Active auction badge text
@@ -239,6 +302,14 @@ export default function CommunityPage() {
                 <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
                   <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
                 </button>
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={deleteLoading}
+                >
+                  Delete Profile
+                </button>
               </div>
             ) : (
               <button
@@ -281,6 +352,7 @@ export default function CommunityPage() {
               initial={myProfile}
               onSaved={handleProfileSaved}
               onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
+              onDelete={() => setShowDeleteConfirm(true)}
             />
           </div>
         )}
@@ -289,7 +361,7 @@ export default function CommunityPage() {
           <div className="flex items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
           </div>
-        ) : filteredProfiles.length === 0 ? (
+        ) : showEmptyCreators ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
               <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
@@ -300,19 +372,19 @@ export default function CommunityPage() {
             <p className="text-gray-600 mb-6">
               {searchQuery ? 'Try adjusting your search terms.' : 'Connect your LinkedIn to join.'}
             </p>
-            {!searchQuery && (
+            {!searchQuery && !myProfile && (
               <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
                 <LinkedInIcon size={16} /> Connect LinkedIn
               </button>
             )}
           </div>
-        ) : (
+        ) : profilesForDisplay.length > 0 ? (
           <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-            {filteredProfiles.map(p => (
+            {profilesForDisplay.map(p => (
               <ListingCardShell key={p.id}>
               <CommunityListingCard
                 profile={p}
-                isMe={p.appUser?.id === user?.id}
+                isMe={profileMatchesUser(p, user)}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
                 onView={() => setDetailProfile(p)}
@@ -321,18 +393,29 @@ export default function CommunityPage() {
               </ListingCardShell>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
       {detailProfile && (
         <CommunityDetailModal
           profile={detailProfile}
-          isMe={detailProfile.appUser?.id === user?.id}
+          isMe={profileMatchesUser(detailProfile, user)}
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
+          onDelete={() => setShowDeleteConfirm(true)}
           onViewAuction={(auctionId) => navigate(`/creator-auction/${auctionId}`)}
         />
       )}
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete LinkedIn profile?"
+        message="This permanently removes your creator profile, LinkedIn connection, and any active auctions from CoBrother. This cannot be undone."
+        confirmLabel={deleteLoading ? 'Deleting…' : 'Delete permanently'}
+        danger
+        onConfirm={handleDeleteProfile}
+        onCancel={() => !deleteLoading && setShowDeleteConfirm(false)}
+      />
 
       {showAuctionModal && myProfile && (
         <CreateAuctionModal
@@ -581,7 +664,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 }
 
 // ─── Community Detail Modal (with auction link) ───────────────────────────────
-function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction }) {
+function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onViewAuction }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]     = useState(null);
   const [loading, setLoading]   = useState(true);
@@ -679,11 +762,20 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction })
               </div>
             )}
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-6 flex-wrap">
               {isMe && (
-                <button type="button" className="btn-glow inline-flex items-center justify-center" onClick={onEdit}>
-                  <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
-                </button>
+                <>
+                  <button type="button" className="btn-glow inline-flex items-center justify-center" onClick={onEdit}>
+                    <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-glow border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={onDelete}
+                  >
+                    Delete Profile
+                  </button>
+                </>
               )}
               <button className="btn-glow" onClick={onClose}>Close</button>
             </div>
@@ -695,15 +787,28 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction })
 }
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
-function CommunityProfileForm({ initial, onSaved, onCancel }) {
+function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
   const { t } = useTranslation();
-  const [form, setForm] = useState({
-    role: initial?.role || '', skills: initial?.skills || '',
-    industry: initial?.industry || '', location: initial?.location || '',
-    whyImHere: initial?.whyImHere || '', linkedInProfileUrl: initial?.linkedInProfileUrl || '',
+  const buildForm = (profile) => ({
+    role: profile?.role || '',
+    skills: profile?.skills || '',
+    industry: profile?.industry || '',
+    location: profile?.location || '',
+    whyImHere: profile?.whyImHere || '',
+    linkedInProfileUrl: profile?.linkedInProfileUrl || '',
   });
+  const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+
+  useEffect(() => {
+    setForm(buildForm(initial));
+  }, [initial?.id, initial?.linkedInProfileUrl, initial?.name, initial?.imageUrl]);
+
+  const linkedInUrl = useMemo(
+    () => (form.linkedInProfileUrl || initial?.linkedInProfileUrl || '').trim(),
+    [form.linkedInProfileUrl, initial?.linkedInProfileUrl],
+  );
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -723,21 +828,43 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
       {initial?.name && (
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-[10px] mb-6">
-          <div className="flex items-center gap-3.5">
-            {initial.imageUrl
-              ? <img src={initial.imageUrl} alt={initial.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-              : <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600 flex-shrink-0">{initial.name[0]?.toUpperCase()}</div>
-            }
-            <div>
-              <div className="font-semibold text-gray-900">{initial.name}</div>
-              {initial.linkedInProfileUrl && (
-                <a href={initial.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885] mt-0.5">
-                  <LinkedInIcon size={13} /> View LinkedIn profile
-                </a>
-              )}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex items-start gap-3.5 min-w-0 flex-1">
+              {initial.imageUrl
+                ? <img src={initial.imageUrl} alt={initial.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                : <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600 flex-shrink-0">{initial.name[0]?.toUpperCase()}</div>
+              }
+              <div className="min-w-0">
+                <div className="font-semibold text-gray-900">{initial.name}</div>
+                {linkedInUrl ? (
+                  <a
+                    href={linkedInUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885] mt-1 break-all"
+                  >
+                    <LinkedInIcon size={13} />
+                    <span className="truncate max-w-[280px] sm:max-w-[360px]">{linkedInUrl}</span>
+                    <span aria-hidden>↗</span>
+                  </a>
+                ) : (
+                  <p className="text-xs text-amber-700 mt-1 m-0">
+                    LinkedIn URL was not returned — enter your profile link below.
+                  </p>
+                )}
+                <p className="text-xs text-blue-600 mt-1.5 m-0">✓ Name and photo imported from LinkedIn</p>
+              </div>
             </div>
+            {onDelete && (
+              <button
+                type="button"
+                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                onClick={onDelete}
+              >
+                Delete profile
+              </button>
+            )}
           </div>
-          <div className="mt-2.5 text-xs text-blue-500">✓ Name and photo imported from LinkedIn</div>
         </div>
       )}
       <h3 className="font-display text-2xl text-gray-900 font-semibold">{t('completeCreatorProfile')}</h3>
@@ -772,8 +899,20 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
           <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">LinkedIn Profile URL <span className="text-red-500">*</span></label>
-          <input name="linkedInProfileUrl" value={form.linkedInProfileUrl} onChange={handleChange} placeholder="https://www.linkedin.com/in/your-username" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          <label className="text-sm font-medium text-gray-700">
+            LinkedIn Profile URL <span className="text-red-500">*</span>
+            {linkedInUrl && (
+              <span className="text-gray-400 font-normal text-xs ml-1">(imported from LinkedIn)</span>
+            )}
+          </label>
+          <input
+            name="linkedInProfileUrl"
+            value={form.linkedInProfileUrl}
+            onChange={handleChange}
+            placeholder="https://www.linkedin.com/in/your-username"
+            required
+            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+          />
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">

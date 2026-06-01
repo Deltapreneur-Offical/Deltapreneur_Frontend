@@ -7,7 +7,32 @@ import { asArray } from '../utils/asArray';
  * @param {Object} filterConfig - { searchFields, priceField, categoryField, dateField }
  * @param {number} pageSize     - items per page (default 20)
  */
-export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
+function resolveLikeCount(item, getLikeCount) {
+  if (getLikeCount) {
+    const resolved = getLikeCount(item);
+    if (typeof resolved === 'number') return resolved;
+    if (resolved && typeof resolved.count === 'number') return resolved.count;
+  }
+  return Number(item?.likeCount ?? item?.like_count ?? 0);
+}
+
+function resolveViews(item) {
+  return Number(item?.views ?? item?.view_count ?? item?.viewCount ?? 0);
+}
+
+function resolvePrice(item, priceField, get) {
+  if (!priceField) return 0;
+  const val = get(item, priceField);
+  if (val != null && val !== '') return Number(val) || 0;
+  if (priceField === 'brandDetails.dealValue') {
+    const snake = get(item, 'brand_details.deal_value');
+    if (snake != null && snake !== '') return Number(snake) || 0;
+  }
+  return Number(item?.price ?? item?.askingPrice ?? item?.asking_price ?? 0) || 0;
+}
+
+export function useFilterSort(items = [], filterConfig = {}, pageSize = 20, options = {}) {
+  const { getLikeCount } = options;
   const safeItems = asArray(items);
   const {
     searchFields = [],
@@ -69,13 +94,13 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
     if (priceField) {
       if (minPrice !== '') {
         result = result.filter(item => {
-          const p = Number(get(item, priceField) || 0);
+          const p = resolvePrice(item, priceField, get);
           return p >= Number(minPrice);
         });
       }
       if (maxPrice !== '') {
         result = result.filter(item => {
-          const p = Number(get(item, priceField) || 0);
+          const p = resolvePrice(item, priceField, get);
           return p <= Number(maxPrice);
         });
       }
@@ -88,13 +113,13 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
         case 'oldest':
           return new Date(get(a, dateField) || 0) - new Date(get(b, dateField) || 0);
         case 'price_asc':
-          return Number(get(a, priceField) || 0) - Number(get(b, priceField) || 0);
+          return resolvePrice(a, priceField, get) - resolvePrice(b, priceField, get);
         case 'price_desc':
-          return Number(get(b, priceField) || 0) - Number(get(a, priceField) || 0);
+          return resolvePrice(b, priceField, get) - resolvePrice(a, priceField, get);
         case 'most_liked':
-          return (b.likeCount || 0) - (a.likeCount || 0);
+          return resolveLikeCount(b, getLikeCount) - resolveLikeCount(a, getLikeCount);
         case 'most_viewed':
-          return (b.views || 0) - (a.views || 0);
+          return resolveViews(b) - resolveViews(a);
         default:
           return 0;
       }
@@ -102,7 +127,7 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
 
     return result;
   }, [safeItems, search, category, minPrice, maxPrice, sortBy,
-      searchFields, priceField, categoryField, dateField]);
+      searchFields, priceField, categoryField, dateField, getLikeCount]);
 
   const totalPages  = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage    = Math.min(page, totalPages);

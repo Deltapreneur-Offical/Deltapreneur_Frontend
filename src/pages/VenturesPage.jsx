@@ -55,21 +55,23 @@ export default function VenturesPage() {
       ? allVentures.filter(v => v.listedBy?.id === user?.id)
       : allVentures,
     {
-      searchFields:  ['brandDetails.brandName', 'brandDetails.description'],
+      searchFields:  ['brandDetails.brandName', 'brandDetails.description', 'brand_details.brand_name', 'brand_details.description'],
       priceField:    'brandDetails.dealValue',
       categoryField: 'brandDetails.industry',
       dateField:     'createdAt',
     },
-    20
+    20,
+    { getLikeCount: (item) => getLike(item.id).count },
   );
 
   useEffect(() => {
     setLoading(true);
-    ventureAPI.getAll()
+    const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
+    req
       .then(({ data }) => setAllVentures(asArray(data)))
       .catch(() => setAllVentures([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [filterTab]);
 
   useEffect(() => {
     coVentureAPI.getMyApplications()
@@ -84,16 +86,6 @@ export default function VenturesPage() {
       })
       .catch(() => setAppliedVentureIds(new Set()));
   }, []);
-
-  // Re-fetch when switching to 'mine' tab
-  useEffect(() => {
-    if (filterTab !== 'mine') return;
-    setLoading(true);
-    ventureAPI.getMyVentures()
-      .then(({ data }) => setAllVentures(asArray(data)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [filterTab]);
 
   const { closeListingDetail } = useOpenListingDetailFromUrl({
     items: allVentures,

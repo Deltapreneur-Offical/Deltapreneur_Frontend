@@ -11,7 +11,6 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
   const [form, setForm] = useState({ firstname: '', lastname: '', phoneNumber: '', address: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1 = name, 2 = phone (optional)
 
   // Pre-fill form with existing user data
   useEffect(() => {
@@ -41,13 +40,17 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
       setError('First name and last name are required.');
       return;
     }
+    if (!/^\d{10}$/.test(form.phoneNumber.trim())) {
+      setError('A valid 10-digit phone number is required.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const payload = {
         firstname: form.firstname.trim(),
         lastname: form.lastname.trim(),
-        phoneNumber: form.phoneNumber.trim() || undefined,
+        phoneNumber: form.phoneNumber.trim(),
         address: form.address.trim() || undefined,
       };
       await authAPI.completeProfile(payload);
@@ -104,7 +107,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">
-              Phone Number <span className="text-gray-400 text-xs">(optional)</span>
+              Phone Number <span className="text-red-400">*</span>
             </label>
             <input
               name="phoneNumber"
@@ -112,6 +115,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               onChange={handleChange}
               placeholder="e.g. 9876543210"
               maxLength={10}
+              required
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
             />
           </div>

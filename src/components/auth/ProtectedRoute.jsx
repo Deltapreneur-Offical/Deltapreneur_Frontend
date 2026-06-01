@@ -1,17 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import PageLoader from '../common/PageLoader';
 
-
-
-// ── Spinner shown while auth state is loading ─────────────────────────────
-function FullScreenSpinner() {
-
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-      <div className="spinner w-10 h-10" />
-    </div>
-  );
+function AuthLoadingScreen() {
+  return <PageLoader message="Checking your session..." />;
 }
 
 /**
@@ -25,7 +17,7 @@ export function ProtectedRoute({ children }) {
 
   
 
-  if (loading) return <FullScreenSpinner />;
+  if (loading) return <AuthLoadingScreen />;
   if (!user || !hasAccessToken)   return <Navigate to="/login" state={{ from: location }} replace />;
   return children;
 }
@@ -41,7 +33,7 @@ export function ProtectedRoute({ children }) {
 export function ProfileGuard({ children }) {
   const { user, loading, hasAccessToken } = useAuth();
   const location = useLocation();
-  if (loading) return <FullScreenSpinner />;
+  if (loading) return <AuthLoadingScreen />;
   if (!user || !hasAccessToken) return <Navigate to="/login" state={{ from: location }} replace />;
 
   // CoBrother can only access /cobrother
@@ -54,7 +46,7 @@ export function ProfileGuard({ children }) {
 
 export function AdminGuard({ children }) {
   const { user, loading, hasAccessToken } = useAuth();
-  if (loading) return <FullScreenSpinner />;
+  if (loading) return <AuthLoadingScreen />;
   if (!user || !hasAccessToken) return <Navigate to="/login" replace />;
   const roleUpper = (user.role ?? '').toString().toUpperCase();
   if (roleUpper !== 'ADMIN' && roleUpper !== 'ROLE_ADMIN') {
@@ -65,7 +57,7 @@ export function AdminGuard({ children }) {
 
 export function CoBrotherGuard({ children }) {
   const { user, loading, hasAccessToken } = useAuth();
-  if (loading) return <FullScreenSpinner />;
+  if (loading) return <AuthLoadingScreen />;
   if (!user || !hasAccessToken) return <Navigate to="/login" replace />;
   if (user.role !== 'COBROTHER') return <Navigate to="/dashboard" replace />;
   return children;

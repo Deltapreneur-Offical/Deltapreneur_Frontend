@@ -73,6 +73,7 @@ export const creatorAPI = {
   getAll:           ()        => api.get('/api/v1/creator/all'),
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
+  delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
   linkedInAuthUrl:  ()        => api.get('/api/v1/creator/linkedin/auth'),
   linkedInCallback: (code)    => api.get(`/api/v1/creator/linkedin/callback?code=${code}`),
 };

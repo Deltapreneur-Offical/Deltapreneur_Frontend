@@ -147,13 +147,10 @@ export default function Home() {
   useEffect(() => {
 
     const handleClickOutside = (e) => {
-
-      if (navRef.current && !navRef.current.contains(e.target)) {
-
-        setOpenDropdown(null);
-
-      }
-
+      const target = e.target;
+      if (navRef.current?.contains(target)) return;
+      if (target.closest?.('[data-home-nav-dropdown]')) return;
+      setOpenDropdown(null);
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -258,7 +255,7 @@ export default function Home() {
 
   return (
 
-    <div className="relative min-w-0 overflow-x-hidden bg-white">
+    <div className="relative min-w-0 bg-white">
 
       <TopNavbar homeMobileMenu />
 

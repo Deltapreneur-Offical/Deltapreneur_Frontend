@@ -34,6 +34,8 @@ import {
   isTechnologyAuctionPending,
   technologyAuctionId,
 } from '../utils/technologyAuctionUi';
+import ConfettiBurst from '../components/common/ConfettiBurst';
+import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -49,7 +51,8 @@ export default function CoCreationPage() {
   const [detailTarget, setDetailTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget]     = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
-  
+  const [showConfetti, setShowConfetti]     = useState(false);
+
   const [auctionTarget, setAuctionTarget]     = useState(null);  // software to auction
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
  
@@ -73,7 +76,8 @@ export default function CoCreationPage() {
       categoryField: 'category',
       dateField:     'createdAt',
     },
-    20
+    20,
+    { getLikeCount: (item) => getLike(item.id).count },
   );
 
   useEffect(() => {
@@ -181,6 +185,7 @@ export default function CoCreationPage() {
                   setShowForm(false);
                 });
                 scheduleRestoreAppLayoutScroll(snap);
+                setShowConfetti(true);
               }}
               onCancel={() => setShowForm(false)}
             />
@@ -308,6 +313,8 @@ export default function CoCreationPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      <ConfettiBurst active={showConfetti} onDone={() => setShowConfetti(false)} />
     </AppLayout>
   );
 }
@@ -325,12 +332,10 @@ function SoftwareForm({ onSaved, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
-  const [savedSoftware, setSavedSoftware]   = useState(null);
-  const [imageFile, setImageFile]           = useState(null);
-  const [imagePreview, setImagePreview]     = useState(null);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [imageError, setImageError]         = useState('');
-  const fileInputRef                        = useRef(null);
+  const [imageFile, setImageFile]       = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageError, setImageError]     = useState('');
+  const fileInputRef                    = useRef(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -356,7 +361,28 @@ function SoftwareForm({ onSaved, onCancel }) {
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
       });
-      setSavedSoftware(data);
+      let created = data?.data ?? data;
+
+      if (imageFile && created?.id) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        try {
+          const { data: imgRes } = await technologyAPI.uploadImage(created.id, formData);
+          const payload = imgRes?.data ?? imgRes;
+          created = {
+            ...created,
+            imageUrl: payload?.imageUrl ?? payload?.image_url ?? created.imageUrl,
+          };
+        } catch (uploadErr) {
+          setImageError(
+            uploadErr.response?.data?.error
+            || uploadErr.response?.data?.message
+            || 'Listing saved but logo upload failed. You can add it later from your dashboard.',
+          );
+        }
+      }
+
+      onSaved(created);
     } catch (err) {
       const status = err.response?.status;
       const msg =
@@ -382,76 +408,8 @@ function SoftwareForm({ onSaved, onCancel }) {
     reader.readAsDataURL(file);
   };
 
-  const handleImageUpload = async () => {
-    if (!imageFile || !savedSoftware) return;
-    setImageUploading(true); setImageError('');
-    try {
-      const formData = new FormData();
-      formData.append('file', imageFile);
-      const { data } = await technologyAPI.uploadImage(savedSoftware.id, formData);
-      const payload = data?.data ?? data;
-      onSaved({
-        ...savedSoftware,
-        imageUrl: payload?.imageUrl ?? payload?.image_url,
-      });
-      setImageUploading(false);
-    } catch (err) {
-      setImageError(err.response?.data?.error || err.response?.data?.message || 'Upload failed. You can add an image later.');
-      setImageUploading(false);
-    }
-  };
-
-  const handleSkip = () => onSaved(savedSoftware);
-
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
-
-  if (savedSoftware) {
-    return (
-      <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-        <h3 className="font-display text-2xl text-gray-900 font-semibold">
-          Add an Image <span className="text-sm text-gray-400 font-normal">(optional)</span>
-        </h3>
-        <p className="text-gray-500 text-sm mt-1">
-          Upload a cover image or logo for <strong className="text-indigo-600">{savedSoftware.name}</strong>. You can also do this later.
-        </p>
-        <p className="text-amber-700 text-sm mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Your listing is pending admin verification. Other users can buy it only after it is approved.
-        </p>
-        <div className="mt-5">
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${
-              imagePreview ? 'border-indigo-300 bg-indigo-50/50' : 'border-gray-200 bg-gray-50 hover:border-indigo-300'
-            }`}
-          >
-            {imagePreview ? (
-              <img src={imagePreview} alt="Preview" className="max-h-[140px] max-w-full rounded-lg object-contain mx-auto" />
-            ) : (
-              <>
-                <div className="text-4xl mb-2">🖼</div>
-                <div className="text-sm text-gray-500">Click to choose an image</div>
-                <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
-              </>
-            )}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-          {imagePreview && (
-            <button type="button" className="text-xs text-gray-500 hover:text-red-500 mb-3"
-              onClick={() => { setImageFile(null); setImagePreview(null); }}>✕ Remove</button>
-          )}
-          {imageError && <div className="text-sm text-red-500 mb-3">{imageError}</div>}
-          <div className="flex gap-3">
-            <button type="button" className="btn-glow flex-1"
-              disabled={!imageFile || imageUploading} onClick={handleImageUpload}>
-              {imageUploading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Upload Image →'}
-            </button>
-            <button type="button" className="btn-glow" onClick={handleSkip}>Skip</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
@@ -549,6 +507,39 @@ function SoftwareForm({ onSaved, onCancel }) {
             placeholder="https://github.com/you/repo" required />
         </div>
 
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>
+            Logo / cover image <span className="text-gray-400 text-xs font-normal">(optional)</span>
+          </label>
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+              imagePreview ? 'border-indigo-300 bg-indigo-50/50' : 'border-gray-200 bg-gray-50 hover:border-indigo-300'
+            }`}
+          >
+            {imagePreview ? (
+              <img src={imagePreview} alt="Preview" className="max-h-[120px] max-w-full rounded-lg object-contain mx-auto" />
+            ) : (
+              <>
+                <div className="text-3xl mb-1">🖼</div>
+                <div className="text-sm text-gray-500">Click to upload logo or cover</div>
+                <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
+              </>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+          {imagePreview && (
+            <button
+              type="button"
+              className="text-xs text-gray-500 hover:text-red-500 self-start"
+              onClick={() => { setImageFile(null); setImagePreview(null); }}
+            >
+              ✕ Remove image
+            </button>
+          )}
+          {imageError && <div className="text-sm text-amber-700">{imageError}</div>}
+        </div>
+
         <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
           <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
             onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
@@ -594,7 +585,24 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
   const addonExtra     = addonTotal(addons);
   const totalPrice   = basePrice + coBrotherFee + addonExtra;
 
+  const handlePhoneChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setForm(f => ({ ...f, buyerPhone: digits }));
+  };
+
   const handlePay = async () => {
+    if (!form.buyerFullName.trim()) {
+      setError('Full name is required.');
+      return;
+    }
+    if (!form.buyerEmail.trim()) {
+      setError('Email is required.');
+      return;
+    }
+    if (!/^\d{10}$/.test(form.buyerPhone.trim())) {
+      setError('A valid 10-digit phone number is required.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       // Pass both buyer info AND coBrotherOptIn to backend
@@ -676,10 +684,18 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
                 placeholder="your@email.com" />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-gray-500 font-medium">Phone</label>
-              <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" value={form.buyerPhone}
-                onChange={e => setForm(f => ({ ...f, buyerPhone: e.target.value }))}
-                placeholder="10-digit number" maxLength={10} />
+              <label className="text-xs text-gray-500 font-medium">
+                Phone <span className="text-red-500">*</span>
+              </label>
+              <input
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+                value={form.buyerPhone}
+                onChange={handlePhoneChange}
+                placeholder="10-digit number"
+                maxLength={10}
+                inputMode="numeric"
+                required
+              />
             </div>
           </div>
         </div>
@@ -704,7 +720,10 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
               </div>
               <div className="text-gray-500 text-[0.78rem] leading-relaxed">
                 Get a dedicated CoBrother to help you set up, deploy, and get the most out of
-                this software. They'll reach out within 24 hours.
+                this software. They'll reach out within 24 hours.{' '}
+                <LearnMoreTooltip>
+                  Your ₹1,000 support request helps us connect, verify, and personally assist your collaboration opportunity through the CoBrother ecosystem
+                </LearnMoreTooltip>
               </div>
             </div>
           </div>

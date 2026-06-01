@@ -13,6 +13,8 @@ import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
+import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
+import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import DomainVerificationModal from './DomainVerificationModal';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
@@ -114,6 +116,14 @@ export default function AdminDashboardPage() {
           rows = rows.filter(
             (v) => v.saleType !== 'AUCTION' && v.sale_type !== 'AUCTION',
           );
+        }
+        if (currentTab === 'domains') {
+          rows = rows.filter(
+            (d) => d.saleType !== 'AUCTION' && d.sale_type !== 'AUCTION',
+          );
+        }
+        if (currentTab === 'addon-orders') {
+          rows = normalizeAddonOrders(rows);
         }
         setData(rows);
         setListCount(rows.length);
@@ -1383,7 +1393,11 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         <div style={{ padding: '0.875rem', background: 'rgba(200,169,110,0.08)',
                       border: '1px solid rgba(200,169,110,0.2)', borderRadius: 8,
                       marginBottom: '1.25rem', fontSize: '0.83rem', color: '#c8a96e' }}>
-          ⚡ A ₹1,000 payment request will be sent to the lister. CoBrother notified after payment.
+          <span>⚡ A ₹1,000 payment request will be sent to the lister. CoBrother notified after payment.</span>
+          {' '}
+          <LearnMoreTooltip>
+            Your ₹1,000 support request helps us connect, verify, and personally assist your collaboration opportunity through the CoBrother ecosystem
+          </LearnMoreTooltip>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -1666,6 +1680,10 @@ function AddonOrderRow({ order, statusColor }) {
             </span>
           </div>
           <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
+            {order.buyerEmail || '—'}
+            {order.buyerPhone ? ` · ${order.buyerPhone}` : ''}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '0.15rem' }}>
             {services.length} service{services.length !== 1 ? 's' : ''} · ₹{Number(order.totalAmount || 0).toLocaleString('en-IN')}
             {order.createdAt && ` · ${formatAuctionDate(order.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
           </div>
@@ -1685,8 +1703,13 @@ function AddonOrderRow({ order, statusColor }) {
             <div>
               <div style={labelStyle}>Buyer</div>
               <div style={valueStyle}>{order.buyerName || '—'}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerEmail}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerPhone || '—'}</div>
+              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerEmail || '—'}</div>
+              <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.15rem' }}>
+                Phone: {order.buyerPhone
+                  || order.buyer?.phoneNumber
+                  || order.buyer?.phone_number
+                  || '—'}
+              </div>
             </div>
             <div>
               <div style={labelStyle}>Linked Purchase</div>

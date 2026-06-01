@@ -153,13 +153,6 @@ export default function ContactPage() {
               >
                 {t('signIn')}
               </button>
-              <button
-                type="button"
-                className="btn-glow"
-                onClick={() => navigate('/join-form')}
-              >
-                {t('joinUs')}
-              </button>
             </div>
           </div>
         </div>

@@ -3744,6 +3744,7 @@ body.home-page-body {
   transition: box-shadow 0.2s ease;
   left: 0;
   right: 0;
+  overflow: visible;
 }
 
 .menu-item-gradient {
@@ -4428,6 +4429,12 @@ body.home-page-body {
   z-index: 60;
   overflow: hidden;
   padding: 0.25rem;
+}
+
+.home-nav-dropdown-panel--portal {
+  position: fixed;
+  top: auto;
+  left: auto;
 }
 
 .home-nav-dropdown-link {

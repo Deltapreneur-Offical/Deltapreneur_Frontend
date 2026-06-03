@@ -34,3 +34,14 @@ export function resolveDomainDisplay(domain) {
     fullDomain: ext ? `${displayName}${ext.full}` : displayName,
   };
 }
+
+/** Title for domain auction cards and detail pages. */
+export function resolveAuctionDomainTitle(auction) {
+  const domain = auction?.domain || {};
+  return (
+    auction?.domainDisplayName
+    || domain.fullDomain
+    || `${domain.domainName || ''}${domain.domainExtension || ''}`.trim()
+    || null
+  );
+}

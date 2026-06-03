@@ -12,7 +12,8 @@ import AuctionImg from '../assets/Auction.png';
 import { asArray } from '../utils/asArray';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 import { useTranslation } from 'react-i18next';
-import { normalizeDomainExtension } from '../utils/domainDisplay';
+import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/domainDisplay';
+import { pickMediaUrl } from '../utils/mediaUrl';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
 const toNum = (value, fallback = 0) => {

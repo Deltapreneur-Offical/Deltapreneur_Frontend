@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, CheckCircle2, Clock, Shield } from 'lucide-react';
-import HeroNetWebCanvas from './HeroNetWebCanvas';
 
 export default function HeroGlow() {
   const { t } = useTranslation();
@@ -10,8 +9,6 @@ export default function HeroGlow() {
     <section className="hero-glow-section relative overflow-x-hidden overflow-y-visible border-b-0 bg-transparent py-6 pl-4 pr-4 sm:py-8 sm:pl-6 sm:pr-5 md:py-10 md:pl-10 lg:pl-20 lg:pr-8">
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
-
-      <HeroNetWebCanvas variant="hero" />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">

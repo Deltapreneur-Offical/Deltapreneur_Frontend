@@ -17,7 +17,7 @@ import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import SkeletonCard from '../components/common/Skeleton';
+import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import DashboardIcon from '../assets/Dashboard.png';
 import VentureLogo from '../assets/Coventure_logo.png';
@@ -187,9 +187,7 @@ export default function VenturesPage() {
 
         {/* ── Content ── */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+          <PageContentSkeleton variant="cards" rows={8} />
         ) : paginated.length === 0 ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">

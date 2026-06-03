@@ -7,6 +7,24 @@ export default defineConfig({
   define: {
     global: 'window',
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-router')) return 'vendor-router';
+            if (id.includes('react')) return 'vendor-react';
+            if (id.includes('i18next')) return 'vendor-i18n';
+            return 'vendor';
+          }
+          if (id.includes('/src/pages/Admin')) return 'route-admin';
+          if (id.includes('/src/pages/Domains')) return 'route-domains';
+          if (id.includes('/src/pages/Ventures')) return 'route-ventures';
+          if (id.includes('/src/pages/Auctions')) return 'route-auctions';
+        },
+      },
+    },
+  },
   server: {
     host: '127.0.0.1',
     port: 5173,

@@ -267,18 +267,22 @@ export default function TechnologyListingCard({
               </button>
             </div>
           ) : isTechnologyAuctionLive(item, auctionStatus) ? (
-            !isAuctionBlockedByVerification(item) && (
-            <button
-              type="button"
-              className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
-              style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
-              }}
-            >
-              Place Bid →
-            </button>
+            isAuctionBlockedByVerification(item) ? (
+              <span className="inline-flex items-center text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md whitespace-nowrap">
+                Verification pending
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+                style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
+                }}
+              >
+                Place Bid →
+              </button>
             )
           ) : isDirectPurchase(item, auctionStatus) ? (
             <button
@@ -288,7 +292,11 @@ export default function TechnologyListingCard({
             >
               Buy Now →
             </button>
-          ) : isPurchaseBlockedByVerification(item) ? null : (
+          ) : isPurchaseBlockedByVerification(item) ? (
+            <span className="inline-flex items-center text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md whitespace-nowrap">
+              Verification pending
+            </span>
+          ) : (
             <span className="text-xs text-gray-400 italic">Sold</span>
           )}
         </div>

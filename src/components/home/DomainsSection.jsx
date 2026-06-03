@@ -6,11 +6,10 @@ import { extractDomainList } from '../../utils/domainApiAdapter';
 import { pickHomepagePreviewListings } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
-import DomainListingCard from '../listings/DomainListingCard';
 import ListingCardShell from '../listings/ListingCardShell';
-import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
-import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeUnifiedListingCard from './HomeUnifiedListingCard';
+import HomeSectionHeader from './HomeSectionHeader';
 import '../../styles/domain-listing-cards.css';
 
 export default function DomainsSection() {
@@ -45,24 +44,22 @@ export default function DomainsSection() {
     navigateToListingDetail(navigate, 'domain', domainId);
   };
 
-  if (loading) {
-    return <HomeSectionCardSkeleton title={t('premiumDomains')} to="/domains" />;
-  }
-
   return (
     <section className="bg-white py-4 md:py-6">
       <div className="w-full">
-        <HomeSectionHeader title={t('premiumDomains')} to="/domains" />
-        {previewDomains.length === 0 ? (
+        <HomeSectionHeader title={t('domains')} to="/domains" />
+        {loading ? (
+          <p className="text-center text-gray-500 py-8">{t('loading')}</p>
+        ) : previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noDomains')}</p>
         ) : (
           <HomePreviewRow>
             {previewDomains.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
                 <ListingCardShell>
-                  <DomainListingCard
-                    browseMode
-                    domain={domain}
+                  <HomeUnifiedListingCard
+                    type="domain"
+                    listing={domain}
                     likeState={getLike(domain.id)}
                     onLike={() => toggleLike(domain.id)}
                     onView={() => handleViewDetails(domain.id)}

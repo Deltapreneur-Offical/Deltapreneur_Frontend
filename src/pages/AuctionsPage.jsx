@@ -10,10 +10,10 @@ import {
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import { asArray } from '../utils/asArray';
-import { formatCountdown, parseAuctionDate, resolveAuctionEndTime, formatAuctionDateTime } from '../utils/auctionDate';
+import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 import { useTranslation } from 'react-i18next';
 import { normalizeDomainExtension } from '../utils/domainDisplay';
-import { pickMediaUrl } from '../utils/mediaUrl';
+import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
 const toNum = (value, fallback = 0) => {
   const n = Number(value);
@@ -43,16 +43,6 @@ const normalizeAuction = (raw) => {
     },
   };
 };
-
-function resolveAuctionDomainTitle(auction) {
-  const domain = auction?.domain || {};
-  return (
-    auction?.domainDisplayName
-    || domain.fullDomain
-    || `${domain.domainName || ''}${domain.domainExtension || ''}`.trim()
-    || null
-  );
-}
 
 const normalizeSoftwareAuction = (raw) => {
   if (!raw || typeof raw !== 'object') return raw;
@@ -241,7 +231,7 @@ export default function AuctionsPage() {
             { id: 'ventures',   label: `🔨 Ventures (${ventureAuctions.length})` },
             { id: 'domains',    label: `◇ Domains (${domainAuctions.length})` },
             { id: 'technology', label: `💻 Technology (${softwareAuctions.length})` },
-            { id: 'community',  label: `👤 ${t('communityTitle')} (${communityAuctions.length})` },
+            { id: 'community',  label: `👤 Creators (${communityAuctions.length})` },
           ].map(t => (
             <button key={t.id}
               className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
@@ -270,9 +260,7 @@ export default function AuctionsPage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {Array.from({ length: 6 }).map((_, i) => <AuctionSkeleton key={i} />)}
-          </div>
+          <PageContentSkeleton variant="cards" rows={6} />
         ) : (shownDomains.length === 0 && shownVentures.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
@@ -363,7 +351,7 @@ export default function AuctionsPage() {
             {shownCommunity.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-teal-600 m-0">👤 {t('creatorProfileAuctions')}</h2>
+                  <h2 className="text-base font-bold text-teal-600 m-0">👤 Creator Profiles</h2>
                   <span className="text-xs text-gray-500 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
                     {shownCommunity.length} live
                   </span>

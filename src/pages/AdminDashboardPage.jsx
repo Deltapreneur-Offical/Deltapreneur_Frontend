@@ -18,6 +18,7 @@ import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import DomainVerificationModal from './DomainVerificationModal';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
+import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
 
 function formatAdminRequestType(type) {
@@ -313,9 +314,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
           {loading ? (
-            <div className="flex items-center justify-center py-16 md:py-20">
-              <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-            </div>
+            <PageContentSkeleton variant="table" rows={7} />
           ) : tab === 'domain-enquiries' ? (
             <DomainEnquiriesTable
               enquiries={data}

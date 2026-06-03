@@ -21,12 +21,11 @@ import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import SkeletonCard from '../components/common/Skeleton';
+import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
 import AddonSelector, {addonTotal, ADDON_SERVICES} from '../components/addon/AddonSelector';
-import { isPremiumDomain } from '../utils/domainPricing';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
@@ -208,9 +207,7 @@ export default function DomainsPage() {
                     setFilterTab('mine');
                     setGlobalNotice(
                       d?._warning
-                        || (isPremiumDomain(normalizedSaved)
-                          ? 'Listed successfully. Premium domains (above ₹5,00,000) also appear on the homepage when featured by admin.'
-                          : ''),
+                        || '',
                     );
                   }
                 });
@@ -242,9 +239,7 @@ export default function DomainsPage() {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+          <PageContentSkeleton variant="cards" rows={8} />
         ) : paginated.length === 0 ? (
           <div className="text-center py-20">
             <img src={DomainsIcon} alt="Domain" className="mx-auto mb-4 w-16 h-16 object-contain" />
@@ -953,7 +948,6 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
   const c           = d.contactInfo || {};
   const s           = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
   const isAuction   = d.saleType === 'AUCTION';
-  const isHighValue = isPremiumDomain(d);
   const auction     = d.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
@@ -975,11 +969,6 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                 {d.verified && (
                   <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-green-600 bg-green-50 border border-green-300">
                     ✓ Verified
-                  </span>
-                )}
-                {isHighValue && (
-                  <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200">
-                    Premium
                   </span>
                 )}
               </div>
@@ -1047,13 +1036,6 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
               </Section>
             )}
 
-            {isHighValue && !isOwner && d.domainStatus === 'AVAILABLE' && (
-              <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-lg mb-5 text-[0.83rem] text-purple-700">
-                ❆ This is a premium domain. Submit an enquiry and our team will facilitate
-                the transaction.
-              </div>
-            )}
-
             {(c.email || c.phoneNumber) && (
               <Section title="Contact">
                 <div className="grid grid-cols-2 gap-3">
@@ -1101,15 +1083,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                       Verification pending
                     </span>
                   ) : (
-                  isHighValue ? (
-                    <button
-                      onClick={onEnquire}
-                      className="btn-glow btn-glow-sm">
-                      Enquire Now →
-                    </button>
-                  ) : (
                     <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
-                  )
                   )
                 ) : null
               )}

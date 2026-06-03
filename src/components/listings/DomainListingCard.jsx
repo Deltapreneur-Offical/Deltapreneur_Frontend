@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
+import { Gavel, ShoppingCart, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
-import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
+import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
@@ -26,7 +26,7 @@ export default function DomainListingCard({
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
-  const isHighValue = isPremiumDomain(domain);
+  const isAdminListed = isAdminCreatedListing(domain, 'domain');
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
@@ -96,8 +96,8 @@ export default function DomainListingCard({
               </span>
             )}
             <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
-            {isHighValue && statusKey === 'AVAILABLE' && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--premium">Premium</span>
+            {isAdminListed && (
+              <span className="domain-listing-card__chip domain-listing-card__chip--premium">Admin Listed</span>
             )}
             {isAuction && (
               <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
@@ -182,8 +182,8 @@ export default function DomainListingCard({
             </span>
           )}
           <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
-          {isHighValue && statusKey === 'AVAILABLE' && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--premium">Premium</span>
+          {isAdminListed && (
+            <span className="domain-listing-card__chip domain-listing-card__chip--premium">Admin Listed</span>
           )}
           {isAuction && (
             <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
@@ -266,15 +266,9 @@ export default function DomainListingCard({
                 Verification pending
               </span>
             ) : (
-            isHighValue ? (
-              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onEnquire?.(); }}>
-                <MessageSquare size={14} /> Enquire
-              </button>
-            ) : (
-              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
-                <ShoppingCart size={14} /> Buy now
-              </button>
-            )
+            <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
+              <ShoppingCart size={14} /> Buy now
+            </button>
             )
           ) : (
             <span className="text-xs text-slate-400 font-medium px-2">{statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}</span>

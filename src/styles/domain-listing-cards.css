@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 0;
+  min-height: 355px;
   padding: 0;
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -78,9 +78,9 @@
 
 .domain-listing-card__name {
   margin: 0;
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 800;
   line-height: 1.35;
   color: #0f172a;
   letter-spacing: -0.02em;
@@ -149,8 +149,8 @@
 .domain-listing-card__chip {
   padding: 0.15rem 0.45rem;
   border-radius: 6px;
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: 0.56rem;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -210,7 +210,7 @@
 }
 
 .domain-listing-card__price-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -219,7 +219,7 @@
 
 .domain-listing-card__price-value {
   margin-top: 0.15rem;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #059669;
@@ -243,7 +243,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 500;
   color: #94a3b8;
 }
@@ -261,8 +261,8 @@
   gap: 0.35rem;
   padding: 0.45rem 0.75rem;
   border-radius: 8px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.64rem;
+  font-weight: 700;
   border: 1px solid transparent;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   cursor: pointer;

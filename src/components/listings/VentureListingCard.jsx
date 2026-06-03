@@ -63,7 +63,7 @@ export default function VentureListingCard({
     ? 'from-purple-600 via-fuchsia-500 to-pink-500'
     : 'from-indigo-600 via-blue-500 to-cyan-400';
 
-  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full${
+  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full min-h-[355px]${
     compact ? ' listing-card--compact' : ''
   }${browseMode ? '' : ' cursor-pointer'}`;
 

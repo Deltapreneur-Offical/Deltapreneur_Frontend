@@ -21,6 +21,7 @@ export function normalizeDomainRecord(raw) {
     askingPrice: Number(raw.askingPrice ?? raw.asking_price ?? 0),
     pricingDemand: raw.pricingDemand ?? raw.pricing_demand ?? null,
     saleType: raw.saleType ?? raw.sale_type ?? 'ONE_TIME',
+    adminListed: Boolean(raw.adminListed ?? raw.admin_listed ?? false),
     listedBy: raw.listedBy ?? raw.listed_by ?? null,
     listedByUserId: raw.listedByUserId ?? raw.listed_by_user_id ?? null,
     paymentStatus: raw.paymentStatus ?? raw.payment_status ?? null,

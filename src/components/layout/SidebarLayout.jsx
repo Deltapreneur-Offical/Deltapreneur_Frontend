@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { Home, Handshake, Users, Globe, Zap, Gavel, ShoppingBag, Settings, Bell, LogOut, Menu, X, Shield, Store } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { resolveUserDisplayName } from '../../utils/userDisplayName';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import TopNavbar from '../common/TopNavbar';
 
@@ -40,7 +41,7 @@ export default function SidebarLayout({ children }) {
   
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
   
-  const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
+  const displayName = resolveUserDisplayName(user);
 
   const handleLogout = async () => {
     await logout();
@@ -208,10 +209,10 @@ export default function SidebarLayout({ children }) {
             </button>
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                {firstName.charAt(0).toUpperCase()}
+                {displayName.charAt(0)}
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-semibold text-gray-900">{firstName}</p>
+                <p className="text-sm font-semibold text-gray-900">{displayName}</p>
                 <p className="text-xs text-gray-500">{user?.role || 'USER'}</p>
               </div>
             </div>

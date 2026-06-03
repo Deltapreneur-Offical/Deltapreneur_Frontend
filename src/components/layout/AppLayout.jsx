@@ -14,6 +14,7 @@ import LanguageDropdown from '../common/LanguageDropdown';
 import HomeFooter from '../common/HomeFooter';
 import BackButton from '../common/BackButton';
 import { getAppBackTarget } from '../../utils/appNavigation';
+import { resolveUserDisplayName } from '../../utils/userDisplayName';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
@@ -70,7 +71,7 @@ export default function AppLayout({ children }) {
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
   const backTarget = getAppBackTarget(location.pathname);
   
-  const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
+  const displayName = resolveUserDisplayName(user);
   const userId = user?.id ?? user?.userId ?? null;
 
   const refreshUnreadCount = useCallback(() => {
@@ -562,10 +563,10 @@ export default function AppLayout({ children }) {
 
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                {firstName.charAt(0).toUpperCase()}
+                {displayName.charAt(0)}
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-semibold text-gray-900">{firstName}</p>
+                <p className="text-sm font-semibold text-gray-900">{displayName}</p>
                 <p className="text-xs text-gray-500">{user?.role || 'USER'}</p>
               </div>
             </div>

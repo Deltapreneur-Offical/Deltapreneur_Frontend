@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { resolvePostLoginPath } from '../utils/authSession';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
 
 /**
@@ -70,7 +71,7 @@ export default function OAuthCallbackPage() {
         const isComplete = fetchedUser.profileComplete ?? profileCompleteParam;
         const redirectPath = consumeRedirectAfterLogin();
         const destination = isComplete
-          ? redirectPath || '/'
+          ? resolvePostLoginPath(redirectPath, fetchedUser)
           : '/complete-profile';
 
         flushSync(() => {

@@ -15,13 +15,13 @@
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   cursor: pointer;
   overflow: hidden;
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .domain-listing-card:not(.listing-card-glow):hover {
@@ -192,9 +192,19 @@
   border: 1px solid #c7d2fe;
 }
 
+.domain-listing-card__chip--verified {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
 .domain-listing-card__body {
   padding: 0 1rem 0.75rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 88px;
 }
 
 .domain-listing-card__price-box {
@@ -237,6 +247,24 @@
   padding: 0.75rem 1rem 1rem;
   border-top: 1px solid #f1f5f9;
   margin-top: auto;
+  background: #fafbfc;
+}
+
+.domain-listing-card__footer--browse {
+  background: transparent;
+}
+
+.domain-listing-card__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.domain-listing-card__status-muted {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+  padding: 0 0.25rem;
 }
 
 .domain-listing-card__stats {
@@ -312,6 +340,15 @@
 .domain-listing-card__btn--icon:hover {
   color: #0f172a;
   background: #f1f5f9;
+}
+
+.domain-listing-card__btn--disabled {
+  flex: 1;
+  color: #94a3b8;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .domain-listing-card__taken-down {

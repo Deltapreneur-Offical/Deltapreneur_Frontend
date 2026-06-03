@@ -1,55 +1,173 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import '../../styles/confetti-burst.css';
 
-const COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'];
+const COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e', '#eab308'];
+const SHAPES = ['circle', 'square', 'rectangle'];
 
-function Particle({ index }) {
-  const angle = (index / 24) * Math.PI * 2;
-  const distance = 80 + (index % 5) * 28;
-  const x = Math.cos(angle) * distance;
-  const y = Math.sin(angle) * distance - 40;
-  const color = COLORS[index % COLORS.length];
-  const size = 6 + (index % 4);
+function rand(a, b) {
+  return a + Math.random() * (b - a);
+}
+
+function makeFallParticles(count) {
+  return Array.from({ length: count }, (_, i) => {
+    const shape = SHAPES[i % SHAPES.length];
+    const size = rand(8, 16);
+    return {
+      id: `fall-${i}`,
+      color: COLORS[i % COLORS.length],
+      shape,
+      size,
+      left: rand(0, 100),
+      delay: rand(0, 1.8),
+      duration: rand(2.8, 4.8),
+      rotation: rand(0, 720),
+    };
+  });
+}
+
+function makeBurstParticles(count, originX, originY) {
+  return Array.from({ length: count }, (_, i) => {
+    const angle = rand(0, Math.PI * 2);
+    const velocity = rand(280, 720);
+    const shape = SHAPES[i % SHAPES.length];
+    const size = rand(8, 18);
+    return {
+      id: `burst-${originX}-${i}`,
+      color: COLORS[i % COLORS.length],
+      shape,
+      size,
+      originX,
+      originY,
+      txEnd: Math.cos(angle) * velocity,
+      tyEnd: Math.sin(angle) * velocity + rand(120, 420),
+      rotation: rand(-720, 720),
+      duration: rand(1.4, 2.4),
+      delay: rand(0, 0.12),
+    };
+  });
+}
+
+function Particle({ particle, variant }) {
+  const w = particle.shape === 'rectangle' ? particle.size * 1.8 : particle.size;
+  const h = particle.shape === 'rectangle' ? particle.size * 0.6 : particle.size;
+  const radius = particle.shape === 'circle' ? '50%' : '2px';
+
+  if (variant === 'fall') {
+    return (
+      <div
+        className="tech-listing-celebration__particle animate-confetti-fall"
+        style={{
+          left: `${particle.left}vw`,
+          width: `${w}px`,
+          height: `${h}px`,
+          backgroundColor: particle.color,
+          borderRadius: radius,
+          '--rotation': `${particle.rotation}deg`,
+          '--duration': `${particle.duration}s`,
+          animationDelay: `${particle.delay}s`,
+        }}
+      />
+    );
+  }
 
   return (
-    <motion.span
-      className="absolute left-1/2 top-1/2 rounded-sm pointer-events-none"
-      style={{ width: size, height: size, backgroundColor: color, marginLeft: -size / 2, marginTop: -size / 2 }}
-      initial={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 }}
-      animate={{ opacity: 0, x, y, scale: 0.2, rotate: 180 + index * 15 }}
-      transition={{ duration: 1.1 + (index % 3) * 0.15, ease: 'easeOut' }}
+    <div
+      className="tech-listing-celebration__particle tech-listing-celebration__particle--burst animate-confetti-burst"
+      style={{
+        left: `${particle.originX}px`,
+        top: `${particle.originY}px`,
+        width: `${w}px`,
+        height: `${h}px`,
+        backgroundColor: particle.color,
+        borderRadius: radius,
+        '--tx-start': '0px',
+        '--ty-start': '0px',
+        '--tx-end': `${particle.txEnd}px`,
+        '--ty-end': `${particle.tyEnd}px`,
+        '--rotation': `${particle.rotation}deg`,
+        '--duration': `${particle.duration}s`,
+        animationDelay: `${particle.delay}s`,
+      }}
     />
   );
 }
 
+const CELEBRATION_MS = 4800;
+
 export default function ConfettiBurst({ active, onDone }) {
+  const [particles, setParticles] = useState({ fall: [], burst: [] });
+
   useEffect(() => {
-    if (!active) return undefined;
-    const t = setTimeout(() => onDone?.(), 1400);
-    return () => clearTimeout(t);
+    if (!active) {
+      setParticles({ fall: [], burst: [] });
+      return undefined;
+    }
+
+    const cx = typeof window !== 'undefined' ? window.innerWidth / 2 : 500;
+    const cy = typeof window !== 'undefined' ? window.innerHeight / 2 : 400;
+    const fall = makeFallParticles(90);
+    const burst1 = makeBurstParticles(70, cx - 120, cy - 40);
+    const burst2 = makeBurstParticles(70, cx + 120, cy - 40);
+    const burst3 = makeBurstParticles(50, cx, cy - 80);
+
+    setParticles({ fall, burst: burst1 });
+
+    const t2 = setTimeout(() => {
+      setParticles((prev) => ({ ...prev, burst: [...prev.burst, ...burst2] }));
+    }, 280);
+    const t3 = setTimeout(() => {
+      setParticles((prev) => ({ ...prev, burst: [...prev.burst, ...burst3] }));
+    }, 520);
+    const done = setTimeout(() => onDone?.(), CELEBRATION_MS);
+
+    return () => {
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(done);
+    };
   }, [active, onDone]);
 
   return (
     <AnimatePresence>
       {active && (
         <motion.div
-          className="fixed inset-0 z-[2000] pointer-events-none flex items-center justify-center"
+          className="tech-listing-celebration"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
         >
-          {Array.from({ length: 24 }, (_, i) => (
-            <Particle key={i} index={i} />
-          ))}
+          <div className="tech-listing-celebration__backdrop" aria-hidden />
+
+          <div className="tech-listing-celebration__confetti-layer" aria-hidden>
+            {particles.fall.map((p) => (
+              <Particle key={p.id} particle={p} variant="fall" />
+            ))}
+            {particles.burst.map((p) => (
+              <Particle key={p.id} particle={p} variant="burst" />
+            ))}
+          </div>
+
           <motion.div
-            className="absolute text-center px-6 py-4 bg-white/95 border border-indigo-100 rounded-2xl shadow-xl"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            className="tech-listing-celebration__card"
+            initial={{ scale: 0.88, opacity: 0, y: 24 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.94, opacity: 0, y: 12 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            role="status"
+            aria-live="polite"
           >
-            <div className="text-2xl mb-1">🎉</div>
-            <div className="font-display text-lg font-semibold text-gray-900">Technology listed!</div>
-            <p className="text-sm text-gray-500 m-0 mt-1">Pending admin verification</p>
+            <div className="tech-listing-celebration__icon" aria-hidden>
+              🎉
+            </div>
+            <h2 className="tech-listing-celebration__title">Technology listed!</h2>
+            <p className="tech-listing-celebration__subtitle">
+              Your listing is live on the marketplace. Admin verification may be required before buyers can purchase.
+            </p>
+            <span className="tech-listing-celebration__badge">
+              <span aria-hidden>✓</span> Listing published
+            </span>
           </motion.div>
         </motion.div>
       )}

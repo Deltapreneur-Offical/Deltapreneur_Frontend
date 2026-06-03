@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gavel, ShoppingCart, Trash2, Share2 } from 'lucide-react';
+import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
+import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
@@ -23,7 +24,6 @@ function DomainCardBody({
   statusKey,
   pricingLabel,
   isAdminListed,
-  needsVerification,
   formatPrice,
 }) {
   return (
@@ -85,12 +85,12 @@ export default function DomainListingCard({
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
+  const isHighValue = isPremiumDomain(domain);
   const isAdminListed = isAdminCreatedListing(domain, 'domain');
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
-  const showPriceBox = !isAuction || Boolean(auction);
   const display = resolveDomainDisplay(domain);
   const domainInitials = (display.name || '')
     .replace(/[^a-zA-Z0-9]/g, '')
@@ -100,7 +100,8 @@ export default function DomainListingCard({
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed';
   const needsVerification = !domain.verified;
-  const purchaseBlocked = needsVerification;
+  const purchaseBlocked = needsVerification && !isOwner;
+  const showPriceBox = !needsVerification || isOwner;
 
   const accentGrad = isAuction
     ? 'from-purple-600 via-fuchsia-500 to-pink-500'
@@ -156,7 +157,6 @@ export default function DomainListingCard({
       statusKey={statusKey}
       pricingLabel={pricingLabel}
       isAdminListed={isAdminListed}
-      needsVerification={needsVerification}
       formatPrice={formatPrice}
     />
   );
@@ -174,7 +174,10 @@ export default function DomainListingCard({
         onClick={onView}
         footer={(
           <ListingBrowseFooter className="border-t-0 pt-0" onViewDetails={onView}>
-            <span>👁 {domain.views || 0}</span>
+            <span className="flex items-center gap-0.5">
+              <Eye size={11} />
+              {domain.views || 0}
+            </span>
             {onLike && (
               <div onClick={stop} onMouseDown={stop} role="presentation">
                 <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
@@ -205,7 +208,10 @@ export default function DomainListingCard({
             onMouseDown={stop}
             role="presentation"
           >
-            <span>👁 {domain.views || 0}</span>
+            <span className="flex items-center gap-0.5">
+              <Eye size={11} />
+              {domain.views || 0}
+            </span>
             {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
           </div>
           <div className="flex gap-2 mt-1" onClick={stop} role="presentation">
@@ -262,6 +268,14 @@ export default function DomainListingCard({
                 <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
                   Verification pending
                 </span>
+              ) : isHighValue ? (
+                <button
+                  type="button"
+                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  onClick={(e) => { stop(e); onEnquire?.(); }}
+                >
+                  <MessageSquare size={12} /> Enquire
+                </button>
               ) : (
                 <button
                   type="button"

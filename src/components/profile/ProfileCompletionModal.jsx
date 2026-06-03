@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { readApiError } from '../../utils/apiError';
@@ -160,6 +160,15 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
                 'Update Profile →'
               )}
             </button>
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <Link
+              to="/security/password"
+              className="block text-center text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors"
+            >
+              Forgot password? Don&apos;t worry — manage it here
+            </Link>
           </div>
         </form>
 

@@ -14,3 +14,22 @@ export function hasCookieAuthSession() {
 export function hasAuthSession() {
   return Boolean(getStoredAccessToken() || hasCookieAuthSession());
 }
+
+/** Default route after a successful login when no return URL was saved. */
+export function getPostLoginDestination(user) {
+  const role = (user?.role ?? '').toString().toUpperCase();
+  if (role === 'COBROTHER') return '/cobrother';
+  return '/dashboard';
+}
+
+/**
+ * Prefer a saved return path; otherwise use role-based dashboard default.
+ * Treats "/" and "/login" as "no saved path" so users land on the app, not home.
+ */
+export function resolvePostLoginPath(storedPath, user) {
+  const normalized = typeof storedPath === 'string' ? storedPath.trim() : '';
+  if (normalized && normalized !== '/' && normalized !== '/login') {
+    return normalized;
+  }
+  return getPostLoginDestination(user);
+}

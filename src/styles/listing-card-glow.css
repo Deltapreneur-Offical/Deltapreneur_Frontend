@@ -6,6 +6,12 @@
 .home-features-card-grid {
   overflow: visible;
   padding: 12px 4px;
+  align-items: stretch;
+}
+
+.domain-listing-grid .listing-card-glow-shell,
+.technology-listing-grid .listing-card-glow-shell {
+  height: 100%;
 }
 
 .listing-card-glow-shell,

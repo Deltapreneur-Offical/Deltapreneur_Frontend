@@ -1,13 +1,81 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gavel, ShoppingCart, Trash2, Share2 } from 'lucide-react';
+import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
+import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
 import '../../styles/domain-listing-cards.css';
+
+function DomainCardChips({
+  isOwner,
+  isAuction,
+  statusKey,
+  pricingLabel,
+  isHighValue,
+  isAdminListed,
+  needsVerification,
+  verified,
+}) {
+  return (
+    <div className="domain-listing-card__chips">
+      {isOwner && (
+        <span className="domain-listing-card__chip domain-listing-card__chip--owner">Owner</span>
+      )}
+      {!isAuction && (
+        <span
+          className={`domain-listing-card__chip domain-listing-card__chip--${
+            statusKey === 'AVAILABLE' ? 'available' : statusKey === 'SOLD' ? 'sold' : 'pending'
+          }`}
+        >
+          {statusKey}
+        </span>
+      )}
+      <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
+      {isHighValue && statusKey === 'AVAILABLE' && (
+        <span className="domain-listing-card__chip domain-listing-card__chip--premium">Premium</span>
+      )}
+      {isAdminListed && (
+        <span className="domain-listing-card__chip domain-listing-card__chip--premium">Admin Listed</span>
+      )}
+      {isAuction && (
+        <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
+      )}
+      {verified ? (
+        <span className="domain-listing-card__chip domain-listing-card__chip--verified">Verified</span>
+      ) : needsVerification ? (
+        <span className="domain-listing-card__chip domain-listing-card__chip--pending">
+          Verification pending
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function DomainPriceBox({
+  isAuction,
+  auctionLive,
+  formatPrice,
+  auctionCurrentBid,
+  auctionStartBid,
+  askingPrice,
+}) {
+  const priceValue = isAuction
+    ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid || askingPrice || 0)
+    : formatPrice(askingPrice ?? 0);
+
+  return (
+    <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+      <div className="domain-listing-card__price-label">
+        {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+      </div>
+      <div className="domain-listing-card__price-value">{priceValue}</div>
+    </div>
+  );
+}
 
 export default function DomainListingCard({
   domain,
@@ -26,12 +94,12 @@ export default function DomainListingCard({
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
+  const isHighValue = isPremiumDomain(domain);
   const isAdminListed = isAdminCreatedListing(domain, 'domain');
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
-  const showPriceBox = !isAuction || Boolean(auction);
   const display = resolveDomainDisplay(domain);
   const domainInitials = (display.name || '')
     .replace(/[^a-zA-Z0-9]/g, '')
@@ -41,7 +109,7 @@ export default function DomainListingCard({
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed';
   const needsVerification = !domain.verified;
-  const purchaseBlocked = needsVerification;
+  const purchaseBlocked = needsVerification && !isOwner;
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -67,82 +135,70 @@ export default function DomainListingCard({
 
   const stop = (e) => e.stopPropagation();
 
+  const cardHeader = (
+    <div className="domain-listing-card__header">
+      <div className="domain-listing-card__identity">
+        <div className="domain-listing-card__avatar">
+          {domain.logo ? <img src={domain.logo} alt="" /> : domainInitials}
+        </div>
+        <div className="domain-listing-card__title-block">
+          <h3 className="domain-listing-card__name" title={display.fullDomain}>
+            <span className="domain-listing-card__name-text">{display.name}</span>
+            {display.ext ? (
+              <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
+                {display.ext.label}
+              </span>
+            ) : null}
+          </h3>
+        </div>
+      </div>
+      <DomainCardChips
+        isOwner={isOwner}
+        isAuction={isAuction}
+        statusKey={statusKey}
+        pricingLabel={pricingLabel}
+        isHighValue={isHighValue}
+        isAdminListed={isAdminListed}
+        needsVerification={needsVerification}
+        verified={domain.verified}
+      />
+    </div>
+  );
+
+  const cardBody = (
+    <div className="domain-listing-card__body">
+      <DomainPriceBox
+        isAuction={isAuction}
+        auctionLive={auctionLive}
+        formatPrice={formatPrice}
+        auctionCurrentBid={auctionCurrentBid}
+        auctionStartBid={auctionStartBid}
+        askingPrice={domain.askingPrice}
+      />
+    </div>
+  );
+
   if (browseMode) {
     return (
       <article className="domain-listing-card domain-listing-card--browse listing-card-glow card-glow-hover">
         {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
-        <div className="domain-listing-card__header">
-          <div className="domain-listing-card__identity">
-            <div className="domain-listing-card__avatar">
-              {domain.logo ? <img src={domain.logo} alt="" /> : domainInitials}
-            </div>
-            <div className="domain-listing-card__title-block">
-              <h3 className="domain-listing-card__name" title={display.fullDomain}>
-                <span className="domain-listing-card__name-text">{display.name}</span>
-                {display.ext ? (
-                  <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
-                    {display.ext.label}
-                  </span>
-                ) : null}
-              </h3>
-            </div>
-          </div>
-          <div className="domain-listing-card__chips">
-            {!isAuction && (
-              <span className={`domain-listing-card__chip domain-listing-card__chip--${
-                statusKey === 'AVAILABLE' ? 'available' : statusKey === 'SOLD' ? 'sold' : 'pending'
-              }`}>
-                {statusKey}
-              </span>
-            )}
-            <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
-            {isAdminListed && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--premium">Admin Listed</span>
-            )}
-            {isAuction && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
-            )}
-            {needsVerification && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--pending">
-                Verification pending
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="domain-listing-card__body">
-          {domain.verified ? (
-            <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
-          ) : (
-            <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
-          )}
-          {showPriceBox ? (
-            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-              <div className="domain-listing-card__price-label">
-                {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
-              </div>
-              <div className="domain-listing-card__price-value">
-                {isAuction
-                  ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
-                  : formatPrice(domain.askingPrice)}
-              </div>
-            </div>
-          ) : (
-            <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
-              <div className="domain-listing-card__price-label">Starting bid</div>
-              <div className="domain-listing-card__price-value">Verification pending</div>
-            </div>
-          )}
-        </div>
+        {cardHeader}
+        {cardBody}
         <ListingBrowseFooter
-          className="domain-listing-card__footer border-t-0 pt-0"
+          className="domain-listing-card__footer domain-listing-card__footer--browse"
           onViewDetails={onView}
         >
-          <span>👁 {domain.views || 0}</span>
-          {onLike && (
-            <div onClick={stop} onMouseDown={stop} role="presentation">
-              <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-            </div>
-          )}
+          <div className="domain-listing-card__stats">
+            <span className="domain-listing-card__stat">
+              <Eye size={14} />
+              {domain.views || 0}
+            </span>
+            {onLike && (
+              <div onClick={stop} onMouseDown={stop} role="presentation">
+                <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
+              </div>
+            )}
+          </div>
         </ListingBrowseFooter>
       </article>
     );
@@ -151,79 +207,15 @@ export default function DomainListingCard({
   return (
     <article className="domain-listing-card listing-card-glow card-glow-hover" onClick={onView}>
       {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
-
-      <div className="domain-listing-card__header">
-        <div className="domain-listing-card__identity">
-          <div className="domain-listing-card__avatar">
-            {domain.logo ? (
-              <img src={domain.logo} alt="" />
-            ) : (
-              domainInitials
-            )}
-          </div>
-          <div className="domain-listing-card__title-block">
-            <h3 className="domain-listing-card__name" title={display.fullDomain}>
-              <span className="domain-listing-card__name-text">{display.name}</span>
-              {display.ext ? (
-                <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
-                  {display.ext.label}
-                </span>
-              ) : null}
-            </h3>
-          </div>
-        </div>
-        <div className="domain-listing-card__chips">
-          {isOwner && <span className="domain-listing-card__chip domain-listing-card__chip--owner">Owner</span>}
-          {!isAuction && (
-            <span className={`domain-listing-card__chip domain-listing-card__chip--${
-              statusKey === 'AVAILABLE' ? 'available' : statusKey === 'SOLD' ? 'sold' : 'pending'
-            }`}>
-              {statusKey}
-            </span>
-          )}
-          <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
-          {isAdminListed && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--premium">Admin Listed</span>
-          )}
-          {isAuction && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
-          )}
-          {needsVerification && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--pending">
-              Verification pending
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="domain-listing-card__body">
-        {domain.verified ? (
-          <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
-        ) : (
-          <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
-        )}
-        {showPriceBox ? (
-          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-            <div className="domain-listing-card__price-label">
-              {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
-            </div>
-            <div className="domain-listing-card__price-value">
-              {isAuction
-                ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
-                : formatPrice(domain.askingPrice)}
-            </div>
-          </div>
-        ) : (
-          <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
-            <div className="domain-listing-card__price-label">Starting bid</div>
-            <div className="domain-listing-card__price-value">Verification pending</div>
-          </div>
-        )}
-      </div>
+      {cardHeader}
+      {cardBody}
 
       <div className="domain-listing-card__footer">
         <div className="domain-listing-card__stats" onClick={stop} onMouseDown={stop} role="presentation">
-          <span>👁 {domain.views || 0}</span>
+          <span className="domain-listing-card__stat">
+            <Eye size={14} />
+            {domain.views || 0}
+          </span>
           {onLike && (
             <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
           )}
@@ -252,26 +244,30 @@ export default function DomainListingCard({
             </>
           ) : isAuction ? (
             purchaseBlocked ? (
-              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                Verification pending
+              <span className="domain-listing-card__btn domain-listing-card__btn--disabled" aria-disabled="true">
+                Not available yet
               </span>
             ) : (
-            <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onViewAuction?.(); }}>
-              <Gavel size={14} /> {auctionLive ? 'Join auction' : 'View auction'}
-            </button>
+              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onViewAuction?.(); }}>
+                <Gavel size={14} /> {auctionLive ? 'Join auction' : 'View auction'}
+              </button>
             )
           ) : statusKey === 'AVAILABLE' ? (
             purchaseBlocked ? (
-              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                Verification pending
+              <span className="domain-listing-card__btn domain-listing-card__btn--disabled" aria-disabled="true">
+                Not available yet
               </span>
+            ) : isHighValue ? (
+              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onEnquire?.(); }}>
+                <MessageSquare size={14} /> Enquire
+              </button>
             ) : (
-            <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
-              <ShoppingCart size={14} /> Buy now
-            </button>
+              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
+                <ShoppingCart size={14} /> Buy now
+              </button>
             )
           ) : (
-            <span className="text-xs text-slate-400 font-medium px-2">{statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}</span>
+            <span className="domain-listing-card__status-muted">{statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}</span>
           )}
         </div>
       </div>

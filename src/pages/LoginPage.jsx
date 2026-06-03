@@ -9,6 +9,7 @@ import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 
 import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
+import { resolvePostLoginPath } from '../utils/authSession';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 
@@ -29,7 +30,7 @@ export default function LoginPage() {
   const from =
     location.state?.from ||
     localStorage.getItem('redirectAfterLogin') ||
-    '/';
+    null;
 
   const showLoginForm = location.state?.showLoginForm === true;
 
@@ -55,8 +56,9 @@ export default function LoginPage() {
 
     if (!loading && user && !showLoginForm) {
 
+      const storedFrom = typeof from === 'string' ? from : from?.pathname;
       const destination = user.profileComplete
-        ? (from && from !== '/login' ? from : '/')
+        ? resolvePostLoginPath(storedFrom, user)
         : '/complete-profile';
       navigate(destination, { replace: true });
       localStorage.removeItem('redirectAfterLogin');
@@ -144,14 +146,15 @@ export default function LoginPage() {
 
     const fetchedUser = await refreshUser();
 
-    const redirectPath =
+    const storedPath =
       localStorage.getItem('redirectAfterLogin') ||
-      (typeof from === 'string' ? from : from?.pathname) ||
-      '/';
+      (typeof from === 'string' ? from : from?.pathname);
     localStorage.removeItem('redirectAfterLogin');
 
     navigate(
-      fetchedUser?.profileComplete ? redirectPath : '/complete-profile',
+      fetchedUser?.profileComplete
+        ? resolvePostLoginPath(storedPath, fetchedUser)
+        : '/complete-profile',
       { replace: true },
     );
 

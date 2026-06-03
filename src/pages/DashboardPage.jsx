@@ -8,6 +8,7 @@ import VentureIcon from '../assets/Coventure_logo.png';
 import CommunityIcon from '../assets/Cobrother_Profile.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
+import { resolveUserDisplayName } from '../utils/userDisplayName';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
 const DASHBOARD_GREETING_COUNT = 8;
@@ -76,7 +77,7 @@ export default function DashboardPage() {
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
   const showAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
 
-  const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
+  const displayName = resolveUserDisplayName(user);
   const rolePillText = displayRoleLabel(user?.role, t);
 
   return (
@@ -110,7 +111,7 @@ export default function DashboardPage() {
               <div className="min-w-0">
                 <p className="text-white/80 text-sm mb-1">{t('dashboardWelcomeBack')}</p>
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white break-words">
-                  {t('dashboardHello', { name: firstName })}
+                  {t('dashboardHello', { name: displayName })}
                 </h1>
                 <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>

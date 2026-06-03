@@ -63,7 +63,7 @@ export default function VentureListingCard({
     ? 'from-purple-600 via-fuchsia-500 to-pink-500'
     : 'from-indigo-600 via-blue-500 to-cyan-400';
 
-  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full min-h-[355px]${
+  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-[355px] max-h-[355px]${
     compact ? ' listing-card--compact' : ''
   }${browseMode ? '' : ' cursor-pointer'}`;
 
@@ -120,9 +120,9 @@ export default function VentureListingCard({
         </div>
       </div>
 
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
-        <div className="flex flex-col gap-1 mb-1">
-          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words">
+      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col gap-1 mb-1 min-h-0">
+          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words line-clamp-1">
             {b.brandName}
           </h3>
           <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">

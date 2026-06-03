@@ -1,0 +1,35 @@
+/* Uniform marketplace listing card height (matches home venture previews) */
+
+:root {
+  --listing-card-height: 355px;
+}
+
+.listing-card-glow-grid,
+.technology-listing-grid,
+.domain-listing-grid {
+  align-items: stretch;
+}
+
+.listing-card-glow-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.listing-card-glow-shell > .venture-listing-card,
+.listing-card-glow-shell > .domain-listing-card,
+.listing-card-glow-shell > .technology-listing-card,
+.listing-card-glow-shell > .community-listing-card,
+.listing-card-glow-shell > article.domain-listing-card {
+  width: 100%;
+  height: var(--listing-card-height);
+  max-height: var(--listing-card-height);
+}
+
+.domain-listing-card.marketplace-listing-card--venture-style {
+  min-height: unset;
+  height: var(--listing-card-height);
+  max-height: var(--listing-card-height);
+  padding: 0;
+  border-radius: 1rem;
+}

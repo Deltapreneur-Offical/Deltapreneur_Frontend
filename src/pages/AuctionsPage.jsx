@@ -386,7 +386,7 @@ function VentureAuctionCard({ auction, onClick }) {
   const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
 
   return (
-    <div className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative" onClick={onClick}>
+    <div className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col" onClick={onClick}>
       <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold" style={{
         color: isDraft ? '#6366f1' : (isExtended ? '#c8a96e' : '#6ec896'),
         background: isDraft ? 'rgba(99,102,241,0.14)' : (isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)'),
@@ -484,7 +484,7 @@ function DomainAuctionCard({ auction, onClick }) {
 
   return (
     <div
-      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative"
+      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col"
       onClick={onClick}
     >
       {/* Status pill */}
@@ -617,7 +617,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
 
   return (
     <div
-      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative"
+      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col"
       onClick={onClick}
     >
       <div
@@ -707,7 +707,7 @@ function CommunityAuctionCard({ auction, onClick }) {
     : [];
 
   return (
-    <div className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative"
+    <div className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col"
       onClick={onClick}>
 
       {/* Status pill */}

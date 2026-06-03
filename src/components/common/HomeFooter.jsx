@@ -122,27 +122,9 @@ const socials = [
 
 
 
-const socialHoverStyles = {
-
-  X: 'hover:border-slate-400 hover:text-slate-800 hover:bg-slate-50 hover:shadow-[0_6px_20px_rgba(100,116,139,0.18)]',
-
-  Instagram: 'hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50/90 hover:shadow-[0_6px_20px_rgba(236,72,153,0.2)]',
-
-  Facebook: 'hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/90 hover:shadow-[0_6px_20px_rgba(59,130,246,0.2)]',
-
-  LinkedIn: 'hover:border-sky-400 hover:text-sky-700 hover:bg-sky-50/90 hover:shadow-[0_6px_20px_rgba(14,165,233,0.2)]',
-
-  YouTube: 'hover:border-red-300 hover:text-red-600 hover:bg-red-50/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.18)]',
-
-  WhatsApp: 'hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50/90 hover:shadow-[0_6px_20px_rgba(16,185,129,0.2)]',
-
-};
-
-
-
 const linkClass =
 
-  'block py-1.5 text-sm text-slate-600 no-underline transition-all duration-200 hover:translate-x-0.5 hover:text-indigo-700 visited:text-slate-600';
+  'block py-1.5 text-sm text-slate-600 no-underline transition-colors duration-300 hover:text-[var(--cobrother-hover-color)] visited:text-slate-600';
 
 const scrollToTop = () => {
 
@@ -318,7 +300,7 @@ export default function HomeFooter() {
 
                   aria-label={label}
 
-                  className={`flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-all duration-200 hover:-translate-y-0.5 sm:h-10 sm:w-10 ${socialHoverStyles[label]}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-colors duration-300 hover:border-[var(--cobrother-hover-color)] hover:text-[var(--cobrother-hover-color)] sm:h-10 sm:w-10"
 
                 >
 

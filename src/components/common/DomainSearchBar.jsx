@@ -28,7 +28,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [tld, setTld] = useState('com');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const debounceRef           = useRef(null);
@@ -38,9 +37,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     if (!q) return null;
     const dot = q.indexOf('.');
     if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    // No TLD typed: check selected extension first, then others (prices differ per TLD)
-    const ordered = [tld, ...TLDS.filter((ext) => ext !== tld)];
-    return ordered.map((ext) => ({ name: q, ext }));
+    return TLDS.map((ext) => ({ name: q, ext }));
   };
 
   const doSearch = async (raw) => {
@@ -92,7 +89,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(query), 700);
     return () => clearTimeout(debounceRef.current);
-  }, [query, tld]);
+  }, [query]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -198,7 +195,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         <div className={`hidden lg:flex lg:flex-row lg:items-end gap-4 xl:gap-5 ${embedded ? 'lg:justify-start' : 'lg:justify-center'}`}>
           <form onSubmit={handleSearch}
             className="search-glow-focus flex w-full max-w-[700px] flex-[1_1_640px] flex-row items-center gap-2 overflow-hidden rounded-2xl border border-indigo-400/40 bg-black py-2 pl-4 pr-2 shadow-[0_4px_24px_rgba(99,102,241,0.12)] transition-all duration-300 sm:pl-5 sm:rounded-full xl:max-w-[740px]">
-            <Search className="h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
+            <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
             <input
               type="text"
               className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-white-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
@@ -206,23 +203,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <div className="relative flex shrink-0 items-center">
-            <select
-  value={tld}
-  onChange={(e) => setTld(e.target.value)}
-  className="cursor-pointer rounded-full border border-gray-700 bg-[#111827] py-2.5 pl-4 pr-8 text-sm font-semibold text-white outline-none transition-all duration-300 hover:bg-[#1f2937] focus:border-purple-400"
-  aria-label="Domain extension"
->
-                {TLDS.map((ext) => (
-                  <option key={ext} value={ext}>
-                    .{ext}
-                  </option>
-                ))}
-              </select>
-            </div>
             <button
   type="submit"
-  className="shrink-0 rounded-full bg-white/95 backdrop-blur-md border border-purple-200 px-7 py-3 text-[14px] font-semibold text-gray-900 shadow-md transition-all duration-300 hover:bg-white hover:shadow-lg"
+  className="domain-search-submit shrink-0 rounded-full bg-white/95 backdrop-blur-md border border-purple-200 px-7 py-3 text-[14px] font-semibold text-gray-900 shadow-md transition-all duration-300 hover:bg-white hover:shadow-lg"
 >
   {t('search')}
 </button>
@@ -233,7 +216,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         {/* Mobile / tablet */}
         <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
           <form onSubmit={handleSearch}
-            className={`search-glow-focus w-full flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01] ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+            className={`search-glow-focus w-full flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-[var(--cobrother-hover-color)] hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01] ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
             <input
               type="text"
               className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-white-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
@@ -242,7 +225,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               onChange={e => setQuery(e.target.value)}
             />
             <button type="submit"
-              className="bg-[#232f3e] text-white py-3 px-6 sm:px-7 rounded-full text-sm sm:text-base font-semibold transition-all w-full sm:w-auto hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
+              className="domain-search-submit bg-[#232f3e] text-white py-3 px-6 sm:px-7 rounded-full text-sm sm:text-base font-semibold transition-all w-full sm:w-auto hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
               {t('search')}
             </button>
           </form>
@@ -333,6 +316,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             12px 0 20px -6px rgba(255,48,108,0.35),
             0 0 14px -3px rgba(120,80,220,0.25);
           border-color: rgba(120,80,220,0.35);
+        }
+
+        .search-glow-focus:hover .domain-search-icon,
+        .search-glow-focus:focus-within .domain-search-icon {
+          color: var(--cobrother-hover-color);
+        }
+
+        .domain-search-submit:hover,
+        .domain-search-submit:focus-visible {
+          border-color: var(--cobrother-hover-color);
+          color: var(--cobrother-hover-color);
+          outline: none;
         }
       `}</style>
     </div>

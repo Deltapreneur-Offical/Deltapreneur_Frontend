@@ -50,6 +50,9 @@ export function resolveBackendOrigin() {
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
     return remoteApiBase.replace(/\/$/, '');
   }
+  if (import.meta.env.DEV && isLocalBackend) {
+    return 'http://127.0.0.1:8000';
+  }
   return PRODUCTION_API_ORIGIN;
 }
 

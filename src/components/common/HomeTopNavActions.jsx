@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/cobrother_community_profil.png';
 import CurrencyDropdown from './CurrencyDropdown';
@@ -51,6 +52,20 @@ function getDisplayNameFromUser(user) {
     return username.charAt(0).toUpperCase() + username.slice(1);
   }
   return 'User';
+}
+
+function WhatsAppNavButton() {
+  return (
+    <button
+      type="button"
+      className="home-nav-whatsapp-btn"
+      aria-label="WhatsApp"
+      title="WhatsApp"
+      onClick={() => {}}
+    >
+      <FaWhatsapp aria-hidden />
+    </button>
+  );
 }
 
 export default function HomeTopNavActions() {
@@ -139,6 +154,8 @@ export default function HomeTopNavActions() {
         <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
       </div>
 
+      <WhatsAppNavButton />
+
       <div className="relative hidden xl:block">
         <a href="/contact" className="home-nav-contact-link">
           {t('contactUs')}
@@ -148,7 +165,7 @@ export default function HomeTopNavActions() {
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button
           type="button"
-          className="home-top-nav-profile-btn relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-slate-400 hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
+          className="home-top-nav-profile-btn relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-[var(--cobrother-hover-color)] hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
           onClick={toggleProfileDropdown}
           aria-label="Account menu"
           aria-expanded={profileDropdownOpen}

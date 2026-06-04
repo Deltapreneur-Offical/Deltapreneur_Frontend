@@ -29,12 +29,31 @@ function parseDomainInput(raw, fallbackTld) {
   return `${q}.${fallbackTld}`;
 }
 
-function statusBadgeClass(status) {
-  const s = (status || '').toUpperCase();
-  if (s === 'ACTIVE') return 'bg-emerald-100 text-emerald-800';
-  if (s === 'CREATED' || s === 'PAYMENT_COMPLETED') return 'bg-amber-100 text-amber-800';
-  if (s.includes('FAIL')) return 'bg-red-100 text-red-700';
+function statusBadgeClass(status, lifecycleStatus) {
+  const life = (lifecycleStatus || '').toLowerCase();
+  if (life === 'registration_confirmed' || (status || '').toUpperCase() === 'ACTIVE') {
+    return 'bg-emerald-100 text-emerald-800';
+  }
+  if (
+    life === 'payment_success' ||
+    life === 'registration_pending' ||
+    ['CREATED', 'PAYMENT_COMPLETED', 'REGISTRATION_PENDING'].includes((status || '').toUpperCase())
+  ) {
+    return 'bg-amber-100 text-amber-800';
+  }
+  if (life === 'registration_failed' || (status || '').toUpperCase().includes('FAIL')) {
+    return 'bg-red-100 text-red-700';
+  }
   return 'bg-gray-100 text-gray-700';
+}
+
+function statusLabel(status, lifecycleStatus, t) {
+  const life = lifecycleStatus || '';
+  if (life === 'registration_confirmed') return t('storefrontStatusConfirmed');
+  if (life === 'registration_pending') return t('storefrontStatusPending');
+  if (life === 'payment_success') return t('storefrontStatusPaid');
+  if (life === 'registration_failed') return t('storefrontStatusFailed');
+  return status || life;
 }
 
 function buildContactFromUser(user) {
@@ -251,7 +270,7 @@ export default function DomainStorefrontPage() {
 
         {config && (
           <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 text-sm text-indigo-900">
-            {config.openProviderSandbox && (
+            {(config.registrarSandbox || config.openProviderSandbox) && (
               <span className="font-semibold mr-2">{t('storefrontSandboxBadge')}</span>
             )}
             {config.demoMode && (
@@ -442,13 +461,16 @@ export default function DomainStorefrontPage() {
                       </td>
                       <td className="py-3 pr-4">
                         <span
-                          className={`inline-block text-xs font-semibold px-2 py-1 rounded-full ${statusBadgeClass(order.status)}`}
+                          className={`inline-block text-xs font-semibold px-2 py-1 rounded-full ${statusBadgeClass(order.status, order.lifecycleStatus)}`}
                         >
-                          {order.status}
+                          {statusLabel(order.status, order.lifecycleStatus, t)}
                         </span>
                       </td>
                       <td className="py-3">
-                        {String(order.status || '').toUpperCase().includes('FAIL') ||
+                        {order.lifecycleStatus === 'registration_failed' ||
+                        String(order.status || '').toUpperCase().includes('FAIL') ||
+                        order.lifecycleStatus === 'payment_success' ||
+                        order.lifecycleStatus === 'registration_pending' ||
                         order.status === 'PAYMENT_COMPLETED' ? (
                           <button
                             type="button"

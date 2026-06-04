@@ -149,7 +149,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         </p>
         {result.status === 'available' && (
           <p className={`text-gray-500 mt-1 ${large ? 'text-xs' : 'text-[11px]'}`}>
-            Registrar create price for .{result.ext} (per OpenProvider; same for any available name on this extension)
+            Registrar create price for .{result.ext} (from ResellerClub; same for any available name on this extension)
           </p>
         )}
       </div>

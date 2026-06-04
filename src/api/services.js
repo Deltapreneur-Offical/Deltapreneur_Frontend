@@ -116,7 +116,11 @@ export const domainStorefrontAPI = {
   createOrder: (body) => api.post('/api/v1/domain/storefront/order', body),
   verifyOrder: (body) => api.post('/api/v1/domain/storefront/order/verify', body),
   listOrders: () => api.get('/api/v1/domain/storefront/orders'),
-  getOrder: (orderId) => api.get(`/api/v1/domain/storefront/orders/${orderId}`),
+  getOrder: (orderId, { sync = true } = {}) =>
+    api.get(`/api/v1/domain/storefront/orders/${orderId}`, { params: { sync } }),
+  syncOrder: (orderId) => api.post(`/api/v1/domain/storefront/orders/${orderId}/sync`),
+  resendVerification: (orderId) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/resend-verification`),
   retryProvision: (orderId) => api.post(`/api/v1/domain/storefront/orders/${orderId}/retry`),
 };
 

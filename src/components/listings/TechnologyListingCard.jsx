@@ -10,6 +10,7 @@ import {
   canRequestTechnologyAuction,
   isTechnologyAuctionLive,
   isTechnologyAuctionPending,
+  isTechnologyListingOwner,
   technologyAuctionId,
 } from '../../utils/technologyAuctionUi';
 import MarketplaceListingCardFrame, {
@@ -46,6 +47,7 @@ export default function TechnologyListingCard({
   browseMode = false,
   onView,
   onBuy,
+  onEdit,
   onDelete,
   likeState,
   onLike,
@@ -56,7 +58,7 @@ export default function TechnologyListingCard({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [imgFailed, setImgFailed] = useState(false);
-  const owner = isOwner ?? item.listedBy?.id === user?.id;
+  const owner = Boolean(user?.id) && (isOwner === true || isTechnologyListingOwner(item, user));
   const isAuction = item.purchaseType === 'AUCTION';
   const showVerificationNotice =
     REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !item.verified;
@@ -119,40 +121,40 @@ export default function TechnologyListingCard({
     </div>
   );
 
+  const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors';
+  const btnEdit = `${btnPill} bg-white border border-gray-300 text-gray-800 font-semibold hover:bg-gray-50`;
+  const btnRemove = `${btnPill} bg-red-50 border border-red-300 text-red-600 font-bold hover:bg-red-100`;
+  const btnBuy = `${btnPill} bg-violet-600 text-white font-bold border-0 hover:bg-violet-700`;
+  const btnAuction = `${btnPill} bg-amber-50 text-amber-800 border border-amber-200 font-semibold hover:bg-amber-100`;
+  const btnLive = `${btnPill} bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hover:bg-emerald-100`;
+
   const actionButtons = (
-    <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()} role="presentation">
-      {user?.role === 'ADMIN' ? (
+    <div className="flex gap-2 flex-wrap items-stretch" onClick={(e) => e.stopPropagation()} role="presentation">
+      {owner ? (
         <>
+          {onEdit && (
+            <button
+              type="button"
+              className={btnEdit}
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            >
+              Edit
+            </button>
+          )}
           <button
             type="button"
-            className="flex-1 min-w-[4.5rem] py-1.5 bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold rounded hover:bg-red-100"
+            className={btnRemove}
             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
           >
             Remove
           </button>
-          {isDirectPurchase(item, auctionStatus) && (
-            <button
-              type="button"
-              className={`flex-1 min-w-[4.5rem] py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90`}
-              onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
-            >
-              Buy
-            </button>
-          )}
-        </>
-      ) : owner ? (
-        <>
           {canRequestTechnologyAuction(item, auctionStatus) && onAuction && (
-            <button
-              type="button"
-              className="flex-1 min-w-[4.5rem] py-1.5 text-[10px] font-bold rounded bg-amber-50 text-amber-800 border border-amber-200"
-              onClick={() => onAuction()}
-            >
+            <button type="button" className={btnAuction} onClick={() => onAuction()}>
               Auction
             </button>
           )}
           {isTechnologyAuctionPending(item, auctionStatus) && (
-            <span className="text-[10px] text-amber-700 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded font-semibold">
+            <span className={`${btnPill} text-center text-amber-700 bg-amber-50 border border-amber-200 font-semibold`}>
               Pending
             </span>
           )}
@@ -160,7 +162,7 @@ export default function TechnologyListingCard({
             && technologyAuctionId(item, auctionStatus) && (
             <button
               type="button"
-              className="flex-1 min-w-[4.5rem] py-1.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700 border border-emerald-200"
+              className={btnLive}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
@@ -169,45 +171,57 @@ export default function TechnologyListingCard({
               {isTechnologyAuctionLive(item, auctionStatus) ? 'Live' : 'View'}
             </button>
           )}
+        </>
+      ) : user?.role === 'ADMIN' ? (
+        <>
           <button
             type="button"
-            className="flex-1 min-w-[4.5rem] py-1.5 bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold rounded hover:bg-red-100"
+            className={btnRemove}
             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
           >
             Remove
           </button>
+          {isDirectPurchase(item, auctionStatus) && (
+            <button
+              type="button"
+              className={btnBuy}
+              onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
+            >
+              Buy Now →
+            </button>
+          )}
         </>
       ) : isTechnologyAuctionLive(item, auctionStatus) ? (
         isAuctionBlockedByVerification(item) ? (
-          <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
+          <span className={`${btnPill} text-center text-amber-800 bg-amber-50 border border-amber-200 font-semibold`}>
             Verification pending
           </span>
         ) : (
           <button
             type="button"
-            className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90`}
+            className={btnBuy}
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
             }}
           >
-            Place Bid
+            Place Bid →
           </button>
         )
       ) : isDirectPurchase(item, auctionStatus) ? (
         <button
           type="button"
-          className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90`}
+          className={btnBuy}
           onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
         >
-          Buy Now
+          Buy Now →
         </button>
       ) : isPurchaseBlockedByVerification(item) ? (
-        <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
+        <span className={`${btnPill} text-center text-amber-800 bg-amber-50 border border-amber-200 font-semibold`}>
           Verification pending
         </span>
       ) : (
-        <span className="flex-1 text-center text-[10px] text-gray-400 italic py-1.5">Sold</span>
+        <span className={`${btnPill} text-center text-gray-400 italic`}>Sold</span>
       )}
     </div>
   );

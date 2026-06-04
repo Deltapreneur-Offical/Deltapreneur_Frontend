@@ -2,6 +2,7 @@ import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import ListingBrowseFooter from './ListingBrowseFooter';
 import MarketplaceListingCardFrame, { ListingCardBadge } from './MarketplaceListingCardFrame';
+import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
 
 function LinkedInIcon({ size = 18 }) {
   return (
@@ -69,15 +70,15 @@ export default function CommunityListingCard({
           )}
         </div>
       )}
-      {profile.linkedInProfileUrl && (
+      {getLinkedInProfileUrl(profile) && (
         <a
-          href={profile.linkedInProfileUrl}
+          href={getLinkedInProfileUrl(profile)}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-1 text-[10px] text-[#0077b5] no-underline mb-2 hover:text-[#005885] flex-shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <LinkedInIcon size={12} /> LinkedIn
+          <LinkedInIcon size={12} /> View LinkedIn profile
         </a>
       )}
     </>

@@ -61,16 +61,27 @@ export default function VenturesPage() {
       dateField:     'createdAt',
     },
     20,
-    { getLikeCount: (item) => getLike(item.id).count },
+    {
+      getLikeCount: (item) => getLike(item.id).count,
+      resetPageWhen: filterTab,
+    },
   );
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
     req
-      .then(({ data }) => setAllVentures(asArray(data)))
-      .catch(() => setAllVentures([]))
-      .finally(() => setLoading(false));
+      .then(({ data }) => {
+        if (!cancelled) setAllVentures(asArray(data));
+      })
+      .catch(() => {
+        if (!cancelled) setAllVentures([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [filterTab]);
 
   useEffect(() => {

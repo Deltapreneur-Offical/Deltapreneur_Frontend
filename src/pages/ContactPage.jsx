@@ -138,7 +138,7 @@ export default function ContactPage() {
 
       <section className="py-16 px-4 max-md:py-12">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-12 shadow-2xl max-md:p-8">
+          <div className="contact-page-cta bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-12 shadow-2xl max-md:p-8">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4 max-md:text-2xl">
               {t('readyToGetStarted')}
             </h2>
@@ -148,8 +148,8 @@ export default function ContactPage() {
             <div className="flex gap-4 justify-center max-md:flex-col">
               <button
                 type="button"
-                className="btn-glow"
-                onClick={() => navigate('/login')}
+                className="btn-glow btn-glow-lg contact-page-cta__signin"
+                onClick={() => navigate('/login', { state: { showLoginForm: true } })}
               >
                 {t('signIn')}
               </button>

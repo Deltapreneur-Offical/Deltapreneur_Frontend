@@ -388,7 +388,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
               <input
                 type="text"
-                className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-white-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
+                className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] !text-white outline-none !placeholder:text-gray-400 focus:ring-0 sm:text-base"
                 placeholder={t('domainSearchPlaceholder')}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -433,7 +433,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             className={`search-glow-focus w-full flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-[var(--cobrother-hover-color)] hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01] ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
             <input
               type="text"
-              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-white-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
+              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none !text-gray-900 text-base sm:text-lg !placeholder:text-gray-500 py-2.5 sm:py-3 focus:ring-0 caret-gray-900"
               placeholder={t('domainSearchPlaceholder')}
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -634,6 +634,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             12px 0 20px -6px rgba(255,48,108,0.35),
             0 0 14px -3px rgba(120,80,220,0.25);
           border-color: rgba(120,80,220,0.35);
+        }
+
+        .search-glow-focus input[type="text"] {
+          -webkit-text-fill-color: currentColor;
         }
 
         .search-glow-focus:hover .domain-search-icon,

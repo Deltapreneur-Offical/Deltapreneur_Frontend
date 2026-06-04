@@ -30,6 +30,37 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
     return () => document.removeEventListener('mousedown', onOutside);
   }, []);
 
+  if (variant === 'profile-menu') {
+    const sectionItemCls = (active) =>
+      `flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors border-none bg-transparent cursor-pointer ${
+        active ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-gray-700 hover:bg-gray-50'
+      }`;
+
+    return (
+      <div className={`px-3 py-3 ${className}`.trim()}>
+        <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+          Currency
+        </p>
+        <div className="space-y-0.5" role="listbox" aria-label="Currency">
+          {supportedCurrencies.map((code) => (
+            <button
+              key={code}
+              type="button"
+              className={sectionItemCls(currency === code)}
+              aria-selected={currency === code}
+              onClick={() => setCurrency(code)}
+            >
+              <span className="font-medium tabular-nums">
+                {CURRENCY_SHORT[code] || ''} {code}
+              </span>
+              <span className="truncate text-gray-500">{CURRENCY_LABELS[code] || code}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const isDark = variant === 'dark';
   const isMinimal = variant === 'minimal';
 

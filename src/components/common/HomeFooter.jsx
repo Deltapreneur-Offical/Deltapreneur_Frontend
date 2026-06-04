@@ -337,17 +337,7 @@ export default function HomeFooter() {
 
   return (
 
-    <footer className="home-footer-theme relative mt-auto overflow-hidden border-t border-slate-200/50 bg-gradient-to-b from-slate-50 via-white to-indigo-50/70 text-slate-700">
-
-      <div
-
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_0%,rgba(59,130,246,0.08),transparent_55%),radial-gradient(ellipse_70%_50%_at_85%_20%,rgba(139,92,246,0.07),transparent_50%)]"
-
-        aria-hidden
-
-      />
-
-      <div className="pointer-events-none absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent" />
+    <footer className="app-chrome-panel home-footer-theme relative mt-auto overflow-hidden text-slate-700">
 
       <div className="home-hero-align-outer">
         <div className="home-hero-align-inner">{footerBody}</div>

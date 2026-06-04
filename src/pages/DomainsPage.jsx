@@ -111,18 +111,28 @@ export default function DomainsPage() {
     dateField:     'createdAt',
   }, 20, {
     getLikeCount: (item) => getLike(item.id).count,
+    resetPageWhen: filterTab,
   });
 
   useEffect(() => {
-  setLoading(true);
+    let cancelled = false;
+    setLoading(true);
 
-  const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
+    const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
 
-  req
-    .then(({ data }) => setAllDomains(extractDomainList(data)))
-    .catch(() => setAllDomains([]))
-    .finally(() => setLoading(false));
-}, [filterTab]);
+    req
+      .then(({ data }) => {
+        if (!cancelled) setAllDomains(extractDomainList(data));
+      })
+      .catch(() => {
+        if (!cancelled) setAllDomains([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [filterTab]);
 
   const { closeListingDetail } = useOpenListingDetailFromUrl({
     items: domainRows,

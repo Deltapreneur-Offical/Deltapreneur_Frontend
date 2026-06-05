@@ -1,6 +1,19 @@
 /** Shared UI rules for technology (software) auction requests on listing cards / dashboard. */
 
+import { matchUserId } from './auctionLister';
+
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
+
+/** True when the logged-in user created this technology listing. */
+export function isTechnologyListingOwner(item, user) {
+  if (!item || !user?.id) return false;
+  return matchUserId(
+    user.id,
+    item.listedBy?.id,
+    item.listedByUserId,
+    item.listed_by_user_id,
+  );
+}
 
 export function resolveTechnologyAuctionMeta(item, auctionStatus) {
   if (auctionStatus) return auctionStatus;

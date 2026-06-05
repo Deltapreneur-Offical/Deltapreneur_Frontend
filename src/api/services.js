@@ -27,7 +27,7 @@ export const profileAPI = {
 
 // ─── Venture ─────────────────────────────────────────────────────────────────
 export const ventureAPI = {
-  getAll:       ()        => api.get('/api/v1/venture/all'),
+  getAll:       (params)  => api.get('/api/v1/venture/all', { params }),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
   create:       (data)    => api.post('/api/v1/venture/', data),
@@ -74,8 +74,8 @@ export const creatorAPI = {
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
-  linkedInAuthUrl:  ()        => api.get('/api/v1/creator/linkedin/auth'),
-  linkedInCallback: (code)    => api.get(`/api/v1/creator/linkedin/callback?code=${code}`),
+  linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth'),
+  linkedInCallback: (code)    => api.get(`/api/v1/community/linkedin/callback?code=${code}`),
 };
 
 /** @deprecated Use creatorAPI */
@@ -90,14 +90,23 @@ export const currencyAPI = {
 };
 
 export const domainAPI = {
-  getAll:          ()        => api.get('/api/v1/domain/all'),
+  getAll:          (params)  => api.get('/api/v1/domain/all', { params }),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
   getMyPurchases:  ()        => api.get('/api/v1/domain/my-purchases'),
   get:             (id)      => api.get(`/api/v1/domain/listings/${id}`),
   create:          (data)    => api.post('/api/v1/domain/listings', data),
   update:          (id, data)=> api.put(`/api/v1/domain/listings/${id}`, data),
   delete:          (id)      => api.delete(`/api/v1/domain/listings/${id}`),
-  check: (name) => api.get(`/api/v1/domain/check?name=${name}`),
+  check: (name, mode) => api.get('/api/v1/domain/check', { params: { name, ...(mode ? { mode } : {}) } }),
+  search: ({ query, mode, page = 1, pageSize = 50 }) =>
+    api.get('/api/v1/domain/search', {
+      params: {
+        query,
+        mode,
+        page,
+        page_size: pageSize,
+      },
+    }),
   createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),
@@ -108,6 +117,11 @@ export const domainAPI = {
     api.post(`/api/v1/domain/${id}/image`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+};
+
+export const aiDomainsAPI = {
+  generate: (idea, options = {}) =>
+    api.post('/api/ai-domains/generate', { idea }, options),
 };
 
 /** Domain registration storefront (OpenProvider + Razorpay) — new domain checkout */
@@ -131,7 +145,7 @@ export const analyticsAPI = {
 };
 
 export const technologyAPI = {
-  getAll:          ()         => api.get('/api/v1/technology/all'),
+  getAll:          (params)   => api.get('/api/v1/technology/all', { params }),
   getMyListings:   ()         => api.get('/api/v1/technology/my-listings'),
   getMyPurchases:  ()         => api.get('/api/v1/technology/my-purchases'),
   get:             (id)       => api.get(`/api/v1/technology/${id}`),

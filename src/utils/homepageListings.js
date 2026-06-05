@@ -44,18 +44,34 @@ export function getListingOwner(item, type = 'domain') {
   return item.listedBy ?? null;
 }
 
-const ADMIN_ROLES = new Set(['ADMIN', 'COBROTHER', 'ROLE_ADMIN', 'ROLE_COBROTHER']);
+const ADMIN_ROLES = new Set([
+  'ADMIN',
+  'COBROTHER',
+  'SUPER_ADMIN',
+  'ADMINISTRATOR',
+  'ROLE_ADMIN',
+  'ROLE_COBROTHER',
+  'ROLE_SUPER_ADMIN',
+  'ROLE_ADMINISTRATOR',
+]);
 
 /** True when listing was created by admin / official catalog (not a guest user listing). */
 export function isAdminCreatedListing(item, type = 'domain') {
   if (!item) return false;
+  if (item.adminListed === true || item.admin_listed === true) return true;
   if (item.official === true) return true;
+  if (item.createdByAdmin === true || item.adminCreated === true) return true;
 
   const owner = getListingOwner(item, type);
   if (!owner) return false;
 
   const role = normalizeRole(owner.role);
-  return ADMIN_ROLES.has(role);
+  if (ADMIN_ROLES.has(role)) return true;
+
+  // Some payloads expose admin/co-brother flags directly on owner objects.
+  if (owner.isAdmin === true || owner.admin === true || owner.isCoBrother === true) return true;
+
+  return false;
 }
 
 /** Guest-user listings only (excludes admin-created listings). */

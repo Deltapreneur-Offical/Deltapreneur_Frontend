@@ -32,10 +32,13 @@ import {
   canRequestTechnologyAuction,
   isTechnologyAuctionLive,
   isTechnologyAuctionPending,
+  isTechnologyListingOwner,
   technologyAuctionId,
 } from '../utils/technologyAuctionUi';
 import ConfettiBurst from '../components/common/ConfettiBurst';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
+import { fetchAllListPages } from '../utils/listPagination';
+import { asArray } from '../utils/asArray';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -50,6 +53,7 @@ export default function CoCreationPage() {
   const [successItem, setSuccessItem]       = useState(null);
   const [detailTarget, setDetailTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget]     = useState(null);
+  const [editTarget, setEditTarget]         = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
 
@@ -68,7 +72,7 @@ export default function CoCreationPage() {
     page, totalPages, setPage,
   } = useFilterSort(
     filterTab === 'mine'
-      ? allSoftware.filter(s => s.listedBy?.id === user?.id)
+      ? allSoftware.filter(s => isTechnologyListingOwner(s, user))
       : allSoftware,
     {
       searchFields:  ['name', 'description', 'techStack'],
@@ -77,16 +81,32 @@ export default function CoCreationPage() {
       dateField:     'createdAt',
     },
     20,
-    { getLikeCount: (item) => getLike(item.id).count },
+    {
+      getLikeCount: (item) => getLike(item.id).count,
+      resetPageWhen: filterTab,
+    },
   );
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    const req = filterTab === 'mine' ? technologyAPI.getMyListings() : technologyAPI.getAll();
-    req
-      .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
-      .catch(() => setAllSoftware([]))
-      .finally(() => setLoading(false));
+    const loadAll = filterTab === 'mine'
+      ? technologyAPI.getMyListings().then(({ data }) => asArray(data))
+      : fetchAllListPages((params) => technologyAPI.getAll(params));
+
+    loadAll
+      .then((rows) => {
+        if (!cancelled) {
+          setAllSoftware(rows);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAllSoftware([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [filterTab]);
 
   const { closeListingDetail } = useOpenListingDetailFromUrl({
@@ -101,7 +121,7 @@ export default function CoCreationPage() {
 
   useEffect(() => {
     if (!user || allSoftware.length === 0) return;
-    const myListings = allSoftware.filter(s => s.listedBy?.id === user.id);
+    const myListings = allSoftware.filter(s => isTechnologyListingOwner(s, user));
     myListings.forEach(s => {
       softwareAuctionAPI.getBySoftware(s.id)
         .then(({ data }) => {
@@ -132,18 +152,18 @@ export default function CoCreationPage() {
         })
         .catch(() => {});
       const refreshListings = filterTab === 'mine'
-        ? technologyAPI.getMyListings()
-        : technologyAPI.getAll();
+        ? technologyAPI.getMyListings().then(({ data }) => asArray(data))
+        : fetchAllListPages((params) => technologyAPI.getAll(params));
       refreshListings
-        .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
+        .then((rows) => setAllSoftware(rows))
         .catch(() => {});
     }
   };
 
 
   const refreshSoftware = () =>
-    technologyAPI.getAll()
-      .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])));
+    fetchAllListPages((params) => technologyAPI.getAll(params))
+      .then((rows) => setAllSoftware(rows));
 
   return (
     <AppLayout>
@@ -161,7 +181,7 @@ export default function CoCreationPage() {
               <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
             {user && (
-              <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => setShowForm(true)}>
+              <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setEditTarget(null); setShowForm(true); }}>
                 <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
               </button>
             )}
@@ -170,24 +190,32 @@ export default function CoCreationPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('all'); setShowForm(false); }}>{t('allTechnology')}</button>
+            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allTechnology')}</button>
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('mine'); setShowForm(false); }}>{t('myListings')}</button>
+            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
 
-        {showForm && user && (
+        {(showForm || editTarget) && user && (
           <div className="mb-6">
             <SoftwareForm
+              key={editTarget?.id || 'create'}
+              initial={editTarget}
               onSaved={s => {
                 const snap = captureAppLayoutScroll();
                 flushSync(() => {
-                  setAllSoftware(prev => [s, ...prev]);
-                  setShowForm(false);
+                  if (editTarget) {
+                    setAllSoftware(prev => prev.map(x => (x.id === s.id ? { ...x, ...s } : x)));
+                    setEditTarget(null);
+                    if (detailTarget?.id === s.id) setDetailTarget(s);
+                  } else {
+                    setAllSoftware(prev => [s, ...prev]);
+                    setShowForm(false);
+                    setShowConfetti(true);
+                  }
                 });
                 scheduleRestoreAppLayoutScroll(snap);
-                setShowConfetti(true);
               }}
-              onCancel={() => setShowForm(false)}
+              onCancel={() => { setShowForm(false); setEditTarget(null); }}
             />
           </div>
         )}
@@ -241,11 +269,12 @@ export default function CoCreationPage() {
         <ListingCardShell key={s.id}>
         <TechnologyListingCard
           item={s}
-          isOwner={s.listedBy?.id === user?.id}
+          isOwner={filterTab === 'mine' || isTechnologyListingOwner(s, user)}
           likeState={getLike(s.id)}
           onLike={() => toggleLike(s.id)}
           onView={() => setDetailTarget(s)}
           onBuy={() => setBuyTarget(s)}
+          onEdit={user ? () => { setEditTarget(s); setShowForm(false); setDetailTarget(null); } : undefined}
           onDelete={() => setDeleteTarget(s.id)}
           onAuction={() => setAuctionTarget(s)}
           auctionStatus={auctionStatuses[s.id]}
@@ -285,11 +314,16 @@ export default function CoCreationPage() {
       {detailTarget && (
         <SoftwareDetailModal
           item={detailTarget}
-          isOwner={detailTarget.listedBy?.id === user?.id}
+          isOwner={isTechnologyListingOwner(detailTarget, user)}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshSoftware(); }}
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
+          onEdit={user ? () => {
+            setEditTarget(detailTarget);
+            setShowForm(false);
+            closeListingDetail();
+          } : undefined}
           onAuction={() => { setAuctionTarget(detailTarget); closeListingDetail(); }}
           auctionStatus={auctionStatuses[detailTarget.id]}
         />
@@ -319,16 +353,29 @@ export default function CoCreationPage() {
   );
 }
 
-// ─── Software Form (admin only) ───────────────────────────────────────────────
-function SoftwareForm({ onSaved, onCancel }) {
+function softwareToFormFields(item, navCurrency) {
+  return {
+    name: item?.name || '',
+    description: item?.description || '',
+    videoLink: item?.videoLink || item?.video_link || '',
+    whatItDoes: item?.whatItDoes || item?.what_it_does || '',
+    howItHelps: item?.howItHelps || item?.how_it_helps || '',
+    githubLink: item?.githubLink || item?.github_link || '',
+    liveDemoLink: item?.liveDemoLink || item?.live_demo_link || '',
+    techStack: item?.techStack || item?.tech_stack || '',
+    category: item?.category || '',
+    pricingDemand: item?.pricingDemand || item?.pricing_demand || '',
+    price: item?.price != null && item?.price !== '' ? String(item.price) : '',
+    currency: item?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    agreement: { terms: Boolean(item?.id) },
+  };
+}
+
+// ─── Software Form (create + edit) ────────────────────────────────────────────
+function SoftwareForm({ initial, onSaved, onCancel }) {
   const { currency: navCurrency } = useCurrency();
-  const [form, setForm] = useState({
-    name: '', description: '', videoLink: '', whatItDoes: '', howItHelps: '',
-    githubLink: '', liveDemoLink: '', techStack: '',
-    category: '', pricingDemand: '', price: '',
-    currency: navCurrency || DEFAULT_LISTING_CURRENCY,
-    agreement: { terms: false },
-  });
+  const isEdit = Boolean(initial?.id);
+  const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -336,6 +383,16 @@ function SoftwareForm({ onSaved, onCancel }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageError, setImageError]     = useState('');
   const fileInputRef                    = useRef(null);
+
+  useEffect(() => {
+    if (initial?.id) {
+      setForm(softwareToFormFields(initial, navCurrency));
+      setImagePreview(initial.imageUrl || initial.image_url || null);
+      setImageFile(null);
+      setImageError('');
+      setError('');
+    }
+  }, [initial?.id, navCurrency]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -357,32 +414,35 @@ function SoftwareForm({ onSaved, onCancel }) {
     }
 
     try {
-      const { data } = await technologyAPI.create({
+      const payload = {
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
-      });
-      let created = data?.data ?? data;
+      };
+      const { data } = isEdit
+        ? await technologyAPI.update(initial.id, payload)
+        : await technologyAPI.create(payload);
+      let saved = data?.data ?? data;
 
-      if (imageFile && created?.id) {
+      if (imageFile && saved?.id) {
         const formData = new FormData();
         formData.append('file', imageFile);
         try {
-          const { data: imgRes } = await technologyAPI.uploadImage(created.id, formData);
-          const payload = imgRes?.data ?? imgRes;
-          created = {
-            ...created,
-            imageUrl: payload?.imageUrl ?? payload?.image_url ?? created.imageUrl,
+          const { data: imgRes } = await technologyAPI.uploadImage(saved.id, formData);
+          const imgPayload = imgRes?.data ?? imgRes;
+          saved = {
+            ...saved,
+            imageUrl: imgPayload?.imageUrl ?? imgPayload?.image_url ?? saved.imageUrl,
           };
         } catch (uploadErr) {
           setImageError(
             uploadErr.response?.data?.error
             || uploadErr.response?.data?.message
-            || 'Listing saved but logo upload failed. You can add it later from your dashboard.',
+            || 'Listing saved but logo upload failed. You can update it again later.',
           );
         }
       }
 
-      onSaved(created);
+      onSaved(saved);
     } catch (err) {
       const status = err.response?.status;
       const msg =
@@ -390,9 +450,9 @@ function SoftwareForm({ onSaved, onCancel }) {
         err.response?.data?.error ||
         err.response?.data?.message;
       if (status === 401) {
-        setError(msg || 'Please sign in again to list Technology.');
+        setError(msg || 'Please sign in again.');
       } else {
-        setError(msg || 'Failed to list Technology.');
+        setError(msg || (isEdit ? 'Failed to update Technology.' : 'Failed to list Technology.'));
       }
     } finally { setLoading(false); }
   };
@@ -413,8 +473,14 @@ function SoftwareForm({ onSaved, onCancel }) {
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">List Technology</h3>
-      <p className="text-gray-500 text-sm mt-1">Add a new technology product to the Technology marketplace.</p>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">
+        {isEdit ? 'Edit Technology' : 'List Technology'}
+      </h3>
+      <p className="text-gray-500 text-sm mt-1">
+        {isEdit
+          ? 'Update your technology listing details.'
+          : 'Add a new technology product to the Technology marketplace.'}
+      </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="flex flex-col gap-1.5">
@@ -540,25 +606,27 @@ function SoftwareForm({ onSaved, onCancel }) {
           {imageError && <div className="text-sm text-amber-700">{imageError}</div>}
         </div>
 
-        <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
-          <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
-            onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
-            required />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
-            {form.agreement.terms && (
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            )}
-          </span>
-          <span className="text-sm text-gray-700 leading-snug">I confirm this software is ready for sale and agree to the Terms & Conditions.</span>
-        </label>
+        {!isEdit && (
+          <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
+            <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
+              onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
+              required />
+            <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
+              {form.agreement.terms && (
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              )}
+            </span>
+            <span className="text-sm text-gray-700 leading-snug">I confirm this software is ready for sale and agree to the Terms & Conditions.</span>
+          </label>
+        )}
 
         {error && <div className="text-sm text-red-500">{error}</div>}
 
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'List Technology →'}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : (isEdit ? 'Save Changes →' : 'List Technology →')}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
         </div>
@@ -837,7 +905,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 }
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
-function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onAuction, auctionStatus, likeState, onLike }) {
+function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction, auctionStatus, likeState, onLike }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -963,6 +1031,11 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onAuction, auction
             )}
 
             <div className="flex gap-3 mt-6 flex-wrap items-center">
+              {isOwner && onEdit && (
+                <button type="button" className="btn-glow btn-glow-sm" onClick={onEdit}>
+                  Edit listing
+                </button>
+              )}
               {isOwner && canRequestTechnologyAuction(d, auctionStatus) && onAuction && (
                 <button className="btn-glow btn-glow-sm" onClick={onAuction}>
                   🔨 Put to Auction

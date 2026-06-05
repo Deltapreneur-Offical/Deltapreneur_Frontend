@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
 import { pickHomepagePreviewListings } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { asArray } from '../../utils/asArray';
+import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
-import TechnologyListingCard from '../listings/TechnologyListingCard';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeUnifiedListingCard from './HomeUnifiedListingCard';
 
 export default function TechnologySection() {
   const { t } = useTranslation();
@@ -22,8 +22,8 @@ export default function TechnologySection() {
     const fetchSoftwares = async () => {
       try {
         setLoading(true);
-        const response = await cocreationAPI.getAll();
-        setSoftwares(asArray(response.data));
+        const items = await fetchAllListPages((params) => cocreationAPI.getAll(params));
+        setSoftwares(items);
       } catch {
         setSoftwares([]);
       } finally {
@@ -59,9 +59,9 @@ export default function TechnologySection() {
             {previewSoftwares.map((item) => (
               <HomePreviewRowItem key={item.id}>
                 <ListingCardShell>
-                  <TechnologyListingCard
-                    browseMode
-                    item={item}
+                  <HomeUnifiedListingCard
+                    type="technology"
+                    listing={item}
                     likeState={getLike(item.id)}
                     onLike={() => toggleLike(item.id)}
                     onView={() => handleViewDetails(item.id)}

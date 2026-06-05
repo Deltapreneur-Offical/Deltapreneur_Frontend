@@ -17,7 +17,7 @@ import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import SkeletonCard from '../components/common/Skeleton';
+import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import DashboardIcon from '../assets/Dashboard.png';
 import VentureLogo from '../assets/Coventure_logo.png';
@@ -25,6 +25,7 @@ import { APP_BASE_URL } from '../config/urls';
 import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { asArray } from '../utils/asArray';
+import { fetchAllListPages } from '../utils/listPagination';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
@@ -61,16 +62,30 @@ export default function VenturesPage() {
       dateField:     'createdAt',
     },
     20,
-    { getLikeCount: (item) => getLike(item.id).count },
+    {
+      getLikeCount: (item) => getLike(item.id).count,
+      resetPageWhen: filterTab,
+    },
   );
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
-    req
-      .then(({ data }) => setAllVentures(asArray(data)))
-      .catch(() => setAllVentures([]))
-      .finally(() => setLoading(false));
+    const loadAll = filterTab === 'mine'
+      ? ventureAPI.getMyVentures().then(({ data }) => asArray(data))
+      : fetchAllListPages((params) => ventureAPI.getAll(params));
+
+    loadAll
+      .then((rows) => {
+        if (!cancelled) setAllVentures(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setAllVentures([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [filterTab]);
 
   useEffect(() => {
@@ -109,8 +124,12 @@ export default function VenturesPage() {
   };
 
   const refreshVentures = () => {
-    const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
-    req.then(({ data }) => setAllVentures(asArray(data)));
+    if (filterTab === 'mine') {
+      ventureAPI.getMyVentures().then(({ data }) => setAllVentures(asArray(data)));
+      return;
+    }
+    fetchAllListPages((params) => ventureAPI.getAll(params))
+      .then((rows) => setAllVentures(rows));
   };
 
   return (
@@ -187,9 +206,7 @@ export default function VenturesPage() {
 
         {/* ── Content ── */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+          <PageContentSkeleton variant="cards" rows={8} />
         ) : paginated.length === 0 ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">

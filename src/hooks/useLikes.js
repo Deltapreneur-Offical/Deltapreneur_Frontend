@@ -7,7 +7,17 @@ import { unwrapApiData } from '../utils/apiResponse';
 import { hasAuthSession } from '../utils/authSession';
 
 function likeKey(entityId) {
-  return String(entityId).toLowerCase();
+  if (typeof entityId === 'string') return entityId.toLowerCase();
+  if (entityId == null) return '';
+  if (typeof entityId === 'number' || typeof entityId === 'boolean') {
+    return String(entityId).toLowerCase();
+  }
+  return '';
+}
+
+function isAuthError(error) {
+  const status = error?.response?.status;
+  return status === 401 || status === 403;
 }
 
 function mapCountPayload(payload) {
@@ -48,6 +58,7 @@ export function useLikes(type, items) {
   const navigate = useNavigate();
   const { user, hasAccessToken, loading: authLoading } = useAuth();
   const authenticated = Boolean(user || hasAccessToken || hasAuthSession());
+  const canFetchLikeStatus = Boolean(user || hasAccessToken);
   const list = asArray(items);
   const entityIdsKey = useMemo(
     () => list.map((i) => i.id).filter(Boolean).join(','),
@@ -71,10 +82,18 @@ export function useLikes(type, items) {
 
     setLoading(true);
     try {
-      const request = authenticated
-        ? likeAPI.bulkStatus(type, ids.map((id) => String(id)))
-        : likeAPI.bulkCounts(type, ids.map((id) => String(id)));
-      const response = await request;
+      const safeIds = ids.map((id) => String(id));
+      let response;
+      if (canFetchLikeStatus) {
+        try {
+          response = await likeAPI.bulkStatus(type, safeIds);
+        } catch (error) {
+          if (!isAuthError(error)) throw error;
+          response = await likeAPI.bulkCounts(type, safeIds);
+        }
+      } else {
+        response = await likeAPI.bulkCounts(type, safeIds);
+      }
       const fetched = mapCountPayload(unwrapApiData(response));
       setLikeMap({ ...seededMap, ...fetched });
     } catch {
@@ -82,7 +101,7 @@ export function useLikes(type, items) {
     } finally {
       setLoading(false);
     }
-  }, [type, entityIdsKey, authenticated, seededMap]);
+  }, [type, entityIdsKey, canFetchLikeStatus, seededMap]);
 
   useEffect(() => {
     if (!entityIdsKey || authLoading) {

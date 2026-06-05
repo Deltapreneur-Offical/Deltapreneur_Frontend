@@ -7,6 +7,7 @@ import { useCookieConsent } from '../../context/CookieConsentContext';
 import { FaWhatsapp } from 'react-icons/fa';
 
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
+import { EXTERNAL_LINK_PROPS, WHATSAPP_URL } from '../../config/contactLinks';
 
 
 
@@ -100,10 +101,6 @@ const WhatsappIcon = () => (
 
 
 
-const WHATSAPP_HREF = 'https://wa.me/919876543210';
-
-
-
 const socials = [
 
   { href: 'https://x.com/CoBrother141506', label: 'X', Icon: XIcon },
@@ -116,33 +113,15 @@ const socials = [
 
   { href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
 
-  { href: WHATSAPP_HREF, label: 'WhatsApp', Icon: WhatsappIcon },
+  { href: WHATSAPP_URL, label: 'WhatsApp', Icon: WhatsappIcon },
 
 ];
 
 
 
-const socialHoverStyles = {
-
-  X: 'hover:border-slate-400 hover:text-slate-800 hover:bg-slate-50 hover:shadow-[0_6px_20px_rgba(100,116,139,0.18)]',
-
-  Instagram: 'hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50/90 hover:shadow-[0_6px_20px_rgba(236,72,153,0.2)]',
-
-  Facebook: 'hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/90 hover:shadow-[0_6px_20px_rgba(59,130,246,0.2)]',
-
-  LinkedIn: 'hover:border-sky-400 hover:text-sky-700 hover:bg-sky-50/90 hover:shadow-[0_6px_20px_rgba(14,165,233,0.2)]',
-
-  YouTube: 'hover:border-red-300 hover:text-red-600 hover:bg-red-50/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.18)]',
-
-  WhatsApp: 'hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50/90 hover:shadow-[0_6px_20px_rgba(16,185,129,0.2)]',
-
-};
-
-
-
 const linkClass =
 
-  'block py-1.5 text-sm text-slate-600 no-underline transition-all duration-200 hover:translate-x-0.5 hover:text-indigo-700 visited:text-slate-600';
+  'block py-1.5 text-sm text-slate-600 no-underline transition-colors duration-300 hover:text-[var(--cobrother-hover-color)] visited:text-slate-600';
 
 const scrollToTop = () => {
 
@@ -312,13 +291,11 @@ export default function HomeFooter() {
 
                   href={href}
 
-                  target="_blank"
-
-                  rel="noopener noreferrer"
+                  {...EXTERNAL_LINK_PROPS}
 
                   aria-label={label}
 
-                  className={`flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-all duration-200 hover:-translate-y-0.5 sm:h-10 sm:w-10 ${socialHoverStyles[label]}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-colors duration-300 hover:border-[var(--cobrother-hover-color)] hover:text-[var(--cobrother-hover-color)] sm:h-10 sm:w-10"
 
                 >
 
@@ -355,17 +332,7 @@ export default function HomeFooter() {
 
   return (
 
-    <footer className="home-footer-theme relative mt-auto overflow-hidden border-t border-slate-200/50 bg-gradient-to-b from-slate-50 via-white to-indigo-50/70 text-slate-700">
-
-      <div
-
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_0%,rgba(59,130,246,0.08),transparent_55%),radial-gradient(ellipse_70%_50%_at_85%_20%,rgba(139,92,246,0.07),transparent_50%)]"
-
-        aria-hidden
-
-      />
-
-      <div className="pointer-events-none absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent" />
+    <footer className="app-chrome-panel home-footer-theme relative mt-auto overflow-hidden text-slate-700">
 
       <div className="home-hero-align-outer">
         <div className="home-hero-align-inner">{footerBody}</div>

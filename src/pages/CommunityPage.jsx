@@ -17,6 +17,7 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
+import { getLinkedInProfileUrl, hasLinkedInAccount } from '../utils/creatorProfile';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -144,11 +145,11 @@ export default function CommunityPage() {
           const profile = data?.data ?? data;
           setMyProfile(profile);
           setShowForm(true);
-          const hasUrl = Boolean(profile?.linkedInProfileUrl?.trim());
+          const hasUrl = Boolean(getLinkedInProfileUrl(profile));
           setLinkedInSuccess(
             hasUrl
               ? 'LinkedIn connected! Your profile link was imported — complete the details below.'
-              : 'LinkedIn connected! Add your public LinkedIn URL below to finish your profile.',
+              : 'LinkedIn connected! Reconnect LinkedIn to import your profile URL, then complete the details below.',
           );
           try {
             await reloadProfiles({ preferProfile: profile });
@@ -746,11 +747,11 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
               </div>
             )}
 
-            {p.linkedInProfileUrl && (
+            {getLinkedInProfileUrl(p) && (
               <div className="mb-5">
                 <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">LinkedIn</div>
-                <a href={p.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-[#0077b5] no-underline hover:text-[#005885]">
-                  <LinkedInIcon size={14} /> View Profile ↗
+                <a href={getLinkedInProfileUrl(p)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-[#0077b5] no-underline hover:text-[#005885]">
+                  <LinkedInIcon size={14} /> View LinkedIn profile ↗
                 </a>
               </div>
             )}
@@ -794,8 +795,8 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
     skills: profile?.skills || '',
     industry: profile?.industry || '',
     location: profile?.location || '',
-    whyImHere: profile?.whyImHere || '',
-    linkedInProfileUrl: profile?.linkedInProfileUrl || '',
+    whyImHere: profile?.whyImHere || profile?.why_im_here || '',
+    linkedInProfileUrl: getLinkedInProfileUrl(profile),
   });
   const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
@@ -803,21 +804,41 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
 
   useEffect(() => {
     setForm(buildForm(initial));
-  }, [initial?.id, initial?.linkedInProfileUrl, initial?.name, initial?.imageUrl]);
+  }, [
+    initial?.id,
+    initial?.linkedInProfileUrl,
+    initial?.linked_in_profile_url,
+    initial?.linkedInId,
+    initial?.linked_in_id,
+    initial?.name,
+    initial?.imageUrl,
+  ]);
 
   const linkedInUrl = useMemo(
-    () => (form.linkedInProfileUrl || initial?.linkedInProfileUrl || '').trim(),
-    [form.linkedInProfileUrl, initial?.linkedInProfileUrl],
+    () => getLinkedInProfileUrl(form) || getLinkedInProfileUrl(initial),
+    [form, initial],
   );
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const linkedInImported = hasLinkedInAccount(initial);
+
+  const handleChange = e => {
+    if (e.target.name === 'linkedInProfileUrl') return;
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
     if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
     setLoading(true); setError('');
     try {
-      const { data } = await communityAPI.update(initial.id, form);
+      const payload = {
+        role: form.role,
+        skills: form.skills,
+        industry: form.industry,
+        location: form.location,
+        whyImHere: form.whyImHere,
+      };
+      const { data } = await communityAPI.update(initial.id, payload);
       onSaved(data?.data ?? data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save. Please try again.');
@@ -847,12 +868,14 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
                     <span className="truncate max-w-[280px] sm:max-w-[360px]">{linkedInUrl}</span>
                     <span aria-hidden>↗</span>
                   </a>
-                ) : (
+                ) : linkedInImported ? (
                   <p className="text-xs text-amber-700 mt-1 m-0">
-                    LinkedIn URL was not returned — enter your profile link below.
+                    LinkedIn URL was not imported — reconnect LinkedIn to refresh your profile link.
                   </p>
-                )}
-                <p className="text-xs text-blue-600 mt-1.5 m-0">✓ Name and photo imported from LinkedIn</p>
+                ) : null}
+                <p className="text-xs text-blue-600 mt-1.5 m-0">
+                  ✓ {linkedInUrl ? 'Name, photo, and LinkedIn URL imported from LinkedIn' : 'Name and photo imported from LinkedIn'}
+                </p>
               </div>
             </div>
             {onDelete && (
@@ -894,25 +917,27 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
           <label className="text-sm font-medium text-gray-700">Location</label>
           <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
+        {linkedInImported && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              LinkedIn URL
+              <span className="text-gray-400 font-normal text-xs ml-1">(imported from LinkedIn)</span>
+            </label>
+            <input
+              name="linkedInProfileUrl"
+              type="url"
+              value={linkedInUrl}
+              readOnly
+              placeholder={linkedInUrl ? '' : 'Reconnect LinkedIn to import your profile URL'}
+              aria-readonly="true"
+              tabIndex={-1}
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-600 bg-gray-50 outline-none cursor-not-allowed focus:border-gray-300 transition-all"
+            />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-gray-400 text-xs">(optional)</span></label>
           <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">
-            LinkedIn Profile URL <span className="text-red-500">*</span>
-            {linkedInUrl && (
-              <span className="text-gray-400 font-normal text-xs ml-1">(imported from LinkedIn)</span>
-            )}
-          </label>
-          <input
-            name="linkedInProfileUrl"
-            value={form.linkedInProfileUrl}
-            onChange={handleChange}
-            placeholder="https://www.linkedin.com/in/your-username"
-            required
-            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
-          />
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">

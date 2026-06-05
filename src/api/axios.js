@@ -82,7 +82,7 @@ function shouldAttemptRefresh(error, original) {
     error.response?.data?.message ||
     error.response?.data?.error ||
     '',
-  ).lowerCase();
+  ).toLowerCase();
 
   if (detail.includes('invalid email or password')) return false;
   if (detail.includes('invalid email or code')) return false;

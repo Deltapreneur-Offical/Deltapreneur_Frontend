@@ -9,6 +9,7 @@ import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 
 import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
+import { resolvePostLoginPath } from '../utils/authSession';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 
@@ -29,7 +30,7 @@ export default function LoginPage() {
   const from =
     location.state?.from ||
     localStorage.getItem('redirectAfterLogin') ||
-    '/';
+    null;
 
   const showLoginForm = location.state?.showLoginForm === true;
 
@@ -55,8 +56,9 @@ export default function LoginPage() {
 
     if (!loading && user && !showLoginForm) {
 
+      const storedFrom = typeof from === 'string' ? from : from?.pathname;
       const destination = user.profileComplete
-        ? (from && from !== '/login' ? from : '/')
+        ? resolvePostLoginPath(storedFrom, user)
         : '/complete-profile';
       navigate(destination, { replace: true });
       localStorage.removeItem('redirectAfterLogin');
@@ -71,9 +73,43 @@ export default function LoginPage() {
 
   useEffect(() => {
     const err = searchParams.get('error');
-    if (err === 'oauth_failed') {
-      setError(t('googleSignInFailed'));
-    } else if (err === 'oauth_profile') {
+    const oauthErrorMessages = {
+      oauth_failed: t('googleSignInFailed'),
+      oauth_profile: t('googleSignInFailed'),
+      google_authentication_failed: t('googleSignInFailed'),
+      oauth_token_exchange_failed: t(
+        'googleTokenExchangeFailed',
+        'Google sign-in could not complete. Please check the Google OAuth redirect URI and try again.',
+      ),
+      oauth_clock_skew: t(
+        'googleClockSkew',
+        'Google sign-in failed because this computer clock appears out of sync. Please correct the time and try again.',
+      ),
+      google_id_token_invalid: t(
+        'googleIdTokenInvalid',
+        'Google sign-in returned an invalid token. Please try again.',
+      ),
+      invalid_oauth_state: t(
+        'googleInvalidOAuthState',
+        'Google sign-in session expired. Please try again.',
+      ),
+      google_oauth_not_configured: t(
+        'googleOAuthNotConfigured',
+        'Google sign-in is not configured for this environment.',
+      ),
+      google_oauth_secret_missing: t(
+        'googleOAuthSecretMissing',
+        'Google sign-in is missing the backend client secret.',
+      ),
+      database_unavailable: t(
+        'databaseUnavailable',
+        'The database is temporarily unavailable. Please try again shortly.',
+      ),
+    };
+
+    if (oauthErrorMessages[err]) {
+      setError(oauthErrorMessages[err]);
+    } else if (err?.startsWith('google_') || err?.startsWith('oauth_')) {
       setError(t('googleSignInFailed'));
     } else if (err === 'verification_failed') {
       setError(t('verificationLinkInvalid'));
@@ -110,14 +146,15 @@ export default function LoginPage() {
 
     const fetchedUser = await refreshUser();
 
-    const redirectPath =
+    const storedPath =
       localStorage.getItem('redirectAfterLogin') ||
-      (typeof from === 'string' ? from : from?.pathname) ||
-      '/';
+      (typeof from === 'string' ? from : from?.pathname);
     localStorage.removeItem('redirectAfterLogin');
 
     navigate(
-      fetchedUser?.profileComplete ? redirectPath : '/complete-profile',
+      fetchedUser?.profileComplete
+        ? resolvePostLoginPath(storedPath, fetchedUser)
+        : '/complete-profile',
       { replace: true },
     );
 
@@ -219,10 +256,7 @@ export default function LoginPage() {
   const handleGoogleLogin = () => {
     // OAuth must start on the backend host (same host as GOOGLE_OAUTH_REDIRECT_URI callback).
     // Do not use the Vercel SPA origin — oauth_state cookie would not be sent on callback.
-    const backend = (import.meta.env.DEV
-      ? window.location.origin
-      : API_ORIGIN || PRODUCTION_API_ORIGIN
-    ).replace(/\/$/, '');
+    const backend = (API_ORIGIN || PRODUCTION_API_ORIGIN).replace(/\/$/, '');
     window.location.href = `${backend}/oauth2/authorization/google`;
   };
 

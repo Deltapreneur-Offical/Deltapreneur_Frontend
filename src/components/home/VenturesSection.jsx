@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
 import { pickHomepagePreviewListings } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { asArray } from '../../utils/asArray';
+import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
-import VentureListingCard from '../listings/VentureListingCard';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeUnifiedListingCard from './HomeUnifiedListingCard';
 
 export default function VenturesSection() {
   const { t } = useTranslation();
@@ -22,8 +22,8 @@ export default function VenturesSection() {
     const fetchVentures = async () => {
       try {
         setLoading(true);
-        const response = await ventureAPI.getAll();
-        setVentures(asArray(response.data));
+        const items = await fetchAllListPages((params) => ventureAPI.getAll(params));
+        setVentures(items);
       } catch {
         setVentures([]);
       } finally {
@@ -59,10 +59,9 @@ export default function VenturesSection() {
             {previewVentures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 <ListingCardShell>
-                  <VentureListingCard
-                    browseMode
-                    compact
-                    venture={venture}
+                  <HomeUnifiedListingCard
+                    type="venture"
+                    listing={venture}
                     likeState={getLike(venture.id)}
                     onLike={() => toggleLike(venture.id)}
                     onView={() => handleViewDetails(venture.id)}

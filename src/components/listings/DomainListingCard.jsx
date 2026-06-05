@@ -1,13 +1,72 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
+import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
+import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
-import '../../styles/domain-listing-cards.css';
+import MarketplaceListingCardFrame, {
+  ListingCardBadge,
+  ListingPriceBox,
+} from './MarketplaceListingCardFrame';
+
+function DomainCardBody({
+  display,
+  domain,
+  isAuction,
+  auctionLive,
+  showPriceBox,
+  auctionCurrentBid,
+  auctionStartBid,
+  statusKey,
+  pricingLabel,
+  isAdminListed,
+  formatPrice,
+}) {
+  return (
+    <>
+      <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
+        <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1" title={display.fullDomain}>
+          {display.fullDomain || 'Unnamed domain'}
+        </h3>
+        <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
+          <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+            {statusKey}
+          </span>
+          <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+            {pricingLabel}
+          </span>
+          {isAdminListed && (
+            <span className="px-1.5 py-[2px] bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+              Admin
+            </span>
+          )}
+        </div>
+      </div>
+      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[30px] flex-shrink-0">
+        {domain.verified
+          ? '✓ Verified domain listing on CoBrother marketplace.'
+          : '⏳ Verification pending — listing on CoBrother marketplace.'}
+      </p>
+      {showPriceBox ? (
+        <ListingPriceBox
+          variant={isAuction ? 'auction' : 'deal'}
+          amount={formatPrice(
+            isAuction
+              ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
+              : domain.askingPrice,
+          )}
+          caption={isAuction ? (auctionLive ? 'current bid' : 'starting bid') : 'asking price'}
+        />
+      ) : (
+        <ListingPriceBox variant="auction" amount="Pending" caption="verification" />
+      )}
+    </>
+  );
+}
 
 export default function DomainListingCard({
   domain,
@@ -27,11 +86,11 @@ export default function DomainListingCard({
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
   const isHighValue = isPremiumDomain(domain);
+  const isAdminListed = isAdminCreatedListing(domain, 'domain');
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
-  const showPriceBox = !isAuction || Boolean(auction);
   const display = resolveDomainDisplay(domain);
   const domainInitials = (display.name || '')
     .replace(/[^a-zA-Z0-9]/g, '')
@@ -41,7 +100,12 @@ export default function DomainListingCard({
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed';
   const needsVerification = !domain.verified;
-  const purchaseBlocked = needsVerification;
+  const purchaseBlocked = needsVerification && !isOwner;
+  const showPriceBox = !needsVerification || isOwner;
+
+  const accentGrad = isAuction
+    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
+    : 'from-indigo-600 via-blue-500 to-cyan-400';
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -67,220 +131,199 @@ export default function DomainListingCard({
 
   const stop = (e) => e.stopPropagation();
 
+  const headerBadges = (
+    <>
+      <ListingCardBadge variant={isAuction ? 'auction' : 'glass'}>
+        {isAuction ? '🔨 Auction' : '◇ Direct'}
+      </ListingCardBadge>
+      {domain.verified ? (
+        <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
+      ) : (
+        <ListingCardBadge variant="pending">Pending</ListingCardBadge>
+      )}
+      {isOwner && <ListingCardBadge variant="owner">✦ Owner</ListingCardBadge>}
+    </>
+  );
+
+  const body = (
+    <DomainCardBody
+      display={display}
+      domain={domain}
+      isAuction={isAuction}
+      auctionLive={auctionLive}
+      showPriceBox={showPriceBox}
+      auctionCurrentBid={auctionCurrentBid}
+      auctionStartBid={auctionStartBid}
+      statusKey={statusKey}
+      pricingLabel={pricingLabel}
+      isAdminListed={isAdminListed}
+      formatPrice={formatPrice}
+    />
+  );
+
   if (browseMode) {
     return (
-      <article className="domain-listing-card domain-listing-card--browse listing-card-glow card-glow-hover">
-        {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
-        <div className="domain-listing-card__header">
-          <div className="domain-listing-card__identity">
-            <div className="domain-listing-card__avatar">
-              {domain.logo ? <img src={domain.logo} alt="" /> : domainInitials}
-            </div>
-            <div className="domain-listing-card__title-block">
-              <h3 className="domain-listing-card__name" title={display.fullDomain}>
-                <span className="domain-listing-card__name-text">{display.name}</span>
-                {display.ext ? (
-                  <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
-                    {display.ext.label}
-                  </span>
-                ) : null}
-              </h3>
-            </div>
-          </div>
-          <div className="domain-listing-card__chips">
-            {!isAuction && (
-              <span className={`domain-listing-card__chip domain-listing-card__chip--${
-                statusKey === 'AVAILABLE' ? 'available' : statusKey === 'SOLD' ? 'sold' : 'pending'
-              }`}>
-                {statusKey}
-              </span>
-            )}
-            <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
-            {isHighValue && statusKey === 'AVAILABLE' && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--premium">Premium</span>
-            )}
-            {isAuction && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
-            )}
-            {needsVerification && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--pending">
-                Verification pending
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="domain-listing-card__body">
-          {domain.verified ? (
-            <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
-          ) : (
-            <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
-          )}
-          {showPriceBox ? (
-            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-              <div className="domain-listing-card__price-label">
-                {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+      <MarketplaceListingCardFrame
+        cardClassName="domain-listing-card marketplace-listing-card--venture-style"
+        gradient={accentGrad}
+        image={domain.logo}
+        imageAlt={display.fullDomain}
+        initial={domainInitials}
+        headerBadges={headerBadges}
+        browseMode
+        onClick={onView}
+        footer={(
+          <ListingBrowseFooter className="border-t-0 pt-0" onViewDetails={onView}>
+            <span className="flex items-center gap-0.5">
+              <Eye size={11} />
+              {domain.views || 0}
+            </span>
+            {onLike && (
+              <div onClick={stop} onMouseDown={stop} role="presentation">
+                <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
               </div>
-              <div className="domain-listing-card__price-value">
-                {isAuction
-                  ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
-                  : formatPrice(domain.askingPrice)}
-              </div>
-            </div>
-          ) : (
-            <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
-              <div className="domain-listing-card__price-label">Starting bid</div>
-              <div className="domain-listing-card__price-value">Verification pending</div>
-            </div>
-          )}
-        </div>
-        <ListingBrowseFooter
-          className="domain-listing-card__footer border-t-0 pt-0"
-          onViewDetails={onView}
-        >
-          <span>👁 {domain.views || 0}</span>
-          {onLike && (
-            <div onClick={stop} onMouseDown={stop} role="presentation">
-              <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-            </div>
-          )}
-        </ListingBrowseFooter>
-      </article>
+            )}
+          </ListingBrowseFooter>
+        )}
+      >
+        {body}
+      </MarketplaceListingCardFrame>
     );
   }
 
   return (
-    <article className="domain-listing-card listing-card-glow card-glow-hover" onClick={onView}>
-      {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
-
-      <div className="domain-listing-card__header">
-        <div className="domain-listing-card__identity">
-          <div className="domain-listing-card__avatar">
-            {domain.logo ? (
-              <img src={domain.logo} alt="" />
+    <MarketplaceListingCardFrame
+      cardClassName="domain-listing-card marketplace-listing-card--venture-style"
+      gradient={accentGrad}
+      image={domain.logo}
+      imageAlt={display.fullDomain}
+      initial={domainInitials}
+      headerBadges={headerBadges}
+      onClick={onView}
+      footer={(
+        <>
+          <div
+            className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium py-1.5 border-t border-gray-100"
+            onClick={stop}
+            onMouseDown={stop}
+            role="presentation"
+          >
+            <span className="flex items-center gap-0.5">
+              <Eye size={11} />
+              {domain.views || 0}
+            </span>
+            {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
+          </div>
+          <div className="flex gap-2 mt-1" onClick={stop} role="presentation">
+            {isOwner ? (
+              <>
+                <button
+                  type="button"
+                  className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold rounded hover:bg-gray-200 inline-flex items-center justify-center gap-1"
+                  onClick={(e) => { stop(e); onEdit?.(); }}
+                >
+                  <EditIcon size={14} /> Edit
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 py-1.5 bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold rounded hover:bg-red-100 inline-flex items-center justify-center gap-1"
+                  onClick={(e) => { stop(e); onDelete?.(); }}
+                >
+                  <Trash2 size={12} /> Remove
+                </button>
+                <div className="relative" ref={shareRef}>
+                  <button
+                    type="button"
+                    className="py-1.5 px-2 bg-gray-100 text-gray-600 text-[10px] font-bold rounded hover:bg-gray-200"
+                    onClick={(e) => { stop(e); setShareOpen(!shareOpen); }}
+                    title="Share"
+                  >
+                    <Share2 size={12} />
+                  </button>
+                  {shareOpen && (
+                    <div
+                      className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+                      onClick={stop}
+                    >
+                      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                        <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                        onClick={() => handleShare(linkedinShare)}
+                      >
+                        LinkedIn
+                      </button>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        onClick={() => handleShare(facebookShare)}
+                      >
+                        Facebook
+                      </button>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        onClick={() => handleShare(whatsappShare)}
+                      >
+                        WhatsApp
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : isAuction ? (
+              purchaseBlocked ? (
+                <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
+                  Verification pending
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  onClick={(e) => { stop(e); onViewAuction?.(); }}
+                >
+                  <Gavel size={12} /> {auctionLive ? 'Bid' : 'Auction'}
+                </button>
+              )
+            ) : statusKey === 'AVAILABLE' ? (
+              purchaseBlocked ? (
+                <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
+                  Verification pending
+                </span>
+              ) : isHighValue ? (
+                <button
+                  type="button"
+                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  onClick={(e) => { stop(e); onEnquire?.(); }}
+                >
+                  <MessageSquare size={12} /> Enquire
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  onClick={(e) => { stop(e); onBuy?.(); }}
+                >
+                  <ShoppingCart size={12} /> Buy
+                </button>
+              )
             ) : (
-              domainInitials
+              <span className="flex-1 text-center text-[10px] text-slate-400 font-medium py-1.5">
+                {statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}
+              </span>
             )}
           </div>
-          <div className="domain-listing-card__title-block">
-            <h3 className="domain-listing-card__name" title={display.fullDomain}>
-              <span className="domain-listing-card__name-text">{display.name}</span>
-              {display.ext ? (
-                <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
-                  {display.ext.label}
-                </span>
-              ) : null}
-            </h3>
-          </div>
-        </div>
-        <div className="domain-listing-card__chips">
-          {isOwner && <span className="domain-listing-card__chip domain-listing-card__chip--owner">Owner</span>}
-          {!isAuction && (
-            <span className={`domain-listing-card__chip domain-listing-card__chip--${
-              statusKey === 'AVAILABLE' ? 'available' : statusKey === 'SOLD' ? 'sold' : 'pending'
-            }`}>
-              {statusKey}
-            </span>
-          )}
-          <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
-          {isHighValue && statusKey === 'AVAILABLE' && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--premium">Premium</span>
-          )}
-          {isAuction && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
-          )}
-          {needsVerification && (
-            <span className="domain-listing-card__chip domain-listing-card__chip--pending">
-              Verification pending
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="domain-listing-card__body">
-        {domain.verified ? (
-          <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
-        ) : (
-          <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
-        )}
-        {showPriceBox ? (
-          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-            <div className="domain-listing-card__price-label">
-              {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
-            </div>
-            <div className="domain-listing-card__price-value">
-              {isAuction
-                ? formatPrice(auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
-                : formatPrice(domain.askingPrice)}
-            </div>
-          </div>
-        ) : (
-          <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
-            <div className="domain-listing-card__price-label">Starting bid</div>
-            <div className="domain-listing-card__price-value">Verification pending</div>
-          </div>
-        )}
-      </div>
-
-      <div className="domain-listing-card__footer">
-        <div className="domain-listing-card__stats" onClick={stop} onMouseDown={stop} role="presentation">
-          <span>👁 {domain.views || 0}</span>
-          {onLike && (
-            <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-          )}
-        </div>
-        <div className="domain-listing-card__actions">
-          {isOwner ? (
-            <>
-              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--ghost" onClick={(e) => { stop(e); onEdit?.(); }}>
-                <EditIcon size={16} /> Edit
-              </button>
-              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--danger" onClick={(e) => { stop(e); onDelete?.(); }}>
-                <Trash2 size={14} /> Remove
-              </button>
-              <div className="relative" ref={shareRef}>
-                <button type="button" className="domain-listing-card__btn domain-listing-card__btn--icon" onClick={(e) => { stop(e); setShareOpen(!shareOpen); }} title="Share">
-                  <Share2 size={14} />
-                </button>
-                {shareOpen && (
-                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[140px]" onClick={stop}>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(linkedinShare)}>LinkedIn</button>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(facebookShare)}>Facebook</button>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(whatsappShare)}>WhatsApp</button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : isAuction ? (
-            purchaseBlocked ? (
-              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                Verification pending
-              </span>
-            ) : (
-            <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onViewAuction?.(); }}>
-              <Gavel size={14} /> {auctionLive ? 'Join auction' : 'View auction'}
-            </button>
-            )
-          ) : statusKey === 'AVAILABLE' ? (
-            purchaseBlocked ? (
-              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                Verification pending
-              </span>
-            ) : (
-            isHighValue ? (
-              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onEnquire?.(); }}>
-                <MessageSquare size={14} /> Enquire
-              </button>
-            ) : (
-              <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
-                <ShoppingCart size={14} /> Buy now
-              </button>
-            )
-            )
-          ) : (
-            <span className="text-xs text-slate-400 font-medium px-2">{statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}</span>
-          )}
-        </div>
-      </div>
-    </article>
+        </>
+      )}
+    >
+      {domain.takenDown && (
+        <span className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-600 text-white">
+          Taken down
+        </span>
+      )}
+      {body}
+    </MarketplaceListingCardFrame>
   );
 }

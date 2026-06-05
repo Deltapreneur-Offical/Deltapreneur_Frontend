@@ -1,11 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -17,12 +18,19 @@ import LoginPage from './pages/LoginPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
+/** Preserve ?linkedin=… query params when redirecting legacy /community URLs. */
+function LegacyCommunityRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: '/creator', search }} replace />;
+}
+
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
 const PasswordSecurityPage = lazy(() => import('./pages/PasswordSecurityPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const loadDashboardPage = () => import('./pages/DashboardPage');
+const DashboardPage = lazy(loadDashboardPage);
 const NewVenturePage = lazy(() => import('./pages/NewVenturePage'));
 const EditVenturePage = lazy(() => import('./pages/EditVenturePage'));
 const VentureDashboardPage = lazy(() => import('./pages/VentureDashboardPage'));
@@ -45,14 +53,39 @@ const SoftwareAuctionPage = lazy(() => import('./pages/SoftwareAuctionPage'));
 const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
-const VenturesPage = lazy(() => import('./pages/VenturesPage'));
+const loadVenturesPage = () => import('./pages/VenturesPage');
+const VenturesPage = lazy(loadVenturesPage);
 const CommunityPage = lazy(() => import('./pages/CommunityPage'));
-const DomainsPage = lazy(() => import('./pages/DomainsPage'));
+const loadDomainsPage = () => import('./pages/DomainsPage');
+const DomainsPage = lazy(loadDomainsPage);
 const CoCreationPage = lazy(() => import('./pages/CoCreationPage'));
 const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
-const AuctionsPage = lazy(() => import('./pages/AuctionsPage'));
+const loadAuctionsPage = () => import('./pages/AuctionsPage');
+const AuctionsPage = lazy(loadAuctionsPage);
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
+
+function preloadPostLoginRoutes() {
+  void loadDashboardPage();
+  void loadDomainsPage();
+  void loadVenturesPage();
+  void loadAuctionsPage();
+}
+
+function RoutePreloader() {
+  const { user, loading, hasAccessToken } = useAuth();
+  const preloadedRef = useRef(false);
+
+  useEffect(() => {
+    if (preloadedRef.current) return;
+    if (loading) return;
+    if (!user || !hasAccessToken) return;
+    preloadedRef.current = true;
+    preloadPostLoginRoutes();
+  }, [loading, user, hasAccessToken]);
+
+  return null;
+}
 
 function RedirectLegacyCocreationAuction() {
   const { auctionId } = useParams();
@@ -81,6 +114,7 @@ export default function App() {
         <CurrencyProvider>
           <CookieConsentProvider>
             <AuthProvider>
+              <RoutePreloader />
               <SiteGradientBorder />
               <CookieConsentBanner />
               <AppErrorBoundary>
@@ -230,7 +264,7 @@ export default function App() {
             />
 
             {/* Legacy Community / Disruptor URLs → Creator */}
-            <Route path="/community" element={<Navigate to="/creator" replace />} />
+            <Route path="/community" element={<LegacyCommunityRedirect />} />
             <Route path="/disruptors" element={<Navigate to="/auctions" replace />} />
 
             {/* Domains */}

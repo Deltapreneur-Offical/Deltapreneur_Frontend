@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import RoundInkStamp from '../domainHeroCarousel/RoundInkStamp';
 
 const statusStyles = {
-  sold: 'border-emerald-200/90 bg-emerald-50/95 text-emerald-700 shadow-[0_8px_18px_rgba(16,185,129,0.14)]',
+  sold: 'border-[rgba(var(--cobrother-brand-green-rgb),0.35)] bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] shadow-[0_8px_18px_rgba(var(--cobrother-brand-green-rgb),0.14)]',
   unsold: 'border-rose-200/90 bg-rose-50/95 text-rose-700 shadow-[0_8px_18px_rgba(244,63,94,0.14)]',
   live: 'border-indigo-200/90 bg-indigo-50/95 text-indigo-700 shadow-[0_8px_18px_rgba(99,102,241,0.14)]',
 };

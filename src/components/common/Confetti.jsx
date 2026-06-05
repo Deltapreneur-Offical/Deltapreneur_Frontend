@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const COLORS = ['#9440dd', '#7c3aed', '#6366f1', '#00C3FF', '#fbbf24', '#ec4899', '#10b981', '#f97316', '#f43f5e', '#facc15'];
+const COLORS = ['#9440dd', '#7c3aed', '#6366f1', '#50BF78', '#fbbf24', '#ec4899', '#f97316', '#f43f5e', '#facc15'];
 const SHAPES = ['circle', 'square', 'rectangle'];
 
 function rand(a, b) { return a + Math.random() * (b - a); }

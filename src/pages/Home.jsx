@@ -28,8 +28,6 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import ExploreSection from '../components/common/ExploreSection';
 
 
-import DomainSearchBar from '../components/common/DomainSearchBar';
-
 import HomeFooter from '../components/common/HomeFooter';
 
 import GlowButton from '../components/common/GlowButton';
@@ -91,10 +89,6 @@ export default function Home() {
   const navigate = useNavigate();
 
   const { t } = useTranslation();
-
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const [searchError, setSearchError] = useState('');
 
   const [openDropdown, setOpenDropdown] = useState(null);
 
@@ -161,32 +155,6 @@ export default function Home() {
 
 
 
-  const handleSearch = (e) => {
-
-    e.preventDefault();
-
-    setSearchError('');
-
-
-
-    try {
-
-      const url = searchDomainRedirect(searchQuery, '.com');
-
-      window.open(url, '_blank');
-
-      setSearchQuery('');
-
-    } catch (error) {
-
-      setSearchError(error.message);
-
-    }
-
-  };
-
-
-
   const features = [
 
     {
@@ -215,7 +183,7 @@ export default function Home() {
 
     {
 
-      icon: <img src={coCreationIcon} alt="Technology" className="w-10 h-10 object-contain" />,
+      icon: <img src={coCreationIcon} alt="Technologies" className="w-10 h-10 object-contain" />,
 
       titleKey: 'technologyTitle',
 
@@ -279,8 +247,6 @@ export default function Home() {
 
       <div className="home-hero-align-outer">
         <div className="home-hero-align-inner">
-          <DomainSearchBar embedded className="-mt-1 pt-2 sm:-mt-2 sm:pt-3 lg:-mt-4 lg:pt-4" />
-
           <ExploreSection />
         </div>
       </div>

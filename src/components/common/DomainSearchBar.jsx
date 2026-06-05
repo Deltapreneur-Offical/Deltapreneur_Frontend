@@ -1,14 +1,98 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
-import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
+import { extractDomainList } from '../../utils/domainApiAdapter';
+import useAIDomains from '../../hooks/useAIDomains';
+import AIDomainGrid from '../ai-domains/AIDomainGrid';
+import AIDomainLoader from '../ai-domains/AIDomainLoader';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
+const SEARCH_MODES = {
+  ai: {
+    label: 'AI Brand Names',
+    placeholder: 'Enter your business idea...',
+  },
+  new: {
+    label: 'Domain Names',
+    placeholder: 'Search New Domains...',
+  },
+  premium: {
+    label: 'Pre-Owned Domains',
+    placeholder: 'Search Premium Domains...',
+  },
+  auction: {
+    label: 'Domain Auctions',
+    placeholder: 'Search Auction Domains...',
+  },
+};
+const SEARCH_TABS = Object.entries(SEARCH_MODES).map(([id, config]) => ({
+  id,
+  label: config.label,
+}));
+
+function toSafeText(value) {
+  if (typeof value === 'string') return value;
+  if (value == null) return '';
+  try {
+    return `${value}`;
+  } catch {
+    return '';
+  }
+}
+
+function toSafeLower(value) {
+  const text = toSafeText(value);
+  if (typeof text === 'string') return text.toLowerCase();
+  return '';
+}
+
+function normalizeSearchText(value) {
+  return toSafeLower(value).replace(/[^a-z0-9]/g, '');
+}
+
+function buildSearchKey(raw) {
+  return toSafeLower(raw).trim();
+}
+
+function damerauLevenshteinDistance(a, b) {
+  const source = normalizeSearchText(a);
+  const target = normalizeSearchText(b);
+  const sourceLen = source.length;
+  const targetLen = target.length;
+  if (!sourceLen) return targetLen;
+  if (!targetLen) return sourceLen;
+
+  const dist = Array.from({ length: sourceLen + 1 }, () => Array(targetLen + 1).fill(0));
+  for (let i = 0; i <= sourceLen; i += 1) dist[i][0] = i;
+  for (let j = 0; j <= targetLen; j += 1) dist[0][j] = j;
+
+  for (let i = 1; i <= sourceLen; i += 1) {
+    for (let j = 1; j <= targetLen; j += 1) {
+      const cost = source[i - 1] === target[j - 1] ? 0 : 1;
+      dist[i][j] = Math.min(
+        dist[i - 1][j] + 1,
+        dist[i][j - 1] + 1,
+        dist[i - 1][j - 1] + cost,
+      );
+
+      if (
+        i > 1
+        && j > 1
+        && source[i - 1] === target[j - 2]
+        && source[i - 2] === target[j - 1]
+      ) {
+        dist[i][j] = Math.min(dist[i][j], dist[i - 2][j - 2] + 1);
+      }
+    }
+  }
+
+  return dist[sourceLen][targetLen];
+}
 
 function registrarPriceSymbol(currency) {
-  const code = String(currency || 'INR').toUpperCase();
+  const code = toSafeText(currency || 'INR').toUpperCase();
   const map = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
   return map[code] || `${code} `;
 }
@@ -28,28 +112,55 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [tld, setTld] = useState('com');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchMode, setSearchMode] = useState('ai');
+  const [auctionResults, setAuctionResults] = useState([]);
+  const [auctionsLoading, setAuctionsLoading] = useState(false);
+  const [premiumDomains, setPremiumDomains] = useState([]);
+  const [premiumLoading, setPremiumLoading] = useState(false);
   const debounceRef           = useRef(null);
+  const newSearchCacheRef = useRef(new Map());
+  const requestIdRef = useRef(0);
+  const safeQuery = toSafeText(query);
+  const normalizedQuery = toSafeLower(query).trim();
+  const hasSearchQuery = normalizedQuery.length > 0;
+  const placeholder = SEARCH_MODES[searchMode]?.placeholder || SEARCH_MODES.new.placeholder;
+  const {
+    results: aiDomains,
+    loading: aiLoading,
+    stage: aiStage,
+    progress: aiProgress,
+    error: aiError,
+    generate: generateAiDomains,
+    reset: resetAiDomains,
+  } = useAIDomains();
 
   const parseQuery = (raw) => {
-    const q = raw.trim().toLowerCase();
+    const q = toSafeLower(raw).trim();
     if (!q) return null;
     const dot = q.indexOf('.');
     if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    // No TLD typed: check selected extension first, then others (prices differ per TLD)
-    const ordered = [tld, ...TLDS.filter((ext) => ext !== tld)];
-    return ordered.map((ext) => ({ name: q, ext }));
+    return TLDS.map((ext) => ({ name: q, ext }));
   };
 
-  const doSearch = async (raw) => {
+  const doSearch = async (raw, options = {}) => {
+    const { force = false } = options;
     const pairs = parseQuery(raw);
     if (!pairs) return;
+    const cacheKey = buildSearchKey(raw);
+    if (!force && newSearchCacheRef.current.has(cacheKey)) {
+      setResults(newSearchCacheRef.current.get(cacheKey));
+      setLoading(false);
+      return;
+    }
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
     setLoading(true);
 
     // Seed skeleton rows immediately
-    setResults(pairs.map(({ name, ext }) => ({
+    const seededResults = pairs.map(({ name, ext }) => ({
       domain: `${name}.${ext}`,
       name,
       ext,
@@ -62,50 +173,178 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       registrarEnv: null,
       minPeriodYears: 1,
       listing: null,
-    })));
+    }));
+    setResults(seededResults);
+    const nextResults = seededResults.map((item) => ({ ...item }));
 
     await Promise.all(pairs.map(async ({ name, ext }) => {
       const fullDomain = `${name}.${ext}`;
       try {
-        const { data } = await domainAPI.check(encodeURIComponent(fullDomain));
-        // Backend returns: { status: 'marketplace'|'available'|'taken', price, listing }
-        setResults(prev => prev.map(r =>
-          r.domain === fullDomain
-            ? {
-                ...r,
-                status: data.status,
-                price: data.price ?? null,
-                unitPrice: data.unitPrice ?? data.price ?? null,
-                priceCurrency: data.priceCurrency ?? null,
-                priceSource: data.priceSource ?? null,
-                registrarSandbox: data.registrarSandbox ?? null,
-                registrarEnv: data.registrarEnv ?? null,
-                minPeriodYears: data.minPeriodYears ?? 1,
-                listing: data.listing ?? null,
-              }
-            : r
-        ));
+        const { data } = await domainAPI.check(fullDomain, 'new');
+        const idx = nextResults.findIndex((r) => r.domain === fullDomain);
+        if (idx !== -1) {
+          nextResults[idx] = {
+            ...nextResults[idx],
+            status: data.status,
+            price: data.price ?? null,
+            unitPrice: data.unitPrice ?? data.price ?? null,
+            priceCurrency: data.priceCurrency ?? null,
+            priceSource: data.priceSource ?? null,
+            registrarSandbox: data.registrarSandbox ?? null,
+            registrarEnv: data.registrarEnv ?? null,
+            minPeriodYears: data.minPeriodYears ?? 1,
+            listing: data.listing ?? null,
+          };
+        }
       } catch {
-        setResults(prev => prev.map(r =>
-          r.domain === fullDomain ? { ...r, status: 'error' } : r
-        ));
+        const idx = nextResults.findIndex((r) => r.domain === fullDomain);
+        if (idx !== -1) nextResults[idx] = { ...nextResults[idx], status: 'error' };
       }
     }));
 
+    if (requestIdRef.current !== currentRequestId) return;
+    newSearchCacheRef.current.set(cacheKey, nextResults);
+    setResults(nextResults);
     setLoading(false);
   };
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); return; }
+    if (searchMode !== 'new') return;
+    if (!normalizedQuery) { setResults([]); return; }
+    const cacheKey = buildSearchKey(query);
+    if (newSearchCacheRef.current.has(cacheKey)) {
+      clearTimeout(debounceRef.current);
+      setResults(newSearchCacheRef.current.get(cacheKey));
+      setLoading(false);
+      return;
+    }
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(query), 700);
     return () => clearTimeout(debounceRef.current);
-  }, [query, tld]);
+  }, [query, searchMode]);
+
+  const fetchPremiumDomains = async (raw, options = {}) => {
+    const { force = false } = options;
+    const q = toSafeText(raw).trim();
+    if (!q) {
+      setPremiumDomains([]);
+      setPremiumLoading(false);
+      return;
+    }
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
+    setPremiumLoading(true);
+    if (force) setPremiumDomains([]);
+
+    try {
+      const { data } = await domainAPI.search({ query: q, mode: 'premium' });
+      if (requestIdRef.current !== currentRequestId) return;
+      setPremiumDomains(extractDomainList(data));
+    } catch {
+      if (requestIdRef.current !== currentRequestId) return;
+      setPremiumDomains([]);
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setPremiumLoading(false);
+      }
+    }
+  };
+
+  const fetchAuctions = async (raw, options = {}) => {
+    const { force = false } = options;
+    const q = toSafeText(raw).trim();
+    if (!q) {
+      setAuctionResults([]);
+      setAuctionsLoading(false);
+      return;
+    }
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
+    setAuctionsLoading(true);
+    if (force) setAuctionResults([]);
+
+    try {
+      const { data } = await domainAPI.search({ query: q, mode: 'auction' });
+      if (requestIdRef.current !== currentRequestId) return;
+      const items = Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
+      setAuctionResults(items);
+    } catch {
+      if (requestIdRef.current !== currentRequestId) return;
+      setAuctionResults([]);
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setAuctionsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!normalizedQuery) {
+      setPremiumDomains([]);
+      setAuctionResults([]);
+      resetAiDomains();
+      return undefined;
+    }
+    if (searchMode === 'premium') {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => fetchPremiumDomains(query), 400);
+      return () => clearTimeout(debounceRef.current);
+    }
+    if (searchMode === 'auction') {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => fetchAuctions(query), 400);
+      return () => clearTimeout(debounceRef.current);
+    }
+    return undefined;
+  }, [query, searchMode]);
+
+  useEffect(() => {
+    if (searchMode === 'ai') {
+      resetAiDomains();
+    }
+  }, [query, searchMode]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     clearTimeout(debounceRef.current);
-    doSearch(query);
+    if (searchMode === 'ai') {
+      generateAiDomains(query);
+    } else if (searchMode === 'new') {
+      doSearch(query, { force: true });
+    } else if (searchMode === 'premium') {
+      fetchPremiumDomains(query, { force: true });
+    } else {
+      fetchAuctions(query, { force: true });
+    }
+  };
+
+  const domainTitleFromAuction = (auction) => {
+    const domain = auction?.domain || {};
+    return (
+      auction?.domainDisplayName
+      || domain.fullDomain
+      || `${domain.domainName || ''}${domain.domainExtension || ''}`.trim()
+      || null
+    );
+  };
+
+  const handleTabChange = (tabId) => {
+    requestIdRef.current += 1;
+    clearTimeout(debounceRef.current);
+    setSearchMode(tabId);
+    resetAiDomains();
+    setResults([]);
+    setPremiumDomains([]);
+    setAuctionResults([]);
+    setLoading(false);
+    setPremiumLoading(false);
+    setAuctionsLoading(false);
   };
 
   const goToMarketplace = (listing) => {
@@ -120,13 +359,34 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               || results.find(r => r.status === 'available')
               || results[0];
   const others = results.filter(r => r !== best);
+  const visibleNewBest = best?.status === 'available' ? best : others.find((r) => r.status === 'available') || null;
+  const visibleNewOthers = [best, ...others]
+    .filter(Boolean)
+    .filter((item) => item !== visibleNewBest && item.status === 'available');
+  const filteredPremiumDomains = premiumDomains.filter((item) => {
+    const q = normalizedQuery;
+    const domainName = toSafeLower(item.domainName || '');
+    const domainExtension = toSafeLower(item.domainExtension || '');
+    const fullDomain = `${domainName}${domainExtension}`;
+    if (fullDomain.includes(q) || domainName.includes(q)) return true;
+
+    // Tolerate small typos when searching exact listed domain names.
+    if (q.length >= 6) {
+      return damerauLevenshteinDistance(domainName, q) <= 2;
+    }
+    return false;
+  });
+  const filteredAuctionResults = auctionResults.filter((auction) => {
+    const fullDomain = toSafeLower(domainTitleFromAuction(auction) || '');
+    return fullDomain.includes(normalizedQuery);
+  });
 
   // ── Sub-components ──────────────────────────────────────────────────────────
   const Badge = ({ status }) => {
     const map = {
       loading:     ['bg-gray-100 text-gray-400',     'CHECKING…'],
       marketplace: ['bg-indigo-100 text-indigo-700', '🏪 ON OUR MARKETPLACE'],
-      available:   ['bg-emerald-100 text-emerald-700','✓ AVAILABLE'],
+      available:   ['bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)]','✓ AVAILABLE'],
       taken:       ['bg-red-100 text-red-500',        'TAKEN'],
       error:       ['bg-gray-100 text-gray-400',      'UNAVAILABLE'],
     };
@@ -203,114 +463,157 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     >
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
-        {/* Desktop: compact search beside live domain feed */}
-        <div className={`hidden lg:flex lg:flex-row lg:items-end gap-4 xl:gap-5 ${embedded ? 'lg:justify-start' : 'lg:justify-center'}`}>
-          <form onSubmit={handleSearch}
-            className="search-glow-focus flex w-full max-w-[700px] flex-[1_1_640px] flex-row items-center gap-2 overflow-hidden rounded-2xl border border-indigo-400/40 bg-black py-2 pl-4 pr-2 shadow-[0_4px_24px_rgba(99,102,241,0.12)] transition-all duration-300 sm:pl-5 sm:rounded-full xl:max-w-[740px]">
-            <Search className="h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
-            <input
-              type="text"
-              className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-white-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
-              placeholder={t('domainSearchPlaceholder')}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <div className="relative flex shrink-0 items-center">
-            <select
-  value={tld}
-  onChange={(e) => setTld(e.target.value)}
-  className="cursor-pointer rounded-full border border-gray-700 bg-[#111827] py-2.5 pl-4 pr-8 text-sm font-semibold text-white outline-none transition-all duration-300 hover:bg-[#1f2937] focus:border-purple-400"
-  aria-label="Domain extension"
->
-                {TLDS.map((ext) => (
-                  <option key={ext} value={ext}>
-                    .{ext}
-                  </option>
+        {/* Desktop: compact search and mode tabs */}
+        <div className="hidden lg:flex lg:flex-row lg:items-end lg:justify-start">
+          <div className="w-full max-w-[760px] flex-[1_1_700px]">
+            <form onSubmit={handleSearch}
+              className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full">
+              <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
+              <input
+                type="text"
+                className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
+                placeholder={placeholder}
+                value={safeQuery}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <button
+                type="submit"
+                aria-label={t('search')}
+                className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2"
+              >
+                <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
+              </button>
+            </form>
+
+            <div className="mt-3 flex justify-center">
+              <div className="brand-search-tabs inline-flex items-center gap-1 rounded-full border bg-white/95 p-1">
+                {SEARCH_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none transition-all duration-200 ${
+                      searchMode === tab.id
+                        ? 'brand-search-tab-active text-white'
+                        : 'brand-search-tab-idle text-slate-600'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
-            <button
-  type="submit"
-  className="shrink-0 rounded-full bg-white/95 backdrop-blur-md border border-purple-200 px-7 py-3 text-[14px] font-semibold text-gray-900 shadow-md transition-all duration-300 hover:bg-white hover:shadow-lg"
->
-  {t('search')}
-</button>
-          </form>
-          <CompactDomainTicker className="hidden lg:block w-full max-w-[390px] flex-[0_1_390px] self-end xl:max-w-[430px] xl:basis-[430px]" />
+          </div>
         </div>
 
         {/* Mobile / tablet */}
         <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
           <form onSubmit={handleSearch}
-            className={`search-glow-focus w-full flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01] ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+            className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+            <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
             <input
               type="text"
-              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-white-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
-              placeholder={t('domainSearchPlaceholder')}
-              value={query}
+              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
+              placeholder={placeholder}
+              value={safeQuery}
               onChange={e => setQuery(e.target.value)}
             />
             <button type="submit"
-              className="bg-[#232f3e] text-white py-3 px-6 sm:px-7 rounded-full text-sm sm:text-base font-semibold transition-all w-full sm:w-auto hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
-              {t('search')}
+              aria-label={t('search')}
+              className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2">
+              <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
             </button>
           </form>
         </div>
 
+        <div className="mt-3 flex justify-center pb-0.5 lg:hidden">
+          <div className="brand-search-tabs brand-search-tabs-mobile grid w-full grid-cols-2 gap-3 md:inline-flex md:w-auto md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1">
+            {SEARCH_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                className={`min-h-12 w-full rounded-full px-3 py-2 text-center text-[12.5px] sm:text-sm font-medium leading-[1.15] tracking-normal transition-all duration-300 ease-out will-change-transform md:min-h-9 md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
+                  searchMode === tab.id
+                    ? 'brand-search-tab-active text-white scale-[1.02]'
+                    : 'brand-search-tab-idle text-slate-800 active:scale-[0.98]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Results */}
-        <div className="mt-8">
-          {loading && results.every(r => r.status === 'loading') && (
+        <div className="mt-4">
+          {hasSearchQuery && searchMode === 'ai' && aiLoading && (
+            <AIDomainLoader
+              stage={aiStage}
+              progress={aiProgress}
+              compact={aiDomains.length > 0}
+            />
+          )}
+
+          {hasSearchQuery && searchMode === 'ai' && !aiLoading && aiError && (
+            <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+              {aiError}
+            </div>
+          )}
+
+          {hasSearchQuery && searchMode === 'ai' && !aiError && aiDomains.length > 0 && (
+            <AIDomainGrid results={aiDomains} />
+          )}
+
+          {hasSearchQuery && searchMode === 'ai' && !aiLoading && !aiError && aiDomains.length === 0 && (
+            <p className="text-left text-gray-500 text-sm py-4">
+              Enter a business idea to generate AI-powered domain names.
+            </p>
+          )}
+
+          {hasSearchQuery && searchMode === 'new' && loading && results.every(r => r.status === 'loading') && (
             <p className="text-center text-gray-400 text-sm mb-6">Checking domains…</p>
           )}
 
-          {/* Best match */}
-          {best?.registrarSandbox && (
+          {/* New Domains */}
+          {hasSearchQuery && searchMode === 'new' && visibleNewBest?.registrarSandbox && (
             <p className="text-center text-amber-800 text-sm mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2">
               ResellerClub sandbox — prices and checkout use your demo API credentials.
             </p>
           )}
 
-          {best && (
+          {hasSearchQuery && searchMode === 'new' && visibleNewBest && (
             <div className={`domain-search-card domain-search-card--featured mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
-              best.status === 'marketplace' ? 'border-indigo-300 ring-1 ring-indigo-100' :
-              best.status === 'available'   ? 'border-emerald-300 ring-1 ring-emerald-50' :
-              best.status === 'loading'     ? 'border-gray-200'   :
-                                              'border-red-200'
+              visibleNewBest.status === 'available' ? 'border-[var(--cobrother-brand-green)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.16)]' :
+                                                      'border-gray-200'
             }`}>
-              <Badge status={best.status} />
+              <Badge status={visibleNewBest.status} />
               <h2 className={`text-4xl font-extrabold mb-4 ${
-                best.status === 'taken' || best.status === 'error'
+                visibleNewBest.status === 'taken' || visibleNewBest.status === 'error'
                   ? 'text-gray-300 line-through' : 'text-gray-900'
               }`}>
-                {best.name}
+                {visibleNewBest.name}
                 <span className={
-                  best.status === 'taken' || best.status === 'error'
+                  visibleNewBest.status === 'taken' || visibleNewBest.status === 'error'
                     ? 'text-purple-200' : 'text-purple-600'
-                }>.{best.ext}</span>
+                }>.{visibleNewBest.ext}</span>
               </h2>
 
-              {best.status === 'marketplace' && best.listing && (
-                <p className="text-indigo-600 font-semibold mb-5">
-                  Asking ₹{Number(best.listing.askingPrice).toLocaleString('en-IN')}
-                  {best.listing.pricingDemand ? ` · ${best.listing.pricingDemand}` : ''}
-                </p>
-              )}
+              {visibleNewBest.status === 'available' && <Price result={visibleNewBest} large />}
 
-              {best.status === 'available' && <Price result={best} large />}
-
-              <Action result={best} large />
+              <Action result={visibleNewBest} large />
             </div>
           )}
 
-          {/* Grid of other TLDs */}
-          {others.length > 0 && (
+          {/* New domains: other TLDs */}
+          {hasSearchQuery && searchMode === 'new' && visibleNewOthers.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {others.map((item, i) => (
+              {visibleNewOthers.map((item, i) => (
                 <div key={i} className={`domain-search-card bg-white border rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 ${
                   item.status === 'taken'       ? 'border-gray-100 opacity-60' :
                   item.status === 'error'       ? 'border-gray-100 opacity-60' :
                   item.status === 'marketplace' ? 'border-indigo-200 ring-1 ring-indigo-50' :
-                  item.status === 'available'   ? 'border-emerald-200 ring-1 ring-emerald-50' :
+                  item.status === 'available'   ? 'border-[rgba(var(--cobrother-brand-green-rgb),0.42)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.14)]' :
                                                   'border-gray-200'
                 }`}>
                   <Badge status={item.status} />
@@ -338,16 +641,186 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               ))}
             </div>
           )}
+
+          {hasSearchQuery && searchMode === 'new' && !loading && !visibleNewBest && (
+            <p className="text-center text-gray-500 text-sm py-6">
+              No registrar domains available for this query right now.
+            </p>
+          )}
+
+          {/* Premium domains */}
+          {hasSearchQuery && searchMode === 'premium' && premiumLoading && (
+            <p className="text-center text-gray-400 text-sm mb-6">Loading listed domains...</p>
+          )}
+          {hasSearchQuery && searchMode === 'premium' && !premiumLoading && filteredPremiumDomains.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredPremiumDomains.map((item) => (
+                <div
+                  key={item.id}
+                  className="domain-search-card bg-white border border-indigo-200 ring-1 ring-indigo-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
+                >
+                  <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-700">
+                    LISTED DOMAIN
+                  </span>
+                  <h2 className="text-xl font-extrabold mb-3 text-gray-900">
+                    {item.domainName}<span className="text-purple-500">{item.domainExtension}</span>
+                  </h2>
+                  <p className="text-indigo-600 text-sm font-semibold mb-4">
+                    Asking ₹{Number(item.askingPrice || 0).toLocaleString('en-IN')}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/domains?highlight=${item.id}`)}
+                    className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-indigo-600 text-white hover:bg-indigo-700"
+                  >
+                    View on Marketplace →
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {hasSearchQuery && searchMode === 'premium' && !premiumLoading && filteredPremiumDomains.length === 0 && (
+            <p className="text-center text-gray-500 text-sm py-6">
+              No listed domains found.
+            </p>
+          )}
+
+          {/* Ongoing domain auctions */}
+          {hasSearchQuery && searchMode === 'auction' && auctionsLoading && (
+            <p className="text-center text-gray-400 text-sm mb-6">Loading live auctions…</p>
+          )}
+          {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredAuctionResults.map((auction) => {
+                const title = domainTitleFromAuction(auction) || 'Unnamed domain';
+                const currentBid = Number(auction.currentHighestBid ?? 0);
+                const minBid = Number(auction.minBidPrice ?? 0);
+                const amount = currentBid > 0 ? currentBid : minBid;
+                const totalBids = Number(auction.totalBids ?? 0);
+                return (
+                  <div
+                    key={auction.id}
+                    className="domain-search-card bg-white border border-gray-200 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-amber-100 text-amber-700">
+                      LIVE AUCTION
+                    </span>
+                    <h2 className="text-xl font-extrabold mb-3 text-gray-900 truncate">{title}</h2>
+                    <p className="text-sm text-gray-600 mb-1">
+                      {currentBid > 0 ? 'Current highest bid' : 'Starting bid'}
+                    </p>
+                    <p className="font-extrabold text-xl text-amber-600 mb-3">
+                      ₹{amount.toLocaleString('en-IN')}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-4">{totalBids} bids placed</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/auction/${auction.id}`)}
+                      className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-gray-900 text-white hover:bg-gray-700"
+                    >
+                      Bid Now
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length === 0 && (
+            <p className="text-center text-gray-500 text-sm py-6">
+              No ongoing auctions found right now.
+            </p>
+          )}
         </div>
       </div>
 
       <style>{`
+        .brand-search-shell {
+          border-color: rgba(var(--cobrother-brand-green-rgb), 0.52);
+        }
+
+        .brand-search-submit {
+          background: var(--cobrother-brand-green);
+          border-color: var(--cobrother-brand-green);
+          box-shadow: 0 8px 18px rgba(var(--cobrother-brand-green-rgb), 0.24);
+        }
+
+        .brand-search-submit:hover,
+        .brand-search-submit:focus-visible {
+          background: var(--cobrother-brand-green-dark);
+          border-color: var(--cobrother-brand-green-dark);
+          box-shadow: 0 10px 22px rgba(var(--cobrother-brand-green-rgb), 0.32);
+        }
+
+        .brand-search-submit:focus-visible {
+          --tw-ring-color: rgba(var(--cobrother-brand-green-rgb), 0.35);
+        }
+
+        .brand-search-tabs {
+          border-color: rgba(var(--cobrother-brand-green-rgb), 0.24);
+          box-shadow: 0 6px 18px rgba(var(--cobrother-brand-green-rgb), 0.11);
+        }
+
+        .brand-search-tabs-mobile {
+          border: 0;
+          background: transparent;
+          box-shadow: none;
+        }
+
+        .brand-search-tab-active {
+          background: var(--cobrother-brand-green);
+          box-shadow:
+            0 10px 22px rgba(var(--cobrother-brand-green-rgb), 0.22),
+            0 2px 6px rgba(var(--cobrother-brand-green-rgb), 0.18);
+          border-color: transparent;
+        }
+
+        .brand-search-tab-idle {
+          background: #f5f7f8;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+        }
+
+        .brand-search-tab-idle:hover,
+        .brand-search-tab-idle:focus-visible {
+          background: #eef3f1;
+          border-color: rgba(var(--cobrother-brand-green-rgb), 0.22);
+          color: var(--cobrother-brand-green-dark);
+          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.07);
+        }
+
+        @media (min-width: 768px) {
+          .brand-search-tabs-mobile {
+            border-color: rgba(var(--cobrother-brand-green-rgb), 0.24);
+            box-shadow: 0 6px 18px rgba(var(--cobrother-brand-green-rgb), 0.11);
+          }
+        }
+
         .search-glow-focus {
           box-shadow:
-            -12px 0 20px -6px rgba(0,195,255,0.35),
-            12px 0 20px -6px rgba(255,48,108,0.35),
-            0 0 14px -3px rgba(120,80,220,0.25);
-          border-color: rgba(120,80,220,0.35);
+            0 10px 30px -12px rgba(var(--cobrother-brand-green-rgb), 0.42),
+            0 0 0 1px rgba(var(--cobrother-brand-green-rgb), 0.16),
+            0 0 24px -10px rgba(var(--cobrother-brand-green-rgb), 0.48);
+        }
+
+        .search-glow-focus:hover,
+        .search-glow-focus:focus-within {
+          border-color: var(--cobrother-brand-green);
+          box-shadow:
+            0 12px 34px -12px rgba(var(--cobrother-brand-green-rgb), 0.5),
+            0 0 0 1px rgba(var(--cobrother-brand-green-rgb), 0.25),
+            0 0 28px -9px rgba(var(--cobrother-brand-green-rgb), 0.58);
+        }
+
+        .search-glow-focus:hover .domain-search-icon,
+        .search-glow-focus:focus-within .domain-search-icon {
+          color: var(--cobrother-brand-green-dark);
+        }
+
+        .domain-search-submit:hover,
+        .domain-search-submit:focus-visible {
+          color: #ffffff;
+          outline: none;
         }
       `}</style>
     </div>

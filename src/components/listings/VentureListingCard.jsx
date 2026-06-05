@@ -61,9 +61,9 @@ export default function VentureListingCard({
 
   const accentGrad = isAuction
     ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-    : 'from-indigo-600 via-blue-500 to-cyan-400';
+    : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]';
 
-  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full${
+  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-[355px] max-h-[355px]${
     compact ? ' listing-card--compact' : ''
   }${browseMode ? '' : ' cursor-pointer'}`;
 
@@ -106,12 +106,12 @@ export default function VentureListingCard({
                 </span>
               )}
               {isAuction && isGstinVerified && (
-                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                <span className="px-1.5 py-0.5 bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✓ GSTIN
                 </span>
               )}
               {!isAuction && isGstinVerified && (
-                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                <span className="px-1.5 py-0.5 bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✓ Verified
                 </span>
               )}
@@ -120,9 +120,9 @@ export default function VentureListingCard({
         </div>
       </div>
 
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
-        <div className="flex flex-col gap-1 mb-1">
-          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words">
+      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col gap-1 mb-1 min-h-0">
+          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words line-clamp-1">
             {b.brandName}
           </h3>
           <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
@@ -157,12 +157,12 @@ export default function VentureListingCard({
             </span>
           </div>
         ) : b.dealValue ? (
-          <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
+          <div className="rounded-lg border border-[rgba(var(--cobrother-brand-green-rgb),0.22)] bg-[var(--cobrother-brand-green-soft)] px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
             <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-emerald-700 tracking-tight">
+              <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
                 {formatPrice(b.dealValue)}
               </span>
-              <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">deal value</span>
+              <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">deal value</span>
             </div>
           </div>
         ) : null}
@@ -197,7 +197,7 @@ export default function VentureListingCard({
                   onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
                   Facebook
                 </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-[var(--cobrother-brand-green-soft)] hover:text-[var(--cobrother-brand-green)] transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
                   WhatsApp
                 </button>
@@ -278,7 +278,7 @@ export default function VentureListingCard({
                 ) : hasApplied ? (
                   <button
                     type="button"
-                    className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded cursor-not-allowed"
+                    className="flex-1 py-1.5 bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] border border-[rgba(var(--cobrother-brand-green-rgb),0.35)] text-[10px] font-bold rounded cursor-not-allowed"
                     title="You already applied"
                     disabled
                   >

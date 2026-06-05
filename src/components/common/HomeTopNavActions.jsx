@@ -2,10 +2,17 @@ import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FaPhoneAlt, FaWhatsapp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/cobrother_community_profil.png';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
+import {
+  EXTERNAL_LINK_PROPS,
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_TEL,
+  WHATSAPP_URL,
+} from '../../config/contactLinks';
 
 const ProfileFlipAvatar = memo(function ProfileFlipAvatar({ flipped, userInitial }) {
   return (
@@ -51,6 +58,33 @@ function getDisplayNameFromUser(user) {
     return username.charAt(0).toUpperCase() + username.slice(1);
   }
   return 'User';
+}
+
+function WhatsAppNavButton() {
+  return (
+    <a
+      href={WHATSAPP_URL}
+      {...EXTERNAL_LINK_PROPS}
+      className="home-nav-whatsapp-btn"
+      aria-label="WhatsApp"
+      title="WhatsApp"
+    >
+      <FaWhatsapp aria-hidden />
+    </a>
+  );
+}
+
+function CallNavButton() {
+  return (
+    <a
+      href={SUPPORT_PHONE_TEL}
+      className="home-nav-call-btn"
+      aria-label="Call CoBrother support"
+      title="Call CoBrother support"
+    >
+      <FaPhoneAlt aria-hidden />
+    </a>
+  );
 }
 
 export default function HomeTopNavActions() {
@@ -131,6 +165,10 @@ export default function HomeTopNavActions() {
 
   return (
     <>
+      <span className="home-nav-support-label">24×7 Support</span>
+      <span className="home-nav-phone-number">{SUPPORT_PHONE_DISPLAY}</span>
+      <CallNavButton />
+      <WhatsAppNavButton />
       <div className="home-nav-util-group" role="group" aria-label="Regional settings">
         <LanguageDropdown variant="minimal" className="home-nav-util-language" />
         <span className="home-nav-util-divider" aria-hidden="true">
@@ -139,7 +177,7 @@ export default function HomeTopNavActions() {
         <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
       </div>
 
-      <div className="relative hidden xl:block">
+      <div className="home-nav-contact-wrap relative block">
         <a href="/contact" className="home-nav-contact-link">
           {t('contactUs')}
         </a>
@@ -148,7 +186,7 @@ export default function HomeTopNavActions() {
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button
           type="button"
-          className="home-top-nav-profile-btn relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-slate-400 hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
+          className="home-top-nav-profile-btn relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-[var(--cobrother-hover-color)] hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
           onClick={toggleProfileDropdown}
           aria-label="Account menu"
           aria-expanded={profileDropdownOpen}
@@ -188,11 +226,29 @@ export default function HomeTopNavActions() {
                 </a>
                 <a
                   href="/contact"
-                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium xl:hidden"
+                  className="home-profile-mobile-only menu-item-gradient px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {t('contactUs')}
                 </a>
+                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
+                  24×7 Support
+                </div>
+                <a
+                  href={SUPPORT_PHONE_TEL}
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-[var(--cobrother-brand-green)] hover:bg-gray-50 transition-colors no-underline"
+                  onClick={() => setProfileDropdownOpen(false)}
+                >
+                  {SUPPORT_PHONE_DISPLAY}
+                </a>
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5">
+                  <span className="home-profile-mobile-select-label">Language</span>
+                  <LanguageDropdown variant="minimal" className="home-profile-menu-language" />
+                </div>
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5 border-b border-gray-100">
+                  <span className="home-profile-mobile-select-label">Currency</span>
+                  <CurrencyDropdown variant="minimal" className="home-profile-menu-currency" />
+                </div>
                 <a
                   href="/complete-profile"
                   className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
@@ -233,11 +289,29 @@ export default function HomeTopNavActions() {
                 </button>
                 <a
                   href="/contact"
-                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline xl:hidden"
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {t('contactUs')}
                 </a>
+                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
+                  24×7 Support
+                </div>
+                <a
+                  href={SUPPORT_PHONE_TEL}
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-[var(--cobrother-brand-green)] hover:bg-gray-100 transition-colors no-underline"
+                  onClick={() => setProfileDropdownOpen(false)}
+                >
+                  {SUPPORT_PHONE_DISPLAY}
+                </a>
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5">
+                  <span className="home-profile-mobile-select-label">Language</span>
+                  <LanguageDropdown variant="minimal" className="home-profile-menu-language" />
+                </div>
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5">
+                  <span className="home-profile-mobile-select-label">Currency</span>
+                  <CurrencyDropdown variant="minimal" className="home-profile-menu-currency" />
+                </div>
               </>
             )}
           </div>

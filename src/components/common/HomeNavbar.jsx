@@ -171,7 +171,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <div className="home-main-nav-start">
           <button
             type="button"
-            className="home-nav-logo-btn shrink-0"
+            className="home-nav-logo-btn min-w-0 shrink"
             onClick={() => navigate('/')}
             aria-label="CoBrother home"
           >
@@ -331,7 +331,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
               )}
               {!authLoading && !user ? (
-                <div className="flex flex-col gap-3 w-full">
+                <div className="flex flex-col items-stretch gap-3 w-full">
                   <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
                     {t('joinCoBrother')}
                   </button>

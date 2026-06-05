@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { extractDomainList } from '../../utils/domainApiAdapter';
+import { fetchAllListPages } from '../../utils/listPagination';
 import { pickHomepagePreviewListings } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
-import DomainListingCard from '../listings/DomainListingCard';
 import ListingCardShell from '../listings/ListingCardShell';
-import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
-import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeUnifiedListingCard from './HomeUnifiedListingCard';
+import HomeSectionHeader from './HomeSectionHeader';
 import '../../styles/domain-listing-cards.css';
 
 export default function DomainsSection() {
@@ -23,8 +23,8 @@ export default function DomainsSection() {
     const fetchDomains = async () => {
       try {
         setLoading(true);
-        const response = await domainAPI.getAll();
-        setDomains(extractDomainList(response.data));
+        const items = await fetchAllListPages((params) => domainAPI.getAll(params));
+        setDomains(extractDomainList({ items, data: items }));
       } catch {
         setDomains([]);
       } finally {
@@ -45,24 +45,22 @@ export default function DomainsSection() {
     navigateToListingDetail(navigate, 'domain', domainId);
   };
 
-  if (loading) {
-    return <HomeSectionCardSkeleton title={t('premiumDomains')} to="/domains" />;
-  }
-
   return (
-    <section className="bg-white py-4 md:py-6">
+    <section className="bg-white pt-0 pb-3 md:pt-0 md:pb-4">
       <div className="w-full">
-        <HomeSectionHeader title={t('premiumDomains')} to="/domains" />
-        {previewDomains.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">{t('noDomains')}</p>
+        <HomeSectionHeader title={t('domains')} to="/domains" />
+        {loading ? (
+          <p className="text-center text-gray-500 py-4">{t('loading')}</p>
+        ) : previewDomains.length === 0 ? (
+          <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : (
           <HomePreviewRow>
             {previewDomains.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
                 <ListingCardShell>
-                  <DomainListingCard
-                    browseMode
-                    domain={domain}
+                  <HomeUnifiedListingCard
+                    type="domain"
+                    listing={domain}
                     likeState={getLike(domain.id)}
                     onLike={() => toggleLike(domain.id)}
                     onView={() => handleViewDetails(domain.id)}

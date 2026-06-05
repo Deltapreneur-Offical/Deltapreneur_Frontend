@@ -34,6 +34,7 @@ import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdapter';
+import { fetchAllListPages } from '../utils/listPagination';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 const STATUS_COLORS = {
@@ -118,11 +119,15 @@ export default function DomainsPage() {
     let cancelled = false;
     setLoading(true);
 
-    const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
+    const loadAll = filterTab === 'mine'
+      ? domainAPI.getMyListings().then(({ data }) => extractDomainList(data))
+      : fetchAllListPages((params) => domainAPI.getAll(params)).then(
+          (items) => extractDomainList({ items, data: items }),
+        );
 
-    req
-      .then(({ data }) => {
-        if (!cancelled) setAllDomains(extractDomainList(data));
+    loadAll
+      .then((rows) => {
+        if (!cancelled) setAllDomains(rows);
       })
       .catch(() => {
         if (!cancelled) setAllDomains([]);
@@ -153,11 +158,9 @@ export default function DomainsPage() {
     } finally { setDeleteTarget(null); }
   };
 
- const refreshDomains = () =>
-  domainAPI.getAll()
-    .then(({ data }) => {
-      setAllDomains(extractDomainList(data));
-    });
+  const refreshDomains = () =>
+    fetchAllListPages((params) => domainAPI.getAll(params))
+      .then((items) => setAllDomains(extractDomainList({ items, data: items })));
   return (
     <AppLayout>
       <Confetti show={showConfetti} />

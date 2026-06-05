@@ -25,6 +25,7 @@ import { APP_BASE_URL } from '../config/urls';
 import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { asArray } from '../utils/asArray';
+import { fetchAllListPages } from '../utils/listPagination';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
@@ -70,10 +71,13 @@ export default function VenturesPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
-    req
-      .then(({ data }) => {
-        if (!cancelled) setAllVentures(asArray(data));
+    const loadAll = filterTab === 'mine'
+      ? ventureAPI.getMyVentures().then(({ data }) => asArray(data))
+      : fetchAllListPages((params) => ventureAPI.getAll(params));
+
+    loadAll
+      .then((rows) => {
+        if (!cancelled) setAllVentures(rows);
       })
       .catch(() => {
         if (!cancelled) setAllVentures([]);
@@ -120,8 +124,12 @@ export default function VenturesPage() {
   };
 
   const refreshVentures = () => {
-    const req = filterTab === 'mine' ? ventureAPI.getMyVentures() : ventureAPI.getAll();
-    req.then(({ data }) => setAllVentures(asArray(data)));
+    if (filterTab === 'mine') {
+      ventureAPI.getMyVentures().then(({ data }) => setAllVentures(asArray(data)));
+      return;
+    }
+    fetchAllListPages((params) => ventureAPI.getAll(params))
+      .then((rows) => setAllVentures(rows));
   };
 
   return (

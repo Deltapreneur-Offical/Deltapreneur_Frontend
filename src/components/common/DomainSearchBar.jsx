@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { auctionAPI, domainAPI } from '../../api/services';
 import { extractDomainList } from '../../utils/domainApiAdapter';
+import { fetchAllListPages } from '../../utils/listPagination';
 import { isActiveListing, isAdminCreatedListing } from '../../utils/homepageListings';
 import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
 
@@ -194,7 +195,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       setAuctionsLoading(true);
       const [activeAuctionsRes, allDomainsRes] = await Promise.all([
         auctionAPI.getActive().catch(() => ({ data: [] })),
-        domainAPI.getAll().catch(() => ({ data: [] })),
+        fetchAllListPages((params) => domainAPI.getAll(params))
+          .then((items) => ({ data: { items, data: items } }))
+          .catch(() => ({ data: [] })),
       ]);
 
       const activeAuctions = Array.isArray(activeAuctionsRes.data)
@@ -241,8 +244,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const fetchPremiumDomains = async () => {
     try {
       setPremiumLoading(true);
-      const { data } = await domainAPI.getAll();
-      const domains = extractDomainList(data);
+      const items = await fetchAllListPages((params) => domainAPI.getAll(params));
+      const domains = extractDomainList({ items, data: items });
       const adminListed = domains.filter(
         (item) => isActiveListing(item, 'domain') && isAdminCreatedListing(item, 'domain'),
       );

@@ -10,6 +10,7 @@ import {
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import { asArray } from '../utils/asArray';
+import { fetchAllListPages } from '../utils/listPagination';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 import { useTranslation } from 'react-i18next';
 import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/domainDisplay';
@@ -161,8 +162,8 @@ export default function AuctionsPage() {
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
       ventureAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-      ventureAPI.getAll()
-        .then(({ data }) => asArray(data)
+      fetchAllListPages((params) => ventureAPI.getAll(params))
+        .then((rows) => rows
           .map(normalizeListedVentureAuction)
           .filter(Boolean))
         .catch(() => []),

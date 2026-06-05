@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
 import { pickHomepagePreviewListings } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { asArray } from '../../utils/asArray';
+import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -22,8 +22,8 @@ export default function TechnologySection() {
     const fetchSoftwares = async () => {
       try {
         setLoading(true);
-        const response = await cocreationAPI.getAll();
-        setSoftwares(asArray(response.data));
+        const items = await fetchAllListPages((params) => cocreationAPI.getAll(params));
+        setSoftwares(items);
       } catch {
         setSoftwares([]);
       } finally {

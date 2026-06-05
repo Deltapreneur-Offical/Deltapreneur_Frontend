@@ -37,6 +37,8 @@ import {
 } from '../utils/technologyAuctionUi';
 import ConfettiBurst from '../components/common/ConfettiBurst';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
+import { fetchAllListPages } from '../utils/listPagination';
+import { asArray } from '../utils/asArray';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -88,11 +90,14 @@ export default function CoCreationPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const req = filterTab === 'mine' ? technologyAPI.getMyListings() : technologyAPI.getAll();
-    req
-      .then(({ data }) => {
+    const loadAll = filterTab === 'mine'
+      ? technologyAPI.getMyListings().then(({ data }) => asArray(data))
+      : fetchAllListPages((params) => technologyAPI.getAll(params));
+
+    loadAll
+      .then((rows) => {
         if (!cancelled) {
-          setAllSoftware(Array.isArray(data) ? data : (data?.data ?? []));
+          setAllSoftware(rows);
         }
       })
       .catch(() => {
@@ -147,18 +152,18 @@ export default function CoCreationPage() {
         })
         .catch(() => {});
       const refreshListings = filterTab === 'mine'
-        ? technologyAPI.getMyListings()
-        : technologyAPI.getAll();
+        ? technologyAPI.getMyListings().then(({ data }) => asArray(data))
+        : fetchAllListPages((params) => technologyAPI.getAll(params));
       refreshListings
-        .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
+        .then((rows) => setAllSoftware(rows))
         .catch(() => {});
     }
   };
 
 
   const refreshSoftware = () =>
-    technologyAPI.getAll()
-      .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])));
+    fetchAllListPages((params) => technologyAPI.getAll(params))
+      .then((rows) => setAllSoftware(rows));
 
   return (
     <AppLayout>

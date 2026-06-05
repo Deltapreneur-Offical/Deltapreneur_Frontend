@@ -1,5 +1,6 @@
 import { domainAPI } from '../api/services';
 import { extractDomainList } from './domainApiAdapter';
+import { fetchAllListPages } from './listPagination';
 import { resolveDomainDisplay } from './domainDisplay';
 import { filterFeaturedListings } from './homepageListings';
 
@@ -26,7 +27,7 @@ export function mapDomainToTickerItem(domain) {
 }
 
 export async function fetchFeaturedDomainTickerItems() {
-  const { data } = await domainAPI.getAll();
-  const domains = extractDomainList(data);
+  const items = await fetchAllListPages((params) => domainAPI.getAll(params));
+  const domains = extractDomainList({ items, data: items });
   return filterFeaturedListings(domains, 'domain').map(mapDomainToTickerItem);
 }

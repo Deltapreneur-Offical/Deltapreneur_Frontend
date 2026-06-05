@@ -1,0 +1,56 @@
+import { asArray } from './asArray';
+
+/** Default page size for browse pages that load the full catalog in chunks. */
+export const BROWSE_LIST_PAGE_SIZE = 50;
+
+/** Home sections only need a small slice before preview selection. */
+export const HOME_PREVIEW_PAGE_SIZE = 48;
+
+/**
+ * Fetch one page from a list API that accepts { page, page_size }.
+ * @param {function(object): Promise} requestFn - e.g. (p) => domainAPI.getAll(p)
+ */
+export async function fetchListPage(requestFn, { page = 1, pageSize = BROWSE_LIST_PAGE_SIZE } = {}) {
+  const { data } = await requestFn({ page, page_size: pageSize });
+  const items = asArray(data);
+  const total = Number(data?.total ?? items.length);
+  return {
+    items,
+    total: Number.isFinite(total) ? total : items.length,
+    page: data?.page ?? page,
+    pageSize: data?.page_size ?? data?.pageSize ?? pageSize,
+  };
+}
+
+/**
+ * Load every page and merge (keeps client-side search/filter working on browse pages).
+ * Stops when all rows are fetched or a page returns no items.
+ */
+export async function fetchAllListPages(
+  requestFn,
+  { pageSize = BROWSE_LIST_PAGE_SIZE, maxPages = 200 } = {},
+) {
+  const merged = [];
+  let total = null;
+  let page = 1;
+
+  while (page <= maxPages) {
+    const { items, total: reportedTotal } = await fetchListPage(requestFn, { page, pageSize });
+    if (total == null) {
+      total = reportedTotal;
+    }
+    if (!items.length) {
+      break;
+    }
+    merged.push(...items);
+    if (merged.length >= total) {
+      break;
+    }
+    if (items.length < pageSize) {
+      break;
+    }
+    page += 1;
+  }
+
+  return merged;
+}

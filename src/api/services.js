@@ -27,7 +27,7 @@ export const profileAPI = {
 
 // ─── Venture ─────────────────────────────────────────────────────────────────
 export const ventureAPI = {
-  getAll:       ()        => api.get('/api/v1/venture/all'),
+  getAll:       (params)  => api.get('/api/v1/venture/all', { params }),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
   create:       (data)    => api.post('/api/v1/venture/', data),
@@ -90,7 +90,7 @@ export const currencyAPI = {
 };
 
 export const domainAPI = {
-  getAll:          ()        => api.get('/api/v1/domain/all'),
+  getAll:          (params)  => api.get('/api/v1/domain/all', { params }),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
   getMyPurchases:  ()        => api.get('/api/v1/domain/my-purchases'),
   get:             (id)      => api.get(`/api/v1/domain/listings/${id}`),
@@ -127,7 +127,7 @@ export const analyticsAPI = {
 };
 
 export const technologyAPI = {
-  getAll:          ()         => api.get('/api/v1/technology/all'),
+  getAll:          (params)   => api.get('/api/v1/technology/all', { params }),
   getMyListings:   ()         => api.get('/api/v1/technology/my-listings'),
   getMyPurchases:  ()         => api.get('/api/v1/technology/my-purchases'),
   get:             (id)       => api.get(`/api/v1/technology/${id}`),

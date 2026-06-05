@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { extractDomainList } from '../../utils/domainApiAdapter';
+import { fetchAllListPages } from '../../utils/listPagination';
 import { pickHomepagePreviewListings } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
@@ -22,8 +23,8 @@ export default function DomainsSection() {
     const fetchDomains = async () => {
       try {
         setLoading(true);
-        const response = await domainAPI.getAll();
-        setDomains(extractDomainList(response.data));
+        const items = await fetchAllListPages((params) => domainAPI.getAll(params));
+        setDomains(extractDomainList({ items, data: items }));
       } catch {
         setDomains([]);
       } finally {

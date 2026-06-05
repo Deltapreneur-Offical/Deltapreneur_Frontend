@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
+import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
@@ -176,36 +177,12 @@ export default function DomainsPage() {
         </div>
       )}
       <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domains')}</h1>
-            <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
-          </div>
-          <div className="flex gap-2 md:gap-3">
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
-              <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
-            </button>
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
-              <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allDomains')}</button>
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
-        </div>
-
-        {globalNotice && (
-          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            {globalNotice}
-          </div>
-        )}
-
-        {(showForm || editTarget) && (
-          <div className="mb-6">
+        {(showForm || editTarget) ? (
+          <>
+            <ListingBackLink
+              label="Back to Domains"
+              onClick={() => { setShowForm(false); setEditTarget(null); }}
+            />
             <DomainForm
               editDomain={editTarget}
               onSaved={d => {
@@ -233,6 +210,34 @@ export default function DomainsPage() {
               }}
               onCancel={() => { setShowForm(false); setEditTarget(null); }}
             />
+          </>
+        ) : (
+          <>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domains')}</h1>
+            <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
+          </div>
+          <div className="flex gap-2 md:gap-3">
+            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
+              <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
+            </button>
+            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
+              <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mb-6">
+          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allDomains')}</button>
+          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
+        </div>
+
+        {globalNotice && (
+          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            {globalNotice}
           </div>
         )}
 
@@ -299,6 +304,8 @@ export default function DomainsPage() {
             </div>
             <Pagination page={page} totalPages={totalPages}
               onPage={setPage} totalCount={totalCount} pageSize={20} />
+          </>
+        )}
           </>
         )}
       </div>

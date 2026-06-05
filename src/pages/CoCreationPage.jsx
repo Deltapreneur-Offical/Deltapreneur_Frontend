@@ -14,6 +14,7 @@ import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
+import ListingBackLink from '../components/common/ListingBackLink';
 import Pagination from '../components/common/Pagination';
 import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -168,6 +169,35 @@ export default function CoCreationPage() {
   return (
     <AppLayout>
       <div>
+        {(showForm || editTarget) && user ? (
+          <>
+            <ListingBackLink
+              label="Back to Technology"
+              onClick={() => { setShowForm(false); setEditTarget(null); }}
+            />
+            <SoftwareForm
+              key={editTarget?.id || 'create'}
+              initial={editTarget}
+              onSaved={s => {
+                const snap = captureAppLayoutScroll();
+                flushSync(() => {
+                  if (editTarget) {
+                    setAllSoftware(prev => prev.map(x => (x.id === s.id ? { ...x, ...s } : x)));
+                    setEditTarget(null);
+                    if (detailTarget?.id === s.id) setDetailTarget(s);
+                  } else {
+                    setAllSoftware(prev => [s, ...prev]);
+                    setShowForm(false);
+                    setShowConfetti(true);
+                  }
+                });
+                scheduleRestoreAppLayoutScroll(snap);
+              }}
+              onCancel={() => { setShowForm(false); setEditTarget(null); }}
+            />
+          </>
+        ) : (
+          <>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -194,31 +224,6 @@ export default function CoCreationPage() {
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
-
-        {(showForm || editTarget) && user && (
-          <div className="mb-6">
-            <SoftwareForm
-              key={editTarget?.id || 'create'}
-              initial={editTarget}
-              onSaved={s => {
-                const snap = captureAppLayoutScroll();
-                flushSync(() => {
-                  if (editTarget) {
-                    setAllSoftware(prev => prev.map(x => (x.id === s.id ? { ...x, ...s } : x)));
-                    setEditTarget(null);
-                    if (detailTarget?.id === s.id) setDetailTarget(s);
-                  } else {
-                    setAllSoftware(prev => [s, ...prev]);
-                    setShowForm(false);
-                    setShowConfetti(true);
-                  }
-                });
-                scheduleRestoreAppLayoutScroll(snap);
-              }}
-              onCancel={() => { setShowForm(false); setEditTarget(null); }}
-            />
-          </div>
-        )}
 
         <FilterBar
           search={search}           onSearch={handleSearch}
@@ -291,6 +296,8 @@ export default function CoCreationPage() {
     pageSize={20}
   />
 </>
+        )}
+          </>
         )}
       </div>
 

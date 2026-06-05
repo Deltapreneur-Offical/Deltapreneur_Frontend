@@ -73,6 +73,9 @@ export default function CommunityAuctionPage() {
 
   // Re-auction / close modal
   const [reAuctionModal, setReAuctionModal] = useState(false);
+  const [closingAuction, setClosingAuction] = useState(false);
+  const [closeMessage, setCloseMessage] = useState('');
+  const [closeError, setCloseError] = useState('');
 
   const community = auction?.community || {};
   const isOwner = resolveAuctionLister(
@@ -253,14 +256,30 @@ export default function CommunityAuctionPage() {
     }
   };
 
+  const resolveApiError = (err, fallback) => {
+    const detail = err?.response?.data?.detail ?? err?.response?.data?.message ?? err?.response?.data?.error;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+      return detail.map((item) => item?.msg || item).filter(Boolean).join(', ') || fallback;
+    }
+    return fallback;
+  };
+
   // Close / re-auction
   const handleClose = async () => {
     if (!window.confirm('Are you sure you want to close this auction?')) return;
+    setClosingAuction(true);
+    setCloseMessage('');
+    setCloseError('');
     try {
       await communityAuctionAPI.close(auction.id);
-      navigate('/creator');
+      await refresh();
+      setCloseMessage('Auction closed successfully.');
+      window.setTimeout(() => navigate('/creator'), 1200);
     } catch (e) {
-      alert('Failed to close auction.');
+      setCloseError(resolveApiError(e, 'Failed to close auction.'));
+    } finally {
+      setClosingAuction(false);
     }
   };
 
@@ -573,8 +592,23 @@ export default function CommunityAuctionPage() {
                 <p className="text-gray-500 text-[0.875rem]">
                   This is your auction. You cannot bid on your own listing.
                 </p>
-                <button className="btn-glow mt-3 w-full" onClick={handleClose}>
-                  Close Auction
+                {closeError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg mt-3 text-[0.82rem] text-red-600 text-left">
+                    {closeError}
+                  </div>
+                )}
+                {closeMessage && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg mt-3 text-[0.82rem] text-green-700 text-left">
+                    {closeMessage}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="btn-glow mt-3 w-full"
+                  onClick={handleClose}
+                  disabled={closingAuction}
+                >
+                  {closingAuction ? 'Closing…' : 'Close Auction'}
                 </button>
               </div>
             )}

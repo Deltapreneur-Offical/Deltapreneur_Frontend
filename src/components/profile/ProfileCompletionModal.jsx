@@ -140,7 +140,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-stretch">
             <button
               type="button"
               className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-[10px] border border-gray-300 hover:bg-gray-200 transition-colors"
@@ -151,7 +151,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
             </button>
             <button
               type="submit"
-              className="btn-glow flex-1"
+              className="btn-glow btn-glow-sm flex-1 min-w-0 min-h-[2.75rem]"
               disabled={loading}
             >
               {loading ? (

@@ -138,7 +138,7 @@ export default function DomainsDashboardPage() {
               <button className="btn-glow" onClick={() => navigate('/domains')}>{t('domainsDashboardBrowseDomains')}</button>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 overflow-visible">
               {purchases.map(d => <DomainRow key={d.id} domain={d} type="purchase" />)}
             </div>
           )

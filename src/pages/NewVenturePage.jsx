@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
+import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
 import Confetti from '../components/common/Confetti';
 
@@ -80,6 +81,7 @@ export default function NewVenturePage() {
       )}
 
       <div className="max-w-full w-full">
+        <ListingBackLink to="/ventures" label="Back to Ventures" />
         <div className="mb-8">
           <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">{t('newVentureTitle')}</h1>
           <p className="text-gray-600">{t('newVentureSubtitle')}</p>

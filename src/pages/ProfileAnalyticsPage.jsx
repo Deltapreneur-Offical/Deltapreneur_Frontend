@@ -31,8 +31,8 @@ const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
 );
 
 const ChartCard = ({ title, children }) => (
-  <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-    <div className="text-sm font-semibold text-gray-300 mb-5">{title}</div>
+  <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl">
+    <div className="text-sm font-semibold text-gray-900 mb-5">{title}</div>
     {children}
   </div>
 );
@@ -53,8 +53,8 @@ export default function ProfileAnalyticsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     analyticsAPI.getProfileAnalytics()
@@ -92,7 +92,6 @@ export default function ProfileAnalyticsPage() {
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>
         ) : !analytics ? null : (
           <div className="flex flex-col gap-6">
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <StatCard label={t('profileAnalyticsTotalViews')} value={analytics.totalViews/2} sub={t('profileAnalyticsAllTime')} />
               <StatCard label={t('profileAnalyticsViewsWeek')} value={analytics.viewsThisWeek/2} sub={t('profileAnalyticsLast7Days')} color="#6ec896" />
@@ -101,7 +100,7 @@ export default function ProfileAnalyticsPage() {
             <ChartCard title={<><img src={CommunityProfileIcon} alt="" className="inline-block w-4 h-4 mr-2 object-contain" />{t('profileAnalyticsViews30Days')}</>}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={viewsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="date" tick={{ fill: '#666', fontSize: 11 }} interval={4} />
                   <YAxis tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
@@ -133,7 +132,7 @@ export default function ProfileAnalyticsPage() {
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={roleData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
                       <XAxis type="number" tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} width={90} />
                       <Tooltip content={<CustomTooltip />} />
@@ -143,7 +142,6 @@ export default function ProfileAnalyticsPage() {
                 )}
               </ChartCard>
             </div>
-
           </div>
         )}
       </div>

@@ -165,7 +165,7 @@ export default function HomeTopNavActions() {
 
   return (
     <>
-      <span className="home-nav-support-label">24Ã—7 Support</span>
+      <span className="home-nav-support-label">24x7 Support</span>
       <span className="home-nav-phone-number">{SUPPORT_PHONE_DISPLAY}</span>
       <CallNavButton />
       <WhatsAppNavButton />
@@ -232,7 +232,7 @@ export default function HomeTopNavActions() {
                   {t('contactUs')}
                 </a>
                 <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
-                  24Ã—7 Support
+                  24x7 Support
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
@@ -295,7 +295,7 @@ export default function HomeTopNavActions() {
                   {t('contactUs')}
                 </a>
                 <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
-                  24Ã—7 Support
+                  24x7 Support
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}

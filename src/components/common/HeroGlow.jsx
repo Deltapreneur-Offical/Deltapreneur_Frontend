@@ -11,7 +11,7 @@ export default function HeroGlow() {
             <p className="hero-tagline m-0 font-sans">Don't Just Start. Disrupt.</p>
             <h1 className="hero-headline m-0 font-sans font-normal leading-[1.2] text-black">
               Why just be a consumer? Be the <span className="hero-emphasis">Creator</span> with{' '}
-              <span className="hero-emphasis">CoBrother</span>
+              <span className="hero-emphasis">CoBrother!</span>
             </h1>
           </div>
 

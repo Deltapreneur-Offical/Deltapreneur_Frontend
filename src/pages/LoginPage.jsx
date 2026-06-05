@@ -13,6 +13,7 @@ import { resolvePostLoginPath } from '../utils/authSession';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
+import { useBotProtection } from '../hooks/useBotProtection';
 
 
 
@@ -48,6 +49,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   const [info, setInfo]   = useState('');
+
+  const {
+    requiresTurnstile,
+    getProtectionPayload,
+    resetProtection,
+    BotProtectionFields,
+  } = useBotProtection();
 
 
 
@@ -169,15 +177,25 @@ export default function LoginPage() {
 
     e.preventDefault();
 
+    if (requiresTurnstile) {
+      setError(t('completeSecurityCheck', 'Please complete the security check.'));
+      return;
+    }
+
     setBusy(true); setError('');
 
     try {
 
-      const { data } = await authAPI.login({ email: form.email, password: form.password });
+      const { data } = await authAPI.login({
+        email: form.email,
+        password: form.password,
+        ...getProtectionPayload(),
+      });
 
       await handleLoginSuccess(data);
 
     } catch (err) {
+      resetProtection();
       const body = err.response?.data;
       if (body?.emailVerified === false) {
         setError(body?.error || body?.message || t('verifyEmailBeforeLogin', 'Please verify your email before logging in.'));
@@ -202,17 +220,24 @@ export default function LoginPage() {
 
     e.preventDefault();
 
+    if (requiresTurnstile) {
+      setError(t('completeSecurityCheck', 'Please complete the security check.'));
+      return;
+    }
+
     setBusy(true); setError('');
 
     try {
 
-      await authAPI.sendOtp(form.email);
+      await authAPI.sendOtp(form.email, getProtectionPayload());
 
       setStep(2);
 
       setInfo(`${t('otpSentTo')} ${form.email}`);
+      resetProtection();
 
     } catch (err) {
+      resetProtection();
       const body = err.response?.data;
       setError(
         body?.error ||
@@ -231,15 +256,25 @@ export default function LoginPage() {
 
     e.preventDefault();
 
+    if (requiresTurnstile) {
+      setError(t('completeSecurityCheck', 'Please complete the security check.'));
+      return;
+    }
+
     setBusy(true); setError('');
 
     try {
 
-      const { data } = await authAPI.verifyOtp(form.email, form.otpCode);
+      const { data } = await authAPI.verifyOtp(
+        form.email,
+        form.otpCode,
+        getProtectionPayload(),
+      );
 
       await handleLoginSuccess(data);
 
     } catch (err) {
+      resetProtection();
       const body = err.response?.data;
       setError(
         body?.error ||
@@ -269,13 +304,19 @@ export default function LoginPage() {
     setBusy(true);
     setError('');
     setInfo('');
+    if (requiresTurnstile) {
+      setError(t('completeSecurityCheck', 'Please complete the security check.'));
+      return;
+    }
     try {
-      const { data } = await authAPI.resendVerification(form.email);
+      const { data } = await authAPI.resendVerification(form.email, getProtectionPayload());
       setInfo(
         data?.message ||
           'If this email is pending verification, you will receive a link shortly.',
       );
+      resetProtection();
     } catch (err) {
+      resetProtection();
       const body = err.response?.data;
       setError(body?.error || body?.message || 'Unable to resend verification link.');
     } finally {
@@ -416,7 +457,8 @@ export default function LoginPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
               />
             </div>
-            <button type="submit" className="btn-glow w-full" disabled={busy}>
+            <BotProtectionFields className="flex flex-col gap-3" />
+            <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
               {busy ? (
                 <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
               ) : (
@@ -431,7 +473,7 @@ export default function LoginPage() {
                 type="button"
                 className="text-gray-500 hover:text-purple-600"
                 onClick={handleResendVerification}
-                disabled={busy}
+                disabled={busy || requiresTurnstile}
               >
                 Resend verification
               </button>
@@ -453,7 +495,8 @@ export default function LoginPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
               />
             </div>
-            <button type="submit" className="btn-glow w-full" disabled={busy}>
+            <BotProtectionFields className="flex flex-col gap-3" />
+            <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
               {busy ? (
                 <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
               ) : (
@@ -486,7 +529,8 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <button type="submit" className="btn-glow w-full" disabled={busy}>
+            <BotProtectionFields className="flex flex-col gap-3" />
+            <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
               {busy ? (
                 <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
               ) : (

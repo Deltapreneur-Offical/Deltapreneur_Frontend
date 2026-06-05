@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { feedbackAPI } from '../../api/services';
+import { useBotProtection } from '../../hooks/useBotProtection';
 
 export default function FeedbackSection() {
   const { t } = useTranslation();
@@ -9,6 +10,12 @@ export default function FeedbackSection() {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const {
+    requiresTurnstile,
+    getProtectionPayload,
+    resetProtection,
+    BotProtectionFields,
+  } = useBotProtection();
 
   const handleFeedbackTypeClick = (type) => {
     setFeedbackType(type);
@@ -19,21 +26,29 @@ export default function FeedbackSection() {
       alert(t('feedbackPlaceholder'));
       return;
     }
+    if (requiresTurnstile) {
+      alert(t('completeSecurityCheck', 'Please complete the security check.'));
+      return;
+    }
     try {
       setFeedbackSubmitting(true);
       const response = await feedbackAPI.submit({
         feedbackType,
         message: feedbackMessage,
         pageUrl: window.location.href,
+        ...getProtectionPayload(),
       });
       
       if (response.data && response.data.status === 'success') {
         setFeedbackSubmitted(true);
+        resetProtection();
       } else {
         alert('Failed to send feedback. Please try again.');
+        resetProtection();
       }
     } catch (error) {
       console.error('Feedback error:', error);
+      resetProtection();
       alert('Something went wrong. Please try again later.');
     } finally {
       setFeedbackSubmitting(false);
@@ -86,11 +101,12 @@ export default function FeedbackSection() {
               value={feedbackMessage}
               onChange={(e) => setFeedbackMessage(e.target.value)}
             />
+            <BotProtectionFields className="mb-3" />
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 mt-3">
               <button
                 className="btn-glow btn-glow-sm w-full sm:w-auto !px-4 !py-2 !text-[11px] sm:!text-xs"
                 onClick={handleFeedbackSubmit}
-                disabled={feedbackSubmitting}
+                disabled={feedbackSubmitting || requiresTurnstile}
               >
                 {feedbackSubmitting ? t('feedbackSubmitting') : t('submitFeedback')}
               </button>

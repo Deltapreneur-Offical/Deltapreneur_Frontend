@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import { useBotProtection } from '../hooks/useBotProtection';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -10,16 +11,28 @@ export default function ForgotPasswordPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const {
+    requiresTurnstile,
+    getProtectionPayload,
+    resetProtection,
+    BotProtectionFields,
+  } = useBotProtection();
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (requiresTurnstile) {
+      setError(t('completeSecurityCheck', 'Please complete the security check.'));
+      return;
+    }
     setBusy(true);
     setError('');
     setInfo('');
     try {
-      const { data } = await authAPI.forgotPassword(email);
+      const { data } = await authAPI.forgotPassword(email, getProtectionPayload());
       setInfo(data?.message || t('forgotPasswordSuccess'));
+      resetProtection();
     } catch (err) {
+      resetProtection();
       const body = err.response?.data;
       setError(body?.error || body?.message || t('forgotPasswordError'));
     } finally {
@@ -69,7 +82,8 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <button type="submit" className="btn-glow w-full" disabled={busy}>
+          <BotProtectionFields className="flex flex-col gap-3" />
+          <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
             {busy ? (
               <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
             ) : (

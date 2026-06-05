@@ -34,9 +34,18 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
+            // Keep React in one chunk — splitting `react` into separate vendor chunks
+            // created circular imports and broke production (`useState` of undefined).
             if (id.includes('node_modules')) {
+              if (
+                id.includes('/react-dom/') ||
+                id.includes('/react/') ||
+                id.includes('/scheduler/') ||
+                id.includes('/react-is/')
+              ) {
+                return 'vendor-react';
+              }
               if (id.includes('react-router')) return 'vendor-router';
-              if (id.includes('react')) return 'vendor-react';
               if (id.includes('i18next')) return 'vendor-i18n';
               return 'vendor';
             }

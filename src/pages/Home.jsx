@@ -183,7 +183,7 @@ export default function Home() {
 
     {
 
-      icon: <img src={coCreationIcon} alt="Technology" className="w-10 h-10 object-contain" />,
+      icon: <img src={coCreationIcon} alt="Technologies" className="w-10 h-10 object-contain" />,
 
       titleKey: 'technologyTitle',
 

@@ -511,9 +511,9 @@ export default function AppLayout({ children }) {
 
             <Link
               to="/"
-              className="app-layout-mobile-brand lg:hidden flex items-center min-w-0 shrink overflow-hidden"
+              className="app-layout-mobile-brand lg:hidden flex items-center shrink-0"
             >
-              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo max-w-full" />
+              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
             </Link>
           </div>
 

@@ -13,12 +13,12 @@ export const PRODUCTION_API_ORIGIN = 'https://cobrother-backend.onrender.com';
 export const PRODUCTION_APP_URL = 'https://co-brother-frontend.vercel.app';
 
 /**
- * Local Uvicorn is HTTP-only. `https://localhost:8080` causes ERR_SSL_PROTOCOL_ERROR.
+ * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` causes ERR_SSL_PROTOCOL_ERROR.
  */
 function normalizeLocalApiBase(url) {
   if (!url || typeof url !== 'string') return url;
   const t = url.trim();
-  if (/^https:\/\/(127\.0\.0\.1|localhost):(8000|8080)(\/|$)/i.test(t)) {
+  if (/^https:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(t)) {
     return `http://${t.slice('https://'.length)}`;
   }
   return t;
@@ -28,10 +28,10 @@ const remoteApiBaseRaw =
   import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
 const remoteApiBase = normalizeLocalApiBase(remoteApiBaseRaw);
 
-/** True when .env points at local Uvicorn (LTS2 uses :8080). */
+/** True when .env points at local Uvicorn (:8000). */
 const isLocalBackend =
   !remoteApiBase ||
-  /^https?:\/\/(127\.0\.0\.1|localhost):(8000|8080)(\/|$)/i.test(remoteApiBase);
+  /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
 function isFrontendOrigin(url) {
   if (!url || typeof window === 'undefined') return false;
@@ -47,9 +47,9 @@ function isFrontendOrigin(url) {
  * Never the Vercel SPA origin — oauth_state cookies must be set on the same host as the callback.
  */
 export function resolveBackendOrigin() {
-  // Local dev always uses :8080 (LTS2). Ignore stale VITE_API_URL=:8000 for OAuth/WS.
+  // Local dev always uses :8000 for OAuth/WS.
   if (import.meta.env.DEV && isLocalBackend) {
-    return 'http://localhost:8080';
+    return 'http://127.0.0.1:8000';
   }
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
     return remoteApiBase.replace(/\/$/, '');
@@ -59,7 +59,7 @@ export function resolveBackendOrigin() {
 
 /**
  * Axios baseURL.
- * - Dev + local backend: '' (Vite proxies /api → :8080)
+ * - Dev + local backend: '' (Vite proxies /api → :8000)
  * - Prod: direct calls to Render (avoids Vercel POST redirects that strip Authorization)
  * - Override with VITE_API_URL when needed
  */

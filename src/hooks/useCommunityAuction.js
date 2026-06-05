@@ -104,7 +104,11 @@ export function useCommunityAuction(auctionId) {
         return { ...next, ...limits };
       });
       if (msg.latestBid) setBids(prev => [normalizeBid(msg.latestBid), ...prev]);
-    } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
+    } else if (
+      msg.type === 'AUCTION_ENDED'
+      || msg.type === 'AUCTION_UNSOLD'
+      || msg.type === 'AUCTION_CLOSED'
+    ) {
       setAuction(prev => prev ? {
         ...prev,
         status: msg.status,

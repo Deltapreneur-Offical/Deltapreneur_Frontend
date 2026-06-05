@@ -146,15 +146,17 @@ export default function HomeTopNavActions() {
 
   return (
     <>
-      <div className="home-nav-util-group" role="group" aria-label="Regional settings">
-        <LanguageDropdown variant="minimal" className="home-nav-util-language" />
-        <span className="home-nav-util-divider" aria-hidden="true">
-          |
-        </span>
-        <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
-      </div>
+      <div className="home-nav-toolbar-extras flex items-center gap-2 shrink-0">
+        <div className="home-nav-util-group" role="group" aria-label="Regional settings">
+          <LanguageDropdown variant="minimal" className="home-nav-util-language" />
+          <span className="home-nav-util-divider" aria-hidden="true">
+            |
+          </span>
+          <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
+        </div>
 
-      <WhatsAppNavButton />
+        <WhatsAppNavButton />
+      </div>
 
       <div className="relative hidden xl:block">
         <a href="/contact" className="home-nav-contact-link">

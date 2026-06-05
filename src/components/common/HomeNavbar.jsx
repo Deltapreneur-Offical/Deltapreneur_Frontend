@@ -6,7 +6,9 @@ import { useAuth } from '../../context/AuthContext';
 import logoBlack from '../../assets/Cobrother_logo.png';
 import logoGreen from '../../assets/Cobrother_Green.png';
 import BackButton from './BackButton';
+import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
+import LanguageDropdown from './LanguageDropdown';
 
 function HomeNavLogo({ className = '' }) {
   return (
@@ -171,7 +173,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <div className="home-main-nav-start">
           <button
             type="button"
-            className="home-nav-logo-btn min-w-0 shrink"
+            className="home-nav-logo-btn shrink-0"
             onClick={() => navigate('/')}
             aria-label="CoBrother home"
           >
@@ -327,6 +329,11 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             </div>
 
             <div className="home-nav-drawer-footer">
+              <div className="home-nav-drawer-regional flex items-center justify-center gap-3 pb-3 mb-3 border-b border-gray-200">
+                <LanguageDropdown variant="minimal" className="home-nav-util-language" />
+                <span className="home-nav-util-divider" aria-hidden="true">|</span>
+                <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
+              </div>
               {showBack && (
                 <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
               )}

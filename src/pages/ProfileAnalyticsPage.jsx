@@ -30,8 +30,8 @@ const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
 );
 
 const ChartCard = ({ title, children }) => (
-  <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-    <div className="text-sm font-semibold text-gray-300 mb-5">{title}</div>
+  <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl">
+    <div className="text-sm font-semibold text-gray-900 mb-5">{title}</div>
     {children}
   </div>
 );
@@ -75,13 +75,19 @@ export default function ProfileAnalyticsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-[1100px]">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-4xl font-bold text-gold m-0">Profile Analytics</h1>
-            <p className="text-gray-600 mt-1">See who's viewing your creator profile.</p>
+      <div className="max-w-[1100px] mx-auto">
+        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-4xl font-bold text-gray-900 m-0">Profile Analytics</h1>
+            <p className="text-gray-600 mt-1 font-medium">See who's viewing your creator profile.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/creator')}>← Back</button>
+          <button
+            type="button"
+            className="btn-glow btn-glow-sm shrink-0 self-start"
+            onClick={() => navigate('/creator')}
+          >
+            ← Back
+          </button>
         </div>
 
         {loading ? (
@@ -101,7 +107,7 @@ export default function ProfileAnalyticsPage() {
             <ChartCard title={<><img src={CommunityProfileIcon} alt="" className="inline-block w-4 h-4 mr-2 object-contain" />Profile Views Over Last 30 Days</>}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={viewsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="date" tick={{ fill: '#666', fontSize: 11 }} interval={4} />
                   <YAxis tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
@@ -111,7 +117,7 @@ export default function ProfileAnalyticsPage() {
             </ChartCard>
 
             {/* Industry + Role */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ChartCard title="🏭 Viewer Industries">
                 {industryData.length === 0 ? (
                   <div style={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', padding: '2rem' }}>No data yet — get more profile views!</div>
@@ -134,7 +140,7 @@ export default function ProfileAnalyticsPage() {
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={roleData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
                       <XAxis type="number" tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} width={90} />
                       <Tooltip content={<CustomTooltip />} />

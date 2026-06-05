@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { API_ORIGIN } from '../config/urls';
 
 function wsOrigin() {
-  // Dev: connect via Vite (5173) so /ws proxies to the API on :8080.
+  // Dev: connect via Vite (5173) so /ws proxies to the API on :8000.
   if (import.meta.env.DEV && typeof window !== 'undefined') {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     return `${proto}//${window.location.host}`;
@@ -10,7 +10,7 @@ function wsOrigin() {
   const base = (API_ORIGIN || '').replace(/\/$/, '');
   if (base.startsWith('https://')) return base.replace('https://', 'wss://');
   if (base.startsWith('http://')) return base.replace('http://', 'ws://');
-  return 'ws://localhost:8080';
+  return 'ws://127.0.0.1:8000';
 }
 
 function getAccessToken() {

@@ -16,6 +16,7 @@ export const APP_HUB_ROUTES = new Set([
 
 /** Pages that already render their own back control in content */
 const PAGE_OWN_BACK = [
+  /^\/ventures\/new$/,
   /^\/domains\/dashboard$/,
   /^\/technology\/dashboard$/,
   /^\/ventures\/dashboard$/,

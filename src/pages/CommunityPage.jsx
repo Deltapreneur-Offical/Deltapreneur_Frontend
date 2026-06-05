@@ -15,6 +15,7 @@ import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUr
 import CommunityListingCard from '../components/listings/CommunityListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
+import ListingBackLink from '../components/common/ListingBackLink';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 import { getLinkedInProfileUrl, hasLinkedInAccount } from '../utils/creatorProfile';
@@ -260,6 +261,21 @@ export default function CommunityPage() {
   return (
     <AppLayout>
       <div>
+        {showForm && myProfile ? (
+          <>
+            <ListingBackLink
+              label="Back to Creators"
+              onClick={() => { setShowForm(false); setLinkedInSuccess(''); }}
+            />
+            <CommunityProfileForm
+              initial={myProfile}
+              onSaved={handleProfileSaved}
+              onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
+              onDelete={() => setShowDeleteConfirm(true)}
+            />
+          </>
+        ) : (
+          <>
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
@@ -347,17 +363,6 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {showForm && myProfile && (
-          <div className="mb-6">
-            <CommunityProfileForm
-              initial={myProfile}
-              onSaved={handleProfileSaved}
-              onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
-              onDelete={() => setShowDeleteConfirm(true)}
-            />
-          </div>
-        )}
-
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
@@ -395,6 +400,8 @@ export default function CommunityPage() {
             ))}
           </div>
         ) : null}
+          </>
+        )}
       </div>
 
       {detailProfile && (

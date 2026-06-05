@@ -115,7 +115,7 @@ export default function DomainsDashboardPage() {
               <button className="btn-glow" onClick={() => navigate('/domains')}>List a Domain</button>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 overflow-visible">
               {listings.map(d => (
                 <DomainRow
                   key={d.id}
@@ -135,7 +135,7 @@ export default function DomainsDashboardPage() {
               <button className="btn-glow" onClick={() => navigate('/domains')}>Browse Domains</button>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 overflow-visible">
               {purchases.map(d => <DomainRow key={d.id} domain={d} type="purchase" />)}
             </div>
           )
@@ -202,7 +202,7 @@ function DomainRow({ domain, type, onVerify }) {
   };
  
   return (
-    <div className="flex items-center justify-between bg-white border border-gray-200 rounded-[10px] px-5 py-4 gap-3 transition-all hover:-translate-y-px hover:shadow-lg">
+    <div className="relative flex items-center justify-between overflow-visible bg-white border border-gray-200 rounded-[10px] px-5 py-4 gap-3 transition-all hover:-translate-y-px hover:shadow-lg">
       <div>
         <div className="font-bold text-gray-900 text-base flex items-center gap-2">
           {domain.domainName}{domain.domainExtension}
@@ -304,12 +304,12 @@ function DomainRow({ domain, type, onVerify }) {
           </button>
 
           {shareOpen && (
-            <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
+            <div className="absolute right-0 bottom-full mb-2 z-[100] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[160px] text-gray-900">
               <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                <span className="text-xs font-semibold text-gray-500">Share via</span>
+                <span className="text-xs font-semibold text-gray-800">Share via</span>
               </div>
               <button
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                 onClick={() => handleShare(linkedinShare)}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -318,7 +318,7 @@ function DomainRow({ domain, type, onVerify }) {
                 LinkedIn
               </button>
               <button
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                 onClick={() => handleShare(facebookShare)}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -327,7 +327,7 @@ function DomainRow({ domain, type, onVerify }) {
                 Facebook
               </button>
               <button
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-green-50 hover:text-green-600 transition-colors"
                 onClick={() => handleShare(whatsappShare)}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">

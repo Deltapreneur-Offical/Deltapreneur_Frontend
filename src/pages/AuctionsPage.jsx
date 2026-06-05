@@ -21,6 +21,20 @@ const toNum = (value, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+function AuctionCardNextBidLine({ highestBid }) {
+  const hasNextBid = highestBid > 0;
+  return (
+    <div
+      className={`text-sm font-semibold mb-3 min-h-[1.25rem] ${hasNextBid ? 'text-gray-700' : 'invisible select-none'}`}
+      aria-hidden={!hasNextBid}
+    >
+      {hasNextBid
+        ? `Next bid: ≥ ₹${Number(highestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+        : 'Next bid placeholder'}
+    </div>
+  );
+}
+
 const normalizeAuction = (raw) => {
   if (!raw || typeof raw !== 'object') return raw;
   const domainRaw = raw.domain || {};
@@ -416,43 +430,39 @@ function VentureAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      {isGstinVerified && (
-        <div className="mb-2">
-          <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-            ✓ GSTIN Verified
-          </span>
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="mb-2 min-h-[1.5rem]">
+          {isGstinVerified && (
+            <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
+              ✓ GSTIN Verified
+            </span>
+          )}
+          {isDraft && !isGstinVerified && (
+            <span className="text-xs font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">
+              GSTIN verification pending
+            </span>
+          )}
         </div>
-      )}
-      {isDraft && !isGstinVerified && (
-        <div className="mb-2">
-          <span className="text-xs font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">
-            GSTIN verification pending
-          </span>
-        </div>
-      )}
 
-      <div className="grid grid-cols-2 gap-3 my-3">
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+        <div className="grid grid-cols-2 gap-3 my-3">
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+              {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            </div>
+            <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+              ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+            </div>
           </div>
-          <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+            <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
           </div>
         </div>
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
-          <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
-        </div>
+
+        <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
       </div>
 
-      {auction.currentHighestBid > 0 && (
-        <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
+      <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
             {isDraft ? 'Status' : 'Ends in'}
@@ -511,45 +521,38 @@ function DomainAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      {/* Verified badge */}
-      {domain.verified && (
-        <div className="mb-2">
-          <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-            ✓ Verified
-          </span>
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="mb-2 min-h-[1.5rem]">
+          {domain.verified && (
+            <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
+              ✓ Verified
+            </span>
+          )}
         </div>
-      )}
 
-      {/* Bid stats */}
-      <div className="grid grid-cols-2 gap-3 my-3">
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+        <div className="grid grid-cols-2 gap-3 my-3">
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+              {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            </div>
+            <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+              ₹{currentAmount.toLocaleString('en-IN')}
+            </div>
           </div>
-          <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{currentAmount.toLocaleString('en-IN')}
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+              Total Bids
+            </div>
+            <div className="font-display text-xl font-bold text-gray-900">
+              {totalBids}
+            </div>
           </div>
         </div>
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            Total Bids
-          </div>
-          <div className="font-display text-xl font-bold text-gray-900">
-            {totalBids}
-          </div>
-        </div>
+
+        <AuctionCardNextBidLine highestBid={highestBid} />
       </div>
 
-      {/* Next bid minimum */}
-      {highestBid > 0 && (
-        <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(highestBid * 1.05).toLocaleString('en-IN',
-            { maximumFractionDigits: 0 })}
-        </div>
-      )}
-
-      {/* Countdown */}
-      <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
+      <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
             Ends in
@@ -657,28 +660,26 @@ function SoftwareAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 my-3">
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="grid grid-cols-2 gap-3 my-3">
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+              {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            </div>
+            <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+              ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+            </div>
           </div>
-          <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+            <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
           </div>
         </div>
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
-          <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
-        </div>
+
+        <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
       </div>
 
-      {auction.currentHighestBid > 0 && (
-        <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
+      <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
@@ -742,46 +743,43 @@ function CommunityAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      {/* Skills */}
-      {skills.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {skills.map((s, i) => (
-            <span key={i} className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 border border-gray-200 text-gray-600">
-              {s}
-            </span>
-          ))}
-          {auction.auctionSkills?.split(',').length > 3 && (
-            <span className="text-xs text-gray-400 self-center">
-              +{auction.auctionSkills.split(',').length - 3} more
-            </span>
-          )}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex flex-wrap gap-1 mb-3 min-h-[1.625rem]">
+          {skills.length > 0 ? (
+            <>
+              {skills.map((s, i) => (
+                <span key={i} className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 border border-gray-200 text-gray-600">
+                  {s}
+                </span>
+              ))}
+              {auction.auctionSkills?.split(',').length > 3 && (
+                <span className="text-xs text-gray-400 self-center">
+                  +{auction.auctionSkills.split(',').length - 3} more
+                </span>
+              )}
+            </>
+          ) : null}
         </div>
-      )}
 
-      {/* Bid stats */}
-      <div className="grid grid-cols-2 gap-3 my-3">
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+        <div className="grid grid-cols-2 gap-3 my-3">
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+              {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            </div>
+            <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+              ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+            </div>
           </div>
-          <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+            <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
           </div>
         </div>
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
-          <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
-        </div>
+
+        <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
       </div>
 
-      {auction.currentHighestBid > 0 && (
-        <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
+      <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>

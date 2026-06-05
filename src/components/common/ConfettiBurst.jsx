@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'];
+const COLORS = ['#6366f1', '#8b5cf6', '#50BF78', '#f59e0b', '#ec4899', '#3b82f6'];
 
 function Particle({ index }) {
   const angle = (index / 24) * Math.PI * 2;

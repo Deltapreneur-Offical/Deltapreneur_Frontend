@@ -111,7 +111,7 @@ export default function DomainListingCard({
         </div>
         <div className="domain-listing-card__body">
           {domain.verified ? (
-            <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
+            <p className="text-[0.68rem] font-semibold text-[var(--cobrother-brand-green)] mb-2">✓ Verified domain</p>
           ) : (
             <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
           )}
@@ -198,7 +198,7 @@ export default function DomainListingCard({
 
       <div className="domain-listing-card__body">
         {domain.verified ? (
-          <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
+          <p className="text-[0.68rem] font-semibold text-[var(--cobrother-brand-green)] mb-2">✓ Verified domain</p>
         ) : (
           <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
         )}

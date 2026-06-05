@@ -1,20 +1,59 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
-import { auctionAPI, domainAPI } from '../../api/services';
+import { ArrowRight, Search } from 'lucide-react';
+import { domainAPI } from '../../api/services';
 import { extractDomainList } from '../../utils/domainApiAdapter';
-import { isActiveListing, isAdminCreatedListing } from '../../utils/homepageListings';
-import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
+import useAIDomains from '../../hooks/useAIDomains';
+import AIDomainGrid from '../ai-domains/AIDomainGrid';
+import AIDomainLoader from '../ai-domains/AIDomainLoader';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
+const SEARCH_MODES = {
+  ai: {
+    label: 'AI Brand Names',
+    placeholder: 'Enter your business idea...',
+  },
+  new: {
+    label: 'Domain Names',
+    placeholder: 'Search New Domains...',
+  },
+  premium: {
+    label: 'Pre-Owned Domains',
+    placeholder: 'Search Premium Domains...',
+  },
+  auction: {
+    label: 'Domain Auctions',
+    placeholder: 'Search Auction Domains...',
+  },
+};
+const SEARCH_TABS = Object.entries(SEARCH_MODES).map(([id, config]) => ({
+  id,
+  label: config.label,
+}));
+
+function toSafeText(value) {
+  if (typeof value === 'string') return value;
+  if (value == null) return '';
+  try {
+    return `${value}`;
+  } catch {
+    return '';
+  }
+}
+
+function toSafeLower(value) {
+  const text = toSafeText(value);
+  if (typeof text === 'string') return text.toLowerCase();
+  return '';
+}
 
 function normalizeSearchText(value) {
-  return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  return toSafeLower(value).replace(/[^a-z0-9]/g, '');
 }
 
 function buildSearchKey(raw) {
-  return String(raw || '').trim().toLowerCase();
+  return toSafeLower(raw).trim();
 }
 
 function damerauLevenshteinDistance(a, b) {
@@ -53,7 +92,7 @@ function damerauLevenshteinDistance(a, b) {
 }
 
 function registrarPriceSymbol(currency) {
-  const code = String(currency || 'INR').toUpperCase();
+  const code = toSafeText(currency || 'INR').toUpperCase();
   const map = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
   return map[code] || `${code} `;
 }
@@ -75,20 +114,30 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('new');
+  const [searchMode, setSearchMode] = useState('ai');
   const [auctionResults, setAuctionResults] = useState([]);
   const [auctionsLoading, setAuctionsLoading] = useState(false);
-  const [auctionsLoaded, setAuctionsLoaded] = useState(false);
   const [premiumDomains, setPremiumDomains] = useState([]);
   const [premiumLoading, setPremiumLoading] = useState(false);
-  const [premiumLoaded, setPremiumLoaded] = useState(false);
   const debounceRef           = useRef(null);
   const newSearchCacheRef = useRef(new Map());
   const requestIdRef = useRef(0);
-  const hasSearchQuery = query.trim().length > 0;
+  const safeQuery = toSafeText(query);
+  const normalizedQuery = toSafeLower(query).trim();
+  const hasSearchQuery = normalizedQuery.length > 0;
+  const placeholder = SEARCH_MODES[searchMode]?.placeholder || SEARCH_MODES.new.placeholder;
+  const {
+    results: aiDomains,
+    loading: aiLoading,
+    stage: aiStage,
+    progress: aiProgress,
+    error: aiError,
+    generate: generateAiDomains,
+    reset: resetAiDomains,
+  } = useAIDomains();
 
   const parseQuery = (raw) => {
-    const q = raw.trim().toLowerCase();
+    const q = toSafeLower(raw).trim();
     if (!q) return null;
     const dot = q.indexOf('.');
     if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
@@ -127,7 +176,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     await Promise.all(pairs.map(async ({ name, ext }) => {
       const fullDomain = `${name}.${ext}`;
       try {
-        const { data } = await domainAPI.check(encodeURIComponent(fullDomain));
+        const { data } = await domainAPI.check(fullDomain, 'new');
         const idx = nextResults.findIndex((r) => r.domain === fullDomain);
         if (idx !== -1) {
           nextResults[idx] = {
@@ -152,8 +201,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   useEffect(() => {
-    if (activeTab !== 'new') return;
-    if (!query.trim()) { setResults([]); return; }
+    if (searchMode !== 'new') return;
+    if (!normalizedQuery) { setResults([]); return; }
     const cacheKey = buildSearchKey(query);
     if (newSearchCacheRef.current.has(cacheKey)) {
       clearTimeout(debounceRef.current);
@@ -164,19 +213,107 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(query), 700);
     return () => clearTimeout(debounceRef.current);
-  }, [query, activeTab]);
+  }, [query, searchMode]);
+
+  const fetchPremiumDomains = async (raw, options = {}) => {
+    const { force = false } = options;
+    const q = toSafeText(raw).trim();
+    if (!q) {
+      setPremiumDomains([]);
+      setPremiumLoading(false);
+      return;
+    }
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
+    setPremiumLoading(true);
+    if (force) setPremiumDomains([]);
+
+    try {
+      const { data } = await domainAPI.search({ query: q, mode: 'premium' });
+      if (requestIdRef.current !== currentRequestId) return;
+      setPremiumDomains(extractDomainList(data));
+    } catch {
+      if (requestIdRef.current !== currentRequestId) return;
+      setPremiumDomains([]);
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setPremiumLoading(false);
+      }
+    }
+  };
+
+  const fetchAuctions = async (raw, options = {}) => {
+    const { force = false } = options;
+    const q = toSafeText(raw).trim();
+    if (!q) {
+      setAuctionResults([]);
+      setAuctionsLoading(false);
+      return;
+    }
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
+    setAuctionsLoading(true);
+    if (force) setAuctionResults([]);
+
+    try {
+      const { data } = await domainAPI.search({ query: q, mode: 'auction' });
+      if (requestIdRef.current !== currentRequestId) return;
+      const items = Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
+      setAuctionResults(items);
+    } catch {
+      if (requestIdRef.current !== currentRequestId) return;
+      setAuctionResults([]);
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setAuctionsLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
-    if (!hasSearchQuery) {
-      setActiveTab('new');
+    if (!normalizedQuery) {
+      setPremiumDomains([]);
+      setAuctionResults([]);
+      resetAiDomains();
+      return undefined;
     }
-  }, [hasSearchQuery]);
+    if (searchMode === 'premium') {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => fetchPremiumDomains(query), 400);
+      return () => clearTimeout(debounceRef.current);
+    }
+    if (searchMode === 'auction') {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => fetchAuctions(query), 400);
+      return () => clearTimeout(debounceRef.current);
+    }
+    return undefined;
+  }, [query, searchMode]);
+
+  useEffect(() => {
+    if (searchMode === 'ai') {
+      resetAiDomains();
+    }
+  }, [query, searchMode]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (activeTab !== 'new') return;
     clearTimeout(debounceRef.current);
-    doSearch(query, { force: true });
+    if (searchMode === 'ai') {
+      generateAiDomains(query);
+    } else if (searchMode === 'new') {
+      doSearch(query, { force: true });
+    } else if (searchMode === 'premium') {
+      fetchPremiumDomains(query, { force: true });
+    } else {
+      fetchAuctions(query, { force: true });
+    }
   };
 
   const domainTitleFromAuction = (auction) => {
@@ -189,80 +326,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     );
   };
 
-  const fetchAuctions = async () => {
-    try {
-      setAuctionsLoading(true);
-      const [activeAuctionsRes, allDomainsRes] = await Promise.all([
-        auctionAPI.getActive().catch(() => ({ data: [] })),
-        domainAPI.getAll().catch(() => ({ data: [] })),
-      ]);
-
-      const activeAuctions = Array.isArray(activeAuctionsRes.data)
-        ? activeAuctionsRes.data
-        : Array.isArray(activeAuctionsRes.data?.data)
-          ? activeAuctionsRes.data.data
-          : Array.isArray(activeAuctionsRes.data?.items)
-            ? activeAuctionsRes.data.items
-            : [];
-
-      const domainAuctionFallback = extractDomainList(allDomainsRes.data)
-        .filter((d) => d.saleType === 'AUCTION' && d.auction)
-        .filter((d) => {
-          const status = String(d.auction?.status || '').toUpperCase();
-          return ['ACTIVE', 'EXTENDED', 'DRAFT'].includes(status);
-        })
-        .map((d) => ({
-          id: d.auction?.id ?? d.id,
-          status: d.auction?.status ?? 'DRAFT',
-          minBidPrice: Number(d.auction?.minBidPrice ?? 0),
-          currentHighestBid: Number(d.auction?.currentHighestBid ?? 0),
-          totalBids: Number(d.auction?.totalBids ?? 0),
-          domain: {
-            fullDomain: `${d.domainName || ''}${d.domainExtension || ''}`,
-            domainName: d.domainName || '',
-            domainExtension: d.domainExtension || '',
-          },
-        }));
-
-      const mergedById = new Map();
-      [...activeAuctions, ...domainAuctionFallback].forEach((item) => {
-        if (!item?.id) return;
-        mergedById.set(String(item.id), item);
-      });
-      setAuctionResults(Array.from(mergedById.values()));
-    } catch {
-      setAuctionResults([]);
-    } finally {
-      setAuctionsLoading(false);
-      setAuctionsLoaded(true);
-    }
-  };
-
-  const fetchPremiumDomains = async () => {
-    try {
-      setPremiumLoading(true);
-      const { data } = await domainAPI.getAll();
-      const domains = extractDomainList(data);
-      const adminListed = domains.filter(
-        (item) => isActiveListing(item, 'domain') && isAdminCreatedListing(item, 'domain'),
-      );
-      setPremiumDomains(adminListed);
-    } catch {
-      setPremiumDomains([]);
-    } finally {
-      setPremiumLoading(false);
-      setPremiumLoaded(true);
-    }
-  };
-
   const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    if (tabId === 'auctions' && !auctionsLoaded && !auctionsLoading) {
-      fetchAuctions();
-    }
-    if (tabId === 'premium' && !premiumLoaded && !premiumLoading) {
-      fetchPremiumDomains();
-    }
+    requestIdRef.current += 1;
+    clearTimeout(debounceRef.current);
+    setSearchMode(tabId);
+    resetAiDomains();
+    setResults([]);
+    setPremiumDomains([]);
+    setAuctionResults([]);
+    setLoading(false);
+    setPremiumLoading(false);
+    setAuctionsLoading(false);
   };
 
   const goToMarketplace = (listing) => {
@@ -282,21 +356,21 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     .filter(Boolean)
     .filter((item) => item !== visibleNewBest && item.status === 'available');
   const filteredPremiumDomains = premiumDomains.filter((item) => {
-    const q = query.trim().toLowerCase();
-    const domainName = String(item.domainName || '').toLowerCase();
-    const domainExtension = String(item.domainExtension || '').toLowerCase();
+    const q = normalizedQuery;
+    const domainName = toSafeLower(item.domainName || '');
+    const domainExtension = toSafeLower(item.domainExtension || '');
     const fullDomain = `${domainName}${domainExtension}`;
     if (fullDomain.includes(q) || domainName.includes(q)) return true;
 
-    // Tolerate small typos when searching exact admin domain names.
+    // Tolerate small typos when searching exact listed domain names.
     if (q.length >= 6) {
       return damerauLevenshteinDistance(domainName, q) <= 2;
     }
     return false;
   });
   const filteredAuctionResults = auctionResults.filter((auction) => {
-    const fullDomain = (domainTitleFromAuction(auction) || '').toLowerCase();
-    return fullDomain.includes(query.trim().toLowerCase());
+    const fullDomain = toSafeLower(domainTitleFromAuction(auction) || '');
+    return fullDomain.includes(normalizedQuery);
   });
 
   // ── Sub-components ──────────────────────────────────────────────────────────
@@ -304,7 +378,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const map = {
       loading:     ['bg-gray-100 text-gray-400',     'CHECKING…'],
       marketplace: ['bg-indigo-100 text-indigo-700', '🏪 ON OUR MARKETPLACE'],
-      available:   ['bg-emerald-100 text-emerald-700','✓ AVAILABLE'],
+      available:   ['bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)]','✓ AVAILABLE'],
       taken:       ['bg-red-100 text-red-500',        'TAKEN'],
       error:       ['bg-gray-100 text-gray-400',      'UNAVAILABLE'],
     };
@@ -380,42 +454,39 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     >
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
-        {/* Desktop: compact search beside live domain feed */}
-        <div className={`hidden lg:flex lg:flex-row lg:items-end gap-4 xl:gap-5 ${embedded ? 'lg:justify-start' : 'lg:justify-center'}`}>
-          <div className="w-full max-w-[700px] flex-[1_1_640px] xl:max-w-[740px]">
+        {/* Desktop: compact search and mode tabs */}
+        <div className="hidden lg:flex lg:flex-row lg:items-end lg:justify-start">
+          <div className="w-full max-w-[760px] flex-[1_1_700px]">
             <form onSubmit={handleSearch}
-              className="search-glow-focus flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border border-indigo-400/40 bg-black py-2 pl-4 pr-2 shadow-[0_4px_24px_rgba(99,102,241,0.12)] transition-all duration-300 sm:pl-5 sm:rounded-full">
-              <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
+              className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full">
+              <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
               <input
                 type="text"
-                className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-white-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
-                placeholder={t('domainSearchPlaceholder')}
-                value={query}
+                className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
+                placeholder={placeholder}
+                value={safeQuery}
                 onChange={(e) => setQuery(e.target.value)}
               />
               <button
                 type="submit"
-                className="domain-search-submit shrink-0 rounded-full bg-white/95 backdrop-blur-md border border-purple-200 px-7 py-3 text-[14px] font-semibold text-gray-900 shadow-md transition-all duration-300 hover:bg-white hover:shadow-lg"
+                aria-label={t('search')}
+                className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2"
               >
-                {t('search')}
+                <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
               </button>
             </form>
 
-            <div className="mt-4 flex justify-center">
-              <div className="inline-flex items-center rounded-full border border-gray-200 bg-white p-1 shadow-sm">
-                {[
-                  { id: 'new', label: 'New Domains' },
-                  { id: 'premium', label: 'Premium Domains' },
-                  { id: 'auctions', label: 'Domain Auctions' },
-                ].map((tab) => (
+            <div className="mt-3 flex justify-center">
+              <div className="brand-search-tabs inline-flex items-center gap-1 rounded-full border bg-white/95 p-1">
+                {SEARCH_TABS.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabChange(tab.id)}
-                    className={`rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition ${
-                      activeTab === tab.id
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
+                    className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none transition-all duration-200 ${
+                      searchMode === tab.id
+                        ? 'brand-search-tab-active text-white'
+                        : 'brand-search-tab-idle text-slate-600'
                     }`}
                   >
                     {tab.label}
@@ -424,42 +495,39 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               </div>
             </div>
           </div>
-          <CompactDomainTicker className="hidden lg:block w-full max-w-[390px] flex-[0_1_390px] self-end xl:max-w-[430px] xl:basis-[430px]" />
         </div>
 
         {/* Mobile / tablet */}
         <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
           <form onSubmit={handleSearch}
-            className={`search-glow-focus w-full flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-[var(--cobrother-hover-color)] hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01] ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+            className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+            <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
             <input
               type="text"
-              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-white-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
-              placeholder={t('domainSearchPlaceholder')}
-              value={query}
+              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
+              placeholder={placeholder}
+              value={safeQuery}
               onChange={e => setQuery(e.target.value)}
             />
             <button type="submit"
-              className="domain-search-submit bg-[#232f3e] text-white py-3 px-6 sm:px-7 rounded-full text-sm sm:text-base font-semibold transition-all w-full sm:w-auto hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
-              {t('search')}
+              aria-label={t('search')}
+              className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2">
+              <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
             </button>
           </form>
         </div>
 
-        <div className="mt-4 flex justify-center lg:hidden">
-          <div className="inline-flex items-center rounded-full border border-gray-200 bg-white p-1 shadow-sm">
-            {[
-              { id: 'new', label: 'New Domains' },
-              { id: 'premium', label: 'Premium Domains' },
-              { id: 'auctions', label: 'Domain Auctions' },
-            ].map((tab) => (
+        <div className="mt-3 flex justify-center pb-0.5 lg:hidden">
+          <div className="brand-search-tabs brand-search-tabs-mobile grid w-full grid-cols-2 gap-3 md:inline-flex md:w-auto md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1">
+            {SEARCH_TABS.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => handleTabChange(tab.id)}
-                className={`rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition ${
-                  activeTab === tab.id
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
+                className={`min-h-12 w-full rounded-full px-3 py-2 text-center text-[12.5px] sm:text-sm font-medium leading-[1.15] tracking-normal transition-all duration-300 ease-out will-change-transform md:min-h-9 md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
+                  searchMode === tab.id
+                    ? 'brand-search-tab-active text-white scale-[1.02]'
+                    : 'brand-search-tab-idle text-slate-800 active:scale-[0.98]'
                 }`}
               >
                 {tab.label}
@@ -469,15 +537,39 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         </div>
 
         {/* Results */}
-        <div className="mt-8">
-          {hasSearchQuery && activeTab === 'new' && loading && results.every(r => r.status === 'loading') && (
+        <div className="mt-4">
+          {hasSearchQuery && searchMode === 'ai' && aiLoading && (
+            <AIDomainLoader
+              stage={aiStage}
+              progress={aiProgress}
+              compact={aiDomains.length > 0}
+            />
+          )}
+
+          {hasSearchQuery && searchMode === 'ai' && !aiLoading && aiError && (
+            <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+              {aiError}
+            </div>
+          )}
+
+          {hasSearchQuery && searchMode === 'ai' && !aiError && aiDomains.length > 0 && (
+            <AIDomainGrid results={aiDomains} />
+          )}
+
+          {hasSearchQuery && searchMode === 'ai' && !aiLoading && !aiError && aiDomains.length === 0 && (
+            <p className="text-left text-gray-500 text-sm py-4">
+              Enter a business idea to generate AI-powered domain names.
+            </p>
+          )}
+
+          {hasSearchQuery && searchMode === 'new' && loading && results.every(r => r.status === 'loading') && (
             <p className="text-center text-gray-400 text-sm mb-6">Checking domains…</p>
           )}
 
           {/* New Domains */}
-          {hasSearchQuery && activeTab === 'new' && visibleNewBest && (
+          {hasSearchQuery && searchMode === 'new' && visibleNewBest && (
             <div className={`domain-search-card domain-search-card--featured mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
-              visibleNewBest.status === 'available' ? 'border-emerald-300 ring-1 ring-emerald-50' :
+              visibleNewBest.status === 'available' ? 'border-[var(--cobrother-brand-green)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.16)]' :
                                                       'border-gray-200'
             }`}>
               <Badge status={visibleNewBest.status} />
@@ -499,14 +591,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           )}
 
           {/* New domains: other TLDs */}
-          {hasSearchQuery && activeTab === 'new' && visibleNewOthers.length > 0 && (
+          {hasSearchQuery && searchMode === 'new' && visibleNewOthers.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {visibleNewOthers.map((item, i) => (
                 <div key={i} className={`domain-search-card bg-white border rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 ${
                   item.status === 'taken'       ? 'border-gray-100 opacity-60' :
                   item.status === 'error'       ? 'border-gray-100 opacity-60' :
                   item.status === 'marketplace' ? 'border-indigo-200 ring-1 ring-indigo-50' :
-                  item.status === 'available'   ? 'border-emerald-200 ring-1 ring-emerald-50' :
+                  item.status === 'available'   ? 'border-[rgba(var(--cobrother-brand-green-rgb),0.42)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.14)]' :
                                                   'border-gray-200'
                 }`}>
                   <Badge status={item.status} />
@@ -535,17 +627,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </div>
           )}
 
-          {hasSearchQuery && activeTab === 'new' && !loading && !visibleNewBest && (
+          {hasSearchQuery && searchMode === 'new' && !loading && !visibleNewBest && (
             <p className="text-center text-gray-500 text-sm py-6">
               No registrar domains available for this query right now.
             </p>
           )}
 
           {/* Premium domains */}
-          {hasSearchQuery && activeTab === 'premium' && premiumLoading && (
-            <p className="text-center text-gray-400 text-sm mb-6">Loading premium domains…</p>
+          {hasSearchQuery && searchMode === 'premium' && premiumLoading && (
+            <p className="text-center text-gray-400 text-sm mb-6">Loading listed domains...</p>
           )}
-          {hasSearchQuery && activeTab === 'premium' && !premiumLoading && filteredPremiumDomains.length > 0 && (
+          {hasSearchQuery && searchMode === 'premium' && !premiumLoading && filteredPremiumDomains.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredPremiumDomains.map((item) => (
                 <div
@@ -553,7 +645,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   className="domain-search-card bg-white border border-indigo-200 ring-1 ring-indigo-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
                 >
                   <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-700">
-                    ADMIN LISTED
+                    LISTED DOMAIN
                   </span>
                   <h2 className="text-xl font-extrabold mb-3 text-gray-900">
                     {item.domainName}<span className="text-purple-500">{item.domainExtension}</span>
@@ -573,17 +665,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </div>
           )}
 
-          {hasSearchQuery && activeTab === 'premium' && !premiumLoading && filteredPremiumDomains.length === 0 && (
+          {hasSearchQuery && searchMode === 'premium' && !premiumLoading && filteredPremiumDomains.length === 0 && (
             <p className="text-center text-gray-500 text-sm py-6">
-              No premium domains listed by admin.
+              No listed domains found.
             </p>
           )}
 
           {/* Ongoing domain auctions */}
-          {hasSearchQuery && activeTab === 'auctions' && auctionsLoading && (
+          {hasSearchQuery && searchMode === 'auction' && auctionsLoading && (
             <p className="text-center text-gray-400 text-sm mb-6">Loading live auctions…</p>
           )}
-          {hasSearchQuery && activeTab === 'auctions' && !auctionsLoading && filteredAuctionResults.length > 0 && (
+          {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredAuctionResults.map((auction) => {
                 const title = domainTitleFromAuction(auction) || 'Unnamed domain';
@@ -619,7 +711,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               })}
             </div>
           )}
-          {hasSearchQuery && activeTab === 'auctions' && !auctionsLoading && filteredAuctionResults.length === 0 && (
+          {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length === 0 && (
             <p className="text-center text-gray-500 text-sm py-6">
               No ongoing auctions found right now.
             </p>
@@ -628,23 +720,91 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       </div>
 
       <style>{`
+        .brand-search-shell {
+          border-color: rgba(var(--cobrother-brand-green-rgb), 0.52);
+        }
+
+        .brand-search-submit {
+          background: var(--cobrother-brand-green);
+          border-color: var(--cobrother-brand-green);
+          box-shadow: 0 8px 18px rgba(var(--cobrother-brand-green-rgb), 0.24);
+        }
+
+        .brand-search-submit:hover,
+        .brand-search-submit:focus-visible {
+          background: var(--cobrother-brand-green-dark);
+          border-color: var(--cobrother-brand-green-dark);
+          box-shadow: 0 10px 22px rgba(var(--cobrother-brand-green-rgb), 0.32);
+        }
+
+        .brand-search-submit:focus-visible {
+          --tw-ring-color: rgba(var(--cobrother-brand-green-rgb), 0.35);
+        }
+
+        .brand-search-tabs {
+          border-color: rgba(var(--cobrother-brand-green-rgb), 0.24);
+          box-shadow: 0 6px 18px rgba(var(--cobrother-brand-green-rgb), 0.11);
+        }
+
+        .brand-search-tabs-mobile {
+          border: 0;
+          background: transparent;
+          box-shadow: none;
+        }
+
+        .brand-search-tab-active {
+          background: var(--cobrother-brand-green);
+          box-shadow:
+            0 10px 22px rgba(var(--cobrother-brand-green-rgb), 0.22),
+            0 2px 6px rgba(var(--cobrother-brand-green-rgb), 0.18);
+          border-color: transparent;
+        }
+
+        .brand-search-tab-idle {
+          background: #f5f7f8;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+        }
+
+        .brand-search-tab-idle:hover,
+        .brand-search-tab-idle:focus-visible {
+          background: #eef3f1;
+          border-color: rgba(var(--cobrother-brand-green-rgb), 0.22);
+          color: var(--cobrother-brand-green-dark);
+          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.07);
+        }
+
+        @media (min-width: 768px) {
+          .brand-search-tabs-mobile {
+            border-color: rgba(var(--cobrother-brand-green-rgb), 0.24);
+            box-shadow: 0 6px 18px rgba(var(--cobrother-brand-green-rgb), 0.11);
+          }
+        }
+
         .search-glow-focus {
           box-shadow:
-            -12px 0 20px -6px rgba(0,195,255,0.35),
-            12px 0 20px -6px rgba(255,48,108,0.35),
-            0 0 14px -3px rgba(120,80,220,0.25);
-          border-color: rgba(120,80,220,0.35);
+            0 10px 30px -12px rgba(var(--cobrother-brand-green-rgb), 0.42),
+            0 0 0 1px rgba(var(--cobrother-brand-green-rgb), 0.16),
+            0 0 24px -10px rgba(var(--cobrother-brand-green-rgb), 0.48);
+        }
+
+        .search-glow-focus:hover,
+        .search-glow-focus:focus-within {
+          border-color: var(--cobrother-brand-green);
+          box-shadow:
+            0 12px 34px -12px rgba(var(--cobrother-brand-green-rgb), 0.5),
+            0 0 0 1px rgba(var(--cobrother-brand-green-rgb), 0.25),
+            0 0 28px -9px rgba(var(--cobrother-brand-green-rgb), 0.58);
         }
 
         .search-glow-focus:hover .domain-search-icon,
         .search-glow-focus:focus-within .domain-search-icon {
-          color: var(--cobrother-hover-color);
+          color: var(--cobrother-brand-green-dark);
         }
 
         .domain-search-submit:hover,
         .domain-search-submit:focus-visible {
-          border-color: var(--cobrother-hover-color);
-          color: var(--cobrother-hover-color);
+          color: #ffffff;
           outline: none;
         }
       `}</style>

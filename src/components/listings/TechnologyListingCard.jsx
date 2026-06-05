@@ -14,7 +14,7 @@ import {
 } from '../../utils/technologyAuctionUi';
 
 const STATUS_COLORS = {
-  AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
+  AVAILABLE: { color: 'var(--cobrother-brand-green)', bg: 'rgba(var(--cobrother-brand-green-rgb),0.1)', border: 'rgba(var(--cobrother-brand-green-rgb),0.3)' },
   PENDING: { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
   SOLD: { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
@@ -108,7 +108,7 @@ export default function TechnologyListingCard({
         {(owner || item.official || item.verified || showVerificationNotice) && (
           <div className="flex flex-wrap items-center gap-1.5 w-full">
             {owner && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-semibold text-green-700 bg-green-50 border border-green-200 whitespace-nowrap">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-semibold text-[var(--cobrother-brand-green)] bg-[var(--cobrother-brand-green-soft)] border border-[rgba(var(--cobrother-brand-green-rgb),0.3)] whitespace-nowrap">
                 ✓ Owner
               </span>
             )}
@@ -118,7 +118,7 @@ export default function TechnologyListingCard({
               </span>
             )}
             {item.verified && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 whitespace-nowrap">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.68rem] font-semibold text-[var(--cobrother-brand-green)] bg-[var(--cobrother-brand-green-soft)] border border-[rgba(var(--cobrother-brand-green-rgb),0.3)] whitespace-nowrap">
                 ✓ Verified
               </span>
             )}
@@ -249,7 +249,7 @@ export default function TechnologyListingCard({
                 <button
                   type="button"
                   className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
-                  style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
+                  style={{ background: 'rgba(var(--cobrother-brand-green-rgb),0.12)', color: 'var(--cobrother-brand-green)', border: '1px solid rgba(var(--cobrother-brand-green-rgb),0.35)' }}
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
@@ -275,7 +275,7 @@ export default function TechnologyListingCard({
               <button
                 type="button"
                 className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
-                style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
+                style={{ background: 'rgba(var(--cobrother-brand-green-rgb),0.12)', color: 'var(--cobrother-brand-green)', border: '1px solid rgba(var(--cobrother-brand-green-rgb),0.35)' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);

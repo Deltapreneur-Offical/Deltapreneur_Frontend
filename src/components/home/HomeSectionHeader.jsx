@@ -5,7 +5,7 @@ export default function HomeSectionHeader({ title, to }) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center justify-between gap-4 mb-5 md:mb-6">
+    <div className="flex items-center justify-between gap-4 mb-1 md:mb-2">
       <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 m-0">
         {title}
       </h3>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
 import { Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
 import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
@@ -26,6 +27,7 @@ function formatRegistrarPrice(amount, currency) {
 
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [tld, setTld] = useState('com');
@@ -133,16 +135,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const Price = ({ result, large }) => {
     if (!result.price) return null;
     const p = Number(result.price);
-    const currency = result.priceCurrency;
+    const currency = (result.priceCurrency || 'INR').toUpperCase();
     const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
     const periodLabel = years > 1 ? `/${years} yrs` : '/yr';
+    const formatAmount = (amount) =>
+      currency === 'INR' ? formatPrice(amount) : formatRegistrarPrice(amount, currency);
     return (
       <div className="mb-4">
         <p className={`text-gray-400 line-through ${large ? 'text-base' : 'text-xs'}`}>
-          {formatRegistrarPrice(p * 1.8, currency)}
+          {formatAmount(p * 1.8)}
         </p>
         <p className={`font-extrabold text-gray-900 ${large ? 'text-3xl' : 'text-xl'}`}>
-          {formatRegistrarPrice(p, currency)}
+          {formatAmount(p)}
           <span className={`font-normal text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>
             {periodLabel}
           </span>
@@ -276,7 +280,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
               {best.status === 'marketplace' && best.listing && (
                 <p className="text-indigo-600 font-semibold mb-5">
-                  Asking ₹{Number(best.listing.askingPrice).toLocaleString('en-IN')}
+                  Asking {formatPrice(best.listing.askingPrice)}
                   {best.listing.pricingDemand ? ` · ${best.listing.pricingDemand}` : ''}
                 </p>
               )}
@@ -312,7 +316,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
                   {item.status === 'marketplace' && item.listing && (
                     <p className="text-indigo-600 text-sm font-semibold mb-3">
-                      ₹{Number(item.listing.askingPrice).toLocaleString('en-IN')} · Marketplace
+                      {formatPrice(item.listing.askingPrice)} · Marketplace
                     </p>
                   )}
 
@@ -326,15 +330,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         </div>
       </div>
 
-      <style>{`
-        .search-glow-focus {
-          box-shadow:
-            -12px 0 20px -6px rgba(0,195,255,0.35),
-            12px 0 20px -6px rgba(255,48,108,0.35),
-            0 0 14px -3px rgba(120,80,220,0.25);
-          border-color: rgba(120,80,220,0.35);
-        }
-      `}</style>
     </div>
   );
 }

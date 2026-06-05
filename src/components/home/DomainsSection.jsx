@@ -18,6 +18,7 @@ export default function DomainsSection() {
   const navigate = useNavigate();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasFetchedDomains, setHasFetchedDomains] = useState(false);
 
   useEffect(() => {
     const fetchDomains = async () => {
@@ -29,6 +30,7 @@ export default function DomainsSection() {
         setDomains([]);
       } finally {
         setLoading(false);
+        setHasFetchedDomains(true);
       }
     };
     fetchDomains();
@@ -45,7 +47,7 @@ export default function DomainsSection() {
     navigateToListingDetail(navigate, 'domain', domainId);
   };
 
-  if (loading) {
+  if (loading || !hasFetchedDomains) {
     return <HomeSectionCardSkeleton title={t('premiumDomains')} to="/domains" />;
   }
 

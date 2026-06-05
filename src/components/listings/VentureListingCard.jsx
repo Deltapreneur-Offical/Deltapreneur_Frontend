@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Share2 } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -23,6 +24,7 @@ export default function VentureListingCard({
   likeState,
   onLike,
 }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
@@ -49,7 +51,7 @@ export default function VentureListingCard({
     typeof window !== 'undefined'
       ? `${window.location.origin}/ventures?id=${venture.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/ventures?id=${venture.id}`;
-  const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
+  const shareText = t('listingCardShareVenture', { name: b.brandName });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -98,21 +100,21 @@ export default function VentureListingCard({
             )}
             <div className="flex flex-wrap items-center gap-1">
               <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
-                {isAuction ? '🔨 Auction' : '🤝 Regular'}
+                {isAuction ? t('listingCardVentureAuction') : t('listingCardVentureRegular')}
               </span>
               {isOwner && (
                 <span className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✦ Owner
+                  {t('listingCardVentureOwner')}
                 </span>
               )}
               {isAuction && isGstinVerified && (
                 <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✓ GSTIN
+                  {t('listingCardGstinVerified')}
                 </span>
               )}
               {!isAuction && isGstinVerified && (
                 <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✓ Verified
+                  {t('auctionsPageVerified')}
                 </span>
               )}
             </div>
@@ -139,7 +141,7 @@ export default function VentureListingCard({
           </div>
         </div>
         <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3">
-          {shortDesc || <span className="italic text-gray-300">No description yet</span>}
+          {shortDesc || <span className="italic text-gray-300">{t('listingCardNoDescription')}</span>}
         </p>
 
         {isAuction && auction ? (
@@ -149,11 +151,11 @@ export default function VentureListingCard({
                 {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0))}
               </span>
               <span className="text-[9px] md:text-[10px] text-purple-400 font-semibold">
-                {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
+                {auction.currentHighestBid > 0 ? t('listingCardHighestBid') : t('listingCardMinBid')}
               </span>
             </div>
             <span className="text-[9px] md:text-[10px] text-purple-400">
-              {auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}
+              {t('listingCardBids', { count: auction.totalBids })}
             </span>
           </div>
         ) : b.dealValue ? (
@@ -162,7 +164,7 @@ export default function VentureListingCard({
               <span className="text-lg md:text-xl font-extrabold text-emerald-700 tracking-tight">
                 {formatPrice(b.dealValue)}
               </span>
-              <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">deal value</span>
+              <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">{t('listingCardDealValue')}</span>
             </div>
           </div>
         ) : null}
@@ -180,26 +182,26 @@ export default function VentureListingCard({
               type="button"
               className="p-0.5 md:p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
               onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
-              title="Share"
+              title={t('listingCardShare')}
             >
               <Share2 size={11} className="md:w-[13px] md:h-[13px]" />
             </button>
             {shareOpen && (
               <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
                 <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
+                  <span className="text-[10px] font-semibold text-gray-500">{t('listingCardShareVia')}</span>
                 </div>
                 <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
-                  LinkedIn
+                  {t('listingCardLinkedIn')}
                 </button>
                 <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
-                  Facebook
+                  {t('listingCardFacebook')}
                 </button>
                 <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
-                  WhatsApp
+                  {t('listingCardWhatsApp')}
                 </button>
               </div>
             )}
@@ -224,7 +226,7 @@ export default function VentureListingCard({
             className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold rounded transition-all hover:bg-gray-200 hover:text-black flex items-center justify-center gap-1"
             onClick={(e) => !b.website && e.preventDefault()}
           >
-            Website ↗
+            {t('listingCardWebsite')}
           </a>
           {isOwner ? (
             <>
@@ -234,7 +236,7 @@ export default function VentureListingCard({
                   className="flex-1 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold rounded transition-all hover:bg-amber-200"
                   onClick={(e) => { e.stopPropagation(); onVerify?.(); }}
                 >
-                  {isAuction ? '🔍 Verify GSTIN' : '🔍 Verify Business GSTIN'}
+                  {isAuction ? t('listingCardVerifyGstin') : t('listingCardVerifyBusinessGstin')}
                 </button>
               )}
               <div className="relative flex-1" ref={optionsRef}>
@@ -243,15 +245,15 @@ export default function VentureListingCard({
                   className="w-full py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded transition-all hover:bg-gray-800 flex items-center justify-center gap-1"
                   onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}
                 >
-                  Options ▼
+                  {t('listingCardOptions')}
                 </button>
                 {optionsOpen && (
                   <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[100px]">
-                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView?.(); }}>View</button>
+                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView?.(); }}>{t('listingCardView')}</button>
                     <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left inline-flex items-center" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onEdit?.(); }}>
-                      <EditActionLabel iconSize={14}>Edit</EditActionLabel>
+                      <EditActionLabel iconSize={14}>{t('edit')}</EditActionLabel>
                     </button>
-                    <button type="button" className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete?.(); }}>Delete</button>
+                    <button type="button" className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete?.(); }}>{t('listingCardDelete')}</button>
                   </div>
                 )}
               </div>
@@ -264,7 +266,7 @@ export default function VentureListingCard({
                   className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
                   onClick={() => navigate(`/venture-auction/${auction.id}`)}
                 >
-                  🔨 Bid
+                  {t('listingCardBid')}
                 </button>
               ) : !isAuction ? (
                 canApply ? (
@@ -273,29 +275,29 @@ export default function VentureListingCard({
                     className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
                     onClick={() => onApply?.()}
                   >
-                    Apply
+                    {t('listingCardApply')}
                   </button>
                 ) : hasApplied ? (
                   <button
                     type="button"
                     className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded cursor-not-allowed"
-                    title="You already applied"
+                    title={t('listingCardAppliedTitle')}
                     disabled
                   >
-                    Applied
+                    {t('listingCardApplied')}
                   </button>
                 ) : (
                   <button
                     type="button"
                     className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed"
-                    title="GST verification required"
+                    title={t('listingCardGstRequiredTitle')}
                     disabled
                   >
-                    GST Pending
+                    {t('listingCardGstPending')}
                   </button>
                 )
               ) : (
-                <button type="button" className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed">View</button>
+                <button type="button" className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed">{t('listingCardView')}</button>
               )}
             </>
           )}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 
 function MessageBlock({ error, info }) {
@@ -19,6 +20,7 @@ function MessageBlock({ error, info }) {
 }
 
 export default function PasswordSecurityPage() {
+  const { t } = useTranslation();
   const [changeForm, setChangeForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -41,7 +43,7 @@ export default function PasswordSecurityPage() {
     setChangeError('');
     setChangeInfo('');
     if (changeForm.newPassword !== changeForm.confirm) {
-      setChangeError('New password and confirm password do not match.');
+      setChangeError(t('passwordMismatch'));
       return;
     }
     setBusyChange(true);
@@ -50,16 +52,13 @@ export default function PasswordSecurityPage() {
         changeForm.currentPassword,
         changeForm.newPassword,
       );
-      setChangeInfo(
-        data?.message ||
-          'Password changed. Please login again because all sessions were revoked.',
-      );
+      setChangeInfo(data?.message || t('passwordChangeSuccess'));
       setChangeForm({ currentPassword: '', newPassword: '', confirm: '' });
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     } catch (err) {
       const body = err.response?.data;
-      setChangeError(body?.error || body?.message || 'Unable to change password.');
+      setChangeError(body?.error || body?.message || t('passwordChangeFailed'));
     } finally {
       setBusyChange(false);
     }
@@ -70,22 +69,19 @@ export default function PasswordSecurityPage() {
     setSetError('');
     setSetInfo('');
     if (setForm.newPassword !== setForm.confirm) {
-      setSetError('New password and confirm password do not match.');
+      setSetError(t('passwordMismatch'));
       return;
     }
     setBusySet(true);
     try {
       const { data } = await authAPI.setPassword(setForm.newPassword);
-      setSetInfo(
-        data?.message ||
-          'Password set. Please login again because all sessions were revoked.',
-      );
+      setSetInfo(data?.message || t('passwordSetSuccess'));
       setSetForm({ newPassword: '', confirm: '' });
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     } catch (err) {
       const body = err.response?.data;
-      setSetError(body?.error || body?.message || 'Unable to set password.');
+      setSetError(body?.error || body?.message || t('passwordSetFailed'));
     } finally {
       setBusySet(false);
     }
@@ -95,15 +91,13 @@ export default function PasswordSecurityPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-indigo-50 py-10 px-4">
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white/92 rounded-[20px] border border-white/60 shadow-[0_20px_60px_rgba(0,0,0,0.12)] p-6">
-          <h2 className="text-xl font-semibold text-gray-900">Change Password</h2>
-          <p className="text-sm text-gray-600 mt-1 mb-4">
-            For accounts that already have a password.
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900">{t('passwordChangeTitle')}</h2>
+          <p className="text-sm text-gray-600 mt-1 mb-4">{t('passwordChangeDesc')}</p>
           <MessageBlock error={changeError} info={changeInfo} />
           <form onSubmit={submitChange} className="flex flex-col gap-4">
             <input
               type="password"
-              placeholder="Current password"
+              placeholder={t('passwordCurrent')}
               value={changeForm.currentPassword}
               onChange={(e) =>
                 setChangeForm((prev) => ({ ...prev, currentPassword: e.target.value }))
@@ -113,7 +107,7 @@ export default function PasswordSecurityPage() {
             />
             <input
               type="password"
-              placeholder="New password"
+              placeholder={t('passwordNew')}
               value={changeForm.newPassword}
               onChange={(e) =>
                 setChangeForm((prev) => ({ ...prev, newPassword: e.target.value }))
@@ -123,28 +117,26 @@ export default function PasswordSecurityPage() {
             />
             <input
               type="password"
-              placeholder="Confirm new password"
+              placeholder={t('passwordConfirmNew')}
               value={changeForm.confirm}
               onChange={(e) => setChangeForm((prev) => ({ ...prev, confirm: e.target.value }))}
               required
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-sm outline-none focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
             />
             <button type="submit" className="btn-glow w-full" disabled={busyChange}>
-              {busyChange ? 'Updating...' : 'Change password'}
+              {busyChange ? t('passwordUpdating') : t('passwordChangeButton')}
             </button>
           </form>
         </div>
 
         <div className="bg-white/92 rounded-[20px] border border-white/60 shadow-[0_20px_60px_rgba(0,0,0,0.12)] p-6">
-          <h2 className="text-xl font-semibold text-gray-900">Set Password</h2>
-          <p className="text-sm text-gray-600 mt-1 mb-4">
-            For social-login users who do not have a password yet.
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900">{t('passwordSetTitle')}</h2>
+          <p className="text-sm text-gray-600 mt-1 mb-4">{t('passwordSetDesc')}</p>
           <MessageBlock error={setError} info={setInfo} />
           <form onSubmit={submitSet} className="flex flex-col gap-4">
             <input
               type="password"
-              placeholder="New password"
+              placeholder={t('passwordNew')}
               value={setForm.newPassword}
               onChange={(e) => setSetForm((prev) => ({ ...prev, newPassword: e.target.value }))}
               required
@@ -152,14 +144,14 @@ export default function PasswordSecurityPage() {
             />
             <input
               type="password"
-              placeholder="Confirm new password"
+              placeholder={t('passwordConfirmNew')}
               value={setForm.confirm}
               onChange={(e) => setSetForm((prev) => ({ ...prev, confirm: e.target.value }))}
               required
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-sm outline-none focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
             />
             <button type="submit" className="btn-glow w-full" disabled={busySet}>
-              {busySet ? 'Updating...' : 'Set password'}
+              {busySet ? t('passwordUpdating') : t('passwordSetButton')}
             </button>
           </form>
         </div>

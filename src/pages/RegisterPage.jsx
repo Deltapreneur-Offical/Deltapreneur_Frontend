@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -50,6 +51,7 @@ export default function RegisterPage() {
           <div className="absolute w-[400px] h-[400px] bg-blue-500/12 rounded-full blur-[80px] opacity-70 -bottom-[100px] -left-[100px]" />
         </div>
         <div className="relative z-10 w-full max-w-[440px] bg-white/92 p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl text-center">
+          <AuthRegionalSettings />
           <div className="text-5xl mb-4">✉</div>
           <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">{t('checkInbox')}</h2>
           <p className="text-gray-600 mb-6">{t('verificationSent', { email: form.email })}</p>
@@ -70,6 +72,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-[440px] bg-white/92 p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl">
+        <AuthRegionalSettings />
         <div className="text-center mb-8">
           <img src={coBrotherLogo} alt="CoBrother" className="w-[100px] h-auto object-contain mx-auto mb-4 block" />
           <h1 className="font-display text-[2rem] font-semibold text-gray-900">{t('registerTitle')}</h1>

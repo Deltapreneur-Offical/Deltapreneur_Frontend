@@ -4,13 +4,14 @@ export default function ListingBrowseFooter({
   onViewDetails,
   label = 'View Details',
   className = '',
+  ctaClassName = '',
 }) {
   return (
     <div className={`listing-browse-footer ${className}`.trim()}>
       {children ? <div className="listing-browse-footer__meta">{children}</div> : null}
       <button
         type="button"
-        className="listing-browse-footer__cta btn-glow btn-glow-sm"
+        className={`listing-browse-footer__cta btn-glow btn-glow-sm ${ctaClassName}`.trim()}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -22,6 +23,7 @@ export default function DomainListingCard({
   likeState,
   onLike,
 }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
@@ -39,7 +41,7 @@ export default function DomainListingCard({
     .toUpperCase() || '?';
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
-  const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed';
+  const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? t('listingCardNegotiable') : t('listingCardFixed');
   const needsVerification = !domain.verified;
   const purchaseBlocked = needsVerification;
 
@@ -55,7 +57,7 @@ export default function DomainListingCard({
     typeof window !== 'undefined'
       ? `${window.location.origin}/domains?id=${domain.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains?id=${domain.id}`;
-  const shareText = `Check out ${display.fullDomain} on CoBrother!`;
+  const shareText = t('listingCardShareDomain', { domain: display.fullDomain });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -70,7 +72,7 @@ export default function DomainListingCard({
   if (browseMode) {
     return (
       <article className="domain-listing-card domain-listing-card--browse listing-card-glow card-glow-hover">
-        {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
+        {domain.takenDown && <span className="domain-listing-card__taken-down">{t('listingCardTakenDown')}</span>}
         <div className="domain-listing-card__header">
           <div className="domain-listing-card__identity">
             <div className="domain-listing-card__avatar">
@@ -97,28 +99,28 @@ export default function DomainListingCard({
             )}
             <span className="domain-listing-card__chip domain-listing-card__chip--muted">{pricingLabel}</span>
             {isHighValue && statusKey === 'AVAILABLE' && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--premium">Premium</span>
+              <span className="domain-listing-card__chip domain-listing-card__chip--premium">{t('listingCardPremium')}</span>
             )}
             {isAuction && (
-              <span className="domain-listing-card__chip domain-listing-card__chip--muted">Auction</span>
+              <span className="domain-listing-card__chip domain-listing-card__chip--muted">{t('listingCardAuction')}</span>
             )}
             {needsVerification && (
               <span className="domain-listing-card__chip domain-listing-card__chip--pending">
-                Verification pending
+                {t('listingCardVerificationPending')}
               </span>
             )}
           </div>
         </div>
         <div className="domain-listing-card__body">
           {domain.verified ? (
-            <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">✓ Verified domain</p>
+            <p className="text-[0.68rem] font-semibold text-emerald-600 mb-2">{t('listingCardVerifiedDomain')}</p>
           ) : (
-            <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ Verification pending</p>
+            <p className="text-[0.68rem] font-semibold text-amber-700 mb-2">⏳ {t('listingCardVerificationPending')}</p>
           )}
           {showPriceBox ? (
             <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
               <div className="domain-listing-card__price-label">
-                {isAuction ? (auctionLive ? 'Current bid' : 'Starting bid') : 'Asking price'}
+                {isAuction ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid')) : t('listingCardAskingPrice')}
               </div>
               <div className="domain-listing-card__price-value">
                 {isAuction
@@ -128,8 +130,8 @@ export default function DomainListingCard({
             </div>
           ) : (
             <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
-              <div className="domain-listing-card__price-label">Starting bid</div>
-              <div className="domain-listing-card__price-value">Verification pending</div>
+              <div className="domain-listing-card__price-label">{t('listingCardStartingBid')}</div>
+              <div className="domain-listing-card__price-value">{t('listingCardVerificationPending')}</div>
             </div>
           )}
         </div>
@@ -150,7 +152,7 @@ export default function DomainListingCard({
 
   return (
     <article className="domain-listing-card listing-card-glow card-glow-hover" onClick={onView}>
-      {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
+      {domain.takenDown && <span className="domain-listing-card__taken-down">{t('listingCardTakenDown')}</span>}
 
       <div className="domain-listing-card__header">
         <div className="domain-listing-card__identity">
@@ -173,7 +175,7 @@ export default function DomainListingCard({
           </div>
         </div>
         <div className="domain-listing-card__chips">
-          {isOwner && <span className="domain-listing-card__chip domain-listing-card__chip--owner">Owner</span>}
+          {isOwner && <span className="domain-listing-card__chip domain-listing-card__chip--owner">{t('listingCardOwner')}</span>}
           {!isAuction && (
             <span className={`domain-listing-card__chip domain-listing-card__chip--${
               statusKey === 'AVAILABLE' ? 'available' : statusKey === 'SOLD' ? 'sold' : 'pending'
@@ -232,20 +234,20 @@ export default function DomainListingCard({
           {isOwner ? (
             <>
               <button type="button" className="domain-listing-card__btn domain-listing-card__btn--ghost" onClick={(e) => { stop(e); onEdit?.(); }}>
-                <EditIcon size={16} /> Edit
+                <EditIcon size={16} /> {t('edit')}
               </button>
               <button type="button" className="domain-listing-card__btn domain-listing-card__btn--danger" onClick={(e) => { stop(e); onDelete?.(); }}>
-                <Trash2 size={14} /> Remove
+                <Trash2 size={14} /> {t('remove')}
               </button>
               <div className="relative" ref={shareRef}>
-                <button type="button" className="domain-listing-card__btn domain-listing-card__btn--icon" onClick={(e) => { stop(e); setShareOpen(!shareOpen); }} title="Share">
+                <button type="button" className="domain-listing-card__btn domain-listing-card__btn--icon" onClick={(e) => { stop(e); setShareOpen(!shareOpen); }} title={t('listingCardShare')}>
                   <Share2 size={14} />
                 </button>
                 {shareOpen && (
                   <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[140px]" onClick={stop}>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(linkedinShare)}>LinkedIn</button>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(facebookShare)}>Facebook</button>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(whatsappShare)}>WhatsApp</button>
+                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(linkedinShare)}>{t('listingCardLinkedIn')}</button>
+                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(facebookShare)}>{t('listingCardFacebook')}</button>
+                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(whatsappShare)}>{t('listingCardWhatsApp')}</button>
                   </div>
                 )}
               </div>
@@ -253,31 +255,31 @@ export default function DomainListingCard({
           ) : isAuction ? (
             purchaseBlocked ? (
               <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                Verification pending
+                {t('listingCardVerificationPending')}
               </span>
             ) : (
             <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onViewAuction?.(); }}>
-              <Gavel size={14} /> {auctionLive ? 'Join auction' : 'View auction'}
+              <Gavel size={14} /> {auctionLive ? t('listingCardJoinAuction') : t('listingCardViewAuction')}
             </button>
             )
           ) : statusKey === 'AVAILABLE' ? (
             purchaseBlocked ? (
               <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
-                Verification pending
+                {t('listingCardVerificationPending')}
               </span>
             ) : (
             isHighValue ? (
               <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onEnquire?.(); }}>
-                <MessageSquare size={14} /> Enquire
+                <MessageSquare size={14} /> {t('listingCardEnquire')}
               </button>
             ) : (
               <button type="button" className="domain-listing-card__btn domain-listing-card__btn--primary" onClick={(e) => { stop(e); onBuy?.(); }}>
-                <ShoppingCart size={14} /> Buy now
+                <ShoppingCart size={14} /> {t('listingCardBuyNow')}
               </button>
             )
             )
           ) : (
-            <span className="text-xs text-slate-400 font-medium px-2">{statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}</span>
+            <span className="text-xs text-slate-400 font-medium px-2">{statusKey === 'SOLD' ? t('listingCardSold') : t('listingCardUnavailable')}</span>
           )}
         </div>
       </div>

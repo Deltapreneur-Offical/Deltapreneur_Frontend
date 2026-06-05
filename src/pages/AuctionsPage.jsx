@@ -7,11 +7,14 @@ import {
   communityAuctionAPI,
   softwareAuctionAPI,
 } from '../api/services';
+import { Globe } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
+import CommunityIcon from '../assets/Community-profileicon-gray.png';
 import { asArray } from '../utils/asArray';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime, formatAuctionDateTime } from '../utils/auctionDate';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../context/CurrencyContext';
 import { normalizeDomainExtension } from '../utils/domainDisplay';
 import { pickMediaUrl } from '../utils/mediaUrl';
 
@@ -146,6 +149,30 @@ function useCountdown(endTime) {
 
 const SECTION_IDS = new Set(['all', 'ventures', 'domains', 'community', 'technology']);
 
+function AuctionSectionTabIcon({ tabId, active }) {
+  if (tabId === 'domains') {
+    return (
+      <Globe
+        size={16}
+        strokeWidth={2}
+        className={`shrink-0 ${active ? 'text-white' : 'text-gray-600'}`}
+        aria-hidden
+      />
+    );
+  }
+  if (tabId === 'community') {
+    return (
+      <img
+        src={CommunityIcon}
+        alt=""
+        className={`w-4 h-4 object-contain shrink-0 ${active ? 'brightness-0 invert' : 'opacity-80'}`}
+        aria-hidden
+      />
+    );
+  }
+  return null;
+}
+
 export default function AuctionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -225,11 +252,11 @@ export default function AuctionsPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Live Auctions</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('auctionsPageLiveTitle')}</h1>
             <p className="text-gray-600 mt-1">
               {totalLive > 0
-                ? `${totalLive} auction${totalLive !== 1 ? 's' : ''} live right now`
-                : 'No live auctions at the moment'}
+                ? t('auctionsPageLiveCount', { count: totalLive })
+                : t('auctionsPageNoLive')}
             </p>
           </div>
         </div>
@@ -237,19 +264,20 @@ export default function AuctionsPage() {
         {/* ── Section tabs ── */}
         <div className="flex gap-2 mb-3 flex-wrap">
           {[
-            { id: 'all',        label: `All (${totalLive})` },
-            { id: 'ventures',   label: `🔨 Ventures (${ventureAuctions.length})` },
-            { id: 'domains',    label: `◇ Domains (${domainAuctions.length})` },
-            { id: 'technology', label: `💻 Technology (${softwareAuctions.length})` },
-            { id: 'community',  label: `👤 ${t('communityTitle')} (${communityAuctions.length})` },
-          ].map(t => (
-            <button key={t.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
+            { id: 'all',        label: t('auctionsPageTabAll', { count: totalLive }) },
+            { id: 'ventures',   label: t('auctionsPageTabVentures', { count: ventureAuctions.length }) },
+            { id: 'domains',    label: t('auctionsPageTabDomains', { count: domainAuctions.length }) },
+            { id: 'technology', label: t('auctionsPageTabTechnology', { count: softwareAuctions.length }) },
+            { id: 'community',  label: t('auctionsPageTabCommunity', { label: t('communityTitle'), count: communityAuctions.length }) },
+          ].map((tab) => (
+            <button key={tab.id}
+              className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
               onClick={() => {
-                setSection(t.id);
-                navigate(t.id === 'all' ? '/auctions' : `/auctions?section=${t.id}`, { replace: true });
+                setSection(tab.id);
+                navigate(tab.id === 'all' ? '/auctions' : `/auctions?section=${tab.id}`, { replace: true });
               }}>
-              {t.label}
+              <AuctionSectionTabIcon tabId={tab.id} active={section === tab.id} />
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -257,14 +285,14 @@ export default function AuctionsPage() {
         {/* ── Sub-filter tabs ── */}
         <div className="flex gap-2 mb-6">
           {[
-            { id: 'all',          label: 'All' },
-            { id: 'ending_soon',  label: '⚡ Ending Soon' },
-            { id: 'no_bids',      label: '🆕 No Bids Yet' },
-          ].map(t => (
-            <button key={t.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setFilter(t.id)}>
-              {t.label}
+            { id: 'all',          label: t('auctionsPageFilterAll') },
+            { id: 'ending_soon',  label: t('auctionsPageFilterEndingSoon') },
+            { id: 'no_bids',      label: t('auctionsPageFilterNoBids') },
+          ].map((tab) => (
+            <button key={tab.id}
+              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
+              onClick={() => setFilter(tab.id)}>
+              {tab.label}
             </button>
           ))}
         </div>
@@ -276,21 +304,21 @@ export default function AuctionsPage() {
         ) : (shownDomains.length === 0 && shownVentures.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
-              <img src={AuctionImg} alt="Auction" className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
+              <img src={AuctionImg} alt={t('auctions')} className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
               {section === 'technology'
-                ? 'No live technology auctions'
-                : 'No auctions match your filters'}
+                ? t('auctionsPageEmptyTechnologyTitle')
+                : t('auctionsPageEmptyFilteredTitle')}
             </h3>
             <p className="text-gray-600 mb-6">
               {section === 'technology'
-                ? 'Approved technology listings appear here once their auction is active. Check Technology after admin verification.'
-                : 'Check back soon — new auctions go live regularly.'}
+                ? t('auctionsPageEmptyTechnologyHint')
+                : t('auctionsPageEmptyFilteredHint')}
             </p>
             {(section !== 'all' || filter !== 'all') && (
               <button className="btn-glow btn-glow-sm" onClick={() => { setSection('all'); setFilter('all'); }}>
-                View All Auctions
+                {t('auctionsPageViewAll')}
               </button>
             )}
           </div>
@@ -300,9 +328,9 @@ export default function AuctionsPage() {
             {shownVentures.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-purple-600 m-0">🔨 Venture Auctions</h2>
+                  <h2 className="text-base font-bold text-purple-600 m-0">{t('auctionsPageVentureSectionTitle')}</h2>
                   <span className="text-xs text-gray-500 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownVentures.length} live
+                    {t('auctionsPageLiveBadge', { count: shownVentures.length })}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -321,9 +349,9 @@ export default function AuctionsPage() {
             {shownDomains.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-blue-600 m-0">◇ Domain Auctions</h2>
+                  <h2 className="text-base font-bold text-blue-600 m-0">{t('auctionsPageDomainSectionTitle')}</h2>
                   <span className="text-xs text-gray-500 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownDomains.length} live
+                    {t('auctionsPageLiveBadge', { count: shownDomains.length })}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -342,9 +370,9 @@ export default function AuctionsPage() {
             {shownSoftware.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-indigo-600 m-0">💻 Technology Auctions</h2>
+                  <h2 className="text-base font-bold text-indigo-600 m-0">{t('auctionsPageTechnologySectionTitle')}</h2>
                   <span className="text-xs text-gray-500 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownSoftware.length} live
+                    {t('auctionsPageLiveBadge', { count: shownSoftware.length })}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -365,7 +393,7 @@ export default function AuctionsPage() {
                 <div className="flex items-center gap-3 mb-4">
                   <h2 className="text-base font-bold text-teal-600 m-0">👤 {t('creatorProfileAuctions')}</h2>
                   <span className="text-xs text-gray-500 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownCommunity.length} live
+                    {t('auctionsPageLiveBadge', { count: shownCommunity.length })}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -388,6 +416,8 @@ export default function AuctionsPage() {
 
 // ─── Venture Auction Card ────────────────────────────────────────────────────────────
 function VentureAuctionCard({ auction, onClick }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const venture  = auction.venture || {};
   const brand    = venture.brandDetails || {};
@@ -403,14 +433,14 @@ function VentureAuctionCard({ auction, onClick }) {
         background: isDraft ? 'rgba(99,102,241,0.14)' : (isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)'),
         border: `1px solid ${isDraft ? 'rgba(99,102,241,0.35)' : (isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)')}`,
       }}>
-        {isDraft ? '📝 DRAFT' : (isExtended ? '⚡ EXTENDED' : '🟢 LIVE')}
+        {isDraft ? t('auctionsPageStatusDraft') : (isExtended ? t('auctionsPageStatusExtended') : t('auctionsPageStatusLive'))}
       </div>
 
       <div className="flex items-center gap-3 mb-4 pr-20">
         {brandImage ? (
           <img
             src={brandImage}
-            alt={brand.brandName || 'Venture'}
+            alt={brand.brandName || t('venture')}
             className="w-11 h-11 rounded-[10px] object-cover border border-purple-200 flex-shrink-0"
           />
         ) : (
@@ -421,7 +451,7 @@ function VentureAuctionCard({ auction, onClick }) {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{brand.brandName || '—'}</h3>
           <div className="flex gap-1.5 flex-wrap items-center">
-            <span className="text-xs text-purple-600 font-semibold">🔨 Equity Auction</span>
+            <span className="text-xs text-purple-600 font-semibold">{t('auctionsPageEquityAuction')}</span>
             {brand.industry && <span className="text-xs text-gray-500">· {brand.industry.replace(/_/g, ' ')}</span>}
           </div>
         </div>
@@ -430,14 +460,14 @@ function VentureAuctionCard({ auction, onClick }) {
       {isGstinVerified && (
         <div className="mb-2">
           <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-            ✓ GSTIN Verified
+            {t('auctionsPageGstinVerified')}
           </span>
         </div>
       )}
       {isDraft && !isGstinVerified && (
         <div className="mb-2">
           <span className="text-xs font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">
-            GSTIN verification pending
+            {t('auctionsPageGstinPending')}
           </span>
         </div>
       )}
@@ -445,36 +475,36 @@ function VentureAuctionCard({ auction, onClick }) {
       <div className="grid grid-cols-2 gap-3 my-3">
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            {auction.currentHighestBid > 0 ? t('auctionsPageHighestBid') : t('auctionsPageStartingBid')}
           </div>
           <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+            {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
           </div>
         </div>
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">{t('auctionsPageTotalBids')}</div>
           <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
         </div>
       </div>
 
       {auction.currentHighestBid > 0 && (
         <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          {t('auctionsPageNextBid', { amount: formatPrice(auction.currentHighestBid * 1.05) })}
         </div>
       )}
 
       <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
-            {isDraft ? 'Status' : 'Ends in'}
+            {isDraft ? t('auctionsPageStatusField') : t('auctionsPageEndsIn')}
           </div>
           <div className={`font-display font-bold text-lg ${isDraft ? 'text-indigo-600' : (isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500')}`}>
-            {isDraft ? 'Awaiting Start' : timeLeft}
+            {isDraft ? t('auctionsPageAwaitingStart') : timeLeft}
           </div>
         </div>
         <button onClick={e => { e.stopPropagation(); onClick(); }}
           className="btn-glow btn-glow-sm">
-          {isDraft ? 'View →' : 'Bid Now →'}
+          {isDraft ? t('auctionsPageViewButton') : t('auctionsPageBidNow')}
         </button>
       </div>
     </div>
@@ -483,6 +513,8 @@ function VentureAuctionCard({ auction, onClick }) {
 
 // ─── Domain Auction Card ────────────────────────────────────────────────────────────
 function DomainAuctionCard({ auction, onClick }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const domain                  = auction.domain || {};
   const domainTitle             = resolveAuctionDomainTitle(auction);
@@ -504,7 +536,7 @@ function DomainAuctionCard({ auction, onClick }) {
         background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
         border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
       }}>
-        {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
+        {isExtended ? t('auctionsPageStatusExtended') : t('auctionsPageStatusLive')}
       </div>
 
       {/* Domain info */}
@@ -514,10 +546,10 @@ function DomainAuctionCard({ auction, onClick }) {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">
-            {domainTitle || 'Unnamed domain'}
+            {domainTitle || t('auctionsPageUnnamedDomain')}
           </h3>
           <span className="text-xs text-purple-600 font-semibold">
-            🔨 Auction
+            {t('auctionsPageAuctionLabel')}
           </span>
         </div>
       </div>
@@ -526,7 +558,7 @@ function DomainAuctionCard({ auction, onClick }) {
       {domain.verified && (
         <div className="mb-2">
           <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-            ✓ Verified
+            {t('auctionsPageVerified')}
           </span>
         </div>
       )}
@@ -535,15 +567,15 @@ function DomainAuctionCard({ auction, onClick }) {
       <div className="grid grid-cols-2 gap-3 my-3">
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            {highestBid > 0 ? t('auctionsPageHighestBid') : t('auctionsPageStartingBid')}
           </div>
           <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{currentAmount.toLocaleString('en-IN')}
+            {formatPrice(currentAmount)}
           </div>
         </div>
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            Total Bids
+            {t('auctionsPageTotalBids')}
           </div>
           <div className="font-display text-xl font-bold text-gray-900">
             {totalBids}
@@ -554,8 +586,7 @@ function DomainAuctionCard({ auction, onClick }) {
       {/* Next bid minimum */}
       {highestBid > 0 && (
         <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(highestBid * 1.05).toLocaleString('en-IN',
-            { maximumFractionDigits: 0 })}
+          {t('auctionsPageNextBid', { amount: formatPrice(highestBid * 1.05) })}
         </div>
       )}
 
@@ -563,7 +594,7 @@ function DomainAuctionCard({ auction, onClick }) {
       <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
-            Ends in
+            {t('auctionsPageEndsIn')}
           </div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
@@ -572,7 +603,7 @@ function DomainAuctionCard({ auction, onClick }) {
         <button
           onClick={e => { e.stopPropagation(); onClick(); }}
           className="btn-glow btn-glow-sm">
-          Bid Now →
+          {t('auctionsPageBidNow')}
         </button>
       </div>
 
@@ -618,11 +649,13 @@ const bone = (style) => ({
 
 // ─── Software / Technology Auction Card ─────────────────────────────────────
 function SoftwareAuctionCard({ auction, onClick }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [imgFailed, setImgFailed] = useState(false);
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const software = auction.software || {};
   const isExtended = auction.status === 'EXTENDED';
-  const title = auction.auctionTitle || auction.name || software.name || 'Technology';
+  const title = auction.auctionTitle || auction.name || software.name || t('auctionsPageTechnologyFallback');
   const category = auction.category || software.category;
   const imageSrc = pickMediaUrl(auction) || pickMediaUrl(software) || auction.imageUrl || software.imageUrl;
 
@@ -639,7 +672,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
           border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
         }}
       >
-        {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
+        {isExtended ? t('auctionsPageStatusExtended') : t('auctionsPageStatusLive')}
       </div>
 
       <div className="flex items-center gap-3 mb-3 pr-20">
@@ -658,7 +691,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{title}</h3>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-indigo-600 font-semibold">💻 Technology Auction</span>
+            <span className="text-xs text-indigo-600 font-semibold">{t('auctionsPageTechnologyAuction')}</span>
             {category && (
               <span className="text-xs text-gray-500">
                 · {String(category).replace(/_/g, ' ')}
@@ -671,27 +704,27 @@ function SoftwareAuctionCard({ auction, onClick }) {
       <div className="grid grid-cols-2 gap-3 my-3">
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            {auction.currentHighestBid > 0 ? t('auctionsPageHighestBid') : t('auctionsPageStartingBid')}
           </div>
           <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+            {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
           </div>
         </div>
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">{t('auctionsPageTotalBids')}</div>
           <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
         </div>
       </div>
 
       {auction.currentHighestBid > 0 && (
         <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          {t('auctionsPageNextBid', { amount: formatPrice(auction.currentHighestBid * 1.05) })}
         </div>
       )}
 
       <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
         <div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">{t('auctionsPageEndsIn')}</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
           </div>
@@ -701,7 +734,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
           onClick={(e) => { e.stopPropagation(); onClick(); }}
           className="btn-glow btn-glow-sm"
         >
-          Bid Now →
+          {t('auctionsPageBidNow')}
         </button>
       </div>
     </div>
@@ -710,6 +743,8 @@ function SoftwareAuctionCard({ auction, onClick }) {
 
 // ─── Creator Profile Auction Card ────────────────────────────────────────────
 function CommunityAuctionCard({ auction, onClick }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const community  = auction.community || {};
   const isExtended = auction.status === 'EXTENDED';
@@ -727,7 +762,7 @@ function CommunityAuctionCard({ auction, onClick }) {
         background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
         border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
       }}>
-        {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
+        {isExtended ? t('auctionsPageStatusExtended') : t('auctionsPageStatusLive')}
       </div>
 
       {/* Profile info */}
@@ -745,7 +780,7 @@ function CommunityAuctionCard({ auction, onClick }) {
             {auction.auctionTitle || community.name || '—'}
           </h3>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-teal-600 font-semibold">👤 Profile Auction</span>
+            <span className="text-xs text-teal-600 font-semibold">{t('auctionsPageProfileAuction')}</span>
             {auction.workType && (
               <span className="text-xs text-gray-500">· {auction.workType.replace(/_/g, ' ')}</span>
             )}
@@ -763,7 +798,7 @@ function CommunityAuctionCard({ auction, onClick }) {
           ))}
           {auction.auctionSkills?.split(',').length > 3 && (
             <span className="text-xs text-gray-400 self-center">
-              +{auction.auctionSkills.split(',').length - 3} more
+              {t('auctionsPageMoreSkills', { count: auction.auctionSkills.split(',').length - 3 })}
             </span>
           )}
         </div>
@@ -773,28 +808,28 @@ function CommunityAuctionCard({ auction, onClick }) {
       <div className="grid grid-cols-2 gap-3 my-3">
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            {auction.currentHighestBid > 0 ? t('auctionsPageHighestBid') : t('auctionsPageStartingBid')}
           </div>
           <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-            ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+            {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
           </div>
         </div>
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">{t('auctionsPageTotalBids')}</div>
           <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
         </div>
       </div>
 
       {auction.currentHighestBid > 0 && (
         <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          {t('auctionsPageNextBid', { amount: formatPrice(auction.currentHighestBid * 1.05) })}
         </div>
       )}
 
       {/* Footer */}
       <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
         <div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">{t('auctionsPageEndsIn')}</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
           </div>
@@ -802,7 +837,7 @@ function CommunityAuctionCard({ auction, onClick }) {
         <div className="flex gap-2">
           <button onClick={e => { e.stopPropagation(); onClick(); }}
             className="btn-glow btn-glow-sm">
-            View →
+            {t('auctionsPageViewButton')}
           </button>
         </div>
       </div>

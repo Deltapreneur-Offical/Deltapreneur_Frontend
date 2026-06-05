@@ -4,7 +4,9 @@
  */
 export default function ListingCardShell({ children, className = '' }) {
   return (
-    <div className={`listing-card-glow-shell${className ? ` ${className}` : ''}`}>
+    <div
+      className={`h-full flex flex-col flex-1 min-h-0 ${className}`}
+    >
       {children}
     </div>
   );

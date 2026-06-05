@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
@@ -49,6 +50,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function ProfileAnalyticsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading]     = useState(true);
@@ -57,9 +59,9 @@ export default function ProfileAnalyticsPage() {
   useEffect(() => {
     analyticsAPI.getProfileAnalytics()
       .then(({ data }) => setAnalytics(normalizeAnalyticsPayload(data)))
-      .catch(() => setError('No creator profile found. Connect LinkedIn first.'))
+      .catch(() => setError(t('profileAnalyticsNoProfile')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   const viewsData = analytics
     ? Object.entries(analytics.viewsByDay).map(([date, count]) => ({ date, Views: count }))
@@ -78,10 +80,10 @@ export default function ProfileAnalyticsPage() {
       <div className="max-w-[1100px]">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-4xl font-bold text-gold m-0">Profile Analytics</h1>
-            <p className="text-gray-600 mt-1">See who's viewing your creator profile.</p>
+            <h1 className="font-display text-4xl font-bold text-gold m-0">{t('profileAnalyticsTitle')}</h1>
+            <p className="text-gray-600 mt-1">{t('profileAnalyticsSubtitle')}</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/creator')}>← Back</button>
+          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/creator')}>{t('profileAnalyticsBack')}</button>
         </div>
 
         {loading ? (
@@ -91,14 +93,12 @@ export default function ProfileAnalyticsPage() {
         ) : !analytics ? null : (
           <div className="flex flex-col gap-6">
 
-            {/* Stat cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <StatCard label="Total Profile Views" value={analytics.totalViews/2} sub="All time" />
-              <StatCard label="Views This Week" value={analytics.viewsThisWeek/2} sub="Last 7 days" color="#6ec896" />
+              <StatCard label={t('profileAnalyticsTotalViews')} value={analytics.totalViews/2} sub={t('profileAnalyticsAllTime')} />
+              <StatCard label={t('profileAnalyticsViewsWeek')} value={analytics.viewsThisWeek/2} sub={t('profileAnalyticsLast7Days')} color="#6ec896" />
             </div>
 
-            {/* Views over time */}
-            <ChartCard title={<><img src={CommunityProfileIcon} alt="" className="inline-block w-4 h-4 mr-2 object-contain" />Profile Views Over Last 30 Days</>}>
+            <ChartCard title={<><img src={CommunityProfileIcon} alt="" className="inline-block w-4 h-4 mr-2 object-contain" />{t('profileAnalyticsViews30Days')}</>}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={viewsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -110,11 +110,10 @@ export default function ProfileAnalyticsPage() {
               </ResponsiveContainer>
             </ChartCard>
 
-            {/* Industry + Role */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <ChartCard title="🏭 Viewer Industries">
+              <ChartCard title={t('profileAnalyticsViewerIndustries')}>
                 {industryData.length === 0 ? (
-                  <div style={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', padding: '2rem' }}>No data yet — get more profile views!</div>
+                  <div style={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', padding: '2rem' }}>{t('profileAnalyticsNoDataViews')}</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
@@ -128,9 +127,9 @@ export default function ProfileAnalyticsPage() {
                 )}
               </ChartCard>
 
-              <ChartCard title="👤 Viewer Roles">
+              <ChartCard title={t('profileAnalyticsViewerRoles')}>
                 {roleData.length === 0 ? (
-                  <div style={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', padding: '2rem' }}>No data yet</div>
+                  <div style={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', padding: '2rem' }}>{t('profileAnalyticsNoData')}</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={roleData} layout="vertical">
@@ -138,7 +137,7 @@ export default function ProfileAnalyticsPage() {
                       <XAxis type="number" tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} width={90} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill="#6e9ec8" radius={[0, 4, 4, 0]} name="Viewers" />
+                      <Bar dataKey="value" fill="#6e9ec8" radius={[0, 4, 4, 0]} name={t('profileAnalyticsViewers')} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}

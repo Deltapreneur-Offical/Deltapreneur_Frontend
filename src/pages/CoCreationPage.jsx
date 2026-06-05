@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus } from 'lucide-react';
 import { technologyAPI } from '../api/services';
@@ -19,14 +19,20 @@ import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import { softwareAuctionAPI } from '../api/services';
-import AddonSelector, { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import AddonSelector, { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/AddonSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
+import FormSelect from '../components/common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
+import {
+  VerificationProgressModal,
+  TechnologyVerificationTrigger,
+} from '../components/listings/TechnologyVerificationProgress';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS } from '../constants/listingCategories';
+import { TECHNOLOGY_DEMO_VIDEO_QUESTION_KEYS } from '../constants/technologyDemoVideoQuestions';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import {
   canRequestTechnologyAuction,
@@ -42,13 +48,14 @@ export default function CoCreationPage() {
   const { user }  = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
   const navigate  = useNavigate();
-
+  const location = useLocation();
   const [allSoftware, setAllSoftware]       = useState([]);
   const [loading, setLoading]               = useState(true);
   const [showForm, setShowForm]             = useState(false);
   const [buyTarget, setBuyTarget]           = useState(null);
   const [successItem, setSuccessItem]       = useState(null);
   const [detailTarget, setDetailTarget]     = useState(null);
+  const [verificationModal, setVerificationModal] = useState(null);
   const [deleteTarget, setDeleteTarget]     = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
@@ -80,24 +87,45 @@ export default function CoCreationPage() {
     { getLikeCount: (item) => getLike(item.id).count },
   );
 
-  useEffect(() => {
-    setLoading(true);
-    const req = filterTab === 'mine' ? technologyAPI.getMyListings() : technologyAPI.getAll();
-    req
-      .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
-      .catch(() => setAllSoftware([]))
-      .finally(() => setLoading(false));
-  }, [filterTab]);
+useEffect(() => {
+  setLoading(true);
+  const req = filterTab === 'mine' ? technologyAPI.getMyListings() : technologyAPI.getAll();
+  req
+    .then(({ data }) => setAllSoftware(Array.isArray(data) ? data : (data?.data ?? [])))
+    .catch(() => setAllSoftware([]))
+    .finally(() => setLoading(false));
+}, [filterTab]);
 
-  const { closeListingDetail } = useOpenListingDetailFromUrl({
-    items: allSoftware,
-    loading,
-    setDetail: setDetailTarget,
-    fetchById: async (id) => {
-      const { data } = await technologyAPI.get(id);
-      return data?.data ?? data;
-    },
-  });
+useEffect(() => {
+  if (location.state?.openListTechnologyForm) {
+    setFilterTab('all');
+    setShowForm(true);
+    navigate('/technology', { replace: true, state: {} });
+  }
+}, [location.state, navigate]);
+
+const { closeListingDetail } = useOpenListingDetailFromUrl({
+  items: allSoftware,
+  loading,
+  setDetail: setDetailTarget,
+  allowUrlDetail: !verificationModal,
+  fetchById: async (id) => {
+    const { data } = await technologyAPI.get(id);
+    return data?.data ?? data;
+  },
+});
+
+  const openVerificationModal = (payload) => {
+    setVerificationModal(payload);
+    setDetailTarget(null);
+    closeListingDetail();
+  };
+
+  const closeVerificationModal = () => {
+    setVerificationModal(null);
+    setDetailTarget(null);
+    closeListingDetail();
+  };
 
   useEffect(() => {
     if (!user || allSoftware.length === 0) return;
@@ -117,14 +145,14 @@ export default function CoCreationPage() {
       await technologyAPI.delete(deleteTarget);
       setAllSoftware(s => s.filter(x => x.id !== deleteTarget));
     } catch (e) {
-      alert(e.response?.data?.error || 'Failed to remove listing.');
+      alert(e.response?.data?.error || t('technologyPageRemoveFailed'));
     } finally { setDeleteTarget(null); }
   };
 
   const handleAuctionSubmitted = () => {
     const targetId = auctionTarget?.id;
     setAuctionTarget(null);
-    alert('Auction request submitted! Admin will review it shortly.');
+    alert(t('technologyPageAuctionSubmitted'));
     if (targetId) {
       softwareAuctionAPI.getBySoftware(targetId)
         .then(({ data }) => {
@@ -200,14 +228,14 @@ export default function CoCreationPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search software by name, description or tech stack…"
+          placeholder={t('technologyPageSearchPlaceholder')}
           priceSymbol={getSymbol(currency)}
           theme="light"
         />
 
         {!loading && totalCount > 0 && (
           <div className="text-sm text-gray-600 mb-4">
-            {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
+            {t('technologyPageResultsFound', { count: totalCount })}
           </div>
         )}
 
@@ -221,17 +249,17 @@ export default function CoCreationPage() {
               <img src={TechnologyIcon} alt="No software" className="w-20 h-20 object-contain opacity-30" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? 'No software matches your filters' :
-               filterTab === 'mine' ? 'You have no listings' :
-               'No Technology listed yet'}
+              {activeFilterCount > 0 ? t('technologyPageEmptyFilteredTitle') :
+               filterTab === 'mine' ? t('technologyPageEmptyMineTitle') :
+               t('technologyPageEmptyAllTitle')}
             </h3>
             <p className="text-gray-600 mb-6">
               {activeFilterCount > 0
-                ? 'Try adjusting your search or filters.'
-                : 'Check back soon for new software listings.'}
+                ? t('technologyPageEmptyFilteredHint')
+                : t('technologyPageEmptyAllHint')}
             </p>
             {activeFilterCount > 0 && (
-              <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
+              <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClearFilters')}</button>
             )}
           </div>
         ) : (
@@ -245,6 +273,7 @@ export default function CoCreationPage() {
           likeState={getLike(s.id)}
           onLike={() => toggleLike(s.id)}
           onView={() => setDetailTarget(s)}
+          onOpenVerification={() => openVerificationModal({ verified: false, itemName: s.name })}
           onBuy={() => setBuyTarget(s)}
           onDelete={() => setDeleteTarget(s.id)}
           onAuction={() => setAuctionTarget(s)}
@@ -282,7 +311,16 @@ export default function CoCreationPage() {
         <PurchaseSuccessModal item={successItem} onClose={() => setSuccessItem(null)} />
       )}
 
-      {detailTarget && (
+      {verificationModal && (
+        <VerificationProgressModal
+          open
+          onClose={closeVerificationModal}
+          verified={verificationModal.verified}
+          itemName={verificationModal.itemName}
+        />
+      )}
+
+      {detailTarget && !verificationModal && (
         <SoftwareDetailModal
           item={detailTarget}
           isOwner={detailTarget.listedBy?.id === user?.id}
@@ -292,6 +330,7 @@ export default function CoCreationPage() {
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
           onAuction={() => { setAuctionTarget(detailTarget); closeListingDetail(); }}
           auctionStatus={auctionStatuses[detailTarget.id]}
+          onOpenVerification={(payload) => openVerificationModal(payload)}
         />
       )}
 
@@ -306,9 +345,9 @@ export default function CoCreationPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Remove Software Listing?"
-        message="This will remove your software from the marketplace."
-        confirmLabel="Remove"
+        title={t('technologyPageRemoveTitle')}
+        message={t('technologyPageRemoveMessage')}
+        confirmLabel={t('remove')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -321,7 +360,8 @@ export default function CoCreationPage() {
 
 // ─── Software Form (admin only) ───────────────────────────────────────────────
 function SoftwareForm({ onSaved, onCancel }) {
-  const { currency: navCurrency } = useCurrency();
+  const { t } = useTranslation();
+  const { currency: navCurrency, convertToInr } = useCurrency();
   const [form, setForm] = useState({
     name: '', description: '', videoLink: '', whatItDoes: '', howItHelps: '',
     githubLink: '', liveDemoLink: '', techStack: '',
@@ -345,21 +385,51 @@ function SoftwareForm({ onSaved, onCancel }) {
     return githubRegex.test(url);
   };
 
+  const isValidHttpUrl = (url) => {
+    try {
+      const parsed = new URL(url.trim());
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true); setError('');
 
-    // Validate GitHub URL
+    const videoLink = form.videoLink?.trim() || '';
+    if (!videoLink) {
+      setError(t('technologyPageDemoVideoRequired'));
+      setLoading(false);
+      return;
+    }
+    if (!isValidHttpUrl(videoLink)) {
+      setError(t('technologyPageDemoVideoInvalid'));
+      setLoading(false);
+      return;
+    }
+
     if (!isValidGithubUrl(form.githubLink)) {
-      setError('Please enter a valid GitHub URL (e.g., https://github.com/username/repo)');
+      setError(t('technologyPageInvalidGithub'));
       setLoading(false);
       return;
     }
 
     try {
+      const listingCurrency = form.currency || DEFAULT_LISTING_CURRENCY;
+      const rawPrice = parseFloat(form.price);
+      const priceInr =
+        Number.isFinite(rawPrice) && rawPrice > 0
+          ? listingCurrency === 'INR'
+            ? Math.round(rawPrice)
+            : convertToInr(rawPrice, listingCurrency)
+          : 0;
+
       const { data } = await technologyAPI.create({
         ...form,
-        currency: form.currency || DEFAULT_LISTING_CURRENCY,
+        videoLink,
+        price: priceInr,
       });
       let created = data?.data ?? data;
 
@@ -377,7 +447,7 @@ function SoftwareForm({ onSaved, onCancel }) {
           setImageError(
             uploadErr.response?.data?.error
             || uploadErr.response?.data?.message
-            || 'Listing saved but logo upload failed. You can add it later from your dashboard.',
+            || t('technologyPageLogoUploadFailed'),
           );
         }
       }
@@ -390,9 +460,9 @@ function SoftwareForm({ onSaved, onCancel }) {
         err.response?.data?.error ||
         err.response?.data?.message;
       if (status === 401) {
-        setError(msg || 'Please sign in again to list Technology.');
+        setError(msg || t('technologyPageSignInAgain'));
       } else {
-        setError(msg || 'Failed to list Technology.');
+        setError(msg || t('technologyPageListFailed'));
       }
     } finally { setLoading(false); }
   };
@@ -400,7 +470,7 @@ function SoftwareForm({ onSaved, onCancel }) {
   const handleImageChange = e => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { setImageError('Only image files are allowed.'); return; }
+    if (!file.type.startsWith('image/')) { setImageError(t('technologyPageImageOnly')); return; }
     setImageError('');
     setImageFile(file);
     const reader = new FileReader();
@@ -413,8 +483,8 @@ function SoftwareForm({ onSaved, onCancel }) {
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">List Technology</h3>
-      <p className="text-gray-500 text-sm mt-1">Add a new technology product to the Technology marketplace.</p>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">{t('technologyPageFormTitle')}</h3>
+      <p className="text-gray-500 text-sm mt-1">{t('technologyPageFormSubtitle')}</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="flex flex-col gap-1.5">
@@ -445,12 +515,12 @@ function SoftwareForm({ onSaved, onCancel }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Category <span className="text-red-500">*</span></label>
-            <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)} required>
+            <FormSelect className={inputCls} value={form.category} onChange={e => set('category', e.target.value)} required>
               <option value="">Select category</option>
               {TECHNOLOGY_CATEGORIES.map(c => (
                 <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Tech Stack</label>
@@ -472,23 +542,73 @@ function SoftwareForm({ onSaved, onCancel }) {
             inputClassName={inputCls}
             labelClassName={labelCls}
           />
+          {form.currency !== 'INR' && (
+            <p className="text-[0.72rem] text-gray-500 col-span-2 -mt-2">
+              Price is converted to INR at today&apos;s mid-market rate before saving.
+            </p>
+          )}
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
-            <select className={inputCls} value={form.pricingDemand}
+            <FormSelect className={inputCls} value={form.pricingDemand}
               onChange={e => set('pricingDemand', e.target.value)} required>
               <option value="">Select type</option>
               <option value="FIXED">Fixed Price</option>
               <option value="NEGOTIABLE">Negotiable</option>
-            </select>
+            </FormSelect>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Demo Video Link</label>
-            <input className={inputCls} value={form.videoLink} onChange={e => set('videoLink', e.target.value)}
-              placeholder="YouTube / Loom URL" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-3 md:col-span-2 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+            <div>
+              <label className={labelCls}>
+                {t('technologyPageDemoVideo')} <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t('technologyPageDemoVideoHint')}</p>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="demo-video-questions" className="text-xs font-semibold text-gray-800">
+                {t('technologyPageDemoVideoQuestionsLabel')}
+              </label>
+              <FormSelect
+                id="demo-video-questions"
+                className={inputCls}
+                defaultValue=""
+                aria-label={t('technologyPageDemoVideoQuestionsLabel')}
+              >
+                <option value="" disabled>
+                  {t('technologyPageDemoVideoSelectPrompt')}
+                </option>
+                {TECHNOLOGY_DEMO_VIDEO_QUESTION_KEYS.map((key, index) => (
+                  <option key={key} value={key}>
+                    {index + 1}. {t(key)}
+                  </option>
+                ))}
+              </FormSelect>
+              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1.5 max-h-52 overflow-y-auto pr-1 mt-1">
+                {TECHNOLOGY_DEMO_VIDEO_QUESTION_KEYS.map((key) => (
+                  <li key={key} className="leading-snug">{t(key)}</li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="demo-video-url" className="text-xs font-semibold text-gray-800">
+                {t('technologyPageDemoVideoUrl')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="demo-video-url"
+                type="url"
+                className={inputCls}
+                value={form.videoLink}
+                onChange={e => set('videoLink', e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=… or https://www.loom.com/share/…"
+                required
+              />
+            </div>
           </div>
+
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Live Demo Link</label>
             <input className={inputCls} value={form.liveDemoLink} onChange={e => set('liveDemoLink', e.target.value)}
@@ -560,7 +680,7 @@ function SoftwareForm({ onSaved, onCancel }) {
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'List Technology →'}
           </button>
-          <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
+          <button type="button" className="btn-glow" onClick={onCancel}>{t('cancel')}</button>
         </div>
       </form>
     </div>
@@ -569,6 +689,7 @@ function SoftwareForm({ onSaved, onCancel }) {
 
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
 function BuySoftwareModal({ item, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
     buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
@@ -744,7 +865,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
             const svc = ADDON_SERVICES.find(s => s.key === k);
             return svc ? (
-              <BillingLine key={k} label={svc.label}
+              <BillingLine key={k} label={addonLabel(k)}
                 value={formatPrice(svc.price)} accent />
             ) : null;
           })}
@@ -772,7 +893,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
               `Pay ${formatPrice(totalPrice)} →`}
           </button>
-          <button className="btn-glow" onClick={onClose}>Cancel</button>
+          <button className="btn-glow" onClick={onClose}>{t('cancel')}</button>
         </div>
       </div>
     </div>
@@ -837,7 +958,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 }
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
-function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onAuction, auctionStatus, likeState, onLike }) {
+function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onAuction, auctionStatus, likeState, onLike, onOpenVerification }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -960,6 +1081,15 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onAuction, auction
                   </div>
                 </div>
               </Section>
+            )}
+
+            {isOwner && REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && Boolean(d.verified) && (
+              <div className="mt-6 pt-5 border-t border-gray-100">
+                <TechnologyVerificationTrigger
+                  verified
+                  onOpen={() => onOpenVerification?.({ verified: true, itemName: d.name })}
+                />
+              </div>
             )}
 
             <div className="flex gap-3 mt-6 flex-wrap items-center">

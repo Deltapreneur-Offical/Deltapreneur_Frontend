@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import CurrencyPriceInput from '../common/CurrencyPriceInput';
+import FormSelect from '../common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../../constants/currencies';
 import { VENTURE_INDUSTRIES } from '../../constants/listingCategories';
 const VENTURE_TYPES = [
@@ -50,10 +52,14 @@ const ventureInputCls =
   'w-full min-w-0 flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]';
 const ventureSelectCls =
   'shrink-0 w-[7.25rem] px-2.5 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]';
+const ventureFieldSelectCls =
+  'w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]';
 const ventureLabelCls = 'text-sm font-medium text-gray-700';
 
-export default function VentureForm({ initialData, onSubmit, loading, error, submitLabel = 'Submit' }) {
-  const { currency: navCurrency } = useCurrency();
+export default function VentureForm({ initialData, onSubmit, loading, error, submitLabel }) {
+  const { t } = useTranslation();
+  const { currency: navCurrency, convertToInr } = useCurrency();
+  const resolvedSubmitLabel = submitLabel ?? t('submit');
   const [form, setForm] = useState(() => initialData ? {
     ...EMPTY,
     ...initialData,
@@ -88,31 +94,41 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
     e.preventDefault();
 
     if (isAuction && !isAuctionEligible) {
-      alert('Auction listings require a Revenue Generating or Scaling stage venture.');
+      alert(t('ventureFormAuctionStageAlert'));
       return;
     }
     if (isAuction && !form.auctionMinBidPrice) {
-      alert('Please enter a minimum bid price for the auction.');
+      alert(t('ventureFormMinBidRequired'));
       return;
     }
     if (isAuction && !form.auctionDuration) {
-      alert('Please select an auction duration.');
+      alert(t('ventureFormDurationRequired'));
       return;
     }
+
+    const listingCurrency = form.currency || DEFAULT_LISTING_CURRENCY;
+    const toStoredInr = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n) || n <= 0) return null;
+      return listingCurrency === 'INR' ? Math.round(n) : convertToInr(n, listingCurrency);
+    };
 
     const payload = {
       ...form,
       saleType: form.saleType,
-      currency: form.currency || DEFAULT_LISTING_CURRENCY,
-      auctionMinBidPrice: isAuction && form.auctionMinBidPrice !== ''
-        ? Number(form.auctionMinBidPrice) : null,
+      auctionMinBidPrice:
+        isAuction && form.auctionMinBidPrice !== ''
+          ? toStoredInr(form.auctionMinBidPrice)
+          : null,
       auctionDuration: isAuction ? form.auctionDuration : null,
       brandDetails: {
         ...form.brandDetails,
         industry:    form.brandDetails.industry    || null,
         ventureType: form.brandDetails.ventureType || null,
-        dealValue: !isAuction && form.brandDetails.dealValue !== ''
-          ? Number(form.brandDetails.dealValue) : null,
+        dealValue:
+          !isAuction && form.brandDetails.dealValue !== ''
+            ? toStoredInr(form.brandDetails.dealValue)
+            : null,
       },
     };
 
@@ -124,8 +140,8 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
 
       {/* ── Listing Type (REGULAR / AUCTION) ── */}
       <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-        <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Listing Type</h3>
-        <p className="text-sm text-gray-500 mb-2">Choose how you want to list your venture before filling in the details.</p>
+        <h3 className="font-display text-xl font-medium text-gray-900 mb-1">{t('ventureFormListingType')}</h3>
+        <p className="text-sm text-gray-500 mb-2">{t('ventureFormListingTypeDesc')}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
             { value: 'REGULAR', icon: '🤝', title: 'Regular Listing', desc: 'Standard co-venture listing — people apply to collaborate.', selectedBorder: 'border-blue-400', selectedBg: 'bg-blue-50', selectedText: 'text-blue-600' },
@@ -179,17 +195,17 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
               />
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Auction Duration <span className="text-red-400">*</span></label>
-                <select
+                <FormSelect
                   value={form.auctionDuration}
                   onChange={e => setField('auctionDuration', e.target.value)}
                   required={isAuction}
-                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
+                  className={ventureFieldSelectCls}
                 >
                   <option value="">Select duration</option>
                   {AUCTION_DURATIONS.map(d => (
                     <option key={d.value} value={d.value}>{d.label}</option>
                   ))}
-                </select>
+                </FormSelect>
               </div>
             </div>
 
@@ -216,10 +232,10 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-400">*</span></label>
-            <select value={form.brandDetails.industry} onChange={(e) => setBrand('industry', e.target.value)} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
+            <FormSelect value={form.brandDetails.industry} onChange={(e) => setBrand('industry', e.target.value)} required className={ventureFieldSelectCls}>
               <option value="">Select industry</option>
               {VENTURE_INDUSTRIES.map((i) => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
-            </select>
+            </FormSelect>
           </div>
         </div>
 
@@ -259,10 +275,10 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Venture Type <span className="text-red-400">*</span></label>
-            <select value={form.brandDetails.ventureType} onChange={(e) => setBrand('ventureType', e.target.value)} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
+            <FormSelect value={form.brandDetails.ventureType} onChange={(e) => setBrand('ventureType', e.target.value)} required className={ventureFieldSelectCls}>
               <option value="">Select type</option>
               {VENTURE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Venture Reference Image</label>
@@ -325,10 +341,10 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Current Stage <span className="text-red-400">*</span></label>
-          <select value={form.stage} onChange={e => setField('stage', e.target.value)} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
+          <FormSelect value={form.stage} onChange={e => setField('stage', e.target.value)} required className={ventureFieldSelectCls}>
             <option value="">Select stage</option>
             {STAGES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
+          </FormSelect>
           {isAuction && form.stage && !isAuctionEligible && (
             <p className="text-xs text-red-500 mt-1">⚠ Auction mode requires Revenue Generating or Scaling stage.</p>
           )}
@@ -386,7 +402,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
       {error && <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-400 text-sm mb-4">{error}</div>}
 
       <button type="submit" className="btn-glow" disabled={loading}>
-        {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : submitLabel}
+        {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : resolvedSubmitLabel}
       </button>
     </form>
   );

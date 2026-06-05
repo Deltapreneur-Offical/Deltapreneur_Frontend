@@ -102,7 +102,7 @@ export default function VenturesPage() {
       await ventureAPI.delete(deleteTarget);
       setAllVentures(v => v.filter(x => x.id !== deleteTarget));
     } catch (err) {
-      alert(err.response?.data?.error || 'Delete failed.');
+      alert(err.response?.data?.error || t('venturesPageDeleteFailed'));
     } finally {
       setDeleteTarget(null);
     }
@@ -118,7 +118,7 @@ export default function VenturesPage() {
       <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-start lg:justify-between min-w-0">
           <div className="min-w-0">
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">Discover and co-venture on exciting opportunities.</p>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">{t('venturesPageSubtitle')}</p>
           </div>
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto lg:justify-end shrink-0">
             <button
@@ -135,13 +135,13 @@ export default function VenturesPage() {
               onClick={() => navigate('/ventures/analytics')}
             >
               <span aria-hidden>📈</span>
-              <span>Analytics</span>
+              <span>{t('analytics')}</span>
             </button>
             <Link
               to="/ventures/new"
               className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap"
             >
-              + List Venture
+              {t('venturesPageListVentureCta')}
             </Link>
           </div>
         </div>
@@ -153,14 +153,14 @@ export default function VenturesPage() {
             className={`btn-glow btn-glow-sm text-sm py-2.5 px-4 min-h-[44px] ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setFilterTab('all')}
           >
-            All Ventures
+            {t('allVentures')}
           </button>
           <button
             type="button"
             className={`btn-glow btn-glow-sm text-sm py-2.5 px-4 min-h-[44px] ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setFilterTab('mine')}
           >
-            My Ventures
+            {t('venturesPageMyVentures')}
           </button>
         </div>
 
@@ -173,7 +173,7 @@ export default function VenturesPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search ventures by name or description…"
+          placeholder={t('venturesPageSearchPlaceholder')}
           priceSymbol={getSymbol(currency)}
           theme="light"
         />
@@ -181,7 +181,7 @@ export default function VenturesPage() {
         {/* ── Result count ── */}
         {!loading && totalCount > 0 && (
           <div className="text-sm text-gray-600 mb-4">
-            {totalCount} venture{totalCount !== 1 ? 's' : ''} found
+            {t('venturesPageResultsFound', { count: totalCount })}
           </div>
         )}
 
@@ -193,21 +193,21 @@ export default function VenturesPage() {
         ) : paginated.length === 0 ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
-              <img src={VentureLogo} alt="Ventures" className="w-16 h-16 opacity-50" />
+              <img src={VentureLogo} alt={t('ventures')} className="w-16 h-16 opacity-50" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? 'No ventures match your filters' :
-               filterTab === 'mine' ? "You haven't listed any ventures yet" :
-               'No ventures listed yet'}
+              {activeFilterCount > 0 ? t('venturesPageEmptyFilteredTitle') :
+               filterTab === 'mine' ? t('venturesPageEmptyMineTitle') :
+               t('venturesPageEmptyAllTitle')}
             </h3>
             <p className="text-gray-600 mb-6">
               {activeFilterCount > 0
-                ? 'Try adjusting your search or filters.'
-                : 'Be the first to list a venture and attract co-venturers.'}
+                ? t('venturesPageEmptyFilteredHint')
+                : t('venturesPageEmptyAllHint')}
             </p>
             {activeFilterCount > 0
-              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
-              : <Link to="/ventures/new" className="btn-glow btn-glow-sm">+ List Venture</Link>
+              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClear')}</button>
+              : <Link to="/ventures/new" className="btn-glow btn-glow-sm">{t('venturesPageListVentureCta')}</Link>
             }
           </div>
         ) : (
@@ -279,9 +279,9 @@ export default function VenturesPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Delete Venture?"
-        message="This will permanently delete the venture and all associated applications. This cannot be undone."
-        confirmLabel="Delete"
+        title={t('venturesPageDeleteTitle')}
+        message={t('venturesPageDeleteMessage')}
+        confirmLabel={t('delete')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -293,7 +293,15 @@ export default function VenturesPage() {
 
 // ─── Venture Detail Modal ─────────────────────────────────────────────────────
 function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onApply, onEdit, onDelete }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+
+  const STAGE_LABELS = {
+    IDEA: t('venturesPageStageIdea'),
+    MVP: t('venturesPageStageMvp'),
+    REVENUE_GENERATING: t('venturesPageStageRevenue'),
+    SCALING: t('venturesPageStageScaling'),
+  };
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
   const hasFetched            = useRef(false);
@@ -312,8 +320,8 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
   const isGstinVerified = Boolean((detail || venture)?.verified || (detail || venture)?.gstinVerified);
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-slideUp">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="venture-detail-modal relative w-full max-w-[620px] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-t-[18px] sm:rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors duration-200 hover:text-gray-700" onClick={onClose}>✕</button>
 
@@ -324,8 +332,8 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
         ) : (
           <>
             {/* Header */}
-            <div className="relative z-10 p-8 pb-6">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="relative z-10 p-4 sm:p-8 pb-4 sm:pb-6">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {b.ventureImageUrl
                   ? <img src={b.ventureImageUrl} alt={b.brandName}
                          className="w-14 h-14 rounded-xl object-cover" />
@@ -334,7 +342,7 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
                     </div>
                 }
                 <div>
-                  <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 m-0">{b.brandName}</h2>
+                  <h2 className="font-display text-xl sm:text-[1.75rem] font-semibold text-gray-900 m-0 break-words">{b.brandName}</h2>
                   <div className="flex gap-2 flex-wrap mt-1">
                     {b.industry && (
                       <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded">{b.industry.replace(/_/g, ' ')}</span>
@@ -349,25 +357,25 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
               </div>
 
               {/* Stats */}
-              <div className="flex gap-4 mb-6 flex-wrap">
+              <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6 flex-wrap">
                 {b.dealValue && (
-                  <div className="px-4 py-2 bg-green-50 border border-green-300 rounded-lg text-sm text-green-700">
+                  <div className="px-3 sm:px-4 py-2 bg-green-50 border border-green-300 rounded-lg text-sm text-green-700">
                     💰 {formatPrice(b.dealValue)}
                   </div>
                 )}
                 <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-                  👁 {(detail?.views ?? venture.views) || 0} views
+                  {t('venturesPageViewsLabel', { count: (detail?.views ?? venture.views) || 0 })}
                 </div>
                 <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-                  📋 {(detail?.coVentureApplicationCount ??
-                       venture.coVentureApplicationCount) || 0} applications
+                  {t('venturesPageApplicationsLabel', { count: (detail?.coVentureApplicationCount ??
+                       venture.coVentureApplicationCount) || 0 })}
                 </div>
               </div>
             </div>
 
-            <div className="relative z-10 px-8">
+            <div className="relative z-10 px-4 sm:px-8">
               {b.description && (
-                <Section title="About">
+                <Section title={t('venturesPageAboutSection')}>
                   <p className="text-gray-700 leading-relaxed text-sm">
                     {b.description}
                   </p>
@@ -375,41 +383,39 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
               )}
 
               {(c.email || c.phoneNumber) && (
-                <Section title="Contact">
-                  <div className="grid grid-cols-2 gap-3">
-                    {c.email       && <DetailItem label="Email" value={c.email} />}
-                    {c.phoneNumber && <DetailItem label="Phone" value={c.phoneNumber} />}
+                <Section title={t('venturesPageContactSection')}>
+                  <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-4">
+                    {c.email       && <DetailItem label={t('emailLabel')} value={c.email} />}
+                    {c.phoneNumber && <DetailItem label={t('domainsPagePhoneLabel')} value={c.phoneNumber} />}
                   </div>
                 </Section>
               )}
 
               {(b.website || b.videoUrl) && (
-                <Section title="Links">
+                <Section title={t('venturesPageLinksSection')}>
                   <div className="flex gap-3 flex-wrap">
                     {b.website && (
                       <a href={b.website} target="_blank" rel="noreferrer"
-                         className="btn-glow btn-glow-sm">🌐 Website ↗</a>
+                         className="btn-glow btn-glow-sm">{t('venturesPageWebsiteLink')}</a>
                     )}
                     {b.videoUrl && (
                       <a href={b.videoUrl} target="_blank" rel="noreferrer"
-                         className="btn-glow btn-glow-sm">🎬 Video ↗</a>
+                         className="btn-glow btn-glow-sm">{t('venturesPageVideoLink')}</a>
                     )}
                   </div>
                 </Section>
               )}
 
               {(detail || venture).stage && (
-                <Section title="Current Stage">
+                <Section title={t('venturesPageCurrentStageSection')}>
                   <span className="inline-block px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-full text-xs text-indigo-600">
-                    {{ IDEA: '💡 Idea', MVP: '🛠 MVP',
-                       REVENUE_GENERATING: '💰 Revenue Generating',
-                       SCALING: '🚀 Scaling' }[(detail || venture).stage]}
+                    {STAGE_LABELS[(detail || venture).stage] || (detail || venture).stage}
                   </span>
                 </Section>
               )}
 
               {(detail || venture).lookingFor && (
-                <Section title="Looking For">
+                <Section title={t('venturesPageLookingForSection')}>
                   <p className="text-gray-700 leading-relaxed text-sm m-0">
                     {(detail || venture).lookingFor}
                   </p>
@@ -417,7 +423,7 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
               )}
 
               {(detail || venture).currentProblem && (
-                <Section title="Current Challenge">
+                <Section title={t('venturesPageChallengeSection')}>
                   <p className="text-gray-700 leading-relaxed text-sm m-0">
                     {(detail || venture).currentProblem}
                   </p>
@@ -425,7 +431,7 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
               )}
 
               {detail?.listedBy && (
-                <Section title="Listed By">
+                <Section title={t('venturesPageListedBySection')}>
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600 text-sm">
                       {detail.listedBy.firstname?.[0]?.toUpperCase() || '?'}
@@ -434,7 +440,7 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
                       <div className="font-semibold text-gray-900 text-sm">
                         {detail.listedBy.firstname} {detail.listedBy.lastname}
                       </div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-gray-600 break-all">
                         {detail.listedBy.email}
                       </div>
                     </div>
@@ -444,37 +450,38 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
             </div>
 
             {/* Actions */}
-            <div className="relative z-10 px-8 pb-8 flex gap-3 flex-wrap">
+            <div className="relative z-10 px-4 sm:px-8 pb-6 sm:pb-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 border-t border-gray-100 pt-4 sm:pt-0 sm:border-t-0 mt-2 sm:mt-0">
               {isOwner ? (
                 <>
-                  <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={onEdit}>
-                    <EditActionLabel iconSize={16}>Edit</EditActionLabel>
+                  <button type="button" className="btn-glow btn-glow-sm w-full sm:w-auto inline-flex items-center justify-center" onClick={onEdit}>
+                    <EditActionLabel iconSize={16}>{t('edit')}</EditActionLabel>
                   </button>
-                  <button className="px-5 py-2 bg-red-500 border border-red-500 text-white rounded-[10px] text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-red-600" onClick={onDelete}>Delete</button>
+                  <button type="button" className="w-full sm:w-auto px-5 py-2.5 bg-red-500 border border-red-500 text-white rounded-[10px] text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-red-600" onClick={onDelete}>{t('delete')}</button>
                 </>
               ) : (
                 <button
+                  type="button"
                   className={
                     hasApplied
-                      ? 'px-5 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-sm font-semibold cursor-not-allowed'
+                      ? 'w-full sm:w-auto px-5 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-sm font-semibold cursor-not-allowed'
                       : isGstinVerified
-                        ? 'btn-glow btn-glow-sm'
-                        : 'px-5 py-2 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-sm font-semibold cursor-not-allowed'
+                        ? 'btn-glow btn-glow-sm w-full sm:w-auto'
+                        : 'w-full sm:w-auto px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-sm font-semibold cursor-not-allowed'
                   }
                   onClick={isGstinVerified && !hasApplied ? onApply : undefined}
                   disabled={!isGstinVerified || hasApplied}
                   title={
                     hasApplied
-                      ? 'You already applied'
+                      ? t('venturesPageAlreadyAppliedTitle')
                       : !isGstinVerified
-                        ? 'GST verification required'
+                        ? t('venturesPageGstRequiredTitle')
                         : undefined
                   }
                 >
-                  {hasApplied ? 'Applied' : isGstinVerified ? 'Co-Venture →' : 'GST Pending'}
+                  {hasApplied ? t('venturesPageApplied') : isGstinVerified ? t('venturesPageCoVenture') : t('venturesPageGstPending')}
                 </button>
               )}
-              <button className="px-5 py-2 bg-white border-2 border-gray-300 text-gray-600 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50" onClick={onClose}>Close</button>
+              <button type="button" className="w-full sm:w-auto px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-600 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50" onClick={onClose}>{t('close')}</button>
             </div>
           </>
         )}
@@ -494,9 +501,9 @@ function Section({ title, children }) {
 
 function DetailItem({ label, value }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="text-xs text-gray-600 mb-1">{label}</div>
-      <div className="text-sm text-gray-900">{value}</div>
+      <div className="text-sm text-gray-900 break-all">{value}</div>
     </div>
   );
 }

@@ -131,16 +131,29 @@ export default function MeetingDateTimePicker({
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Time *</label>
-          <input
-            type="time"
-            value={timePart}
-            disabled={disabled}
-            onChange={(e) => {
-              setTimePart(e.target.value);
-              setDraftError('');
-            }}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400"
-          />
+          <div className="relative meeting-time-field">
+            {!timePart && (
+              <span
+                className="meeting-time-field__placeholder pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-gray-400"
+                aria-hidden
+              >
+                HH:MM
+              </span>
+            )}
+            <input
+              type="time"
+              value={timePart}
+              disabled={disabled}
+              onChange={(e) => {
+                setTimePart(e.target.value);
+                setDraftError('');
+              }}
+              aria-label="Time in 24-hour format (HH:MM)"
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400 ${
+                !timePart ? 'meeting-time-field__input--empty' : ''
+              }`}
+            />
+          </div>
         </div>
       </div>
 

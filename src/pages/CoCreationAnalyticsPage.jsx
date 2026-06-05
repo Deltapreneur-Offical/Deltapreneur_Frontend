@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import useCurrency from '../context/CurrencyContext';
 
 function normalizeTechnologyAnalytics(payload) {
   const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
@@ -18,23 +20,26 @@ function normalizeTechnologyAnalytics(payload) {
 }
 
 export default function CoCreationAnalyticsPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState('');
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     technologyAPI.getAnalytics(id)
-      .then(({ data }) => setData(normalizeTechnologyAnalytics(data)))
-      .catch(() => setError('Failed to load analytics.'))
+      .then(({ data: res }) => setData(normalizeTechnologyAnalytics(res)))
+      .catch(() => setError(t('cocreationAnalyticsLoadFailed')))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, t]);
 
   if (loading) return <AppLayout><div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div></AppLayout>;
   if (error)   return <AppLayout><div className="text-center py-20"><p className="text-red-600">{error}</p></div></AppLayout>;
   if (!data)   return null;
 
+  const displayName = data.softwareName === 'Software' ? t('cocreationAnalyticsDefaultName') : data.softwareName;
   const viewEntries   = Object.entries(data.viewsByDay   || {});
   const industryEntries = Object.entries(data.byIndustry || {});
   const roleEntries   = Object.entries(data.byRole       || {});
@@ -46,27 +51,25 @@ export default function CoCreationAnalyticsPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{data.softwareName}</h1>
-            <p className="text-gray-600 mt-1">Analytics overview for this software listing.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{displayName}</h1>
+            <p className="text-gray-600 mt-1">{t('cocreationAnalyticsOverview')}</p>
           </div>
           <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology/dashboard')}>
-            ← Dashboard
+            {t('cocreationAnalyticsBackDashboard')}
           </button>
         </div>
 
-        {/* Top stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Views"   value={data.totalViews}   icon="👁"  color="#c8a96e" />
-          <StatCard label="Total Sales"   value={data.totalSales}   icon="💰"  color="#6ec896" />
-          <StatCard label="Total Revenue" value={`₹${Number(data.totalRevenue).toLocaleString('en-IN')}`} icon="📈" color="#6ec896" />
-          <StatCard label="Status" value={data.completionStatus || 'N/A'} icon="⟁" color="#a0a0b0" />
+          <StatCard label={t('cocreationAnalyticsTotalViews')}   value={data.totalViews}   icon="👁"  color="#c8a96e" />
+          <StatCard label={t('cocreationAnalyticsTotalSales')}   value={data.totalSales}   icon="💰"  color="#6ec896" />
+          <StatCard label={t('cocreationAnalyticsTotalRevenue')} value={formatPrice(data.totalRevenue)} icon="📈" color="#6ec896" />
+          <StatCard label={t('cocreationAnalyticsStatus')} value={data.completionStatus || 'N/A'} icon="⟁" color="#a0a0b0" />
         </div>
 
-        {/* Views over 30 days */}
         <div style={sectionStyle}>
-          <h3 style={sectionTitle}>Views — Last 30 Days</h3>
+          <h3 style={sectionTitle}>{t('cocreationAnalyticsViews30Days')}</h3>
           {viewEntries.every(([, v]) => v === 0) ? (
-            <p style={{ color: '#666', fontSize: '0.875rem' }}>No views yet.</p>
+            <p style={{ color: '#666', fontSize: '0.875rem' }}>{t('cocreationAnalyticsNoViews')}</p>
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 100, overflowX: 'auto', paddingBottom: '0.5rem' }}>
               {viewEntries.map(([day, count]) => (
@@ -83,11 +86,10 @@ export default function CoCreationAnalyticsPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {/* By Industry */}
           <div style={sectionStyle}>
-            <h3 style={sectionTitle}>Viewers by Industry</h3>
+            <h3 style={sectionTitle}>{t('cocreationAnalyticsByIndustry')}</h3>
             {industryEntries.length === 0 ? (
-              <p style={{ color: '#666', fontSize: '0.875rem' }}>No data yet.</p>
+              <p style={{ color: '#666', fontSize: '0.875rem' }}>{t('cocreationAnalyticsNoData')}</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {industryEntries.sort((a, b) => b[1] - a[1]).map(([industry, count]) => {
@@ -109,11 +111,10 @@ export default function CoCreationAnalyticsPage() {
             )}
           </div>
 
-          {/* By Role */}
           <div style={sectionStyle}>
-            <h3 style={sectionTitle}>Viewers by Role</h3>
+            <h3 style={sectionTitle}>{t('cocreationAnalyticsByRole')}</h3>
             {roleEntries.length === 0 ? (
-              <p style={{ color: '#666', fontSize: '0.875rem' }}>No data yet.</p>
+              <p style={{ color: '#666', fontSize: '0.875rem' }}>{t('cocreationAnalyticsNoData')}</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {roleEntries.sort((a, b) => b[1] - a[1]).map(([role, count]) => {
@@ -144,7 +145,7 @@ function StatCard({ label, value, icon, color }) {
   return (
     <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(0,0,0,0.1)',
                   borderRadius: 12, transition: 'all 0.35s ease', cursor: 'default' }}
-         className="card-glow-hover" onMouseEnter={(e) => {}} onMouseLeave={(e) => {}}>
+         className="card-glow-hover">
       <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{icon}</div>
       <div style={{ fontSize: '1.4rem', fontWeight: 700, color, fontFamily: 'Cormorant Garamond, serif' }}>{value}</div>
       <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.2rem' }}>{label}</div>

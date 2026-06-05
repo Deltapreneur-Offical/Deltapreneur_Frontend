@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { Calendar } from 'lucide-react';
 import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import useCurrency from '../context/CurrencyContext';
 import VentureIcon from '../assets/Coventure_logo.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
@@ -20,8 +23,8 @@ import VentureGstinVerificationModal from '../components/venture/VentureGstinVer
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 
 
-function formatAdminRequestType(type) {
-  if (type === 'COCREATION') return 'Technology';
+function formatAdminRequestType(type, t) {
+  if (type === 'COCREATION') return t('adminRequestTypeTechnology');
   return type?.replace(/_/g, ' ') ?? type;
 }
 
@@ -45,24 +48,28 @@ const unverifiedBadgeStyle = {
   borderRadius: 4,
 };
 
-function VerificationBadge({ verified, verifiedLabel = 'Verified', unverifiedLabel = 'Not verified' }) {
+function VerificationBadge({ verified, verifiedLabel, unverifiedLabel }) {
+  const { t } = useTranslation();
+  const vLabel = verifiedLabel ?? t('adminVerified');
+  const uLabel = unverifiedLabel ?? t('adminNotVerified');
   return verified ? (
-    <span style={verifiedBadgeStyle}>✓ {verifiedLabel}</span>
+    <span style={verifiedBadgeStyle}>✓ {vLabel}</span>
   ) : (
-    <span style={unverifiedBadgeStyle}>○ {unverifiedLabel}</span>
+    <span style={unverifiedBadgeStyle}>○ {uLabel}</span>
   );
 }
 
 const STATUS_COLORS = {
-  PAYMENT_PENDING:   '#c8a96e',
-  PAYMENT_COMPLETED: '#6eadc8',
-  FORWARDED:         '#a06ec8',
-  ACCEPTED:          '#6ec896',
-  REJECTED:          '#c86e6e',
-  CANCELLED:         '#666',
+  PAYMENT_PENDING:   '#b45309',
+  PAYMENT_COMPLETED: '#0369a1',
+  FORWARDED:         '#7c3aed',
+  ACCEPTED:          '#059669',
+  REJECTED:          '#dc2626',
+  CANCELLED:         '#4b5563',
 };
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation();
   const [tab, setTab]                       = useState('ventures');
   const [data, setData]                     = useState([]);
   const [coBrothers, setCoBrothers]         = useState([]);
@@ -135,7 +142,7 @@ export default function AdminDashboardPage() {
         const detailText = Array.isArray(detail)
           ? detail.map((d) => d.msg || d).join(', ')
           : (typeof detail === 'string' ? detail : null);
-        const msg = e.response?.data?.error || detailText || e.message || `Failed to load ${currentTab}`;
+        const msg = e.response?.data?.error || detailText || e.message || t('adminLoadFailed', { tab: currentTab });
         alert(msg);
       })
       .finally(() => setLoading(false));
@@ -171,12 +178,12 @@ export default function AdminDashboardPage() {
   const handleForward = async (entityId, type, coBrotherId) => {
     try {
       const { data } = await adminAPI.forward({ entityId, type, coBrotherId });
-      alert(data?.message || 'Payment request sent to lister.');
+      alert(data?.message || t('adminPaymentSent'));
       setForwardModal(null);
       adminAPI.getCoBrotherRequests()
         .then(({ data }) => setRequests(asArray(data)));
     } catch (e) {
-      alert(e.response?.data?.error || 'Failed to forward.');
+      alert(e.response?.data?.error || t('adminForwardFailed'));
     }
   };
 
@@ -187,13 +194,13 @@ export default function AdminDashboardPage() {
     try {
       const { data } = await adminAPI.takeDown(takeDownTarget.type, takeDownTarget.entityId, reason);
       if (data?.success === false) {
-        alert(data?.error || 'Failed to take down listing.');
+        alert(data?.error || t('adminTakeDownFailed'));
         return;
       }
       setTakeDownTarget(null);
       loadTab(tab);
     } catch (e) {
-      alert(e.response?.data?.error || 'Failed to take down listing.');
+      alert(e.response?.data?.error || t('adminTakeDownFailed'));
     }
   };
 
@@ -201,28 +208,28 @@ export default function AdminDashboardPage() {
     try {
       const { data } = await adminAPI.restore(type, entityId);
       if (data?.success === false) {
-        alert(data?.error || 'Failed to restore listing.');
+        alert(data?.error || t('adminRestoreFailed'));
         return;
       }
       loadTab(tab);
     } catch (e) {
-      alert(e.response?.data?.error || 'Failed to restore listing.');
+      alert(e.response?.data?.error || t('adminRestoreFailed'));
     }
   };
 
   const tabs = [
-    { id: 'ventures',           label: 'Ventures',          icon: VentureIcon    },
-    { id: 'domains',            label: 'Domains',           icon: DomainsIcon    },
-    { id: 'domain-enquiries',   label: 'Domain Enquiries',  icon: EnquireIcon    },
-    { id: 'cocreations',        label: 'Technology',        icon: TechnologyIcon },
-    { id: 'requests',           label: 'CoBrother Requests',icon: RequestIcon    },
-    { id: 'auctions',           label: 'Domain Auctions',   icon: AuctionIcon    },
-    { id: 'venture-auctions',   label: 'Venture Auctions',  icon: AuctionIcon    },
-    { id: 'meetings',           label: 'Meetings',          icon: null, Icon: Calendar },
-    { id: 'homepage-features',  label: 'Homepage Features', icon: PurchaseIcon   },
-    { id: 'software-auctions', label: 'Software Auctions', icon: AuctionIcon },
-    { id: 'community-auctions', label: 'Creator Auctions', icon: AuctionIcon },
-    { id: 'addon-orders',       label: 'Addon Orders', icon: PurchaseIcon     },
+    { id: 'ventures',           label: t('adminTabVentures'),          icon: VentureIcon    },
+    { id: 'domains',            label: t('adminTabDomains'),           icon: DomainsIcon    },
+    { id: 'domain-enquiries',   label: t('adminTabDomainEnquiries'),   icon: EnquireIcon    },
+    { id: 'cocreations',        label: t('adminTabTechnology'),        icon: TechnologyIcon },
+    { id: 'requests',           label: t('adminTabCoBrotherRequests'), icon: RequestIcon    },
+    { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
+    { id: 'venture-auctions',   label: t('adminTabVentureAuctions'),   icon: AuctionIcon    },
+    { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
+    { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
+    { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
+    { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
+    { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
   ];
 
   const handleSaveParticipationFees = async () => {
@@ -234,9 +241,9 @@ export default function AdminDashboardPage() {
         softwareParticipationFeeInr: Number(participationFees.softwareParticipationFeeInr),
         communityParticipationFeeInr: Number(participationFees.communityParticipationFeeInr),
       });
-      alert('Participation fees updated.');
+      alert(t('adminFeesUpdated'));
     } catch (e) {
-      alert(e?.response?.data?.error || 'Failed to update participation fees.');
+      alert(e?.response?.data?.error || t('adminFeesUpdateFailed'));
     } finally {
       setSavingFees(false);
     }
@@ -250,51 +257,54 @@ export default function AdminDashboardPage() {
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="min-w-0">
               <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 m-0 break-words">
-                Admin Dashboard
+                {t('adminDashboardTitle')}
               </h1>
-              <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage all platform activity.</p>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">{t('adminDashboardSubtitle')}</p>
             </div>
           </div>
         </div>
 
         <div className="mb-4 sm:mb-6 -mx-1 sm:mx-0 min-w-0">
           <div className="admin-dashboard-tabs">
-            {tabs.map(t => (
+            {tabs.map(tabItem => (
               <button
-                key={t.id}
+                key={tabItem.id}
                 type="button"
-                className={`admin-dashboard-tab ${tab === t.id ? 'active' : ''}`}
-                aria-pressed={tab === t.id}
-                onClick={() => setTab(t.id)}
+                className={`admin-dashboard-tab admin-dashboard-tab--${tabItem.id} ${tab === tabItem.id ? 'active' : ''}`}
+                aria-pressed={tab === tabItem.id}
+                onClick={() => setTab(tabItem.id)}
               >
-                {t.icon ? (
-                  <img src={t.icon} alt="" className="admin-dashboard-tab-icon" />
-                ) : t.Icon ? (
+                {tabItem.icon ? (
+                  <img src={tabItem.icon} alt="" className="admin-dashboard-tab-icon" />
+                ) : tabItem.Icon ? (
                   <span className="admin-dashboard-tab-lucide" aria-hidden>
-                    <t.Icon size={22} strokeWidth={2} />
+                    <tabItem.Icon size={22} strokeWidth={2} />
                   </span>
                 ) : (
                   <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
                 )}
-                <span className="admin-dashboard-tab-label">{t.label}</span>
+                <span className="admin-dashboard-tab-label">{tabItem.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden">
+        <div
+          className="admin-page-content bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden"
+          data-admin-section={tab}
+        >
           {(tab === 'auctions' || tab === 'venture-auctions' || tab === 'software-auctions' || tab === 'community-auctions') && (
             <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f9fafb' }}>
-              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Participation Fees (INR)</div>
+              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>{t('adminParticipationFees')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(120px,1fr))', gap: '0.6rem' }}>
                 {[
-                  ['Domain', 'domainParticipationFeeInr'],
-                  ['Venture', 'ventureParticipationFeeInr'],
-                  ['Software', 'softwareParticipationFeeInr'],
-                  ['Creators', 'communityParticipationFeeInr'],
+                  [t('adminFeeDomain'), 'domainParticipationFeeInr'],
+                  [t('adminFeeVenture'), 'ventureParticipationFeeInr'],
+                  [t('adminFeeSoftware'), 'softwareParticipationFeeInr'],
+                  [t('adminFeeCreators'), 'communityParticipationFeeInr'],
                 ].map(([label, key]) => (
                   <div key={key}>
-                    <div style={{ fontSize: '0.72rem', color: '#6b7280', marginBottom: '0.2rem' }}>{label}</div>
+                    <div className="admin-fee-label">{label}</div>
                     <input
                       type="number"
                       min="1"
@@ -307,7 +317,7 @@ export default function AdminDashboardPage() {
               </div>
               <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <button className="btn-secondary btn-sm" onClick={handleSaveParticipationFees} disabled={savingFees}>
-                  {savingFees ? 'Saving…' : 'Save Fees'}
+                  {savingFees ? t('adminSaving') : t('adminSaveFees')}
                 </button>
               </div>
             </div>
@@ -344,12 +354,12 @@ export default function AdminDashboardPage() {
             <RequestsTable requests={requests} />
           ) : data.length === 0 ? (
             <div className="text-center py-20">
-              <h3 className="font-display text-2xl font-bold text-gray-900">No records found</h3>
+              <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoRecords')}</h3>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {listCount != null && data.length > 0 && (
-                <p className="text-sm text-gray-500 mb-3">{data.length} record{data.length === 1 ? '' : 's'} shown</p>
+                <p className="text-sm text-gray-500 mb-3">{t('adminRecordsShown', { count: data.length })}</p>
               )}
               {data.map(item => (
                 tab === 'ventures' ? (
@@ -433,8 +443,9 @@ function VentureAdminRow({
   onRestore,
   onVerifyVenture,
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const title = venture.brandDetails?.brandName || `Venture #${venture.id}`;
+  const title = venture.brandDetails?.brandName || t('adminVentureFallback', { id: venture.id });
   const applications = venture.coVentureApplications || venture.co_venture_applications || [];
   const applicationCount = venture.applicationCount ?? applications.length;
   const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
@@ -448,18 +459,9 @@ function VentureAdminRow({
     e.stopPropagation();
     if (!forwardableApp) {
       if (applicationCount > 0) {
-        alert(
-          'This venture has co-venture application(s), but none are loaded in this view.\n\n'
-          + 'Expand the venture row — you should see each applicant listed there. '
-          + 'Use the Forward button on that specific application.\n\n'
-          + 'If the list is empty after expanding, refresh the admin page.'
-        );
+        alert(i18n.t('adminVentureForwardNoApp'));
       } else {
-        alert(
-          'No co-venture application to forward yet.\n\n'
-          + 'Someone must apply to partner on this venture first (via the public venture page). '
-          + 'Then expand the venture row and forward that application to a CoBrother.'
-        );
+        alert(i18n.t('adminVentureForwardNeedApp'));
       }
       return;
     }
@@ -467,77 +469,61 @@ function VentureAdminRow({
   };
 
   return (
-    <div style={{
-      background: '#ffffff',
-      border: `1px solid ${venture.takenDown ? 'rgba(200,110,110,0.25)' : '#e5e7eb'}`,
-      borderRadius: 10,
-      overflow: 'hidden',
-    }}>
+    <div className={`admin-record-card ${venture.takenDown ? '!border-red-200' : ''}`}>
       <div
-        style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer' }}
+        className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 sm:px-5 sm:py-4 cursor-pointer"
         onClick={() => setExpanded(v => !v)}
       >
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="flex-1 min-w-0">
+          <div className="admin-record-title flex items-center gap-2 flex-wrap">
             {title}
             {venture.saleType === 'AUCTION' && (
               <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                Auction
+                {t('adminAuction')}
               </span>
             )}
             {venture.takenDown && (
               <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c86e6e', background: 'rgba(200,110,110,0.12)', border: '1px solid rgba(200,110,110,0.3)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                ⚠ Taken Down
+                {t('adminTakenDown')}
               </span>
             )}
-            <VerificationBadge verified={isGstinVerified} verifiedLabel="GSTIN verified" unverifiedLabel="GSTIN pending" />
+            <VerificationBadge verified={isGstinVerified} verifiedLabel={t('adminGstinVerified')} unverifiedLabel={t('adminGstinPending')} />
             {applicationCount > 0 && (
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#4f46e5', background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                {applicationCount} co-venture application{applicationCount === 1 ? '' : 's'}
+                {t('adminCoVentureApps', { count: applicationCount })}
               </span>
             )}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
-            Venture ID: {venture.id}
+          <div className="admin-record-id">
+            {t('adminVentureId', { id: venture.id })}
           </div>
         </div>
-        {!venture.takenDown && (
-          <button
-            type="button"
-            className="btn-secondary btn-sm"
-            style={{ fontSize: '0.8rem', flexShrink: 0 }}
-            onClick={handleVentureForward}
-            title={forwardableApp ? 'Forward a co-venture application to CoBrother' : 'Requires a co-venture application first'}
-          >
-            ◆ Forward to CoBrother
-          </button>
-        )}
-        <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{expanded ? '▲' : '▼'}</span>
+        <span className="admin-expand-chevron px-1 shrink-0 self-start sm:self-center">{expanded ? '▲' : '▼'}</span>
       </div>
 
       {expanded && (
-        <div style={{ borderTop: '1px solid #e5e7eb', padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <div style={labelStyle}>Lister</div>
+        <div className="border-t border-gray-200 p-4 sm:px-5 sm:py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div className="min-w-0">
+              <div className="admin-field-label">{t('adminLister')}</div>
               {venture.listedBy ? (
                 <>
-                  <div style={valueStyle}>{venture.listedBy.firstname} {venture.listedBy.lastname}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{venture.listedBy.email}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{venture.listedBy.phoneNumber || '—'}</div>
+                  <div className="admin-field-value">{venture.listedBy.firstname} {venture.listedBy.lastname}</div>
+                  <div className="admin-field-meta break-all">{venture.listedBy.email}</div>
+                  <div className="admin-field-meta break-all">{venture.listedBy.phoneNumber || '—'}</div>
                 </>
-              ) : <div style={valueStyle}>—</div>}
+              ) : <div className="admin-field-value">—</div>}
             </div>
             <div>
-              <div style={labelStyle}>Sale type</div>
-              <div style={valueStyle}>{venture.saleType || '—'}</div>
+              <div className="admin-field-label">{t('adminSaleType')}</div>
+              <div className="admin-field-value">{venture.saleType || '—'}</div>
             </div>
           </div>
 
           {venture.brandDetails?.website && (
             <div style={{ fontSize: '0.82rem', marginBottom: '0.75rem' }}>
-              <span style={labelStyle}>Website</span>{' '}
-              <a href={venture.brandDetails.website} target="_blank" rel="noreferrer" style={{ color: '#4f46e5' }}>
+              <span className="admin-field-label admin-field-label--inline">{t('adminWebsite')}</span>{' '}
+              <a href={venture.brandDetails.website} target="_blank" rel="noreferrer" className="admin-link">
                 {venture.brandDetails.website}
               </a>
             </div>
@@ -545,60 +531,58 @@ function VentureAdminRow({
 
           {venture.takenDown && venture.takeDownReason && (
             <div style={{ fontSize: '0.8rem', color: '#c86e6e', marginBottom: '0.75rem', fontStyle: 'italic' }}>
-              Takedown reason: {venture.takeDownReason}
+              {t('adminTakedownReason', { reason: venture.takeDownReason })}
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: applications.length ? '1rem' : 0 }}>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-2 mb-4">
             {showGstinVerify && !venture.takenDown && onVerifyVenture && (
               <button
                 type="button"
-                className="btn-secondary btn-sm"
-                style={{ fontSize: '0.8rem' }}
+                className="btn-secondary btn-sm w-full sm:w-auto text-[0.8rem]"
                 onClick={(e) => { e.stopPropagation(); onVerifyVenture(venture); }}
               >
-                {isGstinVerified ? 'Re-verify GSTIN' : 'Verify GSTIN'}
+                {isGstinVerified ? t('adminReverifyGstin') : t('adminVerifyGstin')}
               </button>
             )}
             {!venture.takenDown && (
               <button
                 type="button"
-                className="btn-secondary btn-sm"
-                style={{ fontSize: '0.8rem' }}
+                className="btn-secondary btn-sm w-full sm:w-auto text-[0.8rem]"
                 onClick={handleVentureForward}
-                title={forwardableApp ? 'Forward a co-venture application to CoBrother' : 'Requires a co-venture application first'}
+                title={forwardableApp ? t('adminForwardCoVentureTitle') : t('adminForwardRequiresApp')}
               >
-                ◆ Forward to CoBrother
+                {t('adminForwardToCoBrother')}
               </button>
             )}
             {!venture.takenDown ? (
               <button
-                className="btn-danger btn-sm"
-                style={{ fontSize: '0.8rem' }}
+                type="button"
+                className="btn-danger btn-sm w-full sm:w-auto text-[0.8rem]"
                 onClick={(e) => { e.stopPropagation(); onTakeDown(venture.id, 'VENTURE', title); }}
               >
-                ⚠ Take Down venture
+                {t('adminTakeDownVenture')}
               </button>
             ) : (
               <button
-                className="btn-secondary btn-sm"
-                style={{ fontSize: '0.75rem' }}
+                type="button"
+                className="btn-secondary btn-sm w-full sm:w-auto text-[0.75rem]"
                 onClick={(e) => { e.stopPropagation(); onRestore(venture.id, 'VENTURE'); }}
               >
-                ↺ Restore venture
+                {t('adminRestoreVenture')}
               </button>
             )}
           </div>
 
           {applicationCount > 0 && applications.length === 0 && (
             <p style={{ fontSize: '0.82rem', color: '#b45309', marginBottom: '0.75rem' }}>
-              {applicationCount} application(s) exist but could not be loaded. Restart the backend and refresh.
+              {t('adminAppsNotLoaded', { count: applicationCount })}
             </p>
           )}
 
           {applications.length > 0 ? (
             <div>
-              <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Co-venture applications</div>
+              <div className="admin-field-label admin-field-label--spaced">{t('adminCoVentureApplications')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {applications.map(app => (
                   <div
@@ -608,14 +592,14 @@ function VentureAdminRow({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#111827' }}>
-                          {app.fullName || (app.applicant ? `${app.applicant.firstname || ''} ${app.applicant.lastname || ''}`.trim() : 'Applicant')}
+                          {app.fullName || (app.applicant ? `${app.applicant.firstname || ''} ${app.applicant.lastname || ''}`.trim() : t('adminApplicant'))}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        <div className="admin-field-meta">
                           {app.applicant?.email || '—'}
                           {app.phone ? ` · ${app.phone}` : ''}
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: '0.2rem' }}>
-                          Application ID: {app.id} · Status: {app.status}
+                        <div className="admin-field-meta" style={{ marginTop: '0.2rem', fontSize: '0.72rem' }}>
+                          {t('adminApplicationIdStatus', { id: app.id, status: app.status })}
                         </div>
                       </div>
                       {!venture.takenDown && (
@@ -628,7 +612,7 @@ function VentureAdminRow({
                             onForward(app.id, 'COVENTURE');
                           }}
                         >
-                          ◆ Forward to CoBrother
+                          {t('adminForwardToCoBrother')}
                         </button>
                       )}
                     </div>
@@ -642,7 +626,7 @@ function VentureAdminRow({
               </div>
             </div>
           ) : (
-            <p style={{ fontSize: '0.82rem', color: '#9ca3af', margin: 0 }}>No co-venture applications yet.</p>
+            <p className="admin-muted-note" style={{ margin: 0 }}>{t('adminNoCoVentureApps')}</p>
           )}
         </div>
       )}
@@ -651,11 +635,13 @@ function VentureAdminRow({
 }
 
 function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDomain, onVerifyVenture, onRefresh }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
 
   const getTitle = () => {
     if (tabType === 'domains')    return (item.domainName || '') + (item.domainExtension || '');
-    return item.name || 'Software #' + item.id;
+    return item.name || `${t('adminFeeSoftware')} #${item.id}`;
   };
 
   const getType = () => {
@@ -667,98 +653,100 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
   const applicant = item.purchasedBy;
 
   return (
-    <div style={{
-      background: '#ffffff',
-      border: `1px solid ${item.takenDown ? 'rgba(200,110,110,0.25)' : '#e5e7eb'}`,
-      borderRadius: 10, overflow: 'hidden',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem',
-                    padding: '1rem 1.25rem', cursor: 'pointer' }}
+    <div className={`admin-record-card ${item.takenDown ? '!border-red-200' : ''}`}>
+      <div className="flex items-center gap-4 p-4 sm:px-5 sm:py-4 cursor-pointer"
            onClick={() => setExpanded(v => !v)}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: '#111827', display: 'flex',
-                        alignItems: 'center', gap: '0.5rem' }}>
+        <div className="flex-1 min-w-0">
+          <div className="admin-record-title flex items-center gap-2 flex-wrap">
             {getTitle()}
             {item.takenDown && (
               <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c86e6e',
                              background: 'rgba(200,110,110,0.12)',
                              border: '1px solid rgba(200,110,110,0.3)',
                              padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                ⚠ Taken Down
+                {t('adminTakenDown')}
               </span>
             )}
             {tabType === 'domains' && (
               <VerificationBadge
                 verified={item.verified}
-                verifiedLabel="Domain verified"
-                unverifiedLabel="Not verified"
+                verifiedLabel={t('adminDomainVerified')}
+                unverifiedLabel={t('adminNotVerified')}
               />
             )}
             {tabType === 'cocreations' && (
               <VerificationBadge
                 verified={item.verified}
-                verifiedLabel="Technology verified"
-                unverifiedLabel="Pending verification"
+                verifiedLabel={t('adminTechVerified')}
+                unverifiedLabel={t('adminPendingVerification')}
               />
             )}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
+          <div className="admin-record-id">
             ID: {item.id}
             {tabType === 'domains' && item.askingPrice != null && (
-              <> · ₹{Number(item.askingPrice).toLocaleString('en-IN')}</>
+              <> · {formatPrice(item.askingPrice)}</>
             )}
           </div>
         </div>
-        <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{expanded ? '▲' : '▼'}</span>
+        <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
 
       {expanded && (
-        <div style={{ borderTop: '1px solid #e5e7eb', padding: '1rem 1.25rem' }}>
+        <div className="admin-record-body">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem',
                         marginBottom: '1rem' }}>
             <div>
-              <div style={labelStyle}>Lister</div>
+              <div className="admin-field-label">{t('adminLister')}</div>
               {lister ? (
                 <>
-                  <div style={valueStyle}>{lister.firstname} {lister.lastname}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{lister.email}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{lister.phoneNumber || '—'}</div>
+                  <div className="admin-field-value">{lister.firstname} {lister.lastname}</div>
+                  <div className="admin-field-meta">{lister.email}</div>
+                  <div className="admin-field-meta">{lister.phoneNumber || '—'}</div>
                 </>
-              ) : <div style={valueStyle}>—</div>}
+              ) : <div className="admin-field-value">—</div>}
             </div>
             <div>
-              <div style={labelStyle}>Buyer</div>
+              <div className="admin-field-label">{t('adminBuyer')}</div>
               {applicant ? (
                 <>
-                  <div style={valueStyle}>{applicant.firstname} {applicant.lastname}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{applicant.email}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{applicant.phoneNumber || '—'}</div>
+                  <div className="admin-field-value">{applicant.firstname} {applicant.lastname}</div>
+                  <div className="admin-field-meta">{applicant.email}</div>
+                  <div className="admin-field-meta">{applicant.phoneNumber || '—'}</div>
                 </>
-              ) : <div style={valueStyle}>Not yet</div>}
+              ) : <div className="admin-field-value">{t('adminNotYet')}</div>}
             </div>
           </div>
 
           {item.takenDown && item.takeDownReason && (
             <div style={{ fontSize: '0.8rem', color: '#c86e6e', marginBottom: '0.75rem',
                           fontStyle: 'italic' }}>
-              Takedown reason: {item.takeDownReason}
+              {t('adminTakedownReason', { reason: item.takeDownReason })}
             </div>
           )}
 
-          {tabType === 'cocreations' && (item.githubLink || item.liveDemoLink) && (
+          {tabType === 'cocreations' && (item.videoLink || item.githubLink || item.liveDemoLink) && (
             <div style={{ fontSize: '0.82rem', marginBottom: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {item.videoLink && (
+                <div>
+                  <span className="admin-field-label admin-field-label--inline">{t('adminDemoVideo')}</span>{' '}
+                  <a href={item.videoLink} target="_blank" rel="noreferrer" className="admin-link">
+                    {item.videoLink}
+                  </a>
+                </div>
+              )}
               {item.githubLink && (
                 <div>
-                  <span style={labelStyle}>GitHub</span>{' '}
-                  <a href={item.githubLink} target="_blank" rel="noreferrer" style={{ color: '#4f46e5', wordBreak: 'break-all' }}>
+                  <span className="admin-field-label admin-field-label--inline">{t('adminGithub')}</span>{' '}
+                  <a href={item.githubLink} target="_blank" rel="noreferrer" className="admin-link">
                     {item.githubLink}
                   </a>
                 </div>
               )}
               {item.liveDemoLink && (
                 <div>
-                  <span style={labelStyle}>Website / demo</span>{' '}
-                  <a href={item.liveDemoLink} target="_blank" rel="noreferrer" style={{ color: '#4f46e5', wordBreak: 'break-all' }}>
+                  <span className="admin-field-label admin-field-label--inline">{t('adminDemo')}</span>{' '}
+                  <a href={item.liveDemoLink} target="_blank" rel="noreferrer" className="admin-link">
                     {item.liveDemoLink}
                   </a>
                 </div>
@@ -777,14 +765,14 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                     onClick={async () => {
                       try {
                         await adminAPI.markTechnologyVerified(item.id);
-                        alert('Technology listing marked as verified.');
+                        alert(i18n.t('adminTechMarkedVerified'));
                         onRefresh?.();
                       } catch (e) {
-                        alert(e.response?.data?.error || 'Could not mark verified.');
+                        alert(e.response?.data?.error || i18n.t('adminMarkVerifiedFailed'));
                       }
                     }}
                   >
-                    Mark verified
+                    {t('adminMarkVerified')}
                   </button>
                 )}
               </>
@@ -797,7 +785,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                   style={{ fontSize: '0.8rem' }}
                   onClick={() => onVerifyDomain(item)}
                 >
-                  {item.verified ? 'Re-verify domain' : 'Verify domain'}
+                  {item.verified ? t('adminReverifyDomain') : t('adminVerifyDomain')}
                 </button>
                 {!item.verified && (
                   <button
@@ -807,14 +795,14 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                     onClick={async () => {
                       try {
                         await adminAPI.markDomainVerified(item.id);
-                        alert('Domain marked as verified.');
+                        alert(i18n.t('adminDomainMarkedVerified'));
                         onRefresh?.();
                       } catch (e) {
-                        alert(e.response?.data?.error || 'Could not mark verified.');
+                        alert(e.response?.data?.error || i18n.t('adminMarkVerifiedFailed'));
                       }
                     }}
                   >
-                    Mark verified
+                    {t('adminMarkVerified')}
                   </button>
                 )}
               </>
@@ -823,20 +811,20 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
               <button className="btn-secondary btn-sm"
                 onClick={() => onForward(item.id, getType())}
                 style={{ fontSize: '0.8rem' }}>
-                ◆ Forward to CoBrother
+                {t('adminForwardToCoBrother')}
               </button>
             )}
             {!item.takenDown ? (
               <button className="btn-danger btn-sm"
                 onClick={() => onTakeDown(item.id, getType(), getTitle())}
                 style={{ fontSize: '0.8rem' }}>
-                ⚠ Take Down
+                {t('adminTakeDown')}
               </button>
             ) : (
               <button className="btn-secondary btn-sm"
                 onClick={() => onRestore(item.id, getType())}
                 style={{ fontSize: '0.75rem' }}>
-                ↺ Restore
+                {t('adminRestore')}
               </button>
             )}
           </div>
@@ -847,8 +835,9 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
 }
 
 function AuctionsAdminTable({ auctions }) {
+  const { t } = useTranslation();
   if (!auctions.length) return (
-    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">No auctions yet</h3></div>
+    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoAuctions')}</h3></div>
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -870,6 +859,8 @@ function AuctionsAdminTable({ auctions }) {
 }
 
 function AuctionAdminRow({ auction, bids }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const domain = auction.domain || {};
   const domainName = domain.domainName || domain.domain_name || '';
@@ -879,7 +870,7 @@ function AuctionAdminRow({ auction, bids }) {
     || domain.fullDomain
     || `${domainName}${domainExtension}`.trim()
     || domainName
-    || `Auction #${String(auction.id || '').slice(0, 8)}`
+    || `${t('adminAuction')} #${String(auction.id || '').slice(0, 8)}`
   );
   const totalBids = auction.totalBids ?? auction.total_bids ?? 0;
   const currentHighestBid = Number(auction.currentHighestBid ?? auction.current_highest_bid ?? 0);
@@ -890,62 +881,55 @@ function AuctionAdminRow({ auction, bids }) {
     : auction.currentWinnerName || null;
 
   return (
-    <div style={{ background: '#ffffff',
-                  border: '1px solid #e5e7eb', borderRadius: 10,
-                  overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem',
-                    padding: '1rem 1.25rem', cursor: 'pointer' }}
-           onClick={() => setExpanded(v => !v)}>
+    <div className="admin-record-card">
+      <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: '#111827' }}>
+          <div className="admin-record-title">
             {title}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
-            {totalBids} bids · Status: {status}
+          <div className="admin-record-id">
+            {t('adminBidsStatus', { count: totalBids, status })}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem',
-                        fontWeight: 700, color: '#6ec896' }}>
+          <div className={`admin-price-amount ${currentHighestBid > 0 ? 'admin-price-amount--bid' : 'admin-price-amount--empty'}`}>
             {currentHighestBid > 0
-              ? `₹${currentHighestBid.toLocaleString('en-IN')}`
-              : 'No bids'}
+              ? `${formatPrice(currentHighestBid)}`
+              : t('adminNoBids')}
           </div>
           {winnerName && (
-            <div style={{ fontSize: '0.72rem', color: '#6b7280' }}>
+            <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>
               {winnerName}
             </div>
           )}
         </div>
-        <span style={{ color: '#9ca3af' }}>{expanded ? '▲' : '▼'}</span>
+        <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
 
       {expanded && (
-        <div style={{ borderTop: '1px solid #e5e7eb',
-                      padding: '1rem 1.25rem' }}>
+        <div className="admin-record-body">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
                         gap: '1rem', marginBottom: '1rem' }}>
-            <div><div style={labelStyle}>Lister</div>
-              <div style={valueStyle}>
+            <div><div className="admin-field-label">{t('adminLister')}</div>
+              <div className="admin-field-value">
                 {domain.listedBy?.firstname} {domain.listedBy?.lastname}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+              <div className="admin-field-meta">
                 {domain.listedBy?.email}
               </div>
             </div>
-            <div><div style={labelStyle}>Winner</div>
-              <div style={valueStyle}>
+            <div><div className="admin-field-label">{t('adminWinner')}</div>
+              <div className="admin-field-value">
                 {winnerName || '—'}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+              <div className="admin-field-meta">
                 {winner?.email || ''}
               </div>
             </div>
-            <div><div style={labelStyle}>Winning Bid</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.25rem',
-                            fontWeight: 700, color: '#6ec896' }}>
+            <div><div className="admin-field-label">{t('adminWinningBid')}</div>
+              <div className="admin-price-amount admin-price-amount--lg admin-price-amount--bid">
                 {currentHighestBid > 0
-                  ? `₹${currentHighestBid.toLocaleString('en-IN')}`
+                  ? `${formatPrice(currentHighestBid)}`
                   : '—'}
               </div>
             </div>
@@ -953,9 +937,8 @@ function AuctionAdminRow({ auction, bids }) {
 
           {bids?.length > 0 && (
             <div>
-              <div style={labelStyle}>All Bids ({bids.length})</div>
-              <div style={{ maxHeight: 200, overflowY: 'auto', marginTop: '0.5rem',
-                            background: '#f9fafb', borderRadius: 8, padding: '0.5rem', border: '1px solid #e5e7eb' }}>
+              <div className="admin-field-label">{t('adminAllBids', { count: bids.length })}</div>
+              <div className="admin-bids-panel">
                 {bids.map((bid, i) => (
                   <div key={bid.id || i} style={{ display: 'flex', justifyContent: 'space-between',
                                         padding: '0.4rem 0.5rem', fontSize: '0.8rem',
@@ -965,10 +948,10 @@ function AuctionAdminRow({ auction, bids }) {
                     </span>
                     <span style={{ color: (bid.isWinningBid || bid.is_winning_bid) ? '#059669' : '#7c3aed',
                                    fontWeight: 600 }}>
-                      ₹{Number(bid.amount).toLocaleString('en-IN')}
+                      {formatPrice(bid.amount)}
                       {(bid.isWinningBid || bid.is_winning_bid) && ' 🏆'}
                     </span>
-                    <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                    <span className="admin-field-meta" style={{ fontSize: '0.75rem' }}>
                       {formatAuctionDateTime(bid.bidTime ?? bid.bid_time ?? bid.createdAt, {
                         hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
                       }, '')}
@@ -985,10 +968,11 @@ function AuctionAdminRow({ auction, bids }) {
 }
 
 function CommunityAuctionsAdminTable({ auctions }) {
+  const { t } = useTranslation();
   if (!auctions.length) {
     return (
       <div className="text-center py-20">
-        <h3 className="font-display text-2xl font-bold text-gray-900">No creator auctions yet</h3>
+        <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoCreatorAuctions')}</h3>
       </div>
     );
   }
@@ -1010,8 +994,10 @@ function CommunityAuctionsAdminTable({ auctions }) {
 }
 
 function CommunityAuctionAdminRow({ auction, community }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
-  const title = auction.auctionTitle || community.name || `Creator auction #${auction.id}`;
+  const title = auction.auctionTitle || community.name || `${t('adminTabCreatorAuctions')} #${auction.id}`;
   const totalBids = auction.totalBids ?? auction.total_bids ?? 0;
   const currentHighestBid = Number(auction.currentHighestBid ?? auction.current_highest_bid ?? 0);
   const winner = auction.currentWinner;
@@ -1020,45 +1006,42 @@ function CommunityAuctionAdminRow({ auction, community }) {
     : null;
 
   return (
-    <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
-      <div
-        style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer' }}
-        onClick={() => setExpanded(v => !v)}
-      >
+    <div className="admin-record-card">
+      <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: '#111827' }}>{title}</div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
-            {totalBids} bids · Status: {auction.status}
+          <div className="admin-record-title">{title}</div>
+          <div className="admin-record-id">
+            {t('adminBidsStatus', { count: totalBids, status: auction.status })}
             {community.role ? ` · ${String(community.role).replace(/_/g, ' ')}` : ''}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 700, color: '#6ec896' }}>
-            {currentHighestBid > 0 ? `₹${currentHighestBid.toLocaleString('en-IN')}` : 'No bids'}
+          <div className={`admin-price-amount ${currentHighestBid > 0 ? 'admin-price-amount--bid' : 'admin-price-amount--empty'}`}>
+            {currentHighestBid > 0 ? `${formatPrice(currentHighestBid)}` : t('adminNoBids')}
           </div>
           {winnerName && (
-            <div style={{ fontSize: '0.72rem', color: '#6b7280' }}>{winnerName}</div>
+            <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>{winnerName}</div>
           )}
         </div>
-        <span style={{ color: '#9ca3af' }}>{expanded ? '▲' : '▼'}</span>
+        <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
       {expanded && (
-        <div style={{ borderTop: '1px solid #e5e7eb', padding: '1rem 1.25rem' }}>
+        <div className="admin-record-body">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
             <div>
-              <div style={labelStyle}>Creator profile</div>
-              <div style={valueStyle}>{community.name || '—'}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{community.email || '—'}</div>
+              <div className="admin-field-label">{t('adminCreatorProfile')}</div>
+              <div className="admin-field-value">{community.name || '—'}</div>
+              <div className="admin-field-meta">{community.email || '—'}</div>
             </div>
             <div>
-              <div style={labelStyle}>Winner</div>
-              <div style={valueStyle}>{winnerName || '—'}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{winner?.email || ''}</div>
+              <div className="admin-field-label">{t('adminWinner')}</div>
+              <div className="admin-field-value">{winnerName || '—'}</div>
+              <div className="admin-field-meta">{winner?.email || ''}</div>
             </div>
             <div>
-              <div style={labelStyle}>Min bid</div>
-              <div style={valueStyle}>
-                ₹{Number(auction.minBidPrice ?? auction.min_bid_price ?? 0).toLocaleString('en-IN')}
+              <div className="admin-field-label">{t('adminMinBid')}</div>
+              <div className="admin-field-value">
+                {formatPrice(auction.minBidPrice ?? auction.min_bid_price ?? 0)}
               </div>
             </div>
           </div>
@@ -1069,8 +1052,9 @@ function CommunityAuctionAdminRow({ auction, community }) {
 }
 
 function VentureAuctionsAdminTable({ auctions }) {
+  const { t } = useTranslation();
   if (!auctions.length) return (
-    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">No venture auctions yet</h3></div>
+    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoVentureAuctions')}</h3></div>
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1086,97 +1070,92 @@ function VentureAuctionsAdminTable({ auctions }) {
 }
 
 function VentureAuctionAdminRow({ auction, bids }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const venture = auction.venture || {};
   const brand   = venture.brandDetails || {};
 
   return (
-    <div style={{ background: '#ffffff',
-                  border: '1px solid #e5e7eb', borderRadius: 10,
-                  overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem',
-                    padding: '1rem 1.25rem', cursor: 'pointer' }}
-           onClick={() => setExpanded(v => !v)}>
+    <div className="admin-record-card">
+      <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {brand.brandName || 'Venture #' + auction.id}
+          <div className="admin-record-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {brand.brandName || t('adminVentureFallback', { id: auction.id })}
             <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#7c3aed',
                            background: 'rgba(124,58,237,0.08)',
                            border: '1px solid rgba(124,58,237,0.25)',
                            padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-              🔨 Equity Auction
+              {t('adminEquityAuction')}
             </span>
             {venture.verified && (
               <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#059669',
                              background: 'rgba(5,150,105,0.08)',
                              border: '1px solid rgba(5,150,105,0.25)',
                              padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                ✓ GSTIN
+                ✓ {t('adminGstinVerified')}
               </span>
             )}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
-            {auction.totalBids} bids · Status: {auction.status}
+          <div className="admin-record-id">
+            {t('adminBidsStatus', { count: auction.totalBids, status: auction.status })}
             {brand.industry && ` · ${brand.industry.replace(/_/g, ' ')}`}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem',
-                        fontWeight: 700, color: '#6ec896' }}>
+          <div className={`admin-price-amount ${auction.currentHighestBid > 0 ? 'admin-price-amount--bid' : 'admin-price-amount--empty'}`}>
             {auction.currentHighestBid > 0
-              ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
-              : 'No bids'}
+              ? `${formatPrice(auction.currentHighestBid)}`
+              : t('adminNoBids')}
           </div>
           {auction.currentWinner && (
-            <div style={{ fontSize: '0.72rem', color: '#6b7280' }}>
+            <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>
               {auction.currentWinner.firstname} {auction.currentWinner.lastname}
             </div>
           )}
         </div>
-        <span style={{ color: '#9ca3af' }}>{expanded ? '▲' : '▼'}</span>
+        <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
 
       {expanded && (
-        <div style={{ borderTop: '1px solid #e5e7eb',
-                      padding: '1rem 1.25rem' }}>
+        <div className="admin-record-body">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
                         gap: '1rem', marginBottom: '1rem' }}>
-            <div><div style={labelStyle}>Venture Owner</div>
-              <div style={valueStyle}>
+            <div><div className="admin-field-label">{t('adminVentureOwner')}</div>
+              <div className="admin-field-value">
                 {venture.listedBy?.firstname} {venture.listedBy?.lastname}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+              <div className="admin-field-meta">
                 {venture.listedBy?.email}
               </div>
             </div>
-            <div><div style={labelStyle}>Current Winner</div>
-              <div style={valueStyle}>
+            <div><div className="admin-field-label">{t('adminCurrentWinner')}</div>
+              <div className="admin-field-value">
                 {auction.currentWinner
                   ? `${auction.currentWinner.firstname} ${auction.currentWinner.lastname}`
                   : '—'}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+              <div className="admin-field-meta">
                 {auction.currentWinner?.email || ''}
               </div>
             </div>
-            <div><div style={labelStyle}>Auction Details</div>
-              <div style={valueStyle}>
-                Min: ₹{Number(auction.minBidPrice || 0).toLocaleString('en-IN')}
+            <div><div className="admin-field-label">{t('adminAuctionDetails')}</div>
+              <div className="admin-field-value">
+                {t('adminMin', { price: formatPrice(auction.minBidPrice || 0) })}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
-                Duration: {auction.duration?.replace(/_/g, ' ') || '—'}
+              <div className="admin-field-meta">
+                {t('adminDuration', { duration: auction.duration?.replace(/_/g, ' ') || '—' })}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
-                {auction.startTime ? `Start: ${formatAuctionDate(auction.startTime)}` : ''}
+              <div className="admin-field-meta">
+                {auction.startTime ? t('adminStart', { date: formatAuctionDate(auction.startTime) }) : ''}
               </div>
             </div>
           </div>
 
           {bids?.length > 0 && (
             <div>
-              <div style={labelStyle}>All Bids ({bids.length})</div>
-              <div style={{ maxHeight: 200, overflowY: 'auto', marginTop: '0.5rem',
-                            background: '#f9fafb', borderRadius: 8, padding: '0.5rem', border: '1px solid #e5e7eb' }}>
+              <div className="admin-field-label">{t('adminAllBids', { count: bids.length })}</div>
+              <div className="admin-bids-panel">
                 {bids.map((bid, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
                                         padding: '0.4rem 0.5rem', fontSize: '0.8rem',
@@ -1184,10 +1163,10 @@ function VentureAuctionAdminRow({ auction, bids }) {
                     <span style={{ color: '#111827', fontWeight: 500 }}>{bid.bidderName}</span>
                     <span style={{ color: bid.isWinningBid ? '#059669' : '#7c3aed',
                                    fontWeight: 600 }}>
-                      ₹{Number(bid.amount).toLocaleString('en-IN')}
+                      {formatPrice(bid.amount)}
                       {bid.isWinningBid && ' 🏆'}
                     </span>
-                    <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                    <span className="admin-field-meta" style={{ fontSize: '0.75rem' }}>
                       {formatAuctionDateTime(bid.bidTime, {
                         hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
                       }, '')}
@@ -1204,32 +1183,33 @@ function VentureAuctionAdminRow({ auction, bids }) {
 }
 
 function DomainEnquiriesTable({ enquiries, onForward }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   if (enquiries.length === 0) return (
     <div className="text-center py-20">
-      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No domain enquiries yet</h3>
-      <p className="text-gray-600">Enquiries for domains above ₹5,00,000 will appear here.</p>
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('adminNoDomainEnquiries')}</h3>
+      <p className="text-gray-600">{t('adminDomainEnquiriesHint')}</p>
     </div>
   );
 
-  const ENQUIRY_STATUS = { PENDING: '#c8a96e', FORWARDED: '#a06ec8', CLOSED: '#6ec896' };
+  const ENQUIRY_STATUS = { PENDING: '#b45309', FORWARDED: '#7c3aed', CLOSED: '#059669' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
       {enquiries.map(e => (
-        <div key={e.id} style={{ padding: '1rem 1.25rem', background: '#ffffff',
-                                  border: '1px solid #e5e7eb', borderRadius: 10 }}>
+        <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between',
                         flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
             <div>
-              <div style={{ fontWeight: 600, color: '#111827' }}>
+              <div className="admin-record-title">
                 {e.domain?.domainName}{e.domain?.domainExtension}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
-                ₹{Number(e.domain?.askingPrice || 0).toLocaleString('en-IN')}
+              <div className="admin-record-id">
+                {formatPrice(e.domain?.askingPrice || 0)}
               </div>
             </div>
             <span style={{ fontSize: '0.75rem', fontWeight: 700,
-                           color: ENQUIRY_STATUS[e.status] || '#888' }}>
+                           color: ENQUIRY_STATUS[e.status] || '#6b7280' }}>
               {e.status}
             </span>
           </div>
@@ -1237,23 +1217,22 @@ function DomainEnquiriesTable({ enquiries, onForward }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
                         gap: '0.75rem', marginBottom: '0.75rem' }}>
             <div>
-              <div style={labelStyle}>Enquirer</div>
-              <div style={valueStyle}>{e.fullName}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{e.email}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{e.phone}</div>
+              <div className="admin-field-label">{t('adminEnquirer')}</div>
+              <div className="admin-field-value">{e.fullName}</div>
+              <div className="admin-field-meta">{e.email}</div>
+              <div className="admin-field-meta">{e.phone}</div>
             </div>
             <div>
-              <div style={labelStyle}>Domain Lister</div>
-              <div style={valueStyle}>
+              <div className="admin-field-label">{t('adminDomainLister')}</div>
+              <div className="admin-field-value">
                 {e.domain?.listedBy?.firstname} {e.domain?.listedBy?.lastname}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{e.domain?.listedBy?.email}</div>
+              <div className="admin-field-meta">{e.domain?.listedBy?.email}</div>
             </div>
           </div>
 
           {e.message && (
-            <div style={{ fontSize: '0.82rem', color: '#a0a0b0', marginBottom: '0.75rem',
-                          fontStyle: 'italic' }}>
+            <div className="admin-quote">
               "{e.message}"
             </div>
           )}
@@ -1262,7 +1241,7 @@ function DomainEnquiriesTable({ enquiries, onForward }) {
             <button className="btn-secondary btn-sm"
               onClick={() => onForward(e.id, 'DOMAIN_ENQUIRY')}
               style={{ fontSize: '0.8rem' }}>
-              ◆ Forward to CoBrother
+              {t('adminForwardToCoBrother')}
             </button>
           )}
         </div>
@@ -1272,37 +1251,37 @@ function DomainEnquiriesTable({ enquiries, onForward }) {
 }
 
 function RequestsTable({ requests }) {
+  const { t } = useTranslation();
   if (requests.length === 0) return (
-    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">No CoBrother requests yet</h3></div>
+    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoCoBrotherRequests')}</h3></div>
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
       {requests.map(r => (
-        <div key={r.id} style={{ padding: '1rem 1.25rem', background: '#ffffff',
-                                  border: '1px solid #e5e7eb', borderRadius: 10 }}>
+        <div key={r.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between',
                         flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <div>
-              <span style={{ fontWeight: 600, color: '#111827' }}>{r.entityTitle}</span>
+              <span className="admin-record-title">{r.entityTitle}</span>
               <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                {formatAdminRequestType(r.requestType)}
+                {formatAdminRequestType(r.requestType, t)}
               </span>
             </div>
             <span style={{ fontSize: '0.75rem', fontWeight: 700,
-                           color: STATUS_COLORS[r.status] || '#888' }}>
+                           color: STATUS_COLORS[r.status] || '#6b7280' }}>
               {r.status?.replace(/_/g, ' ')}
             </span>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
-            Lister: {r.listerName} · {r.listerEmail}
+          <div className="admin-field-meta">
+            {t('adminListerLine', { name: r.listerName, email: r.listerEmail })}
           </div>
           {r.applicantName && (
-            <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
-              Applicant: {r.applicantName} · {r.applicantEmail}
+            <div className="admin-field-meta">
+              {t('adminApplicantLine', { name: r.applicantName, email: r.applicantEmail })}
             </div>
           )}
           <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.3rem' }}>
-            CoBrother: {r.assignedCoBrother?.firstname} {r.assignedCoBrother?.lastname}
+            {t('adminCoBrotherLine', { first: r.assignedCoBrother?.firstname, last: r.assignedCoBrother?.lastname })}
           </div>
         </div>
       ))}
@@ -1311,6 +1290,8 @@ function RequestsTable({ requests }) {
 }
 
 function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [selectedCoBrother, setSelectedCoBrother] = useState('');
   const [loading, setLoading]                     = useState(false);
 
@@ -1329,10 +1310,10 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
   const handleSubmit = async () => {
     if (noCoBrothers) {
-      alert('No CoBrother accounts exist yet. Register users with the CoBrother role first.');
+      alert(i18n.t('adminNoCoBrotherYet'));
       return;
     }
-    if (!selectedCoBrother) { alert('Please select a CoBrother'); return; }
+    if (!selectedCoBrother) { alert(i18n.t('adminSelectCoBrotherAlert')); return; }
     setLoading(true);
     await onForward(entityKey, type, selectedCoBrother);
     setLoading(false);
@@ -1344,16 +1325,16 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
         <div className="modal-header">
-          <div className="modal-badge">Forward to CoBrother</div>
-          <h2>Assign CoBrother</h2>
-          <p>Select a CoBrother for this {formatAdminRequestType(type).toLowerCase()} request.</p>
+          <div className="modal-badge">{t('adminForwardModalBadge')}</div>
+          <h2>{t('adminAssignCoBrother')}</h2>
+          <p>{t('adminForwardSelectDesc', { type: formatAdminRequestType(type, t).toLowerCase() })}</p>
         </div>
 
         {noCoBrothers && (
           <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.08)',
                         border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
                         marginBottom: '1rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-            No CoBrother accounts found. Create or promote a user to the CoBrother role before forwarding.
+            {t('adminNoCoBrotherAccounts')}
           </div>
         )}
 
@@ -1361,42 +1342,37 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
           <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.08)',
                         border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
                         marginBottom: '1rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-            ⚠️ This request has already been accepted. Forwarding again is not recommended.
+            {t('adminAlreadyAccepted')}
           </div>
         )}
 
         {!noCoBrothers && !alreadyAccepted && pendingPayment && (
-          <div style={{ padding: '0.875rem', background: 'rgba(200,169,110,0.08)',
-                        border: '1px solid rgba(200,169,110,0.25)', borderRadius: 8,
-                        marginBottom: '1rem', fontSize: '0.83rem', color: '#c8a96e' }}>
-            ⚠️ The lister already has a pending payment request. Cancel it before assigning another.
+          <div className="admin-alert-banner admin-alert-banner--warning">
+            {t('adminPendingPayment')}
           </div>
         )}
 
         <div className="form-group" style={{ margin: '1rem 0' }}>
-          <label style={{ fontSize: '0.78rem', color: '#888', marginBottom: '0.5rem',
-                          display: 'block' }}>Select CoBrother</label>
+          <label className="admin-form-label">{t('adminSelectCoBrother')}</label>
           <select value={selectedCoBrother} onChange={e => setSelectedCoBrother(e.target.value)} disabled={noCoBrothers}>
-            <option value="">Choose a CoBrother…</option>
+            <option value="">{t('adminChooseCoBrother')}</option>
             {coBrothers.map(cb => {
               const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
               return (
                 <option key={cb.id} value={cb.id} disabled={alreadyAssigned}>
                   {cb.firstname} {cb.lastname} ({cb.email})
-                  {alreadyAssigned ? ' — Already assigned' : ''}
+                  {alreadyAssigned ? t('adminAlreadyAssigned') : ''}
                 </option>
               );
             })}
           </select>
         </div>
 
-        <div style={{ padding: '0.875rem', background: 'rgba(200,169,110,0.08)',
-                      border: '1px solid rgba(200,169,110,0.2)', borderRadius: 8,
-                      marginBottom: '1.25rem', fontSize: '0.83rem', color: '#c8a96e' }}>
-          <span>⚡ A ₹1,000 payment request will be sent to the lister. CoBrother notified after payment.</span>
+        <div className="admin-alert-banner admin-alert-banner--warning" style={{ marginBottom: '1.25rem' }}>
+          <span>{t('adminPaymentRequestNote', { amount: formatPrice(1000) })}</span>
           {' '}
           <LearnMoreTooltip>
-            Your ₹1,000 support request helps us connect, verify, and personally assist your collaboration opportunity through the CoBrother ecosystem
+            {t('adminPaymentLearnMore', { amount: formatPrice(1000) })}
           </LearnMoreTooltip>
         </div>
 
@@ -1404,9 +1380,9 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
           <button className="btn-primary" onClick={handleSubmit}
             disabled={loading || noCoBrothers || !selectedCoBrother || alreadyAccepted || pendingPayment}
             style={{ flex: 1 }}>
-            {loading ? <span className="btn-spinner" /> : 'Send Payment Request →'}
+            {loading ? <span className="btn-spinner" /> : t('adminSendPaymentRequest')}
           </button>
-          <button className="btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
         </div>
       </div>
     </div>
@@ -1414,11 +1390,12 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 }
 
 function TakeDownModal({ target, onConfirm, onClose }) {
+  const { t } = useTranslation();
   const [reason, setReason]   = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!reason.trim()) { alert('Please provide a reason.'); return; }
+    if (!reason.trim()) { alert(i18n.t('adminReasonRequired')); return; }
     setLoading(true);
     await onConfirm(reason);
     setLoading(false);
@@ -1433,7 +1410,7 @@ function TakeDownModal({ target, onConfirm, onClose }) {
           <div className="modal-badge" style={{ background: 'rgba(200,110,110,0.15)',
                                                 color: '#c86e6e',
                                                 border: '1px solid rgba(200,110,110,0.3)' }}>
-            Take Down Listing
+            {t('adminTakeDownModalBadge')}
           </div>
           <h2>{target.title}</h2>
           <p>{target.type}</p>
@@ -1442,26 +1419,24 @@ function TakeDownModal({ target, onConfirm, onClose }) {
         <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.07)',
                       border: '1px solid rgba(200,110,110,0.2)', borderRadius: 8,
                       marginBottom: '1.25rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-          ⚠️ This hides the listing from public view. Lister still sees it with a "Taken Down"
-          badge. Restorable at any time.
+          {t('adminTakeDownWarning')}
         </div>
 
         <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-          <label style={{ fontSize: '0.78rem', color: '#888', marginBottom: '0.5rem',
-                          display: 'block' }}>
-            Reason <span style={{ color: '#c86e6e' }}>*</span>
+          <label className="admin-form-label">
+            {t('adminReason')} <span style={{ color: '#dc2626' }}>*</span>
           </label>
           <textarea value={reason} onChange={e => setReason(e.target.value)}
-            placeholder="e.g. Fraudulent listing, policy violation, spam…"
+            placeholder={t('adminReasonPlaceholder')}
             rows={3} style={{ resize: 'vertical' }} />
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button className="btn-danger" onClick={handleSubmit}
             disabled={loading || !reason.trim()} style={{ flex: 1 }}>
-            {loading ? <span className="btn-spinner" /> : '⚠ Confirm Takedown'}
+            {loading ? <span className="btn-spinner" /> : t('adminConfirmTakedown')}
           </button>
-          <button className="btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
         </div>
       </div>
     </div>
@@ -1470,6 +1445,7 @@ function TakeDownModal({ target, onConfirm, onClose }) {
 
 // ─── Meetings Admin Tab ───────────────────────────────────────────────────────
 function MeetingsAdminTab({ meetings }) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState('all');
 
   const now = Date.now();
@@ -1495,16 +1471,16 @@ function MeetingsAdminTab({ meetings }) {
   const countOngoing  = meetings.filter(m => categorise(m) === 'ongoing').length;
 
   const MEETING_STATUS = {
-    PENDING:   { color: '#c8a96e', label: '⏳ Pending'   },
-    CONFIRMED: { color: '#6ec896', label: '✅ Confirmed'  },
-    CANCELLED: { color: '#c86e6e', label: '❌ Cancelled'  },
-    COMPLETED: { color: '#9ca3af', label: '✓ Completed'  },
+    PENDING:   { color: '#b45309', label: t('adminMeetingPending')   },
+    CONFIRMED: { color: '#059669', label: t('adminMeetingConfirmed')  },
+    CANCELLED: { color: '#dc2626', label: t('adminMeetingCancelled')  },
+    COMPLETED: { color: '#4b5563', label: t('adminMeetingCompleted')  },
   };
 
   if (meetings.length === 0) return (
     <div className="text-center py-20">
-      <h3 className="font-display text-2xl font-bold text-gray-900">No meetings yet</h3>
-      <p className="text-gray-600 mt-1">Meeting records will appear here once users schedule them.</p>
+      <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoMeetings')}</h3>
+      <p className="text-gray-600 mt-1">{t('adminMeetingsHint')}</p>
     </div>
   );
 
@@ -1513,9 +1489,9 @@ function MeetingsAdminTab({ meetings }) {
       {/* Sub-filter bar */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         {[
-          { id: 'all',      label: `All  (${meetings.length})` },
-          { id: 'ongoing',  label: `🔴 Ongoing  (${countOngoing})` },
-          { id: 'upcoming', label: `🟢 Upcoming  (${countUpcoming})` },
+          { id: 'all',      label: t('adminMeetingsAll', { count: meetings.length }) },
+          { id: 'ongoing',  label: t('adminMeetingsOngoing', { count: countOngoing }) },
+          { id: 'upcoming', label: t('adminMeetingsUpcoming', { count: countUpcoming }) },
         ].map(f => (
           <button key={f.id}
             className={`filter-tab ${filter === f.id ? 'active' : ''}`}
@@ -1527,29 +1503,27 @@ function MeetingsAdminTab({ meetings }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 text-sm">No meetings match this filter.</div>
+        <div className="text-center py-16 text-gray-400 text-sm">{t('adminNoMeetingsFilter')}</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filtered.map(m => {
             const cat    = categorise(m);
-            const sc     = MEETING_STATUS[m.status] || { color: '#888', label: m.status };
+            const sc     = MEETING_STATUS[m.status] || { color: '#6b7280', label: m.status };
             const lister    = m.lister    || {};
             const requester = m.requester || {};
 
             return (
-              <div key={m.id} style={{
-                background: '#ffffff',
-                border: `1px solid ${cat === 'ongoing' ? 'rgba(110,200,150,0.4)' : '#e5e7eb'}`,
-                borderLeft: `4px solid ${cat === 'ongoing' ? '#6ec896' : cat === 'upcoming' ? '#6eadc8' : '#d1d5db'}`,
-                borderRadius: 10,
-                padding: '1rem 1.25rem',
-              }}>
+              <div key={m.id} className={`admin-record-card ${
+                cat === 'ongoing' ? 'admin-meeting-card--ongoing'
+                : cat === 'upcoming' ? 'admin-meeting-card--upcoming'
+                : 'admin-meeting-card--past'
+              }`} style={{ padding: '1rem 1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                   {/* Left: topic + participants */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
                       <span style={{ fontWeight: 600, color: '#111827', fontSize: '0.95rem' }}>
-                        {m.topic || '(No topic)'}
+                        {m.topic || t('adminNoTopic')}
                       </span>
                       <span style={{ fontSize: '0.68rem', fontWeight: 700, color: sc.color,
                                      background: sc.color + '18', border: `1px solid ${sc.color}33`,
@@ -1560,26 +1534,26 @@ function MeetingsAdminTab({ meetings }) {
                         <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c86e6e',
                                        background: 'rgba(200,110,110,0.1)', border: '1px solid rgba(200,110,110,0.3)',
                                        padding: '0.15rem 0.5rem', borderRadius: 4, animation: 'pulse 1.5s infinite' }}>
-                          🔴 Live Now
+                          {t('adminLiveNow')}
                         </span>
                       )}
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
                       <div>
-                        <div style={labelStyle}>Profile Owner</div>
-                        <div style={valueStyle}>{lister.firstname || lister.firstName || '—'} {lister.lastname || lister.lastName || ''}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{lister.email || '—'}</div>
+                        <div className="admin-field-label">{t('adminProfileOwner')}</div>
+                        <div className="admin-field-value">{lister.firstname || lister.firstName || '—'} {lister.lastname || lister.lastName || ''}</div>
+                        <div className="admin-field-meta">{lister.email || '—'}</div>
                       </div>
                       <div>
-                        <div style={labelStyle}>Requester</div>
-                        <div style={valueStyle}>{requester.firstname || requester.firstName || '—'} {requester.lastname || requester.lastName || ''}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{requester.email || '—'}</div>
+                        <div className="admin-field-label">{t('adminRequester')}</div>
+                        <div className="admin-field-value">{requester.firstname || requester.firstName || '—'} {requester.lastname || requester.lastName || ''}</div>
+                        <div className="admin-field-meta">{requester.email || '—'}</div>
                       </div>
                     </div>
 
                     {m.message && (
-                      <div style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: '#9ca3af', fontStyle: 'italic' }}>
+                      <div className="admin-quote" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
                         "{m.message}"
                       </div>
                     )}
@@ -1608,12 +1582,12 @@ function MeetingsAdminTab({ meetings }) {
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20 3H4C2.9 3 2 3.9 2 5v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM15 9l-5 3.5L15 16V9z"/>
                           </svg>
-                          Join Google Meet
+                          {t('adminJoinGoogleMeet')}
                         </a>
                         {m.calendarEventLink && (
                           <a href={m.calendarEventLink} target="_blank" rel="noopener noreferrer"
                             style={{ fontSize: '0.7rem', color: '#1a73e8', textDecoration: 'none' }}>
-                            📅 Calendar Event
+                            {t('adminCalendarEvent')}
                           </a>
                         )}
                       </div>
@@ -1630,18 +1604,19 @@ function MeetingsAdminTab({ meetings }) {
 }
 
 function AddonOrdersTable({ orders }) {
+  const { t } = useTranslation();
   if (!orders.length) return (
     <div className="text-center py-20">
-      <h3 className="font-display text-2xl font-bold text-gray-900">No addon orders yet</h3>
-      <p className="text-gray-600 mt-2">Orders will appear here when users select add-ons during checkout.</p>
+      <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoAddonOrders')}</h3>
+      <p className="text-gray-600 mt-2">{t('adminAddonOrdersHint')}</p>
     </div>
   );
 
   const STATUS_COLOR = {
-    COMPLETED:       '#6ec896',
-    CONTACT_PENDING: '#c8a96e',
-    CREATED:         '#6eadc8',
-    FAILED:          '#c86e6e',
+    COMPLETED:       '#059669',
+    CONTACT_PENDING: '#b45309',
+    CREATED:         '#0284c7',
+    FAILED:          '#dc2626',
   };
 
   return (
@@ -1654,15 +1629,16 @@ function AddonOrdersTable({ orders }) {
 }
 
 function AddonOrderRow({ order, statusColor }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const services = order.selectedServices ? order.selectedServices.split(',') : [];
 
   return (
-    <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer' }}
-           onClick={() => setExpanded(v => !v)}>
+    <div className="admin-record-card">
+      <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="admin-record-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             #{order.id} — {order.buyerName || order.buyerEmail || '—'}
             <span style={{ fontSize: '0.68rem', fontWeight: 700,
                            color: order.purchaseType === 'DOMAIN' ? '#0369a1' : '#7c3aed',
@@ -1672,53 +1648,52 @@ function AddonOrderRow({ order, statusColor }) {
               {order.purchaseType}
             </span>
             <span style={{ fontSize: '0.68rem', fontWeight: 700,
-                           color: statusColor[order.paymentStatus] || '#888',
+                           color: statusColor[order.paymentStatus] || '#6b7280',
                            background: 'rgba(0,0,0,0.04)',
                            border: '1px solid rgba(0,0,0,0.1)',
                            padding: '0.15rem 0.45rem', borderRadius: 4 }}>
               {order.paymentStatus?.replace(/_/g, ' ')}
             </span>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.2rem' }}>
+          <div className="admin-record-id">
             {order.buyerEmail || '—'}
             {order.buyerPhone ? ` · ${order.buyerPhone}` : ''}
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '0.15rem' }}>
-            {services.length} service{services.length !== 1 ? 's' : ''} · ₹{Number(order.totalAmount || 0).toLocaleString('en-IN')}
+          <div className="admin-field-meta" style={{ marginTop: '0.15rem' }}>
+            {t('adminServicesCount', { count: services.length })} · {formatPrice(order.totalAmount || 0)}
             {order.createdAt && ` · ${formatAuctionDate(order.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 700,
-                        color: statusColor[order.paymentStatus] || '#888' }}>
-            ₹{Number(order.totalAmount || 0).toLocaleString('en-IN')}
+          <div className="admin-price-amount" style={{ color: statusColor[order.paymentStatus] || '#6b7280' }}>
+            {formatPrice(order.totalAmount || 0)}
           </div>
         </div>
-        <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{expanded ? '▲' : '▼'}</span>
+        <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
 
       {expanded && (
-        <div style={{ borderTop: '1px solid #e5e7eb', padding: '1rem 1.25rem' }}>
+        <div className="admin-record-body">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div>
-              <div style={labelStyle}>Buyer</div>
-              <div style={valueStyle}>{order.buyerName || '—'}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerEmail || '—'}</div>
+              <div className="admin-field-label">{t('adminBuyer')}</div>
+              <div className="admin-field-value">{order.buyerName || '—'}</div>
+              <div className="admin-field-meta">{order.buyerEmail || '—'}</div>
               <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.15rem' }}>
-                Phone: {order.buyerPhone
+                {t('adminPhone', { phone: order.buyerPhone
                   || order.buyer?.phoneNumber
                   || order.buyer?.phone_number
-                  || '—'}
+                  || '—' })}
               </div>
             </div>
             <div>
-              <div style={labelStyle}>Linked Purchase</div>
-              <div style={valueStyle}>{order.purchaseType} #{order.purchaseId}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>Addon Order #{order.id}</div>
+              <div className="admin-field-label">{t('adminLinkedPurchase')}</div>
+              <div className="admin-field-value">{order.purchaseType} #{order.purchaseId}</div>
+              <div className="admin-field-meta">{t('adminAddonOrder', { id: order.id })}</div>
             </div>
             <div>
-              <div style={labelStyle}>Payment</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: statusColor[order.paymentStatus] || '#888' }}>
+              <div className="admin-field-label">{t('adminPayment')}</div>
+              <div className="admin-field-value" style={{ color: statusColor[order.paymentStatus] || '#6b7280' }}>
                 {order.paymentStatus?.replace(/_/g, ' ')}
               </div>
               {order.razorpayPaymentId && (
@@ -1731,7 +1706,7 @@ function AddonOrderRow({ order, statusColor }) {
 
           {services.length > 0 && (
             <div>
-              <div style={labelStyle}>Services Selected</div>
+              <div className="admin-field-label">{t('adminServicesSelected')}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
                 {services.map(key => (
                   <span key={key} style={{ fontSize: '0.75rem', fontWeight: 600,
@@ -1750,8 +1725,3 @@ function AddonOrderRow({ order, statusColor }) {
   );
 }
 
-const labelStyle = {
-  fontSize: '0.72rem', fontWeight: 600, color: '#6b7280',
-  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem',
-};
-const valueStyle = { fontSize: '0.9rem', color: '#111827', fontWeight: 500 };

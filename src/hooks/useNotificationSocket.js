@@ -1,21 +1,13 @@
 import { useEffect } from 'react';
-import { API_ORIGIN } from '../config/urls';
-
-function wsOrigin() {
-  const base = (API_ORIGIN || '').replace(/\/$/, '');
-  if (base.startsWith('https://')) return base.replace('https://', 'wss://');
-  if (base.startsWith('http://')) return base.replace('http://', 'ws://');
-  if (typeof window !== 'undefined') {
-    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${proto}//${window.location.host}`;
-  }
-  return 'ws://127.0.0.1:8000';
-}
+import { resolveWebSocketOrigin } from '../config/urls';
 
 function getAccessToken() {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('accessToken') || localStorage.getItem('token');
 }
+
+const MAX_RECONNECT_ATTEMPTS = 6;
+const BASE_RECONNECT_MS = 5000;
 
 /**
  * Live notification stream for the logged-in user.
@@ -31,15 +23,20 @@ export function useNotificationSocket(userId, onNotification) {
     let ws;
     let cancelled = false;
     let reconnectTimer;
+    let reconnectAttempt = 0;
 
     const connect = () => {
       if (cancelled) return;
 
-      const url = `${wsOrigin()}/ws/notifications/${encodeURIComponent(
+      const url = `${resolveWebSocketOrigin()}/ws/notifications/${encodeURIComponent(
         String(userId),
       )}?token=${encodeURIComponent(token)}`;
 
       ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        reconnectAttempt = 0;
+      };
 
       ws.onmessage = (event) => {
         try {
@@ -53,10 +50,21 @@ export function useNotificationSocket(userId, onNotification) {
         }
       };
 
-      ws.onclose = () => {
-        if (!cancelled) {
-          reconnectTimer = window.setTimeout(connect, 5000);
-        }
+      ws.onclose = (event) => {
+        if (cancelled) return;
+
+        // Auth / permission failures — do not retry with the same token.
+        if (event.code === 4401 || event.code === 4403) return;
+
+        reconnectAttempt += 1;
+        if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) return;
+
+        const delay = Math.min(30000, BASE_RECONNECT_MS * reconnectAttempt);
+        reconnectTimer = window.setTimeout(connect, delay);
+      };
+
+      ws.onerror = () => {
+        // Browser logs the connection failure; onclose handles reconnect/backoff.
       };
     };
 

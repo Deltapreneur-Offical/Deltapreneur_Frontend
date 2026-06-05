@@ -61,6 +61,7 @@ export default function TechnologySection() {
                 <ListingCardShell>
                   <TechnologyListingCard
                     browseMode
+                    compact
                     item={item}
                     likeState={getLike(item.id)}
                     onLike={() => toggleLike(item.id)}

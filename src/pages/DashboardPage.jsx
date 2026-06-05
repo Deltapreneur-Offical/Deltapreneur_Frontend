@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
@@ -78,6 +78,7 @@ export default function DashboardPage() {
 
   const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
   const rolePillText = displayRoleLabel(user?.role, t);
+  const profileComplete = Boolean(user?.profileComplete);
 
   return (
     <AppLayout>
@@ -105,6 +106,23 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {!profileComplete && (
+            <div className="border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50/80 to-amber-50 px-4 py-3.5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-2.5 min-w-0">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 sm:mt-0" aria-hidden />
+                <p className="text-sm text-amber-900 leading-snug m-0">
+                  {t('dashboardProfilePendingBanner')}
+                </p>
+              </div>
+              <Link
+                to="/complete-profile"
+                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
+              >
+                {t('dashboardCompleteProfileCTA')}
+              </Link>
+            </div>
+          )}
+
           <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 p-5 sm:p-6 lg:p-8 text-white">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
@@ -119,10 +137,20 @@ export default function DashboardPage() {
                   <span className="text-xs text-white/70">{t('dashboardRoleLabel')}</span>
                   <span className="text-sm font-semibold text-white">{rolePillText}</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/15 backdrop-blur rounded-full border border-white/20">
-                  <span className="text-xs text-white/70">{t('dashboardProfileLabel')}</span>
-                  <span className="text-sm font-semibold text-white">{t('dashboardProfileComplete')}</span>
-                </div>
+                {profileComplete ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/15 backdrop-blur rounded-full border border-white/20">
+                    <span className="text-xs text-white/70">{t('dashboardProfileLabel')}</span>
+                    <span className="text-sm font-semibold text-white">{t('dashboardProfileComplete')}</span>
+                  </div>
+                ) : (
+                  <Link
+                    to="/complete-profile"
+                    className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-amber-400/25 backdrop-blur rounded-full border border-amber-200/50 hover:bg-amber-400/35 transition-colors"
+                  >
+                    <span className="text-xs text-amber-100">{t('dashboardProfileLabel')}</span>
+                    <span className="text-sm font-semibold text-white">{t('dashboardProfilePending')}</span>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -145,7 +173,7 @@ export default function DashboardPage() {
               </p>
               <Link
                 to={c.to}
-                className="btn-glow btn-glow-sm w-full text-sm py-2.5 px-3 text-center leading-snug whitespace-normal"
+                className="btn-glow w-full min-h-[50px] sm:min-h-[54px] px-5 sm:px-6 py-3.5 sm:py-4 text-[0.9375rem] sm:text-base font-semibold text-center leading-snug whitespace-normal"
               >
                 {c.cta} →
               </Link>

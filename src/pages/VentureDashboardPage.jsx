@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { coVentureAPI, likeAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 import useCurrency from '../context/CurrencyContext';
@@ -30,6 +31,7 @@ const AUCTION_STATUS_COLORS = {
 };
 
 export default function VentureDashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [tab, setTab] = useState('listings');
 
@@ -38,11 +40,11 @@ export default function VentureDashboardPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Venture Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your venture listings, applications, and auctions.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('ventureDashboardPageTitle')}</h1>
+            <p className="text-gray-600 mt-1">{t('ventureDashboardPageSubtitle')}</p>
           </div>
           <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures')}>
-            ← Back to Ventures
+            {t('ventureDashboardPageBack')}
           </button>
         </div>
 
@@ -51,25 +53,25 @@ export default function VentureDashboardPage() {
             className={`btn-glow btn-glow-sm ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setTab('listings')}
           >
-            📋 My Listings
+            {t('ventureDashboardTabListings')}
           </button>
           <button
             className={`btn-glow btn-glow-sm ${tab === 'likes' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setTab('likes')}
           >
-            ❤️ Likes Received
+            {t('ventureDashboardTabLikes')}
           </button>
           <button
             className={`btn-glow btn-glow-sm ${tab === 'incoming' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setTab('incoming')}
           >
-            📥 Incoming Applications
+            {t('ventureDashboardTabIncoming')}
           </button>
           <button
             className={`btn-glow btn-glow-sm ${tab === 'applied' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setTab('applied')}
           >
-            🚀 My Applications
+            {t('ventureDashboardTabApplied')}
           </button>
         </div>
 
@@ -84,6 +86,7 @@ export default function VentureDashboardPage() {
 
 // ─── My Listings ──────────────────────────────────────────────────────────────
 function MyListings() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [ventures, setVentures]         = useState([]);
   const [loading, setLoading]           = useState(true);
@@ -115,10 +118,10 @@ function MyListings() {
   if (ventures.length === 0) return (
     <div className="text-center py-20">
       <div className="text-6xl mb-4">📋</div>
-      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No ventures listed yet</h3>
-      <p className="text-gray-600 mb-4">List your first venture to start finding co-founders and collaborators.</p>
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('ventureDashboardNoListingsTitle')}</h3>
+      <p className="text-gray-600 mb-4">{t('ventureDashboardNoListingsBody')}</p>
       <button className="btn-glow" onClick={() => navigate('/ventures')}>
-        List a Venture
+        {t('ventureDashboardListVenture')}
       </button>
     </div>
   );
@@ -149,6 +152,7 @@ function MyListings() {
 }
 
 function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const navigate   = useNavigate();
   const b          = venture.brandDetails || {};
@@ -163,7 +167,7 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
       await ventureAPI.setActive(venture.id, true);
       onListingChanged?.();
     } catch (err) {
-      alert(err.response?.data?.message || err.response?.data?.error || 'Could not reactivate this listing.');
+      alert(err.response?.data?.message || err.response?.data?.error || t('ventureDashboardCouldNotReactivate'));
     }
   };
 
@@ -174,11 +178,11 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
           {b.brandName || '—'}
           {isAuction ? (
             <span className="text-[0.72rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
-              🔨 Auction
+              {t('ventureDashboardAuctionBadge')}
             </span>
           ) : (
             <span className="text-[0.72rem] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
-              🤝 Regular
+              {t('ventureDashboardRegularBadge')}
             </span>
           )}
         </div>
@@ -201,18 +205,18 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
             ? 'text-green-600 bg-green-50 border border-green-200'
             : 'text-gray-500 bg-gray-50 border border-gray-200'
         }`}>
-          {venture.status ? '● Active' : '○ Inactive'}
+          {venture.status ? t('ventureDashboardActive') : t('ventureDashboardInactive')}
         </span>
 
         {isGstinVerified && (
           <span className="text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-2.5 py-1 rounded-md">
-            ✓ GSTIN Verified
+            {t('ventureDashboardGstinVerified')}
           </span>
         )}
 
         {venture.takenDown && (
           <span className="text-xs font-bold text-red-500 bg-red-50 border border-red-200 px-2.5 py-1 rounded-md">
-            ⚠ Taken Down
+            {t('ventureDashboardTakenDown')}
           </span>
         )}
 

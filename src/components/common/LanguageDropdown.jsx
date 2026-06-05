@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 
 const LANGUAGES = [
-  { code: 'en', name: 'English (IND)' },
+  { code: 'en-IN', name: 'English (IND)' },
   { code: 'hi', name: 'Hindi' },
   { code: 'en-US', name: 'English (US)' },
   { code: 'en-GB', name: 'English (UK)' },
@@ -16,7 +16,7 @@ const LANGUAGES = [
 ];
 
 const LANG_SHORT = {
-  en: 'EN',
+  'en-IN': 'EN',
   hi: 'HI',
   'en-US': 'US',
   'en-GB': 'UK',
@@ -28,16 +28,23 @@ const LANG_SHORT = {
 };
 
 function languageLabel(i18nLanguage) {
-  const exact = LANGUAGES.find((l) => l.code === i18nLanguage);
+  const normalized = i18nLanguage === 'en' ? 'en-IN' : i18nLanguage;
+  const exact = LANGUAGES.find((l) => l.code === normalized);
   if (exact) return exact.name;
-  const base = (i18nLanguage || '').split('-')[0];
+  const base = (normalized || '').split('-')[0];
   return LANGUAGES.find((l) => l.code === base)?.name || 'English (IND)';
 }
 
 function languageShortCode(i18nLanguage) {
-  if (LANG_SHORT[i18nLanguage]) return LANG_SHORT[i18nLanguage];
-  const base = (i18nLanguage || '').split('-')[0];
+  const normalized = i18nLanguage === 'en' ? 'en-IN' : i18nLanguage;
+  if (LANG_SHORT[normalized]) return LANG_SHORT[normalized];
+  const base = (normalized || '').split('-')[0];
   return LANG_SHORT[base] || 'EN';
+}
+
+function isActiveLanguage(current, code) {
+  const normalized = current === 'en' ? 'en-IN' : current;
+  return normalized === code;
 }
 
 export default function LanguageDropdown({ variant = 'dark', className = '' }) {
@@ -106,7 +113,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
             <button
               key={lang.code}
               type="button"
-              className={itemCls(i18n.language === lang.code)}
+              className={itemCls(isActiveLanguage(i18n.language, lang.code))}
               onClick={() => {
                 changeLanguage(lang.code);
                 setOpen(false);

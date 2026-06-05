@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { formatTimeAgo } from '../../utils/timeAgo';
 import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -169,13 +170,6 @@ export default function AppLayout({ children }) {
     if (notification.link) navigate(notification.link);
   };
 
-  const timeAgo = (dateStr) => {
-    const diff = (Date.now() - new Date(dateStr)) / 1000;
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-  };
 
   return (
     <div
@@ -253,7 +247,7 @@ export default function AppLayout({ children }) {
         </nav>
 
         <div className="app-sidebar-footer">
-          {!sidebarCollapsed && <p className="app-sidebar-section-label">Account</p>}
+          {!sidebarCollapsed && <p className="app-sidebar-section-label">{t('accountSection')}</p>}
           <div className="app-sidebar-footer-inner">
             <Link
               to="/"
@@ -347,14 +341,14 @@ export default function AppLayout({ children }) {
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 className="app-sidebar-close"
-                aria-label="Close menu"
+                aria-label={t('closeMenu')}
               >
                 <X size={22} strokeWidth={2} />
               </button>
             </div>
 
             <nav className="app-sidebar-nav" aria-label="Main navigation">
-              <p className="app-sidebar-section-label">Menu</p>
+              <p className="app-sidebar-section-label">{t('navMenu')}</p>
               <div className="app-sidebar-nav-list">
                 {navItems.map((item) => {
                   const active = isActive(item.to);
@@ -393,7 +387,7 @@ export default function AppLayout({ children }) {
             </nav>
 
             <div className="app-sidebar-footer">
-              <p className="app-sidebar-section-label">Account</p>
+              <p className="app-sidebar-section-label">{t('accountSection')}</p>
               <div className="app-sidebar-footer-inner">
                 <Link
                   to="/"
@@ -496,20 +490,20 @@ export default function AppLayout({ children }) {
               {bellOpen && (
                 <div className="absolute top-full right-0 mt-2 w-[360px] bg-white border border-gray-200 rounded-xl shadow-2xl z-[1000] overflow-hidden">
                   <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
-                    <span className="font-semibold text-sm text-gray-900">Notifications</span>
+                    <span className="font-semibold text-sm text-gray-900">{t('notifications')}</span>
                     {unreadCount > 0 && (
                       <button
                         className="text-xs text-gray-500 hover:text-gray-700"
                         onClick={handleMarkAllRead}
                       >
-                        Mark all read
+                        {t('markAllRead')}
                       </button>
                     )}
                   </div>
                   <div className="max-h-[380px] overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                        No notifications yet
+                        {t('noNotificationsYet')}
                       </div>
                     ) : (
                       notifications.map((notification) => (
@@ -537,7 +531,7 @@ export default function AppLayout({ children }) {
                             </div>
                             )}
                             <div className="text-[10px] text-gray-400 mt-1">
-                              {timeAgo(notification.createdAt)}
+                              {formatTimeAgo(notification.createdAt, t)}
                             </div>
                           </div>
                           {!notification.read && (
@@ -553,7 +547,7 @@ export default function AppLayout({ children }) {
                       onClick={() => setBellOpen(false)}
                       className="text-xs text-gray-600 hover:text-gray-900"
                     >
-                      View all notifications
+                      {t('viewAllNotifications')}
                     </Link>
                   </div>
                 </div>

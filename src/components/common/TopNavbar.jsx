@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import HomeTopNavActions from './HomeTopNavActions';
 
 export default function TopNavbar({ homeMobileMenu = false }) {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const stackedWithMainNav = Boolean(homeMobileMenu);
 
@@ -25,7 +27,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
               className="rounded px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-blue-100/80"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Home
+              {t('topNavHome')}
             </a>
           </div>
         </div>

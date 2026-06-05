@@ -7,6 +7,7 @@ import logoBlack from '../../assets/Cobrother_logo.png';
 import logoGreen from '../../assets/Cobrother_Green.png';
 import BackButton from './BackButton';
 import HomeTopNavActions from './HomeTopNavActions';
+import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 
 function HomeNavLogo({ className = '' }) {
   return (
@@ -24,7 +25,9 @@ function NavDropdown({ label, open, onToggle, children }) {
   const updatePosition = useCallback(() => {
     const el = triggerRef.current;
     if (!el) return;
+
     const rect = el.getBoundingClientRect();
+
     setPanelStyle({
       position: 'fixed',
       top: rect.bottom + 6,
@@ -39,9 +42,12 @@ function NavDropdown({ label, open, onToggle, children }) {
       setPanelStyle(null);
       return undefined;
     }
+
     updatePosition();
+
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
+
     return () => {
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
@@ -132,9 +138,12 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
       document.body.classList.remove('home-menu-open');
       return undefined;
     }
+
     document.body.classList.add('home-menu-open');
+
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
     return () => {
       document.body.classList.remove('home-menu-open');
       document.body.style.overflow = prev;
@@ -145,15 +154,17 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     const onResize = () => {
       if (window.innerWidth >= 1280) closeMobileMenu();
     };
+
     window.addEventListener('resize', onResize);
+
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const authButtons = !authLoading && !user ? (
     <>
-      <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/join-form')}>
+      <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
         {t('joinCoBrother')}
-      </button>
+      </JoinCoBrotherGradientButton>
       <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
         {t('signIn')}
       </button>
@@ -169,64 +180,91 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
       >
         <div className="home-main-nav-inner">
           <div className="home-main-nav-start">
-          <button
-            type="button"
-            className="home-nav-logo-btn shrink-0"
-            onClick={() => navigate('/')}
-            aria-label="CoBrother home"
-          >
-            <HomeNavLogo />
-          </button>
+            <button
+              type="button"
+              className="home-nav-logo-btn shrink-0"
+              onClick={() => navigate('/')}
+              aria-label="CoBrother home"
+            >
+              <HomeNavLogo />
+            </button>
 
-          <div className="home-nav-desktop-menu">
-            <div className="flex items-center flex-wrap gap-1">
-              <NavDropdown
-                label={t('domains')}
-                open={openDropdown === 'domains'}
-                onToggle={() => toggleDesktopDropdown('domains')}
-              >
-                <DropdownLink onClick={() => go('/domains')}>{t('exploreDomains')}</DropdownLink>
-                <DropdownLink onClick={() => go('/domains/dashboard')}>{t('listDomains')}</DropdownLink>
-              </NavDropdown>
+            <div className="home-nav-desktop-menu">
+              <div className="flex items-center flex-wrap gap-1">
+                <NavDropdown
+                  label={t('domains')}
+                  open={openDropdown === 'domains'}
+                  onToggle={() => toggleDesktopDropdown('domains')}
+                >
+                  <DropdownLink onClick={() => go('/domains')}>
+                    {t('exploreDomains')}
+                  </DropdownLink>
+                  <DropdownLink onClick={() => go('/domains/dashboard')}>
+                    {t('listDomains')}
+                  </DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('Ventures')}
-                open={openDropdown === 'venture'}
-                onToggle={() => toggleDesktopDropdown('venture')}
-              >
-                <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
-                <DropdownLink onClick={() => go('/ventures/new')}>{t('listVenture')}</DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('ventures')}
+                  open={openDropdown === 'venture'}
+                  onToggle={() => toggleDesktopDropdown('venture')}
+                >
+                  <DropdownLink onClick={() => go('/ventures')}>
+                    {t('exploreVenture')}
+                  </DropdownLink>
+                  <DropdownLink onClick={() => go('/ventures/new')}>
+                    {t('listVenture')}
+                  </DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('technologies')}
-                open={openDropdown === 'technology'}
-                onToggle={() => toggleDesktopDropdown('technology')}
-              >
-                <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
-                <DropdownLink onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('technologies')}
+                  open={openDropdown === 'technology'}
+                  onToggle={() => toggleDesktopDropdown('technology')}
+                >
+                  <DropdownLink onClick={() => go('/technology')}>
+                    {t('exploreTechnology')}
+                  </DropdownLink>
 
-              <NavDropdown
-                label={t('disruptors')}
-                open={openDropdown === 'creators'}
-                onToggle={() => toggleDesktopDropdown('creators')}
-              >
-                <DropdownLink onClick={() => go('/creator')}>{t('exploreDisruptors')}</DropdownLink>
-              </NavDropdown>
+                  <DropdownLink
+                    onClick={() =>
+                      go('/technology', { openListTechnologyForm: true })
+                    }
+                  >
+                    {t('listTechnology')}
+                  </DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('auctions')}
-                open={openDropdown === 'auctions'}
-                onToggle={() => toggleDesktopDropdown('auctions')}
-              >
-                <DropdownLink onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('disruptors')}
+                  open={openDropdown === 'creators'}
+                  onToggle={() => toggleDesktopDropdown('creators')}
+                >
+                  <DropdownLink onClick={() => go('/creator')}>
+                    {t('exploreDisruptors')}
+                  </DropdownLink>
+                </NavDropdown>
+
+                <NavDropdown
+                  label={t('placeAuction')}
+                  open={openDropdown === 'auctions'}
+                  onToggle={() => toggleDesktopDropdown('auctions')}
+                >
+                  <DropdownLink onClick={() => go('/auctions?section=domains')}>
+                    Domain Auction
+                  </DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions?section=ventures')}>
+                    Venture Auction
+                  </DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions?section=technology')}>
+                    Technology Auction
+                  </DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions?section=community')}>
+                    Creator Auction
+                  </DropdownLink>
+                </NavDropdown>
+              </div>
             </div>
-          </div>
           </div>
 
           <div className="home-main-nav-toolbar">
@@ -250,6 +288,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <BackButton to="/" label={t('Home')} variant="pill" />
               </div>
             )}
+
             {authButtons ? (
               <div className="home-nav-desktop-cta home-nav-cta-group">
                 {authButtons}
@@ -259,93 +298,122 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
         </div>
       </nav>
 
-      {/* Mobile / tablet drawer */}
       {mobileMenuOpen &&
         typeof document !== 'undefined' &&
         createPortal(
           <>
-          <button
-            type="button"
-            className="home-nav-overlay"
-            aria-label="Close menu"
-            onClick={closeMobileMenu}
-          />
-          <aside className="home-nav-drawer" aria-label="Main navigation">
-            <div className="home-nav-drawer-header">
-              <span className="home-nav-drawer-title">{t('navMenu')}</span>
-              <button type="button" className="home-nav-drawer-close" onClick={closeMobileMenu} aria-label="Close menu">
-                <X size={22} strokeWidth={2} />
-              </button>
-            </div>
+            <button
+              type="button"
+              className="home-nav-overlay"
+              aria-label="Close menu"
+              onClick={closeMobileMenu}
+            />
 
-            <div className="home-nav-drawer-body">
-              <MobileAccordion
-                title={t('domains')}
-                open={mobileAccordion === 'domains'}
-                onToggle={() => setMobileAccordion((v) => (v === 'domains' ? null : 'domains'))}
-              >
-                <button type="button" className="home-mobile-link" onClick={() => go('/domains')}>{t('exploreDomains')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/domains/dashboard')}>{t('listDomains')}</button>
-              </MobileAccordion>
+            <aside className="home-nav-drawer" aria-label="Main navigation">
+              <div className="home-nav-drawer-header">
+                <span className="home-nav-drawer-title">{t('navMenu')}</span>
+                <button type="button" className="home-nav-drawer-close" onClick={closeMobileMenu} aria-label="Close menu">
+                  <X size={22} strokeWidth={2} />
+                </button>
+              </div>
 
-              <MobileAccordion
-                title={t('Ventures')}
-                open={mobileAccordion === 'venture'}
-                onToggle={() => setMobileAccordion((v) => (v === 'venture' ? null : 'venture'))}
-              >
-                <button type="button" className="home-mobile-link" onClick={() => go('/ventures')}>{t('exploreVenture')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/ventures/new')}>{t('listVenture')}</button>
-              </MobileAccordion>
-
-              <MobileAccordion
-                title={t('technologies')}
-                open={mobileAccordion === 'technology'}
-                onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
-              >
-                <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>{t('exploreTechnology')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</button>
-              </MobileAccordion>
-
-              <MobileAccordion
-                title={t('disruptors')}
-                open={mobileAccordion === 'creators'}
-                onToggle={() => setMobileAccordion((v) => (v === 'creators' ? null : 'creators'))}
-              >
-                <button type="button" className="home-mobile-link" onClick={() => go('/creator')}>{t('exploreDisruptors')}</button>
-              </MobileAccordion>
-
-              <MobileAccordion
-                title={t('auctions')}
-                open={mobileAccordion === 'auctions'}
-                onToggle={() => setMobileAccordion((v) => (v === 'auctions' ? null : 'auctions'))}
-              >
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</button>
-              </MobileAccordion>
-            </div>
-
-            <div className="home-nav-drawer-footer">
-              {showBack && (
-                <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
-              )}
-              {!authLoading && !user ? (
-                <div className="flex flex-col gap-3 w-full">
-                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
-                    {t('joinCoBrother')}
+              <div className="home-nav-drawer-body">
+                <MobileAccordion
+                  title={t('domains')}
+                  open={mobileAccordion === 'domains'}
+                  onToggle={() => setMobileAccordion((v) => (v === 'domains' ? null : 'domains'))}
+                >
+                  <button type="button" className="home-mobile-link" onClick={() => go('/domains')}>
+                    {t('exploreDomains')}
                   </button>
-                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
-                    {t('signIn')}
+                  <button type="button" className="home-mobile-link" onClick={() => go('/domains/dashboard')}>
+                    {t('listDomains')}
                   </button>
-                </div>
-              ) : null}
-            </div>
-          </aside>
-        </>,
-        document.body,
+                </MobileAccordion>
+
+                <MobileAccordion
+                  title={t('ventures')}
+                  open={mobileAccordion === 'venture'}
+                  onToggle={() => setMobileAccordion((v) => (v === 'venture' ? null : 'venture'))}
+                >
+                  <button type="button" className="home-mobile-link" onClick={() => go('/ventures')}>
+                    {t('exploreVenture')}
+                  </button>
+                  <button type="button" className="home-mobile-link" onClick={() => go('/ventures/new')}>
+                    {t('listVenture')}
+                  </button>
+                </MobileAccordion>
+
+                <MobileAccordion
+                  title={t('technologies')}
+                  open={mobileAccordion === 'technology'}
+                  onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
+                >
+                  <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>
+                    {t('exploreTechnology')}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="home-mobile-link"
+                    onClick={() =>
+                      go('/technology', { openListTechnologyForm: true })
+                    }
+                  >
+                    {t('listTechnology')}
+                  </button>
+                </MobileAccordion>
+
+                <MobileAccordion
+                  title={t('disruptors')}
+                  open={mobileAccordion === 'creators'}
+                  onToggle={() => setMobileAccordion((v) => (v === 'creators' ? null : 'creators'))}
+                >
+                  <button type="button" className="home-mobile-link" onClick={() => go('/creator')}>
+                    {t('exploreDisruptors')}
+                  </button>
+                </MobileAccordion>
+
+                <MobileAccordion
+                  title={t('placeAuction')}
+                  open={mobileAccordion === 'auctions'}
+                  onToggle={() => setMobileAccordion((v) => (v === 'auctions' ? null : 'auctions'))}
+                >
+                  <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=domains')}>
+                    Domain Auction
+                  </button>
+                  <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=ventures')}>
+                    Venture Auction
+                  </button>
+                  <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=technology')}>
+                    Technology Auction
+                  </button>
+                  <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=community')}>
+                    Creator Auction
+                  </button>
+                </MobileAccordion>
+              </div>
+
+              <div className="home-nav-drawer-footer">
+                {showBack && (
+                  <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
+                )}
+
+                {!authLoading && !user ? (
+                  <div className="flex flex-col gap-3 w-full">
+                    <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
+                      {t('joinCoBrother')}
+                    </JoinCoBrotherGradientButton>
+                    <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
+                      {t('signIn')}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </aside>
+          </>,
+          document.body,
         )}
-
     </>
   );
 }

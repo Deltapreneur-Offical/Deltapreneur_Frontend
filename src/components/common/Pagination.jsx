@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next';
+
 export default function Pagination({ page, totalPages, onPage, totalCount, pageSize = 20 }) {
+    const { t } = useTranslation();
     if (totalPages <= 1) return null;
   
     const from = (page - 1) * pageSize + 1;
@@ -25,7 +28,7 @@ export default function Pagination({ page, totalPages, onPage, totalCount, pageS
       <div className="flex flex-col items-center gap-3 mt-8">
         {/* Result count */}
         <div className="text-[0.78rem] text-gray-600">
-          Showing {from}–{to} of {totalCount} results
+          {t('paginationShowing', { from, to, total: totalCount })}
         </div>
   
         {/* Page buttons */}

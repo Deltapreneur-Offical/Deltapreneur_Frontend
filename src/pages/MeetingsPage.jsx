@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +12,7 @@ import { formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
  *  2. "Meetings I've Requested" (as requester)         → track outgoing requests
  */
 export default function MeetingsPage() {
-  const { user }    = useAuth();
+  const { t } = useTranslation();
   const navigate    = useNavigate();
 
   const [schedule, setSchedule]   = useState([]);   // as lister
@@ -40,7 +41,7 @@ export default function MeetingsPage() {
       if (action === 'complete') await meetingAPI.complete(meetingId);
       load();
     } catch (err) {
-      alert(err.response?.data?.error || `Failed to ${action} meeting.`);
+      alert(err.response?.data?.error || t('meetingsPageFailedAction', { action }));
     } finally {
       setActionLoading(p => { const n = { ...p }; delete n[meetingId]; return n; });
     }
@@ -68,9 +69,9 @@ export default function MeetingsPage() {
 
         {/* ── Header ── */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-gray-900 m-0">My Meetings</h1>
+          <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('meetingsPageTitle')}</h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Manage your Google Meet sessions — both as a profile owner and as a requester.
+            {t('meetingsPageSubtitle')}
           </p>
         </div>
 
@@ -88,26 +89,26 @@ export default function MeetingsPage() {
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
                 <h2 className="font-display text-lg font-bold text-gray-900 m-0">
-                  My Profile Meetings
+                  {t('meetingsPageProfileTitle')}
                 </h2>
                 <span className="text-xs text-indigo-600 font-semibold bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                  As Owner
+                  {t('meetingsPageAsOwner')}
                 </span>
               </div>
 
               {!hasSchedule ? (
                 <div className="p-6 bg-white border border-gray-200 rounded-[14px] text-center text-gray-400 text-sm">
                   <div className="text-3xl mb-2">📋</div>
-                  <p>No one has requested a meeting with your profile yet.</p>
-                  <p className="text-xs mt-1 text-gray-300">Put your profile up for auction to receive meeting requests.</p>
+                  <p>{t('meetingsPageNoRequestsYet')}</p>
+                  <p className="text-xs mt-1 text-gray-300">{t('meetingsPageAuctionHint')}</p>
                 </div>
               ) : (
                 <>
                   {/* Pending requests — need action */}
                   {pendingRequests.length > 0 && (
                     <SectionGroup
-                      title="⏳ Pending Requests"
-                      subtitle="These need your response"
+                      title={t('meetingsPagePendingRequests')}
+                      subtitle={t('meetingsPageNeedsResponse')}
                       color="amber"
                       count={pendingRequests.length}>
                       {pendingRequests.map(m => (
@@ -122,7 +123,7 @@ export default function MeetingsPage() {
                   {/* Upcoming confirmed */}
                   {upcomingSchedule.length > 0 && (
                     <SectionGroup
-                      title="✅ Upcoming Meetings"
+                      title={t('meetingsPageUpcoming')}
                       color="green"
                       count={upcomingSchedule.length}>
                       {upcomingSchedule.map(m => (
@@ -136,7 +137,7 @@ export default function MeetingsPage() {
 
                   {/* Past / completed */}
                   {pastSchedule.length > 0 && (
-                    <SectionGroup title="✓ Past Meetings" color="gray" count={pastSchedule.length} collapsed>
+                    <SectionGroup title={t('meetingsPagePast')} color="gray" count={pastSchedule.length} collapsed>
                       {pastSchedule.map(m => (
                         <ListerMeetingCard key={m.id} meeting={m}
                           actionLoading={actionLoading[m.id]}
@@ -148,7 +149,7 @@ export default function MeetingsPage() {
 
                   {/* Cancelled */}
                   {cancelledSchedule.length > 0 && (
-                    <SectionGroup title="❌ Cancelled" color="red" count={cancelledSchedule.length} collapsed>
+                    <SectionGroup title={t('meetingsPageCancelled')} color="red" count={cancelledSchedule.length} collapsed>
                       {cancelledSchedule.map(m => (
                         <ListerMeetingCard key={m.id} meeting={m}
                           actionLoading={actionLoading[m.id]}
@@ -166,20 +167,20 @@ export default function MeetingsPage() {
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />
                 <h2 className="font-display text-lg font-bold text-gray-900 m-0">
-                  Meetings I've Requested
+                  {t('meetingsPageRequestedTitle')}
                 </h2>
                 <span className="text-xs text-teal-600 font-semibold bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
-                  As Requester
+                  {t('meetingsPageAsRequester')}
                 </span>
               </div>
 
               {!hasRequests ? (
                 <div className="p-6 bg-white border border-gray-200 rounded-[14px] text-center text-gray-400 text-sm">
                   <div className="text-3xl mb-2">🔍</div>
-                  <p>You haven't requested any meetings yet.</p>
+                  <p>{t('meetingsPageNoRequestedYet')}</p>
                   <button className="btn-glow btn-glow-sm mt-3"
                     onClick={() => navigate('/auctions')}>
-                    Browse Profile Auctions
+                    {t('meetingsPageBrowseAuctions')}
                   </button>
                 </div>
               ) : (
@@ -187,8 +188,8 @@ export default function MeetingsPage() {
                   {/* My pending */}
                   {myPending.length > 0 && (
                     <SectionGroup
-                      title="⏳ Awaiting Confirmation"
-                      subtitle="Waiting for the profile owner"
+                      title={t('meetingsPageAwaitingConfirmation')}
+                      subtitle={t('meetingsPageWaitingOwner')}
                       color="amber"
                       count={myPending.length}>
                       {myPending.map(m => (
@@ -203,7 +204,7 @@ export default function MeetingsPage() {
                   {/* My confirmed */}
                   {myConfirmed.length > 0 && (
                     <SectionGroup
-                      title="✅ Confirmed Meetings"
+                      title={t('meetingsPageConfirmed')}
                       color="green"
                       count={myConfirmed.length}>
                       {myConfirmed.map(m => (
@@ -217,7 +218,7 @@ export default function MeetingsPage() {
 
                   {/* Past */}
                   {myPast.length > 0 && (
-                    <SectionGroup title="✓ Past Meetings" color="gray" count={myPast.length} collapsed>
+                    <SectionGroup title={t('meetingsPagePast')} color="gray" count={myPast.length} collapsed>
                       {myPast.map(m => (
                         <RequesterMeetingCard key={m.id} meeting={m}
                           actionLoading={actionLoading[m.id]}
@@ -229,7 +230,7 @@ export default function MeetingsPage() {
 
                   {/* Cancelled */}
                   {myCancelled.length > 0 && (
-                    <SectionGroup title="❌ Cancelled" color="red" count={myCancelled.length} collapsed>
+                    <SectionGroup title={t('meetingsPageCancelled')} color="red" count={myCancelled.length} collapsed>
                       {myCancelled.map(m => (
                         <RequesterMeetingCard key={m.id} meeting={m}
                           actionLoading={actionLoading[m.id]}
@@ -282,8 +283,8 @@ function SectionGroup({ title, subtitle, color, count, collapsed = false, childr
 
 // ─── Lister Meeting Card ──────────────────────────────────────────────────────
 function ListerMeetingCard({ meeting, actionLoading, onAction, navigate }) {
+  const { t } = useTranslation();
   const [showCancel, setShowCancel] = useState(false);
-  const [reason, setReason]         = useState('');
 
   const isPending   = meeting.status === 'PENDING';
   const isConfirmed = meeting.status === 'CONFIRMED';
@@ -342,38 +343,36 @@ function ListerMeetingCard({ meeting, actionLoading, onAction, navigate }) {
       {/* Cancel info */}
       {meeting.status === 'CANCELLED' && (
         <div className="text-xs text-red-500 mt-1">
-          {meeting.cancelReason && `Reason: ${meeting.cancelReason}`}
+          {meeting.cancelReason && t('meetingsPageCancelReasonLabel', { reason: meeting.cancelReason })}
           {meeting.cancelledBy && (
             <span className="ml-2 text-gray-400">
-              (by {meeting.cancelledBy === 'LISTER' ? 'you' : 'requester'})
+              {meeting.cancelledBy === 'LISTER' ? t('meetingsPageCancelledByYou') : t('meetingsPageCancelledByRequester')}
             </span>
           )}
         </div>
       )}
 
-      {/* View auction link */}
       {meeting.auction?.id && (
         <button
           onClick={() => navigate(`/creator-auction/${meeting.auction.id}`)}
           className="text-xs text-indigo-500 hover:text-indigo-700 font-semibold mt-1 block">
-          View Auction ↗
+          {t('meetingsPageViewAuction')}
         </button>
       )}
 
-      {/* Actions */}
       {isPending && !showCancel && (
         <div className="flex gap-2 mt-3">
           <button
             onClick={() => onAction('confirm', meeting.id)}
             disabled={isLoading}
             className="flex-1 py-1.5 text-xs font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
-            {actionLoading === 'confirm' ? '…' : '✓ Confirm'}
+            {actionLoading === 'confirm' ? '…' : t('meetingsPageConfirm')}
           </button>
           <button
             onClick={() => setShowCancel(true)}
             disabled={isLoading}
             className="flex-1 py-1.5 text-xs font-bold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50">
-            ✕ Decline
+            {t('meetingsPageDecline')}
           </button>
         </div>
       )}
@@ -384,13 +383,13 @@ function ListerMeetingCard({ meeting, actionLoading, onAction, navigate }) {
             onClick={() => onAction('complete', meeting.id)}
             disabled={isLoading}
             className="flex-1 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
-            {actionLoading === 'complete' ? '…' : '✓ Mark Complete'}
+            {actionLoading === 'complete' ? '…' : t('meetingsPageMarkComplete')}
           </button>
           <button
             onClick={() => setShowCancel(true)}
             disabled={isLoading}
             className="py-1.5 px-3 text-xs font-semibold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50">
-            Cancel
+            {t('cancel')}
           </button>
         </div>
       )}
@@ -408,6 +407,7 @@ function ListerMeetingCard({ meeting, actionLoading, onAction, navigate }) {
 
 // ─── Requester Meeting Card ───────────────────────────────────────────────────
 function RequesterMeetingCard({ meeting, actionLoading, onAction, navigate }) {
+  const { t } = useTranslation();
   const [showCancel, setShowCancel] = useState(false);
   const isPending   = meeting.status === 'PENDING';
   const isConfirmed = meeting.status === 'CONFIRMED';
@@ -434,7 +434,7 @@ function RequesterMeetingCard({ meeting, actionLoading, onAction, navigate }) {
           {meeting.lister?.firstName?.[0]?.toUpperCase() || meeting.lister?.firstname?.[0]?.toUpperCase() || '?'}
         </div>
         <div className="text-xs text-gray-600">
-          With: <span className="font-semibold text-gray-800">
+          {t('meetingsPageWith')} <span className="font-semibold text-gray-800">
             {meeting.lister?.firstName || meeting.lister?.firstname}{' '}
             {meeting.lister?.lastName  || meeting.lister?.lastname}
           </span>
@@ -457,40 +457,36 @@ function RequesterMeetingCard({ meeting, actionLoading, onAction, navigate }) {
       {/* Pending notice */}
       {isPending && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-2">
-          ⏳ Waiting for {meeting.lister?.firstName || meeting.lister?.firstname} to confirm.
-          You'll receive an email and Google Calendar invite once confirmed.
+          {t('meetingsPageWaitingFor', { name: meeting.lister?.firstName || meeting.lister?.firstname })}
         </div>
       )}
 
-      {/* Cancel info */}
       {meeting.status === 'CANCELLED' && (
         <div className="text-xs text-red-500 mt-1">
-          {meeting.cancelReason && `Reason: ${meeting.cancelReason}`}
+          {meeting.cancelReason && t('meetingsPageCancelReasonLabel', { reason: meeting.cancelReason })}
           {meeting.cancelledBy && (
             <span className="ml-2 text-gray-400">
-              (by {meeting.cancelledBy === 'REQUESTER' ? 'you' : 'profile owner'})
+              {meeting.cancelledBy === 'REQUESTER' ? t('meetingsPageCancelledByYou') : t('meetingsPageCancelledByOwner')}
             </span>
           )}
         </div>
       )}
 
-      {/* View auction */}
       {meeting.auction?.id && (
         <button
           onClick={() => navigate(`/creator-auction/${meeting.auction.id}`)}
           className="text-xs text-indigo-500 hover:text-indigo-700 font-semibold mt-1 block">
-          View Auction ↗
+          {t('meetingsPageViewAuction')}
         </button>
       )}
 
-      {/* Actions */}
       {(isPending || isConfirmed) && !showCancel && (
         <div className="mt-3">
           <button
             onClick={() => setShowCancel(true)}
             disabled={isLoading}
             className="w-full py-1.5 text-xs font-semibold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50">
-            Cancel Request
+            {t('meetingsPageCancelRequest')}
           </button>
         </div>
       )}
@@ -507,6 +503,7 @@ function RequesterMeetingCard({ meeting, actionLoading, onAction, navigate }) {
 
 // ─── Google Meet Button ───────────────────────────────────────────────────────
 function GoogleMeetButton({ link, calendarLink }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 mb-2 mt-1 flex-wrap">
       <a href={link} target="_blank" rel="noopener noreferrer"
@@ -514,12 +511,12 @@ function GoogleMeetButton({ link, calendarLink }) {
         <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
           <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
         </svg>
-        Join Google Meet
+        {t('meetingsPageJoinGoogleMeet')}
       </a>
       {calendarLink && (
         <a href={calendarLink} target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 font-semibold">
-          📅 View in Calendar
+          {t('meetingsPageViewCalendar')}
         </a>
       )}
     </div>
@@ -528,27 +525,28 @@ function GoogleMeetButton({ link, calendarLink }) {
 
 // ─── Cancel Prompt ────────────────────────────────────────────────────────────
 function CancelPrompt({ onConfirm, onBack }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   return (
     <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-      <div className="text-xs font-semibold text-red-700 mb-2">Reason (optional)</div>
+      <div className="text-xs font-semibold text-red-700 mb-2">{t('meetingsPageCancelReason')}</div>
       <input
         type="text"
         value={reason}
         onChange={e => setReason(e.target.value)}
-        placeholder="e.g. Schedule conflict"
+        placeholder={t('meetingsPageCancelPlaceholder')}
         className="app-field-input w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 mb-2 outline-none focus:border-red-400 bg-white"
       />
       <div className="flex gap-2">
         <button
           onClick={() => onConfirm(reason || undefined)}
           className="flex-1 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition-colors">
-          Confirm Cancel
+          {t('meetingsPageConfirmCancel')}
         </button>
         <button
           onClick={onBack}
           className="py-1 px-3 border border-gray-300 rounded text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-          Back
+          {t('auctionDetailBack')}
         </button>
       </div>
     </div>
@@ -557,11 +555,12 @@ function CancelPrompt({ onConfirm, onBack }) {
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const cfg = {
-    PENDING:   { cls: 'bg-amber-100 text-amber-800 border-amber-300',  label: '⏳ Pending'   },
-    CONFIRMED: { cls: 'bg-green-100 text-green-800 border-green-300',  label: '✅ Confirmed' },
-    CANCELLED: { cls: 'bg-red-100   text-red-700   border-red-300',    label: '❌ Cancelled' },
-    COMPLETED: { cls: 'bg-blue-100  text-blue-700  border-blue-300',   label: '✓ Completed' },
+    PENDING:   { cls: 'bg-amber-100 text-amber-800 border-amber-300',  label: t('meetingsPageStatusPending')   },
+    CONFIRMED: { cls: 'bg-green-100 text-green-800 border-green-300',  label: t('meetingsPageStatusConfirmed') },
+    CANCELLED: { cls: 'bg-red-100   text-red-700   border-red-300',    label: t('meetingsPageStatusCancelled') },
+    COMPLETED: { cls: 'bg-blue-100  text-blue-700  border-blue-300',   label: t('meetingsPageStatusCompleted') },
   }[status] || { cls: 'bg-gray-100 text-gray-600 border-gray-200', label: status };
 
   return (
@@ -573,15 +572,16 @@ function StatusBadge({ status }) {
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 function EmptyState({ navigate }) {
+  const { t } = useTranslation();
   return (
     <div className="text-center py-20">
       <div className="text-5xl mb-4">📅</div>
-      <h3 className="font-display text-xl font-bold text-gray-900 mb-2">No meetings yet</h3>
+      <h3 className="font-display text-xl font-bold text-gray-900 mb-2">{t('meetingsPageEmptyTitle')}</h3>
       <p className="text-gray-500 text-sm mb-6">
-        Browse active creator profile auctions to schedule a Google Meet session.
+        {t('meetingsPageEmptyBody')}
       </p>
       <button className="btn-glow" onClick={() => navigate('/auctions')}>
-        Browse Auctions →
+        {t('meetingsPageBrowseAuctionsBtn')}
       </button>
     </div>
   );

@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
 
 
 
@@ -57,7 +58,7 @@ export default function LoginPage() {
 
       const destination = user.profileComplete
         ? (from && from !== '/login' ? from : '/')
-        : '/complete-profile';
+        : '/dashboard';
       navigate(destination, { replace: true });
       localStorage.removeItem('redirectAfterLogin');
 
@@ -117,7 +118,7 @@ export default function LoginPage() {
     localStorage.removeItem('redirectAfterLogin');
 
     navigate(
-      fetchedUser?.profileComplete ? redirectPath : '/complete-profile',
+      fetchedUser?.profileComplete ? redirectPath : '/dashboard',
       { replace: true },
     );
 
@@ -273,6 +274,8 @@ export default function LoginPage() {
 
 
       <div className="relative z-10 w-full max-w-[420px] sm:max-w-[440px] bg-white/92 px-5 pt-16 pb-6 sm:px-8 sm:pt-16 sm:pb-8 md:p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl">
+
+        <AuthRegionalSettings />
 
         <button
 
@@ -477,7 +480,7 @@ export default function LoginPage() {
         )}
 
         <div className="flex gap-2 justify-center mt-6 text-sm text-gray-500">
-          <span>{t('dontHaveAccount', "Don't have an account?")}</span>
+          <span>{t('dontHaveAccount')}</span>
           <Link to="/register" className="text-purple-600 font-medium hover:underline">
             {t('registerTitle', 'Register')}
           </Link>

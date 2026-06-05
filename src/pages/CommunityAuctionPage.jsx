@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCommunityAuction } from '../hooks/useCommunityAuction';
@@ -11,6 +12,7 @@ import {
   resolveAuctionLister,
 } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import useCurrency from '../context/CurrencyContext';
 import {
   formatAuctionDate,
   formatAuctionDateTime,
@@ -43,6 +45,7 @@ function useCountdown(endTime) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CommunityAuctionPage() {
+  const { t } = useTranslation();
   const { auctionId } = useParams();
   const { user }      = useAuth();
   const navigate      = useNavigate();
@@ -50,6 +53,7 @@ export default function CommunityAuctionPage() {
                       = useCommunityAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
   const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
+  const { formatPrice, getSymbol } = useCurrency();
 
   // Bid state
   const [bidAmount, setBidAmount]   = useState('');
@@ -118,7 +122,7 @@ export default function CommunityAuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Creator auction participation fee`,
+        description: t('auctionDetailParticipationFeeCreator'),
         onSuccess: async (response) => {
           try {
             await communityAuctionAPI.participationVerify(auction.id, {
@@ -128,19 +132,19 @@ export default function CommunityAuctionPage() {
             });
             setParticipation((p) => ({ ...p, paid: true }));
           } catch {
-            setParticipationError('Payment verification failed. Please retry.');
+            setParticipationError(t('auctionDetailPaymentVerifyFailedRetry'));
           } finally {
             setPayingParticipation(false);
           }
         },
         onFailure: async () => {
-          setParticipationError('Participation payment failed. Please retry.');
+          setParticipationError(t('auctionDetailParticipationPaymentFailed'));
           setPayingParticipation(false);
         },
         onDismiss: async () => setPayingParticipation(false),
       });
     } catch (err) {
-      setParticipationError(err?.response?.data?.error || err?.response?.data?.message || 'Failed to start payment.');
+      setParticipationError(err?.response?.data?.error || err?.response?.data?.message || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
     }
   };
@@ -177,11 +181,11 @@ export default function CommunityAuctionPage() {
   // Place bid
   const handleBid = async () => {
     if (!participation.paid) {
-      setBidError('Please pay participation fee first.');
+      setBidError(t('auctionDetailPayParticipationFirst'));
       return;
     }
     const amount = parseFloat(bidAmount);
-    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -189,10 +193,10 @@ export default function CommunityAuctionPage() {
     setBidLoading(true); setBidError(''); setBidSuccess('');
     try {
       await placeBid(amount);
-      setBidSuccess(`Bid of ₹${Number(amount).toLocaleString('en-IN')} placed!`);
+      setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amount) }));
       setBidAmount('');
     } catch (err) {
-      setBidError(err.response?.data?.error || 'Failed to place bid.');
+      setBidError(err.response?.data?.error || t('auctionDetailFailedPlaceBid'));
     } finally { setBidLoading(false); }
   };
 
@@ -205,7 +209,7 @@ export default function CommunityAuctionPage() {
       if (action === 'complete') await meetingAPI.complete(meetingId);
       loadMeetings();
     } catch (err) {
-      alert(err.response?.data?.error || `Failed to ${action} meeting.`);
+      alert(err.response?.data?.error || t('auctionDetailFailedMeetingAction', { action }));
     } finally {
       setMeetingActionLoading(p => ({ ...p, [meetingId]: false }));
     }
@@ -221,7 +225,9 @@ export default function CommunityAuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Winning bid for ${auction.auctionTitle || 'profile auction'}`,
+        description: t('auctionDetailWinningBidDesc', {
+          title: auction.auctionTitle || t('auctionDetailProfileDefaultTitle'),
+        }),
         onSuccess: async (response) => {
           try {
             await communityAuctionAPI.winnerPaymentVerify(auction.id, {
@@ -231,13 +237,13 @@ export default function CommunityAuctionPage() {
             });
             await refresh();
           } catch {
-            setWinnerPaymentError('Payment verification failed. Please retry.');
+            setWinnerPaymentError(t('auctionDetailPaymentVerifyFailedRetry'));
           } finally {
             setPayingWinnerBid(false);
           }
         },
         onFailure: async () => {
-          setWinnerPaymentError('Payment failed. Please retry.');
+          setWinnerPaymentError(t('auctionDetailPaymentFailed'));
           setPayingWinnerBid(false);
         },
         onDismiss: async () => setPayingWinnerBid(false),
@@ -246,7 +252,7 @@ export default function CommunityAuctionPage() {
       setWinnerPaymentError(
         err?.response?.data?.error
         || err?.response?.data?.message
-        || 'Failed to start payment.',
+        || t('auctionDetailFailedStartPayment'),
       );
       setPayingWinnerBid(false);
     }
@@ -254,12 +260,12 @@ export default function CommunityAuctionPage() {
 
   // Close / re-auction
   const handleClose = async () => {
-    if (!window.confirm('Are you sure you want to close this auction?')) return;
+    if (!window.confirm(t('auctionDetailCloseConfirm'))) return;
     try {
       await communityAuctionAPI.close(auction.id);
       navigate('/creator');
     } catch (e) {
-      alert('Failed to close auction.');
+      alert(t('auctionDetailFailedClose'));
     }
   };
 
@@ -274,8 +280,8 @@ export default function CommunityAuctionPage() {
   if (!auction) return (
     <AppLayout>
       <div className="text-center py-20">
-        <h3 className="font-display text-2xl font-bold text-gray-900">Auction not found</h3>
-        <button className="btn-glow mt-4" onClick={() => navigate('/auctions')}>Back to Auctions</button>
+        <h3 className="font-display text-2xl font-bold text-gray-900">{t('auctionDetailNotFound')}</h3>
+        <button className="btn-glow mt-4" onClick={() => navigate('/auctions')}>{t('auctionDetailBackToAuctions')}</button>
       </div>
     </AppLayout>
   );
@@ -288,7 +294,7 @@ export default function CommunityAuctionPage() {
         <div className="mb-8">
           <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4"
             onClick={() => navigate('/auctions')}>
-            ← Back to Auctions
+            {t('auctionDetailBackToAuctions')}
           </button>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
@@ -299,13 +305,13 @@ export default function CommunityAuctionPage() {
                 <StatusBadge status={auction.status} />
               </div>
               <p className="text-gray-500 text-sm m-0">
-                {community.name && `Profile: ${community.name}`}
+                {community.name && t('auctionDetailProfileLabel', { name: community.name })}
                 {auction.workType && ` · ${auction.workType.replace(/_/g, ' ')}`}
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`w-2 h-2 rounded-full ${wsState === 'live' ? 'bg-green-600' : wsState === 'connecting' ? 'bg-amber-500' : 'bg-red-600'}`} />
                 <span className={`text-xs ${wsState === 'live' ? 'text-green-600' : wsState === 'connecting' ? 'text-amber-600' : 'text-red-600'}`}>
-                  {wsState === 'live' ? 'Live' : wsState === 'connecting' ? 'Connecting…' : 'Live updates paused'}
+                  {wsState === 'live' ? t('auctionDetailLive') : wsState === 'connecting' ? t('auctionDetailConnecting') : t('auctionDetailLivePaused')}
                 </span>
               </div>
             </div>
@@ -314,7 +320,7 @@ export default function CommunityAuctionPage() {
             {isActive && (
               <div className="text-right">
                 <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">
-                  {auction.status === 'EXTENDED' ? '⚡ Extended — Ends in' : 'Ends in'}
+                  {auction.status === 'EXTENDED' ? t('auctionDetailEndsExtended') : t('auctionsPageEndsIn')}
                 </div>
                 <div className={`font-display text-3xl font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-indigo-600'}`}>
                   {timeLeft}
@@ -336,26 +342,26 @@ export default function CommunityAuctionPage() {
             <div className={`p-6 border rounded-[14px] transition-all duration-300 ${flashBid ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
               <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Current Highest Bid</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionDetailCurrentHighestBid')}</div>
                   <div className={`font-display text-[2rem] font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                     {auction.currentHighestBid > 0
-                      ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
-                      : 'No bids yet'}
+                      ? `${formatPrice(auction.currentHighestBid)}`
+                      : t('auctionDetailNoBidsYet')}
                   </div>
                   {auction.currentWinnerName && (
                     <div className="text-[0.78rem] text-gray-400 mt-1">
-                      Leading: {auction.currentWinnerName}
+                      {t('auctionDetailLeading', { name: auction.currentWinnerName })}
                     </div>
                   )}
                 </div>
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Starting Bid</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
                   <div className="font-display text-[1.5rem] font-bold text-amber-600">
-                    ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+                    {formatPrice(auction.minBidPrice)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Total Bids</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
                   <div className="font-display text-[2rem] font-bold text-gray-900">
                     {auction.totalBids}
                   </div>
@@ -364,9 +370,9 @@ export default function CommunityAuctionPage() {
 
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
-                  Allowed bid range:{' '}
-                  <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
-                  <span className="text-gray-500 ml-2">(5% above current)</span>
+                  {t('auctionDetailBidRange')}{' '}
+                  <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice)}</strong>
+                  <span className="text-gray-500 ml-2">{t('auctionDetailBidRangeHint')}</span>
                 </div>
               )}
             </div>
@@ -374,13 +380,13 @@ export default function CommunityAuctionPage() {
             {/* Bid history */}
             <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 text-[0.9rem]">
-                Bid History
-                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">({bids.length} bids)</span>
+                {t('auctionDetailBidHistory')}
+                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">{t('auctionDetailBidHistoryCount', { count: bids.length })}</span>
               </div>
               <div ref={bidListRef} className="max-h-[320px] overflow-y-auto py-2">
                 {bids.length === 0 ? (
                   <div className="p-8 text-center text-gray-400 text-[0.875rem]">
-                    No bids yet. Be the first to bid!
+                    {t('auctionDetailNoBidsFirst')}
                   </div>
                 ) : (
                   bids.map((bid, i) => (
@@ -394,16 +400,16 @@ export default function CommunityAuctionPage() {
             {/* UNSOLD — lister options */}
             {isOwner && isUnsold && (
               <div className="p-5 bg-amber-50 border border-amber-200 rounded-[12px]">
-                <div className="font-semibold text-amber-700 mb-2">Auction ended with no bids</div>
+                <div className="font-semibold text-amber-700 mb-2">{t('auctionDetailEndedNoBids')}</div>
                 <p className="text-gray-500 text-[0.875rem] mb-4">
-                  You can re-auction with new settings, or take the listing down.
+                  {t('auctionDetailEndedNoBidsTakeDown')}
                 </p>
                 <div className="flex gap-3">
                   <button className="btn-glow" onClick={() => setReAuctionModal(true)}>
-                    ↺ Re-Auction
+                    {t('auctionDetailReAuctionBtn')}
                   </button>
                   <button className="btn-glow" onClick={handleClose}>
-                    Take Down
+                    {t('auctionDetailTakeDown')}
                   </button>
                 </div>
               </div>
@@ -414,27 +420,26 @@ export default function CommunityAuctionPage() {
               <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
                 <div className="text-[2.5rem] mb-2">{isCompleted ? '✅' : '🏆'}</div>
                 <h3 className="font-display text-[1.5rem] text-green-700 mb-2">
-                  {isCompleted ? 'Auction Complete' : 'Auction Won!'}
+                  {isCompleted ? t('auctionDetailComplete') : t('auctionDetailWon')}
                 </h3>
                 <p className="text-gray-500">
-                  <strong className="text-gray-900">{auction.currentWinnerName || 'A bidder'}</strong>
-                  {' '}won with a bid of{' '}
-                  <strong className="text-green-700">
-                    ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
-                  </strong>
+                  {t('auctionDetailWonLine', {
+                    name: auction.currentWinnerName || t('auctionDetailWonGenericBidder'),
+                    amount: formatPrice(auction.currentHighestBid),
+                  })}
                 </p>
                 {awaitingWinnerPayment && (
                   <div className="mt-4 p-4 bg-white border border-green-200 rounded-lg text-left">
                     <div className="text-sm text-gray-700 mb-3">
-                      You won this auction. Pay your winning bid amount to finalize.
+                      {t('auctionDetailWonPayPrompt')}
                     </div>
                     <button
                       className="btn-glow w-full"
                       onClick={handlePayWinningBid}
                       disabled={payingWinnerBid}>
                       {payingWinnerBid
-                        ? 'Processing…'
-                        : `Pay Winning Bid — ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`}
+                        ? t('auctionDetailProcessing')
+                        : t('auctionDetailPayWinningBid', { amount: formatPrice(auction.currentHighestBid) })}
                     </button>
                     {winnerPaymentError && (
                       <div className="text-xs text-red-600 mt-2">{winnerPaymentError}</div>
@@ -443,17 +448,17 @@ export default function CommunityAuctionPage() {
                 )}
                 {isCompleted && (
                   <p className="text-[0.82rem] text-green-700 mt-2 font-semibold">
-                    Payment received. Our team will coordinate next steps with you and the profile owner.
+                    {t('auctionDetailPaymentReceived')}
                   </p>
                 )}
                 {isEnded && !isWinner && (
                   <p className="text-[0.82rem] text-gray-500 mt-2">
-                    Waiting for the winner to complete payment.
+                    {t('auctionDetailWaitingWinnerPayment')}
                   </p>
                 )}
                 {isEnded && isOwner && (
                   <p className="text-[0.82rem] text-gray-500 mt-2">
-                    The winner must pay their bid amount to finalize the auction.
+                    {t('auctionDetailWinnerMustPay')}
                   </p>
                 )}
               </div>
@@ -488,15 +493,15 @@ export default function CommunityAuctionPage() {
             {isActive && !isOwner && (
               <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
-                  Place Your Bid
+                  {t('auctionDetailPlaceYourBid')}
                 </h3>
                 {!participation.loading && !participation.paid && (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="text-sm text-amber-800 mb-2">
-                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                      {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
                     </div>
                     <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+                      {payingParticipation ? t('auctionDetailProcessing') : t('auctionDetailPayParticipation')}
                     </button>
                     {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
                   </div>
@@ -504,7 +509,7 @@ export default function CommunityAuctionPage() {
 
                 {minNextBid > 0 && (
                   <div className="mb-4">
-                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Bid</div>
+                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailQuickBid')}</div>
                     <div className="flex gap-2 flex-wrap">
                       {[1, 1.1, 1.25].map(mult => {
                         const quickAmount = Math.ceil(minNextBid * mult / 100) * 100;
@@ -517,7 +522,7 @@ export default function CommunityAuctionPage() {
                                 ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
                                 : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
                             }`}>
-                            ₹{Number(quickAmount).toLocaleString('en-IN')}
+                            {formatPrice(quickAmount)}
                           </button>
                         );
                       })}
@@ -527,13 +532,13 @@ export default function CommunityAuctionPage() {
 
                 <div className="flex flex-col gap-1.5 mb-4">
                   <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
-                    YOUR BID AMOUNT (₹)
+                    {t('auctionDetailYourBidAmount', { symbol: getSymbol() })}
                   </label>
                   <input
                     type="number"
                     value={bidAmount}
                     onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
-                    placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
+                    placeholder={t('auctionDetailMinPlaceholder', { amount: formatPrice(minNextBid) })}
                     min={minNextBid}
                     max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
@@ -556,11 +561,13 @@ export default function CommunityAuctionPage() {
                   disabled={bidLoading || !bidAmount || !participation.paid}>
                   {bidLoading
                     ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-                    : `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`}
+                    : (bidAmount
+                      ? t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(bidAmount) })
+                      : `${t('auctionDetailPlaceBidBtn')} →`)}
                 </button>
 
                 <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
-                  Each bid must be at least 5% above the current highest bid.
+                  {t('auctionDetailBidCommitGeneric')}
                 </p>
               </div>
             )}
@@ -570,37 +577,37 @@ export default function CommunityAuctionPage() {
               <div className="p-5 bg-white border border-gray-200 rounded-[14px] text-center">
                 <div className="text-[1.5rem] mb-2">👑</div>
                 <p className="text-gray-500 text-[0.875rem]">
-                  This is your auction. You cannot bid on your own listing.
+                  {t('auctionDetailOwnListing')}
                 </p>
                 <button className="btn-glow mt-3 w-full" onClick={handleClose}>
-                  Close Auction
+                  {t('auctionDetailCloseAuction')}
                 </button>
               </div>
             )}
 
             {/* Auction info card */}
             <div className="p-5 bg-white border border-gray-200 rounded-[14px]">
-              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">Auction Info</div>
+              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('auctionDetailInfo')}</div>
               <div className="flex flex-col gap-2.5">
-                <InfoRow label="Duration"
+                <InfoRow label={t('auctionDetailDuration')}
                   value={auction.duration?.replace(/_/g, ' ')} />
-                <InfoRow label="Expected Rate"
-                  value={formatExpectedRate(auction.expectedRate)} />
-                <InfoRow label="Available From"
+                <InfoRow label={t('auctionDetailExpectedRate')}
+                  value={formatExpectedRate(auction.expectedRate, formatPrice)} />
+                <InfoRow label={t('auctionDetailAvailableFrom')}
                   value={formatDateOrText(auction.availableFrom, {
                     day: 'numeric', month: 'short', year: 'numeric',
                   })} />
-                <InfoRow label="Started"
+                <InfoRow label={t('auctionDetailStarted')}
                   value={formatAuctionDate(auction.startTime, {
                     day: 'numeric', month: 'short', year: 'numeric',
                   })} />
-                <InfoRow label="Ends"
+                <InfoRow label={t('auctionDetailEnds')}
                   value={formatAuctionDateTime(auction.endTime, {
                     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                   })} />
                 {auction.status === 'EXTENDED' && (
                   <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
-                    ⚡ Extended due to last-minute bid
+                    {t('auctionDetailExtendedNote')}
                   </div>
                 )}
               </div>
@@ -616,12 +623,12 @@ export default function CommunityAuctionPage() {
                     document.getElementById('meeting-section')?.scrollIntoView({ behavior: 'smooth' });
                   }, 100);
                 }}>
-                📅 Schedule a Meeting
+                {t('auctionDetailScheduleMeeting')}
               </button>
             )}
             {isActive && !isOwner && !participation.loading && !participation.paid && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                Pay the participation fee to request a meeting with this profile owner.
+                {t('auctionDetailPayMeetingParticipation')}
               </div>
             )}
           </div>
@@ -641,6 +648,8 @@ export default function CommunityAuctionPage() {
 
 // ─── Profile Info Card ────────────────────────────────────────────────────────
 function ProfileInfoCard({ community, auction }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const skills = auction.auctionSkills
     ? auction.auctionSkills.split(',').map(s => s.trim()).filter(Boolean)
     : [];
@@ -674,7 +683,7 @@ function ProfileInfoCard({ community, auction }) {
           {community.linkedInProfileUrl && (
             <a href={community.linkedInProfileUrl} target="_blank" rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:underline">
-              LinkedIn Profile ↗
+              {t('auctionDetailLinkedInProfile')}
             </a>
           )}
         </div>
@@ -682,7 +691,7 @@ function ProfileInfoCard({ community, auction }) {
 
       {community.whyImHere && (
         <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">About</div>
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{t('auctionDetailAbout')}</div>
           <p className="text-sm text-gray-700 m-0 leading-relaxed">{community.whyImHere}</p>
         </div>
       )}
@@ -691,19 +700,19 @@ function ProfileInfoCard({ community, auction }) {
       <div className="mt-4 grid grid-cols-2 gap-3">
         {auction.workType && (
           <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-            <div className="text-xs text-purple-500 font-semibold uppercase tracking-wider mb-0.5">Work Type</div>
+            <div className="text-xs text-purple-500 font-semibold uppercase tracking-wider mb-0.5">{t('auctionDetailWorkType')}</div>
             <div className="text-sm font-bold text-purple-800">{auction.workType.replace(/_/g, ' ')}</div>
           </div>
         )}
         {auction.expectedRate && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-0.5">Expected Rate</div>
-            <div className="text-sm font-bold text-green-800">{formatExpectedRate(auction.expectedRate)}</div>
+            <div className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-0.5">{t('auctionDetailExpectedRate')}</div>
+            <div className="text-sm font-bold text-green-800">{formatExpectedRate(auction.expectedRate, formatPrice)}</div>
           </div>
         )}
         {auction.availableFrom && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-xs text-blue-500 font-semibold uppercase tracking-wider mb-0.5">Available From</div>
+            <div className="text-xs text-blue-500 font-semibold uppercase tracking-wider mb-0.5">{t('auctionDetailAvailableFrom')}</div>
             <div className="text-sm font-bold text-blue-800">
               {formatDateOrText(auction.availableFrom, {
                 day: 'numeric', month: 'short', year: 'numeric',
@@ -715,7 +724,7 @@ function ProfileInfoCard({ community, auction }) {
 
       {skills.length > 0 && (
         <div className="mt-4">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</div>
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailSkills')}</div>
           <div className="flex flex-wrap gap-1.5">
             {skills.map((s, i) => (
               <span key={i} className="px-2.5 py-1 bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold rounded-full">
@@ -728,7 +737,7 @@ function ProfileInfoCard({ community, auction }) {
 
       {auction.additionalInfo && (
         <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">Additional Info</div>
+          <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">{t('auctionDetailAdditionalInfo')}</div>
           <p className="text-sm text-amber-900 m-0 leading-relaxed">{auction.additionalInfo}</p>
         </div>
       )}
@@ -744,6 +753,8 @@ function MeetingsSection({
   payingParticipation, participationError, onPayParticipation,
   onAction, onMeetingRequested, showMeetingForm, setShowMeetingForm,
 }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const userId = user?.id != null ? String(user.id) : null;
   const pendingMeetings   = meetings.filter(m => m.status === 'PENDING');
   const confirmedMeetings = meetings.filter(m => m.status === 'CONFIRMED');
@@ -758,17 +769,17 @@ function MeetingsSection({
       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <div className="font-semibold text-gray-900 text-[0.9rem]">
-            📅 Meetings
+            {t('auctionDetailMeetings')}
           </div>
           <div className="text-xs text-gray-500 mt-0.5">
-            {meetings.length} meeting{meetings.length !== 1 ? 's' : ''}
+            {t('auctionDetailMeetingsCount', { count: meetings.length })}
           </div>
         </div>
         {isActive && !isOwner && !myPendingRequest && participationPaid && (
           <button
             className="btn-glow btn-glow-sm"
             onClick={() => setShowMeetingForm(v => !v)}>
-            {showMeetingForm ? '✕ Cancel' : '+ Request Meeting'}
+            {showMeetingForm ? t('auctionDetailCancelForm') : t('auctionDetailRequestMeeting')}
           </button>
         )}
       </div>
@@ -776,11 +787,10 @@ function MeetingsSection({
       {isActive && !isOwner && !participationLoading && !participationPaid && (
         <div className="px-5 py-4 bg-amber-50 border-b border-amber-200">
           <div className="text-sm text-amber-800 mb-2">
-            Participation fee required to request a meeting:{' '}
-            <strong>₹{Number(participationFee || 0).toLocaleString('en-IN')}</strong>
+            {t('auctionDetailMeetingParticipationRequired', { amount: formatPrice(participationFee || 0) })}
           </div>
           <button className="btn-glow btn-glow-sm w-full sm:w-auto" onClick={onPayParticipation} disabled={payingParticipation}>
-            {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+            {payingParticipation ? t('auctionDetailProcessing') : t('auctionDetailPayParticipation')}
           </button>
           {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
         </div>
@@ -799,28 +809,28 @@ function MeetingsSection({
       {/* Already requested notice */}
       {myPendingRequest && (
         <div className="px-5 py-4 bg-amber-50 border-b border-amber-200">
-          <div className="text-sm text-amber-800 font-semibold">⏳ Your meeting request is pending</div>
+          <div className="text-sm text-amber-800 font-semibold">{t('auctionDetailMeetingPending')}</div>
           <div className="text-xs text-amber-700 mt-0.5">
-            Requested for {formatDateTime(myPendingRequest.scheduledAt)}
+            {t('auctionDetailMeetingRequestedFor', { datetime: formatDateTime(myPendingRequest.scheduledAt) })}
           </div>
           <button
             className="mt-2 text-xs text-red-500 hover:text-red-700 font-semibold"
             disabled={meetingActionLoading[myPendingRequest.id]}
-            onClick={() => onAction('cancel', myPendingRequest.id, 'Cancelled by requester')}>
-            {meetingActionLoading[myPendingRequest.id] ? 'Cancelling…' : 'Cancel Request'}
+            onClick={() => onAction('cancel', myPendingRequest.id, t('auctionDetailMeetingCancelledByRequester'))}>
+            {meetingActionLoading[myPendingRequest.id] ? t('auctionDetailCancelling') : t('auctionDetailCancelRequest')}
           </button>
         </div>
       )}
 
       {meetingsLoading ? (
-        <div className="p-8 text-center text-gray-400 text-sm">Loading meetings…</div>
+        <div className="p-8 text-center text-gray-400 text-sm">{t('auctionDetailLoadingMeetings')}</div>
       ) : meetings.length === 0 && !showMeetingForm ? (
         <div className="p-8 text-center text-gray-400 text-[0.875rem]">
           {isOwner
-            ? 'No meeting requests yet. When others request meetings, they will appear here.'
+            ? t('auctionDetailMeetingsEmptyOwner')
             : isActive
-              ? 'No meetings scheduled. Request one using the button above!'
-              : 'No meetings were scheduled for this auction.'}
+              ? t('auctionDetailMeetingsEmptyActive')
+              : t('auctionDetailMeetingsEmptyEnded')}
         </div>
       ) : (
         <div className="divide-y divide-gray-100">
@@ -865,6 +875,7 @@ function MeetingsSection({
 
 // ─── Meeting Request Form ─────────────────────────────────────────────────────
 function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     scheduledAt:     '',
     topic:           '',
@@ -881,12 +892,12 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.scheduledAt || !form.topic) {
-      setError('Please confirm date & time and enter a topic.');
+      setError(t('auctionDetailMeetingDateTimeRequired'));
       return;
     }
     const scheduled = new Date(form.scheduledAt);
     if (Number.isNaN(scheduled.getTime())) {
-      setError('Invalid date or time. Please confirm your selection again.');
+      setError(t('auctionDetailMeetingInvalidDateTime'));
       return;
     }
     setLoading(true); setError('');
@@ -905,17 +916,17 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
         : Array.isArray(data?.detail)
           ? data.detail.map((e) => e?.msg || e).join(', ')
           : null;
-      setError(data?.error || data?.message || detail || 'Failed to request meeting.');
+      setError(data?.error || data?.message || detail || t('auctionDetailFailedRequestMeeting'));
     } finally { setLoading(false); }
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-5 bg-indigo-50 border-b border-indigo-200">
-      <div className="text-sm font-semibold text-indigo-800 mb-4">Schedule a Meeting</div>
+      <div className="text-sm font-semibold text-indigo-800 mb-4">{t('auctionDetailScheduleMeetingForm')}</div>
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time *</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('auctionDetailDateTime')}</label>
             <MeetingDateTimePicker
               value={form.scheduledAt}
               minDateTime={minDateTime}
@@ -926,37 +937,37 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Duration (min)</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('auctionDetailDurationMin')}</label>
             <select
               value={form.durationMinutes}
               onChange={e => setForm(f => ({ ...f, durationMinutes: e.target.value }))}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400">
-              <option value={15}>15 min</option>
-              <option value={30}>30 min</option>
-              <option value={45}>45 min</option>
-              <option value={60}>1 hour</option>
-              <option value={90}>1.5 hours</option>
-              <option value={120}>2 hours</option>
+              <option value={15}>{t('auctionDetailDuration15Min')}</option>
+              <option value={30}>{t('auctionDetailDuration30Min')}</option>
+              <option value={45}>{t('auctionDetailDuration45Min')}</option>
+              <option value={60}>{t('auctionDetailDuration60Min')}</option>
+              <option value={90}>{t('auctionDetailDuration90Min')}</option>
+              <option value={120}>{t('auctionDetailDuration120Min')}</option>
             </select>
           </div>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Topic *</label>
+          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('auctionDetailTopic')}</label>
           <input
             type="text"
             value={form.topic}
             onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
-            placeholder="e.g. Project discussion, Freelance opportunity"
+            placeholder={t('auctionDetailTopicPlaceholder')}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400"
             required
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Message (optional)</label>
+          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('auctionDetailMessageOptional')}</label>
           <textarea
             value={form.message}
             onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-            placeholder="Tell them what you want to discuss…"
+            placeholder={t('auctionDetailMessagePlaceholder')}
             rows={3}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400 resize-none"
           />
@@ -964,11 +975,11 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
         {error && <div className="text-xs text-red-600 font-semibold">{error}</div>}
         <div className="flex gap-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Send Request →'}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('auctionDetailSendRequest')}
           </button>
           <button type="button" onClick={onCancel}
             className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-            Cancel
+            {t('cancel')}
           </button>
         </div>
       </div>
@@ -978,15 +989,16 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
 
 // ─── Meeting Card ─────────────────────────────────────────────────────────────
 function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
+  const { t } = useTranslation();
   const [showCancelPrompt, setShowCancelPrompt] = useState(false);
   const [cancelReason, setCancelReason]         = useState('');
 
   const isRequester = String(meeting.requester?.id ?? meeting.requesterId ?? '') === String(userId);
   const statusConfig = {
-    PENDING:   { color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200',  label: '⏳ Pending'   },
-    CONFIRMED: { color: 'text-green-700',  bg: 'bg-green-50',  border: 'border-green-200',  label: '✅ Confirmed' },
-    CANCELLED: { color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200',    label: '❌ Cancelled' },
-    COMPLETED: { color: 'text-gray-500',   bg: 'bg-gray-50',   border: 'border-gray-200',   label: '✓ Completed' },
+    PENDING:   { color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200',  label: t('auctionDetailMeetingStatusPending') },
+    CONFIRMED: { color: 'text-green-700',  bg: 'bg-green-50',  border: 'border-green-200',  label: t('auctionDetailMeetingStatusConfirmed') },
+    CANCELLED: { color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200',    label: t('auctionDetailMeetingStatusCancelled') },
+    COMPLETED: { color: 'text-gray-500',   bg: 'bg-gray-50',   border: 'border-gray-200',   label: t('auctionDetailMeetingStatusCompleted') },
   }[meeting.status] || { color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', label: meeting.status };
 
   return (
@@ -1007,12 +1019,16 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
           )}
           {!isOwner && (
             <div className="text-xs text-gray-500 mt-1">
-              With: <span className="font-semibold text-gray-700">{meeting.lister?.firstName || 'Profile Owner'} {meeting.lister?.lastName || ''}</span>
+              {t('auctionDetailMeetingWith', {
+                name: `${meeting.lister?.firstName || t('auctionDetailProfileOwner')} ${meeting.lister?.lastName || ''}`.trim(),
+              })}
             </div>
           )}
           {isOwner && (
             <div className="text-xs text-gray-500 mt-1">
-              With: <span className="font-semibold text-gray-700">{meeting.requester?.firstName || 'Bidder'} {meeting.requester?.lastName || ''}</span>
+              {t('auctionDetailMeetingWith', {
+                name: `${meeting.requester?.firstName || t('auctionDetailBidder')} ${meeting.requester?.lastName || ''}`.trim(),
+              })}
               {meeting.requester?.email && (
                 <span className="text-gray-400"> · {meeting.requester.email}</span>
               )}
@@ -1028,12 +1044,12 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20 3H4C2.9 3 2 3.9 2 5v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM15 9l-5 3.5L15 16V9z"/>
                 </svg>
-                Join Google Meet
+                {t('auctionDetailJoinGoogleMeet')}
               </a>
               {meeting.calendarEventLink && (
                 <a href={meeting.calendarEventLink} target="_blank" rel="noopener noreferrer"
                   className="text-xs hover:underline" style={{ color: '#1a73e8' }}>
-                  📅 View in Calendar
+                  {t('auctionDetailViewCalendar')}
                 </a>
               )}
             </div>
@@ -1041,7 +1057,7 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
 
           {/* Cancel info */}
           {meeting.status === 'CANCELLED' && meeting.cancelReason && (
-            <div className="text-xs text-red-500 mt-1">Reason: {meeting.cancelReason}</div>
+            <div className="text-xs text-red-500 mt-1">{t('auctionDetailCancelReason', { reason: meeting.cancelReason })}</div>
           )}
         </div>
 
@@ -1054,13 +1070,13 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
                 onClick={() => onAction('confirm', meeting.id)}
                 disabled={actionLoading}
                 className="px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 border border-green-300 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50">
-                {actionLoading ? '…' : '✓ Confirm'}
+                {actionLoading ? '…' : t('auctionDetailConfirmMeeting')}
               </button>
               <button
                 onClick={() => setShowCancelPrompt(true)}
                 disabled={actionLoading}
                 className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50">
-                ✕ Decline
+                {t('auctionDetailDeclineMeeting')}
               </button>
             </>
           )}
@@ -1071,13 +1087,13 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
                 onClick={() => onAction('complete', meeting.id)}
                 disabled={actionLoading}
                 className="px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50">
-                {actionLoading ? '…' : '✓ Complete'}
+                {actionLoading ? '…' : t('auctionDetailCompleteMeeting')}
               </button>
               <button
                 onClick={() => setShowCancelPrompt(true)}
                 disabled={actionLoading}
                 className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50">
-                Cancel
+                {t('cancel')}
               </button>
             </>
           )}
@@ -1087,7 +1103,7 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
               onClick={() => setShowCancelPrompt(true)}
               disabled={actionLoading}
               className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50">
-              Cancel
+              {t('cancel')}
             </button>
           )}
           {/* Requester can cancel confirmed */}
@@ -1096,7 +1112,7 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
               onClick={() => setShowCancelPrompt(true)}
               disabled={actionLoading}
               className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50">
-              Cancel
+              {t('cancel')}
             </button>
           )}
         </div>
@@ -1105,12 +1121,12 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
       {/* Cancel reason prompt */}
       {showCancelPrompt && (
         <div className="mt-3 p-3 bg-white border border-red-200 rounded-lg">
-          <div className="text-xs font-semibold text-red-700 mb-2">Reason for cancellation (optional)</div>
+          <div className="text-xs font-semibold text-red-700 mb-2">{t('auctionDetailCancelReasonPrompt')}</div>
           <input
             type="text"
             value={cancelReason}
             onChange={e => setCancelReason(e.target.value)}
-            placeholder="e.g. Schedule conflict"
+            placeholder={t('auctionDetailCancelReasonPlaceholder')}
             className="app-field-input w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 mb-2 outline-none focus:border-red-400 bg-white"
           />
           <div className="flex gap-2">
@@ -1120,12 +1136,12 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
                 setShowCancelPrompt(false);
               }}
               className="flex-1 px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition-colors">
-              Confirm Cancel
+              {t('auctionDetailConfirmCancel')}
             </button>
             <button
               onClick={() => { setShowCancelPrompt(false); setCancelReason(''); }}
               className="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-              Back
+              {t('auctionDetailBack')}
             </button>
           </div>
         </div>
@@ -1136,6 +1152,8 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
 
 // ─── Re-Auction Modal ─────────────────────────────────────────────────────────
 function ReAuctionModal({ auctionId, onClose, onSuccess }) {
+  const { t } = useTranslation();
+  const { getSymbol } = useCurrency();
   const [form, setForm]       = useState({ minBidPrice: '', duration: 'SEVEN_DAYS' });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -1143,7 +1161,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) {
-      setError('Please enter a valid minimum bid.');
+      setError(t('auctionDetailValidMinBid'));
       return;
     }
     setLoading(true); setError('');
@@ -1154,7 +1172,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to re-auction.');
+      setError(err.response?.data?.error || t('auctionDetailFailedReAuction'));
     } finally { setLoading(false); }
   };
 
@@ -1166,35 +1184,35 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
           onClick={onClose}>✕</button>
         <div className="mb-6">
           <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">
-            Re-Auction
+            {t('auctionDetailReAuctionBadge')}
           </div>
-          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Start a New Auction</h2>
-          <p className="text-sm text-gray-500">Set new parameters for your creator profile auction.</p>
+          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{t('auctionDetailReAuctionTitle')}</h2>
+          <p className="text-sm text-gray-500">{t('auctionDetailReAuctionCreatorSubtitle')}</p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">New Minimum Bid (₹) *</label>
+            <label className="text-sm font-medium text-gray-700">{t('auctionDetailNewMinBid', { symbol: getSymbol() })} *</label>
             <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500"
               type="number" min="1" value={form.minBidPrice}
               onChange={e => setForm(f => ({ ...f, minBidPrice: e.target.value }))}
-              placeholder="e.g. 5000" required />
+              placeholder={t('domainsPageMinBidPlaceholder')} required />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Auction Duration *</label>
+            <label className="text-sm font-medium text-gray-700">{t('auctionDetailAuctionDuration')} *</label>
             <select className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500"
               value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}>
-              <option value="ONE_DAY">1 Day</option>
-              <option value="SEVEN_DAYS">7 Days</option>
-              <option value="FIFTEEN_DAYS">15 Days</option>
-              <option value="THIRTY_DAYS">30 Days</option>
+              <option value="ONE_DAY">{t('domainsPageDurationOneDay')}</option>
+              <option value="SEVEN_DAYS">{t('domainsPageDurationSevenDays')}</option>
+              <option value="FIFTEEN_DAYS">{t('auctionDetailDuration15Days')}</option>
+              <option value="THIRTY_DAYS">{t('auctionDetailDuration30Days')}</option>
             </select>
           </div>
           {error && <div className="text-sm text-red-500">{error}</div>}
           <div className="flex gap-3 mt-1">
             <button type="submit" className="btn-glow flex-1" disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Start Re-Auction →'}
+              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('auctionDetailStartReAuction')}
             </button>
-            <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-glow" onClick={onClose}>{t('cancel')}</button>
           </div>
         </form>
       </div>
@@ -1204,6 +1222,8 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
 
 // ─── Helper Components ────────────────────────────────────────────────────────
 function BidRow({ bid, isLatest, isWinner }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const bidTimeStr = formatAuctionTime(bid.bidTime, {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   }, '');
@@ -1218,27 +1238,28 @@ function BidRow({ bid, isLatest, isWinner }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-[0.875rem] text-gray-900">
-          {bid.bidderName || 'Anonymous'}
-          {isWinner && <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">WINNER</span>}
+          {bid.bidderName || t('auctionDetailAnonymous')}
+          {isWinner && <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">{t('auctionDetailWinnerBadge')}</span>}
         </div>
         <div className="text-[0.72rem] text-gray-400">{bidTimeStr}</div>
       </div>
       <div className={`font-display text-[1.1rem] font-bold flex-shrink-0 ${isLatest ? 'text-green-600' : 'text-amber-600'}`}>
-        ₹{Number(bid.amount).toLocaleString('en-IN')}
+        {formatPrice(bid.amount)}
       </div>
     </div>
   );
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const config = {
-    PAYMENT_PENDING: { color: '#888',    label: 'Payment Pending' },
-    ACTIVE:          { color: '#6ec896', label: '🟢 Live'         },
-    EXTENDED:        { color: '#c8a96e', label: '⚡ Extended'     },
-    ENDED:           { color: '#a06ec8', label: 'Ended'           },
-    COMPLETED:       { color: '#6ec896', label: 'Completed'       },
-    UNSOLD:          { color: '#c86e6e', label: 'Unsold'          },
-    CLOSED:          { color: '#666',    label: 'Closed'          },
+    PAYMENT_PENDING: { color: '#888',    label: t('auctionDetailStatusPaymentPending') },
+    ACTIVE:          { color: '#6ec896', label: t('auctionsPageStatusLive') },
+    EXTENDED:        { color: '#c8a96e', label: t('auctionsPageStatusExtended') },
+    ENDED:           { color: '#a06ec8', label: t('auctionDetailStatusEnded') },
+    COMPLETED:       { color: '#6ec896', label: t('auctionDetailStatusCompleted') },
+    UNSOLD:          { color: '#c86e6e', label: t('auctionDetailStatusUnsold') },
+    CLOSED:          { color: '#666',    label: t('auctionDetailStatusClosed') },
   }[status] || { color: '#888', label: status };
   return (
     <span style={{

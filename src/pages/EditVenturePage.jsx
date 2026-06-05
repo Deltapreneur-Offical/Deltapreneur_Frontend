@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import VentureForm from '../components/venture/VentureForm';
 
 export default function EditVenturePage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [venture, setVenture] = useState(null);
@@ -30,7 +32,7 @@ export default function EditVenturePage() {
 
         navigate('/ventures');
       } catch (err) {
-          setError(err.response?.data?.error || 'Failed to update venture.');
+          setError(err.response?.data?.error || t('editVentureUpdateFailed'));
       } finally { setLoading(false); }
   };
 
@@ -46,15 +48,15 @@ export default function EditVenturePage() {
     <AppLayout>
       <div className="max-w-full w-full">
         <div className="mb-8">
-          <h1 className="font-display text-[2rem] font-bold text-gray-900 m-0 mb-2">Edit Venture</h1>
-          <p className="text-gray-600">Update your venture details.</p>
+          <h1 className="font-display text-[2rem] font-bold text-gray-900 m-0 mb-2">{t('editVentureTitle')}</h1>
+          <p className="text-gray-600">{t('editVentureSubtitle')}</p>
         </div>
         <VentureForm
           initialData={venture}
           onSubmit={handleSubmit}
           loading={loading}
           error={error}
-          submitLabel="Save Changes →"
+          submitLabel={t('editVentureSaveChanges')}
         />
       </div>
     </AppLayout>

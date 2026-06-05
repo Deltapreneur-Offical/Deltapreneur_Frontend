@@ -241,10 +241,34 @@ export default function DomainListingCard({
                     <Share2 size={12} />
                   </button>
                   {shareOpen && (
-                    <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[140px]" onClick={stop}>
-                      <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(linkedinShare)}>LinkedIn</button>
-                      <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(facebookShare)}>Facebook</button>
-                      <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(whatsappShare)}>WhatsApp</button>
+                    <div
+                      className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+                      onClick={stop}
+                    >
+                      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                        <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                        onClick={() => handleShare(linkedinShare)}
+                      >
+                        LinkedIn
+                      </button>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        onClick={() => handleShare(facebookShare)}
+                      >
+                        Facebook
+                      </button>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        onClick={() => handleShare(whatsappShare)}
+                      >
+                        WhatsApp
+                      </button>
                     </div>
                   )}
                 </div>

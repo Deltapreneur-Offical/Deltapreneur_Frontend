@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ import TechnologyIcon from '../../assets/CoCreation.png';
 import CommunityIcon from '../../assets/Community-profileicon-gray.png';
 import CurrencyDropdown from '../common/CurrencyDropdown';
 import LanguageDropdown from '../common/LanguageDropdown';
+import AppProfileRegionalMenu from './AppProfileRegionalMenu';
 import HomeFooter from '../common/HomeFooter';
 import BackButton from '../common/BackButton';
 import { getAppBackTarget } from '../../utils/appNavigation';
@@ -66,7 +68,40 @@ export default function AppLayout({ children }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifPanelStyle, setNotifPanelStyle] = useState(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const bellRef = useRef(null);
+  const profileRef = useRef(null);
+
+  const updateNotifPanelPosition = useCallback(() => {
+    const anchor = bellRef.current;
+    if (!anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    const width = Math.min(360, window.innerWidth - 16);
+    let left = rect.right - width;
+    left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+    setNotifPanelStyle({
+      position: 'fixed',
+      top: rect.bottom + 8,
+      left,
+      width,
+      zIndex: 10050,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!bellOpen) {
+      setNotifPanelStyle(null);
+      return undefined;
+    }
+    updateNotifPanelPosition();
+    window.addEventListener('resize', updateNotifPanelPosition);
+    window.addEventListener('scroll', updateNotifPanelPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateNotifPanelPosition);
+      window.removeEventListener('scroll', updateNotifPanelPosition, true);
+    };
+  }, [bellOpen, updateNotifPanelPosition]);
   
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
   const backTarget = getAppBackTarget(location.pathname);
@@ -115,11 +150,14 @@ export default function AppLayout({ children }) {
     return () => clearInterval(interval);
   }, [userId, refreshUnreadCount]);
 
-  // Close bell dropdown on outside click
+  // Close bell / profile menus on outside click
   useEffect(() => {
     const handler = (e) => {
       if (bellRef.current && !bellRef.current.contains(e.target)) {
         setBellOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -129,6 +167,7 @@ export default function AppLayout({ children }) {
   // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
+    setProfileMenuOpen(false);
   }, [location.pathname]);
 
   // Persist sidebar collapsed state
@@ -186,7 +225,7 @@ export default function AppLayout({ children }) {
       <div className="app-layout-workspace flex w-full flex-1 items-stretch">
       {/* Desktop Left Sidebar — workspace only; ends above full-width footer */}
       <aside
-        className={`app-layout-sidebar app-sidebar hidden lg:flex min-h-full flex-col flex-shrink-0 self-stretch ${
+        className={`app-chrome-panel app-layout-sidebar app-sidebar hidden lg:flex min-h-full flex-col flex-shrink-0 self-stretch ${
           sidebarCollapsed ? 'is-collapsed w-[4.75rem]' : 'w-[15.5rem]'
         }`}
       >
@@ -211,51 +250,52 @@ export default function AppLayout({ children }) {
           </button>
         </div>
 
-        <nav className="app-sidebar-nav" aria-label="Main navigation">
-          {!sidebarCollapsed && <p className="app-sidebar-section-label">Menu</p>}
-          <div className="app-sidebar-nav-list">
-            {navItems.map((item) => {
-              const active = isActive(item.to);
-              const Icon = item.icon;
-              const accent = item.adminAccent;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={[
-                    'app-sidebar-link',
-                    active && 'is-active',
-                    accent && 'is-admin',
-                    sidebarCollapsed && 'is-collapsed',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  title={sidebarCollapsed ? t(item.labelKey) : ''}
-                >
-                  <span className="app-sidebar-icon-slot">
-                    {item.isImage ? (
-                      <img
-                        src={item.icon}
-                        alt={t(item.labelKey)}
-                        className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
-                        draggable={false}
-                      />
-                    ) : (
-                      <Icon size={20} strokeWidth={2} />
+        <div className="app-sidebar-body">
+          <nav className="app-sidebar-nav" aria-label="Main navigation">
+            {!sidebarCollapsed && <p className="app-sidebar-section-label">Menu</p>}
+            <div className="app-sidebar-nav-list">
+              {navItems.map((item) => {
+                const active = isActive(item.to);
+                const Icon = item.icon;
+                const accent = item.adminAccent;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={[
+                      'app-sidebar-link',
+                      active && 'is-active',
+                      accent && 'is-admin',
+                      sidebarCollapsed && 'is-collapsed',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    title={sidebarCollapsed ? t(item.labelKey) : ''}
+                  >
+                    <span className="app-sidebar-icon-slot">
+                      {item.isImage ? (
+                        <img
+                          src={item.icon}
+                          alt={t(item.labelKey)}
+                          className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
+                          draggable={false}
+                        />
+                      ) : (
+                        <Icon size={20} strokeWidth={2} />
+                      )}
+                    </span>
+                    {!sidebarCollapsed && (
+                      <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
                     )}
-                  </span>
-                  {!sidebarCollapsed && (
-                    <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
 
-        <div className="app-sidebar-footer">
-          {!sidebarCollapsed && <p className="app-sidebar-section-label">Account</p>}
-          <div className="app-sidebar-footer-inner">
+          <div className="app-sidebar-footer">
+            {!sidebarCollapsed && <p className="app-sidebar-section-label">Account</p>}
+            <div className="app-sidebar-footer-inner">
             <Link
               to="/"
               className={[
@@ -327,6 +367,7 @@ export default function AppLayout({ children }) {
               </span>
               {!sidebarCollapsed && <span className="app-sidebar-link-label">{t('logout')}</span>}
             </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -339,7 +380,7 @@ export default function AppLayout({ children }) {
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
-          <aside className="app-sidebar app-sidebar--drawer lg:hidden fixed inset-y-0 left-0 flex flex-col">
+          <aside className="app-chrome-panel app-sidebar app-sidebar--drawer lg:hidden fixed inset-y-0 left-0 flex flex-col">
             <div className="app-sidebar-header">
               <Link to="/" className="app-sidebar-logo-link" onClick={() => setMobileOpen(false)}>
                 <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
@@ -354,48 +395,49 @@ export default function AppLayout({ children }) {
               </button>
             </div>
 
-            <nav className="app-sidebar-nav" aria-label="Main navigation">
-              <p className="app-sidebar-section-label">Menu</p>
-              <div className="app-sidebar-nav-list">
-                {navItems.map((item) => {
-                  const active = isActive(item.to);
-                  const Icon = item.icon;
-                  const accent = item.adminAccent;
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setMobileOpen(false)}
-                      className={[
-                        'app-sidebar-link',
-                        active && 'is-active',
-                        accent && 'is-admin',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                    >
-                      <span className="app-sidebar-icon-slot">
-                        {item.isImage ? (
-                          <img
-                        src={item.icon}
-                        alt={t(item.labelKey)}
-                        className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
-                        draggable={false}
-                      />
-                        ) : (
-                          <Icon size={20} strokeWidth={2} />
-                        )}
-                      </span>
-                      <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </nav>
+            <div className="app-sidebar-body">
+              <nav className="app-sidebar-nav" aria-label="Main navigation">
+                <p className="app-sidebar-section-label">Menu</p>
+                <div className="app-sidebar-nav-list">
+                  {navItems.map((item) => {
+                    const active = isActive(item.to);
+                    const Icon = item.icon;
+                    const accent = item.adminAccent;
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMobileOpen(false)}
+                        className={[
+                          'app-sidebar-link',
+                          active && 'is-active',
+                          accent && 'is-admin',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      >
+                        <span className="app-sidebar-icon-slot">
+                          {item.isImage ? (
+                            <img
+                              src={item.icon}
+                              alt={t(item.labelKey)}
+                              className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
+                              draggable={false}
+                            />
+                          ) : (
+                            <Icon size={20} strokeWidth={2} />
+                          )}
+                        </span>
+                        <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </nav>
 
-            <div className="app-sidebar-footer">
-              <p className="app-sidebar-section-label">Account</p>
-              <div className="app-sidebar-footer-inner">
+              <div className="app-sidebar-footer">
+                <p className="app-sidebar-section-label">Account</p>
+                <div className="app-sidebar-footer-inner">
                 <Link
                   to="/"
                   onClick={() => setMobileOpen(false)}
@@ -444,6 +486,7 @@ export default function AppLayout({ children }) {
                   </span>
                   <span className="app-sidebar-link-label">{t('logout')}</span>
                 </button>
+                </div>
               </div>
             </div>
           </aside>
@@ -453,8 +496,8 @@ export default function AppLayout({ children }) {
       {/* Main column: header + page content (footer is outside workspace) */}
       <div className="app-layout-main-column flex min-w-0 flex-1 flex-col">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white px-4 py-4 lg:px-8 flex items-center justify-between relative">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+        <header className="app-layout-header sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible">
+          <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden sm:gap-3">
             <button
               onClick={() => setMobileOpen(true)}
               className="lg:hidden p-2 text-gray-600 hover:text-gray-900 shrink-0"
@@ -466,24 +509,36 @@ export default function AppLayout({ children }) {
               <BackButton to={backTarget.to} label={backTarget.label} className="shrink-0" />
             )}
 
-            <Link to="/" className="lg:hidden flex items-center shrink-0">
-              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
+            <Link
+              to="/"
+              className="app-layout-mobile-brand lg:hidden flex items-center min-w-0 shrink overflow-hidden"
+            >
+              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo max-w-full" />
             </Link>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="app-layout-header-utils home-nav-util-group" role="group" aria-label="Regional settings">
+          <div className="app-layout-header-actions flex items-center gap-1.5 shrink-0 sm:gap-3">
+            <div
+              className="app-layout-header-utils home-nav-util-group max-xl:hidden xl:flex"
+              role="group"
+              aria-label="Regional settings"
+            >
               <LanguageDropdown variant="minimal" className="home-nav-util-language" />
               <span className="home-nav-util-divider" aria-hidden="true">
                 |
               </span>
               <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
             </div>
-            {/* Working Bell Icon with Notification Panel */}
+            {/* Bell — always visible on mobile/tablet */}
             <div className="relative" ref={bellRef}>
-              <button 
-                onClick={handleBellOpen}
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileMenuOpen(false);
+                  handleBellOpen();
+                }}
                 className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label={t('notifications')}
               >
                 <Bell size={20} />
                 {unreadCount > 0 && (
@@ -493,79 +548,118 @@ export default function AppLayout({ children }) {
                 )}
               </button>
 
-              {/* Notification Dropdown Panel */}
-              {bellOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[360px] bg-white border border-gray-200 rounded-xl shadow-2xl z-[1000] overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
-                    <span className="font-semibold text-sm text-gray-900">Notifications</span>
-                    {unreadCount > 0 && (
-                      <button
-                        className="text-xs text-gray-500 hover:text-gray-700"
-                        onClick={handleMarkAllRead}
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-                  <div className="max-h-[380px] overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                        No notifications yet
-                      </div>
-                    ) : (
-                      notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`flex items-start gap-3 px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                            !notification.read ? 'bg-blue-50/50' : ''
-                          }`}
-                          onClick={() => handleNotificationClick(notification)}
+              {bellOpen &&
+                notifPanelStyle &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                  <div
+                    className="app-notif-dropdown bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                    style={notifPanelStyle}
+                    role="dialog"
+                    aria-label="Notifications"
+                  >
+                    <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100 gap-2">
+                      <span className="font-semibold text-sm text-gray-900">Notifications</span>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          className="text-xs text-gray-500 hover:text-gray-700 shrink-0 whitespace-nowrap"
+                          onClick={handleMarkAllRead}
                         >
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
-                            {notification.type?.includes('LIKE') ? '❤️'
-                             : notification.type?.includes('VERIFIED') ? '✓'
-                             : notification.type?.includes('VENTURE') ? '🤝'
-                             : notification.type?.includes('DOMAIN') ? '🌐'
-                             : notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-900 mb-0.5">
-                              {notification.title || notification.message}
-                            </div>
-                            {notification.title && notification.message && notification.message !== notification.title && (
-                            <div className="text-xs text-gray-500 line-clamp-2">
-                              {notification.message}
-                            </div>
-                            )}
-                            <div className="text-[10px] text-gray-400 mt-1">
-                              {timeAgo(notification.createdAt)}
-                            </div>
-                          </div>
-                          {!notification.read && (
-                            <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1" />
-                          )}
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-[min(380px,calc(100vh-8rem))] overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="py-8 px-4 text-center text-gray-500 text-sm">
+                          No notifications yet
                         </div>
-                      ))
-                    )}
-                  </div>
-                  <div className="px-4 py-3 border-t border-gray-100 text-center">
-                    <Link
-                      to="/notifications"
-                      onClick={() => setBellOpen(false)}
-                      className="text-xs text-gray-600 hover:text-gray-900"
-                    >
-                      View all notifications
-                    </Link>
-                  </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`flex items-start gap-3 px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                              !notification.read ? 'bg-blue-50/50' : ''
+                            }`}
+                            onClick={() => handleNotificationClick(notification)}
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
+                              {notification.type?.includes('LIKE') ? '❤️'
+                               : notification.type?.includes('VERIFIED') ? '✓'
+                               : notification.type?.includes('VENTURE') ? '🤝'
+                               : notification.type?.includes('DOMAIN') ? '🌐'
+                               : notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-gray-900 mb-0.5">
+                                {notification.title || notification.message}
+                              </div>
+                              {notification.title && notification.message && notification.message !== notification.title && (
+                              <div className="text-xs text-gray-500 line-clamp-2">
+                                {notification.message}
+                              </div>
+                              )}
+                              <div className="text-[10px] text-gray-400 mt-1">
+                                {timeAgo(notification.createdAt)}
+                              </div>
+                            </div>
+                            {!notification.read && (
+                              <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1" />
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="px-4 py-3 border-t border-gray-100 text-center">
+                      <Link
+                        to="/notifications"
+                        onClick={() => setBellOpen(false)}
+                        className="text-xs text-gray-600 hover:text-gray-900"
+                      >
+                        View all notifications
+                      </Link>
+                    </div>
+                  </div>,
+                  document.body,
+                )}
+            </div>
+
+            {/* Mobile / tablet: round profile → accordion language & currency */}
+            <div className="relative shrink-0 xl:hidden" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setBellOpen(false);
+                  setProfileMenuOpen((open) => !open);
+                }}
+                className="app-profile-avatar-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-0 p-0 aspect-square bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold leading-none text-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
+                aria-label="Account and regional settings"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="menu"
+              >
+                {displayName.charAt(0)}
+              </button>
+              {profileMenuOpen && (
+                <div
+                  className="app-profile-menu absolute right-0 top-full z-[1001] mt-2 w-[min(17.5rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
+                  role="menu"
+                >
+                  <AppProfileRegionalMenu
+                    key="profile-regional"
+                    displayName={displayName}
+                    email={user?.email}
+                  />
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+            {/* Desktop (xl+): language/currency in header + profile label */}
+            <div className="hidden xl:flex items-center gap-2 pl-4 border-l border-gray-200 sm:gap-3">
+              <div className="app-profile-avatar-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full aspect-square bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold leading-none text-white">
                 {displayName.charAt(0)}
               </div>
-              <div className="hidden md:block">
+              <div>
                 <p className="text-sm font-semibold text-gray-900">{displayName}</p>
                 <p className="text-xs text-gray-500">{user?.role || 'USER'}</p>
               </div>

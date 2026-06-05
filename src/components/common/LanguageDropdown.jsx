@@ -54,6 +54,35 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
+  if (variant === 'profile-menu') {
+    const sectionItemCls = (active) =>
+      `flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors border-none bg-transparent cursor-pointer ${
+        active ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-gray-700 hover:bg-gray-50'
+      }`;
+
+    return (
+      <div className={`border-b border-gray-100 px-3 py-3 ${className}`.trim()}>
+        <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+          Language
+        </p>
+        <div className="space-y-0.5" role="listbox" aria-label="Language">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              className={sectionItemCls(i18n.language === lang.code)}
+              aria-selected={i18n.language === lang.code}
+              onClick={() => changeLanguage(lang.code)}
+            >
+              <span className="font-medium tabular-nums">{languageShortCode(lang.code)}</span>
+              <span className="text-gray-500">{lang.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const isDark = variant === 'dark';
   const isMinimal = variant === 'minimal';
 

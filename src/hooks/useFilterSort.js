@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { asArray } from '../utils/asArray';
 
 /**
@@ -32,7 +32,7 @@ function resolvePrice(item, priceField, get) {
 }
 
 export function useFilterSort(items = [], filterConfig = {}, pageSize = 20, options = {}) {
-  const { getLikeCount } = options;
+  const { getLikeCount, resetPageWhen } = options;
   const safeItems = asArray(items);
   const {
     searchFields = [],
@@ -47,6 +47,10 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20, opti
   const [maxPrice,    setMaxPrice]    = useState('');
   const [sortBy,      setSortBy]      = useState('newest');
   const [page,        setPage]        = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [resetPageWhen]);
 
   const resetPage = useCallback(() => setPage(1), []);
 
@@ -141,6 +145,8 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20, opti
     activeFilterCount,
     handleSearch, handleCategory, handleMinPrice, handleMaxPrice, handleSort,
     clearAll,
-    page: safePage, totalPages, setPage,
+    page: safePage,
+    totalPages,
+    setPage,
   };
 }

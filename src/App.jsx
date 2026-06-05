@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
@@ -17,6 +17,12 @@ import Home from './pages/Home';
 import LoginPage from './pages/LoginPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
+
+/** Preserve ?linkedin=… query params when redirecting legacy /community URLs. */
+function LegacyCommunityRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: '/creator', search }} replace />;
+}
 
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
@@ -257,7 +263,7 @@ export default function App() {
             />
 
             {/* Legacy Community / Disruptor URLs → Creator */}
-            <Route path="/community" element={<Navigate to="/creator" replace />} />
+            <Route path="/community" element={<LegacyCommunityRedirect />} />
             <Route path="/disruptors" element={<Navigate to="/auctions" replace />} />
 
             {/* Domains */}

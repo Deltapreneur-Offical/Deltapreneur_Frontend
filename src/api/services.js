@@ -74,8 +74,8 @@ export const creatorAPI = {
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
-  linkedInAuthUrl:  ()        => api.get('/api/v1/creator/linkedin/auth'),
-  linkedInCallback: (code)    => api.get(`/api/v1/creator/linkedin/callback?code=${code}`),
+  linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth'),
+  linkedInCallback: (code)    => api.get(`/api/v1/community/linkedin/callback?code=${code}`),
 };
 
 /** @deprecated Use creatorAPI */

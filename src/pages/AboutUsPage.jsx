@@ -117,7 +117,7 @@ export default function AboutUsPage() {
       {/* ══════════════════════════════════════════════════════
           § 1  HERO
       ══════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-white px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32">
+      <section className="relative overflow-hidden bg-slate-50 px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32">
 
         {/* Background atmosphere */}
         <div className="pointer-events-none absolute inset-0 cb-glow-center" />
@@ -171,17 +171,17 @@ export default function AboutUsPage() {
           >
             <motion.a
               href="/join-form"
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}
-              className="cb-display inline-flex items-center gap-2 rounded-xl bg-[#9440dd] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 hover:bg-[#7c3aed] transition-colors no-underline"
+              whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
+              className="cb-display inline-flex items-center gap-2 rounded-xl bg-[#9440dd] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 no-underline transition-all duration-200 hover:bg-[#7c3aed] hover:shadow-[0_10px_28px_rgba(124,58,237,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400"
             >
               Join CoBrother <ArrowRight className="h-4 w-4" />
             </motion.a>
             <motion.a
               href="/contact"
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-7 py-3.5 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all no-underline"
+              whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
+              className="about-cta-secondary group inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-7 py-3.5 text-sm font-semibold text-slate-700 no-underline transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-[0_8px_20px_rgba(79,70,229,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
             >
-              Contact Us <ChevronRight className="h-4 w-4" />
+              Contact Us <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </motion.a>
           </motion.div>
 

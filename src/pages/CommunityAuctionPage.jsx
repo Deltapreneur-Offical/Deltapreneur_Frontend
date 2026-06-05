@@ -21,6 +21,7 @@ import {
   resolveAuctionEndTime,
   toDatetimeLocalInput,
 } from '../utils/auctionDate';
+import { getLinkedInProfileUrl } from '../utils/creatorProfile';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -671,10 +672,10 @@ function ProfileInfoCard({ community, auction }) {
           {community.industry && (
             <div className="text-sm text-gray-500 mb-1">🏢 {community.industry.replace(/_/g, ' ')}</div>
           )}
-          {community.linkedInProfileUrl && (
-            <a href={community.linkedInProfileUrl} target="_blank" rel="noopener noreferrer"
+          {getLinkedInProfileUrl(community) && (
+            <a href={getLinkedInProfileUrl(community)} target="_blank" rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:underline">
-              LinkedIn Profile ↗
+              View LinkedIn profile ↗
             </a>
           )}
         </div>

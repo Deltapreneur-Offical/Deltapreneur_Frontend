@@ -171,7 +171,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <div className="home-main-nav-start">
           <button
             type="button"
-            className="home-nav-logo-btn shrink-0"
+            className="home-nav-logo-btn min-w-0 shrink"
             onClick={() => navigate('/')}
             aria-label="CoBrother home"
           >

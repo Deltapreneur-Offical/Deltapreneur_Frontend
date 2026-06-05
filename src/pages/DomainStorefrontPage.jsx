@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
@@ -78,6 +79,7 @@ function buildContactFromUser(user) {
 }
 
 export default function DomainStorefrontPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -175,6 +177,10 @@ export default function DomainStorefrontPage() {
 
   const canRegister = checkResult?.status === 'available';
   const isMarketplace = checkResult?.status === 'marketplace';
+  const liveCheckoutBlocked =
+    config?.registrarEnv === 'live' &&
+    config?.productionReadiness &&
+    !config.productionReadiness.ready;
 
   const displayPrice = useMemo(() => {
     if (!checkResult?.price) return null;
@@ -189,7 +195,7 @@ export default function DomainStorefrontPage() {
   };
 
   const handlePay = async () => {
-    if (!canRegister || !checkResult?.domain) return;
+    if (!canRegister || !checkResult?.domain || liveCheckoutBlocked) return;
 
     setPayLoading(true);
     setPayError('');
@@ -215,18 +221,26 @@ export default function DomainStorefrontPage() {
               razorpaySignature: response.razorpay_signature,
             });
             const verify = verifyPayload?.data ?? verifyPayload;
+            const orderId = verify?.orderId;
             if (verify?.success) {
+              await loadOrders();
+              if (orderId) {
+                navigate(registrationOrderDetailPath(orderId));
+                return;
+              }
               setSuccessMessage(
                 verify.message ||
                   t('storefrontRegisterSuccess', { domain: checkResult.domain }),
               );
-              await loadOrders();
               setCheckResult(null);
               setQuery('');
               setSearchParams({}, { replace: true });
             } else {
               setPayError(verify?.message || t('storefrontProvisionPending'));
               await loadOrders();
+              if (orderId) {
+                navigate(registrationOrderDetailPath(orderId));
+              }
             }
           } catch (err) {
             setPayError(readApiError(err, t('storefrontVerifyFailed')));
@@ -270,13 +284,44 @@ export default function DomainStorefrontPage() {
 
         {config && (
           <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 text-sm text-indigo-900">
-            {(config.registrarSandbox || config.openProviderSandbox) && (
+            {config.registrarEnv && (
+              <span className="font-semibold mr-2 uppercase text-xs tracking-wide">
+                {config.registrarEnv === 'sandbox' ? t('storefrontSandboxBadge') : 'LIVE API'}
+              </span>
+            )}
+            {(config.registrarSandbox || config.openProviderSandbox) && !config.registrarEnv && (
               <span className="font-semibold mr-2">{t('storefrontSandboxBadge')}</span>
             )}
             {config.demoMode && (
               <span className="font-semibold mr-2">{t('storefrontDemoBadge')}</span>
             )}
             {config.message}
+          </div>
+        )}
+
+        {config?.productionReadiness && !config.productionReadiness.ready && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <p className="font-semibold mb-1">
+              {t('storefrontNotProductionReady', { defaultValue: 'Not production-ready' })}
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              {(config.productionReadiness.blockingIssues || []).map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {config?.productionReadiness?.warnings?.length > 0 && config.productionReadiness.ready && (
+          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+            <p className="font-semibold mb-1">
+              {t('storefrontProdWarnings', { defaultValue: 'Production notes' })}
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              {config.productionReadiness.warnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -417,7 +462,7 @@ export default function DomainStorefrontPage() {
               type="button"
               className="btn-glow w-full sm:w-auto px-8 py-3"
               onClick={handlePay}
-              disabled={payLoading}
+              disabled={payLoading || liveCheckoutBlocked}
             >
               {payLoading ? t('storefrontPayOpening') : t('storefrontPayNow')}
             </button>
@@ -455,7 +500,14 @@ export default function DomainStorefrontPage() {
                 <tbody>
                   {orders.map((order) => (
                     <tr key={order.id} className="border-b border-gray-50">
-                      <td className="py-3 pr-4 font-medium text-gray-900">{order.domain}</td>
+                      <td className="py-3 pr-4 font-medium text-gray-900">
+                        <Link
+                          to={registrationOrderDetailPath(order.id)}
+                          className="text-indigo-700 hover:text-indigo-900 hover:underline"
+                        >
+                          {order.domain}
+                        </Link>
+                      </td>
                       <td className="py-3 pr-4 text-gray-700">
                         ₹{Number(order.priceInr || 0).toLocaleString('en-IN')}
                       </td>
@@ -466,12 +518,18 @@ export default function DomainStorefrontPage() {
                           {statusLabel(order.status, order.lifecycleStatus, t)}
                         </span>
                       </td>
-                      <td className="py-3">
-                        {order.lifecycleStatus === 'registration_failed' ||
-                        String(order.status || '').toUpperCase().includes('FAIL') ||
-                        order.lifecycleStatus === 'payment_success' ||
-                        order.lifecycleStatus === 'registration_pending' ||
-                        order.status === 'PAYMENT_COMPLETED' ? (
+                      <td className="py-3 flex flex-wrap gap-2">
+                        <Link
+                          to={registrationOrderDetailPath(order.id)}
+                          className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold"
+                        >
+                          {t('regOrderView', { defaultValue: 'View' })}
+                        </Link>
+                        {(order.lifecycleStatus === 'registration_failed' ||
+                          String(order.status || '').toUpperCase().includes('FAIL') ||
+                          order.lifecycleStatus === 'payment_success' ||
+                          order.lifecycleStatus === 'registration_pending' ||
+                          order.status === 'PAYMENT_COMPLETED') && (
                           <button
                             type="button"
                             className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold"
@@ -479,8 +537,6 @@ export default function DomainStorefrontPage() {
                           >
                             {t('storefrontRetry')}
                           </button>
-                        ) : (
-                          <span className="text-xs text-gray-400">—</span>
                         )}
                       </td>
                     </tr>

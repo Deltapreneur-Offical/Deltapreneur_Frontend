@@ -32,7 +32,7 @@ function formatINR(amount) {
   
   /**
    * @param {object} opts
-   * @param {'domain'|'software'} opts.type
+   * @param {'domain'|'domain_registration'|'software'} opts.type
    * @param {object} opts.item   — the raw purchase object from the API
    * @param {object} opts.user   — { name, email } of the logged-in user (pass what you have)
    */
@@ -44,11 +44,18 @@ function formatINR(amount) {
       : today();
   
     let productName, productDesc, baseAmount, extraLines = [];
+    let paymentRef = '';
   
-    if (type === 'domain') {
+    if (type === 'domain_registration') {
+      productName = item.domain || `${item.domainName || ''}${item.domainExtension || ''}`;
+      productDesc = 'New domain registration (CoBrother storefront)';
+      baseAmount = Number(item.priceInr ?? item.price ?? 0);
+      paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
+    } else if (type === 'domain') {
       productName = `${item.domainName}${item.domainExtension}`;
       productDesc = item.pricingDemand || 'Domain Name Purchase';
       baseAmount  = Number(item.askingPrice || 0);
+      paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
     } else {
       const sw     = item.software || {};
       productName  = sw.name || 'Software License';
@@ -72,9 +79,16 @@ function formatINR(amount) {
     const displayTotal =
       item.amountCharged != null ? formatMoney(item.amountCharged, chargeCurrency) : formatLine(total);
   
-    const typeLabel = type === 'domain' ? '◇ Domain Purchase' : '⟁ Software License';
-    const typeBadgeBg = type === 'domain' ? '#e0f2fe' : '#ede9fe';
-    const typeBadgeColor = type === 'domain' ? '#0369a1' : '#6d28d9';
+    const typeLabel =
+      type === 'domain_registration'
+        ? '◇ Domain Registration'
+        : type === 'domain'
+          ? '◇ Domain Purchase'
+          : '⟁ Software License';
+    const typeBadgeBg =
+      type === 'software' ? '#ede9fe' : type === 'domain_registration' ? '#ecfdf5' : '#e0f2fe';
+    const typeBadgeColor =
+      type === 'software' ? '#6d28d9' : type === 'domain_registration' ? '#047857' : '#0369a1';
   
     const extraRows = extraLines.map(l => `
       <tr>
@@ -418,6 +432,7 @@ function formatINR(amount) {
       <div class="status-dot"></div>
       <div class="status-text">Payment Confirmed — Thank you for your purchase!</div>
     </div>
+    ${paymentRef ? `<p style="margin-top:12px;font-size:11px;color:#6b7280;"><strong>Payment reference:</strong> ${paymentRef}</p>` : ''}
   
     <!-- Footer -->
     <div class="footer">

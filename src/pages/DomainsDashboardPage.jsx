@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
-import { domainAPI } from '../api/services';
+import { domainAPI, domainStorefrontAPI } from '../api/services';
+import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainVerificationModal from './DomainVerificationModal';
@@ -27,15 +28,23 @@ export default function DomainsDashboardPage() {
   const [tab, setTab]               = useState('listings');
   const [listings, setListings]     = useState([]);
   const [purchases, setPurchases]   = useState([]);
+  const [regOrders, setRegOrders]     = useState([]);
   const [loading, setLoading]       = useState(true);
   const [verifyTarget, setVerifyTarget] = useState(null);
 
+  const purchaseCount = purchases.length + regOrders.length;
 
   useEffect(() => {
-    Promise.all([domainAPI.getMyListings(), domainAPI.getMyPurchases()])
-      .then(([l, p]) => {
+    Promise.all([
+      domainAPI.getMyListings(),
+      domainAPI.getMyPurchases(),
+      domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
+    ])
+      .then(([l, p, reg]) => {
         setListings(extractDomainList(l.data));
         setPurchases(extractDomainList(p.data));
+        const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
+        setRegOrders(regList.filter(isRegistrationPurchase));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -45,9 +54,11 @@ export default function DomainsDashboardPage() {
     .filter(d => d.domainStatus === 'SOLD')
     .reduce((sum, d) => sum + d.askingPrice, 0);
 
-  const totalSpent = purchases
+  const resaleSpent = purchases
     .filter(d => d.paymentStatus === 'COMPLETED')
     .reduce((sum, d) => sum + d.askingPrice, 0);
+  const regSpent = regOrders.reduce((sum, o) => sum + Number(o.priceInr || 0), 0);
+  const totalSpent = resaleSpent + regSpent;
 
   return (
     <AppLayout>
@@ -85,7 +96,7 @@ export default function DomainsDashboardPage() {
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="text-gray-600 mb-2">Purchased</div>
-            <div className="text-2xl font-bold text-black/70">{purchases.length}</div>
+            <div className="text-2xl font-bold text-black/70">{purchaseCount}</div>
             <div className="text-xs text-gray-600 font-semibold mt-1">Purchases</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
@@ -100,7 +111,7 @@ export default function DomainsDashboardPage() {
             My Listings ({listings.length})
           </button>
           <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('purchases')}>
-            My Purchases ({purchases.length})
+            My Purchases ({purchaseCount})
           </button>
         </div>
 
@@ -127,15 +138,40 @@ export default function DomainsDashboardPage() {
             </div>
           )
         ) : (
-          purchases.length === 0 ? (
+          purchaseCount === 0 ? (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🛒</div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No purchases yet</h3>
-              <p className="text-gray-600 mb-6">Browse domains and make your first purchase.</p>
-              <button className="btn-glow" onClick={() => navigate('/domains')}>Browse Domains</button>
+              <p className="text-gray-600 mb-6">Buy a listed domain or register a new name.</p>
+              <div className="flex gap-3 justify-center flex-wrap">
+                <button className="btn-glow" onClick={() => navigate('/domains')}>Browse Domains</button>
+                <button className="btn-glow" onClick={() => navigate('/storefront')}>Register Domain</button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
+              {regOrders.map((order) => (
+                <div
+                  key={`reg-${order.id}`}
+                  className="flex items-center justify-between bg-white border border-emerald-200 rounded-[10px] px-5 py-4 gap-3"
+                >
+                  <div>
+                    <div className="font-bold text-gray-900">{order.domain}</div>
+                    <div className="text-[0.8rem] text-gray-500">New registration · {order.lifecycleStatus || order.status}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[0.95rem] font-bold text-gray-900">
+                      ₹{Number(order.priceInr || 0).toLocaleString('en-IN')}
+                    </span>
+                    <Link
+                      to={registrationOrderDetailPath(order.id)}
+                      className="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                    >
+                      Details
+                    </Link>
+                  </div>
+                </div>
+              ))}
               {purchases.map(d => <DomainRow key={d.id} domain={d} type="purchase" />)}
             </div>
           )

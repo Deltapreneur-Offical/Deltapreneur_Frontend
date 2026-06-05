@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { domainAPI, technologyAPI } from '../api/services';
+import { Link, useNavigate } from 'react-router-dom';
+import { domainAPI, domainStorefrontAPI, technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -13,28 +13,37 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import { asArray } from '../utils/asArray';
 import { extractDomainList } from '../utils/domainApiAdapter';
+import {
+  isRegistrationPurchase,
+  registrationOrderDetailPath,
+  registrationStatusBadgeClass,
+  registrationStatusLabel,
+} from '../utils/domainRegistrationOrder';
+import { useTranslation } from 'react-i18next';
 
 export default function PurchasesPage() {
   const { formatPrice } = useCurrency();
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate                      = useNavigate();
   const [tab, setTab]                 = useState('all');
   const [domains, setDomains]         = useState([]);
+  const [registrations, setRegistrations] = useState([]);
   const [swPurchases, setSwPurchases] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [helpModal, setHelpModal]     = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
 
-  // Optional: pull user info from your auth context/store for the invoice billing section
-  // const { user } = useAuth();
-  const user = {}; // Replace with real user: { name, email, gstin, address }
-
   useEffect(() => {
     setLoading(true);
     Promise.all([
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
+      domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
-    ]).then(([d, s]) => {
+    ]).then(([d, reg, s]) => {
       setDomains(extractDomainList(d.data));
+      const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
+      setRegistrations(regList.filter(isRegistrationPurchase));
       setSwPurchases(asArray(s.data));
     }).finally(() => setLoading(false));
   }, []);
@@ -45,14 +54,21 @@ export default function PurchasesPage() {
     d.purchasedByUserId ||
     d.purchased_by_user_id
   );
+  const completedRegistrations = asArray(registrations);
   const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
-  const totalItems        = completedDomains.length + completedSoftware.length;
+  const domainTabCount = completedDomains.length + completedRegistrations.length;
+  const totalItems        = domainTabCount + completedSoftware.length;
+
+  const domainTabItems = [
+    ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
+    ...completedRegistrations.map(o => ({ ...o, _type: 'domain_registration' })),
+  ];
 
   const displayItems =
-    tab === 'domains'  ? completedDomains.map(d => ({ ...d, _type: 'domain' }))
+    tab === 'domains'  ? domainTabItems
   : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
   : [
-      ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
+      ...domainTabItems,
       ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
     ];
 
@@ -62,13 +78,13 @@ export default function PurchasesPage() {
         <div className="mb-6">
           <div>
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">My Purchases</h1>
-            <p className="text-gray-600 mt-1">All your domain and software purchases in one place.</p>
+            <p className="text-gray-600 mt-1">Marketplace buys, new domain registrations, and software in one place.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard label="Total Purchases"  value={totalItems}                  iconSrc={PurchaseIcon} />
-          <StatCard label="Domains"          value={completedDomains.length}     iconSrc={DomainsIcon} color="#6eadc8" />
+          <StatCard label="Domains"          value={domainTabCount}     iconSrc={DomainsIcon} color="#6eadc8" />
           <StatCard label="Software"         value={completedSoftware.length}    iconSrc={SoftwareIcon} color="#a06ec8" />
           <StatCard label="CoBrother Active"
             value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
@@ -78,7 +94,7 @@ export default function PurchasesPage() {
         <div className="flex gap-2 mb-6">
           {[
             { id: 'all',      label: `All (${totalItems})` },
-            { id: 'domains',  label: `Domains (${completedDomains.length})` },
+            { id: 'domains',  label: `Domains (${domainTabCount})` },
             { id: 'software', label: `Software (${completedSoftware.length})` },
           ].map(t => (
             <button key={t.id}
@@ -98,18 +114,27 @@ export default function PurchasesPage() {
             <div className="text-6xl mb-4">🛒</div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No purchases yet</h3>
             <p className="text-gray-600 mb-6">Browse domains and software to make your first purchase.</p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-3 justify-center flex-wrap">
               <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>Browse Domains</button>
+              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/storefront')}>Register a Domain</button>
               <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>Browse Technology</button>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3.5">
             {displayItems.map((item) =>
-              item._type === 'domain' ? (
+              item._type === 'domain_registration' ? (
+                <RegistrationPurchaseRow
+                  key={'reg-' + item.id}
+                  order={item}
+                  user={user}
+                  t={t}
+                />
+              ) : item._type === 'domain' ? (
                 <DomainPurchaseRow
                   key={'d-' + item.id}
                   domain={item}
+                  user={user}
                 />
               ) : (
                 <SoftwarePurchaseRow
@@ -162,14 +187,14 @@ export default function PurchasesPage() {
 /* ─────────────────────────────────────────────────────────
    Domain Purchase Row
 ───────────────────────────────────────────────────────── */
-function DomainPurchaseRow({ domain }) {
+function DomainPurchaseRow({ domain, user }) {
   const { formatPrice } = useCurrency();
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
       <div className="flex justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">◇ Domain</span>
+            <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">◇ Resale</span>
             {domain.verified && <span className="text-xs font-bold text-green-600">✓ Verified</span>}
           </div>
           <div className="font-bold text-lg text-gray-900">
@@ -181,6 +206,48 @@ function DomainPurchaseRow({ domain }) {
           <div className="font-display text-xl font-bold text-green-600">
             {formatPrice(domain.askingPrice)}
           </div>
+          <InvoiceDownloadButton
+            onClick={() => generateInvoice({ type: 'domain', item: domain, user })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RegistrationPurchaseRow({ order, user, t }) {
+  const amount = Number(order.priceInr || 0);
+  const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
+  const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);
+
+  return (
+    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
+              ◇ Registration
+            </span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge}`}>{label}</span>
+          </div>
+          <div className="font-bold text-lg text-gray-900">{order.domain}</div>
+          <div className="text-xs text-gray-600">
+            {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : ''}
+          </div>
+        </div>
+        <div className="text-right flex flex-col items-end gap-2">
+          <div className="font-display text-xl font-bold text-emerald-700">
+            ₹{amount.toLocaleString('en-IN')}
+          </div>
+          <Link
+            to={registrationOrderDetailPath(order.id)}
+            className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+          >
+            View order →
+          </Link>
+          <InvoiceDownloadButton
+            onClick={() => generateInvoice({ type: 'domain_registration', item: order, user })}
+          />
         </div>
       </div>
     </div>

@@ -52,6 +52,7 @@ const CoCreationPage = lazy(() => import('./pages/CoCreationPage'));
 const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const AuctionsPage = lazy(() => import('./pages/AuctionsPage'));
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
+const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
 
 function RedirectLegacyCocreationAuction() {
   const { auctionId } = useParams();
@@ -256,6 +257,15 @@ export default function App() {
               element={
                 <ProfileGuard>
                   <DomainStorefrontPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/storefront/orders/:orderId"
+              element={
+                <ProfileGuard>
+                  <DomainRegistrationOrderPage />
                 </ProfileGuard>
               }
             />

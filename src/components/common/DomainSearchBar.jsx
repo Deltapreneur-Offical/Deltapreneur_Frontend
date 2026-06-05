@@ -55,7 +55,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       ext,
       status:  'loading',
       price:   null,
+      unitPrice: null,
       priceCurrency: null,
+      priceSource: null,
+      registrarSandbox: null,
+      registrarEnv: null,
       minPeriodYears: 1,
       listing: null,
     })));
@@ -71,7 +75,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 ...r,
                 status: data.status,
                 price: data.price ?? null,
+                unitPrice: data.unitPrice ?? data.price ?? null,
                 priceCurrency: data.priceCurrency ?? null,
+                priceSource: data.priceSource ?? null,
+                registrarSandbox: data.registrarSandbox ?? null,
+                registrarEnv: data.registrarEnv ?? null,
                 minPeriodYears: data.minPeriodYears ?? 1,
                 listing: data.listing ?? null,
               }
@@ -131,25 +139,26 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const Price = ({ result, large }) => {
-    if (!result.price) return null;
-    const p = Number(result.price);
-    const currency = result.priceCurrency;
+    const unit = Number(result.unitPrice ?? result.price);
+    if (!Number.isFinite(unit) || unit <= 0) return null;
+    const currency = result.priceCurrency || 'INR';
     const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
+    const total = years > 1 ? unit * years : unit;
     const periodLabel = years > 1 ? `/${years} yrs` : '/yr';
     return (
       <div className="mb-4">
-        <p className={`text-gray-400 line-through ${large ? 'text-base' : 'text-xs'}`}>
-          {formatRegistrarPrice(p * 1.8, currency)}
-        </p>
         <p className={`font-extrabold text-gray-900 ${large ? 'text-3xl' : 'text-xl'}`}>
-          {formatRegistrarPrice(p, currency)}
+          {formatRegistrarPrice(total, currency)}
           <span className={`font-normal text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>
             {periodLabel}
           </span>
         </p>
         {result.status === 'available' && (
           <p className={`text-gray-500 mt-1 ${large ? 'text-xs' : 'text-[11px]'}`}>
-            Registrar create price for .{result.ext} (from ResellerClub; same for any available name on this extension)
+            {result.registrarSandbox
+              ? `Sandbox registration price for .${result.ext} (ResellerClub demo API)`
+              : `Live registration price for .${result.ext} from ResellerClub`}
+            {years > 1 ? ` (${years}-year minimum)` : ''}
           </p>
         )}
       </div>
@@ -255,6 +264,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           )}
 
           {/* Best match */}
+          {best?.registrarSandbox && (
+            <p className="text-center text-amber-800 text-sm mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2">
+              ResellerClub sandbox — prices and checkout use your demo API credentials.
+            </p>
+          )}
+
           {best && (
             <div className={`domain-search-card domain-search-card--featured mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
               best.status === 'marketplace' ? 'border-indigo-300 ring-1 ring-indigo-100' :

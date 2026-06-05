@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus } from 'lucide-react';
 import { technologyAPI } from '../api/services';
@@ -46,6 +46,7 @@ export default function CoCreationPage() {
   const { user }  = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
   const navigate  = useNavigate();
+  const location = useLocation();
 
   const [allSoftware, setAllSoftware]       = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -87,6 +88,14 @@ export default function CoCreationPage() {
       resetPageWhen: filterTab,
     },
   );
+
+  useEffect(() => {
+    if (location.state?.openListTechnologyForm) {
+      setFilterTab('all');
+      setShowForm(true);
+      navigate('/technology', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   useEffect(() => {
     let cancelled = false;

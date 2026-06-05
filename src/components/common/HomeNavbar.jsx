@@ -8,6 +8,7 @@ import logoGreen from '../../assets/Cobrother_Green.png';
 import BackButton from './BackButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
+import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
 
 function HomeNavLogo({ className = '' }) {
@@ -153,9 +154,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
 
   const authButtons = !authLoading && !user ? (
     <>
-      <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/join-form')}>
+      <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
         {t('joinCoBrother')}
-      </button>
+      </JoinCoBrotherGradientButton>
       <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
         {t('signIn')}
       </button>
@@ -206,7 +207,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => toggleDesktopDropdown('technology')}
               >
                 <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
-                <DropdownLink onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</DropdownLink>
+                <DropdownLink onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                  {t('listTechnology')}
+                </DropdownLink>
               </NavDropdown>
 
               <NavDropdown
@@ -305,7 +308,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>{t('exploreTechnology')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                  {t('listTechnology')}
+                </button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -339,9 +344,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               )}
               {!authLoading && !user ? (
                 <div className="flex flex-col items-stretch gap-3 w-full">
-                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
+                  <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
                     {t('joinCoBrother')}
-                  </button>
+                  </JoinCoBrotherGradientButton>
                   <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
                     {t('signIn')}
                   </button>

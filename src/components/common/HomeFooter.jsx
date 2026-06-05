@@ -7,6 +7,7 @@ import { useCookieConsent } from '../../context/CookieConsentContext';
 import { FaWhatsapp } from 'react-icons/fa';
 
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
+import { EXTERNAL_LINK_PROPS, WHATSAPP_URL } from '../../config/contactLinks';
 
 
 
@@ -100,10 +101,6 @@ const WhatsappIcon = () => (
 
 
 
-const WHATSAPP_HREF = 'https://wa.me/919876543210';
-
-
-
 const socials = [
 
   { href: 'https://x.com/CoBrother141506', label: 'X', Icon: XIcon },
@@ -116,7 +113,7 @@ const socials = [
 
   { href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
 
-  { href: WHATSAPP_HREF, label: 'WhatsApp', Icon: WhatsappIcon },
+  { href: WHATSAPP_URL, label: 'WhatsApp', Icon: WhatsappIcon },
 
 ];
 
@@ -294,9 +291,7 @@ export default function HomeFooter() {
 
                   href={href}
 
-                  target="_blank"
-
-                  rel="noopener noreferrer"
+                  {...EXTERNAL_LINK_PROPS}
 
                   aria-label={label}
 

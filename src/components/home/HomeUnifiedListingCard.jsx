@@ -25,7 +25,7 @@ function pickCardMeta(type, listing) {
       initial: (display.name || '?').slice(0, 1).toUpperCase(),
       gradient: isAuction
         ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-        : 'from-indigo-600 via-blue-500 to-cyan-400',
+        : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]',
     };
   }
 
@@ -43,7 +43,7 @@ function pickCardMeta(type, listing) {
       initial: (listing.name || '?').slice(0, 1).toUpperCase(),
       gradient: isAuction
         ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-        : 'from-indigo-600 via-blue-500 to-cyan-400',
+        : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]',
     };
   }
 
@@ -67,7 +67,7 @@ function pickCardMeta(type, listing) {
     initial: (brand.brandName || '?').slice(0, 1).toUpperCase(),
     gradient: isAuction
       ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-      : 'from-indigo-600 via-blue-500 to-cyan-400',
+      : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]',
   };
 }
 
@@ -103,7 +103,7 @@ export default function HomeUnifiedListingCard({
               </span>
               <span className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm ${
                 meta.tagSecondary === 'VERIFIED'
-                  ? 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)]'
                   : 'bg-amber-100 text-amber-800'
               }`}>
                 {meta.tagSecondary}
@@ -129,12 +129,12 @@ export default function HomeUnifiedListingCard({
           {meta.description}
         </p>
 
-        <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
+        <div className="rounded-lg border border-[rgba(var(--cobrother-brand-green-rgb),0.22)] bg-[var(--cobrother-brand-green-soft)] px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
           <div className="flex items-baseline gap-1">
-            <span className="text-lg md:text-xl font-extrabold text-emerald-700 tracking-tight">
+            <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
               {formatPrice(meta.amount)}
             </span>
-            <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">
+            <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">
               {meta.amountCaption}
             </span>
           </div>

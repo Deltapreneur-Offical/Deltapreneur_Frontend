@@ -97,7 +97,16 @@ export const domainAPI = {
   create:          (data)    => api.post('/api/v1/domain/listings', data),
   update:          (id, data)=> api.put(`/api/v1/domain/listings/${id}`, data),
   delete:          (id)      => api.delete(`/api/v1/domain/listings/${id}`),
-  check: (name) => api.get(`/api/v1/domain/check?name=${name}`),
+  check: (name, mode) => api.get('/api/v1/domain/check', { params: { name, ...(mode ? { mode } : {}) } }),
+  search: ({ query, mode, page = 1, pageSize = 50 }) =>
+    api.get('/api/v1/domain/search', {
+      params: {
+        query,
+        mode,
+        page,
+        page_size: pageSize,
+      },
+    }),
   createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),
@@ -108,6 +117,11 @@ export const domainAPI = {
     api.post(`/api/v1/domain/${id}/image`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+};
+
+export const aiDomainsAPI = {
+  generate: (idea, options = {}) =>
+    api.post('/api/ai-domains/generate', { idea }, options),
 };
 
 /** Domain registration storefront (OpenProvider + Razorpay) — new domain checkout */

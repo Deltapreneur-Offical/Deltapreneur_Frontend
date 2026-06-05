@@ -1,8 +1,24 @@
+function toSafeText(value) {
+  if (typeof value === 'string') return value;
+  if (value == null) return '';
+  try {
+    return `${value}`;
+  } catch {
+    return '';
+  }
+}
+
+function toSafeLower(value) {
+  const text = toSafeText(value);
+  if (typeof text === 'string') return text.toLowerCase();
+  return '';
+}
+
 export function normalizeDomainExtension(ext) {
-  const trimmed = (ext ?? '').toString().trim();
+  const trimmed = toSafeText(ext).trim();
   if (!trimmed || trimmed === '.') return null;
   const full = trimmed.startsWith('.') ? trimmed : `.${trimmed}`;
-  const key = full.replace(/^\./, '').toLowerCase();
+  const key = toSafeLower(full.replace(/^\./, ''));
   if (!key) return null;
   const known = ['com', 'in', 'io', 'net', 'org', 'co', 'ai'];
   return {
@@ -14,8 +30,8 @@ export function normalizeDomainExtension(ext) {
 
 /** Split name + extension for display (handles legacy rows with extension only in domainName). */
 export function resolveDomainDisplay(domain) {
-  let name = (domain?.domainName ?? '').trim();
-  let rawExt = (domain?.domainExtension ?? '').trim();
+  let name = toSafeText(domain?.domainName).trim();
+  let rawExt = toSafeText(domain?.domainExtension).trim();
 
   if (!rawExt && name.includes('.')) {
     const dot = name.indexOf('.');

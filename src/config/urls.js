@@ -13,12 +13,21 @@ export const PRODUCTION_API_ORIGIN = 'https://cobrother-backend.onrender.com';
 export const PRODUCTION_APP_URL = 'https://co-brother-frontend.vercel.app';
 
 /**
- * Local Uvicorn is HTTP-only. `https://localhost:8000` causes ERR_SSL_PROTOCOL_ERROR.
+ * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` causes ERR_SSL_PROTOCOL_ERROR.
  */
 function normalizeLocalApiBase(url) {
   if (!url || typeof url !== 'string') return url;
-  const t = url.trim();
-  if (/^https:\/\/(127\.0\.0\.1|localhost):(8000|8080)(\/|$)/i.test(t)) {
+  let t = url.trim();
+  try {
+    const parsed = new URL(t);
+    if (['127.0.0.1', 'localhost'].includes(parsed.hostname)) {
+      parsed.port = '8000';
+      t = parsed.toString().replace(/\/$/, '');
+    }
+  } catch {
+    // Relative URLs are handled by the caller.
+  }
+  if (/^https:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(t)) {
     return `http://${t.slice('https://'.length)}`;
   }
   return t;
@@ -28,10 +37,10 @@ const remoteApiBaseRaw =
   import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
 const remoteApiBase = normalizeLocalApiBase(remoteApiBaseRaw);
 
-/** True when .env points at local Uvicorn on :8000. */
+/** True when .env points at local Uvicorn on :8000 */
 const isLocalBackend =
   !remoteApiBase ||
-  /^https?:\/\/(127\.0\.0\.1|localhost):(8000|8080)(\/|$)/i.test(remoteApiBase);
+  /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
 function isFrontendOrigin(url) {
   if (!url || typeof window === 'undefined') return false;
@@ -47,12 +56,11 @@ function isFrontendOrigin(url) {
  * Never the Vercel SPA origin — oauth_state cookies must be set on the same host as the callback.
  */
 export function resolveBackendOrigin() {
-  // Local dev uses :8000 (FastAPI). OAuth/WS must match the backend host.
-  if (import.meta.env.DEV && isLocalBackend) {
-    return 'http://127.0.0.1:8000';
-  }
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
     return remoteApiBase.replace(/\/$/, '');
+  }
+  if (import.meta.env.DEV && isLocalBackend) {
+    return 'http://127.0.0.1:8000';
   }
   return PRODUCTION_API_ORIGIN;
 }
@@ -81,6 +89,12 @@ export const API_ORIGIN = resolveBackendOrigin();
 
 /** Axios baseURL */
 export const API_BASE_URL = resolveApiBaseUrl();
+
+if (import.meta.env.DEV && typeof console !== 'undefined') {
+  const apiTarget = API_BASE_URL || API_ORIGIN;
+  const mode = API_BASE_URL ? 'direct' : 'vite-proxy';
+  console.info(`[frontend] API target URL: ${apiTarget} (${mode})`);
+}
 
 export const APP_BASE_URL =
   import.meta.env.VITE_APP_URL ||

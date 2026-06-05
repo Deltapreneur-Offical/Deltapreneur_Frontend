@@ -46,13 +46,13 @@ export default function DomainsSection() {
   };
 
   return (
-    <section className="bg-white py-4 md:py-6">
+    <section className="bg-white pt-0 pb-3 md:pt-0 md:pb-4">
       <div className="w-full">
         <HomeSectionHeader title={t('domains')} to="/domains" />
         {loading ? (
-          <p className="text-center text-gray-500 py-8">{t('loading')}</p>
+          <p className="text-center text-gray-500 py-4">{t('loading')}</p>
         ) : previewDomains.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">{t('noDomains')}</p>
+          <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : (
           <HomePreviewRow>
             {previewDomains.map((domain) => (

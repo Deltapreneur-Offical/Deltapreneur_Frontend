@@ -14,6 +14,7 @@ import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
+import DomainManagementCard from '../components/domain/DomainManagementCard';
 import {
   readApiError,
   registrationStatusBadgeClass,
@@ -181,6 +182,8 @@ export default function DomainRegistrationOrderPage() {
           <p className="text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-3">{order.message}</p>
         )}
 
+        <DomainManagementCard domainManagement={order.domainManagement} />
+
         {steps.length > 0 && (
           <section className="bg-white border border-gray-200 rounded-xl p-5">
             <h2 className="text-sm font-semibold text-gray-900 mb-3">
@@ -221,35 +224,7 @@ export default function DomainRegistrationOrderPage() {
           {order.icannVerificationStatus && order.icannVerificationStatus !== 'UNKNOWN' && (
             <Detail label={t('regOrderIcann', { defaultValue: 'Registrant verification' })} value={order.icannVerificationStatus} />
           )}
-          {Array.isArray(order.nameservers) && order.nameservers.length > 0 && (
-            <div className="sm:col-span-2">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">
-                {t('regOrderNameservers', { defaultValue: 'Nameservers' })}
-              </div>
-              <ul className="text-gray-900 font-mono text-xs space-y-1">
-                {order.nameservers.map((ns) => (
-                  <li key={ns}>{ns}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </section>
-
-        {order.registrarControlPanelUrl && order.lifecycleStatus === 'registration_confirmed' && (
-          <p className="text-sm text-gray-600">
-            {t('regOrderManageDnsHint', {
-              defaultValue: 'To manage DNS records or change nameservers, sign in to your registrar control panel:',
-            })}{' '}
-            <a
-              href={order.registrarControlPanelUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 hover:underline font-medium"
-            >
-              {order.registrarControlPanelUrl}
-            </a>
-          </p>
-        )}
 
         <div className="flex flex-wrap gap-3">
           <button

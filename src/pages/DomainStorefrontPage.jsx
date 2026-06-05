@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
+import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
@@ -519,6 +520,16 @@ export default function DomainStorefrontPage() {
                         </span>
                       </td>
                       <td className="py-3 flex flex-wrap gap-2">
+                        {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+                          <a
+                            href={domainManagementHref(order)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-700 hover:text-indigo-900 text-xs font-semibold"
+                          >
+                            {t('domainMgmtOpenPanel', { defaultValue: 'Manage DNS' })}
+                          </a>
+                        ) : null}
                         <Link
                           to={registrationOrderDetailPath(order.id)}
                           className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold"

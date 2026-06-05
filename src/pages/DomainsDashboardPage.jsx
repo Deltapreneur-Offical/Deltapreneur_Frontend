@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
 import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
+import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainVerificationModal from './DomainVerificationModal';
@@ -159,15 +160,25 @@ export default function DomainsDashboardPage() {
                     <div className="font-bold text-gray-900">{order.domain}</div>
                     <div className="text-[0.8rem] text-gray-500">New registration · {order.lifecycleStatus || order.status}</div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap justify-end">
                     <span className="text-[0.95rem] font-bold text-gray-900">
                       ₹{Number(order.priceInr || 0).toLocaleString('en-IN')}
                     </span>
+                    {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+                      <a
+                        href={domainManagementHref(order)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
+                      >
+                        Manage DNS
+                      </a>
+                    ) : null}
                     <Link
                       to={registrationOrderDetailPath(order.id)}
                       className="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
                     >
-                      Details
+                      Order details
                     </Link>
                   </div>
                 </div>

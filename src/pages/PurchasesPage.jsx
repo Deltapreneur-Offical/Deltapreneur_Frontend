@@ -19,6 +19,7 @@ import {
   registrationStatusBadgeClass,
   registrationStatusLabel,
 } from '../utils/domainRegistrationOrder';
+import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import { useTranslation } from 'react-i18next';
 
 export default function PurchasesPage() {
@@ -239,6 +240,16 @@ function RegistrationPurchaseRow({ order, user, t }) {
           <div className="font-display text-xl font-bold text-emerald-700">
             ₹{amount.toLocaleString('en-IN')}
           </div>
+          {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+            <a
+              href={domainManagementHref(order)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
+            >
+              Manage DNS →
+            </a>
+          ) : null}
           <Link
             to={registrationOrderDetailPath(order.id)}
             className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"

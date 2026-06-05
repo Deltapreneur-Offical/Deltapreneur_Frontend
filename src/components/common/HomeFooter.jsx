@@ -177,7 +177,7 @@ export default function HomeFooter() {
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
 
-          <div className="flex flex-col items-start justify-start sm:col-span-2 md:col-span-4 lg:col-span-4">
+          <div className="flex flex-col items-start justify-start sm:col-span-2 md:col-span-4 lg:col-span-3">
 
             <Link to="/" className="group mb-4 inline-block">
 
@@ -313,11 +313,11 @@ export default function HomeFooter() {
 
 
 
-        <div className="mt-10 border-t border-slate-200/45 pt-5 text-center sm:mt-12 sm:pt-6 sm:text-left">
+        <div className="home-footer-copyright mt-10 border-t border-slate-200/45 pt-5 text-left sm:mt-12 sm:pt-6">
 
           <p className="text-xs text-slate-600 sm:text-sm">
 
-            {t('Copyright © {{year}} CoBrother™ All rights reserved.  ', {
+            {t('footerCopyright', {
 
               year: new Date().getFullYear(),
 

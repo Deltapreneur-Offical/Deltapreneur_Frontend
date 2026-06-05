@@ -209,9 +209,9 @@ export default function App() {
             <Route
               path="/dashboard"
               element={
-                <ProfileGuard>
+                <ProtectedRoute>
                   <DashboardPage />
-                </ProfileGuard>
+                </ProtectedRoute>
               }
             />
 

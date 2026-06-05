@@ -7,7 +7,7 @@ import './styles/listing-card-glow.css'
 import './styles/listing-cards-unified.css'
 import './styles/home-preview-cards.css'
 import './styles/domain-ticker.css'
-import './i18n'
+import './i18n/index';
 import App from './App.jsx'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'
 

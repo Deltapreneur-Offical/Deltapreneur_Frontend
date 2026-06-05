@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import ListingBrowseFooter from './ListingBrowseFooter';
@@ -21,6 +22,7 @@ export default function CommunityListingCard({
   likeState,
   onLike,
 }) {
+  const { t } = useTranslation();
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
   const accentGrad = 'from-teal-600 via-cyan-500 to-blue-500';
 
@@ -30,7 +32,7 @@ export default function CommunityListingCard({
       {profile.role && (
         <ListingCardBadge variant="verified">{profile.role.replace(/_/g, ' ')}</ListingCardBadge>
       )}
-      {isMe && <ListingCardBadge variant="owner">✦ You</ListingCardBadge>}
+      {isMe && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
     </>
   );
 
@@ -38,7 +40,7 @@ export default function CommunityListingCard({
     <>
       <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
         <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1">
-          {profile.name || 'Anonymous'}
+          {profile.name || t('listingCardAnonymous')}
         </h3>
         <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
           {profile.industry && (
@@ -54,7 +56,7 @@ export default function CommunityListingCard({
         </div>
       </div>
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[30px] flex-shrink-0">
-        {profile.bio || profile.description || 'Creator profile on CoBrother marketplace.'}
+        {profile.bio || profile.description || t('listingCardCreatorSummary')}
       </p>
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2 max-h-[52px] overflow-hidden flex-shrink-0">
@@ -78,14 +80,14 @@ export default function CommunityListingCard({
           className="flex items-center gap-1 text-[10px] text-[#0077b5] no-underline mb-2 hover:text-[#005885] flex-shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <LinkedInIcon size={12} /> View LinkedIn profile
+          <LinkedInIcon size={12} /> {t('listingCardViewDetails')}
         </a>
       )}
     </>
   );
 
   const footer = browseMode ? (
-    <ListingBrowseFooter onViewDetails={onView} label="View Profile" className="border-t-0 pt-0">
+    <ListingBrowseFooter onViewDetails={onView} label={t('listingCardViewDetails')} className="border-t-0 pt-0">
       {onLike ? (
         <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} forceRed />
       ) : (
@@ -105,7 +107,7 @@ export default function CommunityListingCard({
           className="py-1.5 px-3 bg-gray-900 text-white text-[10px] font-bold rounded hover:bg-gray-800 inline-flex items-center gap-1"
           onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
         >
-          <EditIcon size={14} /> Edit
+          <EditIcon size={14} /> {t('edit')}
         </button>
       )}
     </div>

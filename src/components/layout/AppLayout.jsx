@@ -252,7 +252,7 @@ export default function AppLayout({ children }) {
 
         <div className="app-sidebar-body">
           <nav className="app-sidebar-nav" aria-label="Main navigation">
-            {!sidebarCollapsed && <p className="app-sidebar-section-label">Menu</p>}
+            {!sidebarCollapsed && <p className="app-sidebar-section-label">{t('navMenu')}</p>}
             <div className="app-sidebar-nav-list">
               {navItems.map((item) => {
                 const active = isActive(item.to);
@@ -294,7 +294,7 @@ export default function AppLayout({ children }) {
           </nav>
 
           <div className="app-sidebar-footer">
-            {!sidebarCollapsed && <p className="app-sidebar-section-label">Account</p>}
+            {!sidebarCollapsed && <p className="app-sidebar-section-label">{t('accountSection')}</p>}
             <div className="app-sidebar-footer-inner">
             <Link
               to="/"
@@ -397,7 +397,7 @@ export default function AppLayout({ children }) {
 
             <div className="app-sidebar-body">
               <nav className="app-sidebar-nav" aria-label="Main navigation">
-                <p className="app-sidebar-section-label">Menu</p>
+                <p className="app-sidebar-section-label">{t('navMenu')}</p>
                 <div className="app-sidebar-nav-list">
                   {navItems.map((item) => {
                     const active = isActive(item.to);
@@ -436,7 +436,7 @@ export default function AppLayout({ children }) {
               </nav>
 
               <div className="app-sidebar-footer">
-                <p className="app-sidebar-section-label">Account</p>
+                <p className="app-sidebar-section-label">{t('accountSection')}</p>
                 <div className="app-sidebar-footer-inner">
                 <Link
                   to="/"
@@ -556,24 +556,24 @@ export default function AppLayout({ children }) {
                     className="app-notif-dropdown bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
                     style={notifPanelStyle}
                     role="dialog"
-                    aria-label="Notifications"
+                    aria-label={t('notifications')}
                   >
                     <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100 gap-2">
-                      <span className="font-semibold text-sm text-gray-900">Notifications</span>
+                      <span className="font-semibold text-sm text-gray-900">{t('notifications')}</span>
                       {unreadCount > 0 && (
                         <button
                           type="button"
                           className="text-xs text-gray-500 hover:text-gray-700 shrink-0 whitespace-nowrap"
                           onClick={handleMarkAllRead}
                         >
-                          Mark all read
+                          {t('markAllRead')}
                         </button>
                       )}
                     </div>
                     <div className="max-h-[min(380px,calc(100vh-8rem))] overflow-y-auto">
                       {notifications.length === 0 ? (
                         <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                          No notifications yet
+                          {t('noNotificationsYet')}
                         </div>
                       ) : (
                         notifications.map((notification) => (

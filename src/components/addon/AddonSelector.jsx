@@ -6,17 +6,20 @@
  *   onChange   : (string[]) => void
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
+import i18n from '../../i18n';
 
 export const ADDON_SERVICES = [
-  { key: 'GST_REGISTRATION',       label: 'GST Registration',                           price: 3000,  contactOnly: false },
-  { key: 'TRADEMARK_REGISTRATION',  label: 'Trademark Registration',                     price: 0,     contactOnly: true  },
-  { key: 'COMPANY_REGISTRATION',    label: 'Company / LLP / Proprietorship Registration', price: 0,    contactOnly: true  },
-  { key: 'UDYAM_REGISTRATION',      label: 'Udyam Registration',                         price: 1500,  contactOnly: false },
-  { key: 'WEBSITE_DEVELOPMENT',     label: 'Website Development',                        price: 0,     contactOnly: true  },
-  { key: 'IEC_REGISTRATION',        label: 'Import Export Code (IEC) Registration',      price: 2000,  contactOnly: false },
-  { key: 'DIGITAL_SIGNATURE',       label: 'Digital Signature Certificate',              price: 3000,  contactOnly: false },
-  { key: 'PROFESSIONAL_TAX',        label: 'Professional Tax Registration',               price: 2500,  contactOnly: false },
-  { key: 'STARTUP_INDIA',           label: 'Startup India Registration',                 price: 3000,  contactOnly: false },
+  { key: 'GST_REGISTRATION',       labelKey: 'addonGstRegistration',       price: 3000,  contactOnly: false },
+  { key: 'TRADEMARK_REGISTRATION',  labelKey: 'addonTrademarkRegistration', price: 0,     contactOnly: true  },
+  { key: 'COMPANY_REGISTRATION',    labelKey: 'addonCompanyRegistration',    price: 0,    contactOnly: true  },
+  { key: 'UDYAM_REGISTRATION',      labelKey: 'addonUdyamRegistration',      price: 1500,  contactOnly: false },
+  { key: 'WEBSITE_DEVELOPMENT',     labelKey: 'addonWebsiteDevelopment',     price: 0,     contactOnly: true  },
+  { key: 'IEC_REGISTRATION',        labelKey: 'addonIecRegistration',        price: 2000,  contactOnly: false },
+  { key: 'DIGITAL_SIGNATURE',       labelKey: 'addonDigitalSignature',       price: 3000,  contactOnly: false },
+  { key: 'PROFESSIONAL_TAX',        labelKey: 'addonProfessionalTax',        price: 2500,  contactOnly: false },
+  { key: 'STARTUP_INDIA',           labelKey: 'addonStartupIndia',           price: 3000,  contactOnly: false },
 ];
 
 export function addonTotal(selected) {
@@ -26,10 +29,13 @@ export function addonTotal(selected) {
 }
 
 export function addonLabel(key) {
-  return ADDON_SERVICES.find(s => s.key === key)?.label ?? key;
+  const svc = ADDON_SERVICES.find(s => s.key === key);
+  return svc ? i18n.t(svc.labelKey) : key;
 }
 
 export default function AddonSelector({ selected = [], onChange }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [open, setOpen] = useState(false);
 
   const toggle = (key) => {
@@ -43,7 +49,6 @@ export default function AddonSelector({ selected = [], onChange }) {
 
   return (
     <div className="mt-4">
-      {/* ── Header toggle ─────────────────────────────────────── */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -51,7 +56,7 @@ export default function AddonSelector({ selected = [], onChange }) {
       >
         <span className="flex items-center gap-2">
           <span className="text-base">🏢</span>
-          Add Business Registration Services
+          {t('addonSelectorTitle')}
           {selected.length > 0 && (
             <span className="ml-1 px-2 py-0.5 bg-indigo-600 text-white text-xs rounded-full">
               {selected.length}
@@ -59,16 +64,15 @@ export default function AddonSelector({ selected = [], onChange }) {
           )}
         </span>
         <span className="text-indigo-500 text-xs font-normal">
-          {open ? '▲ Hide' : '▼ Show'}
+          {open ? t('addonSelectorHide') : t('addonSelectorShow')}
         </span>
       </button>
 
-      {/* ── Dropdown panel ────────────────────────────────────── */}
       {open && (
         <div className="mt-2 border border-indigo-100 rounded-xl overflow-hidden shadow-sm">
           <div className="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex items-start justify-between gap-3">
             <p className="text-xs text-indigo-700 leading-relaxed flex-1">
-              Select any services you'd like. Paid services are charged now; contact-based services are free — our team will reach out within 24 hours.
+              {t('addonSelectorHint')}
             </p>
             {selected.length > 0 && (
               <button
@@ -76,7 +80,7 @@ export default function AddonSelector({ selected = [], onChange }) {
                 onClick={() => onChange([])}
                 className="shrink-0 text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline underline-offset-2 whitespace-nowrap"
               >
-                Unselect All
+                {t('addonSelectorUnselectAll')}
               </button>
             )}
           </div>
@@ -91,7 +95,6 @@ export default function AddonSelector({ selected = [], onChange }) {
                     checked ? 'bg-indigo-50' : 'bg-white hover:bg-gray-50'
                   }`}
                 >
-                  {/* Checkbox */}
                   <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                     checked ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'
                   }`}>
@@ -109,22 +112,21 @@ export default function AddonSelector({ selected = [], onChange }) {
                     onChange={() => toggle(service.key)}
                   />
 
-                  {/* Label + price */}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 leading-snug">
-                      {service.label}
+                      {t(service.labelKey)}
                     </div>
                     {service.contactOnly && (
-                      <div className="text-xs text-amber-600 mt-0.5">📞 We'll contact you — no charge now</div>
+                      <div className="text-xs text-amber-600 mt-0.5">{t('addonSelectorContactNote')}</div>
                     )}
                   </div>
 
                   <div className="flex-shrink-0 text-right">
                     {service.contactOnly ? (
-                      <span className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">Contact</span>
+                      <span className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">{t('addonSelectorContact')}</span>
                     ) : (
                       <span className="text-sm font-bold text-gray-900">
-                        ₹{service.price.toLocaleString('en-IN')}
+                        {formatPrice(service.price)}
                       </span>
                     )}
                   </div>
@@ -133,18 +135,17 @@ export default function AddonSelector({ selected = [], onChange }) {
             })}
           </div>
 
-          {/* ── Running total ────────────────────────────────── */}
           {selected.length > 0 && (
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <div className="text-xs text-gray-600">
-                {selected.length} service{selected.length > 1 ? 's' : ''} selected
+                {t('addonSelectorServicesSelected', { count: selected.length })}
                 {selected.some(k => ADDON_SERVICES.find(s=>s.key===k)?.contactOnly) && (
-                  <span className="ml-1 text-amber-600">· some are contact-based</span>
+                  <span className="ml-1 text-amber-600">{t('addonSelectorSomeContactBased')}</span>
                 )}
               </div>
               {total > 0 && (
                 <div className="text-sm font-bold text-indigo-700">
-                  + ₹{total.toLocaleString('en-IN')} add-ons
+                  {t('addonSelectorAddonsTotal', { price: formatPrice(total) })}
                 </div>
               )}
             </div>

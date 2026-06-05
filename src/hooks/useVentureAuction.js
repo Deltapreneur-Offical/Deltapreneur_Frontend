@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { ventureAuctionAPI } from '../api/services';
-import { API_ORIGIN } from '../config/urls';
+import { resolveRealtimeOrigin } from '../config/urls';
 import { resolveAuctionBidLimits } from '../utils/auctionBidLimits';
 
 const toNum = (value, fallback = 0) => {
@@ -121,7 +121,7 @@ export function useVentureAuction(auctionId) {
     if (!auctionId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${API_ORIGIN.replace(/\/$/, '')}/ws`),
+      webSocketFactory: () => new SockJS(`${resolveRealtimeOrigin()}/ws`),
       reconnectDelay: 3000,
       onConnect: () => {
         setConnected(true);

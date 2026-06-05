@@ -1,6 +1,9 @@
 const MAX_BID_ACTIVE_RATIO = 1.5;
 const MIN_BID_UNIT_INCREMENT = 1;
 
+const defaultInrFormat = (value) =>
+  `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+
 export function toBidNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -43,21 +46,21 @@ export function resolveAuctionBidLimits({
   };
 }
 
-export function validateBidAmount(amount, limits) {
+export function validateBidAmount(amount, limits, formatInr = defaultInrFormat) {
   const value = Number(amount);
   if (!Number.isFinite(value) || value <= 0) {
     return 'Enter a valid bid amount.';
   }
   if (limits.minNextBid > 0 && value < limits.minNextBid) {
-    return `Minimum bid is ₹${Number(limits.minNextBid).toLocaleString('en-IN')}.`;
+    return `Minimum bid is ${formatInr(limits.minNextBid)}.`;
   }
   if (limits.maxBidPrice > 0 && value > limits.maxBidPrice) {
-    return `Bid cannot exceed ₹${Number(limits.maxBidPrice).toLocaleString('en-IN')} (150% of the current active bid).`;
+    return `Bid cannot exceed ${formatInr(limits.maxBidPrice)} (150% of the current active bid).`;
   }
   return null;
 }
 
-export function formatBidRangeLabel(limits) {
+export function formatBidRangeLabel(limits, formatInr = defaultInrFormat) {
   if (!limits?.minNextBid || !limits?.maxBidPrice) return '';
-  return `₹${Number(limits.minNextBid).toLocaleString('en-IN')} – ₹${Number(limits.maxBidPrice).toLocaleString('en-IN')}`;
+  return `${formatInr(limits.minNextBid)} – ${formatInr(limits.maxBidPrice)}`;
 }

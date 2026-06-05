@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Eye } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -54,6 +55,7 @@ export default function TechnologyListingCard({
   onAuction,
   auctionStatus,
 }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -75,9 +77,9 @@ export default function TechnologyListingCard({
       {item.verified ? (
         <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
       ) : (
-        <ListingCardBadge variant="pending">Pending</ListingCardBadge>
+        <ListingCardBadge variant="pending">{t('listingCardVerificationPending')}</ListingCardBadge>
       )}
-      {owner && <ListingCardBadge variant="owner">✦ Owner</ListingCardBadge>}
+      {owner && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
       {item.official && (
         <ListingCardBadge variant="glass">✦ Official</ListingCardBadge>
       )}
@@ -88,7 +90,7 @@ export default function TechnologyListingCard({
     <>
       <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
         <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1">
-          {item.name || 'Unnamed technology'}
+          {item.name || t('listingCardTechnology')}
         </h3>
         <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
           <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
@@ -101,8 +103,8 @@ export default function TechnologyListingCard({
       </div>
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[30px] flex-shrink-0">
         {owner && showVerificationNotice
-          ? 'Awaiting admin verification.'
-          : (item.description || 'Technology listing on CoBrother marketplace.')}
+          ? t('listingCardAwaitingVerification')
+          : (item.description || t('listingCardTechnology'))}
       </p>
       <ListingPriceBox
         variant={isAuction ? 'auction' : 'deal'}
@@ -138,7 +140,7 @@ export default function TechnologyListingCard({
               className={btnEdit}
               onClick={(e) => { e.stopPropagation(); onEdit(); }}
             >
-              Edit
+              {t('edit')}
             </button>
           )}
           <button
@@ -146,16 +148,16 @@ export default function TechnologyListingCard({
             className={btnRemove}
             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
           >
-            Remove
+            {t('remove')}
           </button>
           {canRequestTechnologyAuction(item, auctionStatus) && onAuction && (
             <button type="button" className={btnAuction} onClick={() => onAuction()}>
-              Auction
+              {t('listingCardPutToAuction')}
             </button>
           )}
           {isTechnologyAuctionPending(item, auctionStatus) && (
             <span className={`${btnPill} text-center text-amber-700 bg-amber-50 border border-amber-200 font-semibold`}>
-              Pending
+              {t('listingCardAuctionPending')}
             </span>
           )}
           {(auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED')
@@ -168,7 +170,7 @@ export default function TechnologyListingCard({
                 navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
               }}
             >
-              {isTechnologyAuctionLive(item, auctionStatus) ? 'Live' : 'View'}
+              {isTechnologyAuctionLive(item, auctionStatus) ? t('listingCardViewLiveAuction') : t('listingCardViewAuction')}
             </button>
           )}
         </>
@@ -179,7 +181,7 @@ export default function TechnologyListingCard({
             className={btnRemove}
             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
           >
-            Remove
+            {t('remove')}
           </button>
           {isDirectPurchase(item, auctionStatus) && (
             <button
@@ -187,14 +189,14 @@ export default function TechnologyListingCard({
               className={btnBuy}
               onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
             >
-              Buy Now →
+              {t('listingCardBuyNowArrow')}
             </button>
           )}
         </>
       ) : isTechnologyAuctionLive(item, auctionStatus) ? (
         isAuctionBlockedByVerification(item) ? (
           <span className={`${btnPill} text-center text-amber-800 bg-amber-50 border border-amber-200 font-semibold`}>
-            Verification pending
+            {t('listingCardVerificationPending')}
           </span>
         ) : (
           <button
@@ -205,7 +207,7 @@ export default function TechnologyListingCard({
               navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
             }}
           >
-            Place Bid →
+            {t('listingCardPlaceBid')}
           </button>
         )
       ) : isDirectPurchase(item, auctionStatus) ? (
@@ -214,14 +216,14 @@ export default function TechnologyListingCard({
           className={btnBuy}
           onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
         >
-          Buy Now →
+          {t('listingCardBuyNowArrow')}
         </button>
       ) : isPurchaseBlockedByVerification(item) ? (
         <span className={`${btnPill} text-center text-amber-800 bg-amber-50 border border-amber-200 font-semibold`}>
-          Verification pending
+          {t('listingCardVerificationPending')}
         </span>
       ) : (
-        <span className={`${btnPill} text-center text-gray-400 italic`}>Sold</span>
+        <span className={`${btnPill} text-center text-gray-400 italic`}>{t('listingCardSold')}</span>
       )}
     </div>
   );

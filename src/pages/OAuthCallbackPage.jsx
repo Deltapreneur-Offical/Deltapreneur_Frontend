@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { resolvePostLoginPath } from '../utils/authSession';
@@ -16,6 +17,7 @@ import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
  *  3. flushSync(login(..., user)) then navigate on next tick so ProtectedRoute sees user
  */
 export default function OAuthCallbackPage() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const { login, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -95,7 +97,7 @@ export default function OAuthCallbackPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-indigo-50 text-purple-600 gap-6">
       <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-      <p className="text-gray-500 font-body">Completing sign-in…</p>
+      <p className="text-gray-500 font-body">{t('oauthCompletingSignIn')}</p>
     </div>
   );
 }

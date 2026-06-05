@@ -5,6 +5,8 @@
 
    
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import './styles/admin-panel.css';
+@import './styles/search-glow.css';
 
 @keyframes skeleton-shimmer {
   0%   { background-position: 200% 0; }
@@ -2043,6 +2045,12 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
 }
 .venture-detail-modal .modal-header h2,
 .venture-detail-modal h2 { color: #111827; }
+
+@media (max-width: 639px) {
+  .venture-detail-modal {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 
 /* ─── Domains Light UI ───────────────────────────────── */
 .domains-page .page-header h1,
@@ -5656,6 +5664,65 @@ body.home-menu-open {
   color: #ffffff;
   transform: translateX(2px);
   box-shadow: 0 6px 16px rgba(148, 64, 221, 0.25);
+}
+
+/* Footer — align logo + copyright with less left inset than hero sections */
+.home-footer-theme .home-hero-align-outer {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .home-footer-theme .home-hero-align-outer {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-footer-theme .home-hero-align-outer {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-footer-theme .home-hero-align-outer {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.home-footer-theme .home-hero-align-inner {
+  margin-left: 0;
+  margin-right: auto;
+  max-width: 1400px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Meeting scheduler — replace native `--:--` with HH:MM overlay */
+.meeting-time-field__input--empty {
+  color: transparent;
+}
+
+.meeting-time-field__input--empty::-webkit-datetime-edit,
+.meeting-time-field__input--empty::-webkit-datetime-edit-fields-wrapper {
+  color: transparent;
+}
+
+.meeting-time-field:focus-within .meeting-time-field__placeholder {
+  opacity: 0;
+}
+
+.meeting-time-field:focus-within .meeting-time-field__input--empty,
+.meeting-time-field:focus-within .meeting-time-field__input--empty::-webkit-datetime-edit,
+.meeting-time-field:focus-within .meeting-time-field__input--empty::-webkit-datetime-edit-fields-wrapper {
+  color: inherit;
+}
+
+.home-footer-copyright {
+  max-width: 36rem;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────────── */

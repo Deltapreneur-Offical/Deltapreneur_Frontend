@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { notificationAPI } from '../api/services';
 import { unwrapApiList } from '../utils/apiResponse';
 import AppLayout from '../components/layout/AppLayout';
@@ -30,15 +31,16 @@ const TYPE_COLORS = {
   TECHNOLOGY_VERIFIED:                 '#6ec896',
 };
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr, t) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
-  if (diff < 60)    return 'just now';
-  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 60)    return t('meetingsPageJustNow', { defaultValue: 'just now' });
+  if (diff < 3600)  return t('meetingsPageMinutesAgo', { count: Math.floor(diff / 60), defaultValue: '{{count}}m ago' });
+  if (diff < 86400) return t('meetingsPageHoursAgo', { count: Math.floor(diff / 3600), defaultValue: '{{count}}h ago' });
+  return t('meetingsPageDaysAgo', { count: Math.floor(diff / 86400), defaultValue: '{{count}}d ago' });
 }
 
 export default function NotificationsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading]             = useState(true);
@@ -72,22 +74,22 @@ export default function NotificationsPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Notifications</h1>
-            <p className="text-gray-600 mt-1">{unread.length} unread notification{unread.length !== 1 ? 's' : ''}</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('notifications')}</h1>
+            <p className="text-gray-600 mt-1">{t('notificationsPageUnread', { count: unread.length })}</p>
           </div>
           {unread.length > 0 && (
             <button className="btn-glow btn-glow-sm" onClick={handleMarkAllRead}>
-              ✓ Mark all as read
+              ✓ {t('markAllRead')}
             </button>
           )}
         </div>
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filter === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setFilter('all')}>
-            All ({notifications.length})
+            {t('notificationsPageFilterAll', { count: notifications.length })}
           </button>
           <button className={`btn-glow btn-glow-sm ${filter === 'unread' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setFilter('unread')}>
-            Unread ({unread.length})
+            {t('notificationsPageFilterUnread', { count: unread.length })}
           </button>
         </div>
 
@@ -96,8 +98,12 @@ export default function NotificationsPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🔔</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{filter === 'unread' ? 'All caught up!' : 'No notifications yet'}</h3>
-            <p className="text-gray-600">{filter === 'unread' ? 'No unread notifications.' : 'Activity will show up here.'}</p>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {filter === 'unread' ? t('notificationsPageAllCaughtUp') : t('noNotificationsYet')}
+            </h3>
+            <p className="text-gray-600">
+              {filter === 'unread' ? t('notificationsPageNoUnread') : t('notificationsPageActivityHint')}
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -112,7 +118,6 @@ export default function NotificationsPage() {
                       : 'bg-blue-50/80 border-blue-200'
                   } ${n.link ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'}`}>
 
-                  {/* Icon */}
                   <div className="w-[38px] h-[38px] rounded-[10px] flex-shrink-0 flex items-center justify-center text-lg"
                     style={{
                       background: `${color}18`,
@@ -121,14 +126,13 @@ export default function NotificationsPage() {
                     {TYPE_ICONS[n.type] || '🔔'}
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-2 flex-wrap">
                       <span className={`text-sm ${n.read ? 'font-medium text-gray-600' : 'font-bold text-gray-900'}`}>
                         {n.title || n.message}
                       </span>
                       <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {timeAgo(n.createdAt)}
+                        {timeAgo(n.createdAt, t)}
                       </span>
                     </div>
                     {n.title && n.message && n.message !== n.title && (
@@ -138,7 +142,6 @@ export default function NotificationsPage() {
                     )}
                   </div>
 
-                  {/* Unread dot */}
                   {!n.read && (
                     <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: color }} />
                   )}

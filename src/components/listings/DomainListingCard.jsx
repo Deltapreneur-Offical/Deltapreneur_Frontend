@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -25,12 +26,13 @@ function DomainCardBody({
   pricingLabel,
   isAdminListed,
   formatPrice,
+  t,
 }) {
   return (
     <>
       <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
         <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1" title={display.fullDomain}>
-          {display.fullDomain || 'Unnamed domain'}
+          {display.fullDomain || '—'}
         </h3>
         <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
           <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
@@ -48,8 +50,8 @@ function DomainCardBody({
       </div>
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[30px] flex-shrink-0">
         {domain.verified
-          ? '✓ Verified domain listing on CoBrother marketplace.'
-          : '⏳ Verification pending — listing on CoBrother marketplace.'}
+          ? t('listingCardVerifiedDomain')
+          : `⏳ ${t('listingCardVerificationPending')}`}
       </p>
       {showPriceBox ? (
         <ListingPriceBox
@@ -59,10 +61,10 @@ function DomainCardBody({
               ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
               : domain.askingPrice,
           )}
-          caption={isAuction ? (auctionLive ? 'current bid' : 'starting bid') : 'asking price'}
+          caption={isAuction ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid')) : t('listingCardAskingPrice')}
         />
       ) : (
-        <ListingPriceBox variant="auction" amount="Pending" caption="verification" />
+        <ListingPriceBox variant="auction" amount={t('listingCardVerificationPending')} caption={t('listingCardVerificationPending')} />
       )}
     </>
   );
@@ -81,6 +83,7 @@ export default function DomainListingCard({
   likeState,
   onLike,
 }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
@@ -98,7 +101,7 @@ export default function DomainListingCard({
     .toUpperCase() || '?';
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
-  const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed';
+  const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? t('listingCardNegotiable') : t('listingCardFixed');
   const needsVerification = !domain.verified;
   const purchaseBlocked = needsVerification && !isOwner;
   const showPriceBox = !needsVerification || isOwner;
@@ -119,7 +122,7 @@ export default function DomainListingCard({
     typeof window !== 'undefined'
       ? `${window.location.origin}/domains?id=${domain.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains?id=${domain.id}`;
-  const shareText = `Check out ${display.fullDomain} on CoBrother!`;
+  const shareText = t('listingCardShareDomain', { domain: display.fullDomain });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -139,9 +142,9 @@ export default function DomainListingCard({
       {domain.verified ? (
         <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
       ) : (
-        <ListingCardBadge variant="pending">Pending</ListingCardBadge>
+        <ListingCardBadge variant="pending">{t('listingCardVerificationPending')}</ListingCardBadge>
       )}
-      {isOwner && <ListingCardBadge variant="owner">✦ Owner</ListingCardBadge>}
+      {isOwner && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
     </>
   );
 
@@ -158,6 +161,7 @@ export default function DomainListingCard({
       pricingLabel={pricingLabel}
       isAdminListed={isAdminListed}
       formatPrice={formatPrice}
+      t={t}
     />
   );
 
@@ -222,21 +226,21 @@ export default function DomainListingCard({
                   className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold rounded hover:bg-gray-200 inline-flex items-center justify-center gap-1"
                   onClick={(e) => { stop(e); onEdit?.(); }}
                 >
-                  <EditIcon size={14} /> Edit
+                  <EditIcon size={14} /> {t('edit')}
                 </button>
                 <button
                   type="button"
                   className="flex-1 py-1.5 bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold rounded hover:bg-red-100 inline-flex items-center justify-center gap-1"
                   onClick={(e) => { stop(e); onDelete?.(); }}
                 >
-                  <Trash2 size={12} /> Remove
+                  <Trash2 size={12} /> {t('remove')}
                 </button>
                 <div className="relative" ref={shareRef}>
                   <button
                     type="button"
                     className="py-1.5 px-2 bg-gray-100 text-gray-600 text-[10px] font-bold rounded hover:bg-gray-200"
                     onClick={(e) => { stop(e); setShareOpen(!shareOpen); }}
-                    title="Share"
+                    title={t('listingCardShare')}
                   >
                     <Share2 size={12} />
                   </button>
@@ -253,21 +257,21 @@ export default function DomainListingCard({
                         className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                         onClick={() => handleShare(linkedinShare)}
                       >
-                        LinkedIn
+                        {t('listingCardLinkedIn')}
                       </button>
                       <button
                         type="button"
                         className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                         onClick={() => handleShare(facebookShare)}
                       >
-                        Facebook
+                        {t('listingCardFacebook')}
                       </button>
                       <button
                         type="button"
                         className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
                         onClick={() => handleShare(whatsappShare)}
                       >
-                        WhatsApp
+                        {t('listingCardWhatsApp')}
                       </button>
                     </div>
                   )}
@@ -276,7 +280,7 @@ export default function DomainListingCard({
             ) : isAuction ? (
               purchaseBlocked ? (
                 <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
-                  Verification pending
+                  {t('listingCardVerificationPending')}
                 </span>
               ) : (
                 <button
@@ -284,13 +288,13 @@ export default function DomainListingCard({
                   className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
                   onClick={(e) => { stop(e); onViewAuction?.(); }}
                 >
-                  <Gavel size={12} /> {auctionLive ? 'Bid' : 'Auction'}
+                  <Gavel size={12} /> {auctionLive ? t('listingCardJoinAuction') : t('listingCardViewAuction')}
                 </button>
               )
             ) : statusKey === 'AVAILABLE' ? (
               purchaseBlocked ? (
                 <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
-                  Verification pending
+                  {t('listingCardVerificationPending')}
                 </span>
               ) : isHighValue ? (
                 <button
@@ -298,7 +302,7 @@ export default function DomainListingCard({
                   className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
                   onClick={(e) => { stop(e); onEnquire?.(); }}
                 >
-                  <MessageSquare size={12} /> Enquire
+                  <MessageSquare size={12} /> {t('listingCardEnquire')}
                 </button>
               ) : (
                 <button
@@ -306,12 +310,12 @@ export default function DomainListingCard({
                   className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
                   onClick={(e) => { stop(e); onBuy?.(); }}
                 >
-                  <ShoppingCart size={12} /> Buy
+                  <ShoppingCart size={12} /> {t('listingCardBuyNow')}
                 </button>
               )
             ) : (
               <span className="flex-1 text-center text-[10px] text-slate-400 font-medium py-1.5">
-                {statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}
+                {statusKey === 'SOLD' ? t('listingCardSold') : t('listingCardUnavailable')}
               </span>
             )}
           </div>
@@ -320,7 +324,7 @@ export default function DomainListingCard({
     >
       {domain.takenDown && (
         <span className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-600 text-white">
-          Taken down
+          {t('listingCardTakenDown')}
         </span>
       )}
       {body}

@@ -1,14 +1,17 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { SUPPORTED_CURRENCIES } from '../constants/currencies';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { SUPPORTED_CURRENCIES, DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import {
-  mergeCurrencyMeta,
+  convertPrice,
+  convertForeignToInr,
   formatInrAsCurrency,
-  convertInrAmount,
+  formatCurrency,
   getCurrencySymbol,
+  buildMetaFromRates,
+  buildFallbackMetaFromRates,
 } from '../utils/currencyDisplay';
+import { loadExchangeRates } from '../services/currencyRates';
 
 const STORAGE_KEY = 'cobrother_currency';
-const DEFAULT_CURRENCY = 'INR';
 
 const CurrencyContext = createContext(null);
 
@@ -16,56 +19,70 @@ export function CurrencyProvider({ children }) {
   const [selectedCurrency, setSelectedCurrencyState] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      const code = (saved || DEFAULT_CURRENCY).toUpperCase();
-      return SUPPORTED_CURRENCIES.includes(code) ? code : DEFAULT_CURRENCY;
+      const code = (saved || DEFAULT_LISTING_CURRENCY).toUpperCase();
+      return SUPPORTED_CURRENCIES.includes(code) ? code : DEFAULT_LISTING_CURRENCY;
     } catch {
-      return DEFAULT_CURRENCY;
+      return DEFAULT_LISTING_CURRENCY;
     }
   });
-  const [meta] = useState(() => mergeCurrencyMeta());
-  const loaded = true;
+
+  const [meta, setMeta] = useState(() => buildMetaFromRates({ INR: 1 }));
+  const [ratesLoading, setRatesLoading] = useState(true);
+  const [ratesStale, setRatesStale] = useState(false);
+  const [ratesUpdatedAt, setRatesUpdatedAt] = useState(null);
+
+  const refreshRates = useCallback(async (force = false) => {
+    setRatesLoading(true);
+    try {
+      const result = await loadExchangeRates({ force });
+      setMeta(result.fallback ? buildFallbackMetaFromRates() : result.meta);
+      setRatesStale(Boolean(result.stale || result.fallback));
+      setRatesUpdatedAt(result.updatedAt ?? null);
+    } catch {
+      setMeta(buildFallbackMetaFromRates());
+      setRatesStale(true);
+    } finally {
+      setRatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshRates(true);
+  }, [refreshRates]);
 
   const setCurrency = useCallback((code) => {
-    const upper = (code || DEFAULT_CURRENCY).toUpperCase();
+    const upper = (code || DEFAULT_LISTING_CURRENCY).toUpperCase();
     if (!SUPPORTED_CURRENCIES.includes(upper)) return;
     setSelectedCurrencyState(upper);
     try {
       localStorage.setItem(STORAGE_KEY, upper);
     } catch {
-      /* ignore quota / private mode */
+      /* ignore */
     }
   }, []);
 
   const convertFromInr = useCallback(
-    (inrAmount) => convertInrAmount(inrAmount, selectedCurrency, meta),
+    (inrAmount) => convertPrice(inrAmount, selectedCurrency, meta),
+    [selectedCurrency, meta],
+  );
+
+  const convertToInr = useCallback(
+    (amount, fromCode = selectedCurrency) => convertForeignToInr(amount, fromCode, meta),
     [selectedCurrency, meta],
   );
 
   const formatPrice = useCallback(
-    (inrAmount) => {
-      try {
-        if (inrAmount == null || inrAmount === '') return formatInrAsCurrency(0, selectedCurrency, meta);
-        return formatInrAsCurrency(inrAmount, selectedCurrency, meta);
-      } catch {
-        try {
-          return formatInrAsCurrency(inrAmount, DEFAULT_CURRENCY, mergeCurrencyMeta());
-        } catch {
-          return '₹0';
-        }
-      }
-    },
+    (inrAmount) => formatInrAsCurrency(inrAmount, selectedCurrency, meta),
     [selectedCurrency, meta],
   );
 
   const formatMajor = useCallback(
     (amount, code = selectedCurrency) => {
-      const sym = getCurrencySymbol(code, meta);
-      const amt = Number(amount);
-      if (!Number.isFinite(amt)) return `${sym}0`;
-      return `${sym}${amt.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
+      const converted =
+        code === DEFAULT_LISTING_CURRENCY
+          ? safeNumberMajor(amount)
+          : convertPrice(amount, code, meta);
+      return formatCurrency(converted, code, meta);
     },
     [selectedCurrency, meta],
   );
@@ -75,8 +92,6 @@ export function CurrencyProvider({ children }) {
     [selectedCurrency, meta],
   );
 
-  const supportedCurrencies = SUPPORTED_CURRENCIES;
-
   const value = useMemo(
     () => ({
       currency: selectedCurrency,
@@ -85,16 +100,43 @@ export function CurrencyProvider({ children }) {
       setSelectedCurrency: setCurrency,
       symbol: getCurrencySymbol(selectedCurrency, meta),
       formatPrice,
+      formatCurrency: (amount, code = selectedCurrency) =>
+        formatCurrency(amount, code, meta),
       formatMajor,
       getSymbol,
       convertFromInr,
-      supportedCurrencies,
-      loaded,
+      convertToInr,
+      convertPrice: convertFromInr,
+      supportedCurrencies: SUPPORTED_CURRENCIES,
+      ratesMeta: meta,
+      ratesLoading,
+      ratesStale,
+      ratesUpdatedAt,
+      refreshRates,
+      loaded: !ratesLoading,
     }),
-    [selectedCurrency, setCurrency, meta, formatPrice, formatMajor, getSymbol, convertFromInr, loaded],
+    [
+      selectedCurrency,
+      setCurrency,
+      meta,
+      formatPrice,
+      formatMajor,
+      getSymbol,
+      convertFromInr,
+      convertToInr,
+      ratesLoading,
+      ratesStale,
+      ratesUpdatedAt,
+      refreshRates,
+    ],
   );
 
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
+}
+
+function safeNumberMajor(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
 }
 
 export function useCurrency() {

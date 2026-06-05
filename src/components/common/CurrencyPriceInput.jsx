@@ -1,5 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { CURRENCY_LABELS } from '../../constants/currencies';
+import FormSelect from './FormSelect';
 
 /**
  * Price input with currency selector — reuses navbar supported currencies.
@@ -30,8 +31,9 @@ export default function CurrencyPriceInput({
         {required && <span className="text-red-500"> *</span>}
       </label>
       <div className="flex gap-2 items-stretch">
-        <select
+        <FormSelect
           className={selectCls}
+          wrapperClassName="shrink-0 w-[7.25rem]"
           value={currency}
           onChange={(e) => onCurrencyChange(e.target.value)}
           aria-label={`${label} currency`}
@@ -41,7 +43,7 @@ export default function CurrencyPriceInput({
               {CURRENCY_LABELS[code] || code}
             </option>
           ))}
-        </select>
+        </FormSelect>
         <input
           id={id}
           className={inputClassName}

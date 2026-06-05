@@ -1,21 +1,22 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { isActiveListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
 import { asArray } from '../../utils/asArray';
 
-const SECTION_LABELS = {
-  domain: 'Featured Domains',
-  venture: 'Featured Ventures',
-  software: 'Featured Software',
-  community: 'Featured Creators',
+const SECTION_KEYS = {
+  domain: 'homepageFeatureDomains',
+  venture: 'homepageFeatureVentures',
+  software: 'homepageFeatureSoftware',
+  community: 'homepageFeatureCreators',
 };
 
-const EMPTY_LABELS = {
-  domain: 'domains',
-  venture: 'ventures',
-  software: 'software',
-  community: 'communities',
+const TYPE_KEYS = {
+  domain: 'homepageFeatureTypeDomains',
+  venture: 'homepageFeatureTypeVentures',
+  software: 'homepageFeatureTypeSoftware',
+  community: 'homepageFeatureTypeCommunities',
 };
 
 const PAGE_SIZES = [25, 50, 100];
@@ -28,13 +29,13 @@ function getTitle(item, type) {
   return '';
 }
 
-function FeaturedSwitch({ active, disabled, onToggle }) {
+function FeaturedSwitch({ active, disabled, onToggle, t }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={active}
-      aria-label={active ? 'Remove from homepage featured' : 'Add to homepage featured'}
+      aria-label={active ? t('homepageFeatureSwitchRemove') : t('homepageFeatureSwitchAdd')}
       disabled={disabled}
       onClick={onToggle}
       className={`admin-feature-switch ${active ? 'is-on' : ''} ${disabled ? 'is-busy' : ''}`}
@@ -42,12 +43,14 @@ function FeaturedSwitch({ active, disabled, onToggle }) {
       <span className="admin-feature-switch-track">
         <span className="admin-feature-switch-thumb" />
       </span>
-      <span className="admin-feature-switch-text">{active ? 'Featured' : 'Feature'}</span>
+      <span className="admin-feature-switch-text">{active ? t('homepageFeatureSwitchFeatured') : t('homepageFeatureSwitchFeature')}</span>
     </button>
   );
 }
 
 export default function HomepageFeatureSelector({ type }) {
+  const { t } = useTranslation();
+  const typeLabel = t(TYPE_KEYS[type]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -158,7 +161,7 @@ export default function HomepageFeatureSelector({ type }) {
       await fetchItems();
     } catch (error) {
       console.error('Failed to toggle homepage feature:', error);
-      alert('Failed to update homepage feature status');
+      alert(t('homepageFeatureToggleFailed'));
     } finally {
       setTogglingId(null);
     }
@@ -168,7 +171,7 @@ export default function HomepageFeatureSelector({ type }) {
     return (
       <div className="admin-feature-card admin-feature-card--loading">
         <div className="admin-feature-spinner" />
-        <p className="admin-feature-loading-text">Loading {EMPTY_LABELS[type]}…</p>
+        <p className="admin-feature-loading-text">{t('homepageFeatureLoading', { type: typeLabel })}</p>
       </div>
     );
   }
@@ -177,18 +180,18 @@ export default function HomepageFeatureSelector({ type }) {
     <div className="admin-feature-card">
       <div className="admin-feature-card-head">
         <div className="admin-feature-card-head-main">
-          <h3 className="admin-feature-card-title">{SECTION_LABELS[type]}</h3>
+          <h3 className="admin-feature-card-title">{t(SECTION_KEYS[type])}</h3>
           <p className="admin-feature-card-subtitle">
-            Toggle which active listings appear in the homepage row. Admin and user listings can both be featured.
+            {t('homepageFeatureSubtitle')}
           </p>
         </div>
         <div className="admin-feature-stats">
           <span className="admin-feature-stat">
             <Star size={14} className="admin-feature-stat-icon" aria-hidden />
-            {featuredCount} featured
+            {t('homepageFeatureCount', { count: featuredCount })}
           </span>
           <span className="admin-feature-stat admin-feature-stat--muted">
-            {featureableItems.length} total
+            {t('homepageFeatureTotal', { count: featureableItems.length })}
           </span>
         </div>
       </div>
@@ -200,9 +203,9 @@ export default function HomepageFeatureSelector({ type }) {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Search ${EMPTY_LABELS[type]}…`}
+            placeholder={t('homepageFeatureSearchPlaceholder', { type: typeLabel })}
             className="admin-feature-search"
-            aria-label={`Search ${EMPTY_LABELS[type]}`}
+            aria-label={t('homepageFeatureSearchPlaceholder', { type: typeLabel })}
           />
         </div>
 
@@ -212,9 +215,9 @@ export default function HomepageFeatureSelector({ type }) {
           className="admin-feature-select"
           aria-label="Filter by featured status"
         >
-          <option value="all">All status</option>
-          <option value="featured">Featured only</option>
-          <option value="unfeatured">Not featured</option>
+          <option value="all">{t('homepageFeatureFilterAll')}</option>
+          <option value="featured">{t('homepageFeatureFilterFeatured')}</option>
+          <option value="unfeatured">{t('homepageFeatureFilterUnfeatured')}</option>
         </select>
 
         <select
@@ -223,11 +226,11 @@ export default function HomepageFeatureSelector({ type }) {
           className="admin-feature-select"
           aria-label="Sort list"
         >
-          <option value="name-asc">Name A → Z</option>
-          <option value="name-desc">Name Z → A</option>
-          <option value="id-asc">ID low → high</option>
-          <option value="id-desc">ID high → low</option>
-          <option value="featured-first">Featured first</option>
+          <option value="name-asc">{t('homepageFeatureSortNameAsc')}</option>
+          <option value="name-desc">{t('homepageFeatureSortNameDesc')}</option>
+          <option value="id-asc">{t('homepageFeatureSortIdAsc')}</option>
+          <option value="id-desc">{t('homepageFeatureSortIdDesc')}</option>
+          <option value="featured-first">{t('homepageFeatureSortFeaturedFirst')}</option>
         </select>
 
         <select
@@ -237,15 +240,15 @@ export default function HomepageFeatureSelector({ type }) {
           aria-label="Items per page"
         >
           {PAGE_SIZES.map((n) => (
-            <option key={n} value={n}>{n} / page</option>
+            <option key={n} value={n}>{t('homepageFeaturePerPage', { count: n })}</option>
           ))}
         </select>
       </div>
 
       {featureableItems.length === 0 ? (
-        <p className="admin-feature-empty">No active {EMPTY_LABELS[type]} available to feature</p>
+        <p className="admin-feature-empty">{t('homepageFeatureEmptyActive', { type: typeLabel })}</p>
       ) : filteredSorted.length === 0 ? (
-        <p className="admin-feature-empty">No matches for your search or filters.</p>
+        <p className="admin-feature-empty">{t('homepageFeatureEmptyMatches')}</p>
       ) : (
         <>
           <ul className="admin-feature-list" aria-live="polite">
@@ -259,12 +262,13 @@ export default function HomepageFeatureSelector({ type }) {
                 >
                   <div className="admin-feature-row-body">
                     <p className="admin-feature-item-title">{getTitle(item, type)}</p>
-                    <p className="admin-feature-item-meta">ID: {item.id}</p>
+                    <p className="admin-feature-item-meta">{t('homepageFeatureId', { id: item.id })}</p>
                   </div>
                   <FeaturedSwitch
                     active={featured}
                     disabled={busy}
                     onToggle={() => handleToggle(item.id, featured)}
+                    t={t}
                   />
                 </li>
               );
@@ -273,8 +277,12 @@ export default function HomepageFeatureSelector({ type }) {
 
           <div className="admin-feature-footer">
             <p className="admin-feature-range">
-              Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{filteredSorted.length}</strong>
-              {search.trim() ? ' matching' : ''}
+              <Trans
+                i18nKey="homepageFeatureRange"
+                values={{ from: rangeStart, to: rangeEnd, total: filteredSorted.length }}
+                components={{ strong: <strong /> }}
+              />
+              {search.trim() ? t('homepageFeatureRangeMatching') : ''}
             </p>
             <div className="admin-feature-pagination">
               <button
@@ -287,7 +295,7 @@ export default function HomepageFeatureSelector({ type }) {
                 <ChevronLeft size={18} />
               </button>
               <span className="admin-feature-page-indicator">
-                Page {safePage} of {totalPages}
+                {t('homepageFeaturePage', { current: safePage, total: totalPages })}
               </span>
               <button
                 type="button"

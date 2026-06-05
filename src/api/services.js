@@ -85,8 +85,14 @@ export const communityAPI = creatorAPI;
 
 export const currencyAPI = {
   getSupported: () => api.get('/api/v1/currency/supported'),
+  getRates: (forceRefresh = false) =>
+    api.get('/api/v1/currency/rates', {
+      params: forceRefresh ? { forceRefresh: true } : {},
+    }),
   convert: (amount, to) =>
     api.get('/api/v1/currency/convert', { params: { amount, to } }),
+  convertToInr: (amount, from) =>
+    api.get('/api/v1/currency/convert-to-inr', { params: { amount, from } }),
 };
 
 export const domainAPI = {

@@ -5,7 +5,14 @@ import { useSearchParams } from 'react-router-dom';
  * Opens a listing detail modal when the URL contains ?id= (e.g. from homepage).
  * Returns closeListingDetail — always use this instead of setDetail(null) so the URL clears.
  */
-export function useOpenListingDetailFromUrl({ items, loading, setDetail, fetchById }) {
+export function useOpenListingDetailFromUrl({
+  items,
+  loading,
+  setDetail,
+  fetchById,
+  /** When false, ?id= in the URL will not open the detail modal (e.g. verification progress open). */
+  allowUrlDetail = true,
+}) {
   const [searchParams, setSearchParams] = useSearchParams();
   const fetchedIdRef = useRef(null);
   const id = searchParams.get('id');
@@ -21,8 +28,8 @@ export function useOpenListingDetailFromUrl({ items, loading, setDetail, fetchBy
   }, [searchParams, setSearchParams, setDetail]);
 
   useEffect(() => {
-    if (!id) {
-      fetchedIdRef.current = null;
+    if (!id || !allowUrlDetail) {
+      if (!id) fetchedIdRef.current = null;
       return;
     }
 
@@ -40,7 +47,7 @@ export function useOpenListingDetailFromUrl({ items, loading, setDetail, fetchBy
         if (entity) setDetail(entity);
       })
       .catch(() => {});
-  }, [items, loading, id, setDetail, fetchById]);
+  }, [items, loading, id, setDetail, fetchById, allowUrlDetail]);
 
   return { closeListingDetail };
 }

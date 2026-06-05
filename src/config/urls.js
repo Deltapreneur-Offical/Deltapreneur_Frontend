@@ -84,11 +84,43 @@ function resolveApiBaseUrl() {
   return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
 }
 
-/** OAuth + SockJS — always the backend origin, not the SPA. */
+/** OAuth redirects — always the real backend origin, not the SPA. */
 export const API_ORIGIN = resolveBackendOrigin();
 
 /** Axios baseURL */
 export const API_BASE_URL = resolveApiBaseUrl();
+
+/**
+ * SockJS / STOMP base origin.
+ * Local dev with Vite proxy: same origin as the SPA so `/ws` is proxied to Uvicorn.
+ */
+export function resolveRealtimeOrigin() {
+  if (import.meta.env.DEV && typeof window !== 'undefined' && isLocalBackend) {
+    return window.location.origin;
+  }
+  return resolveBackendOrigin().replace(/\/$/, '');
+}
+
+/**
+ * Raw WebSocket origin (notifications).
+ * Matches SockJS routing — local dev uses the Vite `/ws` proxy when on local backend.
+ */
+export function resolveWebSocketOrigin() {
+  if (import.meta.env.DEV && typeof window !== 'undefined' && isLocalBackend) {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}`;
+  }
+
+  const base = resolveBackendOrigin().replace(/\/$/, '');
+  if (base.startsWith('https://')) return base.replace('https://', 'wss://');
+  if (base.startsWith('http://')) return base.replace('http://', 'ws://');
+
+  if (typeof window !== 'undefined') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}`;
+  }
+  return 'ws://127.0.0.1:8000';
+}
 
 if (import.meta.env.DEV && typeof console !== 'undefined') {
   const apiTarget = API_BASE_URL || API_ORIGIN;

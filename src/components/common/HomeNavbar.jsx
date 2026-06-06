@@ -6,7 +6,10 @@ import { useAuth } from '../../context/AuthContext';
 import logoBlack from '../../assets/Cobrother_logo.png';
 import logoGreen from '../../assets/Cobrother_Green.png';
 import BackButton from './BackButton';
+import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
+import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
+import LanguageDropdown from './LanguageDropdown';
 
 function HomeNavLogo({ className = '' }) {
   return (
@@ -151,9 +154,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
 
   const authButtons = !authLoading && !user ? (
     <>
-      <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/join-form')}>
+      <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
         {t('joinCoBrother')}
-      </button>
+      </JoinCoBrotherGradientButton>
       <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
         {t('signIn')}
       </button>
@@ -171,7 +174,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <div className="home-main-nav-start">
           <button
             type="button"
-            className="home-nav-logo-btn min-w-0 shrink"
+            className="home-nav-logo-btn shrink-0"
             onClick={() => navigate('/')}
             aria-label="CoBrother home"
           >
@@ -204,7 +207,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => toggleDesktopDropdown('technology')}
               >
                 <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
-                <DropdownLink onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</DropdownLink>
+                <DropdownLink onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                  {t('listTechnology')}
+                </DropdownLink>
               </NavDropdown>
 
               <NavDropdown
@@ -303,7 +308,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>{t('exploreTechnology')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/technology/dashboard')}>{t('listTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                  {t('listTechnology')}
+                </button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -327,14 +334,19 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             </div>
 
             <div className="home-nav-drawer-footer">
+              <div className="home-nav-drawer-regional flex items-center justify-center gap-3 pb-3 mb-3 border-b border-gray-200">
+                <LanguageDropdown variant="minimal" className="home-nav-util-language" />
+                <span className="home-nav-util-divider" aria-hidden="true">|</span>
+                <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
+              </div>
               {showBack && (
                 <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
               )}
               {!authLoading && !user ? (
                 <div className="flex flex-col items-stretch gap-3 w-full">
-                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
+                  <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
                     {t('joinCoBrother')}
-                  </button>
+                  </JoinCoBrotherGradientButton>
                   <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
                     {t('signIn')}
                   </button>

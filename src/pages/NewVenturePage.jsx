@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
+import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
 import Confetti from '../components/common/Confetti';
 
 export default function NewVenturePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { hasAccessToken } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -23,7 +26,7 @@ export default function NewVenturePage() {
       body?.error ||
       body?.detail ||
       body?.message ||
-      'Failed to create venture.'
+      t('newVentureCreateFailed')
     );
   };
 
@@ -37,7 +40,7 @@ export default function NewVenturePage() {
 
   const handleSubmit = async (form, imageFile) => {
     if (!hasAccessToken) {
-      setError('Please sign in again before creating a venture.');
+      setError(t('newVentureSignInRequired'));
       clearAuthAndGoLogin();
       return;
     }
@@ -55,7 +58,7 @@ export default function NewVenturePage() {
       } catch (err) {
           const status = err.response?.status;
           if (status === 401 || status === 403) {
-            setError('Your session expired. Please sign in again.');
+            setError(t('newVentureSessionExpired'));
             clearAuthAndGoLogin();
             return;
           }
@@ -71,22 +74,23 @@ export default function NewVenturePage() {
         <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">🚀</div>
-            <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">Venture Published!</h2>
-            <p className="text-sm text-gray-500">Your venture is live. Redirecting…</p>
+            <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">{t('newVenturePublished')}</h2>
+            <p className="text-sm text-gray-500">{t('newVentureRedirecting')}</p>
           </div>
         </div>
       )}
 
       <div className="max-w-full w-full">
+        <ListingBackLink to="/ventures" label="Back to Ventures" />
         <div className="mb-8">
-          <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">List a New Venture</h1>
-          <p className="text-gray-600">Fill in the details to attract the right co-venturers.</p>
+          <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">{t('newVentureTitle')}</h1>
+          <p className="text-gray-600">{t('newVentureSubtitle')}</p>
         </div>
         <VentureForm
           onSubmit={handleSubmit}
           loading={loading}
           error={error}
-          submitLabel="Publish Venture →"
+          submitLabel={t('newVenturePublish')}
         />
       </div>
     </AppLayout>

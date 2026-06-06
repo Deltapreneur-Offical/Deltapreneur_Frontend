@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { coBrotherAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 
@@ -11,6 +12,7 @@ const STATUS_COLORS = {
 };
 
 export default function CoBrotherDashboardPage() {
+  const { t } = useTranslation();
   const [requests, setRequests]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [respondId, setRespondId] = useState(null);
@@ -31,7 +33,7 @@ export default function CoBrotherDashboardPage() {
       setRespondId(null);
       load();
     } catch (e) {
-      alert(e.response?.data || 'Failed to respond.');
+      alert(e.response?.data || t('coBrotherDashboardFailedRespond'));
     }
   };
 
@@ -43,17 +45,17 @@ export default function CoBrotherDashboardPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">CoBrother Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your assigned requests.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('coBrotherDashboardPageTitle')}</h1>
+            <p className="text-gray-600 mt-1">{t('coBrotherDashboardPageSubtitle')}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Assigned" value={requests.length} icon="◆" />
-          <StatCard label="Pending"  value={pending.length}   icon="⏳" color="#a06ec8" />
-          <StatCard label="Accepted" value={requests.filter(r => r.status === 'ACCEPTED').length}
+          <StatCard label={t('coBrotherDashboardStatTotal')} value={requests.length} icon="◆" />
+          <StatCard label={t('coBrotherDashboardStatPending')} value={pending.length} icon="⏳" color="#a06ec8" />
+          <StatCard label={t('coBrotherDashboardStatAccepted')} value={requests.filter(r => r.status === 'ACCEPTED').length}
                     icon="✓" color="#6ec896" />
-          <StatCard label="Rejected" value={requests.filter(r => r.status === 'REJECTED').length}
+          <StatCard label={t('coBrotherDashboardStatRejected')} value={requests.filter(r => r.status === 'REJECTED').length}
                     icon="✕" color="#c86e6e" />
         </div>
 
@@ -62,14 +64,14 @@ export default function CoBrotherDashboardPage() {
         ) : requests.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">◆</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No requests assigned yet</h3>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('coBrotherDashboardNoRequests')}</h3>
           </div>
         ) : (
           <>
             {pending.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-purple-600 mb-4 text-sm font-semibold uppercase tracking-wider">
-                  Pending Response
+                  {t('coBrotherDashboardPendingResponse')}
                 </h3>
                 <div className="flex flex-col gap-3">
                   {pending.map(r => (
@@ -82,7 +84,7 @@ export default function CoBrotherDashboardPage() {
             {completed.length > 0 && (
               <div>
                 <h3 className="text-gray-500 mb-4 text-sm font-semibold uppercase tracking-wider">
-                  Completed
+                  {t('coBrotherDashboardCompleted')}
                 </h3>
                 <div className="flex flex-col gap-3">
                   {completed.map(r => <RequestCard key={r.id} request={r} />)}
@@ -105,6 +107,7 @@ export default function CoBrotherDashboardPage() {
 }
 
 function RequestCard({ request, onRespond }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const statusColor = STATUS_COLORS[request.status] || '#888';
 
@@ -130,23 +133,23 @@ function RequestCard({ request, onRespond }) {
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '1rem 1.25rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem',
                         marginBottom: '1rem' }}>
-            <ContactBlock label="Lister"
+            <ContactBlock label={t('coBrotherDashboardLister')}
               name={request.listerName} email={request.listerEmail}
               phone={request.listerPhone} />
-            <ContactBlock label="Applicant / Buyer"
+            <ContactBlock label={t('coBrotherDashboardApplicantBuyer')}
               name={request.applicantName} email={request.applicantEmail}
               phone={request.applicantPhone} />
           </div>
 
           {request.coBrotherNote && (
             <div style={{ fontSize: '0.82rem', color: '#a0a0b0', marginBottom: '0.75rem' }}>
-              <strong>Your Note:</strong> {request.coBrotherNote}
+              <strong>{t('coBrotherDashboardYourNote')}</strong> {request.coBrotherNote}
             </div>
           )}
 
           {request.status === 'FORWARDED' && onRespond && (
             <button className="btn-primary btn-sm" onClick={onRespond}>
-              Respond →
+              {t('coBrotherDashboardRespond')}
             </button>
           )}
         </div>
@@ -169,6 +172,7 @@ function ContactBlock({ label, name, email, phone }) {
 }
 
 function RespondModal({ request, onRespond, onClose }) {
+  const { t } = useTranslation();
   const [note, setNote]     = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -184,27 +188,27 @@ function RespondModal({ request, onRespond, onClose }) {
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
         <div className="modal-header">
-          <div className="modal-badge">Respond to Request</div>
+          <div className="modal-badge">{t('coBrotherDashboardRespondTitle')}</div>
           <h2>{request?.entityTitle}</h2>
           <p>{request?.requestType} · {request?.listerName}</p>
         </div>
 
         <div className="form-group" style={{ margin: '1.5rem 0' }}>
           <label style={{ fontSize: '0.78rem', color: '#888', marginBottom: '0.5rem',
-                          display: 'block' }}>Note (optional)</label>
+                          display: 'block' }}>{t('coBrotherDashboardNoteOptional')}</label>
           <textarea value={note} onChange={e => setNote(e.target.value)}
-            placeholder="Add a note for the lister…" rows={3}
+            placeholder={t('coBrotherDashboardNotePlaceholder')} rows={3}
             style={{ resize: 'vertical' }} />
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button className="btn-primary" onClick={() => handle(true)}
             disabled={loading} style={{ flex: 1 }}>
-            {loading ? <span className="btn-spinner" /> : '✓ Accept'}
+            {loading ? <span className="btn-spinner" /> : t('coBrotherDashboardAccept')}
           </button>
           <button className="btn-danger" onClick={() => handle(false)}
             disabled={loading} style={{ flex: 1 }}>
-            {loading ? <span className="btn-spinner" /> : '✕ Reject'}
+            {loading ? <span className="btn-spinner" /> : t('coBrotherDashboardReject')}
           </button>
         </div>
       </div>

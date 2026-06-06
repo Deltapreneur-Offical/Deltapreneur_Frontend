@@ -1,0 +1,429 @@
+/* Admin dashboard — readable text + section-colored accents (light surface) */
+
+.admin-page {
+  color: #111827;
+}
+
+.admin-page-content {
+  color: #111827;
+}
+
+/* ─── Field typography (replaces faint gray / gold inline labels) ─── */
+.admin-page .admin-field-label,
+.admin-page .admin-field-label--inline {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.3rem;
+}
+
+.admin-page .admin-field-label--inline {
+  display: inline;
+  margin-bottom: 0;
+}
+
+.admin-page .admin-field-label--spaced {
+  margin-bottom: 0.5rem;
+}
+
+.admin-page .admin-field-value {
+  font-size: 0.9rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+.admin-page .admin-field-meta {
+  font-size: 0.78rem;
+  color: #4b5563;
+  line-height: 1.45;
+}
+
+.admin-page .admin-record-id {
+  font-size: 0.78rem;
+  color: #4b5563;
+  margin-top: 0.2rem;
+}
+
+.admin-page .admin-expand-chevron {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+/* Section accent: field labels */
+.admin-page[data-admin-section='domains'] .admin-field-label,
+.admin-page[data-admin-section='domains'] .admin-field-label--inline {
+  color: #0f766e;
+}
+
+.admin-page[data-admin-section='ventures'] .admin-field-label,
+.admin-page[data-admin-section='ventures'] .admin-field-label--inline {
+  color: #5b21b6;
+}
+
+.admin-page[data-admin-section='cocreations'] .admin-field-label,
+.admin-page[data-admin-section='cocreations'] .admin-field-label--inline {
+  color: #3730a3;
+}
+
+.admin-page[data-admin-section='domain-enquiries'] .admin-field-label,
+.admin-page[data-admin-section='domain-enquiries'] .admin-field-label--inline {
+  color: #0e7499;
+}
+
+.admin-page[data-admin-section='auctions'] .admin-field-label,
+.admin-page[data-admin-section='venture-auctions'] .admin-field-label,
+.admin-page[data-admin-section='software-auctions'] .admin-field-label,
+.admin-page[data-admin-section='community-auctions'] .admin-field-label,
+.admin-page[data-admin-section='auctions'] .admin-field-label--inline,
+.admin-page[data-admin-section='venture-auctions'] .admin-field-label--inline,
+.admin-page[data-admin-section='software-auctions'] .admin-field-label--inline,
+.admin-page[data-admin-section='community-auctions'] .admin-field-label--inline {
+  color: #b45309;
+}
+
+.admin-page[data-admin-section='requests'] .admin-field-label,
+.admin-page[data-admin-section='meetings'] .admin-field-label,
+.admin-page[data-admin-section='addon-orders'] .admin-field-label {
+  color: #1e40af;
+}
+
+/* Record cards */
+.admin-page .admin-record-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.admin-page[data-admin-section='domains'] .admin-record-card {
+  border-left: 4px solid #14b8a6;
+}
+
+.admin-page[data-admin-section='ventures'] .admin-record-card {
+  border-left: 4px solid #8b5cf6;
+}
+
+.admin-page[data-admin-section='cocreations'] .admin-record-card {
+  border-left: 4px solid #6366f1;
+}
+
+.admin-page[data-admin-section='domain-enquiries'] .admin-record-card {
+  border-left: 4px solid #0ea5e9;
+}
+
+.admin-page[data-admin-section='auctions'] .admin-record-card,
+.admin-page[data-admin-section='venture-auctions'] .admin-record-card,
+.admin-page[data-admin-section='software-auctions'] .admin-record-card,
+.admin-page[data-admin-section='community-auctions'] .admin-record-card {
+  border-left: 4px solid #f59e0b;
+}
+
+.admin-page .admin-record-title {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Filter sub-tabs (technology auctions, etc.) */
+.admin-page .filter-tabs {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.admin-page .filter-tab {
+  color: #374151;
+  font-weight: 600;
+}
+
+.admin-page .filter-tab:hover {
+  color: #111827;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.admin-page .filter-tab.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.admin-page[data-admin-section='cocreations'] .filter-tab.active,
+.admin-page[data-admin-section='software-auctions'] .filter-tab.active {
+  color: #4338ca;
+  background: #eef2ff;
+}
+
+.admin-page[data-admin-section='domains'] .filter-tab.active {
+  color: #0f766e;
+  background: #ecfdf5;
+}
+
+.admin-page[data-admin-section='ventures'] .filter-tab.active {
+  color: #6d28d9;
+  background: #f5f3ff;
+}
+
+/* Secondary actions — no gold/yellow on white */
+.admin-page .btn-secondary {
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  font-weight: 600;
+}
+
+.admin-page .btn-secondary:hover {
+  background: #dbeafe;
+  color: #1e3a8a;
+  border-color: #60a5fa;
+}
+
+.admin-page[data-admin-section='domains'] .btn-secondary {
+  color: #0f766e;
+  border-color: #5eead4;
+  background: #f0fdfa;
+}
+
+.admin-page[data-admin-section='domains'] .btn-secondary:hover {
+  color: #115e59;
+  background: #ccfbf1;
+  border-color: #2dd4bf;
+}
+
+.admin-page[data-admin-section='ventures'] .btn-secondary {
+  color: #5b21b6;
+  border-color: #c4b5fd;
+  background: #f5f3ff;
+}
+
+.admin-page[data-admin-section='ventures'] .btn-secondary:hover {
+  color: #4c1d95;
+  background: #ede9fe;
+  border-color: #a78bfa;
+}
+
+.admin-page[data-admin-section='cocreations'] .btn-secondary,
+.admin-page[data-admin-section='software-auctions'] .btn-secondary {
+  color: #3730a3;
+  border-color: #a5b4fc;
+  background: #eef2ff;
+}
+
+.admin-page[data-admin-section='cocreations'] .btn-secondary:hover,
+.admin-page[data-admin-section='software-auctions'] .btn-secondary:hover {
+  color: #312e81;
+  background: #e0e7ff;
+  border-color: #818cf8;
+}
+
+.admin-page[data-admin-section='auctions'] .btn-secondary,
+.admin-page[data-admin-section='venture-auctions'] .btn-secondary,
+.admin-page[data-admin-section='community-auctions'] .btn-secondary {
+  color: #b45309;
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.admin-page[data-admin-section='auctions'] .btn-secondary:hover,
+.admin-page[data-admin-section='venture-auctions'] .btn-secondary:hover,
+.admin-page[data-admin-section='community-auctions'] .btn-secondary:hover {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+
+/* Active top tab — section tint */
+.admin-dashboard-tab--domains.active {
+  color: #0f766e;
+  border-color: rgba(20, 184, 166, 0.45);
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.admin-dashboard-tab--ventures.active {
+  color: #6d28d9;
+  border-color: rgba(139, 92, 246, 0.45);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.admin-dashboard-tab--cocreations.active {
+  color: #4338ca;
+  border-color: rgba(99, 102, 241, 0.45);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.admin-dashboard-tab--domains.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--ventures.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--cocreations.active .admin-dashboard-tab-label {
+  color: inherit;
+}
+
+.admin-page .admin-fee-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.2rem;
+}
+
+.admin-page .admin-muted-note {
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+
+.admin-page .admin-warning-note {
+  font-size: 0.82rem;
+  color: #b45309;
+  font-weight: 500;
+}
+
+.admin-page .admin-error-note {
+  font-size: 0.8rem;
+  color: #dc2626;
+  font-style: italic;
+}
+
+.admin-page .admin-link {
+  color: #4f46e5;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.admin-page[data-admin-section='domains'] .admin-link {
+  color: #0d9488;
+}
+
+.admin-page[data-admin-section='ventures'] .admin-link {
+  color: #7c3aed;
+}
+
+/* Form labels in modals */
+.admin-page .admin-form-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+/* Alert banners (replaces faint gold/yellow inline boxes) */
+.admin-page .admin-alert-banner {
+  padding: 0.875rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.83rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.admin-page .admin-alert-banner--warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #b45309;
+}
+
+.admin-page .admin-alert-banner--error {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.28);
+  color: #dc2626;
+}
+
+.admin-page .admin-quote {
+  font-size: 0.82rem;
+  color: #4b5563;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.admin-page .admin-record-card--pending {
+  border-left-width: 4px;
+  border-left-color: #f59e0b;
+}
+
+.admin-page .admin-record-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+}
+
+.admin-page .admin-record-body {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 1.25rem;
+}
+
+.admin-page .admin-price-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.admin-page[data-admin-section='auctions'] .admin-price-amount--bid,
+.admin-page[data-admin-section='venture-auctions'] .admin-price-amount--bid,
+.admin-page[data-admin-section='software-auctions'] .admin-price-amount--bid,
+.admin-page[data-admin-section='community-auctions'] .admin-price-amount--bid {
+  color: #b45309;
+}
+
+.admin-page[data-admin-section='ventures'] .admin-price-amount--bid {
+  color: #7c3aed;
+}
+
+.admin-page .admin-price-amount--empty {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.admin-page .admin-price-amount--lg {
+  font-size: 1.25rem;
+}
+
+.admin-page .admin-value-yes {
+  font-size: 0.85rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+.admin-page .admin-value-no {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.admin-page .admin-status-fallback {
+  color: #6b7280;
+}
+
+.admin-page .admin-meeting-card--ongoing {
+  border-color: rgba(16, 185, 129, 0.35);
+  border-left: 4px solid #10b981;
+}
+
+.admin-page .admin-meeting-card--upcoming {
+  border-left: 4px solid #0284c7;
+}
+
+.admin-page .admin-meeting-card--past {
+  border-left: 4px solid #9ca3af;
+}
+
+.admin-page .admin-subcard {
+  padding: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.admin-page .admin-bids-panel {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+}

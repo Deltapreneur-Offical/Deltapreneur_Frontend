@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus } from 'lucide-react';
 import { technologyAPI } from '../api/services';
@@ -14,6 +14,7 @@ import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
+import ListingBackLink from '../components/common/ListingBackLink';
 import Pagination from '../components/common/Pagination';
 import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -45,6 +46,7 @@ export default function CoCreationPage() {
   const { user }  = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
   const navigate  = useNavigate();
+  const location = useLocation();
 
   const [allSoftware, setAllSoftware]       = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -86,6 +88,14 @@ export default function CoCreationPage() {
       resetPageWhen: filterTab,
     },
   );
+
+  useEffect(() => {
+    if (location.state?.openListTechnologyForm) {
+      setFilterTab('all');
+      setShowForm(true);
+      navigate('/technology', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,6 +178,35 @@ export default function CoCreationPage() {
   return (
     <AppLayout>
       <div>
+        {(showForm || editTarget) && user ? (
+          <>
+            <ListingBackLink
+              label="Back to Technology"
+              onClick={() => { setShowForm(false); setEditTarget(null); }}
+            />
+            <SoftwareForm
+              key={editTarget?.id || 'create'}
+              initial={editTarget}
+              onSaved={s => {
+                const snap = captureAppLayoutScroll();
+                flushSync(() => {
+                  if (editTarget) {
+                    setAllSoftware(prev => prev.map(x => (x.id === s.id ? { ...x, ...s } : x)));
+                    setEditTarget(null);
+                    if (detailTarget?.id === s.id) setDetailTarget(s);
+                  } else {
+                    setAllSoftware(prev => [s, ...prev]);
+                    setShowForm(false);
+                    setShowConfetti(true);
+                  }
+                });
+                scheduleRestoreAppLayoutScroll(snap);
+              }}
+              onCancel={() => { setShowForm(false); setEditTarget(null); }}
+            />
+          </>
+        ) : (
+          <>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -194,31 +233,6 @@ export default function CoCreationPage() {
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
-
-        {(showForm || editTarget) && user && (
-          <div className="mb-6">
-            <SoftwareForm
-              key={editTarget?.id || 'create'}
-              initial={editTarget}
-              onSaved={s => {
-                const snap = captureAppLayoutScroll();
-                flushSync(() => {
-                  if (editTarget) {
-                    setAllSoftware(prev => prev.map(x => (x.id === s.id ? { ...x, ...s } : x)));
-                    setEditTarget(null);
-                    if (detailTarget?.id === s.id) setDetailTarget(s);
-                  } else {
-                    setAllSoftware(prev => [s, ...prev]);
-                    setShowForm(false);
-                    setShowConfetti(true);
-                  }
-                });
-                scheduleRestoreAppLayoutScroll(snap);
-              }}
-              onCancel={() => { setShowForm(false); setEditTarget(null); }}
-            />
-          </div>
-        )}
 
         <FilterBar
           search={search}           onSearch={handleSearch}
@@ -291,6 +305,8 @@ export default function CoCreationPage() {
     pageSize={20}
   />
 </>
+        )}
+          </>
         )}
       </div>
 

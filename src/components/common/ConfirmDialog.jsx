@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Usage:
@@ -66,13 +67,13 @@ export default function ConfirmDialog({
               danger ? 'border-red-400 text-red-600' : ''
             }`}
           >
-            {confirmLabel}
+            {resolvedConfirm}
           </button>
           <button 
             onClick={onCancel} 
             className="btn-glow flex-1 min-w-0"
           >
-            {cancelLabel}
+            {resolvedCancel}
           </button>
         </div>
       </div>

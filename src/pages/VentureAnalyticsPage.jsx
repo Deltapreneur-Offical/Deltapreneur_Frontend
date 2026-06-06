@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
@@ -54,6 +55,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function VentureAnalyticsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [ventures, setVentures]   = useState([]);
   const [selected, setSelected]   = useState(null);
@@ -69,18 +71,18 @@ export default function VentureAnalyticsPage() {
         setVentures(list);
         if (list.length > 0) setSelected(list[0].id);
       })
-      .catch(() => setError('Failed to load ventures.'))
+      .catch(() => setError(t('ventureAnalyticsLoadVenturesFailed')))
       .finally(() => setFetching(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!selected) return;
     setLoading(true); setError('');
     analyticsAPI.getVentureAnalytics(selected)
       .then((response) => setAnalytics(normalizeAnalyticsPayload(response)))
-      .catch(() => setError('Failed to load analytics.'))
+      .catch(() => setError(t('ventureAnalyticsLoadFailed')))
       .finally(() => setLoading(false));
-  }, [selected]);
+  }, [selected, t]);
 
   const viewsData = analytics
     ? Object.entries(analytics.viewsByDay).map(([date, count]) => ({ date, Views: count }))
@@ -109,11 +111,11 @@ export default function VentureAnalyticsPage() {
 <div className="flex items-start justify-between mb-6">
   <div>
     <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
-      Venture Analytics
+      {t('ventureAnalyticsTitle')}
     </h1>
 
     <p className="text-gray-600 mt-1 font-medium">
-      Track performance and applicant insights for your ventures.
+      {t('ventureAnalyticsSubtitle')}
     </p>
   </div>
 
@@ -121,7 +123,7 @@ export default function VentureAnalyticsPage() {
     className="btn-glow btn-glow-sm"
     onClick={() => navigate('/ventures')}
   >
-    ← Back
+    {t('ventureAnalyticsBack')}
   </button>
 </div>
 
@@ -139,7 +141,7 @@ export default function VentureAnalyticsPage() {
                     : ''
                 }`}
               >
-                {v.brandDetails?.brandName || `Venture #${v.id}`}
+                {v.brandDetails?.brandName || t('ventureAnalyticsVentureFallback', { id: v.id })}
               </button>
             ))}
           </div>
@@ -154,14 +156,14 @@ export default function VentureAnalyticsPage() {
 
             {/* Stat cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="Total Views" value={analytics.totalViews} sub="All time" />
-              <StatCard label="Applications" value={analytics.totalApplications} sub="All time" color="#6ec896" />
-              <StatCard label="Conversion Rate" value={`${analytics.conversionRate}%`} sub="Views → Applications" color="#6e9ec8" />
-              <StatCard label="Avg Time to Apply" value={`${analytics.avgHoursToApply}h`} sub="After first view" color="#c86e6e" />
+              <StatCard label={t('ventureAnalyticsTotalViews')} value={analytics.totalViews} sub={t('profileAnalyticsAllTime')} />
+              <StatCard label={t('ventureAnalyticsApplications')} value={analytics.totalApplications} sub={t('profileAnalyticsAllTime')} color="#6ec896" />
+              <StatCard label={t('ventureAnalyticsConversionRate')} value={`${analytics.conversionRate}%`} sub={t('ventureAnalyticsViewsToApplications')} color="#6e9ec8" />
+              <StatCard label={t('ventureAnalyticsAvgTimeToApply')} value={`${analytics.avgHoursToApply}h`} sub={t('ventureAnalyticsAfterFirstView')} color="#c86e6e" />
             </div>
 
             {/* Views over time */}
-            <ChartCard title="👁 Views Over Last 30 Days">
+            <ChartCard title={t('ventureAnalyticsViews30Days')}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={viewsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -176,9 +178,9 @@ export default function VentureAnalyticsPage() {
 
             {/* Two column: industry + role */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ChartCard title="🏭 Viewer Industries">
+              <ChartCard title={t('ventureAnalyticsViewerIndustries')}>
                 {industryData.length === 0 ? (
-                  <div className="text-gray-600 text-sm text-center py-8">No data yet</div>
+                  <div className="text-gray-600 text-sm text-center py-8">{t('profileAnalyticsNoData')}</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
@@ -191,9 +193,9 @@ export default function VentureAnalyticsPage() {
                 )}
               </ChartCard>
 
-              <ChartCard title="👤 Viewer Roles">
+              <ChartCard title={t('ventureAnalyticsViewerRoles')}>
                 {roleData.length === 0 ? (
-                  <div className="text-gray-600 text-sm text-center py-8">No data yet</div>
+                  <div className="text-gray-600 text-sm text-center py-8">{t('profileAnalyticsNoData')}</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={roleData} layout="vertical">
@@ -201,7 +203,7 @@ export default function VentureAnalyticsPage() {
                       <XAxis type="number" tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} width={90} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill="#6e9ec8" radius={[0, 4, 4, 0]} name="Viewers" />
+                      <Bar dataKey="value" fill="#6e9ec8" radius={[0, 4, 4, 0]} name={t('profileAnalyticsViewers')} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -209,9 +211,9 @@ export default function VentureAnalyticsPage() {
             </div>
 
             {/* Applicant skills */}
-            <ChartCard title="🛠 Top Applicant Skills">
+            <ChartCard title={t('ventureAnalyticsTopSkills')}>
               {skillsData.length === 0 ? (
-                <div className="text-gray-600 text-sm text-center py-8">No applicants yet</div>
+                <div className="text-gray-600 text-sm text-center py-8">{t('ventureAnalyticsNoApplicants')}</div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={skillsData}>
@@ -219,7 +221,7 @@ export default function VentureAnalyticsPage() {
                     <XAxis dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} />
                     <YAxis tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" name="Applicants" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="value" name={t('ventureAnalyticsApplicants')} radius={[4, 4, 0, 0]}>
                       {skillsData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Bar>
                   </BarChart>
@@ -228,9 +230,9 @@ export default function VentureAnalyticsPage() {
             </ChartCard>
 
             {/* Application status */}
-            <ChartCard title="📋 Application Status Breakdown">
+            <ChartCard title={t('ventureAnalyticsStatusBreakdown')}>
               {statusData.length === 0 ? (
-                <div className="text-gray-600 text-sm text-center py-8">No applications yet</div>
+                <div className="text-gray-600 text-sm text-center py-8">{t('ventureAnalyticsNoApplications')}</div>
               ) : (
                 <div className="flex gap-4 flex-wrap">
                   {statusData.map((s, i) => {
@@ -255,18 +257,18 @@ export default function VentureAnalyticsPage() {
       <div className="text-6xl mb-4">📊</div>
 
       <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-        No ventures listed yet
+        {t('ventureAnalyticsEmptyTitle')}
       </h3>
 
       <p className="text-gray-600 mb-6">
-        List a venture to start tracking analytics.
+        {t('ventureAnalyticsEmptyDesc')}
       </p>
 
       <button
         className="btn-glow"
         onClick={() => navigate('/ventures/new')}
       >
-        List a Venture
+        {t('ventureAnalyticsListVenture')}
       </button>
     </div>
   </div>

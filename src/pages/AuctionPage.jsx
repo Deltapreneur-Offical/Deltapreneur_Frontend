@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuction } from '../hooks/useAuction';
@@ -8,6 +9,7 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctionTime, resolveAuctionEndTime } from '../utils/auctionDate';
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import useCurrency from '../context/CurrencyContext';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
@@ -33,12 +35,14 @@ function useCountdown(endTime) {
 }
 
 export default function AuctionPage() {
+  const { t } = useTranslation();
   const { auctionId }  = useParams();
   const { user }       = useAuth();
   const navigate       = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid }
                        = useAuction(auctionId);
   const { timeLeft, isUrgent } = useCountdown(resolveAuctionEndTime(auction));
+  const { formatPrice, getSymbol } = useCurrency();
 
   const [bidAmount, setBidAmount]         = useState('');
   const [bidLoading, setBidLoading]       = useState(false);
@@ -138,7 +142,7 @@ export default function AuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Auction participation fee`,
+        description: t('auctionDetailParticipationFeeDomain'),
         onSuccess: async (response) => {
           try {
             await auctionAPI.participationVerify(auction.id, {
@@ -148,30 +152,30 @@ export default function AuctionPage() {
             });
             setParticipation((p) => ({ ...p, paid: true }));
           } catch {
-            setParticipationError('Payment verification failed. Please try again.');
+            setParticipationError(t('auctionDetailPaymentVerifyFailed'));
           } finally {
             setPayingParticipation(false);
           }
         },
         onFailure: async () => {
-          setParticipationError('Participation payment failed. Please retry.');
+          setParticipationError(t('auctionDetailParticipationPaymentFailed'));
           setPayingParticipation(false);
         },
         onDismiss: async () => setPayingParticipation(false),
       });
     } catch (err) {
-      setParticipationError(err?.response?.data?.error || 'Failed to start payment.');
+      setParticipationError(err?.response?.data?.error || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
     }
   };
 
   const handleBid = async () => {
     if (!participation.paid) {
-      setBidError('Please pay participation fee first.');
+      setBidError(t('auctionDetailPayParticipationFirst'));
       return;
     }
     const amount = parseFloat(bidAmount);
-    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -179,10 +183,10 @@ export default function AuctionPage() {
     setBidLoading(true); setBidError(''); setBidSuccess('');
     try {
       await placeBid(amount);
-      setBidSuccess(`Bid of ₹${Number(amount).toLocaleString('en-IN')} placed!`);
+      setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amount) }));
       setBidAmount('');
     } catch (err) {
-      setBidError(err.response?.data?.error || 'Failed to place bid.');
+      setBidError(err.response?.data?.error || t('auctionDetailFailedPlaceBid'));
     } finally { setBidLoading(false); }
   };
 
@@ -197,7 +201,7 @@ export default function AuctionPage() {
   if (!auction) return (
     <AppLayout>
       <div className="text-center py-20">
-        <h3 className="font-display text-2xl font-bold text-gray-900">Auction not found</h3>
+        <h3 className="font-display text-2xl font-bold text-gray-900">{t('auctionDetailNotFound')}</h3>
       </div>
     </AppLayout>
   );
@@ -207,7 +211,7 @@ export default function AuctionPage() {
     auction.domainDisplayName
     || domain.fullDomain
     || `${domain.domainName || ''}${domain.domainExtension || ''}`.trim()
-    || 'Unnamed domain'
+    || t('auctionsPageUnnamedDomain')
   );
   const ownerName = domain?.listedBy
     ? `${domain.listedBy.firstname || ''} ${domain.listedBy.lastname || ''}`.trim()
@@ -216,7 +220,7 @@ export default function AuctionPage() {
     || domain?.listedBy?.fullName
     || domain?.listedBy?.username
     || domain?.listedBy?.email
-    || 'Domain Owner';
+    || t('auctionDetailDomainOwner');
   const ownerInitial = (ownerName || 'D').trim().charAt(0).toUpperCase();
 
   return (
@@ -226,7 +230,7 @@ export default function AuctionPage() {
         {/* ── Header ── */}
         <div className="mb-8">
           <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4" onClick={() => navigate('/auctions')}>
-            ← Back to Auctions
+            {t('auctionDetailBackToAuctions')}
           </button>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
@@ -236,11 +240,11 @@ export default function AuctionPage() {
                 </h1>
                 {domain.verified ? (
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold text-green-600 bg-green-100 border border-green-300">
-                    ✓ Verified
+                    {t('auctionsPageVerified')}
                   </span>
                 ) : (
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold text-amber-700 bg-amber-100 border border-amber-300">
-                    Verification pending
+                    {t('auctionDetailVerificationPending')}
                   </span>
                 )}
                 <StatusBadge status={auction.status} />
@@ -248,7 +252,7 @@ export default function AuctionPage() {
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-amber-500'}`} />
                 <span className={`text-xs ${connected ? 'text-green-600' : 'text-amber-600'}`}>
-                  {connected ? 'Live' : 'Live updates paused'}
+                  {connected ? t('auctionDetailLive') : t('auctionDetailLivePaused')}
                 </span>
               </div>
             </div>
@@ -257,7 +261,7 @@ export default function AuctionPage() {
             {isActive && (
               <div className="text-right">
                 <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">
-                  {auction.status === 'EXTENDED' ? '⚡ Extended — Ends in' : 'Ends in'}
+                  {auction.status === 'EXTENDED' ? t('auctionDetailEndsExtended') : t('auctionsPageEndsIn')}
                 </div>
                 <div className={`font-display text-3xl font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-indigo-600'}`}>
                   {timeLeft}
@@ -278,11 +282,11 @@ export default function AuctionPage() {
                   {domainTitle}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200">
-                  Domain Auction
+                  {t('auctionDomain')}
                 </span>
               </div>
               <div className="mt-1 text-sm text-gray-600">
-                Owner: <span className="font-semibold text-gray-800">{ownerName}</span>
+                {t('auctionDetailOwnerLabel')} <span className="font-semibold text-gray-800">{ownerName}</span>
               </div>
               <div className="mt-2 flex gap-2 flex-wrap">
                 {domain.domainStatus && (
@@ -297,11 +301,11 @@ export default function AuctionPage() {
                 )}
                 {domain.verified ? (
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-green-700 bg-green-50 border border-green-200">
-                    Verified
+                    {t('auctionsPageVerified')}
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200">
-                    Verification pending
+                    {t('auctionDetailVerificationPending')}
                   </span>
                 )}
               </div>
@@ -318,26 +322,26 @@ export default function AuctionPage() {
             <div className={`p-6 border rounded-[14px] transition-all duration-300 ${flashBid ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
               <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Current Highest Bid</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionDetailCurrentHighestBid')}</div>
                   <div className={`font-display text-[2rem] font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                     {auction.currentHighestBid > 0
-                      ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
-                      : 'No bids yet'}
+                      ? `${formatPrice(auction.currentHighestBid)}`
+                      : t('auctionDetailNoBidsYet')}
                   </div>
                   {auction.currentWinnerName && (
                     <div className="text-[0.78rem] text-gray-400 mt-1">
-                      Leading: {auction.currentWinnerName}
+                      {t('auctionDetailLeading', { name: auction.currentWinnerName })}
                     </div>
                   )}
                 </div>
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Starting Bid</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
                   <div className="font-display text-[1.5rem] font-bold text-amber-600">
-                    ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+                    {formatPrice(auction.minBidPrice)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Total Bidss</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
                   <div className="font-display text-[2rem] font-bold text-gray-900">
                     {auction.totalBids}
                   </div>
@@ -346,8 +350,8 @@ export default function AuctionPage() {
 
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
-                  Allowed bid range: <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
-                  <span className="text-gray-500 ml-2">(5% above current)</span>
+                  {t('auctionDetailBidRange')} <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice)}</strong>
+                  <span className="text-gray-500 ml-2">{t('auctionDetailBidRangeHint')}</span>
                 </div>
               )}
             </div>
@@ -355,13 +359,13 @@ export default function AuctionPage() {
             {/* Bid History */}
             <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 text-[0.9rem]">
-                Bid History
-                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">({bids.length} bids)</span>
+                {t('auctionDetailBidHistory')}
+                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">{t('auctionDetailBidHistoryCount', { count: bids.length })}</span>
               </div>
               <div ref={bidListRef} className="max-h-[360px] overflow-y-auto py-2">
                 {bids.length === 0 ? (
                   <div className="p-8 text-center text-gray-400 text-[0.875rem]">
-                    No bids yet. Be the first to bid!
+                    {t('auctionDetailNoBidsFirst')}
                   </div>
                 ) : (
                   bids.map((bid, i) => (
@@ -376,14 +380,14 @@ export default function AuctionPage() {
             {/* UNSOLD — lister options */}
             {isOwner && auction.status === 'UNSOLD' && (
               <div className="p-5 bg-amber-50 border border-amber-200 rounded-[12px]">
-                <div className="font-semibold text-amber-700 mb-2">Auction ended with no bids</div>
+                <div className="font-semibold text-amber-700 mb-2">{t('auctionDetailEndedNoBids')}</div>
                 <p className="text-gray-500 text-[0.875rem] mb-4">
-                  You can re-auction with new settings, or take the listing down.
+                  {t('auctionDetailEndedNoBidsTakeDown')}
                 </p>
                 <div className="flex gap-3">
                   <button className="btn-glow"
                     onClick={() => setReAuctionModal(true)}>
-                    ↺ Re-Auction
+                    {t('auctionDetailReAuctionBtn')}
                   </button>
                   <button className="btn-glow"
                     onClick={async () => {
@@ -391,10 +395,10 @@ export default function AuctionPage() {
                         await auctionAPI.close(auction.id);
                         navigate('/domains/dashboard');
                       } catch (e) {
-                        alert('Failed to close auction.');
+                        alert(t('auctionDetailFailedClose'));
                       }
                     }}>
-                    Take Down
+                    {t('auctionDetailTakeDown')}
                   </button>
                 </div>
               </div>
@@ -404,16 +408,15 @@ export default function AuctionPage() {
             {hasFinalWinner && (
               <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
                 <div className="text-[2.5rem] mb-2">🏆</div>
-                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">Auction Won!</h3>
+                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">{t('auctionDetailWon')}</h3>
                 <p className="text-gray-500">
-                  <strong className="text-gray-900">{auction.currentWinnerName || 'A bidder'}</strong>
-                  {' '}won with a bid of{' '}
-                  <strong className="text-green-700">
-                    ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
-                  </strong>
+                  {t('auctionDetailWonLine', {
+                    name: auction.currentWinnerName || t('auctionDetailWonGenericBidder'),
+                    amount: formatPrice(auction.currentHighestBid),
+                  })}
                 </p>
                 <p className="text-[0.82rem] text-gray-500 mt-2">
-                  Our admin team will coordinate the transfer.
+                  {t('auctionDetailAdminTransferDomain')}
                 </p>
               </div>
             )}
@@ -426,22 +429,22 @@ export default function AuctionPage() {
             {isActive && !isOwner && (
               <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
-                  Place Your Bid
+                  {t('auctionDetailPlaceYourBid')}
                 </h3>
                 {(biddingBlocked || participation.biddingBlocked) ? (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
                     {participation.biddingBlockedReason ||
-                      'Bidding is unavailable until the domain owner completes verification.'}
+                      t('auctionDetailBiddingBlockedDomain')}
                   </div>
                 ) : (
                 <>
                 {!participation.loading && !participation.paid && (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="text-sm text-amber-800 mb-2">
-                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                      {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
                     </div>
                     <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+                      {payingParticipation ? t('auctionDetailProcessing') : t('auctionDetailPayParticipation')}
                     </button>
                     {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
                   </div>
@@ -450,7 +453,7 @@ export default function AuctionPage() {
                 {/* Quick bid buttons */}
                 {minNextBid > 0 && (
                   <div className="mb-4">
-                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Bid</div>
+                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailQuickBid')}</div>
                     <div className="flex gap-2 flex-wrap">
                       {[1, 1.1, 1.25].map(mult => {
                         const quickAmount = Math.ceil(minNextBid * mult / 100) * 100;
@@ -463,7 +466,7 @@ export default function AuctionPage() {
                                 ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
                                 : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
                             }`}>
-                            ₹{Number(quickAmount).toLocaleString('en-IN')}
+                            {formatPrice(quickAmount)}
                           </button>
                         );
                       })}
@@ -473,13 +476,13 @@ export default function AuctionPage() {
 
                 <div className="flex flex-col gap-1.5 mb-4">
                   <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
-                    YOUR BID AMOUNT (₹)
+                    {t('auctionDetailYourBidAmount', { symbol: getSymbol() })}
                   </label>
                   <input
                     type="number"
                     value={bidAmount}
                     onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
-                    placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
+                    placeholder={t('auctionDetailMinPlaceholder', { amount: formatPrice(minNextBid) })}
                     min={minNextBid}
                     max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
@@ -502,14 +505,13 @@ export default function AuctionPage() {
                 <button className="btn-glow w-full" onClick={handleBid}
                   disabled={bidLoading || !bidAmount || !participation.paid}>
                   {bidLoading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-                    `Place Bid${bidAmount
-                      ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}`
-                      : ''} →`}
+                    (bidAmount
+                      ? t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(bidAmount) })
+                      : `${t('auctionDetailPlaceBidBtn')} →`)}
                 </button>
 
                 <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
-                  By bidding you commit to purchasing this domain if you win.
-                  Each bid must be at least 5% above the current highest bid.
+                  {t('auctionDetailBidCommitDomain')}
                 </p>
                 </>
                 )}
@@ -521,28 +523,28 @@ export default function AuctionPage() {
               <div className="p-5 bg-white border border-gray-200 rounded-[14px] text-center">
                 <div className="text-[1.5rem] mb-2">👑</div>
                 <p className="text-gray-500 text-[0.875rem]">
-                  This is your auction. You cannot bid on your own listing.
+                  {t('auctionDetailOwnListing')}
                 </p>
               </div>
             )}
 
             {/* Auction info card */}
             <div className="p-5 bg-white border border-gray-200 rounded-[14px]">
-              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">Auction Info</div>
+              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('auctionDetailInfo')}</div>
               <div className="flex flex-col gap-2.5">
-                <InfoRow label="Duration"
+                <InfoRow label={t('auctionDetailDuration')}
                   value={auction.duration?.replace(/_/g, ' ')} />
-                <InfoRow label="Started"
+                <InfoRow label={t('auctionDetailStarted')}
                   value={formatAuctionDate(auction.startTime, {
                     day: 'numeric', month: 'short', year: 'numeric',
                   })} />
-                <InfoRow label="Ends"
+                <InfoRow label={t('auctionDetailEnds')}
                   value={formatAuctionDateTime(auction.endTime, {
                     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                   })} />
                 {auction.status === 'EXTENDED' && (
                   <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
-                    ⚡ Extended due to last-minute bid
+                    {t('auctionDetailExtendedNote')}
                   </div>
                 )}
               </div>
@@ -571,6 +573,8 @@ export default function AuctionPage() {
 
 // ─── Bid Row ──────────────────────────────────────────────────────────────────
 function BidRow({ bid, isLatest, isWinner, isLeading }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   // FIX #12: normalize bidTime
   const bidTimeStr = formatAuctionTime(bid.bidTime, {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
@@ -591,22 +595,22 @@ function BidRow({ bid, isLatest, isWinner, isLeading }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-[0.875rem] text-gray-900">
-          {bid.bidderName || 'Anonymous'}
+          {bid.bidderName || t('auctionDetailAnonymous')}
           {isWinner && (
-            <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">WINNER</span>
+            <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">{t('auctionDetailWinnerBadge')}</span>
           )}
           {!isWinner && isLeading && (
-            <span className="ml-1.5 text-[0.68rem] text-green-600 font-bold">LEADING</span>
+            <span className="ml-1.5 text-[0.68rem] text-green-600 font-bold">{t('auctionDetailLeadingBadge')}</span>
           )}
         </div>
         <div className="text-[0.72rem] text-gray-500">
-          {bidTimeStr ? `${bidTimeStr} · Bidder` : 'Bidder'}
+          {bidTimeStr ? t('auctionDetailBidderWithTime', { time: bidTimeStr }) : t('auctionDetailBidder')}
         </div>
       </div>
       <div className={`font-display text-[1.1rem] font-bold flex-shrink-0 ${
         isLatest ? 'text-green-600' : 'text-amber-600'
       }`}>
-        ₹{Number(bid.amount).toLocaleString('en-IN')}
+        {formatPrice(bid.amount)}
       </div>
     </div>
   );
@@ -614,16 +618,17 @@ function BidRow({ bid, isLatest, isWinner, isLeading }) {
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const config = {
-    DRAFT:    { color: '#888',    label: 'Draft'       },
-    ACTIVE:   { color: '#6ec896', label: '🟢 Live'     },
-    EXTENDED: { color: '#c8a96e', label: '⚡ Extended' },
-    ENDED:    { color: '#a06ec8', label: 'Ended'       },
-    PAYMENT_PENDING: { color: '#c8a96e', label: 'Payment Pending' },
-    COMPLETED: { color: '#6ec896', label: 'Completed' },
-    UNSOLD:   { color: '#c86e6e', label: 'Unsold'      },
-    CANCELLED:{ color: '#888',    label: 'Cancelled'   },
-    CLOSED:   { color: '#666',    label: 'Closed'      },
+    DRAFT:    { color: '#888',    label: t('auctionsPageStatusDraft') },
+    ACTIVE:   { color: '#6ec896', label: t('auctionsPageStatusLive') },
+    EXTENDED: { color: '#c8a96e', label: t('auctionsPageStatusExtended') },
+    ENDED:    { color: '#a06ec8', label: t('auctionDetailStatusEnded') },
+    PAYMENT_PENDING: { color: '#c8a96e', label: t('auctionDetailStatusPaymentPending') },
+    COMPLETED: { color: '#6ec896', label: t('auctionDetailStatusCompleted') },
+    UNSOLD:   { color: '#c86e6e', label: t('auctionDetailStatusUnsold') },
+    CANCELLED:{ color: '#888',    label: t('auctionDetailStatusCancelled') },
+    CLOSED:   { color: '#666',    label: t('auctionDetailStatusClosed') },
   }[status] || { color: '#888', label: status };
 
   return (
@@ -648,6 +653,8 @@ function InfoRow({ label, value }) {
 
 // ─── Re-Auction Modal ─────────────────────────────────────────────────────────
 function ReAuctionModal({ auctionId, onClose, onSuccess }) {
+  const { t } = useTranslation();
+  const { getSymbol } = useCurrency();
   const [form, setForm]       = useState({ minBidPrice: '', duration: 'SEVEN_DAYS' });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -655,7 +662,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) {
-      setError('Please enter a valid minimum bid.');
+      setError(t('auctionDetailValidMinBid'));
       return;
     }
     setLoading(true); setError('');
@@ -666,7 +673,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to re-auction.');
+      setError(err.response?.data?.error || t('auctionDetailFailedReAuction'));
     } finally { setLoading(false); }
   };
 
@@ -676,35 +683,35 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
         <div className="mb-6">
-          <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">Re-Auction</div>
-          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Start a New Auction</h2>
-          <p className="text-sm text-gray-500">Set new parameters for your re-auction.</p>
+          <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">{t('auctionDetailReAuctionBadge')}</div>
+          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{t('auctionDetailReAuctionTitle')}</h2>
+          <p className="text-sm text-gray-500">{t('auctionDetailReAuctionSubtitle')}</p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">New Minimum Bid (₹) <span className="text-red-500">*</span></label>
+            <label className="text-sm font-medium text-gray-700">{t('auctionDetailNewMinBidRequired', { symbol: getSymbol() })}</label>
             <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" type="number" min="1" value={form.minBidPrice}
               onChange={e => setForm(f => ({ ...f, minBidPrice: e.target.value }))}
-              placeholder="e.g. 5000" required />
+              placeholder={t('domainsPageMinBidPlaceholder')} required />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Auction Duration <span className="text-red-500">*</span></label>
+            <label className="text-sm font-medium text-gray-700">{t('auctionDetailAuctionDurationRequired')}</label>
             <select className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" value={form.duration}
               onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}>
-              <option value="ONE_HOUR">1 Hour</option>
-              <option value="SIX_HOURS">6 Hours</option>
-              <option value="TWELVE_HOURS">12 Hours</option>
-              <option value="ONE_DAY">1 Day</option>
-              <option value="THREE_DAYS">3 Days</option>
-              <option value="SEVEN_DAYS">7 Days</option>
+              <option value="ONE_HOUR">{t('domainsPageDurationOneHour')}</option>
+              <option value="SIX_HOURS">{t('domainsPageDurationSixHours')}</option>
+              <option value="TWELVE_HOURS">{t('domainsPageDurationTwelveHours')}</option>
+              <option value="ONE_DAY">{t('domainsPageDurationOneDay')}</option>
+              <option value="THREE_DAYS">{t('domainsPageDurationThreeDays')}</option>
+              <option value="SEVEN_DAYS">{t('domainsPageDurationSevenDays')}</option>
             </select>
           </div>
           {error && <div className="text-sm text-red-500">{error}</div>}
           <div className="flex gap-3 mt-1">
             <button type="submit" className="btn-glow flex-1" disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Start Re-Auction →'}
+              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('auctionDetailStartReAuction')}
             </button>
-            <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-glow" onClick={onClose}>{t('cancel')}</button>
           </div>
         </form>
       </div>

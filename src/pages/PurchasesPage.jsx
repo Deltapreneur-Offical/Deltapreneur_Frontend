@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { domainAPI, domainStorefrontAPI, technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import PurchaseIcon from '../assets/purchase.png';
@@ -20,19 +21,18 @@ import {
   registrationStatusLabel,
 } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
-import { useTranslation } from 'react-i18next';
 
 export default function PurchasesPage() {
-  const { formatPrice } = useCurrency();
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
-  const navigate                      = useNavigate();
-  const [tab, setTab]                 = useState('all');
-  const [domains, setDomains]         = useState([]);
+  const navigate = useNavigate();
+  const [tab, setTab] = useState('all');
+  const [domains, setDomains] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [swPurchases, setSwPurchases] = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [helpModal, setHelpModal]     = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function PurchasesPage() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const completedDomains  = asArray(domains).filter(d =>
+  const completedDomains = asArray(domains).filter(d =>
     d.paymentStatus === 'COMPLETED' ||
     d.domainStatus === 'SOLD' ||
     d.purchasedByUserId ||
@@ -58,7 +58,7 @@ export default function PurchasesPage() {
   const completedRegistrations = asArray(registrations);
   const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
   const domainTabCount = completedDomains.length + completedRegistrations.length;
-  const totalItems        = domainTabCount + completedSoftware.length;
+  const totalItems = domainTabCount + completedSoftware.length;
 
   const domainTabItems = [
     ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
@@ -66,42 +66,54 @@ export default function PurchasesPage() {
   ];
 
   const displayItems =
-    tab === 'domains'  ? domainTabItems
-  : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
-  : [
-      ...domainTabItems,
-      ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
-    ];
+    tab === 'domains' ? domainTabItems
+    : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
+    : [
+        ...domainTabItems,
+        ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
+      ];
 
   return (
     <AppLayout>
       <div>
         <div className="mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">My Purchases</h1>
-            <p className="text-gray-600 mt-1">Marketplace buys, new domain registrations, and software in one place.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">
+              {t('purchasesTitle', { defaultValue: 'My Purchases' })}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {t('purchasesSubtitle', {
+                defaultValue: 'Marketplace buys, new domain registrations, and software in one place.',
+              })}
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Purchases"  value={totalItems}                  iconSrc={PurchaseIcon} />
-          <StatCard label="Domains"          value={domainTabCount}     iconSrc={DomainsIcon} color="#6eadc8" />
-          <StatCard label="Software"         value={completedSoftware.length}    iconSrc={SoftwareIcon} color="#a06ec8" />
-          <StatCard label="CoBrother Active"
+          <StatCard label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })} value={totalItems} iconSrc={PurchaseIcon} />
+          <StatCard label={t('purchasesStatDomains', { defaultValue: 'Domains' })} value={domainTabCount} iconSrc={DomainsIcon} color="#6eadc8" />
+          <StatCard label={t('purchasesStatSoftware', { defaultValue: 'Software' })} value={completedSoftware.length} iconSrc={SoftwareIcon} color="#a06ec8" />
+          <StatCard
+            label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
             value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
-            iconSrc={CoBrotherIcon} color="#6ec896" />
+            iconSrc={CoBrotherIcon}
+            color="#6ec896"
+          />
         </div>
 
         <div className="flex gap-2 mb-6">
           {[
-            { id: 'all',      label: `All (${totalItems})` },
-            { id: 'domains',  label: `Domains (${domainTabCount})` },
-            { id: 'software', label: `Software (${completedSoftware.length})` },
-          ].map(t => (
-            <button key={t.id}
-              className={`btn-glow btn-glow-sm ${tab === t.id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-              onClick={() => setTab(t.id)}>
-              {t.label}
+            { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
+            { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
+            { id: 'software', label: `${t('purchasesTabSoftware', { defaultValue: 'Software' })} (${completedSoftware.length})` },
+          ].map((tabItem) => (
+            <button
+              key={tabItem.id}
+              type="button"
+              className={`btn-glow btn-glow-sm ${tab === tabItem.id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              onClick={() => setTab(tabItem.id)}
+            >
+              {tabItem.label}
             </button>
           ))}
         </div>
@@ -113,12 +125,22 @@ export default function PurchasesPage() {
         ) : displayItems.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🛒</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No purchases yet</h3>
-            <p className="text-gray-600 mb-6">Browse domains and software to make your first purchase.</p>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {t('purchasesEmpty', { defaultValue: 'No purchases yet' })}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {t('purchasesBrowseHint', { defaultValue: 'Browse domains and software to make your first purchase.' })}
+            </p>
             <div className="flex gap-3 justify-center flex-wrap">
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>Browse Domains</button>
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/storefront')}>Register a Domain</button>
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>Browse Technology</button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
+                {t('browseDomains', { defaultValue: 'Browse Domains' })}
+              </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/storefront')}>
+                {t('storefront', { defaultValue: 'Register a Domain' })}
+              </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
+                {t('browseTechnology', { defaultValue: 'Browse Technology' })}
+              </button>
             </div>
           </div>
         ) : (
@@ -168,15 +190,17 @@ export default function PurchasesPage() {
             <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
             <div className="relative z-10 p-8">
               <div className="text-5xl mb-4">◆</div>
-              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-2">CoBrother Help Activated!</h2>
+              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-2">{t('purchasesCoBrotherActivated')}</h2>
               <p className="text-gray-500 mb-5 leading-relaxed">
-                A CoBrother will reach out within <strong className="text-purple-600">24 hours</strong>{' '}
-                to help with <strong className="text-gray-900">{helpSuccess.software?.name}</strong>.
+                {t('purchasesCoBrotherReachOut', {
+                  hours: t('purchasesCoBrotherReachOutHours'),
+                  name: helpSuccess.software?.name,
+                })}
               </p>
               <div className="px-3.5 py-3 bg-green-500/8 border border-green-500/20 rounded-[10px] mb-6 text-xs text-green-400">
-                ✓ {formatPrice(1000)} paid · CoBrother assigned · Expect contact via email
+                ✓ {t('purchasesCoBrotherPaidSummary', { price: formatPrice(1000) })}
               </div>
-              <button className="btn-glow w-full" onClick={() => setHelpSuccess(null)}>Done</button>
+              <button type="button" className="btn-glow w-full" onClick={() => setHelpSuccess(null)}>{t('done')}</button>
             </div>
           </div>
         </div>
@@ -185,18 +209,20 @@ export default function PurchasesPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Domain Purchase Row
-───────────────────────────────────────────────────────── */
 function DomainPurchaseRow({ domain, user }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
       <div className="flex justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">◇ Resale</span>
-            {domain.verified && <span className="text-xs font-bold text-green-600">✓ Verified</span>}
+            <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">
+              ◇ {t('purchasesBadgeResale', { defaultValue: 'Resale' })}
+            </span>
+            {domain.verified && (
+              <span className="text-xs font-bold text-green-600">✓ {t('verified', { defaultValue: 'Verified' })}</span>
+            )}
           </div>
           <div className="font-bold text-lg text-gray-900">
             {domain.domainName}{domain.domainExtension}
@@ -227,7 +253,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
-              ◇ Registration
+              ◇ {t('purchasesBadgeRegistration', { defaultValue: 'Registration' })}
             </span>
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge}`}>{label}</span>
           </div>
@@ -265,13 +291,11 @@ function RegistrationPurchaseRow({ order, user, t }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Software Purchase Row
-───────────────────────────────────────────────────────── */
 function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const sw      = purchase.software || {};
-  const helpPaid  = purchase.coBrotherHelpPaid;
+  const sw = purchase.software || {};
+  const helpPaid = purchase.coBrotherHelpPaid;
   const confirmed = purchase.completionStatus === 'CONFIRMED';
   const HELP_FEE_INR = 1000;
 
@@ -280,9 +304,9 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
       <div className="flex justify-between flex-wrap gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded">⟁ Software</span>
-            {confirmed && <span className="text-xs font-bold text-green-600">✓ Completed</span>}
-            {helpPaid && <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-200 px-2 py-0.5 rounded">◆ CoBrother Active</span>}
+            <span className="text-xs font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded">⟁ {t('purchasesBadgeSoftware')}</span>
+            {confirmed && <span className="text-xs font-bold text-green-600">✓ {t('completed')}</span>}
+            {helpPaid && <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-200 px-2 py-0.5 rounded">◆ {t('purchasesCoBrotherActive')}</span>}
           </div>
           <div className="font-bold text-lg text-gray-900">
             {sw.name || '—'}
@@ -298,16 +322,16 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
             {formatPrice(sw.price || 0)}
           </div>
           {helpPaid && <div className="text-xs text-gray-600">+ {formatPrice(HELP_FEE_INR)} CoBrother</div>}
-          <div className="text-xs text-gray-600">✓ Payment Confirmed</div>
+          <div className="text-xs text-gray-600">✓ {t('purchasesPaymentConfirmed')}</div>
           <InvoiceDownloadButton onClick={onDownloadInvoice} />
         </div>
       </div>
 
       {sw.githubLink && (
         <div className="mt-3.5 p-4 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-between">
-          <span className="text-xs text-gray-600">🔗 GitHub Repository</span>
+          <span className="text-xs text-gray-600">🔗 {t('purchasesGithubRepo')}</span>
           <a href={sw.githubLink} target="_blank" rel="noreferrer" className="text-xs text-gray-700 font-bold hover:text-gray-900 transition-all duration-200">
-            Open →
+            {t('openLink')}
           </a>
         </div>
       )}
@@ -315,21 +339,17 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
       <div className="mt-3.5">
         {helpPaid ? (
           <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
-            <div className="font-bold text-sm text-green-600 mb-1">◆ CoBrother Helper Assigned</div>
-            <div className="text-xs text-gray-600 leading-relaxed">
-              Check your email for introduction details from your assigned CoBrother.
-            </div>
+            <div className="font-bold text-sm text-green-600 mb-1">◆ {t('purchasesHelperAssigned')}</div>
+            <div className="text-xs text-gray-600 leading-relaxed">{t('purchasesHelperEmailHint')}</div>
           </div>
         ) : (
           <div className="p-4 bg-purple-50 border border-purple-100 rounded-lg flex items-center justify-between flex-wrap gap-3">
             <div>
-              <div className="font-bold text-sm text-purple-700 mb-1">Need help getting started?</div>
-              <div className="text-xs text-gray-600 leading-relaxed">
-                Get a dedicated CoBrother to guide you through setup and deployment.
-              </div>
+              <div className="font-bold text-sm text-purple-700 mb-1">{t('purchasesNeedHelpTitle')}</div>
+              <div className="text-xs text-gray-600 leading-relaxed">{t('purchasesNeedHelpDesc')}</div>
             </div>
-            <button onClick={onGetHelp} className="btn-glow btn-glow-sm">
-              Get Help — {formatPrice(HELP_FEE_INR)}
+            <button type="button" onClick={onGetHelp} className="btn-glow btn-glow-sm">
+              {t('purchasesGetHelp', { price: formatPrice(HELP_FEE_INR) })}
             </button>
           </div>
         )}
@@ -338,12 +358,11 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Reusable Download Button
-───────────────────────────────────────────────────────── */
 function InvoiceDownloadButton({ onClick }) {
+  const { t } = useTranslation();
   return (
     <button
+      type="button"
       onClick={onClick}
       className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-lg px-3 py-1.5 transition-all duration-200 bg-white hover:bg-gray-50 group"
     >
@@ -354,24 +373,23 @@ function InvoiceDownloadButton({ onClick }) {
         <path d="M8 1v9m0 0L5 7m3 3 3-3M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2"
           stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-      Invoice
+      {t('invoice')}
     </button>
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   CoBrother Help Modal (unchanged)
-───────────────────────────────────────────────────────── */
 function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { currency, formatPrice } = useCurrency();
   const HELP_FEE_INR = 1000;
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
   const sw = purchase.software || {};
 
   const handlePay = async () => {
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
     try {
       const { data: orderData } = await technologyAPI.payCoBrotherHelp(purchase.id, {
         ...buildOrderCurrencyPayload(currency),
@@ -385,19 +403,22 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
           try {
             await technologyAPI.verifyCoBrotherHelp(purchase.id, {
               razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId:   response.razorpay_order_id,
+              razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
             onSuccess({ ...purchase, coBrotherOptIn: true, coBrotherHelpPaid: true });
           } catch {
-            setError('Payment verification failed.');
+            setError(t('storefrontVerifyFailed'));
             setLoading(false);
           }
         },
-        onFailure: () => { setError('Payment failed.'); setLoading(false); },
+        onFailure: () => { setError(t('storefrontPaymentFailed')); setLoading(false); },
         onDismiss: () => setLoading(false),
       });
-    } catch (err) { setError(err.response?.data?.error || 'Failed.'); setLoading(false); }
+    } catch (err) {
+      setError(err.response?.data?.error || t('errorGeneric'));
+      setLoading(false);
+    }
   };
 
   return (
@@ -405,16 +426,18 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
       <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
         <div className="relative z-10 p-8">
-          <div className="modal-badge" style={{ background: '#ede9fe', color: '#7c3aed', border: '1px solid #c4b5fd' }}>◆ CoBrother Help</div>
+          <div className="modal-badge" style={{ background: '#ede9fe', color: '#7c3aed', border: '1px solid #c4b5fd' }}>◆ {t('purchasesCoBrotherHelpBadge')}</div>
           <h2>{sw.name}</h2>
-          <p>Get a dedicated expert to help you succeed with this software.</p>
+          <p>{t('purchasesCoBrotherHelpDesc')}</p>
         </div>
         <div className="p-8">
           <div className="mb-6">
-            {['Dedicated CoBrother assigned within 24 hours',
-              'Personalised onboarding and setup guidance',
-              'Help with deployment, configuration, and integration',
-              'Direct communication channel with your helper'].map((line, i) => (
+            {[
+              t('purchasesHelpFeature1'),
+              t('purchasesHelpFeature2'),
+              t('purchasesHelpFeature3'),
+              t('purchasesHelpFeature4'),
+            ].map((line, i) => (
               <div key={i} className="flex items-center gap-2 mb-3">
                 <span className="text-green-600 text-sm">✓</span>
                 <span className="text-gray-600 text-sm leading-relaxed">{line}</span>
@@ -422,27 +445,27 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
             ))}
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-            <div className="text-xs text-gray-600 font-bold uppercase mb-2">Billing Summary</div>
+            <div className="text-xs text-gray-600 font-bold uppercase mb-2">{t('purchasesBillingSummary')}</div>
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600 text-sm">Software (already paid)</span>
+              <span className="text-gray-600 text-sm">{t('purchasesSoftwarePaid')}</span>
               <span className="text-gray-600 text-sm">{formatPrice(sw.price || 0)}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600 text-sm">CoBrother Helper Fee</span>
+              <span className="text-gray-600 text-sm">{t('purchasesHelperFee')}</span>
               <span className="text-gray-600 text-sm font-bold">{formatPrice(HELP_FEE_INR)}</span>
             </div>
             <div className="h-1 bg-gray-200 mb-2" />
             <div className="flex justify-between items-center">
-              <span className="font-bold text-gray-900 text-sm">Paying Today</span>
+              <span className="font-bold text-gray-900 text-sm">{t('purchasesPayingToday')}</span>
               <span className="font-display text-lg font-bold text-purple-700">{formatPrice(HELP_FEE_INR)}</span>
             </div>
           </div>
           {error && <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-xs text-red-600 mb-6">{error}</div>}
           <div className="flex gap-3">
-            <button className="btn-glow w-full" onClick={handlePay} disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : `Pay ${formatPrice(HELP_FEE_INR)} — Get Help →`}
+            <button type="button" className="btn-glow w-full" onClick={handlePay} disabled={loading}>
+              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('purchasesPayGetHelp', { price: formatPrice(HELP_FEE_INR) })}
             </button>
-            <button className="btn-glow w-full" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-glow w-full" onClick={onClose}>{t('cancel')}</button>
           </div>
         </div>
       </div>
@@ -450,9 +473,6 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Stat Card (unchanged)
-───────────────────────────────────────────────────────── */
 function StatCard({ label, value, iconSrc, color = '#111827' }) {
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeFooter from '../components/common/HomeFooter';
@@ -41,6 +42,7 @@ const SKILL_ENUM_MAP = {
 };
 
 const JoinForm = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '',
@@ -75,16 +77,16 @@ const JoinForm = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.fullName || formData.fullName.length < 2) {
-      newErrors.fullName = 'Full name is required';
+      newErrors.fullName = t('joinFormErrFullName');
     }
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Enter a valid email address';
+      newErrors.email = t('joinFormErrEmail');
     }
     if (!formData.whatsapp || formData.whatsapp.length !== 10 || !/^\d{10}$/.test(formData.whatsapp)) {
-      newErrors.whatsapp = 'Enter a valid 10-digit WhatsApp number';
+      newErrors.whatsapp = t('joinFormErrWhatsapp');
     }
     if (!formData.cityPincode || formData.cityPincode.length < 2) {
-      newErrors.cityPincode = 'City / Pincode is required';
+      newErrors.cityPincode = t('joinFormErrCity');
     }
     return newErrors;
   };
@@ -113,7 +115,7 @@ const JoinForm = () => {
 
       setSubmitState({
         status: 'success',
-        message: 'Thank you! Our team will contact you soon.'
+        message: t('joinFormSuccessMessage')
       });
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 12000);
@@ -129,28 +131,23 @@ const JoinForm = () => {
       console.error('Join Us error:', error);
       setSubmitState({
         status: 'error',
-        message: 'Something went wrong. Please try again later.'
+        message: t('joinFormErrorMessage')
       });
     }
   };
 
+  const workflowSteps = [
+    { icon: Bell, titleKey: 'joinFormStepClaimTitle', descKey: 'joinFormStepClaimDesc', color: '#9440dd' },
+    { icon: MapPin, titleKey: 'joinFormStepSetupTitle', descKey: 'joinFormStepSetupDesc', color: '#6366f1' },
+    { icon: MonitorCheck, titleKey: 'joinFormStepHandoverTitle', descKey: 'joinFormStepHandoverDesc', color: '#0ea5e9' },
+    { icon: BadgeIndianRupee, titleKey: 'joinFormStepEarnTitle', descKey: 'joinFormStepEarnDesc', color: '#10b981' },
+  ];
+
   const faqs = [
-    {
-      q: "Do I need years of experience?",
-      a: "No. Skill + execution mindset matters. Choose a top skill and start."
-    },
-    {
-      q: "When do I get paid?",
-      a: "Commission clears when the integration goes live - post setup and dashboard handover."
-    },
-    {
-      q: "How will I receive leads?",
-      a: "Based on your city/pincode and selected skill. You'll get a WhatsApp notification."
-    },
-    {
-      q: "Is there a joining fee?",
-      a: "No joining fee. No hidden charges. You only earn - we take nothing upfront."
-    }
+    { qKey: 'joinFormFaq1Q', aKey: 'joinFormFaq1A' },
+    { qKey: 'joinFormFaq2Q', aKey: 'joinFormFaq2A' },
+    { qKey: 'joinFormFaq3Q', aKey: 'joinFormFaq3A' },
+    { qKey: 'joinFormFaq4Q', aKey: 'joinFormFaq4A' },
   ];
 
   return (
@@ -162,11 +159,11 @@ const JoinForm = () => {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button onClick={() => navigate('/')} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
             <ArrowLeft size={18} />
-            <span className="font-semibold">Back to Home</span>
+            <span className="font-semibold">{t('joinFormBackHome')}</span>
           </button>
           <div className="flex items-center gap-2 text-purple-600 font-bold text-lg">
             <Network size={20} />
-            <span>CoBrother Elite</span>
+            <span>{t('joinFormElite')}</span>
           </div>
         </div>
       </header>
@@ -176,29 +173,28 @@ const JoinForm = () => {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-green-100 border border-green-300 rounded-full text-xs sm:text-sm font-semibold text-green-700 mb-5 sm:mb-6">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            Be the <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold">Disruptive CoBrother</span>
+            {t('joinFormBadge')}
           </div>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Be the <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Disruptive CoBrother</span>
+            {t('joinFormHeroTitle')}
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed">
-            Disruptive businesses are integrating <strong className="text-gray-900">AI and Technology</strong> but struggling to implement it.
-            We provide the technology - <strong className="text-gray-900">you deliver it to the doorstep</strong> and earn up to 100%.
+            {t('joinFormHeroDesc')}
           </p>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-[560px] sm:max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12">
             <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
               <p className="text-2xl sm:text-4xl font-bold font-display text-purple-600 leading-none tabular-nums mb-1.5 sm:mb-2">100%</p>
-              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">Earnings</p>
+              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatEarnings')}</p>
             </div>
             <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
               <p className="text-2xl sm:text-4xl font-bold font-display text-indigo-600 leading-none tabular-nums mb-1.5 sm:mb-2">48h</p>
-              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">Onboarding</p>
+              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatOnboarding')}</p>
             </div>
             <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
               <p className="text-2xl sm:text-4xl font-bold font-display text-green-600 leading-none tabular-nums mb-1.5 sm:mb-2">{'\u20B90'}</p>
-              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">Joining fee</p>
+              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatJoiningFee')}</p>
             </div>
           </div>
         </div>
@@ -214,22 +210,17 @@ const JoinForm = () => {
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <Workflow size={20} className="text-purple-600" />
-                  The CoBrother Workflow
+                  {t('joinFormWorkflowTitle')}
                 </h3>
                 <div className="space-y-4">
-                  {[
-                    { icon: Bell, title: 'Claim a Lead', desc: 'Get notified of a business in your area ready for Aultum Technologies.', color: '#9440dd' },
-                    { icon: MapPin, title: 'On-Site Setup', desc: 'Visit the Business, deliver and install Aultum Technologies.', color: '#6366f1' },
-                    { icon: MonitorCheck, title: 'Technology Handover', desc: 'Walk the business owner through their real time technology.', color: '#0ea5e9' },
-                    { icon: BadgeIndianRupee, title: 'Instant Earning', desc: 'Your 100% Delivery Fees, Instant Earning, Clears the Moment Integration Goes Live.', color: '#10b981' }
-                  ].map((step, idx) => (
+                  {workflowSteps.map((step, idx) => (
                     <div key={idx} className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${step.color}15`, borderWidth: '2px', borderStyle: 'solid', borderColor: `${step.color}30` }}>
                         <step.icon size={18} style={{ color: step.color }} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-bold text-lg mb-1" style={{ color: step.color }}>{step.title}</h4>
-                        <p className="text-gray-600 text-sm">{step.desc}</p>
+                        <h4 className="font-bold text-lg mb-1" style={{ color: step.color }}>{t(step.titleKey)}</h4>
+                        <p className="text-gray-600 text-sm">{t(step.descKey)}</p>
                       </div>
                     </div>
                   ))}
@@ -240,28 +231,28 @@ const JoinForm = () => {
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <Sparkles size={20} className="text-purple-600" />
-                  Everything you should know
+                  {t('joinFormDetailsTitle')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <DetailCard
                     icon={Package}
-                    title="What to deliver"
-                    items={['Aultum Technologies', 'AI Technologies', 'Dashboard live + Integration']}
+                    title={t('joinFormDeliverTitle')}
+                    items={[t('joinFormDeliver1'), t('joinFormDeliver2'), t('joinFormDeliver3')]}
                   />
                   <DetailCard
                     icon={Store}
-                    title="Who you deliver"
-                    items={['Owners buying AI', 'Teams in need of setup support', 'Local Businesses and Startups', 'Corporates buying AI tools']}
+                    title={t('joinFormWhoTitle')}
+                    items={[t('joinFormWho1'), t('joinFormWho2'), t('joinFormWho3'), t('joinFormWho4')]}
                   />
                   <DetailCard
                     icon={Sparkles}
-                    title="What you Earn"
-                    items={['Lead notifications by area', 'Clear setup workflow', 'Commission on go-live']}
+                    title={t('joinFormEarnTitle')}
+                    items={[t('joinFormEarn1'), t('joinFormEarn2'), t('joinFormEarn3')]}
                   />
                   <DetailCard
                     icon={ShieldCheck}
-                    title="What you Need"
-                    items={['Phone + WhatsApp active', 'Basic communication skills', 'Laptop/Tablet recommended']}
+                    title={t('joinFormNeedTitle')}
+                    items={[t('joinFormNeed1'), t('joinFormNeed2'), t('joinFormNeed3')]}
                   />
                 </div>
               </div>
@@ -270,11 +261,11 @@ const JoinForm = () => {
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <MessageCircle size={20} className="text-purple-600" />
-                  Frequently Asked Questions
+                  {t('joinFormFaqTitle')}
                 </h3>
                 <div className="space-y-3">
                   {faqs.map((faq, idx) => (
-                    <AccordionItem key={idx} q={faq.q} a={faq.a} />
+                    <AccordionItem key={idx} q={t(faq.qKey)} a={t(faq.aKey)} />
                   ))}
                 </div>
               </div>
@@ -284,39 +275,39 @@ const JoinForm = () => {
             <div className="lg:col-span-1 lg:sticky lg:top-24 self-start">
               <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <div className="mb-6">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Claim Your Territory</h3>
-                  <p className="text-gray-600 text-sm">Fill Once - We Route Leads to You by Area & Skill.</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{t('joinFormClaimTitle')}</h3>
+                  <p className="text-gray-600 text-sm">{t('joinFormClaimSubtitle')}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('joinFormFullName')} <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
-                      placeholder="Your full name"
+                      placeholder={t('joinFormNamePlaceholder')}
                       className={`w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.fullName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                     />
                     {errors.fullName && <span className="text-xs text-red-500 mt-1 block">{errors.fullName}</span>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('joinFormEmail')} <span className="text-red-500">*</span></label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="your.email@example.com"
+                      placeholder={t('joinFormEmailPlaceholder')}
                       className={`w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                     />
                     {errors.email && <span className="text-xs text-red-500 mt-1 block">{errors.email}</span>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">WhatsApp <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('joinFormWhatsapp')} <span className="text-red-500">*</span></label>
                     <div className="flex items-center gap-2">
                       <span className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 font-semibold">+91</span>
                       <input
@@ -324,7 +315,7 @@ const JoinForm = () => {
                         name="whatsapp"
                         value={formData.whatsapp}
                         onChange={handleChange}
-                        placeholder="WhatsApp number"
+                        placeholder={t('joinFormWhatsappPlaceholder')}
                         className={`flex-1 px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.whatsapp ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                       />
                     </div>
@@ -332,20 +323,20 @@ const JoinForm = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">City / Pincode <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('joinFormCityPincode')} <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="cityPincode"
                       value={formData.cityPincode}
                       onChange={handleChange}
-                      placeholder="Mumbai / 400065"
+                      placeholder={t('joinFormCityPlaceholder')}
                       className={`w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.cityPincode ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                     />
                     {errors.cityPincode && <span className="text-xs text-red-500 mt-1 block">{errors.cityPincode}</span>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Top Skill <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('joinFormTopSkill')} <span className="text-red-500">*</span></label>
                     <select name="topSkill" value={formData.topSkill} onChange={handleChange} className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
                       <option value="WEB_DEV">Web Development</option>
                       <option value="APP_DEV">App Development</option>
@@ -379,8 +370,8 @@ const JoinForm = () => {
                     <div className="flex items-center gap-3">
                       <Laptop size={18} className="text-gray-600" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">Equipment</p>
-                        <p className="text-xs text-gray-600">Laptop / Tablet available</p>
+                        <p className="text-sm font-semibold text-gray-900">{t('joinFormEquipment')}</p>
+                        <p className="text-xs text-gray-600">{t('joinFormEquipmentHint')}</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -403,10 +394,10 @@ const JoinForm = () => {
                     {submitState.status === 'loading' ? (
                       <>
                         <Loader2 size={20} className="animate-spin" />
-                        <span>Processing...</span>
+                        <span>{t('joinFormProcessing')}</span>
                       </>
                     ) : (
-                      'SUBMIT'
+                      t('joinFormSubmit')
                     )}
                   </button>
 
@@ -414,7 +405,7 @@ const JoinForm = () => {
                     <div className="flex items-start gap-3 p-4 bg-green-100 border border-green-300 rounded-lg">
                       <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-bold text-green-900">Territory Claimed!</p>
+                        <p className="text-sm font-bold text-green-900">{t('joinFormTerritoryClaimed')}</p>
                         <p className="text-xs text-green-700 mt-1">{submitState.message}</p>
                       </div>
                     </div>
@@ -424,24 +415,24 @@ const JoinForm = () => {
                     <div className="flex items-start gap-3 p-4 bg-red-100 border border-red-300 rounded-lg">
                       <AlertCircle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-bold text-red-900">Error</p>
+                        <p className="text-sm font-bold text-red-900">{t('joinFormError')}</p>
                         <p className="text-xs text-red-700 mt-1">{submitState.message}</p>
                       </div>
                     </div>
                   )}
 
                   <p className="text-xs text-center text-gray-500">
-                    Zero Spam · Zero Joining Fee · Matched Within 48h
+                    {t('joinFormFooterNote')}
                   </p>
                 </form>
               </div>
 
               {/* Trust Badges */}
               <div className="grid grid-cols-2 gap-3 mt-6">
-                <TrustBadge icon={Timer} text="Zero wait time" />
-                <TrustBadge icon={BadgePercent} text="Up to 100% cut" />
-                <TrustBadge icon={ShieldCheck} text="No joining fee" />
-                <TrustBadge icon={Rocket} text="Instant commission" />
+                <TrustBadge icon={Timer} text={t('joinFormTrustZeroWait')} />
+                <TrustBadge icon={BadgePercent} text={t('joinFormTrust100Cut')} />
+                <TrustBadge icon={ShieldCheck} text={t('joinFormTrustNoFee')} />
+                <TrustBadge icon={Rocket} text={t('joinFormTrustInstant')} />
               </div>
             </div>
           </div>

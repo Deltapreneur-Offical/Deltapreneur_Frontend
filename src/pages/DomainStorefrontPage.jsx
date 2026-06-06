@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
@@ -82,6 +83,7 @@ function buildContactFromUser(user) {
 export default function DomainStorefrontPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -288,35 +290,59 @@ export default function DomainStorefrontPage() {
           </div>
         )}
 
-        <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('storefrontSearchTitle')}</h2>
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
-            <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-200 px-3 py-2">
-              <Search className="w-5 h-5 text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t('domainSearchPlaceholder')}
-                className="flex-1 border-none outline-none text-gray-900 placeholder:text-gray-400"
-              />
-              <select
-                value={tld}
-                onChange={(e) => setTld(e.target.value)}
-                className="rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm font-medium text-gray-800"
-                aria-label="TLD"
+        <section className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm p-5 sm:p-6">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-indigo-50/90 via-violet-50/30 to-transparent"
+            aria-hidden="true"
+          />
+          <div className="relative">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('storefrontSearchTitle')}</h2>
+
+            <form
+              onSubmit={handleSearch}
+              className="storefront-search-form search-glow-focus group rounded-2xl border-2 border-indigo-300/50 bg-white/95 p-2.5 shadow-[0_8px_40px_rgba(99,102,241,0.14)] backdrop-blur-sm transition-all duration-300 hover:border-indigo-400 hover:shadow-[0_12px_48px_rgba(99,102,241,0.24)] sm:rounded-full sm:px-3 sm:py-2"
+            >
+              <div className="storefront-search-form__fields">
+                <Search
+                  className="h-5 w-5 shrink-0 text-indigo-400 transition-colors group-focus-within:text-indigo-600"
+                  strokeWidth={2.25}
+                />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t('domainSearchPlaceholder')}
+                  className="storefront-search-form__input border-none bg-transparent py-2 text-base text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0 sm:py-1.5 sm:text-[15px]"
+                />
+                <select
+                  value={tld}
+                  onChange={(e) => setTld(e.target.value)}
+                  className="storefront-search__tld w-[5.25rem] shrink-0 cursor-pointer rounded-full border border-indigo-200/80 bg-indigo-50/90 py-1.5 pl-2.5 text-xs font-semibold text-indigo-900 outline-none transition-colors hover:border-indigo-300 hover:bg-indigo-100/90 focus:border-indigo-400 sm:w-[5.5rem] sm:py-2 sm:pl-3"
+                  aria-label="TLD"
+                >
+                  {TLDS.map((ext) => (
+                    <option key={ext} value={ext}>
+                      .{ext}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                disabled={checking}
+                className="storefront-search-form__submit inline-flex h-10 items-center justify-center gap-2 rounded-full bg-gray-900 px-5 text-sm font-semibold leading-none text-white shadow-[0_4px_14px_rgba(15,23,42,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[0_8px_20px_rgba(15,23,42,0.28)] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0"
               >
-                {TLDS.map((ext) => (
-                  <option key={ext} value={ext}>
-                    .{ext}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button type="submit" className="btn-glow px-6 py-3 shrink-0" disabled={checking}>
-              {checking ? t('storefrontChecking') : t('search')}
-            </button>
-          </form>
+                {checking ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    {t('storefrontChecking')}
+                  </>
+                ) : (
+                  t('search')
+                )}
+              </button>
+            </form>
+          </div>
 
           {checkError && (
             <div className="mt-4 flex items-start gap-2 text-sm text-red-600">
@@ -348,7 +374,7 @@ export default function DomainStorefrontPage() {
 
               {checkResult.status === 'available' && displayPrice != null && (
                 <p className="text-2xl font-extrabold text-gray-900 mb-1">
-                  ₹{Number(displayPrice).toLocaleString('en-IN')}
+                  {formatPrice(displayPrice)}
                   <span className="text-sm font-normal text-gray-500 ml-1">
                     / {period} {period === 1 ? t('storefrontYear') : t('storefrontYears')}
                   </span>
@@ -462,7 +488,7 @@ export default function DomainStorefrontPage() {
                         </Link>
                       </td>
                       <td className="py-3 pr-4 text-gray-700">
-                        ₹{Number(order.priceInr || 0).toLocaleString('en-IN')}
+                        {formatPrice(order.priceInr || 0)}
                       </td>
                       <td className="py-3 pr-4">
                         <span

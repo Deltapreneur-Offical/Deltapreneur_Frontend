@@ -1,30 +1,29 @@
-import en from '../locales/en.json';
-import enGB from '../locales/en-GB.json';
-import enUS from '../locales/en-US.json';
-import hi from '../locales/hi.json';
-import zh from '../locales/zh.json';
-import ur from '../locales/ur.json';
-import fr from '../locales/fr.json';
-import pt from '../locales/pt.json';
-import de from '../locales/de.json';
+import enIN from './locales/en-IN.json';
+import { DEFAULT_LANGUAGE } from './languageUtils';
 
-/** Merge English keys so partial locale files still translate the full UI. */
-function withEnglishFallback(locale) {
-  return { ...en, ...locale };
+/** Merge English-India keys so partial locale files still translate the full UI. */
+export function withEnglishFallback(locale) {
+  return { ...enIN, ...locale };
 }
 
-export function buildI18nResources() {
+/** Only the default language is bundled synchronously for fast first paint. */
+export function buildInitialResources() {
   return {
-    en: { translation: en },
-    'en-GB': { translation: withEnglishFallback(enGB) },
-    'en-US': { translation: withEnglishFallback(enUS) },
-    hi: { translation: withEnglishFallback(hi) },
-    zh: { translation: withEnglishFallback(zh) },
-    ur: { translation: withEnglishFallback(ur) },
-    fr: { translation: withEnglishFallback(fr) },
-    pt: { translation: withEnglishFallback(pt) },
-    de: { translation: withEnglishFallback(de) },
+    [DEFAULT_LANGUAGE]: { translation: enIN },
   };
 }
 
-export const supportedLanguages = ['en', 'en-GB', 'en-US', 'hi', 'zh', 'ur', 'fr', 'pt', 'de'];
+/** Dynamic imports — other languages load on first selection. */
+export const lazyLocaleLoaders = {
+  'en-IN': () => Promise.resolve({ default: enIN }),
+  hi: () => import('./locales/hi.json'),
+  'en-GB': () => import('./locales/en-GB.json'),
+  'en-US': () => import('./locales/en-US.json'),
+  ur: () => import('./locales/ur.json'),
+  zh: () => import('./locales/zh.json'),
+  fr: () => import('./locales/fr.json'),
+  pt: () => import('./locales/pt.json'),
+  de: () => import('./locales/de.json'),
+};
+
+export { DEFAULT_LANGUAGE as defaultLanguage };

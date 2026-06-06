@@ -1,0 +1,69 @@
+/* Shared domain search glow — home, storefront, marketplace */
+.search-glow-focus {
+  box-shadow:
+    -12px 0 20px -6px rgba(0, 195, 255, 0.35),
+    12px 0 20px -6px rgba(255, 48, 108, 0.35),
+    0 0 14px -3px rgba(120, 80, 220, 0.25);
+  border-color: rgba(120, 80, 220, 0.35);
+}
+
+.search-glow-focus:focus-within {
+  box-shadow:
+    -14px 0 24px -6px rgba(0, 195, 255, 0.42),
+    14px 0 24px -6px rgba(255, 48, 108, 0.4),
+    0 0 20px -2px rgba(99, 102, 241, 0.35);
+  border-color: rgba(99, 102, 241, 0.55);
+}
+
+.storefront-search__tld {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  padding-right: 1.75rem;
+}
+
+/* Storefront — prevent input/button overlap */
+.storefront-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.storefront-search-form__fields {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.storefront-search-form__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.storefront-search-form__submit {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .storefront-search-form {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .storefront-search-form__fields {
+    flex: 1 1 0%;
+    width: auto;
+  }
+
+  .storefront-search-form__submit {
+    width: auto;
+    margin-left: 0.125rem;
+  }
+}

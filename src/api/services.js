@@ -3,16 +3,19 @@ import api from './axios';
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const authAPI = {
   register:           (data)          => api.post('/api/v1/auth/register', data),
+  sendRegisterOtp:    (data)          => api.post('/api/v1/auth/register/otp/send', data),
+  resendRegisterOtp:  (email, extra = {}) => api.post('/api/v1/auth/register/otp/resend', { email, ...extra }),
+  verifyRegisterOtp:  (email, otp, extra = {}) => api.post('/api/v1/auth/register/otp/verify', { email, otpCode: otp, ...extra }),
   login:              (data)          => api.post('/api/v1/auth/login', data),
-  forgotPassword:     (email)         => api.post('/api/v1/auth/forgot-password', { email }),
+  forgotPassword:     (email, extra = {}) => api.post('/api/v1/auth/forgot-password', { email, ...extra }),
   resetPassword:      (token, password)=> api.post('/api/v1/auth/reset-password', { token, password }),
   changePassword:     (currentPassword, newPassword) =>
     api.post('/api/v1/auth/change-password', { currentPassword, newPassword }),
   setPassword:        (newPassword)   => api.post('/api/v1/auth/set-password', { newPassword }),
-  sendOtp:            (email)         => api.post('/api/v1/auth/otp/send', { email }),
-  verifyOtp:          (email, otp)    => api.post('/api/v1/auth/otp/verify', { email, otpCode: otp }),
+  sendOtp:            (email, extra = {}) => api.post('/api/v1/auth/otp/send', { email, ...extra }),
+  verifyOtp:          (email, otp, extra = {}) => api.post('/api/v1/auth/otp/verify', { email, otpCode: otp, ...extra }),
   verifyEmail:        (token)         => api.get(`/api/v1/auth/verify-email?token=${token}`),
-  resendVerification: (email)         => api.post('/api/v1/auth/resend-verification', { email }),
+  resendVerification: (email, extra = {}) => api.post('/api/v1/auth/resend-verification', { email, ...extra }),
   refresh:            (refreshToken)  => api.post('/api/v1/auth/refresh', { refreshToken }),
   logout:             ()              => api.post('/api/v1/auth/logout'),
   completeProfile:    (data)          => api.post('/api/v1/auth/complete-profile', data),
@@ -85,8 +88,14 @@ export const communityAPI = creatorAPI;
 
 export const currencyAPI = {
   getSupported: () => api.get('/api/v1/currency/supported'),
+  getRates: (forceRefresh = false) =>
+    api.get('/api/v1/currency/rates', {
+      params: forceRefresh ? { forceRefresh: true } : {},
+    }),
   convert: (amount, to) =>
     api.get('/api/v1/currency/convert', { params: { amount, to } }),
+  convertToInr: (amount, from) =>
+    api.get('/api/v1/currency/convert-to-inr', { params: { amount, from } }),
 };
 
 export const domainAPI = {

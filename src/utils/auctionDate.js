@@ -113,13 +113,17 @@ export function toDatetimeLocalInput(value) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/** Display expected rate — supports numeric values and free-form strings (e.g. "500/hr"). */
-export function formatExpectedRate(value, fallback = '—') {
+/** Display expected rate — supports numeric INR values and free-form strings (e.g. "500/hr"). */
+export function formatExpectedRate(value, formatInr, fallback = '—') {
   if (value == null || value === '') return fallback;
   const str = String(value).trim();
   const n = Number(str);
-  if (Number.isFinite(n)) return `₹${n.toLocaleString('en-IN')}`;
-  if (/^\d/.test(str)) return str.startsWith('₹') ? str : `₹${str}`;
+  if (Number.isFinite(n)) {
+    return typeof formatInr === 'function'
+      ? formatInr(n)
+      : `₹${n.toLocaleString('en-IN')}`;
+  }
+  if (/^\d/.test(str)) return str;
   return str;
 }
 

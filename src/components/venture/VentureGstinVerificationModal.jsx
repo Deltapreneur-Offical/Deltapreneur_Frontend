@@ -1,11 +1,107 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ventureAuctionAPI } from '../../api/services';
+import './venture-gstin-verification-modal.css';
+
+const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+function getGstinValidationState(value) {
+  const trimmed = value.trim().toUpperCase();
+  if (!trimmed) return 'empty';
+  if (trimmed.length < 15) return 'incomplete';
+  if (GSTIN_REGEX.test(trimmed)) return 'valid';
+  return 'invalid';
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 2.5L4.5 5.5V11.5C4.5 16.2 7.6 20.5 12 21.8C16.4 20.5 19.5 16.2 19.5 11.5V5.5L12 2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.2 12.1L11.1 14L14.9 10.2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M12 10.5V16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="12" cy="7.75" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function GstIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="3" width="16" height="18" rx="2.5" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M8 8H16M8 12H14M8 16H12" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="rgba(16,185,129,0.12)" stroke="#10b981" strokeWidth="1.75" />
+      <path d="M8.5 12.2L10.8 14.5L15.8 9.5" stroke="#059669" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="rgba(239,68,68,0.1)" stroke="#ef4444" strokeWidth="1.75" />
+      <path d="M12 8.5V13" stroke="#dc2626" strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="12" cy="16" r="1" fill="#dc2626" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg className="gst-modal__cta-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M13 6L19 12L13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function SuccessCheckIcon() {
+  return (
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7.5 12.5L10.5 15.5L16.5 9.5"
+        stroke="currentColor"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export default function VentureGstinVerificationModal({ venture, onClose, onVerified, adminMode = false }) {
-  const [gstin, setGstin]       = useState(venture?.gstin || '');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [result, setResult]     = useState(null);
+  const [gstin, setGstin] = useState(venture?.gstin || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
+
+  const b = venture?.brandDetails || {};
+  const isAuction = venture?.saleType === 'AUCTION';
+  const validationState = useMemo(() => getGstinValidationState(gstin), [gstin]);
 
   const handleVerify = async () => {
     setError('');
@@ -33,96 +129,49 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
     }
   };
 
-  const b = venture?.brandDetails || {};
-  const isAuction = venture?.saleType === 'AUCTION';
+  const inputWrapClass = [
+    'gst-modal__input-wrap',
+    validationState === 'valid' ? 'gst-modal__input-wrap--valid' : '',
+    validationState === 'invalid' ? 'gst-modal__input-wrap--invalid' : '',
+  ].filter(Boolean).join(' ');
+
+  const validationMessage = (() => {
+    if (validationState === 'valid') return 'Format looks valid — ready to verify';
+    if (validationState === 'invalid') return 'Invalid GSTIN format — check characters and length';
+    if (validationState === 'incomplete') return `${gstin.trim().length}/15 characters entered`;
+    return null;
+  })();
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-card" style={{ maxWidth: 500 }}>
-        <div className="modal-glow" />
-        <button className="modal-close" onClick={onClose}>✕</button>
+    <div className="gst-modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="gst-modal" role="dialog" aria-modal="true" aria-labelledby="gst-modal-title">
+        <button type="button" className="gst-modal__close" onClick={onClose} aria-label="Close">
+          ✕
+        </button>
 
         {result ? (
-          <div className="modal-success" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-            {/* Animated Success Icon */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 1.5rem',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6ec896, #4caf50)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              animation: 'successPulse 0.6s ease-out',
-              boxShadow: '0 8px 32px rgba(110, 200, 150, 0.3)',
-            }}>
-              <div style={{
-                fontSize: '2.5rem',
-                color: 'white',
-                fontWeight: 'bold',
-                animation: 'checkmarkScale 0.4s ease-out 0.2s both',
-              }}>✓</div>
-              {/* Decorative rings */}
-              <div style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                borderRadius: '50%',
-                border: '2px solid rgba(110, 200, 150, 0.3)',
-                animation: 'ripple 1.5s ease-out infinite',
-              }} />
-              <div style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                borderRadius: '50%',
-                border: '2px solid rgba(110, 200, 150, 0.2)',
-                animation: 'ripple 1.5s ease-out infinite 0.5s',
-              }} />
+          <div className="gst-modal__success">
+            <div className="gst-modal__success-icon-wrap">
+              <span className="gst-modal__success-ring" aria-hidden="true" />
+              <span className="gst-modal__success-ring gst-modal__success-ring--delay" aria-hidden="true" />
+              <div className="gst-modal__success-icon">
+                <SuccessCheckIcon />
+              </div>
             </div>
 
-            {/* Success Title with Gradient */}
-            <h3 style={{
-              fontSize: '1.75rem',
-              fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #6ec896, #4caf50)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              marginBottom: '1rem',
-              animation: 'slideUp 0.5s ease-out 0.3s both',
-            }}>
-              GSTIN Verified Successfully!
+            <div className="gst-modal__success-badge">Verified Business</div>
+            <h3 className="gst-modal__success-title" id="gst-modal-title">
+              GST verified successfully
             </h3>
+            <p className="gst-modal__success-sub">Business identity confirmed.</p>
 
-            {/* Success Message Card */}
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(110, 200, 150, 0.1), rgba(76, 175, 80, 0.05))',
-              border: '1px solid rgba(110, 200, 150, 0.3)',
-              borderRadius: '12px',
-              padding: '1.25rem',
-              marginBottom: '1.5rem',
-              animation: 'slideUp 0.5s ease-out 0.4s both',
-            }}>
-              <p style={{
-                margin: '0',
-                fontSize: '1rem',
-                color: '#000000',
-                lineHeight: 1.6,
-              }}>
-                🎉 <strong style={{ color: '#6ec896' }}>{b.brandName}</strong>
+            <div className="gst-modal__success-card">
+              <p>
+                <strong>{b.brandName}</strong>
                 {isAuction ? (
                   <>
-                    {" "}auction is now
-                    <strong style={{
-                      color: '#6ec896',
-                      fontSize: '1.1rem',
-                      display: 'inline-block',
-                      marginLeft: '0.25rem',
-                      animation: 'pulse 2s ease-in-out infinite',
-                    }}> LIVE</strong> and ready for bidding!
+                    {' '}auction is now
+                    <strong className="gst-modal__success-live"> LIVE</strong> and ready for bidding!
                   </>
                 ) : (
                   <> is now GST verified successfully.</>
@@ -130,164 +179,143 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
               </p>
             </div>
 
-            {/* Legal Name Display */}
             {result.legalName && (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '1rem',
-                marginBottom: '1.5rem',
-                animation: 'slideUp 0.5s ease-out 0.5s both',
-              }}>
-                <p style={{
-                  margin: '0',
-                  fontSize: '0.85rem',
-                  color: '#000000',
-                  marginBottom: '0.5rem',
-                }}>
-                  Legal Entity Name
-                </p>
-                <p style={{
-                  margin: '0',
-                  fontSize: '1rem',
-                  color: '#000000',
-                  fontWeight: '600',
-                  fontFamily: 'monospace',
-                }}>
-                  {result.legalName}
-                </p>
+              <div className="gst-modal__legal">
+                <p className="gst-modal__legal-label">Legal Entity Name</p>
+                <p className="gst-modal__legal-value">{result.legalName}</p>
               </div>
             )}
 
-            {/* Action Button */}
-            <button 
-              className="btn-primary" 
-              onClick={() => onVerified()}
-              style={{
-                background: 'linear-gradient(135deg, #6ec896, #4caf50)',
-                border: 'none',
-                padding: '0.875rem 2rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 16px rgba(110, 200, 150, 0.3)',
-                animation: 'slideUp 0.5s ease-out 0.6s both',
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 20px rgba(110, 200, 150, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 16px rgba(110, 200, 150, 0.3)';
-              }}
-            >
-              {isAuction ? 'View Auction →' : 'Done →'}
+            <button type="button" className="gst-modal__cta" onClick={() => onVerified()}>
+              {isAuction ? 'View Auction' : 'Done'}
+              <ArrowIcon />
             </button>
-
-            {/* CSS Animations */}
-            <style>{`
-              @keyframes successPulse {
-                0% { transform: scale(0.8); opacity: 0; }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); opacity: 1; }
-              }
-              
-              @keyframes checkmarkScale {
-                0% { transform: scale(0) rotate(-45deg); }
-                50% { transform: scale(1.2) rotate(10deg); }
-                100% { transform: scale(1) rotate(0deg); }
-              }
-              
-              @keyframes ripple {
-                0% { transform: scale(1); opacity: 1; }
-                100% { transform: scale(1.5); opacity: 0; }
-              }
-              
-              @keyframes slideUp {
-                0% { transform: translateY(20px); opacity: 0; }
-                100% { transform: translateY(0); opacity: 1; }
-              }
-              
-              @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-              }
-            `}</style>
           </div>
         ) : (
           <>
-            <div className="modal-header">
-              <div className="modal-badge">{isAuction ? '🔨 Venture Auction Verification' : '✅ Venture GST Verification'}</div>
-              <h2>{b.brandName}</h2>
-              <p style={{ fontSize: '0.82rem', color: '#888' }}>
+            <header className="gst-modal__header">
+              <div className="gst-modal__header-top">
+                <div className="gst-modal__shield" aria-hidden="true">
+                  <ShieldIcon />
+                </div>
+                <div>
+                  <div className="gst-modal__badge">
+                    {isAuction ? 'Equity Auction Setup' : 'Verified Business Setup'}
+                  </div>
+                  <h2 className="gst-modal__title" id="gst-modal-title">
+                    Verify Your GSTIN
+                  </h2>
+                </div>
+              </div>
+              <p className="gst-modal__subtitle">
                 {isAuction
-                  ? 'Verify your GSTIN to activate the equity auction'
-                  : 'Verify your GSTIN to validate your venture listing'}
+                  ? 'Verify your GSTIN to activate the equity auction and unlock trusted venture listings.'
+                  : 'Validate your registered business identity and unlock trusted venture listings.'}
               </p>
+            </header>
+
+            <section className="gst-modal__info" aria-label="Why GST verification matters">
+              <div className="gst-modal__info-head">
+                <div className="gst-modal__info-icon">
+                  <InfoIcon />
+                </div>
+                <h3 className="gst-modal__info-title">Why GST Verification Matters</h3>
+              </div>
+              <ul className="gst-modal__benefits">
+                <li className="gst-modal__benefit">
+                  <span className="gst-modal__benefit-check" aria-hidden="true">✓</span>
+                  Builds buyer trust
+                </li>
+                <li className="gst-modal__benefit">
+                  <span className="gst-modal__benefit-check" aria-hidden="true">✓</span>
+                  Improves listing credibility
+                </li>
+                <li className="gst-modal__benefit">
+                  <span className="gst-modal__benefit-check" aria-hidden="true">✓</span>
+                  Unlocks premium venture features
+                </li>
+                <li className="gst-modal__benefit">
+                  <span className="gst-modal__benefit-check" aria-hidden="true">✓</span>
+                  Reduces fraud risk
+                </li>
+              </ul>
+              <p className="gst-modal__warning">
+                Use the GSTIN registered for the same business as your venture name below.
+              </p>
+            </section>
+
+            <div className="gst-modal__context">
+              <span className="gst-modal__context-label">Venture name on file</span>
+              <span className="gst-modal__context-value">{b.brandName}</span>
             </div>
 
-            <div style={{
-              padding: '0.875rem 1rem', borderRadius: 8, marginBottom: '1.25rem',
-              background: 'rgba(160,110,200,0.07)',
-              border: '1px solid rgba(160,110,200,0.2)',
-              fontSize: '0.8rem', color: '#bbb', lineHeight: 1.6,
-            }}>
-              <strong style={{ color: '#a06ec8' }}>Why GSTIN?</strong> It confirms you're running a
-              registered, active business — giving bidders confidence before placing large bids.
-              <br />
-              <span style={{ color: '#c8a96e', marginTop: '0.35rem', display: 'block' }}>
-                ⚠ Use the GSTIN registered for the same business as your venture name above.
-              </span>
-            </div>
-
-            <div style={{
-              padding: '0.65rem 0.875rem', borderRadius: 8, marginBottom: '1.25rem',
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              fontSize: '0.82rem', color: '#aaa',
-            }}>
-              Venture name on file: <strong style={{ color: '#e0e0f0' }}>{b.brandName}</strong>
-            </div>
-
-            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-              <label style={{ fontSize: '0.82rem', color: '#aaa', display: 'block', marginBottom: '0.5rem' }}>
-                GSTIN (15-digit) <span style={{ color: '#c86e6e' }}>*</span>
+            <div className="gst-modal__field">
+              <label className="gst-modal__label" htmlFor="gstin-input">
+                GSTIN (15-digit) <span className="gst-modal__label-required">*</span>
               </label>
-              <input
-                value={gstin}
-                onChange={e => { setGstin(e.target.value.toUpperCase()); setError(''); }}
-                placeholder="e.g. 22AAAAA0000A1Z5"
-                maxLength={15}
-                style={{ fontFamily: 'monospace', fontSize: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}
-              />
-              <p style={{ fontSize: '0.72rem', color: '#666', marginTop: '0.35rem' }}>
+              <div className={inputWrapClass}>
+                <span className="gst-modal__input-icon" aria-hidden="true">
+                  <GstIcon />
+                </span>
+                <input
+                  id="gstin-input"
+                  className="gst-modal__input"
+                  value={gstin}
+                  onChange={e => { setGstin(e.target.value.toUpperCase()); setError(''); }}
+                  placeholder="22AAAAA0000A1Z5"
+                  maxLength={15}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {validationState === 'valid' && (
+                  <span className="gst-modal__input-status" aria-hidden="true">
+                    <CheckIcon />
+                  </span>
+                )}
+                {validationState === 'invalid' && (
+                  <span className="gst-modal__input-status" aria-hidden="true">
+                    <WarningIcon />
+                  </span>
+                )}
+              </div>
+              {validationMessage && (
+                <p
+                  className={`gst-modal__validation-msg gst-modal__validation-msg--${
+                    validationState === 'valid'
+                      ? 'valid'
+                      : validationState === 'invalid'
+                        ? 'invalid'
+                        : 'incomplete'
+                  }`}
+                >
+                  {validationMessage}
+                </p>
+              )}
+              <p className="gst-modal__hint">
                 Format: 2-digit state code + PAN (10 chars) + entity number + Z + check digit
               </p>
             </div>
 
             {error && (
-              <div style={{
-                padding: '0.875rem 1rem', borderRadius: 8, marginBottom: '1rem',
-                background: 'rgba(200,110,110,0.08)',
-                border: '1px solid rgba(200,110,110,0.25)',
-                fontSize: '0.82rem', color: '#c86e6e', lineHeight: 1.6,
-              }}>
+              <div className="gst-modal__error" role="alert">
                 {error}
               </div>
             )}
 
             <button
-              className="btn-primary full-width"
+              type="button"
+              className="gst-modal__cta"
               onClick={handleVerify}
               disabled={loading || gstin.trim().length !== 15}
             >
-              {loading
-                ? <span className="btn-spinner" />
-                : (isAuction ? 'Verify GSTIN & Activate Auction →' : 'Verify GSTIN →')}
+              {loading ? (
+                <span className="btn-spinner" />
+              ) : (
+                <>
+                  {isAuction ? 'Verify GSTIN & Activate Auction' : 'Verify GSTIN'}
+                  <ArrowIcon />
+                </>
+              )}
             </button>
           </>
         )}

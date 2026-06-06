@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSoftwareAuction } from '../hooks/useSoftwareAuction';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,7 @@ import { Gavel, Clock, Wifi, WifiOff, TrendingUp, Code, Wrench, FileText } from 
 import { formatAuctionDateTime, formatCountdown, resolveAuctionEndTime } from '../utils/auctionDate';
 import { isSoftwareAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import useCurrency from '../context/CurrencyContext';
 
 function Countdown({ endTime, status }) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -40,23 +42,25 @@ function Countdown({ endTime, status }) {
   );
 }
 
-const STATUS_STYLES = {
-  ACTIVE:           { color: '#6ec896', bg: 'rgba(110,200,150,0.12)', label: '🟢 Live' },
-  EXTENDED:         { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', label: '⏱ Extended' },
-  ENDED:            { color: '#6eadc8', bg: 'rgba(110,173,200,0.12)', label: '✓ Ended' },
-  UNSOLD:           { color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', label: 'No Bids' },
-  CLOSED:           { color: '#6b7280', bg: 'rgba(107,114,128,0.12)', label: 'Closed'  },
-  DRAFT:            { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', label: '⏳ Pending Approval' },
-  PENDING_APPROVAL: { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', label: '⏳ Pending Approval' },
+const STATUS_STYLE_BASE = {
+  ACTIVE:           { color: '#6ec896', bg: 'rgba(110,200,150,0.12)', labelKey: 'auctionsPageStatusLive' },
+  EXTENDED:         { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', labelKey: 'auctionsPageStatusExtended' },
+  ENDED:            { color: '#6eadc8', bg: 'rgba(110,173,200,0.12)', labelKey: 'auctionDetailStatusEnded' },
+  UNSOLD:           { color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', labelKey: 'auctionDetailStatusNoBids' },
+  CLOSED:           { color: '#6b7280', bg: 'rgba(107,114,128,0.12)', labelKey: 'auctionDetailStatusClosed' },
+  DRAFT:            { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', labelKey: 'auctionDetailStatusPendingApproval' },
+  PENDING_APPROVAL: { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', labelKey: 'auctionDetailStatusPendingApproval' },
 };
 
 export default function SoftwareAuctionPage() {
+  const { t } = useTranslation();
   const { auctionId }                       = useParams();
   const { user }                            = useAuth();
   const navigate                            = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice,
           wsState, loading, loadError, placeBid } = useSoftwareAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
+  const { formatPrice, getSymbol } = useCurrency();
 
   const [bidAmount, setBidAmount]           = useState('');
   const [bidError, setBidError]             = useState('');
@@ -72,7 +76,8 @@ export default function SoftwareAuctionPage() {
     participation,
   );
   const biddingBlocked = REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !auction?.software?.verified;
-  const statusStyle = STATUS_STYLES[auction?.status] || STATUS_STYLES.DRAFT;
+  const statusStyleBase = STATUS_STYLE_BASE[auction?.status] || STATUS_STYLE_BASE.DRAFT;
+  const statusStyle = { ...statusStyleBase, label: t(statusStyleBase.labelKey) };
 
   useEffect(() => {
     if (!auction?.id || !user || !isActive) {
@@ -103,7 +108,7 @@ export default function SoftwareAuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Software auction participation fee`,
+        description: t('auctionDetailParticipationFeeSoftware'),
         onSuccess: async (response) => {
           try {
             await softwareAuctionAPI.participationVerify(auction.id, {
@@ -120,28 +125,28 @@ export default function SoftwareAuctionPage() {
             });
             setBidError('');
           } catch {
-            setParticipationError('Payment verification failed. Please retry.');
+            setParticipationError(t('auctionDetailPaymentVerifyFailedRetry'));
           } finally {
             setPayingParticipation(false);
           }
         },
         onFailure: async () => {
-          setParticipationError('Participation payment failed. Please retry.');
+          setParticipationError(t('auctionDetailParticipationPaymentFailed'));
           setPayingParticipation(false);
         },
         onDismiss: async () => setPayingParticipation(false),
       });
     } catch (err) {
-      setParticipationError(err?.response?.data?.error || 'Failed to start payment.');
+      setParticipationError(err?.response?.data?.error || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
     }
   };
 
   const handleBid = async () => {
-    if (!participation.paid) { setBidError('Please pay participation fee first'); return; }
+    if (!participation.paid) { setBidError(t('auctionDetailPayParticipationFirst')); return; }
     const amt = parseFloat(bidAmount);
-    if (isNaN(amt) || amt <= 0) { setBidError('Enter a valid amount'); return; }
-    const bidErrorMsg = validateBidAmount(amt, { minNextBid, maxBidPrice });
+    if (isNaN(amt) || amt <= 0) { setBidError(t('auctionDetailEnterValidAmount')); return; }
+    const bidErrorMsg = validateBidAmount(amt, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -150,7 +155,7 @@ export default function SoftwareAuctionPage() {
     setPlacing(true);
     try {
       await placeBid(amt);
-      setBidSuccess('Bid placed successfully!');
+      setBidSuccess(t('auctionDetailBidPlacedSuccess'));
       setBidAmount('');
       setTimeout(() => setBidSuccess(''), 4000);
     } catch (e) {
@@ -159,7 +164,7 @@ export default function SoftwareAuctionPage() {
         data?.error
         || data?.message
         || (typeof data?.detail === 'string' ? data.detail : null)
-        || 'Failed to place bid',
+        || t('auctionDetailFailedPlaceBid'),
       );
     } finally {
       setPlacing(false);
@@ -177,11 +182,11 @@ export default function SoftwareAuctionPage() {
   if (!auction) return (
     <AppLayout>
       <div className="text-center py-24">
-        <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">Auction not found</h2>
+        <h2 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('auctionDetailNotFound')}</h2>
         {loadError && (
           <p className="text-red-600 text-sm mt-2 max-w-md mx-auto">{loadError}</p>
         )}
-        <button className="btn-ghost mt-4" onClick={() => navigate('/technology')}>← Back to Technology</button>
+        <button className="btn-ghost mt-4" onClick={() => navigate('/technology')}>{t('auctionDetailBackTechnology')}</button>
       </div>
     </AppLayout>
   );
@@ -195,7 +200,7 @@ export default function SoftwareAuctionPage() {
         {/* Back */}
         <button className="btn-ghost mb-4" style={{ fontSize: '0.85rem' }}
           onClick={() => navigate('/technology')}>
-          ← Technology
+          {t('auctionDetailBackTechnology')}
         </button>
 
         {/* Header card */}
@@ -233,19 +238,19 @@ export default function SoftwareAuctionPage() {
                   {wsState === 'reconnecting' && isActive && (
                     <span style={{ fontSize: '0.72rem', color: '#c86e6e',
                                    display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <WifiOff size={11} /> Live updates paused
+                      <WifiOff size={11} /> {t('auctionDetailLivePaused')}
                     </span>
                   )}
                   {wsState === 'connecting' && isActive && (
                     <span style={{ fontSize: '0.72rem', color: '#c8a96e',
                                    display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <Wifi size={11} /> Connecting…
+                      <Wifi size={11} /> {t('auctionDetailConnecting')}
                     </span>
                   )}
                   {wsState === 'live' && isActive && (
                     <span style={{ fontSize: '0.72rem', color: '#6ec896',
                                    display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <Wifi size={11} /> Live
+                      <Wifi size={11} /> {t('auctionDetailLive')}
                     </span>
                   )}
                 </div>
@@ -258,12 +263,12 @@ export default function SoftwareAuctionPage() {
                 <div style={{ fontSize: '0.72rem', color: '#9ca3af',
                               textTransform: 'uppercase', letterSpacing: '0.06em',
                               marginBottom: '0.3rem' }}>
-                  <Clock size={11} style={{ marginRight: 4 }} />Time Left
+                  <Clock size={11} style={{ marginRight: 4 }} />{t('auctionDetailTimeLeft')}
                 </div>
                 <Countdown endTime={resolvedEndTime} status={auction.status} />
                 {auction.status === 'EXTENDED' && (
                   <div style={{ fontSize: '0.72rem', color: '#c8a96e', marginTop: '0.25rem' }}>
-                    ⚡ Extended (anti-snipe)
+                    {t('auctionDetailExtendedAntiSnipe')}
                   </div>
                 )}
               </div>
@@ -277,21 +282,21 @@ export default function SoftwareAuctionPage() {
                         borderRadius: 10, border: '1px solid #e5e7eb' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af',
-                            textTransform: 'uppercase', letterSpacing: '0.06em' }}>Min Bid</div>
+                            textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('auctionDetailMinBid')}</div>
               <div style={{ fontFamily: 'Cormorant Garamond, serif',
                             fontSize: '1.3rem', fontWeight: 700, color: '#111827' }}>
-                ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+                {formatPrice(auction.minBidPrice)}
               </div>
             </div>
             <div style={{ textAlign: 'center', borderLeft: '1px solid #e5e7eb',
                           borderRight: '1px solid #e5e7eb' }}>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af',
-                            textTransform: 'uppercase', letterSpacing: '0.06em' }}>Current Highest</div>
+                            textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('auctionsPageHighestBid')}</div>
               <div style={{ fontFamily: 'Cormorant Garamond, serif',
                             fontSize: '1.3rem', fontWeight: 700,
                             color: auction.currentHighestBid > 0 ? '#6ec896' : '#9ca3af' }}>
                 {auction.currentHighestBid > 0
-                  ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
+                  ? formatPrice(auction.currentHighestBid)
                   : '—'}
               </div>
               {auction.currentWinnerName && (
@@ -302,7 +307,7 @@ export default function SoftwareAuctionPage() {
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af',
-                            textTransform: 'uppercase', letterSpacing: '0.06em' }}>Total Bids</div>
+                            textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('auctionsPageTotalBids')}</div>
               <div style={{ fontFamily: 'Cormorant Garamond, serif',
                             fontSize: '1.3rem', fontWeight: 700, color: '#111827' }}>
                 {auction.totalBids}
@@ -321,7 +326,7 @@ export default function SoftwareAuctionPage() {
                           borderRadius: 12, padding: '1.25rem' }}>
               <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                            fontSize: '1.1rem', fontWeight: 700, color: '#111827',
-                           margin: '0 0 0.75rem' }}>About the Software</h3>
+                           margin: '0 0 0.75rem' }}>{t('auctionDetailAboutSoftware')}</h3>
               {sw.description && (
                 <p style={{ fontSize: '0.88rem', color: '#374151', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
                   {sw.description}
@@ -346,14 +351,14 @@ export default function SoftwareAuctionPage() {
                           borderRadius: 12, padding: '1.25rem' }}>
               <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                            fontSize: '1.1rem', fontWeight: 700, color: '#111827',
-                           margin: '0 0 1rem' }}>What's Included</h3>
+                           margin: '0 0 1rem' }}>{t('auctionDetailWhatsIncluded')}</h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem',
                               fontSize: '0.88rem', color: '#374151' }}>
                   <Code size={16} color={auction.sourceCodeIncluded ? '#6ec896' : '#d1d5db'} />
                   <span style={{ color: auction.sourceCodeIncluded ? '#111827' : '#9ca3af' }}>
-                    Source code {auction.sourceCodeIncluded ? 'included' : 'not included'}
+                    {auction.sourceCodeIncluded ? t('auctionDetailSourceCodeIncluded') : t('auctionDetailSourceCodeNotIncluded')}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem',
@@ -361,8 +366,8 @@ export default function SoftwareAuctionPage() {
                   <Wrench size={16} color={auction.supportIncluded ? '#6ec896' : '#d1d5db'} />
                   <span style={{ color: auction.supportIncluded ? '#111827' : '#9ca3af' }}>
                     {auction.supportIncluded
-                      ? `Post-sale support — ${auction.supportDays} day${auction.supportDays !== 1 ? 's' : ''}`
-                      : 'No post-sale support'}
+                      ? t('auctionDetailSupportIncluded', { count: auction.supportDays, days: auction.supportDays })
+                      : t('auctionDetailNoSupport')}
                   </span>
                 </div>
                 {auction.transferDetails && (
@@ -381,7 +386,7 @@ export default function SoftwareAuctionPage() {
                             borderRadius: 12, padding: '1.25rem' }}>
                 <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                              fontSize: '1.1rem', fontWeight: 700, color: '#111827',
-                             margin: '0 0 0.75rem' }}>Why Auction?</h3>
+                             margin: '0 0 0.75rem' }}>{t('auctionDetailWhyAuction')}</h3>
                 <p style={{ fontSize: '0.88rem', color: '#374151', lineHeight: 1.6, margin: 0 }}>
                   {auction.auctionRationale}
                 </p>
@@ -394,24 +399,24 @@ export default function SoftwareAuctionPage() {
                             borderRadius: 12, padding: '1.25rem' }}>
                 <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                              fontSize: '1.1rem', fontWeight: 700, color: '#111827',
-                             margin: '0 0 0.75rem' }}>Links</h3>
+                             margin: '0 0 0.75rem' }}>{t('auctionDetailLinks')}</h3>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {sw.liveDemoLink && (
                     <a href={sw.liveDemoLink} target="_blank" rel="noopener noreferrer"
                       className="btn-secondary btn-sm" style={{ fontSize: '0.8rem' }}>
-                      🔗 Live Demo
+                      {t('auctionDetailLiveDemo')}
                     </a>
                   )}
                   {sw.githubLink && (
                     <a href={sw.githubLink} target="_blank" rel="noopener noreferrer"
                       className="btn-secondary btn-sm" style={{ fontSize: '0.8rem' }}>
-                      ⌥ GitHub
+                      {t('auctionDetailGithub')}
                     </a>
                   )}
                   {sw.videoLink && (
                     <a href={sw.videoLink} target="_blank" rel="noopener noreferrer"
                       className="btn-secondary btn-sm" style={{ fontSize: '0.8rem' }}>
-                      ▶ Demo Video
+                      {t('auctionDetailDemoVideo')}
                     </a>
                   )}
                 </div>
@@ -425,10 +430,10 @@ export default function SoftwareAuctionPage() {
                            fontSize: '1.1rem', fontWeight: 700, color: '#111827',
                            margin: '0 0 0.75rem' }}>
                 <TrendingUp size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-                Bid History ({bids.length})
+                {t('auctionDetailBidHistory')} ({bids.length})
               </h3>
               {bids.length === 0 ? (
-                <p style={{ fontSize: '0.85rem', color: '#9ca3af', margin: 0 }}>No bids yet. Be the first!</p>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', margin: 0 }}>{t('auctionDetailNoBidsFirstShort')}</p>
               ) : (
                 <div style={{ maxHeight: 240, overflowY: 'auto' }}>
                   {bids.map((bid, i) => (
@@ -441,13 +446,13 @@ export default function SoftwareAuctionPage() {
                         </span>
                         {bid.isWinningBid && (
                           <span style={{ marginLeft: '0.4rem', fontSize: '0.7rem',
-                                         color: '#059669' }}>🏆 Winner</span>
+                                         color: '#059669' }}>🏆 {t('auctionDetailWinnerBadge')}</span>
                         )}
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '0.88rem', fontWeight: 700,
                                       color: bid.isWinningBid ? '#059669' : '#6eadc8' }}>
-                          ₹{Number(bid.amount).toLocaleString('en-IN')}
+                          {formatPrice(bid.amount)}
                         </div>
                         <div style={{ fontSize: '0.72rem', color: '#9ca3af' }}>
                           {formatAuctionDateTime(bid.bidTime, {
@@ -471,10 +476,10 @@ export default function SoftwareAuctionPage() {
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⏳</div>
                 <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                              fontWeight: 700, color: '#111827', margin: '0 0 0.5rem' }}>
-                  Awaiting Approval
+                  {t('auctionDetailAwaitingApproval')}
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: 0 }}>
-                  This auction is under review. It will go live once approved by our team.
+                  {t('auctionDetailAwaitingApprovalDesc')}
                 </p>
               </div>
             ) : auction.status === 'ENDED' ? (
@@ -483,16 +488,16 @@ export default function SoftwareAuctionPage() {
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🏆</div>
                 <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                              fontWeight: 700, color: '#111827', margin: '0 0 0.5rem' }}>
-                  Auction Ended
+                  {t('auctionDetailEndedTitle')}
                 </h3>
                 {auction.currentWinnerName && (
                   <p style={{ fontSize: '0.88rem', color: '#374151', margin: '0 0 0.5rem' }}>
-                    Won by <strong>{auction.currentWinnerName}</strong>
+                    {t('auctionDetailWonBy', { name: auction.currentWinnerName })}
                   </p>
                 )}
                 <p style={{ fontFamily: 'Cormorant Garamond, serif',
                             fontSize: '1.5rem', fontWeight: 700, color: '#6ec896', margin: 0 }}>
-                  ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
+                  {formatPrice(auction.currentHighestBid)}
                 </p>
               </div>
             ) : auction.status === 'UNSOLD' && isOwner ? (
@@ -500,14 +505,14 @@ export default function SoftwareAuctionPage() {
                             borderRadius: 12, padding: '1.5rem' }}>
                 <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
                              fontWeight: 700, color: '#111827', margin: '0 0 1rem' }}>
-                  No Bids — Re-Auction?
+                  {t('auctionDetailNoBidsReauctionTitle')}
                 </h3>
                 <p style={{ fontSize: '0.83rem', color: '#6b7280', margin: '0 0 1rem' }}>
-                  Your auction ended without bids. You can re-list with a new price/duration.
+                  {t('auctionDetailNoBidsReauctionDesc')}
                 </p>
                 <button className="btn-glow w-full"
                   onClick={() => navigate(`/technology`)}>
-                  Manage Listing
+                  {t('auctionDetailManageListing')}
                 </button>
               </div>
             ) : isActive && !isOwner && user ? (
@@ -517,24 +522,24 @@ export default function SoftwareAuctionPage() {
                              fontSize: '1.15rem', fontWeight: 700, color: '#111827',
                              margin: '0 0 0.25rem' }}>
                   <Gavel size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-                  Place a Bid
+                  {t('auctionDetailPlaceBid')}
                 </h3>
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1.25rem' }}>
-                  Allowed range: {formatBidRangeLabel({ minNextBid, maxBidPrice })}
+                  {t('auctionDetailAllowedRange', { range: formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice) })}
                 </p>
                 {biddingBlocked ? (
                   <div style={{ padding: '0.75rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a', fontSize: '0.82rem', color: '#8a6d1f' }}>
-                    Bidding is unavailable until the technology listing is verified by an admin.
+                    {t('auctionDetailBiddingBlockedTech')}
                   </div>
                 ) : (
                 <>
                 {!participation.loading && !participation.paid && (
                   <div style={{ marginBottom: '0.8rem', padding: '0.65rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a' }}>
                     <div style={{ fontSize: '0.8rem', color: '#8a6d1f', marginBottom: '0.4rem' }}>
-                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                      {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
                     </div>
                     <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+                      {payingParticipation ? t('auctionDetailProcessing') : t('auctionDetailPayParticipation')}
                     </button>
                     {participationError && <div style={{ fontSize: '0.74rem', color: '#c86e6e', marginTop: '0.35rem' }}>{participationError}</div>}
                   </div>
@@ -544,7 +549,7 @@ export default function SoftwareAuctionPage() {
                   <div style={{ position: 'relative', flex: 1 }}>
                     <span style={{ position: 'absolute', left: '0.75rem', top: '50%',
                                    transform: 'translateY(-50%)', color: '#6b7280',
-                                   fontWeight: 600 }}>₹</span>
+                                   fontWeight: 600 }}>{getSymbol()}</span>
                     <input type="number" value={bidAmount}
                       onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
                       placeholder={Number(minNextBid).toFixed(0)}
@@ -552,7 +557,7 @@ export default function SoftwareAuctionPage() {
                   </div>
                   <button className="btn-glow" onClick={handleBid} disabled={placing || !participation.paid}
                     style={{ whiteSpace: 'nowrap', minWidth: 80 }}>
-                    {placing ? <span className="btn-spinner" /> : 'Bid →'}
+                    {placing ? <span className="btn-spinner" /> : t('auctionDetailBidBtn')}
                   </button>
                 </div>
 
@@ -567,7 +572,7 @@ export default function SoftwareAuctionPage() {
                         style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem',
                                  background: '#f9fafb', border: '1px solid #e5e7eb',
                                  borderRadius: 6, cursor: 'pointer', color: '#374151' }}>
-                        ₹{Number(val).toLocaleString('en-IN')}
+                        {formatPrice(val)}
                       </button>
                     );
                   })}
@@ -585,7 +590,7 @@ export default function SoftwareAuctionPage() {
                 )}
 
                 <p style={{ fontSize: '0.72rem', color: '#9ca3af', margin: 0, lineHeight: 1.5 }}>
-                  Each bid must be at least 5% above the current highest. Last-minute bids extend the auction by 5 minutes.
+                  {t('auctionDetailBidCommitSoftware')}
                 </p>
                 </>
                 )}
@@ -594,17 +599,17 @@ export default function SoftwareAuctionPage() {
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem', textAlign: 'center' }}>
                 <p style={{ fontSize: '0.85rem', color: '#9ca3af', margin: 0 }}>
-                  You cannot bid on your own listing.
+                  {t('auctionDetailCannotBidOwn')}
                 </p>
               </div>
             ) : !user ? (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem', textAlign: 'center' }}>
                 <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 1rem' }}>
-                  Sign in to place a bid
+                  {t('auctionDetailSignInToBid')}
                 </p>
                 <button className="btn-glow w-full" onClick={() => navigate('/login')}>
-                  Sign In
+                  {t('signIn')}
                 </button>
               </div>
             ) : null}
@@ -616,7 +621,7 @@ export default function SoftwareAuctionPage() {
                             padding: '1rem 1.25rem' }}>
                 <div style={{ fontSize: '0.7rem', color: '#9ca3af',
                               textTransform: 'uppercase', letterSpacing: '0.06em',
-                              marginBottom: '0.5rem' }}>Listed by</div>
+                              marginBottom: '0.5rem' }}>{t('auctionDetailListedBy')}</div>
                 <div style={{ fontWeight: 600, color: '#111827', fontSize: '0.88rem' }}>
                   {sw.listedBy.firstname} {sw.listedBy.lastname}
                 </div>

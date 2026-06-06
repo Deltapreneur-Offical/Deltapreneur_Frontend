@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useVentureAuction } from '../hooks/useVentureAuction';
@@ -13,16 +14,18 @@ import {
   resolveAuctionEndTime,
 } from '../utils/auctionDate';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
+import useCurrency from '../context/CurrencyContext';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { isVentureAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 
 function useCountdown(endTime) {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState('—');
   const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
     if (!endTime) {
-      setTimeLeft('Awaiting schedule');
+      setTimeLeft(t('auctionDetailAwaitingSchedule'));
       setIsUrgent(false);
       return;
     }
@@ -34,17 +37,19 @@ function useCountdown(endTime) {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [endTime]);
+  }, [endTime, t]);
 
   return { timeLeft, isUrgent };
 }
 
 export default function VentureAuctionPage() {
+  const { t } = useTranslation();
   const { auctionId }  = useParams();
   const { user }       = useAuth();
   const navigate       = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid }
                        = useVentureAuction(auctionId);
+  const { formatPrice, getSymbol } = useCurrency();
 
   const [bidAmount, setBidAmount]           = useState('');
   const [bidLoading, setBidLoading]         = useState(false);
@@ -95,7 +100,7 @@ export default function VentureAuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Venture auction participation fee`,
+        description: t('auctionDetailParticipationFeeVenture'),
         onSuccess: async (response) => {
           try {
             await ventureAuctionAPI.participationVerify(auction.id, {
@@ -105,19 +110,19 @@ export default function VentureAuctionPage() {
             });
             setParticipation((p) => ({ ...p, paid: true }));
           } catch {
-            setParticipationError('Payment verification failed. Please retry.');
+            setParticipationError(t('auctionDetailPaymentVerifyFailedRetry'));
           } finally {
             setPayingParticipation(false);
           }
         },
         onFailure: async () => {
-          setParticipationError('Participation payment failed. Please retry.');
+          setParticipationError(t('auctionDetailParticipationPaymentFailed'));
           setPayingParticipation(false);
         },
         onDismiss: async () => setPayingParticipation(false),
       });
     } catch (err) {
-      setParticipationError(err?.response?.data?.error || 'Failed to start payment.');
+      setParticipationError(err?.response?.data?.error || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
     }
   };
@@ -136,11 +141,11 @@ export default function VentureAuctionPage() {
 
   const handleBid = async () => {
     if (!participation.paid) {
-      setBidError('Please pay participation fee first.');
+      setBidError(t('auctionDetailPayParticipationFirst'));
       return;
     }
     const amount = parseFloat(bidAmount);
-    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -148,10 +153,10 @@ export default function VentureAuctionPage() {
     setBidLoading(true); setBidError(''); setBidSuccess('');
     try {
       await placeBid(amount);
-      setBidSuccess(`Bid of ₹${Number(amount).toLocaleString('en-IN')} placed!`);
+      setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amount) }));
       setBidAmount('');
     } catch (err) {
-      setBidError(err.response?.data?.error || 'Failed to place bid.');
+      setBidError(err.response?.data?.error || t('auctionDetailFailedPlaceBid'));
     } finally { setBidLoading(false); }
   };
 
@@ -160,7 +165,7 @@ export default function VentureAuctionPage() {
   );
 
   if (!auction) return (
-    <AppLayout><div className="empty-state"><h3>Auction not found</h3></div></AppLayout>
+    <AppLayout><div className="empty-state"><h3>{t('auctionDetailNotFound')}</h3></div></AppLayout>
   );
 
   const venture = auction.venture || {};
@@ -169,7 +174,7 @@ export default function VentureAuctionPage() {
     venture?.listedBy?.name
     || `${venture?.listedBy?.firstname || ''} ${venture?.listedBy?.lastname || ''}`.trim()
     || venture?.listedBy?.email
-    || 'Venture Owner';
+    || t('auctionDetailVentureOwner');
   const ownerInitial = (ownerName || 'V').trim().charAt(0).toUpperCase();
   const brandImage = pickMediaUrl(brand);
 
@@ -178,21 +183,21 @@ export default function VentureAuctionPage() {
       <div className="max-w-[1100px] mx-auto px-4">
         <div className="mb-8">
           <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4" onClick={() => navigate('/auctions')}>
-            ← Back to Auctions
+            {t('auctionDetailBackToAuctions')}
           </button>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
-                  {brand.brandName || 'Venture Auction'}
+                  {brand.brandName || t('auctionDetailVentureAuctionDefault')}
                 </h1>
                 {venture.verified && (
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold text-green-600 bg-green-100 border border-green-300">
-                    ✓ GSTIN Verified
+                    {t('auctionsPageGstinVerified')}
                   </span>
                 )}
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200">
-                  Equity Auction
+                  {t('auctionsPageEquityAuction')}
                 </span>
                 <StatusBadge status={auction.status} />
               </div>
@@ -203,14 +208,14 @@ export default function VentureAuctionPage() {
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-amber-500'}`} />
                 <span className={`text-xs ${connected ? 'text-green-600' : 'text-amber-600'}`}>
-                  {connected ? 'Live' : 'Reconnecting...'}
+                  {connected ? t('auctionDetailLive') : t('auctionDetailReconnecting')}
                 </span>
               </div>
             </div>
             {isActive && (
               <div className="text-right">
                 <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">
-                  {auction.status === 'EXTENDED' ? 'Extended - Ends in' : 'Ends in'}
+                  {auction.status === 'EXTENDED' ? t('auctionDetailEndsExtendedShort') : t('auctionsPageEndsIn')}
                 </div>
                 <div className={`font-display text-3xl font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-indigo-600'}`}>
                   {timeLeft}
@@ -236,14 +241,14 @@ export default function VentureAuctionPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-display text-2xl font-semibold text-gray-900 m-0 truncate">
-                  {brand.brandName || 'Venture Listing'}
+                  {brand.brandName || t('auctionDetailVentureListing')}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200">
-                  Equity Auction
+                  {t('auctionsPageEquityAuction')}
                 </span>
               </div>
               <div className="mt-1 text-sm text-gray-600">
-                Owner: <span className="font-semibold text-gray-800">{ownerName}</span>
+                {t('auctionDetailOwnerLabel')} <span className="font-semibold text-gray-800">{ownerName}</span>
               </div>
               <div className="mt-2 flex gap-2 flex-wrap">
                 {venture.stage && (
@@ -258,7 +263,7 @@ export default function VentureAuctionPage() {
                 )}
                 {venture.verified && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-green-700 bg-green-50 border border-green-200">
-                    GSTIN Verified
+                    {t('auctionDetailGstinVerifiedShort')}
                   </span>
                 )}
               </div>
@@ -271,48 +276,48 @@ export default function VentureAuctionPage() {
             <div className={`p-6 border rounded-[14px] transition-all duration-300 ${flashBid ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
               <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Current Highest Bid</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionDetailCurrentHighestBid')}</div>
                   <div className={`font-display text-[2rem] font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
-                    {auction.currentHighestBid > 0 ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}` : 'No bids yet'}
+                    {auction.currentHighestBid > 0 ? formatPrice(auction.currentHighestBid) : t('auctionDetailNoBidsYet')}
                   </div>
                   {auction.currentWinnerName && (
-                    <div className="text-[0.78rem] text-gray-500 mt-1">Leading: {auction.currentWinnerName}</div>
+                    <div className="text-[0.78rem] text-gray-500 mt-1">{t('auctionDetailLeading', { name: auction.currentWinnerName })}</div>
                   )}
                 </div>
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Starting Bid</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
                   <div className="font-display text-[1.5rem] font-bold text-amber-600">
-                    ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+                    {formatPrice(auction.minBidPrice)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Total Bids</div>
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
                   <div className="font-display text-[2rem] font-bold text-gray-900">{auction.totalBids}</div>
                 </div>
               </div>
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
-                  Next bid range: <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
-                  <span className="text-gray-500 ml-2">(5% above current)</span>
+                  {t('auctionDetailNextBidRange')} <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice)}</strong>
+                  <span className="text-gray-500 ml-2">{t('auctionDetailBidRangeHint')}</span>
                 </div>
               )}
             </div>
 
             {brand.description && (
               <div className="p-5 bg-white border border-gray-200 rounded-[14px]">
-                <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">About the Venture</div>
+                <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('auctionDetailAboutVenture')}</div>
                 <p className="text-[0.9rem] text-gray-600 leading-relaxed m-0">{brand.description}</p>
               </div>
             )}
 
             <div className="bg-white border border-gray-200 rounded-[14px] overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 text-[0.9rem]">
-                Bid History
-                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">({bids.length} bids)</span>
+                {t('auctionDetailBidHistory')}
+                <span className="text-gray-500 font-normal ml-2 text-[0.8rem]">{t('auctionDetailBidHistoryCount', { count: bids.length })}</span>
               </div>
               <div ref={bidListRef} className="max-h-[360px] overflow-y-auto py-2">
                 {bids.length === 0 ? (
-                  <div className="p-8 text-center text-gray-400 text-[0.875rem]">No bids yet. Be the first to bid!</div>
+                  <div className="p-8 text-center text-gray-400 text-[0.875rem]">{t('auctionDetailNoBidsFirst')}</div>
                 ) : (
                   bids.map((bid, i) => (
                     <BidRow key={i} bid={bid} isLatest={i === 0} isWinner={bid.isWinningBid || bid.winningBid} />
@@ -323,13 +328,13 @@ export default function VentureAuctionPage() {
 
             {isOwner && auction.status === 'UNSOLD' && (
               <div className="p-5 bg-amber-50 border border-amber-200 rounded-[12px]">
-                <div className="font-semibold text-amber-700 mb-2">Auction ended with no bids</div>
+                <div className="font-semibold text-amber-700 mb-2">{t('auctionDetailEndedNoBids')}</div>
                 <p className="text-gray-500 text-[0.875rem] mb-4">
-                  You can re-auction with new settings, or close the listing.
+                  {t('auctionDetailEndedNoBidsClose')}
                 </p>
                 <div className="flex gap-3">
                   <button className="btn-glow" onClick={() => setReAuctionModal(true)}>
-                    ↺ Re-Auction
+                    {t('auctionDetailReAuctionBtn')}
                   </button>
                   <button
                     className="btn-glow"
@@ -338,11 +343,11 @@ export default function VentureAuctionPage() {
                         await ventureAuctionAPI.close(auction.id);
                         navigate('/ventures/dashboard');
                       } catch {
-                        alert('Failed to close auction.');
+                        alert(t('auctionDetailFailedClose'));
                       }
                     }}
                   >
-                    Close Auction
+                    {t('auctionDetailCloseAuction')}
                   </button>
                 </div>
               </div>
@@ -351,14 +356,15 @@ export default function VentureAuctionPage() {
             {auction.status === 'ENDED' && (
               <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
                 <div className="text-[2.5rem] mb-2">🏆</div>
-                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">Auction Won!</h3>
+                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">{t('auctionDetailWon')}</h3>
                 <p className="text-gray-500">
-                  <strong className="text-gray-900">{auction.currentWinnerName || 'A bidder'}</strong>{' '}
-                  won with a bid of{' '}
-                  <strong className="text-green-700">₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}</strong>
+                  {t('auctionDetailWonLine', {
+                    name: auction.currentWinnerName || t('auctionDetailWonGenericBidder'),
+                    amount: formatPrice(auction.currentHighestBid),
+                  })}
                 </p>
                 <p className="text-[0.82rem] text-gray-500 mt-2">
-                  Our admin team will coordinate the equity transfer.
+                  {t('auctionDetailAdminTransferEquity')}
                 </p>
               </div>
             )}
@@ -368,25 +374,25 @@ export default function VentureAuctionPage() {
             {isDraft && (
               <div className="p-5 bg-amber-50 border border-amber-200 rounded-[14px] text-center">
                 <div className="text-[1.5rem] mb-2">📝</div>
-                <p className="font-semibold text-amber-800 mb-2">Auction not started yet</p>
+                <p className="font-semibold text-amber-800 mb-2">{t('auctionDetailNotStarted')}</p>
                 <p className="text-gray-600 text-[0.875rem] m-0">
                   {venture.verified || venture.gstinVerified
-                    ? 'This auction is awaiting activation by the owner.'
-                    : 'GSTIN verification is pending. Bidding opens after the venture owner completes verification.'}
+                    ? t('auctionDetailAwaitingActivation')
+                    : t('auctionDetailGstinPending')}
                 </p>
               </div>
             )}
 
             {isActive && !isOwner && (
               <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
-                <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">Place Your Bid</h3>
+                <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">{t('auctionDetailPlaceYourBid')}</h3>
                 {!participation.loading && !participation.paid && (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="text-sm text-amber-800 mb-2">
-                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
+                      {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
                     </div>
                     <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? 'Processing...' : 'Pay Participation Fee →'}
+                      {payingParticipation ? t('auctionDetailProcessingDots') : t('auctionDetailPayParticipation')}
                     </button>
                     {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
                   </div>
@@ -394,7 +400,7 @@ export default function VentureAuctionPage() {
 
                 {minNextBid > 0 && (
                   <div className="mb-4">
-                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Bid</div>
+                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailQuickBid')}</div>
                     <div className="flex gap-2 flex-wrap">
                       {[1, 1.1, 1.25].map((mult) => {
                         const quickAmount = Math.ceil((minNextBid * mult) / 100) * 100;
@@ -409,7 +415,7 @@ export default function VentureAuctionPage() {
                                 : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
                             }`}
                           >
-                            ₹{Number(quickAmount).toLocaleString('en-IN')}
+                            {formatPrice(quickAmount)}
                           </button>
                         );
                       })}
@@ -419,7 +425,7 @@ export default function VentureAuctionPage() {
 
                 <div className="flex flex-col gap-1.5 mb-4">
                   <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
-                    Your Bid Amount (₹)
+                    {t('auctionDetailYourBidAmountLabel', { symbol: getSymbol() })}
                   </label>
                   <input
                     type="number"
@@ -428,7 +434,7 @@ export default function VentureAuctionPage() {
                       setBidAmount(e.target.value);
                       setBidError('');
                     }}
-                    placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
+                    placeholder={t('auctionDetailMinPlaceholder', { amount: formatPrice(minNextBid) })}
                     min={minNextBid}
                     max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
@@ -449,13 +455,14 @@ export default function VentureAuctionPage() {
                   {bidLoading ? (
                     <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
                   ) : (
-                    `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`
+                    (bidAmount
+                      ? t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(bidAmount) })
+                      : `${t('auctionDetailPlaceBidBtn')} →`)
                   )}
                 </button>
 
                 <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
-                  By bidding you commit to acquiring this equity stake if you win.
-                  Each bid must be at least 5% above the current highest bid.
+                  {t('auctionDetailBidCommitVenture')}
                 </p>
               </div>
             )}
@@ -464,30 +471,30 @@ export default function VentureAuctionPage() {
               <div className="p-5 bg-white border border-gray-200 rounded-[14px] text-center">
                 <div className="text-[1.5rem] mb-2">👑</div>
                 <p className="text-gray-500 text-[0.875rem]">
-                  This is your auction. You cannot bid on your own listing.
+                  {t('auctionDetailOwnListing')}
                 </p>
               </div>
             )}
 
             <div className="p-5 bg-white border border-gray-200 rounded-[14px]">
-              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">Auction Info</div>
+              <div className="text-[0.72rem] font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('auctionDetailInfo')}</div>
               <div className="flex flex-col gap-2.5">
-                <InfoRow label="Duration" value={auction.duration?.replace(/_/g, ' ')} />
+                <InfoRow label={t('auctionDetailDuration')} value={auction.duration?.replace(/_/g, ' ')} />
                 <InfoRow
-                  label="Started"
+                  label={t('auctionDetailStarted')}
                   value={formatAuctionDate(auction.startTime, {
                     day: 'numeric', month: 'short', year: 'numeric',
                   })}
                 />
                 <InfoRow
-                  label="Ends"
+                  label={t('auctionDetailEnds')}
                   value={formatAuctionDateTime(auction.endTime, {
                     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                   })}
                 />
                 {auction.status === 'EXTENDED' && (
                   <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-[0.75rem] text-amber-800">
-                    ⚡ Extended due to last-minute bid
+                    {t('auctionDetailExtendedNote')}
                   </div>
                 )}
               </div>
@@ -512,6 +519,8 @@ export default function VentureAuctionPage() {
 }
 
 function BidRow({ bid, isLatest, isWinner }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const bidTimeStr = formatAuctionTime(bid.bidTime, {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   }, '');
@@ -527,30 +536,31 @@ function BidRow({ bid, isLatest, isWinner }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-[0.875rem] text-gray-900">
-          {bid.bidderName || 'Anonymous'}
+          {bid.bidderName || t('auctionDetailAnonymous')}
           {isWinner && (
-            <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">WINNER</span>
+            <span className="ml-1.5 text-[0.68rem] text-amber-600 font-bold">{t('auctionDetailWinnerBadge')}</span>
           )}
         </div>
         <div className="text-[0.72rem] text-gray-500">
-          {bidTimeStr ? `${bidTimeStr} · Bidder` : 'Bidder'}
+          {bidTimeStr ? t('auctionDetailBidderWithTime', { time: bidTimeStr }) : t('auctionDetailBidder')}
         </div>
       </div>
       <div className={`font-display text-[1.1rem] font-bold flex-shrink-0 ${isLatest ? 'text-green-600' : 'text-amber-600'}`}>
-        ₹{Number(bid.amount).toLocaleString('en-IN')}
+        {formatPrice(bid.amount)}
       </div>
     </div>
   );
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const config = {
-    DRAFT:    { color: '#888',    label: 'Draft'       },
-    ACTIVE:   { color: '#6ec896', label: '🟢 Live'     },
-    EXTENDED: { color: '#c8a96e', label: '⚡ Extended' },
-    ENDED:    { color: '#a06ec8', label: 'Ended'       },
-    UNSOLD:   { color: '#c86e6e', label: 'Unsold'      },
-    CLOSED:   { color: '#666',    label: 'Closed'      },
+    DRAFT:    { color: '#888',    label: t('auctionsPageStatusDraft') },
+    ACTIVE:   { color: '#6ec896', label: t('auctionsPageStatusLive') },
+    EXTENDED: { color: '#c8a96e', label: t('auctionsPageStatusExtended') },
+    ENDED:    { color: '#a06ec8', label: t('auctionDetailStatusEnded') },
+    UNSOLD:   { color: '#c86e6e', label: t('auctionDetailStatusUnsold') },
+    CLOSED:   { color: '#666',    label: t('auctionDetailStatusClosed') },
   }[status] || { color: '#888', label: status };
 
   return (
@@ -578,6 +588,8 @@ function InfoRow({ label, value }) {
 }
 
 function ReAuctionModal({ auctionId, onClose, onSuccess }) {
+  const { t } = useTranslation();
+  const { getSymbol } = useCurrency();
   const [form, setForm]       = useState({ minBidPrice: '', duration: 'SEVEN_DAYS' });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -585,7 +597,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) {
-      setError('Please enter a valid minimum bid.');
+      setError(t('auctionDetailValidMinBid'));
       return;
     }
     setLoading(true); setError('');
@@ -596,7 +608,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to re-auction.');
+      setError(err.response?.data?.error || t('auctionDetailFailedReAuction'));
     } finally { setLoading(false); }
   };
 
@@ -606,33 +618,33 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
         <div className="modal-header">
-          <div className="modal-badge">Re-Auction</div>
-          <h2>Start a New Venture Auction</h2>
-          <p>Set new parameters for your re-auction.</p>
+          <div className="modal-badge">{t('auctionDetailReAuctionBadge')}</div>
+          <h2>{t('auctionDetailReAuctionVentureTitle')}</h2>
+          <p>{t('auctionDetailReAuctionSubtitle')}</p>
         </div>
         <form onSubmit={handleSubmit} className="venture-form" style={{ marginTop: '1.25rem' }}>
           <div className="form-group">
-            <label>New Minimum Bid (₹) <span className="required">*</span></label>
+            <label>{t('auctionDetailNewMinBidRequired', { symbol: getSymbol() })}</label>
             <input type="number" min="1" value={form.minBidPrice}
               onChange={e => setForm(f => ({ ...f, minBidPrice: e.target.value }))}
-              placeholder="e.g. 500000" required />
+              placeholder={t('auctionDetailMinBidVenturePlaceholder')} required />
           </div>
           <div className="form-group">
-            <label>Auction Duration <span className="required">*</span></label>
+            <label>{t('auctionDetailAuctionDurationRequired')}</label>
             <select value={form.duration}
               onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}>
-              <option value="ONE_DAY">1 Day</option>
-              <option value="SEVEN_DAYS">7 Days</option>
-              <option value="FIFTEEN_DAYS">15 Days</option>
-              <option value="THIRTY_DAYS">30 Days</option>
+              <option value="ONE_DAY">{t('domainsPageDurationOneDay')}</option>
+              <option value="SEVEN_DAYS">{t('domainsPageDurationSevenDays')}</option>
+              <option value="FIFTEEN_DAYS">{t('auctionDetailDuration15Days')}</option>
+              <option value="THIRTY_DAYS">{t('auctionDetailDuration30Days')}</option>
             </select>
           </div>
           {error && <div className="form-error">{error}</div>}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
             <button type="submit" className="btn-primary" disabled={loading} style={{ flex: 1 }}>
-              {loading ? <span className="btn-spinner" /> : 'Start Re-Auction →'}
+              {loading ? <span className="btn-spinner" /> : t('auctionDetailStartReAuction')}
             </button>
-            <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
           </div>
         </form>
       </div>

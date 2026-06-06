@@ -187,7 +187,9 @@ export default function HomeTopNavActions() {
     <>
       <SupportLabel />
       <HomeNavToolbarSeparator />
-      <span className="home-nav-phone-number">{SUPPORT_PHONE_DISPLAY}</span>
+      <a href={SUPPORT_PHONE_TEL} className="home-nav-phone-number">
+        {SUPPORT_PHONE_DISPLAY}
+      </a>
       <HomeNavToolbarSeparator />
       <CallNavButton />
       <HomeNavToolbarSeparator variant="mobile" />

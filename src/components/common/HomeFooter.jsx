@@ -251,12 +251,6 @@ export default function HomeFooter() {
 
               </button>
 
-              <ScrollLink to="/join-form" className={linkClass}>
-
-                {t('joinCoBrother')}
-
-              </ScrollLink>
-
             </nav>
 
           </div>
@@ -278,6 +272,12 @@ export default function HomeFooter() {
               <ScrollLink to="/contact" className={linkClass}>
 
                 {t('Contact Us')}
+
+              </ScrollLink>
+
+              <ScrollLink to="/join-form" className={linkClass}>
+
+                {t('joinCoBrother')}
 
               </ScrollLink>
 

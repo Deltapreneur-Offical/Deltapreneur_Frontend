@@ -4116,13 +4116,21 @@ body.home-page-body {
 }
 
 .home-nav-support-emphasis {
-  color: #16a34a;
-  font-weight: 600;
+  color: inherit;
+  font-weight: 500;
 }
 
 .home-nav-phone-number {
   color: #64748b;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.home-nav-phone-number:hover,
+.home-nav-phone-number:focus-visible {
+  color: var(--cobrother-hover-color);
 }
 
 /* Premium inline locale + currency controls (1st navbar) */

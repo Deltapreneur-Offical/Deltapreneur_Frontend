@@ -64,6 +64,7 @@ const loadAuctionsPage = () => import('./pages/AuctionsPage');
 const AuctionsPage = lazy(loadAuctionsPage);
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
+const CoBrotherAI = lazy(() => import('./components/ai/CoBrotherAI'));
 
 function preloadPostLoginRoutes() {
   void loadDashboardPage();
@@ -117,6 +118,9 @@ export default function App() {
               <RoutePreloader />
               <SiteGradientBorder />
               <CookieConsentBanner />
+              <Suspense fallback={null}>
+                <CoBrotherAI />
+              </Suspense>
               <AppErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>

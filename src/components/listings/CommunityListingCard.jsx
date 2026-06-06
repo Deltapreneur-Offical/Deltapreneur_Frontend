@@ -1,16 +1,16 @@
 import { useTranslation } from 'react-i18next';
+import { UserPlus } from 'lucide-react';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
-import ListingBrowseFooter from './ListingBrowseFooter';
-import MarketplaceListingCardFrame, { ListingCardBadge } from './MarketplaceListingCardFrame';
-import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
 
-function LinkedInIcon({ size = 18 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-    </svg>
-  );
+function formatRoleLabel(role) {
+  if (!role) return '';
+  return role.toString().replace(/_/g, ' ').toUpperCase();
+}
+
+function formatIndustryLabel(industry) {
+  if (!industry) return '';
+  return industry.toString().replace(/_/g, ' ').toUpperCase();
 }
 
 export default function CommunityListingCard({
@@ -24,108 +24,113 @@ export default function CommunityListingCard({
 }) {
   const { t } = useTranslation();
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
-  const accentGrad = 'from-teal-600 via-cyan-500 to-blue-500';
+  const imageUrl = profile.imageUrl || profile.image_url || null;
+  const name = profile.name || t('listingCardAnonymous');
+  const roleLabel = formatRoleLabel(profile.role);
+  const industryLabel = formatIndustryLabel(profile.industry);
+  const primaryLine = [roleLabel, industryLabel].filter(Boolean).join(' · ');
+  const locationPart = profile.location?.trim() || '';
+  const skillPart = skills[0] || '';
+  const secondaryLine = [locationPart, skillPart].filter(Boolean).join(' · ');
 
-  const headerBadges = (
-    <>
-      <ListingCardBadge variant="glass">👤 Creator</ListingCardBadge>
-      {profile.role && (
-        <ListingCardBadge variant="verified">{profile.role.replace(/_/g, ' ')}</ListingCardBadge>
-      )}
-      {isMe && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
-    </>
-  );
-
-  const body = (
-    <>
-      <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
-        <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1">
-          {profile.name || t('listingCardAnonymous')}
-        </h3>
-        <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
-          {profile.industry && (
-            <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-              {profile.industry.replace(/_/g, ' ')}
-            </span>
-          )}
-          {profile.location && (
-            <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded whitespace-nowrap">
-              📍 {profile.location}
-            </span>
-          )}
-        </div>
-      </div>
-      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[30px] flex-shrink-0">
-        {profile.bio || profile.description || t('listingCardCreatorSummary')}
-      </p>
-      {skills.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2 max-h-[52px] overflow-hidden flex-shrink-0">
-          {skills.slice(0, 4).map((skill) => (
-            <span key={skill} className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] text-gray-600">
-              {skill}
-            </span>
-          ))}
-          {skills.length > 4 && (
-            <span className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px] text-gray-400">
-              +{skills.length - 4}
-            </span>
-          )}
-        </div>
-      )}
-      {getLinkedInProfileUrl(profile) && (
-        <a
-          href={getLinkedInProfileUrl(profile)}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1 text-[10px] text-[#0077b5] no-underline mb-2 hover:text-[#005885] flex-shrink-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <LinkedInIcon size={12} /> {t('listingCardViewDetails')}
-        </a>
-      )}
-    </>
-  );
-
-  const footer = browseMode ? (
-    <ListingBrowseFooter onViewDetails={onView} label={t('listingCardViewDetails')} className="border-t-0 pt-0">
-      {onLike ? (
-        <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} forceRed />
-      ) : (
-        <span className="text-xs text-gray-500">👁 {profile.views || 0}</span>
-      )}
-    </ListingBrowseFooter>
-  ) : (
-    <div className="flex justify-between items-center gap-2 border-t border-gray-100 pt-2">
-      {onLike ? (
-        <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} forceRed />
-      ) : (
-        <span className="text-xs text-gray-500">👁 {profile.views || 0}</span>
-      )}
-      {isMe && (
-        <button
-          type="button"
-          className="py-1.5 px-3 bg-gray-900 text-white text-[10px] font-bold rounded hover:bg-gray-800 inline-flex items-center gap-1"
-          onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
-        >
-          <EditIcon size={14} /> {t('edit')}
-        </button>
-      )}
-    </div>
-  );
+  const handleView = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onView?.();
+  };
 
   return (
-    <MarketplaceListingCardFrame
-      cardClassName={`community-listing-card${isMe ? ' ring-1 ring-indigo-200' : ''}`}
-      gradient={accentGrad}
-      image={profile.imageUrl}
-      imageAlt={profile.name}
-      initial={profile.name?.[0]?.toUpperCase() || '?'}
-      headerBadges={headerBadges}
-      browseMode={browseMode}
-      onClick={onView}
-      footer={footer}
+    <article
+      className={`community-listing-card community-profile-card group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full min-h-[340px] ${
+        isMe ? 'ring-1 ring-indigo-200' : ''
+      }`}
     >
-      {body}
-    </MarketplaceListingCardFrame>
+      <div className="relative h-[92px] flex-shrink-0 overflow-hidden rounded-t-2xl bg-gradient-to-r from-slate-600 via-slate-500 to-slate-400">
+        {imageUrl ? (
+          <>
+            <img
+              src={imageUrl}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover scale-105 blur-[2px] opacity-90"
+            />
+            <div className="absolute inset-0 bg-black/10" />
+          </>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col items-center text-center px-4 pb-5 pt-0 flex-1 -mt-10 relative z-10">
+        <div className="flex-shrink-0 mb-3">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              className="w-[72px] h-[72px] rounded-full object-cover border-[3px] border-white shadow-md bg-white"
+            />
+          ) : (
+            <div className="w-[72px] h-[72px] rounded-full border-[3px] border-white shadow-md bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center font-display text-2xl font-bold text-white">
+              {name[0]?.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+
+        <h3 className="font-display text-[1.05rem] font-bold text-gray-900 leading-tight line-clamp-1 m-0">
+          {name}
+        </h3>
+
+        {primaryLine ? (
+          <p className="mt-1.5 mb-0 text-[0.68rem] font-semibold tracking-[0.06em] text-gray-800 uppercase leading-snug">
+            {primaryLine}
+          </p>
+        ) : null}
+
+        {secondaryLine ? (
+          <p className="mt-1 mb-0 text-[0.72rem] text-gray-400 leading-snug line-clamp-1">
+            {secondaryLine}
+          </p>
+        ) : null}
+
+        <div className="mt-3 mb-4 flex justify-center">
+          {onLike ? (
+            <LikeButton
+              liked={likeState?.liked}
+              count={likeState?.count}
+              onToggle={onLike}
+              forceRed
+            />
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-[20px] px-2.5 py-1 text-[0.72rem] bg-gray-50 border border-gray-200 text-gray-500">
+              <span className="grayscale-0">❤️</span>
+              <span className="font-semibold text-[#c86e6e]">{profile.views || 0}</span>
+            </span>
+          )}
+        </div>
+
+        <div className="mt-auto w-full flex flex-col items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 w-full max-w-[220px] py-2.5 px-4 rounded-full border-2 border-blue-500 text-blue-600 text-[0.8rem] font-semibold bg-white hover:bg-blue-50 transition-colors"
+            onClick={handleView}
+          >
+            <UserPlus size={17} strokeWidth={2.25} aria-hidden />
+            {t('listingCardViewDetails')}
+          </button>
+
+          {isMe && !browseMode ? (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3 text-[0.72rem] font-semibold text-gray-600 hover:text-gray-900"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit?.();
+              }}
+            >
+              <EditIcon size={14} />
+              {t('edit')}
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </article>
   );
 }

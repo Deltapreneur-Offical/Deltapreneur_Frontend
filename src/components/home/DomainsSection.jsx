@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { extractDomainList } from '../../utils/domainApiAdapter';
 import { fetchAllListPages } from '../../utils/listPagination';
-import { pickHomepagePreviewListings } from '../../utils/homepageListings';
+import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
+import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import HomeUnifiedListingCard from './HomeUnifiedListingCard';
@@ -37,9 +38,15 @@ export default function DomainsSection() {
     fetchDomains();
   }, []);
 
+  const isMobile = useHomepageMobile();
+
   const previewDomains = useMemo(
-    () => pickHomepagePreviewListings(domains, 'domain'),
-    [domains],
+    () => pickHomepagePreviewListings(
+      domains,
+      'domain',
+      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
+    ),
+    [domains, isMobile],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', previewDomains);
@@ -53,8 +60,8 @@ export default function DomainsSection() {
   }
 
   return (
-    <section className="bg-white pt-0 pb-3 md:pt-0 md:pb-4">
-      <div className="w-full">
+    <section className="bg-white pt-0 pb-3 md:pt-0 md:pb-4 min-w-0 overflow-x-hidden">
+      <div className="w-full min-w-0">
         <HomeSectionHeader title={t('domains')} to="/domains" />
         {previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>

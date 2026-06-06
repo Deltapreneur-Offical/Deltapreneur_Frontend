@@ -1,53 +1,53 @@
-/* Homepage listing previews — same card UI as marketplace pages, scaled down */
+/* Homepage listing previews — same card UI as marketplace pages */
 
 .home-preview-row {
-  --home-preview-design-width: 300px;
-  --home-preview-zoom: 0.76;
   --home-preview-zoom-lg: 0.9;
-  --home-preview-item-width: calc(var(--home-preview-design-width) * var(--home-preview-zoom));
-  align-items: stretch;
-  gap: 0.65rem;
+  gap: 0;
+  scroll-padding-inline: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .home-preview-row__item {
-  flex-shrink: 0;
-  width: var(--home-preview-item-width);
-  snap-align: start;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .home-preview-row__card {
-  width: var(--home-preview-design-width);
-  max-width: none;
-  zoom: var(--home-preview-zoom);
   flex: 1;
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-sizing: border-box;
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 1023px) {
+  .home-preview-row {
+    overscroll-behavior-x: contain;
+  }
+
   .home-preview-row__item {
-    width: auto;
-    min-width: 0;
+    scroll-snap-stop: always;
   }
 
   .home-preview-row__card {
     width: 100%;
+    max-width: 100%;
+    zoom: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-preview-row__card {
     zoom: var(--home-preview-zoom-lg);
   }
 }
 
 @supports not (zoom: 1) {
-  .home-preview-row__card {
-    transform: scale(var(--home-preview-zoom));
-    transform-origin: top center;
-  }
-
   @media (min-width: 1024px) {
     .home-preview-row__card {
       transform: scale(var(--home-preview-zoom-lg));
+      transform-origin: top center;
     }
   }
 }
@@ -59,6 +59,7 @@
   min-height: 0;
   height: 100%;
   width: 100%;
+  min-width: 0;
 }
 
 .home-preview-row .listing-card-glow-shell {
@@ -67,6 +68,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .home-preview-row .listing-card-glow-shell::before {
@@ -77,16 +79,20 @@
 
 .home-preview-row .listing-card-glow-shell > * {
   width: 100%;
+  max-width: 100%;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 .home-preview-row .domain-listing-card,
 .home-preview-row .venture-listing-card,
 .home-preview-row .technology-listing-card,
-.home-preview-row .community-listing-card {
+.home-preview-row .community-listing-card,
+.home-preview-row .community-profile-card {
   height: 100%;
-  min-height: 100%;
+  min-height: 340px;
+  max-width: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;

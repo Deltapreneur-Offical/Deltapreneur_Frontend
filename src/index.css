@@ -3554,6 +3554,14 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   min-height: 1.125rem;
 }
 
+.app-sidebar-icon-img--domain,
+.app-sidebar-icon-img--creator {
+  width: 1.125rem;
+  height: 1.125rem;
+  min-width: 1.125rem;
+  min-height: 1.125rem;
+}
+
 .app-sidebar-link-label {
   min-width: 0;
   flex: 1;

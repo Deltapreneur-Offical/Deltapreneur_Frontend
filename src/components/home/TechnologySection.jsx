@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
-import { pickHomepagePreviewListings } from '../../utils/homepageListings';
+import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
+import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -33,9 +34,15 @@ export default function TechnologySection() {
     fetchSoftwares();
   }, []);
 
+  const isMobile = useHomepageMobile();
+
   const previewSoftwares = useMemo(
-    () => pickHomepagePreviewListings(softwares, 'software'),
-    [softwares],
+    () => pickHomepagePreviewListings(
+      softwares,
+      'software',
+      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
+    ),
+    [softwares, isMobile],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', previewSoftwares);
@@ -49,8 +56,8 @@ export default function TechnologySection() {
   }
 
   return (
-    <section className="bg-white py-4 md:py-6">
-      <div className="w-full">
+    <section className="bg-white py-4 md:py-6 min-w-0 overflow-x-hidden">
+      <div className="w-full min-w-0">
         <HomeSectionHeader title={t('technologySoftware')} to="/technology" />
         {previewSoftwares.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noSoftware')}</p>

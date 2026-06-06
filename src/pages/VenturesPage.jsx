@@ -26,10 +26,11 @@ import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { asArray } from '../utils/asArray';
 import { fetchAllListPages } from '../utils/listPagination';
+import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
-  const { user }  = useAuth();
+  const { user, loading: authLoading }  = useAuth();
   const { currency, getSymbol } = useCurrency();
   const navigate  = useNavigate();
 
@@ -41,6 +42,7 @@ export default function VenturesPage() {
   const [deleteTarget, setDeleteTarget]     = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
   const [appliedVentureIds, setAppliedVentureIds] = useState(() => new Set());
+  const [accessNotice, setAccessNotice]       = useState('');
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', allVentures);
 
@@ -52,9 +54,11 @@ export default function VenturesPage() {
     clearAll, activeFilterCount,
     page, totalPages, setPage,
   } = useFilterSort(
-    filterTab === 'mine'
-      ? allVentures.filter(v => v.listedBy?.id === user?.id)
-      : allVentures,
+    resolveMarketplaceListingRows(allVentures, {
+      tab: filterTab,
+      user,
+      type: 'venture',
+    }),
     {
       searchFields:  ['brandDetails.brandName', 'brandDetails.description', 'brand_details.brand_name', 'brand_details.description'],
       priceField:    'brandDetails.dealValue',
@@ -102,13 +106,19 @@ export default function VenturesPage() {
       .catch(() => setAppliedVentureIds(new Set()));
   }, []);
 
-  const { closeListingDetail } = useOpenListingDetailFromUrl({
+  const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: allVentures,
     loading,
     setDetail: setDetailTarget,
     fetchById: async (id) => {
       const { data } = await ventureAPI.get(id);
       return data?.data ?? data;
+    },
+    listingType: 'venture',
+    user,
+    authLoading,
+    onAccessDenied: () => {
+      setAccessNotice(t('listingDetailAccessDenied', 'This listing is not available to view yet.'));
     },
   });
 
@@ -183,6 +193,12 @@ export default function VenturesPage() {
           </button>
         </div>
 
+        {accessNotice && (
+          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            {accessNotice}
+          </div>
+        )}
+
         {/* ── Filter bar ── */}
         <FilterBar
           search={search}           onSearch={handleSearch}
@@ -234,12 +250,12 @@ export default function VenturesPage() {
                 <ListingCardShell key={v.id}>
                 <VentureListingCard
                   venture={v}
-                  isOwner={v.listedBy?.id === user?.id}
+                  isOwner={isListingOwner(v, user, 'venture')}
                   hasApplied={appliedVentureIds.has(v.id)}
                   showVerifyButton={false}
                   likeState={getLike(v.id)}
                   onLike={() => toggleLike(v.id)}
-                  onView={() => setDetailTarget(v)}
+                  onView={() => openDetailIfAllowed(v)}
                   onApply={() => setApplyTarget(v)}
                   onVerify={() => setVerifyTarget(v)}
                   onEdit={() => navigate(`/ventures/${v.id}/edit`)}
@@ -259,7 +275,7 @@ export default function VenturesPage() {
       {detailTarget && (
         <VentureDetailModal
           venture={detailTarget}
-          isOwner={detailTarget.listedBy?.id === user?.id}
+          isOwner={isListingOwner(detailTarget, user, 'venture')}
           hasApplied={appliedVentureIds.has(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshVentures(); }}
           onApply={() => { setApplyTarget(detailTarget); closeListingDetail(); }}

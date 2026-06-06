@@ -9,6 +9,7 @@ import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
+import VerificationStatusBadge from './VerificationStatusBadge';
 import MarketplaceListingCardFrame, {
   ListingCardBadge,
   ListingPriceBox,
@@ -139,11 +140,7 @@ export default function DomainListingCard({
       <ListingCardBadge variant={isAuction ? 'auction' : 'glass'}>
         {isAuction ? '🔨 Auction' : '◇ Direct'}
       </ListingCardBadge>
-      {domain.verified ? (
-        <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
-      ) : (
-        <ListingCardBadge variant="pending">{t('listingCardVerificationPending')}</ListingCardBadge>
-      )}
+      <VerificationStatusBadge item={domain} type="domain" />
       {isOwner && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
     </>
   );

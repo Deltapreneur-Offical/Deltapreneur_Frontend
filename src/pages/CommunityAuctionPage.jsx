@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCommunityAuction } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import MeetingDateTimePicker from '../components/common/MeetingDateTimePicker';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import {
@@ -74,6 +75,7 @@ export default function CommunityAuctionPage() {
   // Re-auction / close modal
   const [reAuctionModal, setReAuctionModal] = useState(false);
   const [closingAuction, setClosingAuction] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [closeMessage, setCloseMessage] = useState('');
   const [closeError, setCloseError] = useState('');
 
@@ -86,6 +88,8 @@ export default function CommunityAuctionPage() {
   const isEnded   = auction?.status === 'ENDED';
   const isCompleted = auction?.status === 'COMPLETED';
   const isUnsold  = auction?.status === 'UNSOLD';
+  const isClosed  = auction?.status === 'CLOSED';
+  const canCloseActive = isActive && Number(auction?.totalBids || 0) === 0;
   const isWinner = Boolean(
     user?.id && auction?.currentWinnerId
     && String(user.id) === String(auction.currentWinnerId),
@@ -267,15 +271,14 @@ export default function CommunityAuctionPage() {
 
   // Close / re-auction
   const handleClose = async () => {
-    if (!window.confirm('Are you sure you want to close this auction?')) return;
+    setShowCloseConfirm(false);
     setClosingAuction(true);
     setCloseMessage('');
     setCloseError('');
     try {
       await communityAuctionAPI.close(auction.id);
       await refresh();
-      setCloseMessage('Auction closed successfully.');
-      window.setTimeout(() => navigate('/creator'), 1200);
+      setCloseMessage('Auction closed successfully. Bidding is disabled.');
     } catch (e) {
       setCloseError(resolveApiError(e, 'Failed to close auction.'));
     } finally {
@@ -411,6 +414,16 @@ export default function CommunityAuctionPage() {
               </div>
             </div>
 
+            {/* CLOSED — lister / visitors */}
+            {isClosed && (
+              <div className="p-5 bg-gray-50 border border-gray-200 rounded-[12px]">
+                <div className="font-semibold text-gray-700 mb-2">This auction is closed</div>
+                <p className="text-gray-500 text-[0.875rem] m-0">
+                  Bidding is disabled. Bid history is preserved below.
+                </p>
+              </div>
+            )}
+
             {/* UNSOLD — lister options */}
             {isOwner && isUnsold && (
               <div className="p-5 bg-amber-50 border border-amber-200 rounded-[12px]">
@@ -422,7 +435,7 @@ export default function CommunityAuctionPage() {
                   <button className="btn-glow" onClick={() => setReAuctionModal(true)}>
                     ↺ Re-Auction
                   </button>
-                  <button className="btn-glow" onClick={handleClose}>
+                  <button type="button" className="btn-glow" onClick={() => setShowCloseConfirm(true)}>
                     Take Down
                   </button>
                 </div>
@@ -602,14 +615,20 @@ export default function CommunityAuctionPage() {
                     {closeMessage}
                   </div>
                 )}
-                <button
-                  type="button"
-                  className="btn-glow mt-3 w-full"
-                  onClick={handleClose}
-                  disabled={closingAuction}
-                >
-                  {closingAuction ? 'Closing…' : 'Close Auction'}
-                </button>
+                {canCloseActive ? (
+                  <button
+                    type="button"
+                    className="btn-glow mt-3 w-full"
+                    onClick={() => setShowCloseConfirm(true)}
+                    disabled={closingAuction}
+                  >
+                    {closingAuction ? 'Closing…' : 'Close Auction'}
+                  </button>
+                ) : (
+                  <p className="text-[0.78rem] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg mt-3 px-3 py-2 text-left">
+                    You cannot close a live auction that already has bids. Wait for it to end, or contact support if needed.
+                  </p>
+                )}
               </div>
             )}
 
@@ -662,6 +681,17 @@ export default function CommunityAuctionPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showCloseConfirm}
+        title="Close this auction?"
+        message="Are you sure you want to close this auction? Bidding will stop and the auction will be marked closed."
+        confirmLabel="Close Auction"
+        cancelLabel="Cancel"
+        danger
+        onConfirm={handleClose}
+        onCancel={() => setShowCloseConfirm(false)}
+      />
 
       {reAuctionModal && (
         <ReAuctionModal

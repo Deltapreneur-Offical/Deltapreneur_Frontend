@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
+import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
@@ -9,7 +9,8 @@ import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
 import { useNotificationSocket } from '../../hooks/useNotificationSocket';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
-import CommunityIcon from '../../assets/Community-profileicon-gray.png';
+import DomainsIcon from '../../assets/CoBranding.png';
+import CreatorIcon from '../../assets/Cobrother_Profile.png';
 import CurrencyDropdown from '../common/CurrencyDropdown';
 import LanguageDropdown from '../common/LanguageDropdown';
 import AppProfileRegionalMenu from './AppProfileRegionalMenu';
@@ -20,16 +21,16 @@ import { resolveUserDisplayName } from '../../utils/userDisplayName';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
-  { icon: Globe, labelKey: 'domains', to: '/domains', isImage: false },
+  { icon: DomainsIcon, labelKey: 'domains', to: '/domains', isImage: true, iconImgClass: 'app-sidebar-icon-img--domain' },
   { icon: Store, labelKey: 'storefront', to: '/storefront', isImage: false },
   { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },
   { icon: TechnologyIcon, labelKey: 'technology', to: '/technology', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
   {
-    icon: CommunityIcon,
+    icon: CreatorIcon,
     labelKey: 'creator',
     to: '/creator',
     isImage: true,
-    iconImgClass: 'app-sidebar-icon-img--disruptor',
+    iconImgClass: 'app-sidebar-icon-img--creator',
   },
   { icon: Gavel, labelKey: 'auctions', to: '/auctions', isImage: false },
   { icon: ShoppingBag, labelKey: 'purchases', to: '/purchases', isImage: false },

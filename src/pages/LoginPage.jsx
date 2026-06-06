@@ -9,7 +9,7 @@ import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 
 import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
-import { resolvePostLoginPath } from '../utils/authSession';
+import { resolveAfterAuthNavigation, saveReturnLocationBeforeOAuth } from '../utils/authSession';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
@@ -65,11 +65,11 @@ export default function LoginPage() {
 
     if (!loading && user && !showLoginForm) {
 
-      const storedFrom = typeof from === 'string' ? from : from?.pathname;
-      const destination = user.profileComplete
-        ? resolvePostLoginPath(storedFrom, user)
-        : '/complete-profile';
-      navigate(destination, { replace: true });
+      const destination = resolveAfterAuthNavigation(
+        localStorage.getItem('redirectAfterLogin') || from,
+        user,
+      );
+      navigate(destination.pathname, { replace: true, state: destination.state });
       localStorage.removeItem('redirectAfterLogin');
 
     }
@@ -155,17 +155,13 @@ export default function LoginPage() {
 
     const fetchedUser = await refreshUser();
 
-    const storedPath =
-      localStorage.getItem('redirectAfterLogin') ||
-      (typeof from === 'string' ? from : from?.pathname);
+    const destination = resolveAfterAuthNavigation(
+      localStorage.getItem('redirectAfterLogin') || from,
+      fetchedUser,
+    );
     localStorage.removeItem('redirectAfterLogin');
 
-    navigate(
-      fetchedUser?.profileComplete
-        ? resolvePostLoginPath(storedPath, fetchedUser)
-        : '/complete-profile',
-      { replace: true },
-    );
+    navigate(destination.pathname, { replace: true, state: destination.state });
 
   };
 
@@ -290,6 +286,9 @@ export default function LoginPage() {
   // ── Google OAuth ─────────────────────────────────────────────────────────────
 
   const handleGoogleLogin = () => {
+    saveReturnLocationBeforeOAuth(
+      localStorage.getItem('redirectAfterLogin') || from,
+    );
     // OAuth must start on the backend host (same host as GOOGLE_OAUTH_REDIRECT_URI callback).
     // Do not use the Vercel SPA origin — oauth_state cookie would not be sent on callback.
     const backend = (API_ORIGIN || PRODUCTION_API_ORIGIN).replace(/\/$/, '');

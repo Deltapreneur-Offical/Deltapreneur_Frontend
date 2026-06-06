@@ -61,7 +61,20 @@ export function ProfileGuard({ children }) {
     return <Navigate to="/cobrother" replace />;
   }
   if (!loading && user && !user.profileComplete) {
-    return <Navigate to="/complete-profile" replace />;
+    return (
+      <Navigate
+        to="/complete-profile"
+        replace
+        state={{
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+            state: location.state,
+          },
+        }}
+      />
+    );
   }
   return <GuardedContent loading={loading}>{children}</GuardedContent>;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
@@ -39,6 +39,7 @@ import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdapter';
 import { fetchAllListPages } from '../utils/listPagination';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
+import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -77,9 +78,10 @@ function buildDomainFormState(domain, navCurrency) {
 
 export default function DomainsPage() {
   const { t } = useTranslation();
-  const { user }  = useAuth();
+  const { user, loading: authLoading }  = useAuth();
   const { currency, getSymbol } = useCurrency();
   const navigate  = useNavigate();
+  const location  = useLocation();
 
   const [allDomains, setAllDomains]         = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -98,9 +100,11 @@ export default function DomainsPage() {
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
   const domainRows = asArray(allDomains);
-  const visibleDomains = filterTab === 'mine'
-    ? domainRows.filter(d => (d.listedBy?.id ?? d.listedByUserId) === user?.id)
-    : domainRows.filter(d => !d.takenDown && d.status !== false);
+  const visibleDomains = resolveMarketplaceListingRows(domainRows, {
+    tab: filterTab,
+    user,
+    type: 'domain',
+  });
 
   const {
     paginated, totalCount,
@@ -142,13 +146,28 @@ export default function DomainsPage() {
     return () => { cancelled = true; };
   }, [filterTab]);
 
-  const { closeListingDetail } = useOpenListingDetailFromUrl({
+  useEffect(() => {
+    if (location.state?.openListDomainForm) {
+      setFilterTab('all');
+      setShowForm(true);
+      setEditTarget(null);
+      navigate('/domains', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
+
+  const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: domainRows,
     loading,
     setDetail: setDetailTarget,
     fetchById: async (id) => {
       const { data } = await domainAPI.get(id);
       return normalizeDomainRecord(data?.data ?? data);
+    },
+    listingType: 'domain',
+    user,
+    authLoading,
+    onAccessDenied: () => {
+      setGlobalNotice(t('listingDetailAccessDenied', 'This listing is not available to view yet.'));
     },
   });
 
@@ -289,10 +308,10 @@ export default function DomainsPage() {
                 <ListingCardShell key={d.id}>
                 <DomainListingCard
                   domain={d}
-                  isOwner={(d.listedBy?.id ?? d.listedByUserId) === user?.id}
+                  isOwner={isListingOwner(d, user, 'domain')}
                   likeState={getLike(d.id)}
                   onLike={() => toggleLike(d.id)}
-                  onView={() => setDetailTarget(d)}
+                  onView={() => openDetailIfAllowed(d)}
                   onEdit={() => { setEditTarget(d); setShowForm(false); }}
                   onBuy={() => setBuyTarget(d)}
                   onEnquire={() => setEnquireTarget(d)}
@@ -330,7 +349,7 @@ export default function DomainsPage() {
       {detailTarget && (
         <DomainDetailModal
           domain={detailTarget}
-          isOwner={(detailTarget.listedBy?.id ?? detailTarget.listedByUserId) === user?.id}
+          isOwner={isListingOwner(detailTarget, user, 'domain')}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshDomains(); }}

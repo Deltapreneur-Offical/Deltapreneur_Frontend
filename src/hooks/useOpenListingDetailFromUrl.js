@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { canViewListingDetail } from '../utils/listingVisibility';
 
 /**
- * Opens a listing detail modal when the URL contains ?id= (e.g. from homepage).
+ * Opens a listing detail modal when the URL contains ?id= or ?highlight= (e.g. from homepage).
  * Returns closeListingDetail — always use this instead of setDetail(null) so the URL clears.
  */
 export function useOpenListingDetailFromUrl({
@@ -10,32 +11,62 @@ export function useOpenListingDetailFromUrl({
   loading,
   setDetail,
   fetchById,
-  /** When false, ?id= in the URL will not open the detail modal (e.g. verification progress open). */
+  /** When false, URL detail params will not open the detail modal. */
   allowUrlDetail = true,
+  /** domain | venture | technology | software | community */
+  listingType,
+  user,
+  /** Wait for auth session before allowing/denying owner-only deep links. */
+  authLoading = false,
+  onAccessDenied,
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const fetchedIdRef = useRef(null);
-  const id = searchParams.get('id');
+  const id = searchParams.get('id') || searchParams.get('highlight');
 
-  const closeListingDetail = useCallback(() => {
-    setDetail(null);
-    if (searchParams.get('id')) {
-      const next = new URLSearchParams(searchParams);
-      next.delete('id');
+  const clearUrlListingParams = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('id');
+    next.delete('highlight');
+    if (next.toString() !== searchParams.toString()) {
       setSearchParams(next, { replace: true });
     }
     fetchedIdRef.current = null;
-  }, [searchParams, setSearchParams, setDetail]);
+  }, [searchParams, setSearchParams]);
+
+  const denyDetailAccess = useCallback(() => {
+    setDetail(null);
+    clearUrlListingParams();
+    onAccessDenied?.();
+  }, [setDetail, clearUrlListingParams, onAccessDenied]);
+
+  const openDetailIfAllowed = useCallback((entity) => {
+    if (!entity) {
+      denyDetailAccess();
+      return;
+    }
+    if (listingType && !canViewListingDetail(entity, user, listingType)) {
+      denyDetailAccess();
+      return;
+    }
+    setDetail(entity);
+  }, [listingType, user, setDetail, denyDetailAccess]);
+
+  const closeListingDetail = useCallback(() => {
+    setDetail(null);
+    clearUrlListingParams();
+  }, [setDetail, clearUrlListingParams]);
 
   useEffect(() => {
     if (!id || !allowUrlDetail) {
       if (!id) fetchedIdRef.current = null;
       return;
     }
+    if (authLoading) return;
 
     const match = items.find((item) => String(item.id) === String(id));
     if (match) {
-      setDetail(match);
+      openDetailIfAllowed(match);
       return;
     }
 
@@ -44,10 +75,21 @@ export function useOpenListingDetailFromUrl({
 
     fetchById(id)
       .then((entity) => {
-        if (entity) setDetail(entity);
+        openDetailIfAllowed(entity);
       })
-      .catch(() => {});
-  }, [items, loading, id, setDetail, fetchById, allowUrlDetail]);
+      .catch(() => {
+        denyDetailAccess();
+      });
+  }, [
+    items,
+    loading,
+    id,
+    fetchById,
+    allowUrlDetail,
+    openDetailIfAllowed,
+    denyDetailAccess,
+    authLoading,
+  ]);
 
-  return { closeListingDetail };
+  return { closeListingDetail, openDetailIfAllowed };
 }

@@ -152,14 +152,16 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const authButtons = !authLoading && !user ? (
+  const authButtons = !authLoading ? (
     <>
       <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
         {t('joinCoBrother')}
       </JoinCoBrotherGradientButton>
-      <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
-        {t('signIn')}
-      </button>
+      {!user && (
+        <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
+          {t('signIn')}
+        </button>
+      )}
     </>
   ) : null;
 
@@ -189,7 +191,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => toggleDesktopDropdown('domains')}
               >
                 <DropdownLink onClick={() => go('/domains')}>{t('exploreDomains')}</DropdownLink>
-                <DropdownLink onClick={() => go('/domains/dashboard')}>{t('listDomains')}</DropdownLink>
+                <DropdownLink onClick={() => go('/domains', { openListDomainForm: true })}>{t('listDomains')}</DropdownLink>
               </NavDropdown>
 
               <NavDropdown
@@ -290,7 +292,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'domains' ? null : 'domains'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/domains')}>{t('exploreDomains')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/domains/dashboard')}>{t('listDomains')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/domains', { openListDomainForm: true })}>{t('listDomains')}</button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -342,16 +344,18 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               {showBack && (
                 <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
               )}
-              {!authLoading && !user ? (
+              {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">
                   <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
                     {t('joinCoBrother')}
                   </JoinCoBrotherGradientButton>
-                  <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
-                    {t('signIn')}
-                  </button>
+                  {!user && (
+                    <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
+                      {t('signIn')}
+                    </button>
+                  )}
                 </div>
-              ) : null}
+              )}
             </div>
           </aside>
         </>,

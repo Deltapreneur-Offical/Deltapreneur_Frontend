@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
-import { extractDomainList } from '../../utils/domainApiAdapter';
+import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
+import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
@@ -177,15 +178,19 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       const fullDomain = `${name}.${ext}`;
       try {
         const { data } = await domainAPI.check(fullDomain, 'new');
+        const listing = data.listing ? normalizeDomainRecord(data.listing) : null;
+        const onPublicMarketplace = data.status === 'marketplace'
+          && listing
+          && isPublicMarketplaceListing(listing, 'domain');
         const idx = nextResults.findIndex((r) => r.domain === fullDomain);
         if (idx !== -1) {
           nextResults[idx] = {
             ...nextResults[idx],
-            status: data.status,
+            status: onPublicMarketplace ? 'marketplace' : (data.status === 'marketplace' ? 'taken' : data.status),
             price: data.price ?? null,
             priceCurrency: data.priceCurrency ?? null,
             minPeriodYears: data.minPeriodYears ?? 1,
-            listing: data.listing ?? null,
+            listing: onPublicMarketplace ? listing : null,
           };
         }
       } catch {
@@ -232,7 +237,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     try {
       const { data } = await domainAPI.search({ query: q, mode: 'premium' });
       if (requestIdRef.current !== currentRequestId) return;
-      setPremiumDomains(extractDomainList(data));
+      setPremiumDomains(filterPublicMarketplaceListings(extractDomainList(data), 'domain'));
     } catch {
       if (requestIdRef.current !== currentRequestId) return;
       setPremiumDomains([]);

@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
-import { pickHomepagePreviewListings } from '../../utils/homepageListings';
+import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
+import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -33,9 +34,15 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
+  const isMobile = useHomepageMobile();
+
   const previewVentures = useMemo(
-    () => pickHomepagePreviewListings(ventures, 'venture'),
-    [ventures],
+    () => pickHomepagePreviewListings(
+      ventures,
+      'venture',
+      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
+    ),
+    [ventures, isMobile],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewVentures);
@@ -49,8 +56,8 @@ export default function VenturesSection() {
   }
 
   return (
-    <section className="bg-white py-4 md:py-6">
-      <div className="w-full">
+    <section className="bg-white py-4 md:py-6 min-w-0 overflow-x-hidden">
+      <div className="w-full min-w-0">
         <HomeSectionHeader title={t('coVentures')} to="/ventures" />
         {previewVentures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noVentures')}</p>

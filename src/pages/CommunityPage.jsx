@@ -66,7 +66,7 @@ function apiErrorMessage(err, fallback) {
 export default function CommunityPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [profiles, setProfiles]             = useState([]);
@@ -85,6 +85,7 @@ export default function CommunityPage() {
 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [accessNotice, setAccessNotice] = useState('');
 
   const applyProfilesList = (list, { preferProfile } = {}) => {
     setProfiles(list);
@@ -172,13 +173,19 @@ export default function CommunityPage() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const { closeListingDetail } = useOpenListingDetailFromUrl({
+  const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: profiles,
     loading,
     setDetail: setDetailProfile,
     fetchById: async (id) => {
       const { data } = await communityAPI.getOne(id);
       return data?.data ?? data;
+    },
+    listingType: 'community',
+    user,
+    authLoading,
+    onAccessDenied: () => {
+      setAccessNotice(t('listingDetailAccessDenied', 'This listing is not available to view yet.'));
     },
   });
 
@@ -393,7 +400,7 @@ export default function CommunityPage() {
                 isMe={profileMatchesUser(p, user)}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
-                onView={() => setDetailProfile(p)}
+                onView={() => openDetailIfAllowed(p)}
                 onEdit={() => { setMyProfile(p); setShowForm(true); }}
               />
               </ListingCardShell>
@@ -672,6 +679,9 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 }
 
 // ─── Community Detail Modal (with auction link) ───────────────────────────────
+const MODAL_OUTLINE_BTN =
+  'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-900 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors';
+
 function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onViewAuction }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]     = useState(null);
@@ -679,6 +689,8 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
   const [auction, setAuction]   = useState(null);
   const p = detail || profile;
   const skills = p.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
+  const linkedInUrl = getLinkedInProfileUrl(p);
+  const whyHere = (p.whyImHere ?? p.why_im_here ?? '').trim();
 
   useEffect(() => {
     communityAPI.getOne(profile.id)
@@ -689,7 +701,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
     communityAuctionAPI.getByCommunity(profile.id)
       .then(({ data }) => setAuction(data?.auction ?? data))
       .catch(() => {});
-  }, [profile.id]);
+  }, [profile.id, profile]);
 
   const isAuctionLive = auction && (auction.status === 'ACTIVE' || auction.status === 'EXTENDED');
 
@@ -697,8 +709,14 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
-        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700" onClick={onClose}>✕</button>
+        <button
+          type="button"
+          className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700 leading-none"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ✕
+        </button>
 
         {loading ? (
           <div className="flex justify-center p-12">
@@ -706,86 +724,121 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-4 mb-6">
-              {p.imageUrl
-                ? <img src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-full object-cover border-2 border-indigo-200 flex-shrink-0" />
-                : <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-2xl font-bold text-indigo-600 flex-shrink-0">{p.name?.[0]?.toUpperCase() || '?'}</div>
-              }
-              <div>
-                <h2 className="font-display text-[1.75rem] font-semibold text-gray-900">{p.name || 'Anonymous'}</h2>
-                {p.role && (
-                  <div className="inline-block mt-1 px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded text-[0.7rem] text-indigo-600 uppercase tracking-wider">
+            <div className="flex items-start gap-4 mb-6 pr-8">
+              {p.imageUrl ? (
+                <img
+                  src={p.imageUrl}
+                  alt={p.name}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-2xl font-bold text-indigo-600 flex-shrink-0">
+                  {p.name?.[0]?.toUpperCase() || '?'}
+                </div>
+              )}
+              <div className="min-w-0 pt-1">
+                <h2 className="font-display text-[1.65rem] font-semibold text-gray-900 leading-tight m-0">
+                  {p.name || 'Anonymous'}
+                </h2>
+                {p.role ? (
+                  <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[0.65rem] font-bold uppercase tracking-wider">
                     {p.role.replace(/_/g, ' ')}
-                  </div>
-                )}
+                  </span>
+                ) : null}
               </div>
             </div>
 
-            {/* Auction banner */}
             {isAuctionLive && (
-              <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-0.5">🔨 Profile Auction Live</div>
-                  <div className="text-sm text-amber-800 font-semibold">{auction.auctionTitle}</div>
-                  <div className="text-xs text-amber-600 mt-1">
+              <div className="mb-6 p-4 bg-[#fdf8ee] border border-[#e8d4a8] rounded-xl flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="text-[0.65rem] font-bold text-[#a16207] uppercase tracking-wider mb-1">
+                    🔨 Profile Auction Live
+                  </div>
+                  <div className="text-[0.95rem] text-[#78350f] font-bold leading-snug">
+                    {auction.auctionTitle}
+                  </div>
+                  <div className="text-[0.78rem] text-[#92400e] mt-1">
                     {auction.currentHighestBid > 0
                       ? `Highest bid: ${formatPrice(auction.currentHighestBid)}`
                       : `Starting at ${formatPrice(auction.minBidPrice)}`}
                   </div>
                 </div>
-                <button className="btn-glow btn-glow-sm flex-shrink-0"
-                  onClick={() => { onClose(); onViewAuction(auction.id); }}>
+                <button
+                  type="button"
+                  className={`${MODAL_OUTLINE_BTN} flex-shrink-0 whitespace-nowrap`}
+                  onClick={() => { onClose(); onViewAuction(auction.id); }}
+                >
                   Bid / Meet →
                 </button>
               </div>
             )}
 
-            <div className="flex gap-2 flex-wrap mb-5">
-              {p.industry && <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">{p.industry.replace(/_/g, ' ')}</span>}
-              {p.location && <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">📍 {p.location}</span>}
+            <div className="flex gap-2 flex-wrap mb-6">
+              {p.industry ? (
+                <span className="px-2.5 py-1 rounded-md text-[0.68rem] font-bold uppercase tracking-wide bg-orange-50 text-orange-700 border border-orange-100">
+                  {p.industry.replace(/_/g, ' ')}
+                </span>
+              ) : null}
+              {p.location ? (
+                <span className="px-2.5 py-1 rounded-md text-[0.68rem] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                  📍 {p.location}
+                </span>
+              ) : null}
             </div>
 
-            {skills.length > 0 && (
-              <div className="mb-5">
-                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</div>
+            <div className="mb-5">
+              <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</div>
+              {skills.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
-                  {skills.map(s => <span key={s} className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">{s}</span>)}
+                  {skills.map(s => (
+                    <span key={s} className="px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs text-gray-700 lowercase">
+                      {s}
+                    </span>
+                  ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <span className="text-sm text-gray-500">NA</span>
+              )}
+            </div>
 
-            {getLinkedInProfileUrl(p) && (
-              <div className="mb-5">
-                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">LinkedIn</div>
-                <a href={getLinkedInProfileUrl(p)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-[#0077b5] no-underline hover:text-[#005885]">
-                  <LinkedInIcon size={14} /> View LinkedIn profile ↗
+            <div className="mb-5">
+              <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">LinkedIn</div>
+              {linkedInUrl ? (
+                <a
+                  href={linkedInUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-[#0077b5] no-underline hover:text-[#005885] font-medium"
+                >
+                  <LinkedInIcon size={15} />
+                  View Profile ↗
                 </a>
-              </div>
-            )}
+              ) : (
+                <span className="text-sm text-gray-500">NA</span>
+              )}
+            </div>
 
-            {p.whyImHere && (
-              <div className="mb-5">
-                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Why I'm Here</div>
-                <p className="text-gray-600 leading-relaxed text-sm m-0">{p.whyImHere}</p>
-              </div>
-            )}
+            <div className="mb-2">
+              <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Why I&apos;m Here</div>
+              <p className="text-gray-900 leading-relaxed text-sm m-0">
+                {whyHere || 'NA'}
+              </p>
+            </div>
 
-            <div className="flex gap-3 mt-6 flex-wrap">
-              {isMe && (
+            <div className="flex gap-3 mt-8 flex-wrap">
+              {isMe ? (
                 <>
-                  <button type="button" className="btn-glow inline-flex items-center justify-center" onClick={onEdit}>
-                    <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
+                  <button type="button" className={MODAL_OUTLINE_BTN} onClick={onEdit}>
+                    <EditActionLabel iconSize={15}>Edit Profile</EditActionLabel>
                   </button>
-                  <button
-                    type="button"
-                    className="btn-glow border-red-300 text-red-600 hover:bg-red-50"
-                    onClick={onDelete}
-                  >
+                  <button type="button" className={MODAL_OUTLINE_BTN} onClick={onDelete}>
                     Delete Profile
                   </button>
                 </>
-              )}
-              <button className="btn-glow" onClick={onClose}>Close</button>
+              ) : null}
+              <button type="button" className={MODAL_OUTLINE_BTN} onClick={onClose}>
+                Close
+              </button>
             </div>
           </>
         )}

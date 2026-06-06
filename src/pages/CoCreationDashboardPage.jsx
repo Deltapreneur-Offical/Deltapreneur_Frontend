@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Boxes, IndianRupee, ShoppingCart, CreditCard, Clock3 } from 'lucide-react';
 import { technologyAPI, softwareAuctionAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import { formatAuctionDate } from '../utils/auctionDate';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
+import VerificationStatusBadge from '../components/listings/VerificationStatusBadge';
+import { VerificationProgressModal } from '../components/listings/TechnologyVerificationProgress';
 import {
   canRequestTechnologyAuction,
   isTechnologyAuctionLive,
@@ -24,6 +27,7 @@ export default function CoCreationDashboardPage() {
   const [githubModal, setGithubModal]   = useState(null); // { link, softwareName }
   const [auctionTarget, setAuctionTarget] = useState(null);
   const [auctionStatuses, setAuctionStatuses] = useState({});
+  const [verificationTarget, setVerificationTarget] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -84,6 +88,7 @@ export default function CoCreationDashboardPage() {
 
   // Stats
   const completedPurchases = purchases.filter(p => p.paymentStatus === 'COMPLETED');
+  const totalPurchases = listings.reduce((sum, s) => sum + (s.purchaseCount || 0), 0);
   const totalRevenue = listings.reduce((sum, s) => sum + (s.price * (s.purchaseCount || 0)), 0);
   const totalSpent   = completedPurchases.reduce((sum, p) => sum + (p.software?.price || 0), 0);
   const pendingConfirm = completedPurchases.filter(p => p.completionStatus === 'PENDING').length;
@@ -101,9 +106,9 @@ export default function CoCreationDashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <StatCard label="Total Listings" value={listings.length} icon={<Boxes size={18} />} />
-          <StatCard label="Total Sales" value={listings.reduce((s, x) => s + (x.purchaseCount || 0), 0)}
+          <StatCard label="Total Purchases" value={totalPurchases}
                     icon={<IndianRupee size={18} />} color="#047857" />
           <StatCard label="Revenue" value={formatPrice(totalRevenue)}
                     icon={<IndianRupee size={18} />} color="#047857" />
@@ -151,6 +156,7 @@ export default function CoCreationDashboardPage() {
                   key={s.id}
                   item={s}
                   auctionStatus={auctionStatuses[s.id]}
+                  onShowVerification={() => setVerificationTarget(s)}
                   onAnalytics={() => navigate(`/technology/${s.id}/analytics`)}
                   onAuction={() => setAuctionTarget(s)}
                   onViewAuction={(auctionId) => navigate(`/technology/auction/${auctionId}`)}
@@ -190,6 +196,13 @@ export default function CoCreationDashboardPage() {
         />
       )}
 
+      <VerificationProgressModal
+        open={Boolean(verificationTarget)}
+        onClose={() => setVerificationTarget(null)}
+        verified={Boolean(verificationTarget?.verified)}
+        itemName={verificationTarget?.name}
+      />
+
       {/* GitHub link reveal modal */}
       {githubModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setGithubModal(null)}>
@@ -224,20 +237,25 @@ export default function CoCreationDashboardPage() {
 }
 
 // ─── Listing Row (seller view) ────────────────────────────────────────────────
-function ListingRow({ item, auctionStatus, onAnalytics, onAuction, onViewAuction }) {
+function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAuction, onViewAuction }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const sales = item.purchaseCount || 0;
+  const verified = Boolean(item.verified);
 
   return (
     <div className="bg-white border border-gray-200 rounded-[10px] overflow-hidden">
-      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-           onClick={() => setExpanded(v => !v)}>
+      <div
+        className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+        onClick={() => setExpanded((v) => !v)}
+      >
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-gray-900 text-[0.95rem]">
-            {item.name}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-gray-900 text-[0.95rem]">{item.name}</span>
+            <VerificationStatusBadge item={item} type="technology" />
             {item.official && (
-              <span className="ml-2 text-[0.68rem] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
+              <span className="text-[0.68rem] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
                 ✦ Official
               </span>
             )}
@@ -259,7 +277,7 @@ function ListingRow({ item, auctionStatus, onAnalytics, onAuction, onViewAuction
               {sales}
             </div>
             <div className="text-[0.68rem] text-gray-400">
-              {sales === 1 ? 'buyer' : 'buyers'}
+              {sales === 1 ? 'sale' : 'sales'}
             </div>
           </div>
           <div className="text-right">
@@ -276,6 +294,15 @@ function ListingRow({ item, auctionStatus, onAnalytics, onAuction, onViewAuction
         <div className="border-t border-gray-100 px-5 py-3.5 flex gap-3 flex-wrap items-center">
           <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50" onClick={onAnalytics}>
             📊 Analytics
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 transition-colors hover:bg-indigo-100"
+            onClick={onShowVerification}
+          >
+            {verified
+              ? t('techVerifyTrackerTitleDone', 'Verification complete — view steps')
+              : t('techVerifyTrackerTitle', 'View verification progress')}
           </button>
           {canRequestTechnologyAuction(item, auctionStatus) && (
             <button

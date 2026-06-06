@@ -17,14 +17,15 @@ export function hasAuthSession() {
 
 /** Default route after a successful login when no return URL was saved. */
 export function getPostLoginDestination(user) {
-  const role = (user?.role ?? '').toString().toUpperCase();
+  const role = (user?.role ?? '').toString().toUpperCase().replace(/^ROLE_/, '');
   if (role === 'COBROTHER') return '/cobrother';
-  return '/dashboard';
+  if (role === 'ADMIN' || role === 'ADMINISTRATOR' || role === 'SUPER_ADMIN') return '/admin';
+  return '/';
 }
 
 /**
- * Prefer a saved return path; otherwise use role-based dashboard default.
- * Treats "/" and "/login" as "no saved path" so users land on the app, not home.
+ * Prefer a saved return path; otherwise use role-based default (home for most users).
+ * Treats "/login" as unset; "/" means the marketplace home page.
  */
 export function resolvePostLoginPath(storedPath, user) {
   const normalized = typeof storedPath === 'string' ? storedPath.trim() : '';
@@ -32,4 +33,87 @@ export function resolvePostLoginPath(storedPath, user) {
     return normalized;
   }
   return getPostLoginDestination(user);
+}
+
+/** Normalize react-router `from` (string path or location-like object). */
+export function normalizeReturnLocation(from) {
+  if (!from) return null;
+  if (typeof from === 'string') {
+    const trimmed = from.trim();
+    return trimmed ? { pathname: trimmed } : null;
+  }
+  if (typeof from === 'object' && from.pathname) {
+    return {
+      pathname: from.pathname,
+      search: from.search || '',
+      hash: from.hash || '',
+      state: from.state,
+    };
+  }
+  return null;
+}
+
+/**
+ * Post-login navigation target, preserving location.state (e.g. openListDomainForm).
+ * @returns {{ pathname: string, state?: object }}
+ */
+export function resolvePostLoginNavigation(from, user) {
+  const returnLoc = normalizeReturnLocation(from);
+  const pathname = resolvePostLoginPath(returnLoc?.pathname, user);
+  const usedSavedPath = Boolean(
+    returnLoc?.pathname
+    && resolvePostLoginPath(returnLoc.pathname, user) === pathname,
+  );
+  const state = usedSavedPath && returnLoc?.state ? returnLoc.state : undefined;
+  return state ? { pathname, state } : { pathname };
+}
+
+/**
+ * Where to send the user right after auth — complete-profile first when needed,
+ * carrying the eventual destination (and its state) in location.state.from.
+ * @returns {{ pathname: string, state?: object }}
+ */
+export function resolveAfterAuthNavigation(from, user) {
+  const target = resolvePostLoginNavigation(from, user);
+  if (user && !user.profileComplete) {
+    return { pathname: '/complete-profile', state: { from: target } };
+  }
+  return target;
+}
+
+const RETURN_LOCATION_STORAGE_KEY = 'returnLocationAfterLogin';
+
+/** Persist full return target before OAuth leaves the SPA (pathname, search, state). */
+export function saveReturnLocationBeforeOAuth(from) {
+  if (typeof window === 'undefined') return;
+  const returnLoc = normalizeReturnLocation(from);
+  if (!returnLoc?.pathname) return;
+  try {
+    localStorage.setItem(RETURN_LOCATION_STORAGE_KEY, JSON.stringify(returnLoc));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+/** Read and clear saved OAuth return target. */
+export function consumeReturnLocationBeforeOAuth() {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(RETURN_LOCATION_STORAGE_KEY);
+  if (raw) localStorage.removeItem(RETURN_LOCATION_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return normalizeReturnLocation(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * OAuth callback destination — same rules as password login
+ * (including complete-profile first and nested location.state).
+ */
+export function resolveOAuthCallbackNavigation(user, redirectPath) {
+  const savedLocation = consumeReturnLocationBeforeOAuth();
+  const from = savedLocation || redirectPath || null;
+  return resolveAfterAuthNavigation(from, user);
 }

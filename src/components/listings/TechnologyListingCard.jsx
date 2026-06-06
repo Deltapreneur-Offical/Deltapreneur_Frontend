@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye } from 'lucide-react';
+import { Eye, Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
+import { APP_BASE_URL } from '../../config/urls';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
+import VerificationStatusBadge from './VerificationStatusBadge';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
   canRequestTechnologyAuction,
@@ -60,6 +62,8 @@ export default function TechnologyListingCard({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [imgFailed, setImgFailed] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = useRef(null);
   const owner = Boolean(user?.id) && (isOwner === true || isTechnologyListingOwner(item, user));
   const isAuction = item.purchaseType === 'AUCTION';
   const showVerificationNotice =
@@ -69,16 +73,39 @@ export default function TechnologyListingCard({
     ? 'from-purple-600 via-fuchsia-500 to-pink-500'
     : 'from-indigo-600 via-blue-500 to-cyan-400';
 
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const shareUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/technology?id=${item.id}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/technology?id=${item.id}`;
+  const shareText = t('listingCardShareTechnology', {
+    name: item.name || t('listingCardTechnology'),
+    defaultValue: `Check out this technology: ${item.name || 'Technology'} - Listed on CoBrother!`,
+  });
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
+  const handleShare = (platform) => {
+    window.open(platform, '_blank', 'width=600,height=400');
+    setShareOpen(false);
+  };
+
+  const stop = (e) => e.stopPropagation();
+
   const headerBadges = (
     <>
       <ListingCardBadge variant={isAuction ? 'auction' : 'glass'}>
         {isAuction ? '🔨 Auction' : '💻 Regular'}
       </ListingCardBadge>
-      {item.verified ? (
-        <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
-      ) : (
-        <ListingCardBadge variant="pending">{t('listingCardVerificationPending')}</ListingCardBadge>
-      )}
+      <VerificationStatusBadge item={item} type="technology" />
       {owner && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
       {item.official && (
         <ListingCardBadge variant="glass">✦ Official</ListingCardBadge>
@@ -123,31 +150,67 @@ export default function TechnologyListingCard({
     </div>
   );
 
-  const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors';
-  const btnEdit = `${btnPill} bg-white border border-gray-300 text-gray-800 font-semibold hover:bg-gray-50`;
-  const btnRemove = `${btnPill} bg-red-50 border border-red-300 text-red-600 font-bold hover:bg-red-100`;
-  const btnBuy = `${btnPill} bg-violet-600 text-white font-bold border-0 hover:bg-violet-700`;
-  const btnAuction = `${btnPill} bg-amber-50 text-amber-800 border border-amber-200 font-semibold hover:bg-amber-100`;
-  const btnLive = `${btnPill} bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hover:bg-emerald-100`;
+  const btnBase = 'flex-1 min-w-0 py-1.5 text-[10px] font-bold rounded transition-colors inline-flex items-center justify-center gap-1';
+  const btnEdit = `${btnBase} bg-white border border-gray-300 text-gray-800 hover:bg-gray-50`;
+  const btnRemove = `${btnBase} bg-red-50 border border-red-200 text-red-600 hover:bg-red-100`;
+  const btnBuy = `${btnBase} bg-violet-600 text-white border-0 hover:bg-violet-700`;
+  const btnAuction = `${btnBase} bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100`;
+  const btnLive = `${btnBase} bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100`;
+
+  const shareButton = (
+    <div className="relative shrink-0" ref={shareRef}>
+      <button
+        type="button"
+        className="py-1.5 px-2 bg-gray-100 text-gray-600 text-[10px] font-bold rounded hover:bg-gray-200"
+        onClick={(e) => { stop(e); setShareOpen(!shareOpen); }}
+        title={t('listingCardShare')}
+      >
+        <Share2 size={12} />
+      </button>
+      {shareOpen && (
+        <div
+          className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+          onClick={stop}
+        >
+          <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+            <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+          </div>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            onClick={() => handleShare(linkedinShare)}
+          >
+            {t('listingCardLinkedIn')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+            onClick={() => handleShare(facebookShare)}
+          >
+            {t('listingCardFacebook')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
+            onClick={() => handleShare(whatsappShare)}
+          >
+            {t('listingCardWhatsApp')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   const actionButtons = (
-    <div className="flex gap-2 flex-wrap items-stretch" onClick={(e) => e.stopPropagation()} role="presentation">
+    <div className="flex gap-2 flex-wrap items-stretch" onClick={stop} role="presentation">
       {owner ? (
         <>
           {onEdit && (
-            <button
-              type="button"
-              className={btnEdit}
-              onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            >
+            <button type="button" className={btnEdit} onClick={(e) => { stop(e); onEdit(); }}>
               {t('edit')}
             </button>
           )}
-          <button
-            type="button"
-            className={btnRemove}
-            onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-          >
+          <button type="button" className={btnRemove} onClick={(e) => { stop(e); onDelete?.(); }}>
             {t('remove')}
           </button>
           {canRequestTechnologyAuction(item, auctionStatus) && onAuction && (
@@ -156,7 +219,7 @@ export default function TechnologyListingCard({
             </button>
           )}
           {isTechnologyAuctionPending(item, auctionStatus) && (
-            <span className={`${btnPill} text-center text-amber-700 bg-amber-50 border border-amber-200 font-semibold`}>
+            <span className={`${btnBase} text-center text-amber-700 bg-amber-50 border border-amber-200`}>
               {t('listingCardAuctionPending')}
             </span>
           )}
@@ -166,64 +229,63 @@ export default function TechnologyListingCard({
               type="button"
               className={btnLive}
               onClick={(e) => {
-                e.stopPropagation();
+                stop(e);
                 navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
               }}
             >
               {isTechnologyAuctionLive(item, auctionStatus) ? t('listingCardViewLiveAuction') : t('listingCardViewAuction')}
             </button>
           )}
+          {shareButton}
         </>
       ) : user?.role === 'ADMIN' ? (
         <>
-          <button
-            type="button"
-            className={btnRemove}
-            onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-          >
+          <button type="button" className={btnRemove} onClick={(e) => { stop(e); onDelete?.(); }}>
             {t('remove')}
           </button>
           {isDirectPurchase(item, auctionStatus) && (
-            <button
-              type="button"
-              className={btnBuy}
-              onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
-            >
+            <button type="button" className={btnBuy} onClick={(e) => { stop(e); onBuy?.(); }}>
               {t('listingCardBuyNowArrow')}
             </button>
           )}
+          {shareButton}
         </>
       ) : isTechnologyAuctionLive(item, auctionStatus) ? (
-        isAuctionBlockedByVerification(item) ? (
-          <span className={`${btnPill} text-center text-amber-800 bg-amber-50 border border-amber-200 font-semibold`}>
-            {t('listingCardVerificationPending')}
-          </span>
-        ) : (
-          <button
-            type="button"
-            className={btnBuy}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
-            }}
-          >
-            {t('listingCardPlaceBid')}
-          </button>
-        )
+        <>
+          {isAuctionBlockedByVerification(item) ? (
+            <span className={`${btnBase} text-center text-amber-800 bg-amber-50 border border-amber-200`}>
+              {t('listingCardVerificationPending')}
+            </span>
+          ) : (
+            <button
+              type="button"
+              className={btnBuy}
+              onClick={(e) => {
+                stop(e);
+                navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
+              }}
+            >
+              {t('listingCardPlaceBid')}
+            </button>
+          )}
+          {shareButton}
+        </>
       ) : isDirectPurchase(item, auctionStatus) ? (
-        <button
-          type="button"
-          className={btnBuy}
-          onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
-        >
-          {t('listingCardBuyNowArrow')}
-        </button>
+        <>
+          <button type="button" className={btnBuy} onClick={(e) => { stop(e); onBuy?.(); }}>
+            {t('listingCardBuyNowArrow')}
+          </button>
+          {shareButton}
+        </>
       ) : isPurchaseBlockedByVerification(item) ? (
-        <span className={`${btnPill} text-center text-amber-800 bg-amber-50 border border-amber-200 font-semibold`}>
+        <span className={`${btnBase} text-center text-amber-800 bg-amber-50 border border-amber-200`}>
           {t('listingCardVerificationPending')}
         </span>
       ) : (
-        <span className={`${btnPill} text-center text-gray-400 italic`}>{t('listingCardSold')}</span>
+        <>
+          <span className={`${btnBase} text-center text-gray-400 italic font-medium`}>{t('listingCardSold')}</span>
+          {shareButton}
+        </>
       )}
     </div>
   );
@@ -261,7 +323,7 @@ export default function TechnologyListingCard({
       onClick={onView}
       footer={(
         <>
-          <div onClick={(e) => e.stopPropagation()} role="presentation">
+          <div onClick={stop} role="presentation">
             {statsRow}
           </div>
           {actionButtons}

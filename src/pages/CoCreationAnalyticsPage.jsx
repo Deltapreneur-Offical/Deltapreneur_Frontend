@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { technologyAPI } from '../api/services';
+import { useAuth } from '../context/AuthContext';
+import { isListingOwner } from '../utils/listingVisibility';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
 
@@ -23,17 +25,34 @@ export default function CoCreationAnalyticsPage() {
   const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState('');
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
-    technologyAPI.getAnalytics(id)
-      .then(({ data: res }) => setData(normalizeTechnologyAnalytics(res)))
+    if (authLoading || !id) return;
+    setLoading(true);
+    setError('');
+
+    technologyAPI.get(id)
+      .then(({ data: softwareRes }) => {
+        const software = softwareRes?.data ?? softwareRes;
+        if (!isListingOwner(software, user, 'technology')) {
+          setError(t('listingDetailAccessDenied', 'This listing is not available to view yet.'));
+          setData(null);
+          return null;
+        }
+        return technologyAPI.getAnalytics(id);
+      })
+      .then((analyticsRes) => {
+        if (!analyticsRes) return;
+        setData(normalizeTechnologyAnalytics(analyticsRes.data));
+      })
       .catch(() => setError(t('cocreationAnalyticsLoadFailed')))
       .finally(() => setLoading(false));
-  }, [id, t]);
+  }, [id, user, authLoading, t]);
 
   if (loading) return <AppLayout><div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div></AppLayout>;
   if (error)   return <AppLayout><div className="text-center py-20"><p className="text-red-600">{error}</p></div></AppLayout>;

@@ -8,9 +8,9 @@ function VerificationStepperOnly({ verified }) {
   const activeStep = verified ? 3 : 2;
 
   const steps = [
-    { label: t('techVerifyStepListed'), hint: t('techVerifyStepListedHint') },
-    { label: t('techVerifyStepReview'), hint: t('techVerifyStepReviewHint') },
-    { label: t('techVerifyStepVerified'), hint: t('techVerifyStepVerifiedHint') },
+    { label: t('techVerifyStepListed', 'Listed'), hint: t('techVerifyStepListedHint', 'Your technology is on CoBrother') },
+    { label: t('techVerifyStepReview', 'Under review'), hint: t('techVerifyStepReviewHint', 'Waiting period: 2–3 business days') },
+    { label: t('techVerifyStepVerified', 'Verified'), hint: t('techVerifyStepVerifiedHint', 'Available to buyers') },
   ];
 
   const stateFor = (stepNum) => {
@@ -134,7 +134,7 @@ export function VerificationProgressModal({ open, onClose, verified, itemName })
           id="tech-verify-modal-title"
           className="font-display text-xl sm:text-2xl font-semibold text-gray-900 text-center pr-8 m-0"
         >
-          {t('techVerifyModalTitle')}
+          {t('techVerifyModalTitle', 'Verification progress')}
         </h2>
         {itemName ? (
           <p className="text-sm text-gray-500 text-center mt-1 mb-0">{itemName}</p>

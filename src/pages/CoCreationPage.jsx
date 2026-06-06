@@ -28,6 +28,7 @@ import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUr
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS } from '../constants/listingCategories';
+import TechnologyDemoVideoSection, { isValidDemoVideoUrl } from '../components/technology/TechnologyDemoVideoSection';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import {
   canRequestTechnologyAuction,
@@ -39,11 +40,12 @@ import {
 import ConfettiBurst from '../components/common/ConfettiBurst';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import { fetchAllListPages } from '../utils/listPagination';
+import { resolveMarketplaceListingRows } from '../utils/listingVisibility';
 import { asArray } from '../utils/asArray';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
-  const { user }  = useAuth();
+  const { user, loading: authLoading }  = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
   const navigate  = useNavigate();
   const location = useLocation();
@@ -58,6 +60,7 @@ export default function CoCreationPage() {
   const [editTarget, setEditTarget]         = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
+  const [accessNotice, setAccessNotice]     = useState('');
 
   const [auctionTarget, setAuctionTarget]     = useState(null);  // software to auction
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
@@ -73,9 +76,11 @@ export default function CoCreationPage() {
     clearAll, activeFilterCount,
     page, totalPages, setPage,
   } = useFilterSort(
-    filterTab === 'mine'
-      ? allSoftware.filter(s => isTechnologyListingOwner(s, user))
-      : allSoftware,
+    resolveMarketplaceListingRows(allSoftware, {
+      tab: filterTab,
+      user,
+      type: 'technology',
+    }),
     {
       searchFields:  ['name', 'description', 'techStack'],
       priceField:    'price',
@@ -119,13 +124,19 @@ export default function CoCreationPage() {
     return () => { cancelled = true; };
   }, [filterTab]);
 
-  const { closeListingDetail } = useOpenListingDetailFromUrl({
+  const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: allSoftware,
     loading,
     setDetail: setDetailTarget,
     fetchById: async (id) => {
       const { data } = await technologyAPI.get(id);
       return data?.data ?? data;
+    },
+    listingType: 'technology',
+    user,
+    authLoading,
+    onAccessDenied: () => {
+      setAccessNotice(t('listingDetailAccessDenied', 'This listing is not available to view yet.'));
     },
   });
 
@@ -234,6 +245,12 @@ export default function CoCreationPage() {
             onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
 
+        {accessNotice && (
+          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            {accessNotice}
+          </div>
+        )}
+
         <FilterBar
           search={search}           onSearch={handleSearch}
           category={category}       onCategory={handleCategory}
@@ -286,7 +303,7 @@ export default function CoCreationPage() {
           isOwner={filterTab === 'mine' || isTechnologyListingOwner(s, user)}
           likeState={getLike(s.id)}
           onLike={() => toggleLike(s.id)}
-          onView={() => setDetailTarget(s)}
+          onView={() => openDetailIfAllowed(s)}
           onBuy={() => setBuyTarget(s)}
           onEdit={user ? () => { setEditTarget(s); setShowForm(false); setDetailTarget(null); } : undefined}
           onDelete={() => setDeleteTarget(s.id)}
@@ -421,6 +438,18 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true); setError('');
+
+    // Validate demo video URL
+    if (!form.videoLink?.trim()) {
+      setError('Demo video link is required.');
+      setLoading(false);
+      return;
+    }
+    if (!isValidDemoVideoUrl(form.videoLink)) {
+      setError('Please enter a valid demo video URL (YouTube or Loom).');
+      setLoading(false);
+      return;
+    }
 
     // Validate GitHub URL
     if (!isValidGithubUrl(form.githubLink)) {
@@ -565,17 +594,17 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Demo Video Link</label>
-            <input className={inputCls} value={form.videoLink} onChange={e => set('videoLink', e.target.value)}
-              placeholder="YouTube / Loom URL" />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Live Demo Link</label>
-            <input className={inputCls} value={form.liveDemoLink} onChange={e => set('liveDemoLink', e.target.value)}
-              placeholder="https://yourdemo.com" />
-          </div>
+        <TechnologyDemoVideoSection
+          value={form.videoLink}
+          onChange={(v) => set('videoLink', v)}
+          inputClassName={inputCls}
+          labelClassName={labelCls}
+        />
+
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>Live Demo Link</label>
+          <input className={inputCls} value={form.liveDemoLink} onChange={e => set('liveDemoLink', e.target.value)}
+            placeholder="https://yourdemo.com" />
         </div>
 
         <div className="flex flex-col gap-1.5">

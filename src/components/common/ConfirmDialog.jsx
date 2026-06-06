@@ -27,6 +27,10 @@ export default function ConfirmDialog({
     return () => document.removeEventListener('keydown', handler);
   }, [open, onCancel]);
 
+  const { t } = useTranslation();
+  const resolvedConfirm = confirmLabel ?? t('confirm', 'Confirm');
+  const resolvedCancel = cancelLabel ?? t('cancel', 'Cancel');
+
   if (!open) return null;
 
   return (

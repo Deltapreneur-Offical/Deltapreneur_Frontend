@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { resolvePostLoginPath } from '../utils/authSession';
+import { resolveOAuthCallbackNavigation } from '../utils/authSession';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
 
 /**
@@ -41,7 +41,6 @@ export default function OAuthCallbackPage() {
 
     const token = params.get('token');
     const refreshToken = params.get('refreshToken');
-    const profileCompleteParam = params.get('profileComplete') === 'true';
     const cookieSession = params.get('success') === '1';
     const error = params.get('error');
 
@@ -70,11 +69,8 @@ export default function OAuthCallbackPage() {
           navigate('/login?error=oauth_profile', { replace: true });
           return;
         }
-        const isComplete = fetchedUser.profileComplete ?? profileCompleteParam;
         const redirectPath = consumeRedirectAfterLogin();
-        const destination = isComplete
-          ? resolvePostLoginPath(redirectPath, fetchedUser)
-          : '/complete-profile';
+        const destination = resolveOAuthCallbackNavigation(fetchedUser, redirectPath);
 
         flushSync(() => {
           if (token && refreshToken) {
@@ -85,7 +81,10 @@ export default function OAuthCallbackPage() {
         });
 
         setTimeout(() => {
-          navigate(destination, { replace: true });
+          navigate(destination.pathname, {
+            replace: true,
+            state: destination.state,
+          });
         }, 0);
       })
       .catch((err) => {

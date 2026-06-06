@@ -1,4 +1,5 @@
 import { asArray } from './asArray';
+import { isPublicMarketplaceListing } from './listingVisibility';
 
 /** Whether a listing is visible on marketplace browse pages and can be homepage-featured. */
 export function isActiveListing(item, type = 'domain') {
@@ -92,7 +93,7 @@ export function isHomepageFeaturedListing(item, type = 'domain') {
 }
 
 export function filterHomepageListings(items, type = 'domain') {
-  return asArray(items).filter((item) => isActiveListing(item, type));
+  return asArray(items).filter((item) => isPublicMarketplaceListing(item, type));
 }
 
 export function filterFeaturedListings(items, type = 'domain') {

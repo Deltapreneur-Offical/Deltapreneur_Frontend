@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { resolvePostLoginNavigation } from '../../utils/authSession';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +11,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
   const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ firstname: '', lastname: '', phoneNumber: '', address: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -55,8 +57,12 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
         address: form.address.trim() || undefined,
       };
       await authAPI.completeProfile(payload);
-      await refreshUser();
-      navigate('/dashboard');
+      const updatedUser = await refreshUser();
+      const pending = location.state?.from;
+      const destination = pending?.pathname
+        ? resolvePostLoginNavigation(pending, updatedUser)
+        : { pathname: '/' };
+      navigate(destination.pathname, { replace: true, state: destination.state });
     } catch (err) {
       setError(readApiError(err, t('profileCompletionFailed')));
     } finally {
@@ -143,7 +149,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
           <div className="flex gap-3 items-stretch">
             <button
               type="button"
-              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-[10px] border border-gray-300 hover:bg-gray-200 transition-colors"
+              className="btn-glow btn-glow-sm flex-1 min-w-0 min-h-[2.75rem] bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
               onClick={() => navigate(forceOpen ? '/dashboard' : -1)}
               disabled={loading}
             >

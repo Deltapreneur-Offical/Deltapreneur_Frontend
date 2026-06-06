@@ -5,6 +5,13 @@ import { VENTURE_EQUITY_TYPE_LABELS } from '../../constants/ventureLabels';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from '../listings/ListingBrowseFooter';
 
+function isListingVerified(type, listing) {
+  if (type === 'domain') return Boolean(listing?.verified);
+  if (type === 'technology') return Boolean(listing?.verified);
+  if (type === 'venture') return Boolean(listing?.verified || listing?.gstinVerified);
+  return true;
+}
+
 function pickCardMeta(type, listing) {
   if (type === 'domain') {
     const display = resolveDomainDisplay(listing);
@@ -19,7 +26,7 @@ function pickCardMeta(type, listing) {
       tagPrimary: isAuction ? 'AUCTION' : 'DIRECT',
       tagSecondary: listing.verified ? 'VERIFIED' : 'PENDING',
       amount,
-      amountCaption: isAuction ? 'current bid' : 'asking price',
+      amountCaption: isAuction ? 'current bid' : 'price',
       description: listing.description || 'Domain listing on CoBrother marketplace.',
       image: listing.logo || null,
       initial: (display.name || '?').slice(0, 1).toUpperCase(),
@@ -37,7 +44,7 @@ function pickCardMeta(type, listing) {
       tagPrimary: isAuction ? 'AUCTION' : 'REGULAR',
       tagSecondary: listing.verified ? 'VERIFIED' : 'PENDING',
       amount: Number(listing.price || 0),
-      amountCaption: 'deal value',
+      amountCaption: isAuction ? 'current bid' : 'price',
       description: listing.description || 'Technology listing on CoBrother marketplace.',
       image: listing.imageUrl || null,
       initial: (listing.name || '?').slice(0, 1).toUpperCase(),
@@ -61,7 +68,7 @@ function pickCardMeta(type, listing) {
     tagPrimary: isAuction ? 'AUCTION' : 'REGULAR',
     tagSecondary: listing.verified || listing.gstinVerified ? 'VERIFIED' : 'PENDING',
     amount,
-    amountCaption: isAuction ? 'current bid' : 'deal value',
+    amountCaption: isAuction ? 'current bid' : 'price',
     description: brand.description || 'Venture listing on CoBrother marketplace.',
     image: brand.ventureImageUrl || null,
     initial: (brand.brandName || '?').slice(0, 1).toUpperCase(),
@@ -80,10 +87,11 @@ export default function HomeUnifiedListingCard({
 }) {
   const { formatPrice } = useCurrency();
   const meta = useMemo(() => pickCardMeta(type, listing), [type, listing]);
+  const showPrice = isListingVerified(type, listing);
 
   return (
-    <article className="listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-[355px]">
-      <div className={`relative bg-gradient-to-r ${meta.gradient} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
+    <article className="listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-[355px] max-h-[355px]">
+      <div className={`relative bg-gradient-to-r ${meta.gradient} px-4 pt-3.5 pb-3.5 min-h-[90px] flex-shrink-0 flex items-end`}>
         <div className="relative z-10 flex items-end justify-between w-full">
           <div className="flex items-center gap-2">
             {meta.image ? (
@@ -113,8 +121,8 @@ export default function HomeUnifiedListingCard({
         </div>
       </div>
 
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
-        <div className="flex flex-col gap-1 mb-1">
+      <div className="relative px-4 pb-3 pt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
           <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words line-clamp-1">
             {meta.title}
           </h3>
@@ -125,22 +133,24 @@ export default function HomeUnifiedListingCard({
           </div>
         </div>
 
-        <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3 min-h-[30px]">
+        <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[28px] flex-shrink-0">
           {meta.description}
         </p>
 
-        <div className="rounded-lg border border-[rgba(var(--cobrother-brand-green-rgb),0.22)] bg-[var(--cobrother-brand-green-soft)] px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
-          <div className="flex items-baseline gap-1">
-            <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
-              {formatPrice(meta.amount)}
-            </span>
-            <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">
-              {meta.amountCaption}
-            </span>
+        {showPrice ? (
+          <div className="rounded-lg border border-[rgba(var(--cobrother-brand-green-rgb),0.22)] bg-[var(--cobrother-brand-green-soft)] px-2 md:px-3 py-1.5 md:py-2 mb-2 flex-shrink-0">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
+                {formatPrice(meta.amount)}
+              </span>
+              <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">
+                {meta.amountCaption}
+              </span>
+            </div>
           </div>
-        </div>
+        ) : null}
 
-        <ListingBrowseFooter onViewDetails={onView} className="mt-auto border-t border-gray-100">
+        <ListingBrowseFooter onViewDetails={onView} className="mt-auto flex-shrink-0 border-t border-gray-100 pt-2">
           <span>👁 {listing.views || 0}</span>
           {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
         </ListingBrowseFooter>

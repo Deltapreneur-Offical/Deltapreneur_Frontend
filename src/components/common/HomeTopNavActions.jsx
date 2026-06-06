@@ -231,12 +231,12 @@ export default function HomeTopNavActions() {
                 >
                   {t('contactUs')}
                 </a>
-                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
+                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-[var(--cobrother-brand-green)]">
                   24x7 Support
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-[var(--cobrother-brand-green)] hover:bg-gray-50 transition-colors no-underline"
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-gray-50 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {SUPPORT_PHONE_DISPLAY}
@@ -294,12 +294,12 @@ export default function HomeTopNavActions() {
                 >
                   {t('contactUs')}
                 </a>
-                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
+                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-[var(--cobrother-brand-green)]">
                   24x7 Support
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-[var(--cobrother-brand-green)] hover:bg-gray-100 transition-colors no-underline"
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-gray-100 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {SUPPORT_PHONE_DISPLAY}

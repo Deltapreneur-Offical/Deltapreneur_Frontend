@@ -109,7 +109,7 @@ export default function TechnologyListingCard({
       <ListingPriceBox
         variant={isAuction ? 'auction' : 'deal'}
         amount={formatPrice(item.price || 0)}
-        caption={isAuction ? 'listing value' : 'deal value'}
+        caption={isAuction ? 'listing value' : 'price'}
       />
     </>
   );

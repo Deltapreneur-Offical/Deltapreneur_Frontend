@@ -1,6 +1,6 @@
 export default function HomePreviewRow({ children }) {
   return (
-    <div className="home-preview-row flex overflow-x-auto pb-1 -mx-1 px-1 snap-x snap-mandatory lg:grid lg:grid-cols-5 lg:overflow-visible lg:mx-0 lg:px-0">
+    <div className="home-preview-row flex overflow-x-auto overflow-y-visible pb-3 -mx-1 px-1 snap-x snap-mandatory lg:grid lg:grid-cols-5 lg:overflow-visible lg:mx-0 lg:px-0 lg:pb-4">
       {children}
     </div>
   );

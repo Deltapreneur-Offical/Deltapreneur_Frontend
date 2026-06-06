@@ -241,7 +241,7 @@ export default function Home() {
 
 
 
-      <div className="home-hero-search-stack relative z-10 overflow-x-hidden">
+      <div className="home-hero-search-stack relative z-10 overflow-visible">
         <HeroGlow />
       </div>
 

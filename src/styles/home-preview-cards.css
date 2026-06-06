@@ -1,72 +1,60 @@
-/* Homepage listing previews — same card UI as marketplace pages, scaled down */
+/* Homepage listing previews — full card height, no zoom clipping */
 
 .home-preview-row {
-  --home-preview-design-width: 300px;
-  --home-preview-zoom: 0.76;
-  --home-preview-zoom-lg: 0.9;
-  --home-preview-item-width: calc(var(--home-preview-design-width) * var(--home-preview-zoom));
+  --home-preview-card-height: 355px;
   align-items: stretch;
-  gap: 0.65rem;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .home-preview-row__item {
-  flex-shrink: 0;
-  width: var(--home-preview-item-width);
+  flex: 0 0 min(82vw, 292px);
   snap-align: start;
   display: flex;
   flex-direction: column;
+  overflow: visible;
 }
 
 .home-preview-row__card {
-  width: var(--home-preview-design-width);
-  max-width: none;
-  zoom: var(--home-preview-zoom);
-  flex: 1;
+  width: 100%;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  overflow: visible;
 }
 
 @media (min-width: 1024px) {
   .home-preview-row__item {
+    flex: unset;
     width: auto;
     min-width: 0;
   }
 
   .home-preview-row__card {
     width: 100%;
-    zoom: var(--home-preview-zoom-lg);
-  }
-}
-
-@supports not (zoom: 1) {
-  .home-preview-row__card {
-    transform: scale(var(--home-preview-zoom));
-    transform-origin: top center;
-  }
-
-  @media (min-width: 1024px) {
-    .home-preview-row__card {
-      transform: scale(var(--home-preview-zoom-lg));
-    }
   }
 }
 
 .home-preview-row__card > div {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  height: 100%;
   width: 100%;
+  min-height: var(--home-preview-card-height);
+  overflow: visible;
 }
 
 .home-preview-row .listing-card-glow-shell {
-  padding: 4px 2px;
-  height: 100%;
-  flex: 1;
+  padding: 6px 4px;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  overflow: visible;
+  min-height: var(--home-preview-card-height);
+  height: auto;
 }
 
 .home-preview-row .listing-card-glow-shell::before {
@@ -77,17 +65,21 @@
 
 .home-preview-row .listing-card-glow-shell > * {
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 auto;
+  min-height: var(--home-preview-card-height);
+  height: auto;
+  max-height: none;
+  overflow: hidden;
 }
 
 .home-preview-row .domain-listing-card,
 .home-preview-row .venture-listing-card,
 .home-preview-row .technology-listing-card,
 .home-preview-row .community-listing-card {
-  height: 100%;
-  min-height: 100%;
-  flex: 1;
+  min-height: var(--home-preview-card-height);
+  height: auto;
+  max-height: none;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
@@ -98,13 +90,17 @@
 
 .home-preview-row .listing-browse-footer {
   gap: 0.5rem;
-  padding-top: 0.5rem;
+  padding-top: 0.625rem;
   margin-top: auto;
+  flex-shrink: 0;
 }
 
 .home-preview-row .listing-browse-footer__cta {
-  min-height: 2rem;
-  font-size: 0.72rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .home-preview-row .technology-listing-card .listing-browse-footer__meta {

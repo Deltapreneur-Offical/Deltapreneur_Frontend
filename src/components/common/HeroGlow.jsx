@@ -2,15 +2,18 @@ import DomainSearchBar from './DomainSearchBar';
 
 export default function HeroGlow() {
   return (
-    <section className="hero-glow-section relative overflow-x-hidden overflow-y-visible border-b-0 bg-transparent pb-0 pl-4 pr-4 pt-5 sm:pl-6 sm:pr-5 sm:pt-6 md:pl-10 md:pt-7 lg:pl-20 lg:pr-8 lg:pt-7">
+    <section className="hero-glow-section relative overflow-x-clip overflow-y-visible border-b-0 bg-transparent pb-2 pl-4 pr-4 pt-5 sm:pl-6 sm:pr-5 sm:pt-6 md:pl-10 md:pt-7 lg:pl-20 lg:pr-8 lg:pt-7">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex w-full max-w-[920px] flex-col items-start text-left">
           <div className="relative z-20 flex w-full min-w-0 flex-col items-start">
-            <p className="hero-tagline m-0 font-sans">Don't Just Start. Disrupt.</p>
+            <p className="hero-tagline m-0 font-sans">
+              <span className="hero-tagline-dot" aria-hidden="true" />
+              Don't Just Start, Disrupt
+            </p>
             <h1 className="hero-headline m-0 font-sans font-normal leading-[1.2] text-black">
-              Why just be a consumer? Be the <span className="hero-emphasis">Creator</span> with{' '}
+              Why just be a Consumer? Be the <span className="hero-emphasis">Creator</span> with{' '}
               <span className="hero-emphasis">CoBrother!</span>
             </h1>
           </div>
@@ -52,6 +55,9 @@ export default function HeroGlow() {
         }
 
         .hero-tagline {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
           margin-bottom: 0.35rem;
           font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', var(--font-body), system-ui, sans-serif;
           font-size: clamp(0.72rem, 1.25vw, 0.9rem);
@@ -60,6 +66,14 @@ export default function HeroGlow() {
           color: rgba(51, 65, 85, 0.72);
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
+        }
+
+        .hero-tagline-dot {
+          width: 0.5rem;
+          height: 0.5rem;
+          border-radius: 50%;
+          background: var(--cobrother-brand-green);
+          flex-shrink: 0;
         }
 
         .hero-headline {
@@ -75,7 +89,7 @@ export default function HeroGlow() {
 
         .hero-emphasis {
           color: inherit;
-          font-weight: 800;
+          font-weight: 600;
         }
 
         @media (min-width: 640px) {

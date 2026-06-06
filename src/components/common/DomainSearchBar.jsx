@@ -12,19 +12,19 @@ const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const SEARCH_MODES = {
   ai: {
     label: 'AI Brand Names',
-    placeholder: 'Enter your business idea...',
+    placeholder: 'Enter you business and brandname idea',
   },
   new: {
     label: 'Domain Names',
-    placeholder: 'Search New Domains...',
+    placeholder: 'Search your domain names',
   },
   premium: {
     label: 'Pre-Owned Domains',
-    placeholder: 'Search Premium Domains...',
+    placeholder: 'Search Premium domain names',
   },
   auction: {
     label: 'Domain Auctions',
-    placeholder: 'Search Auction Domains...',
+    placeholder: 'Explore Domain name auction',
   },
 };
 const SEARCH_TABS = Object.entries(SEARCH_MODES).map(([id, config]) => ({
@@ -458,7 +458,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         <div className="hidden lg:flex lg:flex-row lg:items-end lg:justify-start">
           <div className="w-full max-w-[760px] flex-[1_1_700px]">
             <form onSubmit={handleSearch}
-              className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full">
+              className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full">
               <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
               <input
                 type="text"
@@ -472,7 +472,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 aria-label={t('search')}
                 className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2"
               >
-                <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
+                <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
               </button>
             </form>
 
@@ -483,10 +483,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabChange(tab.id)}
-                    className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none transition-all duration-200 ${
+                    className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none ${
                       searchMode === tab.id
-                        ? 'brand-search-tab-active text-white'
-                        : 'brand-search-tab-idle text-slate-600'
+                        ? 'brand-search-tab-active'
+                        : 'brand-search-tab-idle'
                     }`}
                   >
                     {tab.label}
@@ -500,7 +500,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         {/* Mobile / tablet */}
         <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
           <form onSubmit={handleSearch}
-            className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+            className={`search-glow-focus brand-search-shell w-full flex flex-row items-center rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
             <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
             <input
               type="text"
@@ -512,22 +512,22 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <button type="submit"
               aria-label={t('search')}
               className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2">
-              <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
+              <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
             </button>
           </form>
         </div>
 
-        <div className="mt-3 flex justify-center pb-0.5 lg:hidden">
-          <div className="brand-search-tabs brand-search-tabs-mobile grid w-full grid-cols-2 gap-3 md:inline-flex md:w-auto md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1">
+        <div className="mt-3 flex justify-center pb-2 lg:hidden overflow-visible">
+          <div className="brand-search-tabs brand-search-tabs-mobile flex w-full flex-wrap items-stretch justify-center gap-2 sm:gap-2.5 md:inline-flex md:w-auto md:flex-nowrap md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1">
             {SEARCH_TABS.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => handleTabChange(tab.id)}
-                className={`min-h-12 w-full rounded-full px-3 py-2 text-center text-[12.5px] sm:text-sm font-medium leading-[1.15] tracking-normal transition-all duration-300 ease-out will-change-transform md:min-h-9 md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
+                className={`min-h-11 flex-1 basis-[calc(50%-0.25rem)] sm:min-h-12 sm:basis-[calc(50%-0.375rem)] rounded-full px-2.5 py-2 text-center text-[11.5px] sm:text-sm font-medium leading-snug md:min-h-9 md:flex-none md:basis-auto md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
                   searchMode === tab.id
-                    ? 'brand-search-tab-active text-white scale-[1.02]'
-                    : 'brand-search-tab-idle text-slate-800 active:scale-[0.98]'
+                    ? 'brand-search-tab-active'
+                    : 'brand-search-tab-idle'
                 }`}
               >
                 {tab.label}
@@ -721,85 +721,109 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
       <style>{`
         .brand-search-shell {
-          border-color: rgba(var(--cobrother-brand-green-rgb), 0.52);
+          border: 2px solid transparent;
+          background:
+            linear-gradient(#ffffff, #ffffff) padding-box,
+            linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
         }
 
         .brand-search-submit {
-          background: var(--cobrother-brand-green);
-          border-color: var(--cobrother-brand-green);
-          box-shadow: 0 8px 18px rgba(var(--cobrother-brand-green-rgb), 0.24);
+          background: #000000;
+          border-color: #000000;
+          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
         }
 
         .brand-search-submit:hover,
         .brand-search-submit:focus-visible {
-          background: var(--cobrother-brand-green-dark);
-          border-color: var(--cobrother-brand-green-dark);
-          box-shadow: 0 10px 22px rgba(var(--cobrother-brand-green-rgb), 0.32);
+          background: #000000;
+          border-color: #000000;
+          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
         }
 
         .brand-search-submit:focus-visible {
-          --tw-ring-color: rgba(var(--cobrother-brand-green-rgb), 0.35);
+          --tw-ring-color: rgba(0, 0, 0, 0.25);
         }
 
         .brand-search-tabs {
-          border-color: rgba(var(--cobrother-brand-green-rgb), 0.24);
-          box-shadow: 0 6px 18px rgba(var(--cobrother-brand-green-rgb), 0.11);
+          border-color: rgba(0, 0, 0, 0.12);
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
         }
 
         .brand-search-tabs-mobile {
           border: 0;
           background: transparent;
           box-shadow: none;
+          overflow: visible;
+        }
+
+        .brand-search-tab-active,
+        .brand-search-tab-idle {
+          transition: none;
         }
 
         .brand-search-tab-active {
-          background: var(--cobrother-brand-green);
-          box-shadow:
-            0 10px 22px rgba(var(--cobrother-brand-green-rgb), 0.22),
-            0 2px 6px rgba(var(--cobrother-brand-green-rgb), 0.18);
-          border-color: transparent;
+          background: #000000;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+          border: 1px solid #000000;
+        }
+
+        /* While hovering another tab, show only one black pill at a time */
+        .brand-search-tabs:has(.brand-search-tab-idle:hover) .brand-search-tab-active,
+        .brand-search-tabs:has(.brand-search-tab-idle:focus-visible) .brand-search-tab-active {
+          background: #ffffff;
+          color: #000000;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          box-shadow: none;
+        }
+
+        .brand-search-tab-active:hover,
+        .brand-search-tab-active:focus-visible {
+          background: #000000;
+          color: #ffffff;
+          border-color: #000000;
         }
 
         .brand-search-tab-idle {
-          background: #f5f7f8;
-          border: 1px solid rgba(15, 23, 42, 0.08);
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+          background: #ffffff;
+          color: #000000;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          box-shadow: none;
         }
 
         .brand-search-tab-idle:hover,
         .brand-search-tab-idle:focus-visible {
-          background: #eef3f1;
-          border-color: rgba(var(--cobrother-brand-green-rgb), 0.22);
-          color: var(--cobrother-brand-green-dark);
-          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.07);
+          background: #000000;
+          border-color: #000000;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
 
         @media (min-width: 768px) {
           .brand-search-tabs-mobile {
-            border-color: rgba(var(--cobrother-brand-green-rgb), 0.24);
-            box-shadow: 0 6px 18px rgba(var(--cobrother-brand-green-rgb), 0.11);
+            border-color: rgba(0, 0, 0, 0.12);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
           }
         }
 
         .search-glow-focus {
           box-shadow:
-            0 10px 30px -12px rgba(var(--cobrother-brand-green-rgb), 0.42),
-            0 0 0 1px rgba(var(--cobrother-brand-green-rgb), 0.16),
-            0 0 24px -10px rgba(var(--cobrother-brand-green-rgb), 0.48);
+            0 10px 30px -12px rgba(102, 204, 255, 0.35),
+            0 0 0 1px rgba(102, 204, 255, 0.2),
+            0 0 24px -10px rgba(102, 204, 255, 0.4);
         }
 
         .search-glow-focus:hover,
         .search-glow-focus:focus-within {
-          border-color: var(--cobrother-brand-green);
           box-shadow:
-            0 12px 34px -12px rgba(var(--cobrother-brand-green-rgb), 0.5),
-            0 0 0 1px rgba(var(--cobrother-brand-green-rgb), 0.25),
-            0 0 28px -9px rgba(var(--cobrother-brand-green-rgb), 0.58);
+            0 12px 34px -12px rgba(102, 204, 255, 0.45),
+            0 0 0 1px rgba(102, 204, 255, 0.28),
+            0 0 28px -9px rgba(102, 204, 255, 0.5);
         }
 
         .search-glow-focus:hover .domain-search-icon,
         .search-glow-focus:focus-within .domain-search-icon {
-          color: var(--cobrother-brand-green-dark);
+          color: #38bdf8;
         }
 
         .domain-search-submit:hover,

@@ -53,7 +53,7 @@ export default function DomainsSection() {
   }
 
   return (
-    <section className="bg-white pt-0 pb-3 md:pt-0 md:pb-4">
+    <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 overflow-visible">
       <div className="w-full">
         <HomeSectionHeader title={t('domains')} to="/domains" />
         {previewDomains.length === 0 ? (

@@ -61,7 +61,7 @@ function DomainCardBody({
               ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
               : domain.askingPrice,
           )}
-          caption={isAuction ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid')) : t('listingCardAskingPrice')}
+          caption={isAuction ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid')) : t('listingCardPrice')}
         />
       ) : (
         <ListingPriceBox variant="auction" amount={t('listingCardVerificationPending')} caption={t('listingCardVerificationPending')} />
@@ -104,7 +104,7 @@ export default function DomainListingCard({
   const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? t('listingCardNegotiable') : t('listingCardFixed');
   const needsVerification = !domain.verified;
   const purchaseBlocked = needsVerification && !isOwner;
-  const showPriceBox = !needsVerification || isOwner;
+  const showPriceBox = true;
 
   const accentGrad = isAuction
     ? 'from-purple-600 via-fuchsia-500 to-pink-500'

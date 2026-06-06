@@ -162,7 +162,7 @@ export default function VentureListingCard({
               <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
                 {formatPrice(b.dealValue)}
               </span>
-              <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">deal value</span>
+              <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">price</span>
             </div>
           </div>
         ) : null}

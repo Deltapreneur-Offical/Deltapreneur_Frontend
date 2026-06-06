@@ -1,4 +1,5 @@
-import { prepareAIDomainStorefront } from './aiDomainStorefront';
+import { useNavigate } from 'react-router-dom';
+import { goToAIDomainStorefront } from './aiDomainStorefront';
 
 function normalizeStatus(status, available) {
   if (status === 'available' || available === true) return 'available';
@@ -31,11 +32,29 @@ function AvailabilityPill({ label, status, available }) {
   );
 }
 
+function formatInr(amount) {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return `₹${n.toLocaleString('en-IN')}/yr`;
+}
+
 export default function AIDomainCard({ item, index = 0 }) {
+  const navigate = useNavigate();
   const comStatus = normalizeStatus(item.com_status, item.com_available);
   const inStatus = normalizeStatus(item.in_status, item.in_available);
-  const primaryDomain = comStatus === 'available' ? item.domain_com : item.domain_in || item.domain_com;
-  const action = prepareAIDomainStorefront(primaryDomain);
+  const primaryDomain =
+    comStatus === 'available'
+      ? item.domain_com
+      : inStatus === 'available'
+        ? item.domain_in
+        : item.domain_com;
+  const primaryPrice =
+    comStatus === 'available'
+      ? item.com_price_inr
+      : inStatus === 'available'
+        ? item.in_price_inr
+        : null;
+  const canBuy = comStatus === 'available' || inStatus === 'available';
 
   return (
     <article
@@ -44,12 +63,15 @@ export default function AIDomainCard({ item, index = 0 }) {
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="rounded-full bg-[var(--cobrother-brand-green-soft)] px-3 py-1 text-[11px] font-bold text-[var(--cobrother-brand-green)]">
-          {item.brand_category}
+          {item.style || item.brand_category}
         </span>
         <span className="text-sm font-extrabold text-slate-900">{item.score}/100</span>
       </div>
 
-      <h2 className="mb-3 truncate text-xl font-extrabold text-slate-950">{item.name}</h2>
+      <h2 className="mb-1 truncate text-xl font-extrabold text-slate-950">{item.name}</h2>
+      {item.reason && (
+        <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-500">{item.reason}</p>
+      )}
 
       <div className="mb-4 space-y-2 text-sm">
         <div className="flex items-center justify-between gap-3">
@@ -62,12 +84,23 @@ export default function AIDomainCard({ item, index = 0 }) {
         </div>
       </div>
 
+      {formatInr(primaryPrice) && (
+        <p className="mb-3 text-sm font-semibold text-slate-700">
+          From {formatInr(primaryPrice)}
+        </p>
+      )}
+
       <button
         type="button"
-        onClick={() => action.run()}
-        className="w-full rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[var(--cobrother-brand-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--cobrother-brand-green-rgb),0.35)]"
+        disabled={!canBuy}
+        onClick={() => goToAIDomainStorefront(primaryDomain, navigate)}
+        className={`w-full rounded-lg px-4 py-2.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--cobrother-brand-green-rgb),0.35)] ${
+          canBuy
+            ? 'bg-slate-950 text-white hover:bg-[var(--cobrother-brand-green)]'
+            : 'cursor-not-allowed bg-slate-100 text-slate-400'
+        }`}
       >
-        Buy Domain
+        {canBuy ? 'Register Domain →' : 'No available TLD'}
       </button>
     </article>
   );

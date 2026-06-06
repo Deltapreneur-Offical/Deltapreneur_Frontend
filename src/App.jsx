@@ -63,6 +63,7 @@ const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const loadAuctionsPage = () => import('./pages/AuctionsPage');
 const AuctionsPage = lazy(loadAuctionsPage);
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
+const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
 
 function preloadPostLoginRoutes() {
   void loadDashboardPage();
@@ -290,6 +291,15 @@ export default function App() {
               element={
                 <ProfileGuard>
                   <DomainStorefrontPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/storefront/orders/:orderId"
+              element={
+                <ProfileGuard>
+                  <DomainRegistrationOrderPage />
                 </ProfileGuard>
               }
             />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { domainAPI, technologyAPI } from '../api/services';
+import { domainAPI, domainStorefrontAPI, technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -14,66 +14,87 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import { asArray } from '../utils/asArray';
 import { extractDomainList } from '../utils/domainApiAdapter';
+import {
+  isRegistrationPurchase,
+  registrationOrderDetailPath,
+  registrationStatusBadgeClass,
+  registrationStatusLabel,
+} from '../utils/domainRegistrationOrder';
+import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
 export default function PurchasesPage() {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const navigate                      = useNavigate();
-  const [tab, setTab]                 = useState('all');
-  const [domains, setDomains]         = useState([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState('all');
+  const [domains, setDomains] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
   const [swPurchases, setSwPurchases] = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [helpModal, setHelpModal]     = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
-
-  // Optional: pull user info from your auth context/store for the invoice billing section
-  // const { user } = useAuth();
-  const user = {}; // Replace with real user: { name, email, gstin, address }
 
   useEffect(() => {
     setLoading(true);
     Promise.all([
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
+      domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
-    ]).then(([d, s]) => {
+    ]).then(([d, reg, s]) => {
       setDomains(extractDomainList(d.data));
+      const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
+      setRegistrations(regList.filter(isRegistrationPurchase));
       setSwPurchases(asArray(s.data));
     }).finally(() => setLoading(false));
   }, []);
 
-  const completedDomains  = asArray(domains).filter(d =>
+  const completedDomains = asArray(domains).filter(d =>
     d.paymentStatus === 'COMPLETED' ||
     d.domainStatus === 'SOLD' ||
     d.purchasedByUserId ||
     d.purchased_by_user_id
   );
+  const completedRegistrations = asArray(registrations);
   const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
-  const totalItems        = completedDomains.length + completedSoftware.length;
+  const domainTabCount = completedDomains.length + completedRegistrations.length;
+  const totalItems = domainTabCount + completedSoftware.length;
+
+  const domainTabItems = [
+    ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
+    ...completedRegistrations.map(o => ({ ...o, _type: 'domain_registration' })),
+  ];
 
   const displayItems =
-    tab === 'domains'  ? completedDomains.map(d => ({ ...d, _type: 'domain' }))
-  : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
-  : [
-      ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
-      ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
-    ];
+    tab === 'domains' ? domainTabItems
+    : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
+    : [
+        ...domainTabItems,
+        ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
+      ];
 
   return (
     <AppLayout>
       <div>
         <div className="mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('purchasesTitle')}</h1>
-            <p className="text-gray-600 mt-1">{t('purchasesSubtitle')}</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">
+              {t('purchasesTitle', { defaultValue: 'My Purchases' })}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {t('purchasesSubtitle', {
+                defaultValue: 'Marketplace buys, new domain registrations, and software in one place.',
+              })}
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label={t('purchasesStatTotal')} value={totalItems} iconSrc={PurchaseIcon} />
-          <StatCard label={t('purchasesStatDomains')} value={completedDomains.length} iconSrc={DomainsIcon} color="#6eadc8" />
-          <StatCard label={t('purchasesStatSoftware')} value={completedSoftware.length} iconSrc={SoftwareIcon} color="#a06ec8" />
+          <StatCard label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })} value={totalItems} iconSrc={PurchaseIcon} />
+          <StatCard label={t('purchasesStatDomains', { defaultValue: 'Domains' })} value={domainTabCount} iconSrc={DomainsIcon} color="#6eadc8" />
+          <StatCard label={t('purchasesStatSoftware', { defaultValue: 'Software' })} value={completedSoftware.length} iconSrc={SoftwareIcon} color="#a06ec8" />
           <StatCard
-            label={t('purchasesStatCoBrotherActive')}
+            label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
             value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
             iconSrc={CoBrotherIcon}
             color="#6ec896"
@@ -82,13 +103,16 @@ export default function PurchasesPage() {
 
         <div className="flex gap-2 mb-6">
           {[
-            { id: 'all', label: `${t('purchasesTabAll')} (${totalItems})` },
-            { id: 'domains', label: `${t('purchasesTabDomains')} (${completedDomains.length})` },
-            { id: 'software', label: `${t('purchasesTabSoftware')} (${completedSoftware.length})` },
+            { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
+            { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
+            { id: 'software', label: `${t('purchasesTabSoftware', { defaultValue: 'Software' })} (${completedSoftware.length})` },
           ].map((tabItem) => (
-            <button key={tabItem.id}
+            <button
+              key={tabItem.id}
+              type="button"
               className={`btn-glow btn-glow-sm ${tab === tabItem.id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-              onClick={() => setTab(tabItem.id)}>
+              onClick={() => setTab(tabItem.id)}
+            >
               {tabItem.label}
             </button>
           ))}
@@ -101,20 +125,39 @@ export default function PurchasesPage() {
         ) : displayItems.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🛒</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('purchasesEmpty')}</h3>
-            <p className="text-gray-600 mb-6">{t('purchasesBrowseHint')}</p>
-            <div className="flex gap-3 justify-center">
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>{t('browseDomains')}</button>
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>{t('browseTechnology')}</button>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {t('purchasesEmpty', { defaultValue: 'No purchases yet' })}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {t('purchasesBrowseHint', { defaultValue: 'Browse domains and software to make your first purchase.' })}
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
+                {t('browseDomains', { defaultValue: 'Browse Domains' })}
+              </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/storefront')}>
+                {t('storefront', { defaultValue: 'Register a Domain' })}
+              </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
+                {t('browseTechnology', { defaultValue: 'Browse Technology' })}
+              </button>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3.5">
             {displayItems.map((item) =>
-              item._type === 'domain' ? (
+              item._type === 'domain_registration' ? (
+                <RegistrationPurchaseRow
+                  key={'reg-' + item.id}
+                  order={item}
+                  user={user}
+                  t={t}
+                />
+              ) : item._type === 'domain' ? (
                 <DomainPurchaseRow
                   key={'d-' + item.id}
                   domain={item}
+                  user={user}
                 />
               ) : (
                 <SoftwarePurchaseRow
@@ -157,7 +200,7 @@ export default function PurchasesPage() {
               <div className="px-3.5 py-3 bg-green-500/8 border border-green-500/20 rounded-[10px] mb-6 text-xs text-green-400">
                 ✓ {t('purchasesCoBrotherPaidSummary', { price: formatPrice(1000) })}
               </div>
-              <button className="btn-glow w-full" onClick={() => setHelpSuccess(null)}>{t('done')}</button>
+              <button type="button" className="btn-glow w-full" onClick={() => setHelpSuccess(null)}>{t('done')}</button>
             </div>
           </div>
         </div>
@@ -166,10 +209,7 @@ export default function PurchasesPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Domain Purchase Row
-───────────────────────────────────────────────────────── */
-function DomainPurchaseRow({ domain }) {
+function DomainPurchaseRow({ domain, user }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   return (
@@ -177,8 +217,12 @@ function DomainPurchaseRow({ domain }) {
       <div className="flex justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">◇ {t('purchasesBadgeDomain')}</span>
-            {domain.verified && <span className="text-xs font-bold text-green-600">✓ {t('verified')}</span>}
+            <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">
+              ◇ {t('purchasesBadgeResale', { defaultValue: 'Resale' })}
+            </span>
+            {domain.verified && (
+              <span className="text-xs font-bold text-green-600">✓ {t('verified', { defaultValue: 'Verified' })}</span>
+            )}
           </div>
           <div className="font-bold text-lg text-gray-900">
             {domain.domainName}{domain.domainExtension}
@@ -189,20 +233,69 @@ function DomainPurchaseRow({ domain }) {
           <div className="font-display text-xl font-bold text-green-600">
             {formatPrice(domain.askingPrice)}
           </div>
+          <InvoiceDownloadButton
+            onClick={() => generateInvoice({ type: 'domain', item: domain, user })}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Software Purchase Row
-───────────────────────────────────────────────────────── */
+function RegistrationPurchaseRow({ order, user, t }) {
+  const amount = Number(order.priceInr || 0);
+  const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
+  const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);
+
+  return (
+    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
+              ◇ {t('purchasesBadgeRegistration', { defaultValue: 'Registration' })}
+            </span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge}`}>{label}</span>
+          </div>
+          <div className="font-bold text-lg text-gray-900">{order.domain}</div>
+          <div className="text-xs text-gray-600">
+            {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : ''}
+          </div>
+        </div>
+        <div className="text-right flex flex-col items-end gap-2">
+          <div className="font-display text-xl font-bold text-emerald-700">
+            ₹{amount.toLocaleString('en-IN')}
+          </div>
+          {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+            <a
+              href={domainManagementHref(order)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
+            >
+              Manage DNS →
+            </a>
+          ) : null}
+          <Link
+            to={registrationOrderDetailPath(order.id)}
+            className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+          >
+            View order →
+          </Link>
+          <InvoiceDownloadButton
+            onClick={() => generateInvoice({ type: 'domain_registration', item: order, user })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const sw      = purchase.software || {};
-  const helpPaid  = purchase.coBrotherHelpPaid;
+  const sw = purchase.software || {};
+  const helpPaid = purchase.coBrotherHelpPaid;
   const confirmed = purchase.completionStatus === 'CONFIRMED';
   const HELP_FEE_INR = 1000;
 
@@ -255,7 +348,7 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
               <div className="font-bold text-sm text-purple-700 mb-1">{t('purchasesNeedHelpTitle')}</div>
               <div className="text-xs text-gray-600 leading-relaxed">{t('purchasesNeedHelpDesc')}</div>
             </div>
-            <button onClick={onGetHelp} className="btn-glow btn-glow-sm">
+            <button type="button" onClick={onGetHelp} className="btn-glow btn-glow-sm">
               {t('purchasesGetHelp', { price: formatPrice(HELP_FEE_INR) })}
             </button>
           </div>
@@ -265,13 +358,11 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Reusable Download Button
-───────────────────────────────────────────────────────── */
 function InvoiceDownloadButton({ onClick }) {
   const { t } = useTranslation();
   return (
     <button
+      type="button"
       onClick={onClick}
       className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-lg px-3 py-1.5 transition-all duration-200 bg-white hover:bg-gray-50 group"
     >
@@ -293,11 +384,12 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   const { currency, formatPrice } = useCurrency();
   const HELP_FEE_INR = 1000;
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
   const sw = purchase.software || {};
 
   const handlePay = async () => {
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
     try {
       const { data: orderData } = await technologyAPI.payCoBrotherHelp(purchase.id, {
         ...buildOrderCurrencyPayload(currency),
@@ -311,7 +403,7 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
           try {
             await technologyAPI.verifyCoBrotherHelp(purchase.id, {
               razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId:   response.razorpay_order_id,
+              razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
             onSuccess({ ...purchase, coBrotherOptIn: true, coBrotherHelpPaid: true });
@@ -323,7 +415,10 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
         onFailure: () => { setError(t('storefrontPaymentFailed')); setLoading(false); },
         onDismiss: () => setLoading(false),
       });
-    } catch (err) { setError(err.response?.data?.error || t('errorGeneric')); setLoading(false); }
+    } catch (err) {
+      setError(err.response?.data?.error || t('errorGeneric'));
+      setLoading(false);
+    }
   };
 
   return (
@@ -367,10 +462,10 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
           </div>
           {error && <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-xs text-red-600 mb-6">{error}</div>}
           <div className="flex gap-3">
-            <button className="btn-glow w-full" onClick={handlePay} disabled={loading}>
+            <button type="button" className="btn-glow w-full" onClick={handlePay} disabled={loading}>
               {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('purchasesPayGetHelp', { price: formatPrice(HELP_FEE_INR) })}
             </button>
-            <button className="btn-glow w-full" onClick={onClose}>{t('cancel')}</button>
+            <button type="button" className="btn-glow w-full" onClick={onClose}>{t('cancel')}</button>
           </div>
         </div>
       </div>
@@ -378,9 +473,6 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Stat Card (unchanged)
-───────────────────────────────────────────────────────── */
 function StatCard({ label, value, iconSrc, color = '#111827' }) {
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">

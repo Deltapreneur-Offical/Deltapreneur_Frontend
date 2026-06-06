@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useCurrency from '../context/CurrencyContext';
@@ -7,6 +7,8 @@ import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
+import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
@@ -30,12 +32,31 @@ function parseDomainInput(raw, fallbackTld) {
   return `${q}.${fallbackTld}`;
 }
 
-function statusBadgeClass(status) {
-  const s = (status || '').toUpperCase();
-  if (s === 'ACTIVE') return 'bg-emerald-100 text-emerald-800';
-  if (s === 'CREATED' || s === 'PAYMENT_COMPLETED') return 'bg-amber-100 text-amber-800';
-  if (s.includes('FAIL')) return 'bg-red-100 text-red-700';
+function statusBadgeClass(status, lifecycleStatus) {
+  const life = (lifecycleStatus || '').toLowerCase();
+  if (life === 'registration_confirmed' || (status || '').toUpperCase() === 'ACTIVE') {
+    return 'bg-emerald-100 text-emerald-800';
+  }
+  if (
+    life === 'payment_success' ||
+    life === 'registration_pending' ||
+    ['CREATED', 'PAYMENT_COMPLETED', 'REGISTRATION_PENDING'].includes((status || '').toUpperCase())
+  ) {
+    return 'bg-amber-100 text-amber-800';
+  }
+  if (life === 'registration_failed' || (status || '').toUpperCase().includes('FAIL')) {
+    return 'bg-red-100 text-red-700';
+  }
   return 'bg-gray-100 text-gray-700';
+}
+
+function statusLabel(status, lifecycleStatus, t) {
+  const life = lifecycleStatus || '';
+  if (life === 'registration_confirmed') return t('storefrontStatusConfirmed');
+  if (life === 'registration_pending') return t('storefrontStatusPending');
+  if (life === 'payment_success') return t('storefrontStatusPaid');
+  if (life === 'registration_failed') return t('storefrontStatusFailed');
+  return status || life;
 }
 
 function buildContactFromUser(user) {
@@ -60,6 +81,7 @@ function buildContactFromUser(user) {
 }
 
 export default function DomainStorefrontPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
@@ -158,6 +180,8 @@ export default function DomainStorefrontPage() {
 
   const canRegister = checkResult?.status === 'available';
   const isMarketplace = checkResult?.status === 'marketplace';
+  const checkoutUnavailable =
+    config?.productionReadiness && !config.productionReadiness.ready;
 
   const displayPrice = useMemo(() => {
     if (!checkResult?.price) return null;
@@ -172,7 +196,7 @@ export default function DomainStorefrontPage() {
   };
 
   const handlePay = async () => {
-    if (!canRegister || !checkResult?.domain) return;
+    if (!canRegister || !checkResult?.domain || checkoutUnavailable) return;
 
     setPayLoading(true);
     setPayError('');
@@ -198,18 +222,26 @@ export default function DomainStorefrontPage() {
               razorpaySignature: response.razorpay_signature,
             });
             const verify = verifyPayload?.data ?? verifyPayload;
+            const orderId = verify?.orderId;
             if (verify?.success) {
+              await loadOrders();
+              if (orderId) {
+                navigate(registrationOrderDetailPath(orderId));
+                return;
+              }
               setSuccessMessage(
                 verify.message ||
                   t('storefrontRegisterSuccess', { domain: checkResult.domain }),
               );
-              await loadOrders();
               setCheckResult(null);
               setQuery('');
               setSearchParams({}, { replace: true });
             } else {
               setPayError(verify?.message || t('storefrontProvisionPending'));
               await loadOrders();
+              if (orderId) {
+                navigate(registrationOrderDetailPath(orderId));
+              }
             }
           } catch (err) {
             setPayError(readApiError(err, t('storefrontVerifyFailed')));
@@ -250,18 +282,6 @@ export default function DomainStorefrontPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('storefrontTitle')}</h1>
           <p className="text-gray-600 mt-2 max-w-2xl">{t('storefrontSubtitle')}</p>
         </div>
-
-        {config && (
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 text-sm text-indigo-900">
-            {config.openProviderSandbox && (
-              <span className="font-semibold mr-2">{t('storefrontSandboxBadge')}</span>
-            )}
-            {config.demoMode && (
-              <span className="font-semibold mr-2">{t('storefrontDemoBadge')}</span>
-            )}
-            {config.message}
-          </div>
-        )}
 
         {successMessage && (
           <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
@@ -365,9 +385,6 @@ export default function DomainStorefrontPage() {
                 <p className="text-sm text-indigo-700 mb-2">{t('storefrontMarketplaceHint')}</p>
               )}
 
-              {checkResult.demoMode && (
-                <p className="text-xs text-amber-700 mb-2">{t('storefrontDemoHint')}</p>
-              )}
             </div>
           )}
         </section>
@@ -424,7 +441,7 @@ export default function DomainStorefrontPage() {
               type="button"
               className="btn-glow w-full sm:w-auto px-8 py-3"
               onClick={handlePay}
-              disabled={payLoading}
+              disabled={payLoading || checkoutUnavailable}
             >
               {payLoading ? t('storefrontPayOpening') : t('storefrontPayNow')}
             </button>
@@ -462,20 +479,46 @@ export default function DomainStorefrontPage() {
                 <tbody>
                   {orders.map((order) => (
                     <tr key={order.id} className="border-b border-gray-50">
-                      <td className="py-3 pr-4 font-medium text-gray-900">{order.domain}</td>
+                      <td className="py-3 pr-4 font-medium text-gray-900">
+                        <Link
+                          to={registrationOrderDetailPath(order.id)}
+                          className="text-indigo-700 hover:text-indigo-900 hover:underline"
+                        >
+                          {order.domain}
+                        </Link>
+                      </td>
                       <td className="py-3 pr-4 text-gray-700">
                         {formatPrice(order.priceInr || 0)}
                       </td>
                       <td className="py-3 pr-4">
                         <span
-                          className={`inline-block text-xs font-semibold px-2 py-1 rounded-full ${statusBadgeClass(order.status)}`}
+                          className={`inline-block text-xs font-semibold px-2 py-1 rounded-full ${statusBadgeClass(order.status, order.lifecycleStatus)}`}
                         >
-                          {order.status}
+                          {statusLabel(order.status, order.lifecycleStatus, t)}
                         </span>
                       </td>
-                      <td className="py-3">
-                        {String(order.status || '').toUpperCase().includes('FAIL') ||
-                        order.status === 'PAYMENT_COMPLETED' ? (
+                      <td className="py-3 flex flex-wrap gap-2">
+                        {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+                          <a
+                            href={domainManagementHref(order)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-700 hover:text-indigo-900 text-xs font-semibold"
+                          >
+                            {t('domainMgmtOpenPanel', { defaultValue: 'Manage DNS' })}
+                          </a>
+                        ) : null}
+                        <Link
+                          to={registrationOrderDetailPath(order.id)}
+                          className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold"
+                        >
+                          {t('regOrderView', { defaultValue: 'View' })}
+                        </Link>
+                        {(order.lifecycleStatus === 'registration_failed' ||
+                          String(order.status || '').toUpperCase().includes('FAIL') ||
+                          order.lifecycleStatus === 'payment_success' ||
+                          order.lifecycleStatus === 'registration_pending' ||
+                          order.status === 'PAYMENT_COMPLETED') && (
                           <button
                             type="button"
                             className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold"
@@ -483,8 +526,6 @@ export default function DomainStorefrontPage() {
                           >
                             {t('storefrontRetry')}
                           </button>
-                        ) : (
-                          <span className="text-xs text-gray-400">—</span>
                         )}
                       </td>
                     </tr>

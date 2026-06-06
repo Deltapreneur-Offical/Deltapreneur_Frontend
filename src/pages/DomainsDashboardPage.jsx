@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
-import { domainAPI } from '../api/services';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
+import { domainAPI, domainStorefrontAPI } from '../api/services';
+import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
+import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainVerificationModal from './DomainVerificationModal';
@@ -30,15 +31,23 @@ export default function DomainsDashboardPage() {
   const [tab, setTab]               = useState('listings');
   const [listings, setListings]     = useState([]);
   const [purchases, setPurchases]   = useState([]);
+  const [regOrders, setRegOrders]     = useState([]);
   const [loading, setLoading]       = useState(true);
   const [verifyTarget, setVerifyTarget] = useState(null);
 
+  const purchaseCount = purchases.length + regOrders.length;
 
   useEffect(() => {
-    Promise.all([domainAPI.getMyListings(), domainAPI.getMyPurchases()])
-      .then(([l, p]) => {
+    Promise.all([
+      domainAPI.getMyListings(),
+      domainAPI.getMyPurchases(),
+      domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
+    ])
+      .then(([l, p, reg]) => {
         setListings(extractDomainList(l.data));
         setPurchases(extractDomainList(p.data));
+        const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
+        setRegOrders(regList.filter(isRegistrationPurchase));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -48,9 +57,11 @@ export default function DomainsDashboardPage() {
     .filter(d => d.domainStatus === 'SOLD')
     .reduce((sum, d) => sum + d.askingPrice, 0);
 
-  const totalSpent = purchases
+  const resaleSpent = purchases
     .filter(d => d.paymentStatus === 'COMPLETED')
     .reduce((sum, d) => sum + d.askingPrice, 0);
+  const regSpent = regOrders.reduce((sum, o) => sum + Number(o.priceInr || 0), 0);
+  const totalSpent = resaleSpent + regSpent;
 
   return (
     <AppLayout>
@@ -87,11 +98,10 @@ export default function DomainsDashboardPage() {
             <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatTotalRevenue')}</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatPurchased')}</div>
-            <div className="text-2xl font-bold text-black/70">{purchases.length}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatPurchases')}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="text-gray-600 mb-2">{t('domainsDashboardStatPurchased', { defaultValue: 'Purchased' })}</div>
+            <div className="text-2xl font-bold text-black/70">{purchaseCount}</div>
+            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatPurchases', { defaultValue: 'Purchases' })}</div>
+          </div>          <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="text-gray-600 mb-2">{t('domainsDashboardStatTotalSpent')}</div>
             <div className="text-2xl font-bold text-black/70">{formatPrice(totalSpent)}</div>
             <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatTotalSpent')}</div>
@@ -103,9 +113,8 @@ export default function DomainsDashboardPage() {
             {t('domainsDashboardTabListings', { count: listings.length })}
           </button>
           <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('purchases')}>
-            {t('domainsDashboardTabPurchases', { count: purchases.length })}
-          </button>
-        </div>
+            {t('domainsDashboardTabPurchases', { count: purchaseCount, defaultValue: `My Purchases (${purchaseCount})` })}
+          </button>        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
@@ -130,19 +139,63 @@ export default function DomainsDashboardPage() {
             </div>
           )
         ) : (
-          purchases.length === 0 ? (
+          purchaseCount === 0 ? (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🛒</div>
-              <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('domainsDashboardNoPurchasesTitle')}</h3>
-              <p className="text-gray-600 mb-6">{t('domainsDashboardNoPurchasesBody')}</p>
-              <button className="btn-glow" onClick={() => navigate('/domains')}>{t('domainsDashboardBrowseDomains')}</button>
+              <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+                {t('domainsDashboardNoPurchasesTitle', { defaultValue: 'No purchases yet' })}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {t('domainsDashboardNoPurchasesBody', { defaultValue: 'Buy a listed domain or register a new name.' })}
+              </p>
+              <div className="flex gap-3 justify-center flex-wrap">
+                <button type="button" className="btn-glow" onClick={() => navigate('/domains')}>
+                  {t('domainsDashboardBrowseDomains', { defaultValue: 'Browse Domains' })}
+                </button>
+                <button type="button" className="btn-glow" onClick={() => navigate('/storefront')}>
+                  {t('storefront', { defaultValue: 'Register Domain' })}
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-3 overflow-visible">
+              {regOrders.map((order) => (
+                <div
+                  key={`reg-${order.id}`}
+                  className="flex items-center justify-between bg-white border border-emerald-200 rounded-[10px] px-5 py-4 gap-3"
+                >
+                  <div>
+                    <div className="font-bold text-gray-900">{order.domain}</div>
+                    <div className="text-[0.8rem] text-gray-500">
+                      {t('purchasesBadgeRegistration', { defaultValue: 'New registration' })} · {order.lifecycleStatus || order.status}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap justify-end">
+                    <span className="text-[0.95rem] font-bold text-gray-900">
+                      ₹{Number(order.priceInr || 0).toLocaleString('en-IN')}
+                    </span>
+                    {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+                      <a
+                        href={domainManagementHref(order)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
+                      >
+                        Manage DNS
+                      </a>
+                    ) : null}
+                    <Link
+                      to={registrationOrderDetailPath(order.id)}
+                      className="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                    >
+                      Order details
+                    </Link>
+                  </div>
+                </div>
+              ))}
               {purchases.map(d => <DomainRow key={d.id} domain={d} type="purchase" />)}
             </div>
-          )
-        )}
+          )        )}
       </div>
       {verifyTarget && (
         <DomainVerificationModal

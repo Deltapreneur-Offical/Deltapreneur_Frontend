@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import searchIcon from '../../assets/search.png';
+import searchGreenIcon from '../../assets/search_green.png';
 import { domainAPI } from '../../api/services';
 import { extractDomainList } from '../../utils/domainApiAdapter';
 import useAIDomains from '../../hooks/useAIDomains';
@@ -46,6 +48,23 @@ function toSafeLower(value) {
   const text = toSafeText(value);
   if (typeof text === 'string') return text.toLowerCase();
   return '';
+}
+
+function BrandSearchIcon() {
+  return (
+    <span className="domain-search-icon relative inline-flex h-7 w-7 shrink-0" aria-hidden="true">
+      <img
+        src={searchIcon}
+        alt=""
+        className="domain-search-icon-img domain-search-icon-img--default h-7 w-7 object-contain transition-opacity duration-200"
+      />
+      <img
+        src={searchGreenIcon}
+        alt=""
+        className="domain-search-icon-img domain-search-icon-img--hover absolute inset-0 h-7 w-7 object-contain opacity-0 transition-opacity duration-200"
+      />
+    </span>
+  );
 }
 
 function normalizeSearchText(value) {
@@ -465,7 +484,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           <div className="w-full max-w-[760px] flex-[1_1_700px]">
             <form onSubmit={handleSearch}
               className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full">
-              <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
+              <BrandSearchIcon />
               <input
                 type="text"
                 className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
@@ -507,7 +526,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
           <form onSubmit={handleSearch}
             className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
-            <Search className="domain-search-icon h-5 w-5 shrink-0 text-slate-500 transition-colors duration-200" strokeWidth={2} />
+            <BrandSearchIcon />
             <input
               type="text"
               className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
@@ -803,9 +822,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             0 0 28px -9px rgba(var(--cobrother-brand-green-rgb), 0.58);
         }
 
-        .search-glow-focus:hover .domain-search-icon,
-        .search-glow-focus:focus-within .domain-search-icon {
-          color: var(--cobrother-brand-green-dark);
+        .search-glow-focus:hover .domain-search-icon-img--default,
+        .search-glow-focus:focus-within .domain-search-icon-img--default {
+          opacity: 0;
+        }
+
+        .search-glow-focus:hover .domain-search-icon-img--hover,
+        .search-glow-focus:focus-within .domain-search-icon-img--hover {
+          opacity: 1;
         }
 
         .domain-search-submit:hover,

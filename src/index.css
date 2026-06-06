@@ -4750,6 +4750,12 @@ body.home-page-body {
   display: block;
 }
 
+@media (min-width: 640px) {
+  .home-top-nav-actions .home-nav-contact-icon-btn {
+    display: none !important;
+  }
+}
+
 .home-profile-mobile-only {
   display: none !important;
 }
@@ -4781,13 +4787,13 @@ body.home-page-body {
   }
 
   .home-top-nav-actions .home-nav-whatsapp-btn {
-    color: var(--cobrother-brand-green);
+    color: #25d366;
   }
 
   .home-top-nav-actions .home-nav-call-btn svg,
   .home-top-nav-actions .home-nav-whatsapp-btn svg {
-    width: 1rem;
-    height: 1rem;
+    width: 1.125rem;
+    height: 1.125rem;
   }
 
   .home-profile-mobile-only {

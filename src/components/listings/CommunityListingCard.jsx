@@ -24,8 +24,6 @@ export default function CommunityListingCard({
 }) {
   const { t } = useTranslation();
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
-  const accentGrad = 'from-teal-600 via-cyan-500 to-blue-500';
-
   const headerBadges = (
     <>
       <ListingCardBadge variant="glass">👤 Creator</ListingCardBadge>
@@ -115,8 +113,7 @@ export default function CommunityListingCard({
 
   return (
     <MarketplaceListingCardFrame
-      cardClassName={`community-listing-card${isMe ? ' ring-1 ring-indigo-200' : ''}`}
-      gradient={accentGrad}
+      cardClassName={`community-listing-card${isMe ? ' ring-1 ring-gray-200' : ''}`}
       image={profile.imageUrl}
       imageAlt={profile.name}
       initial={profile.name?.[0]?.toUpperCase() || '?'}

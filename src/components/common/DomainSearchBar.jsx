@@ -12,19 +12,19 @@ const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const SEARCH_MODES = {
   ai: {
     label: 'AI Brand Names',
-    placeholder: 'Enter you business and brandname idea',
+    placeholder: 'Enter your business and brand name',
   },
   new: {
     label: 'Domain Names',
-    placeholder: 'Search your domain names',
+    placeholder: 'Search your domain name',
   },
   premium: {
     label: 'Pre-Owned Domains',
-    placeholder: 'Search Premium domain names',
+    placeholder: 'Search premium domain name',
   },
   auction: {
     label: 'Domain Auctions',
-    placeholder: 'Explore Domain name auction',
+    placeholder: 'Explore domain name auctions',
   },
 };
 const SEARCH_TABS = Object.entries(SEARCH_MODES).map(([id, config]) => ({

@@ -4,6 +4,7 @@ import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { VENTURE_EQUITY_TYPE_LABELS } from '../../constants/ventureLabels';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from '../listings/ListingBrowseFooter';
+import { LISTING_CARD_HEADER_CLASS } from '../listings/MarketplaceListingCardFrame';
 
 function isListingVerified(type, listing) {
   if (type === 'domain') return Boolean(listing?.verified);
@@ -30,9 +31,6 @@ function pickCardMeta(type, listing) {
       description: listing.description || 'Domain listing on CoBrother marketplace.',
       image: listing.logo || null,
       initial: (display.name || '?').slice(0, 1).toUpperCase(),
-      gradient: isAuction
-        ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-        : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]',
     };
   }
 
@@ -48,9 +46,6 @@ function pickCardMeta(type, listing) {
       description: listing.description || 'Technology listing on CoBrother marketplace.',
       image: listing.imageUrl || null,
       initial: (listing.name || '?').slice(0, 1).toUpperCase(),
-      gradient: isAuction
-        ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-        : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]',
     };
   }
 
@@ -72,9 +67,6 @@ function pickCardMeta(type, listing) {
     description: brand.description || 'Venture listing on CoBrother marketplace.',
     image: brand.ventureImageUrl || null,
     initial: (brand.brandName || '?').slice(0, 1).toUpperCase(),
-    gradient: isAuction
-      ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-      : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]',
   };
 }
 
@@ -90,29 +82,29 @@ export default function HomeUnifiedListingCard({
   const showPrice = isListingVerified(type, listing);
 
   return (
-    <article className="listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-[355px] max-h-[355px]">
-      <div className={`relative bg-gradient-to-r ${meta.gradient} px-4 pt-3.5 pb-3.5 min-h-[90px] flex-shrink-0 flex items-end`}>
+    <article className="listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-all duration-300 h-[355px] max-h-[355px]">
+      <div className={LISTING_CARD_HEADER_CLASS}>
         <div className="relative z-10 flex items-end justify-between w-full">
           <div className="flex items-center gap-2">
             {meta.image ? (
               <img
                 src={meta.image}
                 alt={meta.title}
-                className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg"
+                className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100 shadow-sm"
               />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-gray-900 ring-2 ring-gray-100 shadow-sm bg-gray-100">
                 {meta.initial}
               </div>
             )}
             <div className="flex flex-wrap items-center gap-1">
-              <span className="px-1.5 py-0.5 bg-white/25 backdrop-blur-sm text-white text-[9px] font-bold rounded uppercase tracking-wide">
+              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[9px] font-bold rounded uppercase tracking-wide">
                 {meta.tagPrimary}
               </span>
               <span className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm ${
                 meta.tagSecondary === 'VERIFIED'
-                  ? 'bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)]'
-                  : 'bg-amber-100 text-amber-800'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-600'
               }`}>
                 {meta.tagSecondary}
               </span>
@@ -138,12 +130,12 @@ export default function HomeUnifiedListingCard({
         </p>
 
         {showPrice ? (
-          <div className="rounded-lg border border-[rgba(var(--cobrother-brand-green-rgb),0.22)] bg-[var(--cobrother-brand-green-soft)] px-2 md:px-3 py-1.5 md:py-2 mb-2 flex-shrink-0">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 px-2 md:px-3 py-1.5 md:py-2 mb-2 flex-shrink-0">
             <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
+              <span className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">
                 {formatPrice(meta.amount)}
               </span>
-              <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">
+              <span className="text-[9px] md:text-[10px] text-gray-500 font-semibold">
                 {meta.amountCaption}
               </span>
             </div>

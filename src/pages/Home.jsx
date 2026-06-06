@@ -237,6 +237,8 @@ export default function Home() {
 
         navigate={navigate}
 
+        hideJoinCta
+
       />
 
 

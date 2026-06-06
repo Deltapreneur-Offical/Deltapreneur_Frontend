@@ -251,6 +251,12 @@ export default function HomeFooter() {
 
               </button>
 
+              <ScrollLink to="/join-form" className={linkClass}>
+
+                {t('joinCoBrother')}
+
+              </ScrollLink>
+
             </nav>
 
           </div>

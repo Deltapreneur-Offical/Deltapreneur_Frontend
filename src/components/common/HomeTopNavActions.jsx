@@ -65,7 +65,7 @@ function WhatsAppNavButton() {
     <a
       href={WHATSAPP_URL}
       {...EXTERNAL_LINK_PROPS}
-      className="home-nav-whatsapp-btn"
+      className="home-nav-whatsapp-btn home-nav-contact-icon-btn"
       aria-label="WhatsApp"
       title="WhatsApp"
     >
@@ -78,7 +78,7 @@ function CallNavButton() {
   return (
     <a
       href={SUPPORT_PHONE_TEL}
-      className="home-nav-call-btn"
+      className="home-nav-call-btn home-nav-contact-icon-btn"
       aria-label="Call CoBrother support"
       title="Call CoBrother support"
     >

@@ -10,10 +10,11 @@ export default function HeroGlow() {
           <div className="relative z-20 flex w-full min-w-0 flex-col items-start">
             <p className="hero-tagline m-0 font-sans">
               <span className="hero-tagline-dot" aria-hidden="true" />
-              Don't Just Start, Disrupt
+              Don't Just Start, Disrupt.
             </p>
             <h1 className="hero-headline m-0 font-sans font-normal leading-[1.2] text-black">
-              Why just be a Consumer? Be the <span className="hero-emphasis">Creator</span> with{' '}
+              Why just be a <span className="hero-emphasis">Consumer</span>? Be the{' '}
+              <span className="hero-emphasis">Creator</span> with{' '}
               <span className="hero-emphasis">CoBrother!</span>
             </h1>
           </div>

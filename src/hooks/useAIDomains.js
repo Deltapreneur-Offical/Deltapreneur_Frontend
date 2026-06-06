@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { aiDomainsAPI } from '../api/services';
 
-const LOADING_STAGES = [
-  'Understanding your idea...',
-  'Generating premium brands...',
-  'Evaluating startup potential...',
-  'Finding naming opportunities...',
-  'Preparing results...',
-];
+const LOADING_STAGES = {
+  start: 'Understanding your idea...',
+  ai: 'Generating premium brands...',
+  domains: 'Checking domain availability...',
+  done: 'Preparing results...',
+};
 const REVEAL_BATCH_SIZE = 4;
 const REVEAL_INTERVAL_MS = 100;
 
@@ -42,46 +41,40 @@ export default function useAIDomains() {
   const [cached, setCached] = useState(false);
   const requestIdRef = useRef(0);
   const progressTimerRef = useRef(null);
-  const messageTimerRef = useRef(null);
   const revealTimerRef = useRef(null);
 
   const clearTimers = useCallback(() => {
     window.clearInterval(progressTimerRef.current);
-    window.clearInterval(messageTimerRef.current);
     window.clearInterval(revealTimerRef.current);
   }, []);
 
   const startProgress = useCallback(() => {
     setProgress(0);
-    setStage(LOADING_STAGES[0]);
-    let stageIndex = 0;
-    messageTimerRef.current = window.setInterval(() => {
-      stageIndex = (stageIndex + 1) % LOADING_STAGES.length;
-      setStage(LOADING_STAGES[stageIndex]);
-    }, 850);
-
+    setStage(LOADING_STAGES.start);
     progressTimerRef.current = window.setInterval(() => {
       setProgress((prev) => {
-        if (prev < 85) return Math.min(85, prev + 3);
-        if (prev < 95) return Math.min(95, prev + 0.45);
-        return 95;
+        if (prev < 70) return Math.min(70, prev + 7);
+        return prev;
       });
-    }, 90);
+    }, 40);
   }, []);
 
-  const finishProgress = useCallback((currentRequestId) => new Promise((resolve) => {
+  const beginAiWait = useCallback(() => {
+    setStage(LOADING_STAGES.ai);
     window.clearInterval(progressTimerRef.current);
-    window.clearInterval(messageTimerRef.current);
-    setStage(LOADING_STAGES[4]);
-    const steps = [95, 97, 99, 100];
-    steps.forEach((value, index) => {
-      window.setTimeout(() => {
-        if (requestIdRef.current !== currentRequestId) return;
-        setProgress(value);
-        if (value === 100) resolve();
-      }, index * 55);
-    });
-  }), []);
+    progressTimerRef.current = window.setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 90) return Math.min(90, prev + 0.6);
+        return prev;
+      });
+    }, 120);
+  }, []);
+
+  const completeProgress = useCallback(() => {
+    window.clearInterval(progressTimerRef.current);
+    setStage(LOADING_STAGES.done);
+    setProgress(100);
+  }, []);
 
   const revealResults = useCallback((items, currentRequestId) => {
     window.clearInterval(revealTimerRef.current);
@@ -141,26 +134,37 @@ export default function useAIDomains() {
     startProgress();
 
     try {
+      beginAiWait();
       const { data } = await aiDomainsAPI.generate(cleanIdea, {
         headers: { 'X-Guest-Session': getGuestSession() },
       });
       if (requestIdRef.current !== currentRequestId) return;
+
       const nextResults = Array.isArray(data?.results) ? data.results : [];
+      if (import.meta.env.DEV) {
+        console.info('[AI Domains] idea:', cleanIdea);
+        console.info('[AI Domains] response names:', nextResults.map((item) => item.name));
+        console.info('[AI Domains] cached:', Boolean(data?.cached));
+      }
+
       setCategory(data?.category || '');
       setCached(Boolean(data?.cached));
-      await finishProgress(currentRequestId);
+      completeProgress();
       if (requestIdRef.current !== currentRequestId) return;
       revealResults(nextResults, currentRequestId);
     } catch (err) {
       if (requestIdRef.current !== currentRequestId) return;
       clearTimers();
+      if (import.meta.env.DEV) {
+        console.error('[AI Domains] request failed:', err?.response?.data || err);
+      }
       setError(extractError(err));
       setResults([]);
       setStage('');
       setProgress(0);
       setLoading(false);
     }
-  }, [clearTimers, finishProgress, revealResults, startProgress]);
+  }, [beginAiWait, clearTimers, completeProgress, revealResults, startProgress]);
 
   useEffect(() => {
     return () => {

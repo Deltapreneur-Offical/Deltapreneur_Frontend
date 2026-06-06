@@ -413,12 +413,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             {periodLabel}
           </span>
         </p>
-        {result.status === 'available' && (
+        {result.status === 'available' && years > 1 && (
           <p className={`text-gray-500 mt-1 ${large ? 'text-xs' : 'text-[11px]'}`}>
-            {result.registrarSandbox
-              ? `Sandbox registration price for .${result.ext} (ResellerClub demo API)`
-              : `Live registration price for .${result.ext} from ResellerClub`}
-            {years > 1 ? ` (${years}-year minimum)` : ''}
+            {years}-year minimum registration
           </p>
         )}
       </div>
@@ -576,12 +573,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           )}
 
           {/* New Domains */}
-          {hasSearchQuery && searchMode === 'new' && visibleNewBest?.registrarSandbox && (
-            <p className="text-center text-amber-800 text-sm mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2">
-              ResellerClub sandbox — prices and checkout use your demo API credentials.
-            </p>
-          )}
-
           {hasSearchQuery && searchMode === 'new' && visibleNewBest && (
             <div className={`domain-search-card domain-search-card--featured mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
               visibleNewBest.status === 'available' ? 'border-[var(--cobrother-brand-green)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.16)]' :

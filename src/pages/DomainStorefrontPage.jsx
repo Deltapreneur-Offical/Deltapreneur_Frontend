@@ -178,10 +178,8 @@ export default function DomainStorefrontPage() {
 
   const canRegister = checkResult?.status === 'available';
   const isMarketplace = checkResult?.status === 'marketplace';
-  const liveCheckoutBlocked =
-    config?.registrarEnv === 'live' &&
-    config?.productionReadiness &&
-    !config.productionReadiness.ready;
+  const checkoutUnavailable =
+    config?.productionReadiness && !config.productionReadiness.ready;
 
   const displayPrice = useMemo(() => {
     if (!checkResult?.price) return null;
@@ -196,7 +194,7 @@ export default function DomainStorefrontPage() {
   };
 
   const handlePay = async () => {
-    if (!canRegister || !checkResult?.domain || liveCheckoutBlocked) return;
+    if (!canRegister || !checkResult?.domain || checkoutUnavailable) return;
 
     setPayLoading(true);
     setPayError('');
@@ -283,49 +281,6 @@ export default function DomainStorefrontPage() {
           <p className="text-gray-600 mt-2 max-w-2xl">{t('storefrontSubtitle')}</p>
         </div>
 
-        {config && (
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 text-sm text-indigo-900">
-            {config.registrarEnv && (
-              <span className="font-semibold mr-2 uppercase text-xs tracking-wide">
-                {config.registrarEnv === 'sandbox' ? t('storefrontSandboxBadge') : 'LIVE API'}
-              </span>
-            )}
-            {(config.registrarSandbox || config.openProviderSandbox) && !config.registrarEnv && (
-              <span className="font-semibold mr-2">{t('storefrontSandboxBadge')}</span>
-            )}
-            {config.demoMode && (
-              <span className="font-semibold mr-2">{t('storefrontDemoBadge')}</span>
-            )}
-            {config.message}
-          </div>
-        )}
-
-        {config?.productionReadiness && !config.productionReadiness.ready && (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            <p className="font-semibold mb-1">
-              {t('storefrontNotProductionReady', { defaultValue: 'Not production-ready' })}
-            </p>
-            <ul className="list-disc pl-5 space-y-1">
-              {(config.productionReadiness.blockingIssues || []).map((issue) => (
-                <li key={issue}>{issue}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {config?.productionReadiness?.warnings?.length > 0 && config.productionReadiness.ready && (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-            <p className="font-semibold mb-1">
-              {t('storefrontProdWarnings', { defaultValue: 'Production notes' })}
-            </p>
-            <ul className="list-disc pl-5 space-y-1">
-              {config.productionReadiness.warnings.map((w) => (
-                <li key={w}>{w}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {successMessage && (
           <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
             <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
@@ -404,9 +359,6 @@ export default function DomainStorefrontPage() {
                 <p className="text-sm text-indigo-700 mb-2">{t('storefrontMarketplaceHint')}</p>
               )}
 
-              {checkResult.demoMode && (
-                <p className="text-xs text-amber-700 mb-2">{t('storefrontDemoHint')}</p>
-              )}
             </div>
           )}
         </section>
@@ -463,7 +415,7 @@ export default function DomainStorefrontPage() {
               type="button"
               className="btn-glow w-full sm:w-auto px-8 py-3"
               onClick={handlePay}
-              disabled={payLoading || liveCheckoutBlocked}
+              disabled={payLoading || checkoutUnavailable}
             >
               {payLoading ? t('storefrontPayOpening') : t('storefrontPayNow')}
             </button>

@@ -1,35 +1,20 @@
-/* Domain marketplace cards — clean SaaS listing grid */
+/* Domain marketplace cards — AI brand-name style listing grid */
 
 .domain-listing-grid {
   display: grid;
   gap: 1.25rem;
+  align-items: stretch;
 }
 
 .domain-listing-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 355px;
-  padding: 0;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-  cursor: pointer;
-  overflow: hidden;
-  transition:
-    border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.25s ease;
-}
-
-.domain-listing-card:not(.listing-card-glow):hover {
-  border-color: #c7d2fe;
-  box-shadow:
-    0 4px 6px -1px rgba(15, 23, 42, 0.06),
-    0 12px 24px -8px rgba(79, 70, 229, 0.12);
-  transform: translateY(-2px);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  min-height: 0;
+  cursor: default;
 }
 
 .domain-listing-card__header {

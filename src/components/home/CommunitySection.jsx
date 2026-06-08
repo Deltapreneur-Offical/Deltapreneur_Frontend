@@ -30,7 +30,18 @@ export default function CommunitySection() {
         setLoading(false);
       }
     };
+
     fetchCommunities();
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchCommunities();
+    };
+    window.addEventListener('focus', fetchCommunities);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('focus', fetchCommunities);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   const previewCommunities = useMemo(

@@ -9,7 +9,7 @@ import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
-import HomeUnifiedListingCard from './HomeUnifiedListingCard';
+import DomainListingCard from '../listings/DomainListingCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import '../../styles/domain-listing-cards.css';
@@ -63,9 +63,9 @@ export default function DomainsSection() {
             {previewDomains.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
                 <ListingCardShell>
-                  <HomeUnifiedListingCard
-                    type="domain"
-                    listing={domain}
+                  <DomainListingCard
+                    domain={domain}
+                    browseMode
                     likeState={getLike(domain.id)}
                     onLike={() => toggleLike(domain.id)}
                     onView={() => handleViewDetails(domain.id)}

@@ -5,6 +5,7 @@ import './index.css'
 import './styles/professional-ui.css'
 import './styles/listing-card-glow.css'
 import './styles/listing-cards-unified.css'
+import './styles/creator-profile-card.css'
 import './styles/home-preview-cards.css'
 import './styles/domain-ticker.css'
 import './i18n/index';

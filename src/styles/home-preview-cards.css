@@ -72,7 +72,17 @@
   overflow: hidden;
 }
 
-.home-preview-row .domain-listing-card,
+.home-preview-row .domain-listing-card {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  max-width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .home-preview-row .venture-listing-card,
 .home-preview-row .technology-listing-card,
 .home-preview-row .community-listing-card {

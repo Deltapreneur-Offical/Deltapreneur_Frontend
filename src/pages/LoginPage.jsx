@@ -12,6 +12,7 @@ import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
 import { resolveAfterAuthNavigation, saveReturnLocationBeforeOAuth } from '../utils/authSession';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 
 
@@ -53,7 +54,7 @@ export default function LoginPage() {
     requiresTurnstile,
     getProtectionPayload,
     resetProtection,
-    BotProtectionFields,
+    botProtectionProps,
   } = useBotProtection();
 
 
@@ -453,7 +454,7 @@ export default function LoginPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
               />
             </div>
-            <BotProtectionFields className="flex flex-col gap-3" />
+            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
             <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
               {busy ? (
                 <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
@@ -491,7 +492,7 @@ export default function LoginPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
               />
             </div>
-            <BotProtectionFields className="flex flex-col gap-3" />
+            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
             <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
               {busy ? (
                 <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />
@@ -525,7 +526,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <BotProtectionFields className="flex flex-col gap-3" />
+            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
             <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
               {busy ? (
                 <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />

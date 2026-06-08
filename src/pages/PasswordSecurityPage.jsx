@@ -196,9 +196,10 @@ export default function PasswordSecurityPage() {
         className="fixed top-4 left-4 sm:top-5 sm:left-5 z-20"
       >
         <BackButton
+          to="/complete-profile"
           variant="pill"
           label="Back"
-          className="shadow-[0_2px_12px_rgba(15,23,42,0.08)] bg-white/95 backdrop-blur-sm border-gray-200/90 hover:shadow-[0_4px_16px_rgba(15,23,42,0.1)] hover:border-gray-300 px-3.5 py-2"
+          className="relative z-30 pointer-events-auto shadow-[0_2px_12px_rgba(15,23,42,0.08)] bg-white/95 backdrop-blur-sm border-gray-200/90 hover:shadow-[0_4px_16px_rgba(15,23,42,0.1)] hover:border-gray-300 px-3.5 py-2"
         />
       </motion.div>
 

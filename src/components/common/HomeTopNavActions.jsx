@@ -275,20 +275,26 @@ export default function HomeTopNavActions() {
                   <span className="home-profile-mobile-select-label">Currency</span>
                   <CurrencyDropdown variant="minimal" className="home-profile-menu-currency" />
                 </div>
-                <a
-                  href="/complete-profile"
-                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
-                  onClick={() => setProfileDropdownOpen(false)}
+                <button
+                  type="button"
+                  className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    navigate('/complete-profile');
+                  }}
                 >
                   {t('updateProfile')}
-                </a>
-                <a
-                  href="/security/password"
-                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
-                  onClick={() => setProfileDropdownOpen(false)}
+                </button>
+                <button
+                  type="button"
+                  className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    navigate('/security/password');
+                  }}
                 >
                   Password & Security
-                </a>
+                </button>
                 <div className="border-t border-gray-100">
                   <button
                     type="button"

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { feedbackAPI } from '../../api/services';
+import BotProtectionFields from '../common/BotProtectionFields';
 import { useBotProtection } from '../../hooks/useBotProtection';
 
 export default function FeedbackSection() {
@@ -14,7 +15,7 @@ export default function FeedbackSection() {
     requiresTurnstile,
     getProtectionPayload,
     resetProtection,
-    BotProtectionFields,
+    botProtectionProps,
   } = useBotProtection();
 
   const handleFeedbackTypeClick = (type) => {
@@ -101,7 +102,7 @@ export default function FeedbackSection() {
               value={feedbackMessage}
               onChange={(e) => setFeedbackMessage(e.target.value)}
             />
-            <BotProtectionFields className="mb-3" />
+            <BotProtectionFields {...botProtectionProps} className="mb-3" />
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 mt-3">
               <button
                 className="btn-glow btn-glow-sm w-full sm:w-auto !px-4 !py-2 !text-[11px] sm:!text-xs"

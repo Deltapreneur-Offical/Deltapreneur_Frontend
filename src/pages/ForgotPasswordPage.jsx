@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 
 export default function ForgotPasswordPage() {
@@ -15,7 +16,7 @@ export default function ForgotPasswordPage() {
     requiresTurnstile,
     getProtectionPayload,
     resetProtection,
-    BotProtectionFields,
+    botProtectionProps,
   } = useBotProtection();
 
   const onSubmit = async (e) => {
@@ -82,7 +83,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <BotProtectionFields className="flex flex-col gap-3" />
+          <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
           <button type="submit" className="btn-glow w-full" disabled={busy || requiresTurnstile}>
             {busy ? (
               <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin inline-block" />

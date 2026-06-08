@@ -5,6 +5,7 @@ import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
+import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 
 export default function RegisterPage() {
@@ -20,7 +21,7 @@ export default function RegisterPage() {
     requiresTurnstile,
     getProtectionPayload,
     resetProtection,
-    BotProtectionFields,
+    botProtectionProps,
   } = useBotProtection();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -161,7 +162,7 @@ export default function RegisterPage() {
               <label className="text-sm font-medium text-gray-700">{t('confirmPasswordLabel')}</label>
               <input name="confirm" type="password" value={form.confirm} onChange={handleChange} placeholder={t('confirmPasswordPlaceholder')} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]" />
             </div>
-            <BotProtectionFields className="flex flex-col gap-3" />
+            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
             <button type="submit" className="btn-glow w-full" disabled={loading || requiresTurnstile}>
               {loading ? <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : t('sendVerificationCode', 'Send Verification Code')}
             </button>
@@ -183,7 +184,7 @@ export default function RegisterPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)] tracking-widest text-center text-lg"
               />
             </div>
-            <BotProtectionFields className="flex flex-col gap-3" />
+            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
             <button type="submit" className="btn-glow w-full" disabled={loading || requiresTurnstile}>
               {loading ? <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : t('verifyAndCreateAccount', 'Verify & Create Account')}
             </button>

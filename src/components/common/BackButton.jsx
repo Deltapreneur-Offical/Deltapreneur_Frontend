@@ -14,8 +14,16 @@ export default function BackButton({
   const navigate = useNavigate();
 
   const handleClick = () => {
-    if (to) navigate(to);
-    else navigate(-1);
+    if (to) {
+      navigate(to);
+      return;
+    }
+    const historyIndex = window.history.state?.idx ?? 0;
+    if (historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate('/');
   };
 
   const base =

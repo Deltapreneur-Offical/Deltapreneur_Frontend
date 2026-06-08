@@ -3,17 +3,36 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 const SCRIPT_ID = 'cf-turnstile-script';
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
-function loadTurnstileScript() {
-  return new Promise((resolve, reject) => {
-    if (window.turnstile) {
-      resolve(window.turnstile);
-      return;
-    }
+let scriptLoadPromise = null;
+
+export function prefetchTurnstileScript() {
+  if (typeof window === 'undefined') {
+    return Promise.resolve(null);
+  }
+  if (window.turnstile) {
+    return Promise.resolve(window.turnstile);
+  }
+  if (scriptLoadPromise) {
+    return scriptLoadPromise;
+  }
+
+  scriptLoadPromise = new Promise((resolve, reject) => {
+    const finish = () => {
+      if (window.turnstile) {
+        resolve(window.turnstile);
+        return;
+      }
+      reject(new Error('Turnstile failed to initialize.'));
+    };
 
     const existing = document.getElementById(SCRIPT_ID);
     if (existing) {
-      existing.addEventListener('load', () => resolve(window.turnstile));
-      existing.addEventListener('error', reject);
+      if (existing.dataset.loaded === 'true') {
+        finish();
+        return;
+      }
+      existing.addEventListener('load', finish, { once: true });
+      existing.addEventListener('error', () => reject(new Error('Turnstile script failed to load.')), { once: true });
       return;
     }
 
@@ -22,18 +41,31 @@ function loadTurnstileScript() {
     script.src = SCRIPT_SRC;
     script.async = true;
     script.defer = true;
-    script.onload = () => resolve(window.turnstile);
-    script.onerror = reject;
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      finish();
+    };
+    script.onerror = () => reject(new Error('Turnstile script failed to load.'));
     document.head.appendChild(script);
+  }).catch((error) => {
+    scriptLoadPromise = null;
+    throw error;
   });
+
+  return scriptLoadPromise;
 }
 
 const TurnstileWidget = forwardRef(function TurnstileWidget(
-  { siteKey, onToken, onExpire },
+  { siteKey, onToken, onExpire, theme = 'light' },
   ref,
 ) {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
+  const onTokenRef = useRef(onToken);
+  const onExpireRef = useRef(onExpire);
+
+  onTokenRef.current = onToken;
+  onExpireRef.current = onExpire;
 
   useImperativeHandle(ref, () => ({
     reset: () => {
@@ -48,24 +80,26 @@ const TurnstileWidget = forwardRef(function TurnstileWidget(
 
     let cancelled = false;
 
-    loadTurnstileScript()
+    prefetchTurnstileScript()
       .then((turnstile) => {
         if (cancelled || !containerRef.current) return;
 
         widgetIdRef.current = turnstile.render(containerRef.current, {
           sitekey: siteKey,
-          callback: (token) => onToken?.(token),
+          theme,
+          size: 'normal',
+          callback: (token) => onTokenRef.current?.(token),
           'expired-callback': () => {
-            onToken?.('');
-            onExpire?.();
+            onTokenRef.current?.('');
+            onExpireRef.current?.();
           },
           'error-callback': () => {
-            onToken?.('');
-            onExpire?.();
+            onTokenRef.current?.('');
+            onExpireRef.current?.();
           },
         });
       })
-      .catch(() => onToken?.(''));
+      .catch(() => onTokenRef.current?.(''));
 
     return () => {
       cancelled = true;
@@ -74,7 +108,7 @@ const TurnstileWidget = forwardRef(function TurnstileWidget(
         widgetIdRef.current = null;
       }
     };
-  }, [siteKey, onToken, onExpire]);
+  }, [siteKey, theme]);
 
   if (!siteKey) return null;
 

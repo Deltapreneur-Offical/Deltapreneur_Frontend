@@ -56,7 +56,7 @@ export default function VenturesSection() {
   }
 
   return (
-    <section className="bg-white py-4 md:py-6 min-w-0 overflow-x-hidden">
+    <section className="bg-white py-4 md:py-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('coVentures')} to="/ventures" />
         {previewVentures.length === 0 ? (

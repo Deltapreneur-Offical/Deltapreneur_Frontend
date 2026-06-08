@@ -237,11 +237,13 @@ export default function Home() {
 
         navigate={navigate}
 
+        hideJoinCta
+
       />
 
 
 
-      <div className="home-hero-search-stack relative z-10 overflow-x-hidden">
+      <div className="home-hero-search-stack relative z-10 overflow-visible">
         <HeroGlow />
       </div>
 

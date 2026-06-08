@@ -109,7 +109,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
   );
 }
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false }) {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -152,7 +152,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const authButtons = !authLoading ? (
+  const authButtons = !authLoading && !user && !hideJoinCta ? (
     <>
       <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
         {t('joinCoBrother')}
@@ -163,6 +163,10 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
         </button>
       )}
     </>
+  ) : !authLoading && !user ? (
+    <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
+      {t('signIn')}
+    </button>
   ) : null;
 
   return (
@@ -346,9 +350,11 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               )}
               {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">
-                  <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
-                    {t('joinCoBrother')}
-                  </JoinCoBrotherGradientButton>
+                  {!hideJoinCta ? (
+                    <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
+                      {t('joinCoBrother')}
+                    </JoinCoBrotherGradientButton>
+                  ) : null}
                   {!user && (
                     <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
                       {t('signIn')}

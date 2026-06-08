@@ -43,6 +43,13 @@ const MODES = [
   { id: 'auctions', label: 'Auctions', icon: Gavel },
 ];
 
+const MODE_TO_API = {
+  explore: 'marketplace',
+  domains: 'broker',
+  ventures: 'founder',
+  auctions: 'auction',
+};
+
 const QUICK_STARTS = [
   {
     icon: Globe2,
@@ -525,15 +532,16 @@ export default function CoBrotherAI() {
       await streamCoBrotherAI(
         {
           message: prompt,
-          mode,
-          conversationId,
-          messages: messages.map(({ role, content }) => ({ role, content })).slice(-10),
+          mode: MODE_TO_API[mode] || 'marketplace',
+          conversation_id: conversationId || undefined,
+          voice: voiceOutputEnabled,
         },
         {
           signal: controller.signal,
           onEvent: (event, data) => {
-            if (event === 'conversation' || data?.conversationId) {
-              setConversationId(data.conversationId || data.id);
+            const nextConversationId = data?.conversation_id || data?.conversationId || data?.id;
+            if (event === 'conversation' || nextConversationId) {
+              setConversationId(nextConversationId);
             }
 
             if (event === 'metadata' || data?.metadata) {
@@ -545,7 +553,9 @@ export default function CoBrotherAI() {
             }
 
             if (event === 'done') {
-              if (data?.conversationId) setConversationId(data.conversationId);
+              if (data?.conversation_id || data?.conversationId) {
+                setConversationId(data.conversation_id || data.conversationId);
+              }
               if (data?.metadata) setMetadata(data.metadata);
               return;
             }
@@ -679,8 +689,8 @@ export default function CoBrotherAI() {
   }
 
   const panelClass = fullscreen
-    ? 'fixed inset-3 z-[100] sm:inset-5'
-    : 'fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-[100] h-[min(680px,calc(100dvh-6.5rem))] sm:inset-x-auto sm:right-5 sm:w-[min(520px,calc(100vw-2.5rem))]';
+    ? 'fixed inset-x-3 bottom-3 top-[calc(var(--home-nav-stack-height,0px)+0.75rem)] z-[1100] sm:inset-x-5 sm:bottom-5 sm:top-[calc(var(--home-nav-stack-height,0px)+1.25rem)]'
+    : 'fixed inset-x-3 top-[calc(var(--home-nav-stack-height,0px)+0.75rem)] bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-[1100] sm:inset-x-auto sm:right-5 sm:w-[min(520px,calc(100vw-2.5rem))]';
 
   return (
     <>

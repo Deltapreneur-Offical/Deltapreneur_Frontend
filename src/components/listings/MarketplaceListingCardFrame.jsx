@@ -1,14 +1,16 @@
 /**
- * Shared marketplace card shell — fixed height + gradient header (home venture style).
+ * Shared marketplace card shell — fixed height + flat header (AI/domain search style).
  */
 export const LISTING_CARD_HEIGHT = 'h-[355px] max-h-[355px]';
 
+export const LISTING_CARD_HEADER_CLASS =
+  'relative border-b border-gray-100 bg-white px-4 pt-3.5 pb-3.5 min-h-[90px] max-h-[90px] flex items-end flex-shrink-0';
+
 export const listingCardBaseClass = (extra = '') =>
-  `listing-card-glow card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 ${LISTING_CARD_HEIGHT} min-h-[355px] ${extra}`.trim();
+  `listing-card-glow card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-all duration-300 ${LISTING_CARD_HEIGHT} min-h-[355px] ${extra}`.trim();
 
 export default function MarketplaceListingCardFrame({
   cardClassName = 'venture-listing-card',
-  gradient = 'from-indigo-600 via-blue-500 to-cyan-400',
   image,
   imageAlt = '',
   initial = '?',
@@ -28,12 +30,12 @@ export default function MarketplaceListingCardFrame({
       tabIndex={interactive ? 0 : undefined}
       onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onClick?.(); } : undefined}
     >
-      <div className={`relative bg-gradient-to-r ${gradient} px-4 pt-3.5 pb-3.5 min-h-[90px] max-h-[90px] flex items-end flex-shrink-0`}>
+      <div className={LISTING_CARD_HEADER_CLASS}>
         {image ? (
           <img
             src={image}
             alt={imageAlt}
-            className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
+            className="absolute top-0 right-0 w-full h-full object-cover opacity-[0.06] group-hover:opacity-[0.1] transition-opacity duration-300"
           />
         ) : null}
         <div className="relative z-10 flex items-end justify-between w-full min-w-0">
@@ -42,10 +44,10 @@ export default function MarketplaceListingCardFrame({
               <img
                 src={image}
                 alt={imageAlt}
-                className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg flex-shrink-0"
+                className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100 shadow-sm flex-shrink-0"
               />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-gray-900 ring-2 ring-gray-100 shadow-sm bg-gray-100 flex-shrink-0">
                 {initial}
               </div>
             )}
@@ -76,14 +78,14 @@ export function ListingCardBadge({ children, variant = 'glass', className = '' }
   const base = `px-1.5 py-0.5 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm whitespace-nowrap ${className}`.trim();
   if (variant === 'verified') {
     return (
-      <span className={`${base} bg-emerald-100 text-emerald-700`}>
+      <span className="px-1.5 py-0.5 bg-gray-900 text-white text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm whitespace-nowrap">
         {children}
       </span>
     );
   }
   if (variant === 'pending') {
     return (
-      <span className={`${base} bg-amber-100 text-amber-800`}>
+      <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm whitespace-nowrap">
         {children}
       </span>
     );
@@ -104,48 +106,33 @@ export function ListingCardBadge({ children, variant = 'glass', className = '' }
   }
   if (variant === 'owner') {
     return (
-      <span className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm whitespace-nowrap">
+      <span className="px-1.5 py-0.5 bg-gray-100 text-gray-800 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm whitespace-nowrap">
         {children}
       </span>
     );
   }
   if (variant === 'auction') {
     return (
-      <span className="px-1.5 py-0.5 bg-yellow-400 text-gray-900 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+      <span className="px-1.5 py-0.5 bg-gray-900 text-white text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
         {children}
       </span>
     );
   }
   return (
-    <span className="px-1.5 py-0.5 bg-white/25 backdrop-blur-sm text-white text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+    <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
       {children}
     </span>
   );
 }
 
 export function ListingPriceBox({ amount, caption, variant = 'deal' }) {
-  const isAuction = variant === 'auction';
   return (
-    <div
-      className={`rounded-lg px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3 flex-shrink-0 ${
-        isAuction
-          ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100'
-          : 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100'
-      }`}
-    >
+    <div className="rounded-lg px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3 flex-shrink-0 bg-gray-50 border border-gray-200">
       <div className="flex items-baseline gap-1 min-w-0">
-        <span
-          className={`text-lg md:text-xl font-extrabold tracking-tight truncate ${
-            isAuction ? 'text-purple-700' : 'text-emerald-700'
-          }`}
-        >
+        <span className="text-lg md:text-xl font-extrabold tracking-tight truncate text-gray-900">
           {amount}
         </span>
-        <span
-          className={`text-[9px] md:text-[10px] font-semibold whitespace-nowrap ${
-            isAuction ? 'text-purple-400' : 'text-emerald-400'
-          }`}
-        >
+        <span className="text-[9px] md:text-[10px] font-semibold whitespace-nowrap text-gray-500">
           {caption}
         </span>
       </div>

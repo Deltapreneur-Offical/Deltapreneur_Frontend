@@ -33,6 +33,16 @@ export function isActiveListing(item, type = 'domain') {
   return true;
 }
 
+/** Verified listings only — homepage preview rows hide unverified cards. */
+export function isHomepageVerifiedListing(item, type = 'domain') {
+  if (!item) return false;
+  if (type === 'domain') return Boolean(item.verified);
+  if (type === 'software') return Boolean(item.verified);
+  if (type === 'venture') return Boolean(item.verified || item.gstinVerified);
+  if (type === 'community') return Boolean(item.isApproved ?? item.is_approved);
+  return Boolean(item.verified);
+}
+
 function normalizeRole(role) {
   return (role ?? '').toString().toUpperCase().replace(/^ROLE_/, '');
 }
@@ -108,7 +118,9 @@ export function pickHomepagePreviewListings(
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
 ) {
-  const active = filterHomepageListings(items, type);
+  const active = filterHomepageListings(items, type).filter((item) =>
+    isHomepageVerifiedListing(item, type),
+  );
   if (active.length === 0) return [];
 
   const featured = active.filter((item) => Boolean(item.featured));

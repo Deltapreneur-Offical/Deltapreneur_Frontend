@@ -7,6 +7,7 @@ import { VENTURE_EQUITY_TYPE_LABELS } from '../../constants/ventureLabels';
 import LikeButton from '../common/LikeButton';
 import EditActionLabel from '../common/EditActionLabel';
 import ListingBrowseFooter from './ListingBrowseFooter';
+import { LISTING_CARD_HEADER_CLASS } from './MarketplaceListingCardFrame';
 
 export default function VentureListingCard({
   venture,
@@ -59,11 +60,7 @@ export default function VentureListingCard({
     setShareOpen(false);
   };
 
-  const accentGrad = isAuction
-    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-    : 'from-[var(--cobrother-brand-green)] via-[var(--cobrother-brand-green)] to-[var(--cobrother-brand-green)]';
-
-  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-[355px] max-h-[355px]${
+  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-all duration-300 h-[355px] max-h-[355px]${
     compact ? ' listing-card--compact' : ''
   }${browseMode ? '' : ' cursor-pointer'}`;
 
@@ -75,12 +72,12 @@ export default function VentureListingCard({
       tabIndex={browseMode ? undefined : 0}
       onKeyDown={browseMode ? undefined : (e) => { if (e.key === 'Enter') onView?.(); }}
     >
-      <div className={`relative bg-gradient-to-r ${accentGrad} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
+      <div className={LISTING_CARD_HEADER_CLASS}>
         {b.ventureImageUrl ? (
           <img
             src={b.ventureImageUrl}
             alt={b.brandName}
-            className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
+            className="absolute top-0 right-0 w-full h-full object-cover opacity-[0.06] group-hover:opacity-[0.1] transition-opacity duration-300"
           />
         ) : null}
         <div className="relative z-10 flex items-end justify-between w-full">
@@ -89,29 +86,29 @@ export default function VentureListingCard({
               <img
                 src={b.ventureImageUrl}
                 alt={b.brandName}
-                className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg"
+                className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100 shadow-sm"
               />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-gray-900 ring-2 ring-gray-100 shadow-sm bg-gray-100">
                 {b.brandName?.[0] || '?'}
               </div>
             )}
             <div className="flex flex-wrap items-center gap-1">
-              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
+              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wide ${isAuction ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
                 {isAuction ? '🔨 Auction' : '🤝 Regular'}
               </span>
               {isOwner && (
-                <span className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-800 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✦ Owner
                 </span>
               )}
               {isAuction && isGstinVerified && (
-                <span className="px-1.5 py-0.5 bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                <span className="px-1.5 py-0.5 bg-gray-900 text-white text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✓ GSTIN
                 </span>
               )}
               {!isAuction && isGstinVerified && (
-                <span className="px-1.5 py-0.5 bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
+                <span className="px-1.5 py-0.5 bg-gray-900 text-white text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✓ Verified
                 </span>
               )}
@@ -132,7 +129,7 @@ export default function VentureListingCard({
               </span>
             )}
             {b.ventureType && (
-              <span className="px-1.5 py-[2px] bg-indigo-50 text-indigo-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+              <span className="px-1.5 py-[2px] bg-gray-100 text-gray-600 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
                 {VENTURE_EQUITY_TYPE_LABELS[b.ventureType] || b.ventureType}
               </span>
             )}
@@ -143,26 +140,26 @@ export default function VentureListingCard({
         </p>
 
         {isAuction && auction ? (
-          <div className="rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
+          <div className="rounded-lg bg-gray-50 border border-gray-200 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
             <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-purple-700 tracking-tight">
+              <span className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">
                 {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0))}
               </span>
-              <span className="text-[9px] md:text-[10px] text-purple-400 font-semibold">
+              <span className="text-[9px] md:text-[10px] text-gray-500 font-semibold">
                 {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
               </span>
             </div>
-            <span className="text-[9px] md:text-[10px] text-purple-400">
+            <span className="text-[9px] md:text-[10px] text-gray-500">
               {auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}
             </span>
           </div>
         ) : b.dealValue ? (
-          <div className="rounded-lg border border-[rgba(var(--cobrother-brand-green-rgb),0.22)] bg-[var(--cobrother-brand-green-soft)] px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
             <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-[var(--cobrother-brand-green)] tracking-tight">
+              <span className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">
                 {formatPrice(b.dealValue)}
               </span>
-              <span className="text-[9px] md:text-[10px] text-[var(--cobrother-brand-green)] font-semibold">deal value</span>
+              <span className="text-[9px] md:text-[10px] text-gray-500 font-semibold">price</span>
             </div>
           </div>
         ) : null}
@@ -197,7 +194,7 @@ export default function VentureListingCard({
                   onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
                   Facebook
                 </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-[var(--cobrother-brand-green-soft)] hover:text-[var(--cobrother-brand-green)] transition-colors"
+                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
                   WhatsApp
                 </button>
@@ -231,7 +228,7 @@ export default function VentureListingCard({
               {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
                 <button
                   type="button"
-                  className="flex-1 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold rounded transition-all hover:bg-amber-200"
+                  className="flex-1 py-1.5 bg-gray-100 text-gray-800 border border-gray-200 text-[10px] font-bold rounded transition-all hover:bg-gray-200"
                   onClick={(e) => { e.stopPropagation(); onVerify?.(); }}
                 >
                   {isAuction ? '🔍 Verify GSTIN' : '🔍 Verify Business GSTIN'}
@@ -261,7 +258,7 @@ export default function VentureListingCard({
               {isAuction && auction?.id && auction.status !== 'DRAFT' ? (
                 <button
                   type="button"
-                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
+                  className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded transition-all hover:bg-black"
                   onClick={() => navigate(`/venture-auction/${auction.id}`)}
                 >
                   🔨 Bid
@@ -270,7 +267,7 @@ export default function VentureListingCard({
                 canApply ? (
                   <button
                     type="button"
-                    className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
+                    className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded transition-all hover:bg-black"
                     onClick={() => onApply?.()}
                   >
                     Apply
@@ -278,7 +275,7 @@ export default function VentureListingCard({
                 ) : hasApplied ? (
                   <button
                     type="button"
-                    className="flex-1 py-1.5 bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)] border border-[rgba(var(--cobrother-brand-green-rgb),0.35)] text-[10px] font-bold rounded cursor-not-allowed"
+                    className="flex-1 py-1.5 bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-bold rounded cursor-not-allowed"
                     title="You already applied"
                     disabled
                   >

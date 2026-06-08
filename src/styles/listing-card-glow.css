@@ -39,12 +39,12 @@
   filter: blur(16px);
   background: linear-gradient(
     90deg,
-    rgba(20, 184, 166, 0.65) 0%,
-    rgba(20, 184, 166, 0.15) 20%,
+    rgba(15, 23, 42, 0.18) 0%,
+    rgba(15, 23, 42, 0.06) 20%,
     transparent 42%,
     transparent 58%,
-    rgba(59, 130, 246, 0.15) 80%,
-    rgba(59, 130, 246, 0.65) 100%
+    rgba(15, 23, 42, 0.06) 80%,
+    rgba(15, 23, 42, 0.18) 100%
   );
 }
 
@@ -98,14 +98,11 @@
 .venture-listing-card.card-glow-hover:hover,
 .community-listing-card.card-glow-hover:hover {
   transform: translateY(-3px) translateZ(0);
-  border-color: rgba(20, 184, 166, 0.42) !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
   background-color: #fff;
   box-shadow:
-    -12px 0 28px -6px rgba(20, 184, 166, 0.42),
-    12px 0 28px -6px rgba(59, 130, 246, 0.42),
-    0 0 24px rgba(20, 184, 166, 0.14),
-    0 0 32px rgba(59, 130, 246, 0.12),
-    0 14px 32px rgba(15, 23, 42, 0.12);
+    0 12px 32px rgba(15, 23, 42, 0.12),
+    0 4px 20px rgba(15, 23, 42, 0.06);
 }
 
 .community-listing-card .listing-browse-footer {

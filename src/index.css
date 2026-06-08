@@ -4116,13 +4116,29 @@ body.home-page-body {
 }
 
 .home-nav-support-label {
-  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.home-nav-support-emphasis {
+  color: inherit;
   font-weight: 500;
 }
 
 .home-nav-phone-number {
-  color: var(--cobrother-brand-green);
+  color: #64748b;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.home-nav-phone-number:hover,
+.home-nav-phone-number:focus-visible {
+  color: var(--cobrother-hover-color);
 }
 
 /* Premium inline locale + currency controls (1st navbar) */
@@ -4134,12 +4150,28 @@ body.home-page-body {
   padding: 0.125rem 0;
 }
 
-.home-nav-util-divider {
+.home-nav-util-divider,
+.home-nav-toolbar-separator {
   color: rgba(148, 163, 184, 0.45);
   font-size: 0.6875rem;
   font-weight: 300;
   line-height: 1;
   user-select: none;
+  flex-shrink: 0;
+}
+
+.home-nav-toolbar-separator--mobile {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .home-nav-toolbar-separator--desktop {
+    display: none !important;
+  }
+
+  .home-nav-toolbar-separator--mobile {
+    display: inline;
+  }
 }
 
 .home-top-nav-actions .home-nav-util-btn,
@@ -4725,17 +4757,28 @@ body.home-page-body {
   border: none;
   border-radius: 0;
   background: transparent;
-  color: #64748b;
   cursor: pointer;
   line-height: 1;
-  transition: color 0.25s ease;
+}
+
+.home-nav-call-btn {
+  color: #2563eb;
 }
 
 .home-nav-call-btn:hover,
-.home-nav-call-btn:focus-visible,
+.home-nav-call-btn:focus-visible {
+  color: #2563eb;
+  background: transparent;
+  outline: none;
+}
+
+.home-nav-whatsapp-btn {
+  color: var(--cobrother-brand-green);
+}
+
 .home-nav-whatsapp-btn:hover,
 .home-nav-whatsapp-btn:focus-visible {
-  color: var(--cobrother-hover-color);
+  color: var(--cobrother-brand-green);
   background: transparent;
   outline: none;
 }
@@ -4745,6 +4788,12 @@ body.home-page-body {
   width: 0.9375rem;
   height: 0.9375rem;
   display: block;
+}
+
+@media (min-width: 640px) {
+  .home-top-nav-actions .home-nav-contact-icon-btn {
+    display: none !important;
+  }
 }
 
 .home-profile-mobile-only {
@@ -4771,13 +4820,24 @@ body.home-page-body {
     height: 2.25rem;
     min-height: 2.25rem;
     padding: 0;
-    color: #64748b;
   }
 
-  .home-top-nav-actions .home-nav-call-btn svg,
+  .home-top-nav-actions .home-nav-call-btn {
+    color: #2563eb;
+  }
+
+  .home-top-nav-actions .home-nav-whatsapp-btn {
+    color: #25d366;
+  }
+
+  .home-top-nav-actions .home-nav-call-btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
   .home-top-nav-actions .home-nav-whatsapp-btn svg {
-    width: 1rem;
-    height: 1rem;
+    width: 1.3125rem;
+    height: 1.3125rem;
   }
 
   .home-profile-mobile-only {
@@ -5401,7 +5461,8 @@ body.home-menu-open {
   padding-left: 1rem;
   padding-right: 1rem;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   max-width: 100%;
 }
 
@@ -5787,6 +5848,62 @@ body.home-menu-open {
 .meeting-time-field:focus-within .meeting-time-field__input--empty::-webkit-datetime-edit,
 .meeting-time-field:focus-within .meeting-time-field__input--empty::-webkit-datetime-edit-fields-wrapper {
   color: inherit;
+}
+
+.home-footer-social {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.home-footer-social-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .home-footer-social-row {
+    gap: 0.625rem;
+  }
+}
+
+.home-footer-social-link--whatsapp:hover {
+  border-color: #25d366;
+  color: #25d366;
+}
+
+.home-footer-social-link--facebook:hover {
+  border-color: #1877f2;
+  color: #1877f2;
+}
+
+.home-footer-social-link--instagram:hover {
+  border-color: transparent;
+  color: #ffffff;
+  background: linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+}
+
+.home-footer-social-link--linkedin:hover {
+  border-color: #0a66c2;
+  color: #0a66c2;
+}
+
+.home-footer-social-link--youtube:hover {
+  border-color: #ff0000;
+  color: #ff0000;
+}
+
+.home-footer-social-link--x:hover {
+  border-color: #000000;
+  color: #000000;
 }
 
 .home-footer-copyright {

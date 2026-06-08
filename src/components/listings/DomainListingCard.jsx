@@ -43,7 +43,7 @@ function DomainCardBody({
             {pricingLabel}
           </span>
           {isAdminListed && (
-            <span className="px-1.5 py-[2px] bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+            <span className="px-1.5 py-[2px] bg-gray-100 text-gray-700 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
               Admin
             </span>
           )}
@@ -62,7 +62,7 @@ function DomainCardBody({
               ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
               : domain.askingPrice,
           )}
-          caption={isAuction ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid')) : t('listingCardAskingPrice')}
+          caption={isAuction ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid')) : t('listingCardPrice')}
         />
       ) : (
         <ListingPriceBox variant="auction" amount={t('listingCardVerificationPending')} caption={t('listingCardVerificationPending')} />
@@ -105,11 +105,7 @@ export default function DomainListingCard({
   const pricingLabel = domain.pricingDemand === 'NEGOTIABLE' ? t('listingCardNegotiable') : t('listingCardFixed');
   const needsVerification = !domain.verified;
   const purchaseBlocked = needsVerification && !isOwner;
-  const showPriceBox = !needsVerification || isOwner;
-
-  const accentGrad = isAuction
-    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-    : 'from-indigo-600 via-blue-500 to-cyan-400';
+  const showPriceBox = true;
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -166,7 +162,6 @@ export default function DomainListingCard({
     return (
       <MarketplaceListingCardFrame
         cardClassName="domain-listing-card marketplace-listing-card--venture-style"
-        gradient={accentGrad}
         image={domain.logo}
         imageAlt={display.fullDomain}
         initial={domainInitials}
@@ -195,7 +190,6 @@ export default function DomainListingCard({
   return (
     <MarketplaceListingCardFrame
       cardClassName="domain-listing-card marketplace-listing-card--venture-style"
-      gradient={accentGrad}
       image={domain.logo}
       imageAlt={display.fullDomain}
       initial={domainInitials}
@@ -265,7 +259,7 @@ export default function DomainListingCard({
                       </button>
                       <button
                         type="button"
-                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
                         onClick={() => handleShare(whatsappShare)}
                       >
                         {t('listingCardWhatsApp')}
@@ -276,13 +270,13 @@ export default function DomainListingCard({
               </>
             ) : isAuction ? (
               purchaseBlocked ? (
-                <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
+                <span className="flex-1 text-center text-[10px] text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1.5 rounded font-semibold">
                   {t('listingCardVerificationPending')}
                 </span>
               ) : (
                 <button
                   type="button"
-                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded hover:bg-black inline-flex items-center justify-center gap-1"
                   onClick={(e) => { stop(e); onViewAuction?.(); }}
                 >
                   <Gavel size={12} /> {auctionLive ? t('listingCardJoinAuction') : t('listingCardViewAuction')}
@@ -290,13 +284,13 @@ export default function DomainListingCard({
               )
             ) : statusKey === 'AVAILABLE' ? (
               purchaseBlocked ? (
-                <span className="flex-1 text-center text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1.5 rounded font-semibold">
+                <span className="flex-1 text-center text-[10px] text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1.5 rounded font-semibold">
                   {t('listingCardVerificationPending')}
                 </span>
               ) : isHighValue ? (
                 <button
                   type="button"
-                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded hover:bg-black inline-flex items-center justify-center gap-1"
                   onClick={(e) => { stop(e); onEnquire?.(); }}
                 >
                   <MessageSquare size={12} /> {t('listingCardEnquire')}
@@ -304,7 +298,7 @@ export default function DomainListingCard({
               ) : (
                 <button
                   type="button"
-                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded hover:opacity-90 inline-flex items-center justify-center gap-1`}
+                  className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded hover:bg-black inline-flex items-center justify-center gap-1"
                   onClick={(e) => { stop(e); onBuy?.(); }}
                 >
                   <ShoppingCart size={12} /> {t('listingCardBuyNow')}

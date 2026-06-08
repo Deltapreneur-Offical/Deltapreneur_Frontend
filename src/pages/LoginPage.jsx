@@ -12,7 +12,6 @@ import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
 import { resolveAfterAuthNavigation, saveReturnLocationBeforeOAuth } from '../utils/authSession';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
-import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
 import { useBotProtection } from '../hooks/useBotProtection';
 
 
@@ -347,9 +346,7 @@ export default function LoginPage() {
 
 
 
-      <div className="relative z-10 w-full max-w-[420px] sm:max-w-[440px] bg-white/92 px-5 pt-16 pb-6 sm:px-8 sm:pt-16 sm:pb-8 md:p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl">
-
-        <AuthRegionalSettings />
+      <div className="relative z-10 w-full max-w-[420px] sm:max-w-[440px] bg-white/92 px-5 pt-12 pb-6 sm:px-8 sm:pt-12 sm:pb-8 md:p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl">
 
         <button
 

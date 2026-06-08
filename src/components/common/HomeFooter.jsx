@@ -101,21 +101,55 @@ const WhatsappIcon = () => (
 
 
 
-const socials = [
+const socialRowOne = [
 
-  { href: 'https://x.com/CoBrother141506', label: 'X', Icon: XIcon },
+  { id: 'whatsapp', href: WHATSAPP_URL, label: 'WhatsApp', Icon: WhatsappIcon },
 
-  { href: 'https://www.instagram.com/cobrother__?igsh=bXE3YnR4dDJ6NnVi', label: 'Instagram', Icon: InstagramIcon },
+  { id: 'facebook', href: 'https://www.facebook.com/share/16vjEWTjHi/', label: 'Facebook', Icon: FacebookIcon },
 
-  { href: 'https://www.facebook.com/share/16vjEWTjHi/', label: 'Facebook', Icon: FacebookIcon },
-
-  { href: 'https://www.linkedin.com/in/co-brother-9921b03aa', label: 'LinkedIn', Icon: LinkedinIcon },
-
-  { href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
-
-  { href: WHATSAPP_URL, label: 'WhatsApp', Icon: WhatsappIcon },
+  { id: 'instagram', href: 'https://www.instagram.com/cobrother__?igsh=bXE3YnR4dDJ6NnVi', label: 'Instagram', Icon: InstagramIcon },
 
 ];
+
+
+
+const socialRowTwo = [
+
+  { id: 'linkedin', href: 'https://www.linkedin.com/in/co-brother-9921b03aa', label: 'LinkedIn', Icon: LinkedinIcon },
+
+  { id: 'youtube', href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
+
+  { id: 'x', href: 'https://x.com/CoBrother141506', label: 'X', Icon: XIcon },
+
+];
+
+
+
+const socialLinkClass =
+
+  'home-footer-social-link flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-colors duration-300 sm:h-10 sm:w-10';
+
+
+
+const SocialLink = ({ href, label, Icon, id }) => (
+
+  <a
+
+    href={href}
+
+    {...EXTERNAL_LINK_PROPS}
+
+    aria-label={label}
+
+    className={`${socialLinkClass} home-footer-social-link--${id}`}
+
+  >
+
+    <Icon />
+
+  </a>
+
+);
 
 
 
@@ -241,6 +275,12 @@ export default function HomeFooter() {
 
               </ScrollLink>
 
+              <ScrollLink to="/join-form" className={linkClass}>
+
+                {t('joinCoBrother')}
+
+              </ScrollLink>
+
             </nav>
 
           </div>
@@ -281,29 +321,27 @@ export default function HomeFooter() {
 
             <h3 className={headingClass}>{t('Show us some love')}</h3>
 
-            <div className="flex flex-wrap gap-2 sm:gap-2.5">
+            <div className="home-footer-social">
 
-              {socials.map(({ href, label, Icon }) => (
+              <div className="home-footer-social-row">
 
-                <a
+                {socialRowOne.map((social) => (
 
-                  key={label}
+                  <SocialLink key={social.id} {...social} />
 
-                  href={href}
+                ))}
 
-                  {...EXTERNAL_LINK_PROPS}
+              </div>
 
-                  aria-label={label}
+              <div className="home-footer-social-row">
 
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-colors duration-300 hover:border-[var(--cobrother-hover-color)] hover:text-[var(--cobrother-hover-color)] sm:h-10 sm:w-10"
+                {socialRowTwo.map((social) => (
 
-                >
+                  <SocialLink key={social.id} {...social} />
 
-                  <Icon />
+                ))}
 
-                </a>
-
-              ))}
+              </div>
 
             </div>
 

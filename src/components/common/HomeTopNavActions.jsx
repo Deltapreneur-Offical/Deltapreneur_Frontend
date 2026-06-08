@@ -65,7 +65,7 @@ function WhatsAppNavButton() {
     <a
       href={WHATSAPP_URL}
       {...EXTERNAL_LINK_PROPS}
-      className="home-nav-whatsapp-btn"
+      className="home-nav-whatsapp-btn home-nav-contact-icon-btn"
       aria-label="WhatsApp"
       title="WhatsApp"
     >
@@ -78,12 +78,32 @@ function CallNavButton() {
   return (
     <a
       href={SUPPORT_PHONE_TEL}
-      className="home-nav-call-btn"
+      className="home-nav-call-btn home-nav-contact-icon-btn"
       aria-label="Call CoBrother support"
       title="Call CoBrother support"
     >
       <FaPhoneAlt aria-hidden />
     </a>
+  );
+}
+
+function HomeNavToolbarSeparator({ variant = 'desktop' }) {
+  return (
+    <span
+      className={`home-nav-toolbar-separator home-nav-toolbar-separator--${variant}`}
+      aria-hidden="true"
+    >
+      |
+    </span>
+  );
+}
+
+function SupportLabel({ className = 'home-nav-support-label' }) {
+  return (
+    <span className={className}>
+      <span className="home-nav-support-prefix">24x7</span>
+      <span className="home-nav-support-emphasis">Support</span>
+    </span>
   );
 }
 
@@ -165,10 +185,16 @@ export default function HomeTopNavActions() {
 
   return (
     <>
-      <span className="home-nav-support-label">24x7 Support</span>
-      <span className="home-nav-phone-number">{SUPPORT_PHONE_DISPLAY}</span>
+      <SupportLabel />
+      <HomeNavToolbarSeparator />
+      <a href={SUPPORT_PHONE_TEL} className="home-nav-phone-number">
+        {SUPPORT_PHONE_DISPLAY}
+      </a>
+      <HomeNavToolbarSeparator />
       <CallNavButton />
+      <HomeNavToolbarSeparator variant="mobile" />
       <WhatsAppNavButton />
+      <HomeNavToolbarSeparator variant="mobile" />
       <div className="home-nav-util-group" role="group" aria-label="Regional settings">
         <LanguageDropdown variant="minimal" className="home-nav-util-language" />
         <span className="home-nav-util-divider" aria-hidden="true">
@@ -176,13 +202,13 @@ export default function HomeTopNavActions() {
         </span>
         <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
       </div>
-
+      <HomeNavToolbarSeparator />
       <div className="home-nav-contact-wrap relative block">
         <a href="/contact" className="home-nav-contact-link">
           {t('contactUs')}
         </a>
       </div>
-
+      <HomeNavToolbarSeparator />
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button
           type="button"
@@ -231,12 +257,12 @@ export default function HomeTopNavActions() {
                 >
                   {t('contactUs')}
                 </a>
-                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
-                  24x7 Support
+                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium">
+                  <SupportLabel />
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-[var(--cobrother-brand-green)] hover:bg-gray-50 transition-colors no-underline"
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-gray-50 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {SUPPORT_PHONE_DISPLAY}
@@ -294,12 +320,12 @@ export default function HomeTopNavActions() {
                 >
                   {t('contactUs')}
                 </a>
-                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium text-slate-500">
-                  24x7 Support
+                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium">
+                  <SupportLabel />
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-[var(--cobrother-brand-green)] hover:bg-gray-100 transition-colors no-underline"
+                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-gray-100 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {SUPPORT_PHONE_DISPLAY}

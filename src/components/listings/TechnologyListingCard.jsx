@@ -69,10 +69,6 @@ export default function TechnologyListingCard({
   const showVerificationNotice =
     REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !item.verified;
 
-  const accentGrad = isAuction
-    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-    : 'from-indigo-600 via-blue-500 to-cyan-400';
-
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
@@ -136,7 +132,7 @@ export default function TechnologyListingCard({
       <ListingPriceBox
         variant={isAuction ? 'auction' : 'deal'}
         amount={formatPrice(item.price || 0)}
-        caption={isAuction ? 'listing value' : 'deal value'}
+        caption={isAuction ? 'listing value' : 'price'}
       />
     </>
   );
@@ -150,12 +146,12 @@ export default function TechnologyListingCard({
     </div>
   );
 
-  const btnBase = 'flex-1 min-w-0 py-1.5 text-[10px] font-bold rounded transition-colors inline-flex items-center justify-center gap-1';
-  const btnEdit = `${btnBase} bg-white border border-gray-300 text-gray-800 hover:bg-gray-50`;
-  const btnRemove = `${btnBase} bg-red-50 border border-red-200 text-red-600 hover:bg-red-100`;
-  const btnBuy = `${btnBase} bg-violet-600 text-white border-0 hover:bg-violet-700`;
-  const btnAuction = `${btnBase} bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100`;
-  const btnLive = `${btnBase} bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100`;
+  const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors inline-flex items-center justify-center gap-1';
+  const btnEdit = `${btnPill} bg-white border border-gray-300 text-gray-800 font-semibold hover:bg-gray-50`;
+  const btnRemove = `${btnPill} bg-red-50 border border-red-300 text-red-600 font-bold hover:bg-red-100`;
+  const btnBuy = `${btnPill} bg-gray-950 text-white font-bold border-0 hover:bg-black`;
+  const btnAuction = `${btnPill} bg-gray-100 text-gray-800 border border-gray-200 font-semibold hover:bg-gray-200`;
+  const btnLive = `${btnPill} bg-gray-100 text-gray-800 border border-gray-200 font-semibold hover:bg-gray-200`;
 
   const shareButton = (
     <div className="relative shrink-0" ref={shareRef}>
@@ -219,7 +215,7 @@ export default function TechnologyListingCard({
             </button>
           )}
           {isTechnologyAuctionPending(item, auctionStatus) && (
-            <span className={`${btnBase} text-center text-amber-700 bg-amber-50 border border-amber-200`}>
+            <span className={`${btnPill} text-center text-gray-700 bg-gray-100 border border-gray-200 font-semibold`}>
               {t('listingCardAuctionPending')}
             </span>
           )}
@@ -253,7 +249,7 @@ export default function TechnologyListingCard({
       ) : isTechnologyAuctionLive(item, auctionStatus) ? (
         <>
           {isAuctionBlockedByVerification(item) ? (
-            <span className={`${btnBase} text-center text-amber-800 bg-amber-50 border border-amber-200`}>
+            <span className={`${btnPill} text-center text-gray-700 bg-gray-100 border border-gray-200 font-semibold`}>
               {t('listingCardVerificationPending')}
             </span>
           ) : (
@@ -278,12 +274,12 @@ export default function TechnologyListingCard({
           {shareButton}
         </>
       ) : isPurchaseBlockedByVerification(item) ? (
-        <span className={`${btnBase} text-center text-amber-800 bg-amber-50 border border-amber-200`}>
+        <span className={`${btnPill} text-center text-gray-700 bg-gray-100 border border-gray-200 font-semibold`}>
           {t('listingCardVerificationPending')}
         </span>
       ) : (
         <>
-          <span className={`${btnBase} text-center text-gray-400 italic font-medium`}>{t('listingCardSold')}</span>
+          <span className={`${btnPill} text-center text-gray-400 italic font-medium`}>{t('listingCardSold')}</span>
           {shareButton}
         </>
       )}
@@ -294,7 +290,6 @@ export default function TechnologyListingCard({
     return (
       <MarketplaceListingCardFrame
         cardClassName="technology-listing-card"
-        gradient={accentGrad}
         image={item.imageUrl && !imgFailed ? item.imageUrl : null}
         imageAlt={item.name}
         initial={(item.name || '?').slice(0, 1).toUpperCase()}
@@ -315,7 +310,6 @@ export default function TechnologyListingCard({
   return (
     <MarketplaceListingCardFrame
       cardClassName="technology-listing-card"
-      gradient={accentGrad}
       image={item.imageUrl && !imgFailed ? item.imageUrl : null}
       imageAlt={item.name}
       initial={(item.name || '?').slice(0, 1).toUpperCase()}

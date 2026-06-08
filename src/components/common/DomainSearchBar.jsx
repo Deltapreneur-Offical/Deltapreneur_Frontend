@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
-import searchIcon from '../../assets/search.png';
-import searchGreenIcon from '../../assets/search_green.png';
+import { ArrowRight, Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
@@ -53,18 +51,11 @@ function toSafeLower(value) {
 
 function BrandSearchIcon() {
   return (
-    <span className="domain-search-icon relative inline-flex h-7 w-7 shrink-0" aria-hidden="true">
-      <img
-        src={searchIcon}
-        alt=""
-        className="domain-search-icon-img domain-search-icon-img--default h-7 w-7 object-contain transition-opacity duration-200"
-      />
-      <img
-        src={searchGreenIcon}
-        alt=""
-        className="domain-search-icon-img domain-search-icon-img--hover absolute inset-0 h-7 w-7 object-contain opacity-0 transition-opacity duration-200"
-      />
-    </span>
+    <Search
+      className="domain-search-icon h-7 w-7 shrink-0 text-slate-900 transition-colors duration-200"
+      strokeWidth={2.25}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -217,12 +208,24 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             registrarSandbox: data.registrarSandbox ?? null,
             registrarEnv: data.registrarEnv ?? null,
             minPeriodYears: data.minPeriodYears ?? 1,
+            registrarMessage: data.message ?? null,
             listing: onPublicMarketplace ? listing : null,
           };
         }
-      } catch {
+      } catch (err) {
         const idx = nextResults.findIndex((r) => r.domain === fullDomain);
-        if (idx !== -1) nextResults[idx] = { ...nextResults[idx], status: 'error' };
+        const registrarMessage =
+          err?.response?.data?.message
+          || err?.response?.data?.error
+          || err?.message
+          || 'Could not check this domain with the registrar.';
+        if (idx !== -1) {
+          nextResults[idx] = {
+            ...nextResults[idx],
+            status: 'error',
+            registrarMessage,
+          };
+        }
       }
     }));
 
@@ -379,14 +382,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     navigate(`/storefront?domain=${encodeURIComponent(`${name}.${ext}`)}`);
   };
 
-  const best   = results.find(r => r.status === 'marketplace')
-              || results.find(r => r.status === 'available')
-              || results[0];
-  const others = results.filter(r => r !== best);
-  const visibleNewBest = best?.status === 'available' ? best : others.find((r) => r.status === 'available') || null;
-  const visibleNewOthers = [best, ...others]
-    .filter(Boolean)
-    .filter((item) => item !== visibleNewBest && item.status === 'available');
+  const completedNewResults = results.filter((item) => item.status !== 'loading');
+  const visibleNewBest =
+    completedNewResults.find((item) => item.status === 'available')
+    || completedNewResults.find((item) => item.status === 'marketplace')
+    || completedNewResults.find((item) => item.status === 'taken')
+    || completedNewResults[0]
+    || null;
+  const visibleNewOthers = completedNewResults.filter((item) => item !== visibleNewBest);
+  const registrarErrorMessage = completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
+    || (completedNewResults.length > 0 && completedNewResults.every((item) => item.status === 'error')
+      ? completedNewResults[0]?.registrarMessage
+      : '');
   const filteredPremiumDomains = premiumDomains.filter((item) => {
     const q = normalizedQuery;
     const domainName = toSafeLower(item.domainName || '');
@@ -472,7 +479,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
     return (
       <button disabled className={`bg-gray-100 text-gray-400 cursor-not-allowed ${base}`}>
-        Taken
+        {result.status === 'error' ? 'Unavailable' : 'Taken'}
       </button>
     );
   };
@@ -657,7 +664,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </div>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && !loading && !visibleNewBest && (
+          {hasSearchQuery && searchMode === 'new' && !loading && registrarErrorMessage && completedNewResults.every((item) => item.status === 'error') && (
+            <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {registrarErrorMessage}
+            </p>
+          )}
+
+          {hasSearchQuery && searchMode === 'new' && !loading && completedNewResults.length === 0 && (
             <p className="text-center text-gray-500 text-sm py-6">
               No registrar domains available for this query right now.
             </p>
@@ -851,14 +864,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             0 0 28px -9px rgba(102, 204, 255, 0.5);
         }
 
-        .search-glow-focus:hover .domain-search-icon-img--default,
-        .search-glow-focus:focus-within .domain-search-icon-img--default {
-          opacity: 0;
-        }
-
-        .search-glow-focus:hover .domain-search-icon-img--hover,
-        .search-glow-focus:focus-within .domain-search-icon-img--hover {
-          opacity: 1;
+        .search-glow-focus:hover .domain-search-icon,
+        .search-glow-focus:focus-within .domain-search-icon {
+          color: var(--cobrother-brand-green);
         }
 
         .domain-search-submit:hover,

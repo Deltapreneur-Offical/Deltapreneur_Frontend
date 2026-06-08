@@ -196,6 +196,16 @@ function iconForItem(item) {
   return Globe2;
 }
 
+function BroAIIcon({ isDark, className }) {
+  return (
+    <img
+      src={broAILogo}
+      alt=""
+      className={`rounded-full object-contain ${isDark ? 'brightness-0 invert drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]' : ''} ${className}`}
+    />
+  );
+}
+
 function BubbleActions({ content, isDark }) {
   const [copied, setCopied] = useState(false);
 
@@ -706,7 +716,7 @@ export default function CoBrotherAI() {
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.96 }}
       >
-        <img src={broAILogo} alt="" className="h-9 w-9 rounded-full object-contain sm:h-10 sm:w-10" />
+        <BroAIIcon isDark={isDark} className="h-9 w-9 sm:h-10 sm:w-10" />
         <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-[var(--cobrother-brand-green)]" />
       </motion.button>
 
@@ -732,7 +742,7 @@ export default function CoBrotherAI() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <img src={broAILogo} alt="" className="h-10 w-10 rounded-full object-contain" />
+                  <BroAIIcon isDark={isDark} className="h-10 w-10" />
                   <div className="min-w-0 flex-1">
                     <h2
                       className={`truncate text-[24px] font-bold leading-7 tracking-[-0.02em] ${
@@ -888,7 +898,7 @@ export default function CoBrotherAI() {
                 {messages.length === 0 ? (
                   <div className="mx-auto flex min-h-full max-w-md flex-col justify-center py-2">
                     <div className="text-center">
-                      <img src={broAILogo} alt="" className="mx-auto h-14 w-14 rounded-full object-contain" />
+                      <BroAIIcon isDark={isDark} className="mx-auto h-14 w-14" />
                       <h3
                         className={`mt-4 text-[26px] font-semibold leading-tight tracking-[-0.02em] ${
                           isDark ? 'text-white' : 'text-slate-950'

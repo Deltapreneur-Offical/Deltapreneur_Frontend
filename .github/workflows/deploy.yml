@@ -2,42 +2,30 @@ name: Deploy Frontend
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # Public repo: shallow clone without GITHUB_TOKEN (avoids 403 when owner account is suspended)
-      - name: Checkout
-        run: |
-          git init .
-          git remote add origin https://github.com/${{ github.repository }}.git
-          git fetch --depth=1 origin ${{ github.sha }}
-          git checkout FETCH_HEAD
+      - name: Deploy to Lightsail
+        uses: appleboy/ssh-action@v1.0.3
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Install & Build
-        run: |
-          npm ci
-          npm run build
+          script: |
+            cd /home/ubuntu/projects/CoBrother_Frontend
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+            git fetch origin
+            git reset --hard origin/main
 
-      - name: Copy dist to server
-        run: |
-          scp -i ~/.ssh/deploy_key -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/frontend/
+            npm install
 
-      - name: Reload Nginx
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl reload nginx"
+            npm run build
+
+            sudo systemctl reload nginx

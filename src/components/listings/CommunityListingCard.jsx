@@ -1,6 +1,5 @@
-import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import LikeButton from '../common/LikeButton';
+import ListingStatsRow from './ListingStatsRow';
 import { EditIcon } from '../common/EditActionLabel';
 
 function formatLabel(value) {
@@ -112,20 +111,12 @@ export default function CommunityListingCard({
         </div>
 
         <div className="creator-profile-card__footer">
-          <div className="creator-profile-card__likes">
-            <span className="creator-profile-card__views inline-flex items-center gap-1">
-              <Eye size={12} />
-              {profile.views || 0}
-            </span>
-            {onLike ? (
-              <LikeButton
-                liked={likeState?.liked}
-                count={likeState?.count}
-                onToggle={onLike}
-                forceRed
-              />
-            ) : null}
-          </div>
+          <ListingStatsRow
+            views={profile.views}
+            likeState={likeState}
+            onLike={onLike}
+            className="creator-profile-card__stats"
+          />
 
           <button
             type="button"

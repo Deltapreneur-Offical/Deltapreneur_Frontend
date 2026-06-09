@@ -6,7 +6,6 @@ import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
-import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -34,15 +33,9 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
-  const isMobile = useHomepageMobile();
-
   const previewVentures = useMemo(
-    () => pickHomepagePreviewListings(
-      ventures,
-      'venture',
-      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
-    ),
-    [ventures, isMobile],
+    () => pickHomepagePreviewListings(ventures, 'venture', HOMEPAGE_PREVIEW_LIMIT),
+    [ventures],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewVentures);

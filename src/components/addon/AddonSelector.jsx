@@ -11,36 +11,36 @@ import useCurrency from '../../context/CurrencyContext';
 import i18n from '../../i18n';
 
 export const ADDON_SERVICES = [
-  { key: 'GST_REGISTRATION',       labelKey: 'addonGstRegistration',       price: 3000,  contactOnly: false },
-  { key: 'TRADEMARK_REGISTRATION',  labelKey: 'addonTrademarkRegistration', price: 0,     contactOnly: true  },
-  { key: 'COMPANY_REGISTRATION',    labelKey: 'addonCompanyRegistration',    price: 0,    contactOnly: true  },
-  { key: 'UDYAM_REGISTRATION',      labelKey: 'addonUdyamRegistration',      price: 1500,  contactOnly: false },
-  { key: 'WEBSITE_DEVELOPMENT',     labelKey: 'addonWebsiteDevelopment',     price: 0,     contactOnly: true  },
-  { key: 'IEC_REGISTRATION',        labelKey: 'addonIecRegistration',        price: 2000,  contactOnly: false },
-  { key: 'DIGITAL_SIGNATURE',       labelKey: 'addonDigitalSignature',       price: 3000,  contactOnly: false },
-  { key: 'PROFESSIONAL_TAX',        labelKey: 'addonProfessionalTax',        price: 2500,  contactOnly: false },
-  { key: 'STARTUP_INDIA',           labelKey: 'addonStartupIndia',           price: 3000,  contactOnly: false },
+  { key: 'GST_REGISTRATION', labelKey: 'addonGstRegistration', price: 3000, contactOnly: false },
+  { key: 'TRADEMARK_REGISTRATION', labelKey: 'addonTrademarkRegistration', price: 0, contactOnly: true },
+  { key: 'COMPANY_REGISTRATION', labelKey: 'addonCompanyRegistration', price: 0, contactOnly: true },
+  { key: 'UDYAM_REGISTRATION', labelKey: 'addonUdyamRegistration', price: 1500, contactOnly: false },
+  { key: 'WEBSITE_DEVELOPMENT', labelKey: 'addonWebsiteDevelopment', price: 0, contactOnly: true },
+  { key: 'IEC_REGISTRATION', labelKey: 'addonIecRegistration', price: 2000, contactOnly: false },
+  { key: 'DIGITAL_SIGNATURE', labelKey: 'addonDigitalSignature', price: 3000, contactOnly: false },
+  { key: 'PROFESSIONAL_TAX', labelKey: 'addonProfessionalTax', price: 2500, contactOnly: false },
+  { key: 'STARTUP_INDIA', labelKey: 'addonStartupIndia', price: 3000, contactOnly: false },
 ];
 
 export function addonTotal(selected) {
   return ADDON_SERVICES
-    .filter(s => selected.includes(s.key) && !s.contactOnly)
-    .reduce((sum, s) => sum + s.price, 0);
+    .filter((service) => selected.includes(service.key) && !service.contactOnly)
+    .reduce((sum, service) => sum + service.price, 0);
 }
 
 export function addonLabel(key) {
-  const svc = ADDON_SERVICES.find(s => s.key === key);
-  return svc ? i18n.t(svc.labelKey) : key;
+  const service = ADDON_SERVICES.find((item) => item.key === key);
+  return service ? i18n.t(service.labelKey) : key;
 }
 
-export default function AddonSelector({ selected = [], onChange }) {
+export default function AddonSelector({ selected = [], onChange, className = 'mt-4' }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [open, setOpen] = useState(false);
 
   const toggle = (key) => {
     const next = selected.includes(key)
-      ? selected.filter(k => k !== key)
+      ? selected.filter((item) => item !== key)
       : [...selected, key];
     onChange(next);
   };
@@ -48,22 +48,22 @@ export default function AddonSelector({ selected = [], onChange }) {
   const total = addonTotal(selected);
 
   return (
-    <div className="mt-4">
+    <div className={className}>
       <button
         type="button"
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl text-sm font-semibold text-indigo-800 hover:from-indigo-100 hover:to-purple-100 transition-all duration-200"
+        onClick={() => setOpen((value) => !value)}
+        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl text-sm font-semibold text-indigo-800 hover:from-indigo-100 hover:to-purple-100 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
       >
-        <span className="flex items-center gap-2">
-          <span className="text-base">🏢</span>
-          {t('addonSelectorTitle')}
+        <span className="flex items-center gap-2 min-w-0 flex-1 text-left">
+          <span className="text-base flex-shrink-0">🏢</span>
+          <span className="leading-snug">{t('addonSelectorTitle')}</span>
           {selected.length > 0 && (
             <span className="ml-1 px-2 py-0.5 bg-indigo-600 text-white text-xs rounded-full">
               {selected.length}
             </span>
           )}
         </span>
-        <span className="text-indigo-500 text-xs font-normal">
+        <span className="text-indigo-500 text-xs font-normal flex-shrink-0 whitespace-nowrap">
           {open ? t('addonSelectorHide') : t('addonSelectorShow')}
         </span>
       </button>
@@ -86,7 +86,7 @@ export default function AddonSelector({ selected = [], onChange }) {
           </div>
 
           <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
-            {ADDON_SERVICES.map(service => {
+            {ADDON_SERVICES.map((service) => {
               const checked = selected.includes(service.key);
               return (
                 <label
@@ -100,7 +100,7 @@ export default function AddonSelector({ selected = [], onChange }) {
                   }`}>
                     {checked && (
                       <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                   </span>
@@ -139,7 +139,7 @@ export default function AddonSelector({ selected = [], onChange }) {
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <div className="text-xs text-gray-600">
                 {t('addonSelectorServicesSelected', { count: selected.length })}
-                {selected.some(k => ADDON_SERVICES.find(s=>s.key===k)?.contactOnly) && (
+                {selected.some((key) => ADDON_SERVICES.find((service) => service.key === key)?.contactOnly) && (
                   <span className="ml-1 text-amber-600">{t('addonSelectorSomeContactBased')}</span>
                 )}
               </div>

@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
+import { HOME_RESET_EVENT } from '../../utils/homeReset';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
@@ -146,6 +147,31 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     generate: generateAiDomains,
     reset: resetAiDomains,
   } = useAIDomains();
+
+  const clearAllSearchResults = useCallback(() => {
+    requestIdRef.current += 1;
+    clearTimeout(debounceRef.current);
+    resetAiDomains();
+    setResults([]);
+    setPremiumDomains([]);
+    setAuctionResults([]);
+    setLoading(false);
+    setPremiumLoading(false);
+    setAuctionsLoading(false);
+  }, [resetAiDomains]);
+
+  const resetSearchBar = useCallback(() => {
+    clearAllSearchResults();
+    setQuery('');
+    setSearchMode('ai');
+    newSearchCacheRef.current.clear();
+  }, [clearAllSearchResults]);
+
+  useEffect(() => {
+    const onHomeReset = () => resetSearchBar();
+    window.addEventListener(HOME_RESET_EVENT, onHomeReset);
+    return () => window.removeEventListener(HOME_RESET_EVENT, onHomeReset);
+  }, [resetSearchBar]);
 
   const parseQuery = (raw) => {
     const q = toSafeLower(raw).trim();
@@ -331,12 +357,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     return undefined;
   }, [query, searchMode]);
 
-  useEffect(() => {
-    if (searchMode === 'ai') {
-      resetAiDomains();
-    }
-  }, [query, searchMode]);
-
   const handleSearch = (e) => {
     e.preventDefault();
     clearTimeout(debounceRef.current);
@@ -362,16 +382,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const handleTabChange = (tabId) => {
-    requestIdRef.current += 1;
-    clearTimeout(debounceRef.current);
+    if (tabId === searchMode) return;
+    setQuery('');
+    newSearchCacheRef.current.clear();
+    clearAllSearchResults();
     setSearchMode(tabId);
-    resetAiDomains();
-    setResults([]);
-    setPremiumDomains([]);
-    setAuctionResults([]);
-    setLoading(false);
-    setPremiumLoading(false);
-    setAuctionsLoading(false);
   };
 
   const goToMarketplace = (listing) => {

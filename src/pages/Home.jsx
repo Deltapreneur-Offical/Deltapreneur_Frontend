@@ -225,7 +225,7 @@ export default function Home() {
 
     <div className="relative min-w-0 bg-white">
 
-      <TopNavbar homeMobileMenu />
+      <TopNavbar homeMobileMenu hideContactUs />
 
       <HomeNavbar
 

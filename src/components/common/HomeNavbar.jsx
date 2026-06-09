@@ -1,24 +1,15 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import logoBlack from '../../assets/Cobrother_logo.png';
-import logoGreen from '../../assets/Cobrother_Green.png';
 import BackButton from './BackButton';
+import BrandNavLogo from './BrandNavLogo';
 import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
 import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
-
-function HomeNavLogo({ className = '' }) {
-  return (
-    <span className={`home-nav-logo-swap ${className}`.trim()}>
-      <img src={logoBlack} alt="CoBrother" className="home-nav-logo-img home-nav-logo-img--default" />
-      <img src={logoGreen} alt="" aria-hidden className="home-nav-logo-img home-nav-logo-img--hover" />
-    </span>
-  );
-}
 
 function NavDropdown({ label, open, onToggle, children }) {
   const triggerRef = useRef(null);
@@ -111,6 +102,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false }) {
   const { t } = useTranslation();
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState(null);
@@ -128,6 +120,15 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
   const go = (path, state) => {
     navigate(path, state ? { state } : undefined);
     closeMobileMenu();
+  };
+
+  const handleLogoClick = () => {
+    closeMobileMenu();
+    if (location.pathname === '/') {
+      window.location.reload();
+      return;
+    }
+    navigate('/');
   };
 
   useEffect(() => {
@@ -180,11 +181,11 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <div className="home-main-nav-start">
           <button
             type="button"
-            className="home-nav-logo-btn shrink-0"
-            onClick={() => navigate('/')}
+            className="home-nav-logo-btn brand-logo-interactive shrink-0"
+            onClick={handleLogoClick}
             aria-label="CoBrother home"
           >
-            <HomeNavLogo />
+            <BrandNavLogo />
           </button>
 
           <div className="home-nav-desktop-menu">

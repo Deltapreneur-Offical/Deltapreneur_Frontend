@@ -101,13 +101,13 @@ function HomeNavToolbarSeparator({ variant = 'desktop' }) {
 function SupportLabel({ className = 'home-nav-support-label' }) {
   return (
     <span className={className}>
-      <span className="home-nav-support-prefix">24x7</span>
+      <span className="home-nav-support-prefix">24*7</span>
       <span className="home-nav-support-emphasis">Support</span>
     </span>
   );
 }
 
-export default function HomeTopNavActions() {
+export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const { t } = useTranslation();
   const { user, logout, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -202,12 +202,16 @@ export default function HomeTopNavActions() {
         </span>
         <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
       </div>
-      <HomeNavToolbarSeparator />
-      <div className="home-nav-contact-wrap relative block">
-        <a href="/contact" className="home-nav-contact-link">
-          {t('contactUs')}
-        </a>
-      </div>
+      {!hideContactUs ? (
+        <>
+          <HomeNavToolbarSeparator />
+          <div className="home-nav-contact-wrap relative block">
+            <a href="/contact" className="home-nav-contact-link">
+              {t('contactUs')}
+            </a>
+          </div>
+        </>
+      ) : null}
       <HomeNavToolbarSeparator />
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button

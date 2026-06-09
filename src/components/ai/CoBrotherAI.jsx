@@ -6,6 +6,7 @@ import {
   Check,
   Clock3,
   Copy,
+  Cpu,
   Download,
   ExternalLink,
   Gavel,
@@ -20,7 +21,6 @@ import {
   MoreHorizontal,
   Plus,
   RefreshCw,
-  Search,
   Send,
   Share2,
   Sparkles,
@@ -37,41 +37,74 @@ import broAILogo from '../../assets/Cobrother_Profile.png';
 import { useAuth } from '../../context/AuthContext';
 
 const MODES = [
-  { id: 'explore', label: 'Explore', icon: Search },
   { id: 'domains', label: 'Domains', icon: Globe2 },
   { id: 'ventures', label: 'Ventures', icon: BriefcaseBusiness },
+  { id: 'technologies', label: 'Technologies', icon: Cpu },
   { id: 'auctions', label: 'Auctions', icon: Gavel },
 ];
 
 const MODE_TO_API = {
-  explore: 'marketplace',
   domains: 'broker',
   ventures: 'founder',
+  technologies: 'marketplace',
   auctions: 'auction',
 };
 
-const QUICK_STARTS = [
-  {
-    icon: Globe2,
-    text: 'How do I buy a domain?',
-    prompt: 'How do I buy a premium domain on CoBrother?',
-  },
-  {
-    icon: BriefcaseBusiness,
-    text: 'How do I list my domain?',
-    prompt: 'Explain how to list my domain or venture on CoBrother.',
-  },
-  {
-    icon: Gavel,
-    text: 'Show active domain auctions',
-    prompt: 'Show me active domain auctions and explain what I should compare before bidding.',
-  },
-];
+const QUICK_STARTS_BY_MODE = {
+  domains: [
+    {
+      icon: Globe2,
+      text: 'How do I buy a domain?',
+      prompt: 'How do I buy a premium domain on CoBrother?',
+    },
+    {
+      icon: Globe2,
+      text: 'How do I list my domain?',
+      prompt: 'Explain how to list my domain on CoBrother.',
+    },
+  ],
+  ventures: [
+    {
+      icon: BriefcaseBusiness,
+      text: 'How do I list a venture?',
+      prompt: 'Explain how to list my venture on CoBrother.',
+    },
+    {
+      icon: BriefcaseBusiness,
+      text: 'Evaluate venture opportunities',
+      prompt: 'Help me evaluate venture listings and what to compare before investing or partnering.',
+    },
+  ],
+  technologies: [
+    {
+      icon: Cpu,
+      text: 'Find technology listings',
+      prompt: 'Show me software and technology listings on CoBrother and explain how to evaluate them.',
+    },
+    {
+      icon: Cpu,
+      text: 'How do I buy software?',
+      prompt: 'How do I buy or acquire a technology listing on CoBrother?',
+    },
+  ],
+  auctions: [
+    {
+      icon: Gavel,
+      text: 'Show active domain auctions',
+      prompt: 'Show me active domain auctions and explain what I should compare before bidding.',
+    },
+    {
+      icon: Gavel,
+      text: 'Auction bidding tips',
+      prompt: 'What should I know before placing a bid in a CoBrother domain auction?',
+    },
+  ],
+};
 
 const EMPTY_SECTIONS = {
-  explore: 'Ask about marketplace strategy, deal discovery, branding, or CoBrother workflows.',
   domains: 'Compare domain names, pricing signals, SEO value, and acquisition steps.',
   ventures: 'Evaluate venture listings, founder fit, monetization, and negotiation questions.',
+  technologies: 'Discover software listings, compare tech assets, and plan acquisition or licensing steps.',
   auctions: 'Prepare bids, compare auctions, estimate time pressure, and plan next actions.',
 };
 
@@ -350,7 +383,7 @@ export default function CoBrotherAI() {
   const { hasAccessToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState('domains');
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
@@ -361,7 +394,7 @@ export default function CoBrotherAI() {
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [voiceNotice, setVoiceNotice] = useState('');
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [moreOpen, setMoreOpen] = useState(false);
   const [history, setHistory] = useState([]);
   const [marketplacePreview, setMarketplacePreview] = useState([]);
@@ -373,6 +406,7 @@ export default function CoBrotherAI() {
   const recognitionRef = useRef(null);
 
   const isDark = theme === 'dark';
+  const quickStarts = QUICK_STARTS_BY_MODE[mode] || QUICK_STARTS_BY_MODE.domains;
   const marketplaceItems = useMemo(
     () => extractMarketplaceItems(metadata).concat(marketplacePreview).slice(0, 4),
     [metadata, marketplacePreview],
@@ -381,16 +415,16 @@ export default function CoBrotherAI() {
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      if (saved.theme) setTheme(saved.theme);
       if (typeof saved.voiceOutputEnabled === 'boolean') {
         setVoiceOutputEnabled(saved.voiceOutputEnabled);
       }
     } catch {}
+    setTheme('light');
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme, voiceOutputEnabled }));
-  }, [theme, voiceOutputEnabled]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ voiceOutputEnabled }));
+  }, [voiceOutputEnabled]);
 
   useEffect(() => {
     if (!open || !hasAccessToken) return;
@@ -750,10 +784,10 @@ export default function CoBrotherAI() {
                       }`}
                       style={{ fontFamily: '"Plus Jakarta Sans", Inter, system-ui, sans-serif' }}
                     >
-                      Bro AI
+                      Bro
                     </h2>
                     <p className={`truncate text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Marketplace Intelligence Assistant
+                      AI Assistant
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -904,14 +938,14 @@ export default function CoBrotherAI() {
                           isDark ? 'text-white' : 'text-slate-950'
                         }`}
                       >
-                        Welcome to Bro AI
+                        Welcome to CoBrother
                       </h3>
                       <p className={`mx-auto mt-2 max-w-sm text-sm leading-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                         {EMPTY_SECTIONS[mode]} Get focused guidance without leaving the marketplace.
                       </p>
                     </div>
                     <div className="mt-6 grid gap-2">
-                      {QUICK_STARTS.map((item) => {
+                      {quickStarts.map((item) => {
                         const Icon = item.icon;
                         return (
                           <button
@@ -1066,7 +1100,7 @@ export default function CoBrotherAI() {
                       }
                     }}
                     rows={1}
-                    placeholder="Ask about domains, ventures, auctions, branding..."
+                    placeholder="Ask about domains, ventures, technologies, auctions..."
                     className={`max-h-28 min-h-11 flex-1 resize-none border-0 bg-transparent px-1 py-2.5 text-sm leading-6 outline-none placeholder:opacity-100 ${
                       isDark ? 'text-white placeholder:text-slate-400' : 'text-slate-950 placeholder:text-slate-500'
                     }`}

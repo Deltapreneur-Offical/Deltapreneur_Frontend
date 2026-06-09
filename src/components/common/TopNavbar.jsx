@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HomeTopNavActions from './HomeTopNavActions';
 
-export default function TopNavbar({ homeMobileMenu = false }) {
+export default function TopNavbar({ homeMobileMenu = false, hideContactUs = false }) {
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const stackedWithMainNav = Boolean(homeMobileMenu);
@@ -15,7 +15,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
     >
       <div className="home-top-nav-inner">
         <div className="home-top-nav-actions">
-          <HomeTopNavActions />
+          <HomeTopNavActions hideContactUs={hideContactUs} />
         </div>
       </div>
 

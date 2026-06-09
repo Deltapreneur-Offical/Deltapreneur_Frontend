@@ -20,7 +20,9 @@ import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import { softwareAuctionAPI } from '../api/services';
-import AddonSelector, { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import AddonSections from '../components/addon/AddonSections';
+import { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import { vaLabel } from '../components/addon/VirtualAssistantSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
@@ -692,6 +694,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState('');
   const [addons, setAddons]                 = useState([]);
+  const [vaAddons, setVaAddons]             = useState([]);
 
   const basePrice    = item.price;
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
@@ -722,7 +725,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
       const { data: orderData } = await technologyAPI.createOrder(item.id, {
         ...form,
         coBrotherOptIn,
-        services: addons,
+        services: [...addons, ...vaAddons],
         ...buildOrderCurrencyPayload(currency),
       });
 
@@ -746,7 +749,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
               githubLink:       verifyData.githubLink,
               coBrotherOptIn,
               coBrotherHelpPaid: coBrotherOptIn,
-              _addons:           addons,
+              _addons:           [...addons, ...vaAddons],
             });
           } catch {
             setError('Payment verification failed. Contact support.');
@@ -771,7 +774,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+      <div className="relative w-full max-w-[520px] md:max-w-[680px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
@@ -842,7 +845,12 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           </div>
         </div>
         
-        <AddonSelector selected={addons} onChange={setAddons} />
+        <AddonSections
+          businessSelected={addons}
+          onBusinessChange={setAddons}
+          vaSelected={vaAddons}
+          onVaChange={setVaAddons}
+        />
 
         {/* ── Billing breakdown ── */}
         <div className="bg-gray-50 border border-gray-200 rounded-[10px] p-4 mb-5">
@@ -861,7 +869,10 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
                 value={formatPrice(svc.price)} accent />
             ) : null;
           })}
-          {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
+          {vaAddons.map((k) => (
+            <BillingLine key={k} label={vaLabel(k)} value="Contact" accent />
+          ))}
+          {(addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) || vaAddons.length > 0) && (
             <div className="text-xs text-amber-600 py-1">+ contact-based services (no charge now)</div>
           )}
           <div className="h-px bg-gray-200 my-2.5" />

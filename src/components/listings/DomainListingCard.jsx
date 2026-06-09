@@ -1,79 +1,58 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
+import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
-import LikeButton from '../common/LikeButton';
+import ListingAvailabilityBadge from './ListingAvailabilityBadge';
+import ListingStatsRow from './ListingStatsRow';
 import { ListingCardBadge } from './MarketplaceListingCardFrame';
 
 const CARD_CLASS =
-  'domain-listing-card card-glow-hover relative flex aspect-square h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_14px_30px_rgba(59,130,246,0.14)] sm:p-4';
+  'domain-listing-card card-glow-hover relative flex aspect-square h-full w-full flex-col rounded-2xl bg-white p-3 sm:p-4';
 
 const PRIMARY_BTN =
   'w-full rounded-lg px-4 py-2.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
-
-function ListingStatus({ status }) {
-  const key = (status || 'AVAILABLE').toUpperCase();
-  const isAvailable = key === 'AVAILABLE';
-  const config = isAvailable
-    ? {
-        dot: 'bg-[var(--cobrother-brand-green)]',
-        text: 'Available',
-        tone: 'text-[var(--cobrother-brand-green)]',
-      }
-    : key === 'SOLD'
-      ? { dot: 'bg-rose-500', text: 'Taken', tone: 'text-rose-600' }
-      : {
-          dot: 'bg-slate-300',
-          text: key.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase()),
-          tone: 'text-slate-500',
-        };
-
-  return (
-    <span
-      className={`inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${config.dot}`}
-      role="img"
-      aria-label={config.text}
-      title={config.text}
-    />
-  );
-}
 
 function resolveDomainInitial(name) {
   const cleaned = (name || '').replace(/[^a-zA-Z0-9]/g, '');
   return (cleaned.slice(0, 1) || '?').toUpperCase();
 }
 
-function DomainListingIdentity({ logo, logoAlt, initial, children }) {
+function DomainListingHeader({ logo, logoAlt, initial, name, fullDomain, statusBadges, status }) {
   return (
-    <div className="relative mb-3 flex min-h-[3.5rem] items-end gap-3">
-      {logo ? (
-        <>
-          <img
-            src={logo}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-full rounded-xl object-cover opacity-[0.06]"
-          />
+    <header className="domain-listing-card__header">
+      <div className="domain-listing-card__header-top">
+        {logo ? (
           <img
             src={logo}
             alt={logoAlt}
-            className="relative z-10 h-14 w-14 flex-shrink-0 rounded-xl object-cover shadow-sm ring-2 ring-gray-100"
+            className="domain-listing-card__avatar object-cover"
           />
-        </>
-      ) : (
-        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100 font-display text-2xl font-extrabold text-gray-900 shadow-sm ring-2 ring-gray-100">
-          {initial}
-        </div>
-      )}
-      <div className="relative z-10 flex min-w-0 flex-1 flex-wrap items-center gap-1.5 pb-0.5">
-        {children}
+        ) : (
+          <div className="domain-listing-card__avatar domain-listing-card__avatar--fallback">
+            {initial}
+          </div>
+        )}
+        {statusBadges ? (
+          <div className="domain-listing-card__header-badges">
+            {statusBadges}
+          </div>
+        ) : null}
       </div>
-    </div>
+      <div className="domain-listing-card__header-info">
+        <h2 className="domain-listing-card__name" title={name}>
+          <span className="domain-listing-card__name-text">{name}</span>
+        </h2>
+        <p className="domain-listing-card__domain" title={fullDomain}>
+          {fullDomain}
+        </p>
+        <ListingAvailabilityBadge status={status} className="domain-listing-card__availability" />
+      </div>
+    </header>
   );
 }
 
@@ -178,7 +157,7 @@ export default function DomainListingCard({
             onView?.();
           }}
         >
-          {t('listingCardViewDetails', 'View Details')} ΓåÆ
+          {t('listingCardViewDetails', 'View Details')}
         </button>
       );
     }
@@ -340,38 +319,33 @@ export default function DomainListingCard({
         <img src={domain.logo} alt="" className="hidden" onError={() => setImgFailed(true)} />
       ) : null}
 
-      <DomainListingIdentity
+      <DomainListingHeader
         logo={domainLogo}
         logoAlt={display.fullDomain}
         initial={domainInitial}
-      >
-        <ListingCardBadge variant={isAuction ? 'auction' : isAdminListed ? 'admin' : 'glass'}>
-          {isAuction ? 'Auction' : isAdminListed ? 'Admin' : 'Direct'}
-        </ListingCardBadge>
-        {domain.verified ? (
-          <ListingCardBadge variant="verified">Verified</ListingCardBadge>
-        ) : (
-          <ListingCardBadge variant="pending">Pending</ListingCardBadge>
+        name={display.name}
+        fullDomain={display.fullDomain}
+        status={statusKey}
+        statusBadges={(
+          <>
+            <ListingCardBadge variant={isAuction ? 'auction' : isAdminListed ? 'admin' : 'glass'}>
+              {isAuction ? 'Auction' : isAdminListed ? 'Admin' : 'Direct'}
+            </ListingCardBadge>
+            {domain.verified ? (
+              <ListingCardBadge variant="verified">Verified</ListingCardBadge>
+            ) : (
+              <ListingCardBadge variant="pending">Pending</ListingCardBadge>
+            )}
+            {isOwner && (
+              <ListingCardBadge variant="owner">Owner</ListingCardBadge>
+            )}
+          </>
         )}
-        {isOwner && (
-          <ListingCardBadge variant="owner">Owner</ListingCardBadge>
-        )}
-      </DomainListingIdentity>
-
-      <h2 className="mb-1 truncate text-lg font-extrabold text-slate-950 sm:text-xl" title={display.fullDomain}>
-        {display.name}
-      </h2>
+      />
 
       {description ? (
-        <p className="mb-2 line-clamp-2 text-xs leading-relaxed text-slate-500">{description}</p>
+        <p className="domain-listing-card__description">{description}</p>
       ) : null}
-
-      <div className="mb-0 text-sm">
-        <div className="flex items-center justify-between gap-3">
-          <span className="truncate font-semibold text-slate-700">{display.fullDomain}</span>
-          <ListingStatus status={statusKey} />
-        </div>
-      </div>
 
       <div className="min-h-0 flex-1" aria-hidden />
 
@@ -382,19 +356,13 @@ export default function DomainListingCard({
         />
       )}
 
-      <div
-        className="mb-3 flex items-center justify-between text-[11px] font-medium text-slate-400"
-        onClick={stop}
-        onMouseDown={stop}
-        role="presentation"
-      >
-        <span className="inline-flex items-center gap-1">
-          <Eye size={12} />
-          {domain.views || 0}
-        </span>
-        {onLike && (
-          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-        )}
+      <div onClick={stop} onMouseDown={stop} role="presentation">
+        <ListingStatsRow
+          views={domain.views}
+          likeState={likeState}
+          onLike={onLike}
+          className="domain-listing-card__stats"
+        />
       </div>
 
       <div className="mt-auto">{renderPrimaryAction()}</div>

@@ -238,25 +238,78 @@
 /* Active top tab — section tint */
 .admin-dashboard-tab--domains.active {
   color: #0f766e;
-  border-color: rgba(20, 184, 166, 0.45);
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-color: rgba(20, 184, 166, 0.5);
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.14) 0%, rgba(204, 251, 241, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(20, 184, 166, 0.16), 0 4px 10px rgba(20, 184, 166, 0.08);
+}
+
+.admin-dashboard-tab--domains.active .admin-dashboard-tab-lucide-icon {
+  color: #0f766e;
 }
 
 .admin-dashboard-tab--ventures.active {
   color: #6d28d9;
-  border-color: rgba(139, 92, 246, 0.45);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-color: rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(237, 233, 254, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.16), 0 4px 10px rgba(139, 92, 246, 0.08);
 }
 
 .admin-dashboard-tab--cocreations.active {
   color: #4338ca;
-  border-color: rgba(99, 102, 241, 0.45);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-color: rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(224, 231, 255, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.16), 0 4px 10px rgba(99, 102, 241, 0.08);
+}
+
+.admin-dashboard-tab--domain-enquiries.active {
+  color: #0369a1;
+  border-color: rgba(14, 165, 233, 0.5);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.14) 0%, rgba(224, 242, 254, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.16), 0 4px 10px rgba(14, 165, 233, 0.08);
+}
+
+.admin-dashboard-tab--requests.active,
+.admin-dashboard-tab--meetings.active,
+.admin-dashboard-tab--addon-orders.active {
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(219, 234, 254, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.16), 0 4px 10px rgba(59, 130, 246, 0.08);
+}
+
+.admin-dashboard-tab--meetings.active .admin-dashboard-tab-lucide-icon {
+  color: #1d4ed8;
+}
+
+.admin-dashboard-tab--auctions.active,
+.admin-dashboard-tab--venture-auctions.active,
+.admin-dashboard-tab--software-auctions.active,
+.admin-dashboard-tab--community-auctions.active {
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(254, 243, 199, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.16), 0 4px 10px rgba(245, 158, 11, 0.08);
+}
+
+.admin-dashboard-tab--homepage-features.active {
+  color: #4f46e5;
+  border-color: rgba(79, 70, 229, 0.5);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.14) 0%, rgba(237, 233, 254, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.16), 0 4px 10px rgba(79, 70, 229, 0.08);
 }
 
 .admin-dashboard-tab--domains.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--ventures.active .admin-dashboard-tab-label,
-.admin-dashboard-tab--cocreations.active .admin-dashboard-tab-label {
+.admin-dashboard-tab--cocreations.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--domain-enquiries.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--requests.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--meetings.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--addon-orders.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--auctions.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--venture-auctions.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--software-auctions.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--community-auctions.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--homepage-features.active .admin-dashboard-tab-label {
   color: inherit;
 }
 

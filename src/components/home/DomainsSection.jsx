@@ -7,7 +7,6 @@ import { fetchAllListPages } from '../../utils/listPagination';
 import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
-import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import DomainListingCard from '../listings/DomainListingCard';
@@ -38,15 +37,9 @@ export default function DomainsSection() {
     fetchDomains();
   }, []);
 
-  const isMobile = useHomepageMobile();
-
   const previewDomains = useMemo(
-    () => pickHomepagePreviewListings(
-      domains,
-      'domain',
-      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
-    ),
-    [domains, isMobile],
+    () => pickHomepagePreviewListings(domains, 'domain', HOMEPAGE_PREVIEW_LIMIT),
+    [domains],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', previewDomains);

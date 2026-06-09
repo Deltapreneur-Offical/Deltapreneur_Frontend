@@ -42,14 +42,8 @@ function AvailabilityStatus({ status, available }) {
 export default function AIDomainCard({ item, index = 0 }) {
   const navigate = useNavigate();
   const comStatus = normalizeStatus(item.com_status, item.com_available);
-  const inStatus = normalizeStatus(item.in_status, item.in_available);
-  const primaryDomain =
-    comStatus === 'available'
-      ? item.domain_com
-      : inStatus === 'available'
-        ? item.domain_in
-        : item.domain_com;
-  const canBuy = comStatus === 'available' || inStatus === 'available';
+  const primaryDomain = item.domain_com;
+  const canBuy = comStatus === 'available';
 
   return (
     <article
@@ -63,18 +57,11 @@ export default function AIDomainCard({ item, index = 0 }) {
       </div>
 
       <h2 className="mb-1 truncate text-xl font-extrabold text-slate-950">{item.name}</h2>
-      {item.reason && (
-        <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-500">{item.reason}</p>
-      )}
 
-      <div className="mb-4 flex-1 space-y-2 text-sm">
+      <div className="mb-4 flex-1 text-sm">
         <div className="flex items-center justify-between gap-3">
           <span className="truncate font-semibold text-slate-700">{item.domain_com}</span>
           <AvailabilityStatus status={comStatus} available={item.com_available} />
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="truncate font-semibold text-slate-700">{item.domain_in}</span>
-          <AvailabilityStatus status={inStatus} available={item.in_available} />
         </div>
       </div>
 

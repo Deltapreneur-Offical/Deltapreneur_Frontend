@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Heart } from 'lucide-react';
 
 export default function LikeButton({
   liked,
@@ -10,23 +11,31 @@ export default function LikeButton({
 }) {
   const [animating, setAnimating] = useState(false);
   const isActive = liked || forceRed;
-  const isLight = variant === 'light';
+  const iconSize = size === 'sm' ? 14 : 16;
 
   const stop = (e) => {
     e.stopPropagation();
     e.preventDefault();
   };
 
+  const heartClass = `listing-like-btn__icon ${
+    isActive ? 'listing-like-btn__icon--active' : 'listing-like-btn__icon--idle'
+  }`;
+
   if (!onToggle) {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 ${
-          size === 'sm' ? 'text-[0.72rem]' : 'text-[0.82rem]'
-        } ${isLight ? 'text-gray-500' : 'text-gray-500'}`}
+        className={`listing-like-btn listing-like-btn--readonly ${size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'}`}
         aria-label={`${count || 0} likes`}
       >
-        <span className={isActive ? 'grayscale-0' : 'grayscale'}>❤️</span>
-        <span className={`font-semibold ${isActive ? 'text-[#c86e6e]' : ''}`}>
+        <Heart
+          size={iconSize}
+          className={heartClass}
+          strokeWidth={2}
+          fill={isActive ? 'currentColor' : 'none'}
+          aria-hidden="true"
+        />
+        <span className="listing-like-btn__count">
           {count || 0}
         </span>
       </span>
@@ -49,28 +58,18 @@ export default function LikeButton({
       onClick={handleClick}
       onMouseDown={stop}
       title={liked ? 'Unlike' : 'Like'}
-      className={`inline-flex items-center gap-1.5 rounded-[20px] cursor-pointer transition-all duration-200 ${
-        size === 'sm' ? 'px-2.5 py-1' : 'px-3.5 py-1.5'
-      } ${
-        isActive
-          ? 'bg-red-50 border-red-200'
-          : isLight
-            ? 'bg-gray-50 border-gray-200 hover:bg-red-50 hover:border-red-100'
-            : 'bg-white/5 border-white/10'
-      } border ${animating ? 'scale-110' : 'scale-100'}`}
+      className={`listing-like-btn listing-like-btn--interactive ${
+        size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'
+      } listing-like-btn--light ${animating ? 'listing-like-btn--animating' : ''}`}
     >
-      <span
-        className={`transition-all duration-200 ${
-          size === 'sm' ? 'text-[0.85rem]' : 'text-base'
-        } ${isActive ? 'grayscale-0' : 'grayscale'}`}
-      >
-        ❤️
-      </span>
-      <span
-        className={`font-semibold transition-colors duration-200 ${
-          size === 'sm' ? 'text-[0.72rem]' : 'text-[0.82rem]'
-        } ${isActive ? 'text-[#c86e6e]' : isLight ? 'text-gray-500' : 'text-gray-500'}`}
-      >
+      <Heart
+        size={iconSize}
+        className={heartClass}
+        strokeWidth={2}
+        fill={isActive ? 'currentColor' : 'none'}
+        aria-hidden="true"
+      />
+      <span className="listing-like-btn__count">
         {count || 0}
       </span>
     </button>

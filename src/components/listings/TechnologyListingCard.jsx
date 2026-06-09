@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Share2 } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import LikeButton from '../common/LikeButton';
+import ListingStatsRow from './ListingStatsRow';
+import ListingAvailabilityBadge from './ListingAvailabilityBadge';
 import ListingBrowseFooter from './ListingBrowseFooter';
 import VerificationStatusBadge from './VerificationStatusBadge';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
@@ -109,18 +110,16 @@ export default function TechnologyListingCard({
     </>
   );
 
+  const techName = item.name || t('listingCardTechnology');
+  const techCategory = (item.category || 'Technology').replace(/_/g, ' ');
+
   const body = (
     <>
-      <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
-        <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1">
-          {item.name || t('listingCardTechnology')}
-        </h3>
-        <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
+      <div className="flex flex-col gap-1.5 mb-2 flex-shrink-0">
+        <ListingAvailabilityBadge status={item.softwareStatus || 'AVAILABLE'} />
+        <div className="flex items-center gap-1 flex-wrap">
           <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-            {(item.category || 'Technology').replace(/_/g, ' ')}
-          </span>
-          <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-            {item.softwareStatus || 'AVAILABLE'}
+            {techCategory}
           </span>
         </div>
       </div>
@@ -138,12 +137,11 @@ export default function TechnologyListingCard({
   );
 
   const statsRow = (
-    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium py-1.5 border-t border-gray-100">
-      <span className="flex items-center gap-0.5">
-        <Eye size={11} /> {item.views || 0}
-      </span>
-      {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-    </div>
+    <ListingStatsRow
+      views={item.views}
+      likeState={likeState}
+      onLike={onLike}
+    />
   );
 
   const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors inline-flex items-center justify-center gap-1';
@@ -291,8 +289,10 @@ export default function TechnologyListingCard({
       <MarketplaceListingCardFrame
         cardClassName="technology-listing-card"
         image={item.imageUrl && !imgFailed ? item.imageUrl : null}
-        imageAlt={item.name}
-        initial={(item.name || '?').slice(0, 1).toUpperCase()}
+        imageAlt={techName}
+        initial={(techName || '?').slice(0, 1).toUpperCase()}
+        headerTitle={techName}
+        headerSubtitle={techCategory}
         headerBadges={headerBadges}
         browseMode
         onClick={onView}
@@ -311,8 +311,10 @@ export default function TechnologyListingCard({
     <MarketplaceListingCardFrame
       cardClassName="technology-listing-card"
       image={item.imageUrl && !imgFailed ? item.imageUrl : null}
-      imageAlt={item.name}
-      initial={(item.name || '?').slice(0, 1).toUpperCase()}
+      imageAlt={techName}
+      initial={(techName || '?').slice(0, 1).toUpperCase()}
+      headerTitle={techName}
+      headerSubtitle={techCategory}
       headerBadges={headerBadges}
       onClick={onView}
       footer={(

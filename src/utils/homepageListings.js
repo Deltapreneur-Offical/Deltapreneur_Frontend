@@ -39,7 +39,16 @@ export function isHomepageVerifiedListing(item, type = 'domain') {
   if (type === 'domain') return Boolean(item.verified);
   if (type === 'software') return Boolean(item.verified);
   if (type === 'venture') return Boolean(item.verified || item.gstinVerified);
-  if (type === 'community') return Boolean(item.isApproved ?? item.is_approved);
+  if (type === 'community') {
+    if (Boolean(item.isApproved ?? item.is_approved)) return true;
+    // Completed creator profiles are public on /creator — show them on homepage too.
+    return Boolean(
+      item.role
+      || item.name
+      || item.linkedInId
+      || item.linked_in_id,
+    );
+  }
   return Boolean(item.verified);
 }
 
@@ -125,6 +134,15 @@ export function pickHomepagePreviewListings(
 
   const featured = active.filter((item) => Boolean(item.featured));
   const rest = active.filter((item) => !item.featured);
+
+  if (type === 'community') {
+    rest.sort((a, b) => {
+      const ta = new Date(a.createdAt ?? a.created_at ?? 0).getTime();
+      const tb = new Date(b.createdAt ?? b.created_at ?? 0).getTime();
+      return tb - ta;
+    });
+  }
+
   return [...featured, ...rest].slice(0, limit);
 }
 

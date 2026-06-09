@@ -72,7 +72,7 @@ function buildDomainFormState(domain, navCurrency) {
       email: domain?.contactInfo?.email ?? '',
       phoneNumber: domain?.contactInfo?.phoneNumber ?? '',
     },
-    agreement: { terms: true },
+    agreement: { terms: false },
   };
 }
 

@@ -62,7 +62,7 @@ export const ventureAuctionAPI = {
   adminVerifyGstin: (ventureId, gstin) => api.post(`/api/v1/venture-auction/admin/venture/${ventureId}/verify-gstin`, { gstin }),
   get:           (auctionId)          => api.get(`/api/v1/venture-auction/${auctionId}`),
   getByVenture:  (ventureId)          => api.get(`/api/v1/venture-auction/venture/${ventureId}`),
-  placeBid:      (auctionId, amount)  => api.post(`/api/v1/venture-auction/${auctionId}/bid`, { amount }),
+  placeBid:      (auctionId, payload)  => api.post(`/api/v1/venture-auction/${auctionId}/bid`, payload),
   reAuction:     (auctionId, data)    => api.post(`/api/v1/venture-auction/${auctionId}/re-auction`, data),
   close:         (auctionId)          => api.post(`/api/v1/venture-auction/${auctionId}/close`),
   getActive:     ()                   => api.get('/api/v1/venture-auction/active'),
@@ -230,7 +230,20 @@ export const adminAPI = {
   getPendingSoftwareAuctions:()         => api.get('/api/v1/software-auction/admin/pending'),
   approveSoftwareAuction:    (id)       => api.post(`/api/v1/software-auction/admin/${id}/approve`),
   rejectSoftwareAuction:     (id, r)    => api.post(`/api/v1/software-auction/admin/${id}/reject`, { reason: r }),
+  getPendingVentures:        ()         => api.get('/api/v1/admin/ventures/pending'),
+  approveVenture:            (id)       => api.post(`/api/v1/admin/ventures/${id}/approve`),
+  rejectVenture:             (id, r)    => api.post(`/api/v1/admin/ventures/${id}/reject`, { reason: r }),
+  getListingFeesAndCharges:  ()         => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
+  updateListingFeesAndCharges: (data)   => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
 
+};
+
+export const auctionFeesAPI = {
+  getListingFeesAndCharges: () => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
+  updateListingFeesAndCharges: (data) => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
+  creationCreateOrder: (data) => api.post('/api/v1/auction-fees/creation/create-order', data),
+  creationVerify: (data) => api.post('/api/v1/auction-fees/creation/verify', data),
+  bidCreateOrder: (auctionId, data) => api.post(`/api/v1/auction-fees/${auctionId}/bid/create-order`, data),
 };
 
 export const coBrotherAPI = {
@@ -254,7 +267,7 @@ export const auctionAPI = {
   create:       (domainId, data)    => api.post(`/api/v1/auction/domain/${domainId}`, data),
   get:          (auctionId)         => api.get(`/api/v1/auction/${auctionId}`),
   getByDomain:  (domainId)          => api.get(`/api/v1/auction/domain/${domainId}`),
-  placeBid:     (auctionId, amount) => api.post(`/api/v1/auction/${auctionId}/bid`, { amount }),
+  placeBid:     (auctionId, payload) => api.post(`/api/v1/auction/${auctionId}/bid`, payload),
   reAuction:    (auctionId, data)   => api.post(`/api/v1/auction/${auctionId}/re-auction`, data),
   close:        (auctionId)         => api.post(`/api/v1/auction/${auctionId}/close`),
   adminGetAll:  ()                  => api.get('/api/v1/auction/admin/all'),
@@ -280,7 +293,7 @@ export const creatorAuctionAPI = {
   getByCommunity:      (communityId)       => api.get(`/api/v1/creator-auction/community/${communityId}`),
   getActive:           ()                  => api.get('/api/v1/creator-auction/active'),
   getMyAuctions:       ()                  => api.get('/api/v1/creator-auction/my'),
-  placeBid:            (auctionId, amount) => api.post(`/api/v1/creator-auction/${auctionId}/bid`, { amount }),
+  placeBid:            (auctionId, payload) => api.post(`/api/v1/creator-auction/${auctionId}/bid`, payload),
   participationStatus: (auctionId)         => api.get(`/api/v1/creator-auctions/${auctionId}/participation/status`),
   participationCreateOrder: (auctionId)    => api.post(`/api/v1/creator-auctions/${auctionId}/participation/create-order`),
   participationVerify: (auctionId, data)   => api.post(`/api/v1/creator-auctions/${auctionId}/participation/verify`, data),
@@ -298,7 +311,7 @@ export const softwareAuctionAPI = {
   create:          (softwareId, data)   => api.post(`/api/v1/software-auction/software/${softwareId}`, data),
   get:             (auctionId)          => api.get(`/api/v1/software-auction/${auctionId}`),
   getBySoftware:   (softwareId)         => api.get(`/api/v1/software-auction/software/${softwareId}`),
-  placeBid:        (auctionId, amount)  => api.post(`/api/v1/software-auction/${auctionId}/bid`, { amount }),
+  placeBid:        (auctionId, payload)  => api.post(`/api/v1/software-auction/${auctionId}/bid`, payload),
   participationStatus: (auctionId)      => api.get(`/api/v1/software-auction/${auctionId}/participation/status`),
   participationCreateOrder: (auctionId) => api.post(`/api/v1/software-auction/${auctionId}/participation/create-order`),
   participationVerify: (auctionId, data)=> api.post(`/api/v1/software-auction/${auctionId}/participation/verify`, data),

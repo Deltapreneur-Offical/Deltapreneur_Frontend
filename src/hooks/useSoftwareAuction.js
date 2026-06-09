@@ -203,8 +203,9 @@ export function useSoftwareAuction(auctionId) {
     };
   }, [auctionId]);
 
-  const placeBid = useCallback(async (amount) => {
-    const res = await softwareAuctionAPI.placeBid(auctionId, amount);
+  const placeBid = useCallback(async (payload) => {
+    const body = typeof payload === 'object' && payload !== null ? payload : { amount: payload };
+    const res = await softwareAuctionAPI.placeBid(auctionId, body);
     await fetchAuctionDetail();
     return res;
   }, [auctionId, fetchAuctionDetail]);

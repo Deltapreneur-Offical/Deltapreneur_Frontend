@@ -143,7 +143,6 @@ export default function SoftwareAuctionPage() {
   };
 
   const handleBid = async () => {
-    if (!participation.paid) { setBidError(t('auctionDetailPayParticipationFirst')); return; }
     const amt = parseFloat(bidAmount);
     if (isNaN(amt) || amt <= 0) { setBidError(t('auctionDetailEnterValidAmount')); return; }
     const bidErrorMsg = validateBidAmount(amt, { minNextBid, maxBidPrice }, formatPrice);
@@ -154,7 +153,20 @@ export default function SoftwareAuctionPage() {
     setBidError(''); setBidSuccess('');
     setPlacing(true);
     try {
-      await placeBid(amt);
+      const { payBidFee } = await import('../utils/auctionFees');
+      const payment = await payBidFee({
+        auctionType: 'SOFTWARE',
+        auctionId: auction.id,
+        bidAmount: amt,
+        user,
+        description: t('auctionDetailBidFee', { defaultValue: 'Auction bid fee' }),
+      });
+      await placeBid({
+        amount: amt,
+        razorpayOrderId: payment.razorpayOrderId,
+        razorpayPaymentId: payment.razorpayPaymentId,
+        razorpaySignature: payment.razorpaySignature,
+      });
       setBidSuccess(t('auctionDetailBidPlacedSuccess'));
       setBidAmount('');
       setTimeout(() => setBidSuccess(''), 4000);
@@ -533,18 +545,6 @@ export default function SoftwareAuctionPage() {
                   </div>
                 ) : (
                 <>
-                {!participation.loading && !participation.paid && (
-                  <div style={{ marginBottom: '0.8rem', padding: '0.65rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#8a6d1f', marginBottom: '0.4rem' }}>
-                      {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
-                    </div>
-                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? t('auctionDetailProcessing') : t('auctionDetailPayParticipation')}
-                    </button>
-                    {participationError && <div style={{ fontSize: '0.74rem', color: '#c86e6e', marginTop: '0.35rem' }}>{participationError}</div>}
-                  </div>
-                )}
-
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <div style={{ position: 'relative', flex: 1 }}>
                     <span style={{ position: 'absolute', left: '0.75rem', top: '50%',
@@ -555,7 +555,7 @@ export default function SoftwareAuctionPage() {
                       placeholder={Number(minNextBid).toFixed(0)}
                       style={{ paddingLeft: '1.75rem', width: '100%' }} />
                   </div>
-                  <button className="btn-glow" onClick={handleBid} disabled={placing || !participation.paid}
+                  <button className="btn-glow" onClick={handleBid} disabled={placing}
                     style={{ whiteSpace: 'nowrap', minWidth: 80 }}>
                     {placing ? <span className="btn-spinner" /> : t('auctionDetailBidBtn')}
                   </button>

@@ -144,8 +144,9 @@ export function useVentureAuction(auctionId) {
     return () => { client.deactivate(); setConnected(false); };
   }, [auctionId]);
 
-  const placeBid = useCallback(async (amount) => {
-    const res = await ventureAuctionAPI.placeBid(auctionId, amount);
+  const placeBid = useCallback(async (payload) => {
+    const body = typeof payload === 'object' && payload !== null ? payload : { amount: payload };
+    const res = await ventureAuctionAPI.placeBid(auctionId, body);
     // WebSocket can be temporarily disconnected; force-refresh to keep UI accurate.
     await fetchAuctionDetail();
     return res;

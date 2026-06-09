@@ -12,6 +12,7 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { computeCommissionBreakdown } from '../utils/auctionFees';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
@@ -406,7 +407,9 @@ export default function DomainsPage() {
 // ─── Domain Form ──────────────────────────────────────────────────────────────
 function DomainForm({ editDomain, onSaved, onCancel }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { currency: navCurrency, convertToInr, ratesLoading } = useCurrency();
+  const [commissionPercent, setCommissionPercent] = useState(15);
   const isEdit = Boolean(editDomain?.id);
   const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency));
   const [loading, setLoading] = useState(false);
@@ -426,6 +429,14 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     setImagePreview(editDomain?.logo ?? null);
     setImageError('');
   }, [editDomain?.id, navCurrency]);
+
+  useEffect(() => {
+    import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
+      fetchListingFeesAndCharges()
+        .then((fees) => setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15)))
+        .catch(() => {});
+    });
+  }, []);
 
   const setContact = (k, v) =>
     setForm(f => ({ ...f, contactInfo: { ...f.contactInfo, [k]: v } }));
@@ -481,10 +492,17 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               form.currency === 'INR'
                 ? parseFloat(form.minBidPrice)
                 : convertToInr(parseFloat(form.minBidPrice), form.currency);
+            const { payAuctionCreationFee } = await import('../utils/auctionFees');
+            const creationFeeOrderId = await payAuctionCreationFee({
+              auctionType: 'DOMAIN',
+              user,
+              referenceId: saved.id,
+            });
             await auctionAPI.create(saved.id, {
               domain_id: saved.id,
               minBidPrice: minBidInr,
-              duration:    form.auctionDuration,
+              duration: form.auctionDuration,
+              creationFeeOrderId,
             });
           } catch (auctionErr) {
             const msg = readApiError(
@@ -526,6 +544,10 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   };
 
   const isAuction = form.saleType === 'AUCTION';
+  const sellerAmount = parseFloat(form.askingPrice) || 0;
+  const commissionBreakdown = !isAuction && sellerAmount > 0
+    ? computeCommissionBreakdown(sellerAmount, commissionPercent)
+    : null;
   const selectedExt = normalizeDomainExtension(form.domainExtension);
 
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-purple-500 transition-all w-full placeholder:text-gray-400';
@@ -652,6 +674,13 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               ? t('domainsPageRatesLoading')
               : t('domainsPageRatesConvertHint')}
           </p>
+        )}
+        {commissionBreakdown && (
+          <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
+            <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
+            <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
+            <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+          </div>
         )}
 
         {!isEdit && isAuction && (

@@ -185,8 +185,11 @@ export function useAuction(auctionId) {
     };
   }, [auctionId]);
 
-  const placeBid = useCallback(async (amount) => {
-    return auctionAPI.placeBid(auctionId, amount);
+  const placeBid = useCallback(async (payload) => {
+    const body = typeof payload === 'object' && payload !== null
+      ? payload
+      : { amount: payload };
+    return auctionAPI.placeBid(auctionId, body);
   }, [auctionId]);
 
   return { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid };

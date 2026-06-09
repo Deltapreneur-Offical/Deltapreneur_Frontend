@@ -6,6 +6,7 @@ import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { payAuctionCreationFee } from '../utils/auctionFees';
 import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctionTime, resolveAuctionEndTime } from '../utils/auctionDate';
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
@@ -170,10 +171,6 @@ export default function AuctionPage() {
   };
 
   const handleBid = async () => {
-    if (!participation.paid) {
-      setBidError(t('auctionDetailPayParticipationFirst'));
-      return;
-    }
     const amount = parseFloat(bidAmount);
     const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
@@ -182,11 +179,24 @@ export default function AuctionPage() {
     }
     setBidLoading(true); setBidError(''); setBidSuccess('');
     try {
-      await placeBid(amount);
+      const { payBidFee } = await import('../utils/auctionFees');
+      const payment = await payBidFee({
+        auctionType: 'DOMAIN',
+        auctionId: auction.id,
+        bidAmount: amount,
+        user,
+        description: t('auctionDetailBidFee', { defaultValue: 'Auction bid fee' }),
+      });
+      await placeBid({
+        amount,
+        razorpayOrderId: payment.razorpayOrderId,
+        razorpayPaymentId: payment.razorpayPaymentId,
+        razorpaySignature: payment.razorpaySignature,
+      });
       setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amount) }));
       setBidAmount('');
     } catch (err) {
-      setBidError(err.response?.data?.error || t('auctionDetailFailedPlaceBid'));
+      setBidError(err?.response?.data?.error || err?.message || t('auctionDetailFailedPlaceBid'));
     } finally { setBidLoading(false); }
   };
 
@@ -438,7 +448,7 @@ export default function AuctionPage() {
                   </div>
                 ) : (
                 <>
-                {!participation.loading && !participation.paid && (
+                {false && !participation.loading && !participation.paid && (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="text-sm text-amber-800 mb-2">
                       {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
@@ -503,7 +513,7 @@ export default function AuctionPage() {
                 )}
 
                 <button className="btn-glow w-full" onClick={handleBid}
-                  disabled={bidLoading || !bidAmount || !participation.paid}>
+                  disabled={bidLoading || !bidAmount}>
                   {bidLoading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
                     (bidAmount
                       ? t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(bidAmount) })
@@ -556,6 +566,7 @@ export default function AuctionPage() {
       {reAuctionModal && (
         <ReAuctionModal
           auctionId={auction.id}
+          domainId={auction.domainId || auction.domain_id}
           onClose={() => setReAuctionModal(false)}
           onSuccess={() => { setReAuctionModal(false); window.location.reload(); }}
         />
@@ -652,8 +663,9 @@ function InfoRow({ label, value }) {
 }
 
 // ─── Re-Auction Modal ─────────────────────────────────────────────────────────
-function ReAuctionModal({ auctionId, onClose, onSuccess }) {
+function ReAuctionModal({ auctionId, domainId, onClose, onSuccess }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { getSymbol } = useCurrency();
   const [form, setForm]       = useState({ minBidPrice: '', duration: 'SEVEN_DAYS' });
   const [loading, setLoading] = useState(false);
@@ -667,13 +679,21 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
     }
     setLoading(true); setError('');
     try {
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'DOMAIN',
+        user,
+        referenceId: domainId,
+        description: t('auctionDetailReAuctionCreationFee', { defaultValue: 'Domain re-auction creation fee' }),
+      });
       await auctionAPI.reAuction(auctionId, {
+        domainId,
         minBidPrice: parseFloat(form.minBidPrice),
         duration:    form.duration,
+        creationFeeOrderId,
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || t('auctionDetailFailedReAuction'));
+      setError(err.response?.data?.error || err.message || t('auctionDetailFailedReAuction'));
     } finally { setLoading(false); }
   };
 

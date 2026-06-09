@@ -448,10 +448,9 @@ export default function CommunityPage() {
 function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
   const { user } = useAuth();
   const { currency, formatPrice, getSymbol } = useCurrency();
-  const LISTING_FEE_INR = 118;
-  const listingFeeDisplay = formatPrice(LISTING_FEE_INR);
-  const paymentSteps = ['Details', `Pay ${listingFeeDisplay}`, 'Live!'];
-  const [step, setStep]       = useState('form'); // form | payment | done
+  const [creationFeeInr, setCreationFeeInr] = useState(118);
+  const creationFeeDisplay = formatPrice(creationFeeInr);
+  const [step, setStep]       = useState('form'); // form | done
   const [form, setForm]       = useState({
     auctionTitle: '',
     auctionSkills: '',
@@ -468,64 +467,40 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  // Step 1: create auction record
+  useEffect(() => {
+    import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
+      fetchListingFeesAndCharges()
+        .then((fees) => setCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118)))
+        .catch(() => {});
+    });
+  }, []);
+
   const handleCreate = async e => {
     e.preventDefault();
     if (!form.auctionTitle.trim()) { setError('Auction title is required.'); return; }
     if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) { setError('Enter a valid minimum bid.'); return; }
     setLoading(true); setError('');
     try {
+      const { payAuctionCreationFee } = await import('../utils/auctionFees');
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'COMMUNITY',
+        user,
+        referenceId: communityId,
+        description: 'Creator auction creation fee',
+      });
       const payload = {
         ...form,
         minBidPrice: parseFloat(form.minBidPrice),
+        creationFeeOrderId,
       };
       const { data } = await communityAuctionAPI.create(communityId, payload);
       const auction = data?.auction ?? data;
-      setAuctionId(auction.id);
-      setStep('payment');
+      setAuctionId(auction?.id ?? null);
+      setStep('done');
+      onSuccess(auction);
     } catch (err) {
       setError(apiErrorMessage(err, 'Failed to create auction. Please try again.'));
     } finally { setLoading(false); }
-  };
-
-  // Step 2: pay ₹118 via Razorpay
-  const handlePayListingFee = async () => {
-    setLoading(true); setError('');
-    try {
-      const { data } = await communityAuctionAPI.createListingOrder(auctionId, {
-        ...buildOrderCurrencyPayload(currency),
-      });
-
-      openRazorpayCheckout({
-        orderData: data,
-        user,
-        description: 'Profile Auction Listing Fee',
-        themeColor: '#1a1a2e',
-        onSuccess: async (response) => {
-          try {
-            const { data: verifyData } = await communityAuctionAPI.verifyListingFee(auctionId, {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id:   response.razorpay_order_id,
-              razorpay_signature:  response.razorpay_signature,
-            });
-            const liveAuction = verifyData?.auction ?? verifyData;
-            setStep('done');
-            onSuccess(liveAuction);
-          } catch {
-            setError('Payment verification failed. Please contact support.');
-            setLoading(false);
-          }
-        },
-        onFailure: () => {
-          setError('Payment failed. Please try again.');
-          setLoading(false);
-        },
-        onDismiss: () => setLoading(false),
-      });
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not initiate payment. Please try again.');
-      setLoading(false);
-    }
   };
 
   return (
@@ -535,23 +510,6 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700" onClick={onClose}>✕</button>
 
-        {/* ── Step indicator ── */}
-        <div className="flex items-center gap-2 mb-6">
-          {paymentSteps.map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                (step === 'form' && i === 0) || (step === 'payment' && i === 1) || (step === 'done' && i === 2)
-                  ? 'bg-gray-900 text-white'
-                  : (step === 'payment' && i === 0) || (step === 'done' && i <= 1)
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 text-gray-400'
-              }`}>{((step === 'payment' && i === 0) || (step === 'done' && i <= 1)) ? '✓' : i + 1}</div>
-              <span className="text-xs text-gray-500 font-medium">{s}</span>
-              {i < 2 && <div className="w-6 h-px bg-gray-200" />}
-            </div>
-          ))}
-        </div>
-
         {step === 'form' && (
           <>
             <div className="mb-5">
@@ -559,7 +517,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
                 🔨 Profile Auction
               </div>
               <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Put Your Profile to Auction</h2>
-              <p className="text-sm text-gray-500">Let companies bid to work with you. One-time listing fee: <strong>{listingFeeDisplay}</strong></p>
+              <p className="text-sm text-gray-500">Let companies bid to work with you. Auction creation fee: <strong>{creationFeeDisplay}</strong></p>
             </div>
 
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
@@ -628,41 +586,12 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 
               <div className="flex gap-3 mt-1">
                 <button type="submit" className="btn-glow flex-1" disabled={loading}>
-                  {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Continue to Payment →'}
+                  {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : `Pay ${creationFeeDisplay} & Create Auction`}
                 </button>
                 <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
               </div>
             </form>
           </>
-        )}
-
-        {step === 'payment' && (
-          <div className="text-center py-4">
-            <div className="text-5xl mb-4">💳</div>
-            <h2 className="font-display text-2xl font-semibold text-gray-900 mb-2">One-Time Listing Fee</h2>
-            <p className="text-gray-500 text-sm mb-6">
-              Pay a one-time listing fee of <strong className="text-gray-900">{listingFeeDisplay}</strong> to make your auction go live.
-              Your profile will be immediately visible to bidders.
-            </p>
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-6 text-left">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">What you get</div>
-              <ul className="text-sm text-gray-700 space-y-1.5">
-                <li>✓ Live auction visible to all registered users</li>
-                <li>✓ Real-time bid notifications</li>
-                <li>✓ Pre-auction meeting scheduler</li>
-                <li>✓ Winner email with contact details</li>
-              </ul>
-            </div>
-            {error && <div className="text-sm text-red-500 p-3 bg-red-50 border border-red-200 rounded-lg mb-4">{error}</div>}
-            <div className="flex gap-3">
-              <button className="btn-glow flex-1 text-base py-3" onClick={handlePayListingFee} disabled={loading}>
-                {loading
-                  ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-                  : `Pay ${formatPrice(LISTING_FEE_INR)} & Go Live →`}
-              </button>
-              <button className="btn-glow" onClick={() => setStep('form')}>← Back</button>
-            </div>
-          </div>
         )}
 
         {step === 'done' && (

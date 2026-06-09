@@ -23,6 +23,7 @@ import {
   toDatetimeLocalInput,
 } from '../utils/auctionDate';
 import { getLinkedInProfileUrl } from '../utils/creatorProfile';
+import { payAuctionCreationFee } from '../utils/auctionFees';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -184,10 +185,6 @@ export default function CommunityAuctionPage() {
 
   // Place bid
   const handleBid = async () => {
-    if (!participation.paid) {
-      setBidError('Please pay participation fee first.');
-      return;
-    }
     const amount = parseFloat(bidAmount);
     const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
     if (bidErrorMsg) {
@@ -196,11 +193,24 @@ export default function CommunityAuctionPage() {
     }
     setBidLoading(true); setBidError(''); setBidSuccess('');
     try {
-      await placeBid(amount);
+      const { payBidFee } = await import('../utils/auctionFees');
+      const payment = await payBidFee({
+        auctionType: 'COMMUNITY',
+        auctionId: auction.id,
+        bidAmount: amount,
+        user,
+        description: 'Creator auction bid fee',
+      });
+      await placeBid({
+        amount,
+        razorpayOrderId: payment.razorpayOrderId,
+        razorpayPaymentId: payment.razorpayPaymentId,
+        razorpaySignature: payment.razorpaySignature,
+      });
       setBidSuccess(`Bid of ₹${Number(amount).toLocaleString('en-IN')} placed!`);
       setBidAmount('');
     } catch (err) {
-      setBidError(err.response?.data?.error || 'Failed to place bid.');
+      setBidError(err.response?.data?.error || err?.message || 'Failed to place bid.');
     } finally { setBidLoading(false); }
   };
 
@@ -523,18 +533,6 @@ export default function CommunityAuctionPage() {
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
                   Place Your Bid
                 </h3>
-                {!participation.loading && !participation.paid && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="text-sm text-amber-800 mb-2">
-                      Participation fee required: <strong>₹{Number(participation.fee || 0).toLocaleString('en-IN')}</strong>
-                    </div>
-                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
-                    </button>
-                    {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
-                  </div>
-                )}
-
                 {minNextBid > 0 && (
                   <div className="mb-4">
                     <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Bid</div>
@@ -586,7 +584,7 @@ export default function CommunityAuctionPage() {
                 )}
 
                 <button className="btn-glow w-full" onClick={handleBid}
-                  disabled={bidLoading || !bidAmount || !participation.paid}>
+                  disabled={bidLoading || !bidAmount}>
                   {bidLoading
                     ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
                     : `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`}
@@ -660,8 +658,8 @@ export default function CommunityAuctionPage() {
               </div>
             </div>
 
-            {/* Request meeting shortcut — non-owner, active, participation paid */}
-            {isActive && !isOwner && participation.paid && (
+            {/* Request meeting shortcut — non-owner, active */}
+            {isActive && !isOwner && (
               <button
                 className="btn-glow w-full"
                 onClick={() => {
@@ -672,11 +670,6 @@ export default function CommunityAuctionPage() {
                 }}>
                 📅 Schedule a Meeting
               </button>
-            )}
-            {isActive && !isOwner && !participation.loading && !participation.paid && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                Pay the participation fee to request a meeting with this profile owner.
-              </div>
             )}
           </div>
         </div>
@@ -1201,6 +1194,7 @@ function MeetingCard({ meeting, isOwner, userId, actionLoading, onAction }) {
 
 // ─── Re-Auction Modal ─────────────────────────────────────────────────────────
 function ReAuctionModal({ auctionId, onClose, onSuccess }) {
+  const { user } = useAuth();
   const [form, setForm]       = useState({ minBidPrice: '', duration: 'SEVEN_DAYS' });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -1213,13 +1207,20 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
     }
     setLoading(true); setError('');
     try {
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'COMMUNITY',
+        user,
+        referenceId: auctionId,
+        description: 'Community re-auction creation fee',
+      });
       await communityAuctionAPI.reAuction(auctionId, {
         minBidPrice: parseFloat(form.minBidPrice),
         duration:    form.duration,
+        creationFeeOrderId,
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to re-auction.');
+      setError(err.response?.data?.error || err.message || 'Failed to re-auction.');
     } finally { setLoading(false); }
   };
 

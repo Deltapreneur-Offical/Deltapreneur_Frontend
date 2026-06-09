@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import CurrencyPriceInput from '../common/CurrencyPriceInput';
 import FormSelect from '../common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../../constants/currencies';
 import { VENTURE_INDUSTRIES } from '../../constants/listingCategories';
+import { computeCommissionBreakdown, fetchListingFeesAndCharges } from '../../utils/auctionFees';
 const VENTURE_TYPES = [
   { value: 'FIFTY_FIFTY', label: '50:50 — Equal Synergy' },
   { value: 'SIXTY_FORTY', label: '60:40 — Majority Founder' },
@@ -59,6 +60,7 @@ const ventureLabelCls = 'text-sm font-medium text-gray-700';
 export default function VentureForm({ initialData, onSubmit, loading, error, submitLabel }) {
   const { t } = useTranslation();
   const { currency: navCurrency, convertToInr } = useCurrency();
+  const [commissionPercent, setCommissionPercent] = useState(15);
   const resolvedSubmitLabel = submitLabel ?? t('submit');
   const [form, setForm] = useState(() => initialData ? {
     ...EMPTY,
@@ -82,6 +84,21 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
 
   const isAuction = form.saleType === 'AUCTION';
   const isAuctionEligible = AUCTION_ELIGIBLE_STAGES.includes(form.stage);
+  const listingApprovalStatus = initialData?.listingApprovalStatus
+    ?? initialData?.listing_approval_status
+    ?? null;
+  const isPendingApproval = listingApprovalStatus === 'PENDING_APPROVAL';
+
+  useEffect(() => {
+    fetchListingFeesAndCharges()
+      .then((fees) => setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15)))
+      .catch(() => {});
+  }, []);
+
+  const sellerDealAmount = parseFloat(form.brandDetails.dealValue) || 0;
+  const commissionBreakdown = !isAuction && sellerDealAmount > 0
+    ? computeCommissionBreakdown(sellerDealAmount, commissionPercent)
+    : null;
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -211,10 +228,10 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
 
             <div className="mt-3 p-3 bg-white border border-gray-200 rounded-lg text-xs text-gray-500 leading-relaxed">
               <strong className="text-purple-600">📋 How it works:</strong><br />
-              1. Submit this form to create your auction listing (status: Draft)<br />
+              1. Pay the auction creation fee and submit this form<br />
               2. Go to <strong>Venture Dashboard → My Listings</strong><br />
               3. Click <strong>🔍 Verify GSTIN</strong> — your venture name must match the GSTIN trade name<br />
-              4. Once verified, your auction goes <strong>Live</strong> immediately
+              4. Once verified, your auction goes <strong>Live</strong>
             </div>
           </div>
         )}
@@ -259,7 +276,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
           {!isAuction && (
             <CurrencyPriceInput
               id="venture-deal-value"
-              label="Deal Value"
+              label="Deal Value (your amount)"
               value={form.brandDetails.dealValue}
               onChange={(v) => setBrand('dealValue', v)}
               currency={form.currency}
@@ -271,6 +288,18 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
             />
           )}
         </div>
+        {commissionBreakdown && (
+          <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
+            <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
+            <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
+            <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+          </div>
+        )}
+        {isPendingApproval && (
+          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+            Your venture listing is pending admin approval and is not visible publicly yet.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">

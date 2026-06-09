@@ -6,6 +6,7 @@ import { useVentureAuction } from '../hooks/useVentureAuction';
 import { ventureAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { payAuctionCreationFee } from '../utils/auctionFees';
 import {
   formatAuctionDate,
   formatAuctionDateTime,
@@ -140,10 +141,6 @@ export default function VentureAuctionPage() {
   }, [bids.length]);
 
   const handleBid = async () => {
-    if (!participation.paid) {
-      setBidError(t('auctionDetailPayParticipationFirst'));
-      return;
-    }
     const amount = parseFloat(bidAmount);
     const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
@@ -152,11 +149,24 @@ export default function VentureAuctionPage() {
     }
     setBidLoading(true); setBidError(''); setBidSuccess('');
     try {
-      await placeBid(amount);
+      const { payBidFee } = await import('../utils/auctionFees');
+      const payment = await payBidFee({
+        auctionType: 'VENTURE',
+        auctionId: auction.id,
+        bidAmount: amount,
+        user,
+        description: t('auctionDetailBidFee', { defaultValue: 'Auction bid fee' }),
+      });
+      await placeBid({
+        amount,
+        razorpayOrderId: payment.razorpayOrderId,
+        razorpayPaymentId: payment.razorpayPaymentId,
+        razorpaySignature: payment.razorpaySignature,
+      });
       setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amount) }));
       setBidAmount('');
     } catch (err) {
-      setBidError(err.response?.data?.error || t('auctionDetailFailedPlaceBid'));
+      setBidError(err.response?.data?.error || err?.message || t('auctionDetailFailedPlaceBid'));
     } finally { setBidLoading(false); }
   };
 
@@ -386,18 +396,6 @@ export default function VentureAuctionPage() {
             {isActive && !isOwner && (
               <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
                 <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">{t('auctionDetailPlaceYourBid')}</h3>
-                {!participation.loading && !participation.paid && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="text-sm text-amber-800 mb-2">
-                      {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
-                    </div>
-                    <button className="btn-glow w-full" onClick={handlePayParticipation} disabled={payingParticipation}>
-                      {payingParticipation ? t('auctionDetailProcessingDots') : t('auctionDetailPayParticipation')}
-                    </button>
-                    {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
-                  </div>
-                )}
-
                 {minNextBid > 0 && (
                   <div className="mb-4">
                     <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailQuickBid')}</div>
@@ -451,7 +449,7 @@ export default function VentureAuctionPage() {
                   </div>
                 )}
 
-                <button className="btn-glow w-full" onClick={handleBid} disabled={bidLoading || !bidAmount || !participation.paid}>
+                <button className="btn-glow w-full" onClick={handleBid} disabled={bidLoading || !bidAmount}>
                   {bidLoading ? (
                     <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
                   ) : (
@@ -589,6 +587,7 @@ function InfoRow({ label, value }) {
 
 function ReAuctionModal({ auctionId, onClose, onSuccess }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { getSymbol } = useCurrency();
   const [form, setForm]       = useState({ minBidPrice: '', duration: 'SEVEN_DAYS' });
   const [loading, setLoading] = useState(false);
@@ -602,13 +601,20 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
     }
     setLoading(true); setError('');
     try {
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'VENTURE',
+        user,
+        referenceId: auctionId,
+        description: t('auctionDetailReAuctionCreationFee', { defaultValue: 'Venture re-auction creation fee' }),
+      });
       await ventureAuctionAPI.reAuction(auctionId, {
         minBidPrice: parseFloat(form.minBidPrice),
         duration:    form.duration,
+        creationFeeOrderId,
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || t('auctionDetailFailedReAuction'));
+      setError(err.response?.data?.error || err.message || t('auctionDetailFailedReAuction'));
     } finally { setLoading(false); }
   };
 

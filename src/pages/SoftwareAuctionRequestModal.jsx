@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { softwareAuctionAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
+import { fetchListingFeesAndCharges, payAuctionCreationFee } from '../utils/auctionFees';
 
 const DURATIONS = ['ONE_DAY', 'THREE_DAYS', 'FIVE_DAYS', 'SEVEN_DAYS', 'FOURTEEN_DAYS', 'THIRTY_DAYS'];
 const DURATION_KEYS = {
@@ -16,6 +18,8 @@ const DURATION_KEYS = {
 export default function SoftwareAuctionRequestModal({ software, onClose, onSubmitted }) {
   const { t } = useTranslation();
   const { formatPrice, getSymbol } = useCurrency();
+  const { user } = useAuth();
+  const [creationFeeInr, setCreationFeeInr] = useState(118);
   const [form, setForm] = useState({
     minBidPrice: '',
     duration: 'SEVEN_DAYS',
@@ -27,6 +31,12 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+
+  useEffect(() => {
+    fetchListingFeesAndCharges()
+      .then((fees) => setCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118)))
+      .catch(() => {});
+  }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -40,6 +50,12 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
     setError('');
     setLoading(true);
     try {
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'SOFTWARE',
+        user,
+        referenceId: String(software.id),
+        description: t('softwareAuctionCreationFee', { defaultValue: 'Software auction creation fee' }),
+      });
       await softwareAuctionAPI.create(software.id, {
         minBidPrice: parseFloat(form.minBidPrice),
         duration: form.duration,
@@ -48,6 +64,7 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
         supportIncluded: form.supportIncluded,
         supportDays: form.supportIncluded ? parseInt(form.supportDays) : 0,
         transferDetails: form.transferDetails,
+        creationFeeOrderId,
       });
       onSubmitted();
     } catch (e) {
@@ -73,6 +90,9 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
                       border: '1px solid rgba(110,173,200,0.25)', borderRadius: 8,
                       marginBottom: '1.25rem', fontSize: '0.83rem', color: '#6eadc8' }}>
           {t('softwareAuctionRequestInfo')}
+          <div style={{ marginTop: '0.5rem' }}>
+            Auction creation fee: <strong>{formatPrice(creationFeeInr)}</strong> (charged before submission).
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 md:gap-5">
@@ -151,7 +171,7 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
 
         <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-6">
           <button className="btn-glow flex-1 order-2 sm:order-1" onClick={handleSubmit} disabled={loading}>
-            {loading ? <span className="btn-spinner" /> : t('softwareAuctionSubmitReview')}
+            {loading ? <span className="btn-spinner" /> : `Pay ${formatPrice(creationFeeInr)} & Submit`}
           </button>
           <button
             className="px-4 py-2.5 md:py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg transition-all hover:bg-gradient-to-r hover:from-red-500 hover:to-pink-500 hover:text-white hover:shadow-lg order-1 sm:order-2"

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { payAuctionCreationFee } from '../utils/auctionFees';
 import AppLayout from '../components/layout/AppLayout';
 import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
@@ -11,7 +12,7 @@ import Confetti from '../components/common/Confetti';
 export default function NewVenturePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { hasAccessToken } = useAuth();
+  const { hasAccessToken, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
@@ -46,7 +47,15 @@ export default function NewVenturePage() {
     }
     setLoading(true); setError('');
     try {
-        const { data } = await ventureAPI.create(form);
+        const payload = { ...form };
+        if (form.saleType === 'AUCTION') {
+          payload.creationFeeOrderId = await payAuctionCreationFee({
+            auctionType: 'VENTURE',
+            user,
+            description: t('ventureAuctionCreationFee', { defaultValue: 'Venture auction creation fee' }),
+          });
+        }
+        const { data } = await ventureAPI.create(payload);
         const savedId = data?.id ?? data?.data?.id;
 
         if (imageFile && savedId) {

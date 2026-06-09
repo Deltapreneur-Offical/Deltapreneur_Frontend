@@ -78,12 +78,16 @@ export default function AdminDashboardPage() {
   const [loading, setLoading]               = useState(false);
   const [forwardModal, setForwardModal]     = useState(null);
   const [takeDownTarget, setTakeDownTarget] = useState(null);
-  const [participationFees, setParticipationFees] = useState({
+  const [listingFees, setListingFees] = useState({
+    listingCommissionPercent: '',
+    auctionCreationFeeInr: '',
+    auctionBidFeeInr: '',
     domainParticipationFeeInr: '',
     ventureParticipationFeeInr: '',
     softwareParticipationFeeInr: '',
     communityParticipationFeeInr: '',
   });
+  const [pendingVentures, setPendingVentures] = useState([]);
   const [savingFees, setSavingFees] = useState(false);
   const [verifyDomain, setVerifyDomain]   = useState(null);
   const [verifyVenture, setVerifyVenture] = useState(null);
@@ -159,16 +163,23 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
-    auctionAPI.getParticipationFees()
+    adminAPI.getListingFeesAndCharges()
       .then(({ data }) => {
-        setParticipationFees({
-          domainParticipationFeeInr: String(data?.domainParticipationFeeInr ?? ''),
-          ventureParticipationFeeInr: String(data?.ventureParticipationFeeInr ?? ''),
-          softwareParticipationFeeInr: String(data?.softwareParticipationFeeInr ?? ''),
-          communityParticipationFeeInr: String(data?.communityParticipationFeeInr ?? ''),
+        const fees = data?.data ?? data;
+        setListingFees({
+          listingCommissionPercent: String(fees?.listingCommissionPercent ?? ''),
+          auctionCreationFeeInr: String(fees?.auctionCreationFeeInr ?? ''),
+          auctionBidFeeInr: String(fees?.auctionBidFeeInr ?? ''),
+          domainParticipationFeeInr: String(fees?.domainParticipationFeeInr ?? ''),
+          ventureParticipationFeeInr: String(fees?.ventureParticipationFeeInr ?? ''),
+          softwareParticipationFeeInr: String(fees?.softwareParticipationFeeInr ?? ''),
+          communityParticipationFeeInr: String(fees?.communityParticipationFeeInr ?? ''),
         });
       })
       .catch(() => {});
+    adminAPI.getPendingVentures()
+      .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
+      .catch(() => setPendingVentures([]));
   }, []);
 
   useEffect(() => {
@@ -233,14 +244,13 @@ export default function AdminDashboardPage() {
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
   ];
 
-  const handleSaveParticipationFees = async () => {
+  const handleSaveListingFees = async () => {
     setSavingFees(true);
     try {
-      await auctionAPI.updateParticipationFees({
-        domainParticipationFeeInr: Number(participationFees.domainParticipationFeeInr),
-        ventureParticipationFeeInr: Number(participationFees.ventureParticipationFeeInr),
-        softwareParticipationFeeInr: Number(participationFees.softwareParticipationFeeInr),
-        communityParticipationFeeInr: Number(participationFees.communityParticipationFeeInr),
+      await adminAPI.updateListingFeesAndCharges({
+        listingCommissionPercent: Number(listingFees.listingCommissionPercent),
+        auctionCreationFeeInr: Number(listingFees.auctionCreationFeeInr),
+        auctionBidFeeInr: Number(listingFees.auctionBidFeeInr),
       });
       alert(t('adminFeesUpdated'));
     } catch (e) {
@@ -294,33 +304,49 @@ export default function AdminDashboardPage() {
           className="admin-page-content bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden"
           data-admin-section={tab}
         >
-          {(tab === 'auctions' || tab === 'venture-auctions' || tab === 'software-auctions' || tab === 'community-auctions') && (
+          {(tab === 'auctions' || tab === 'venture-auctions' || tab === 'software-auctions' || tab === 'community-auctions' || tab === 'ventures') && (
             <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f9fafb' }}>
-              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>{t('adminParticipationFees')}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(120px,1fr))', gap: '0.6rem' }}>
+              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Listing Fees &amp; Charges</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px,1fr))', gap: '0.6rem' }}>
                 {[
-                  [t('adminFeeDomain'), 'domainParticipationFeeInr'],
-                  [t('adminFeeVenture'), 'ventureParticipationFeeInr'],
-                  [t('adminFeeSoftware'), 'softwareParticipationFeeInr'],
-                  [t('adminFeeCreators'), 'communityParticipationFeeInr'],
+                  ['Listing commission (%)', 'listingCommissionPercent'],
+                  ['Auction creation fee (INR)', 'auctionCreationFeeInr'],
+                  ['Auction bid fee (INR)', 'auctionBidFeeInr'],
                 ].map(([label, key]) => (
                   <div key={key}>
                     <div className="admin-fee-label">{label}</div>
                     <input
                       type="number"
-                      min="1"
-                      value={participationFees[key]}
-                      onChange={(e) => setParticipationFees((p) => ({ ...p, [key]: e.target.value }))}
+                      min="0"
+                      value={listingFees[key]}
+                      onChange={(e) => setListingFees((p) => ({ ...p, [key]: e.target.value }))}
                       style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: '1px solid #d1d5db' }}
                     />
                   </div>
                 ))}
               </div>
               <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="btn-secondary btn-sm" onClick={handleSaveParticipationFees} disabled={savingFees}>
+                <button className="btn-secondary btn-sm" onClick={handleSaveListingFees} disabled={savingFees}>
                   {savingFees ? t('adminSaving') : t('adminSaveFees')}
                 </button>
               </div>
+            </div>
+          )}
+          {tab === 'ventures' && pendingVentures.length > 0 && (
+            <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #fde68a', borderRadius: 10, background: '#fffbeb' }}>
+              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Pending venture approvals ({pendingVentures.length})</div>
+              {pendingVentures.map((v) => (
+                <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #fde68a' }}>
+                  <span>{v.brandDetails?.brandName || v.brand_details?.brand_name || v.id}</span>
+                  <span style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button type="button" className="btn-secondary btn-sm" onClick={() => adminAPI.approveVenture(v.id).then(() => window.location.reload())}>Approve</button>
+                    <button type="button" className="btn-secondary btn-sm" onClick={() => {
+                      const reason = window.prompt('Rejection reason (optional)') || '';
+                      adminAPI.rejectVenture(v.id, reason).then(() => window.location.reload());
+                    }}>Reject</button>
+                  </span>
+                </div>
+              ))}
             </div>
           )}
           {loading ? (

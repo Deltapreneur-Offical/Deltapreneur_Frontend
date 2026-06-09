@@ -42,6 +42,7 @@ import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows } from '../utils/listingVisibility';
 import { asArray } from '../utils/asArray';
+import { computeCommissionBreakdown, fetchListingFeesAndCharges } from '../utils/auctionFees';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -411,6 +412,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const [commissionPercent, setCommissionPercent] = useState(15);
 
   const [imageFile, setImageFile]       = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -426,6 +428,12 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
       setError('');
     }
   }, [initial?.id, navCurrency]);
+
+  useEffect(() => {
+    fetchListingFeesAndCharges()
+      .then((fees) => setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15)))
+      .catch(() => {});
+  }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -515,6 +523,10 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
+  const sellerAmount = parseFloat(form.price) || 0;
+  const commissionBreakdown = sellerAmount > 0
+    ? computeCommissionBreakdown(sellerAmount, commissionPercent)
+    : null;
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
@@ -593,6 +605,13 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
             </select>
           </div>
         </div>
+        {commissionBreakdown && (
+          <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
+            <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
+            <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
+            <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+          </div>
+        )}
 
         <TechnologyDemoVideoSection
           value={form.videoLink}

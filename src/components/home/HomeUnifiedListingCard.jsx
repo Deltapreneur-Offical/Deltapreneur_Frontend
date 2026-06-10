@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { VENTURE_EQUITY_TYPE_LABELS } from '../../constants/ventureLabels';
-import LikeButton from '../common/LikeButton';
-import ListingBrowseFooter from '../listings/ListingBrowseFooter';
+import ListingCardStatsFooter from '../listings/ListingCardStatsFooter';
 import { LISTING_CARD_HEADER_CLASS } from '../listings/MarketplaceListingCardFrame';
 
 function isListingVerified(type, listing) {
@@ -142,10 +141,13 @@ export default function HomeUnifiedListingCard({
           </div>
         ) : null}
 
-        <ListingBrowseFooter onViewDetails={onView} className="mt-auto flex-shrink-0 border-t border-gray-100 pt-2">
-          <span>👁 {listing.views || 0}</span>
-          {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-        </ListingBrowseFooter>
+        <ListingCardStatsFooter
+          viewCount={listing.views || 0}
+          likeState={likeState}
+          onLike={onLike}
+          onView={onView}
+          className="border-t border-gray-100"
+        />
       </div>
     </article>
   );

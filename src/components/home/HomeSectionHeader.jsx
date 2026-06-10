@@ -6,7 +6,7 @@ export default function HomeSectionHeader({ title, to }) {
 
   return (
     <div className="flex items-center justify-between gap-4 mb-1 md:mb-2">
-      <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 m-0">
+      <h3 className="home-section-heading font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 m-0 [text-shadow:0_1px_1px_rgba(15,23,42,0.22),0_2px_8px_rgba(15,23,42,0.28),0_4px_16px_rgba(15,23,42,0.12)]">
         {title}
       </h3>
       {to ? (

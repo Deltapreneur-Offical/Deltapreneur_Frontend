@@ -7,6 +7,7 @@ import './styles/listing-card-glow.css'
 import './styles/listing-cards-unified.css'
 import './styles/creator-profile-card.css'
 import './styles/home-preview-cards.css'
+import './styles/listing-card-stats-footer.css'
 import './styles/domain-ticker.css'
 import './i18n/index';
 import App from './App.jsx'

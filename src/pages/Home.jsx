@@ -259,7 +259,7 @@ export default function Home() {
           <div className="home-features-card-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
             {features.map((feature, index) => (
               <ListingCardShell key={index} className="home-feature-card-shell">
-                <div className="listing-card-glow home-feature-card card-glow-hover p-5 md:p-8 bg-white rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center h-full">
+                <div className="listing-card-glow home-feature-card card-glow-hover p-5 md:p-8 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center h-full">
                   <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">
                     {feature.icon}
                   </div>

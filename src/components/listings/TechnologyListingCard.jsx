@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Share2 } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import LikeButton from '../common/LikeButton';
-import ListingBrowseFooter from './ListingBrowseFooter';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import VerificationStatusBadge from './VerificationStatusBadge';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
@@ -137,13 +136,14 @@ export default function TechnologyListingCard({
     </>
   );
 
-  const statsRow = (
-    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium py-1.5 border-t border-gray-100">
-      <span className="flex items-center gap-0.5">
-        <Eye size={11} /> {item.views || 0}
-      </span>
-      {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-    </div>
+  const statsFooter = (
+    <ListingCardStatsFooter
+      viewCount={item.views || 0}
+      likeState={likeState}
+      onLike={onLike}
+      onView={onView}
+      className={browseMode ? '' : 'border-t border-gray-100'}
+    />
   );
 
   const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors inline-flex items-center justify-center gap-1';
@@ -296,11 +296,7 @@ export default function TechnologyListingCard({
         headerBadges={headerBadges}
         browseMode
         onClick={onView}
-        footer={(
-          <ListingBrowseFooter className="border-t-0 pt-0" onViewDetails={onView}>
-            {statsRow}
-          </ListingBrowseFooter>
-        )}
+        footer={statsFooter}
       >
         {body}
       </MarketplaceListingCardFrame>
@@ -318,7 +314,7 @@ export default function TechnologyListingCard({
       footer={(
         <>
           <div onClick={stop} role="presentation">
-            {statsRow}
+            {statsFooter}
           </div>
           {actionButtons}
         </>

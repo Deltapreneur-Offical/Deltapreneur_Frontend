@@ -352,6 +352,9 @@ export default function DomainsPage() {
           isOwner={isListingOwner(detailTarget, user, 'domain')}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
+          onViewsUpdated={(id, views) => {
+            setAllDomains((prev) => prev.map((row) => (row.id === id ? { ...row, views } : row)));
+          }}
           onClose={() => { closeListingDetail(); refreshDomains(); }}
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
           onEnquire={() => { setEnquireTarget(detailTarget); closeListingDetail(); }}
@@ -990,7 +993,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
 
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
 function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
-                              onViewAuction, onEdit, likeState, onLike }) {
+                              onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
@@ -1001,7 +1004,11 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
     if (hasFetched.current) return;
     hasFetched.current = true;
     domainAPI.get(domain.id)
-      .then(({ data }) => setDetail(normalizeDomainRecord(data?.data ?? data)))
+      .then(({ data }) => {
+        const normalized = normalizeDomainRecord(data?.data ?? data);
+        setDetail(normalized);
+        onViewsUpdated?.(normalized.id, normalized.views);
+      })
       .catch(() => setDetail(domain))
       .finally(() => setLoading(false));
   }, [domain.id]);

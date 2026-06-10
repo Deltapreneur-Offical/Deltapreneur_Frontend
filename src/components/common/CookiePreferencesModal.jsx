@@ -108,6 +108,8 @@ export default function CookiePreferencesModal() {
 }
 
 function PreferenceRow({ icon: Icon, title, description, enabled, onChange, locked = false }) {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
       <div className="flex items-start justify-between gap-4">

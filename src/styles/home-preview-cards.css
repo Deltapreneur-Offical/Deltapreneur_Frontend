@@ -7,6 +7,8 @@
   overflow-x: auto;
   overflow-y: visible;
   padding-bottom: 1rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -81,6 +83,7 @@
   min-height: var(--home-preview-card-height);
   height: auto;
   max-height: none;
+  border-radius: 1rem;
   overflow: hidden;
 }
 
@@ -106,6 +109,11 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+}
+
+.home-preview-row .listing-card-glow-shell > .creator-profile-card,
+.home-preview-row .listing-card-glow-shell > .community-listing-card.creator-profile-card {
+  overflow: visible;
 }
 
 .home-preview-row .card-glow-hover:hover {

@@ -1,6 +1,9 @@
+import { Trans, useTranslation } from 'react-i18next';
 import DomainSearchBar from './DomainSearchBar';
 
 export default function HeroGlow() {
+  const { t } = useTranslation();
+
   return (
     <section className="hero-glow-section relative overflow-x-clip overflow-y-visible border-b-0 bg-transparent pb-2 pl-4 pr-4 pt-5 sm:pl-6 sm:pr-5 sm:pt-6 md:pl-10 md:pt-7 lg:pl-20 lg:pr-8 lg:pt-7">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
@@ -10,12 +13,17 @@ export default function HeroGlow() {
           <div className="relative z-20 flex w-full min-w-0 flex-col items-start">
             <p className="hero-tagline m-0 font-sans">
               <span className="hero-tagline-dot" aria-hidden="true" />
-              Don't Just Start, Disrupt.
+              {t('heroEyebrow')}
             </p>
             <h1 className="hero-headline m-0 font-sans font-normal leading-[1.2] text-black">
-              Why just be a <span className="hero-emphasis">Consumer</span>? Be the{' '}
-              <span className="hero-emphasis">Creator</span> with{' '}
-              <span className="hero-emphasis">CoBrother!</span>
+              <Trans
+                i18nKey="heroHeadingRich"
+                components={{
+                  consumer: <span className="hero-emphasis" />,
+                  creator: <span className="hero-emphasis" />,
+                  brand: <span className="hero-emphasis" />,
+                }}
+              />
             </h1>
           </div>
 

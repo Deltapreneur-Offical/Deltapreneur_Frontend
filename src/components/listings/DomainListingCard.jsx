@@ -1,13 +1,13 @@
 ﻿import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
+import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
-import LikeButton from '../common/LikeButton';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { ListingCardBadge } from './MarketplaceListingCardFrame';
 
 const CARD_CLASS =
@@ -169,18 +169,7 @@ export default function DomainListingCard({
 
   const renderPrimaryAction = () => {
     if (browseMode) {
-      return (
-        <button
-          type="button"
-          className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
-          onClick={(e) => {
-            stop(e);
-            onView?.();
-          }}
-        >
-          {t('listingCardViewDetails', 'View Details')} ΓåÆ
-        </button>
-      );
+      return null;
     }
 
     if (isOwner) {
@@ -382,22 +371,17 @@ export default function DomainListingCard({
         />
       )}
 
-      <div
-        className="mb-3 flex items-center justify-between text-[11px] font-medium text-slate-400"
-        onClick={stop}
-        onMouseDown={stop}
-        role="presentation"
-      >
-        <span className="inline-flex items-center gap-1">
-          <Eye size={12} />
-          {domain.views || 0}
-        </span>
-        {onLike && (
-          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-        )}
-      </div>
+      <ListingCardStatsFooter
+        viewCount={Number(domain.views ?? domain.view_count ?? domain.viewCount ?? 0)}
+        likeState={likeState}
+        onLike={onLike}
+        onView={onView}
+        className={browseMode ? '' : 'mb-2'}
+      />
 
-      <div className="mt-auto">{renderPrimaryAction()}</div>
+      {renderPrimaryAction() ? (
+        <div className="mt-auto">{renderPrimaryAction()}</div>
+      ) : null}
     </article>
   );
 }

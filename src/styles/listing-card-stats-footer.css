@@ -1,0 +1,79 @@
+/* Shared footer — domain / venture / technology listing cards */
+
+.listing-card-stats-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding-top: 0.65rem;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.listing-card-stats-footer__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.listing-card-stats-footer__views {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #94a3b8;
+}
+
+.listing-card-stats-footer__mark {
+  width: 0.875rem;
+  height: 0.875rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+  opacity: 0.72;
+}
+
+.listing-card-stats-footer__group .inline-flex {
+  flex-shrink: 0;
+}
+
+.listing-card-stats-footer__cta {
+  flex-shrink: 0;
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
+  transition:
+    background-color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.listing-card-stats-footer__cta:hover {
+  background: #000000;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.28);
+}
+
+.listing-card-stats-footer__cta:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2);
+}
+
+.domain-listing-card .listing-card-stats-footer {
+  padding-top: 0.5rem;
+  margin-bottom: 0;
+}

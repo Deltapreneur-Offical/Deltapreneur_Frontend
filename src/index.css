@@ -5563,7 +5563,7 @@ body.home-menu-open {
   padding-left: 1rem;
   padding-right: 1rem;
   box-sizing: border-box;
-  overflow-x: clip;
+  overflow-x: visible;
   overflow-y: visible;
   max-width: 100%;
 }
@@ -5617,6 +5617,13 @@ body.home-menu-open {
 .home-hero-align-inner .home-listing-carousel-header,
 .home-hero-align-inner .home-section-heading {
   text-align: left;
+}
+
+.home-section-heading {
+  text-shadow:
+    0 1px 1px rgba(15, 23, 42, 0.22),
+    0 2px 8px rgba(15, 23, 42, 0.28),
+    0 4px 16px rgba(15, 23, 42, 0.12);
 }
 
 /* ─── Hero Section ───────────────────────────────────────────────────────── */
@@ -5821,7 +5828,7 @@ body.home-menu-open {
 }
 
 .home-feature-card {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
   border: 2px solid #f3f4f6;
   border-radius: 16px;
   padding: 2rem 1.5rem;

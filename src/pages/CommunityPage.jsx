@@ -8,8 +8,8 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 import CreatorIcon from '../assets/Cobrother_Profile.png';
+import { useCreatorFollows } from '../hooks/useCreatorFollows';
 import { useLikes } from '../hooks/useLikes';
-import LikeButton from '../components/common/LikeButton';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import CommunityListingCard from '../components/listings/CommunityListingCard';
@@ -70,6 +70,7 @@ export default function CommunityPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [profiles, setProfiles]             = useState([]);
+  const { toggle: toggleFollow, get: getFollow } = useCreatorFollows(profiles);
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', profiles);
   const [loading, setLoading]               = useState(true);
   const [showForm, setShowForm]             = useState(false);
@@ -400,6 +401,8 @@ export default function CommunityPage() {
                 isMe={profileMatchesUser(p, user)}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
+                followState={getFollow(p.id)}
+                onFollow={() => toggleFollow(p.id)}
                 onView={() => openDetailIfAllowed(p)}
                 onEdit={() => { setMyProfile(p); setShowForm(true); }}
               />

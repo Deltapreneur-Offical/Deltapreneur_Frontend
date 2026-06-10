@@ -1,20 +1,29 @@
+import { Trans, useTranslation } from 'react-i18next';
 import DomainSearchBar from './DomainSearchBar';
 
 export default function HeroGlow() {
+  const { t } = useTranslation();
+
   return (
     <section className="hero-glow-section relative overflow-x-clip overflow-y-visible border-b-0 bg-transparent pb-2 pl-4 pr-4 pt-5 sm:pl-6 sm:pr-5 sm:pt-6 md:pl-10 md:pt-7 lg:pl-20 lg:pr-8 lg:pt-7">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex w-full max-w-[920px] flex-col items-start text-left">
-          <div className="hero-text-stack relative z-20 w-full min-w-0">
-            <span className="hero-tagline-dot" aria-hidden="true" />
+          <div className="relative z-20 flex w-full min-w-0 flex-col items-start">
             <p className="hero-tagline m-0 font-sans">
-              Don&apos;t Just Start, Disrupt.
+              <span className="hero-tagline-dot" aria-hidden="true" />
+              {t('heroEyebrow')}
             </p>
-            <h1 className="hero-headline m-0 font-sans font-normal text-black">
-              <span className="hero-emphasis">Creator?</span> Let&apos;s get ventured with{' '}
-              <span className="hero-emphasis">CoBrother!</span>
+            <h1 className="hero-headline m-0 font-sans font-normal leading-[1.2] text-black">
+              <Trans
+                i18nKey="heroHeadingRich"
+                components={{
+                  consumer: <span className="hero-emphasis" />,
+                  creator: <span className="hero-emphasis" />,
+                  brand: <span className="hero-emphasis" />,
+                }}
+              />
             </h1>
           </div>
 
@@ -54,30 +63,11 @@ export default function HeroGlow() {
           }
         }
 
-        .hero-text-stack {
-          display: grid;
-          grid-template-columns: auto 1fr;
-          column-gap: 0.5rem;
-          row-gap: 0.15rem;
-          align-items: start;
-        }
-
-        .hero-tagline-dot {
-          grid-column: 1;
-          grid-row: 1;
-          align-self: center;
-          width: 0.5rem;
-          height: 0.5rem;
-          border-radius: 50%;
-          background: var(--cobrother-brand-green);
-          flex-shrink: 0;
-        }
-
         .hero-tagline {
-          grid-column: 2;
-          grid-row: 1;
-          margin: 0;
-          line-height: 1.2;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.35rem;
           font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', var(--font-body), system-ui, sans-serif;
           font-size: clamp(0.72rem, 1.25vw, 0.9rem);
           font-weight: 400;
@@ -87,13 +77,16 @@ export default function HeroGlow() {
           -webkit-font-smoothing: antialiased;
         }
 
+        .hero-tagline-dot {
+          width: 0.5rem;
+          height: 0.5rem;
+          border-radius: 50%;
+          background: var(--cobrother-brand-green);
+          flex-shrink: 0;
+        }
+
         .hero-headline {
-          grid-column: 2;
-          grid-row: 2;
-          display: block;
-          width: 100%;
-          margin: 0;
-          line-height: 1.25;
+          display: inline-block;
           font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', var(--font-body), system-ui, sans-serif;
           font-size: clamp(1.02rem, 3.2vw, 1.22rem);
           font-weight: 400;

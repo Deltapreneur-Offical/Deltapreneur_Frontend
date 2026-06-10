@@ -18,11 +18,18 @@
 
 .listing-card-glow-shell > .venture-listing-card,
 .listing-card-glow-shell > .technology-listing-card,
-.listing-card-glow-shell > .community-listing-card,
-.listing-card-glow-shell > .creator-profile-card {
+.listing-card-glow-shell > .community-listing-card {
   width: 100%;
   height: var(--listing-card-height);
   max-height: var(--listing-card-height);
+}
+
+.listing-card-glow-shell > .creator-profile-card {
+  width: 100%;
+  min-height: var(--listing-card-height);
+  height: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .listing-card-glow-shell > .domain-listing-card,

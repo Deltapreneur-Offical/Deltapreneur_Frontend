@@ -1,7 +1,7 @@
 export default function SkeletonCard({ className = '' }) {
   return (
     <div
-      className={`flex h-full min-h-[280px] flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm pointer-events-none ${className}`.trim()}
+      className={`listing-card-skeleton flex h-full min-h-[280px] flex-col rounded-2xl border border-gray-200 p-5 shadow-sm pointer-events-none ${className}`.trim()}
     >
       <div className="mb-4 flex items-center gap-3">
         <Bone className="h-11 w-11 flex-shrink-0 rounded-[10px]" />

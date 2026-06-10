@@ -1,0 +1,65 @@
+import { ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
+import LikeButton from '../common/LikeButton';
+
+export default function ListingCardStatsFooter({
+  viewCount = 0,
+  likeState,
+  onLike,
+  onView,
+  className = '',
+}) {
+  const { t } = useTranslation();
+
+  const stop = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  return (
+    <div
+      className={`listing-card-stats-footer ${className}`.trim()}
+      onClick={stop}
+      onMouseDown={stop}
+      role="presentation"
+    >
+      <div className="listing-card-stats-footer__group">
+        <span
+          className="listing-card-stats-footer__views"
+          title={t('creatorProfileViews', 'Profile views')}
+        >
+          <img
+            src={cobrotherViewMark}
+            alt=""
+            aria-hidden
+            className="listing-card-stats-footer__mark"
+          />
+          <span>{Number(viewCount) || 0}</span>
+        </span>
+        {onLike ? (
+          <LikeButton
+            liked={likeState?.liked}
+            count={likeState?.count}
+            onToggle={onLike}
+            forceRed
+          />
+        ) : null}
+      </div>
+
+      {onView ? (
+        <button
+          type="button"
+          className="listing-card-stats-footer__cta"
+          aria-label={t('listingCardViewDetails', 'View details')}
+          onClick={(e) => {
+            stop(e);
+            onView();
+          }}
+        >
+          <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
+        </button>
+      ) : null}
+    </div>
+  );
+}

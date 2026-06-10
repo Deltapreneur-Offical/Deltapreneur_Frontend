@@ -595,7 +595,7 @@ function DomainAuctionCard({ auction, onClick }) {
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function AuctionSkeleton() {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm pointer-events-none">
+    <div className="listing-card-skeleton border border-gray-200 rounded-xl p-5 shadow-sm pointer-events-none h-[355px] max-h-[355px]">
       <div className="flex gap-3 mb-4">
         <div className="w-11 h-11 rounded-[10px] bg-gradient-to-r from-gray-200 to-gray-300 animate-pulse" />
         <div className="flex-1 flex flex-col gap-2">

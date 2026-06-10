@@ -5,9 +5,8 @@ import { Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import ListingStatsRow from './ListingStatsRow';
 import ListingAvailabilityBadge from './ListingAvailabilityBadge';
-import ListingBrowseFooter from './ListingBrowseFooter';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import VerificationStatusBadge from './VerificationStatusBadge';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
@@ -136,11 +135,13 @@ export default function TechnologyListingCard({
     </>
   );
 
-  const statsRow = (
-    <ListingStatsRow
-      views={item.views}
+  const statsFooter = (
+    <ListingCardStatsFooter
+      viewCount={item.views || 0}
       likeState={likeState}
       onLike={onLike}
+      onView={onView}
+      className={browseMode ? '' : 'border-t border-gray-100'}
     />
   );
 
@@ -296,11 +297,7 @@ export default function TechnologyListingCard({
         headerBadges={headerBadges}
         browseMode
         onClick={onView}
-        footer={(
-          <ListingBrowseFooter className="border-t-0 pt-0" onViewDetails={onView}>
-            {statsRow}
-          </ListingBrowseFooter>
-        )}
+        footer={statsFooter}
       >
         {body}
       </MarketplaceListingCardFrame>
@@ -320,7 +317,7 @@ export default function TechnologyListingCard({
       footer={(
         <>
           <div onClick={stop} role="presentation">
-            {statsRow}
+            {statsFooter}
           </div>
           {actionButtons}
         </>

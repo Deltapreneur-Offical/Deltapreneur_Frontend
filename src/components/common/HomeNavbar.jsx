@@ -200,7 +200,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               </NavDropdown>
 
               <NavDropdown
-                label={t('Ventures')}
+                label={t('ventures')}
                 open={openDropdown === 'venture'}
                 onToggle={() => toggleDesktopDropdown('venture')}
               >
@@ -301,7 +301,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               </MobileAccordion>
 
               <MobileAccordion
-                title={t('Ventures')}
+                title={t('ventures')}
                 open={mobileAccordion === 'venture'}
                 onToggle={() => setMobileAccordion((v) => (v === 'venture' ? null : 'venture'))}
               >

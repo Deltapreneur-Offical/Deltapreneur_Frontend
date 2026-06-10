@@ -33,7 +33,7 @@ export function normalizeDomainRecord(raw) {
     status: raw.status !== false,
     featured: Boolean(raw.featured ?? false),
     likeCount: Number(raw.likeCount ?? raw.like_count ?? 0),
-    views: Number(raw.views ?? raw.view_count ?? 0),
+    views: Number(raw.views ?? raw.view_count ?? raw.viewCount ?? 0),
     auction,
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,

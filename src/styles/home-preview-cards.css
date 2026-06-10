@@ -135,19 +135,13 @@
   height: auto;
 
   max-height: none;
-
+  border-radius: 1rem;
   overflow: visible;
-
   outline: none;
-
   transition:
-
     transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-
     box-shadow 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-
     border-color 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-
 }
 
 
@@ -174,22 +168,22 @@
 
 }
 
-
-
 /* Technology/venture/community: listing-card-glow sets border:none — restore a single border */
-
 .home-preview-row .technology-listing-card,
-
 .home-preview-row .venture-listing-card,
-
 .home-preview-row .community-listing-card,
-
 .home-preview-row .community-profile-card,
-
 .home-preview-row .creator-profile-card {
-
   border: 1px solid #e2e8f0;
+}
 
+.home-preview-row .listing-card-glow-shell > .creator-profile-card,
+.home-preview-row .listing-card-glow-shell > .community-listing-card.creator-profile-card {
+  overflow: visible;
+}
+
+.home-preview-row .card-glow-hover:hover {
+  transform: translateY(-2px) translateZ(0);
 }
 
 

@@ -81,6 +81,13 @@ export const creatorAPI = {
   linkedInCallback: (code)    => api.get(`/api/v1/community/linkedin/callback?code=${code}`),
 };
 
+export const creatorFollowAPI = {
+  toggle:      (communityId) => api.post(`/api/v1/creator/${communityId}/follow/toggle`),
+  getStatus:   (communityId) => api.get(`/api/v1/creator/${communityId}/follow/status`),
+  bulkStatus:  (communityIds) => api.post('/api/v1/creator/follow/bulk-status', communityIds),
+  bulkCounts:  (communityIds) => api.post('/api/v1/creator/follow/bulk-counts', communityIds),
+};
+
 /** @deprecated Use creatorAPI */
 export const communityAPI = creatorAPI;
 

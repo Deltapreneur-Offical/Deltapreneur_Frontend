@@ -11,28 +11,13 @@ import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
-const SEARCH_MODES = {
-  ai: {
-    label: 'AI Brand Names',
-    placeholder: 'Enter your business and brand name',
-  },
-  new: {
-    label: 'Domain Names',
-    placeholder: 'Search your domain name',
-  },
-  premium: {
-    label: 'Pre-Owned Domains',
-    placeholder: 'Search premium domain name',
-  },
-  auction: {
-    label: 'Domain Auctions',
-    placeholder: 'Explore domain name auctions',
-  },
+const SEARCH_MODE_IDS = ['ai', 'new', 'premium', 'auction'];
+const SEARCH_MODE_CONFIG = {
+  ai: { labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
+  new: { labelKey: 'searchTabNew', placeholderKey: 'searchPlaceholderNew' },
+  premium: { labelKey: 'searchTabPremium', placeholderKey: 'searchPlaceholderPremium' },
+  auction: { labelKey: 'searchTabAuction', placeholderKey: 'searchPlaceholderAuction' },
 };
-const SEARCH_TABS = Object.entries(SEARCH_MODES).map(([id, config]) => ({
-  id,
-  label: config.label,
-}));
 
 function toSafeText(value) {
   if (typeof value === 'string') return value;
@@ -137,7 +122,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const safeQuery = toSafeText(query);
   const normalizedQuery = toSafeLower(query).trim();
   const hasSearchQuery = normalizedQuery.length > 0;
-  const placeholder = SEARCH_MODES[searchMode]?.placeholder || SEARCH_MODES.new.placeholder;
+  const placeholder = t(
+    SEARCH_MODE_CONFIG[searchMode]?.placeholderKey || SEARCH_MODE_CONFIG.new.placeholderKey,
+  );
   const {
     results: aiDomains,
     loading: aiLoading,
@@ -530,18 +517,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
             <div className="mt-3 flex justify-center">
               <div className="brand-search-tabs inline-flex items-center gap-1 rounded-full border bg-white/95 p-1">
-                {SEARCH_TABS.map((tab) => (
+                {SEARCH_MODE_IDS.map((tabId) => (
                   <button
-                    key={tab.id}
+                    key={tabId}
                     type="button"
-                    onClick={() => handleTabChange(tab.id)}
+                    onClick={() => handleTabChange(tabId)}
                     className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none ${
-                      searchMode === tab.id
+                      searchMode === tabId
                         ? 'brand-search-tab-active'
-                        : 'brand-search-tab-idle'
+                        : `brand-search-tab-idle brand-search-tab--${tabId}`
                     }`}
                   >
-                    {tab.label}
+                    {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
                   </button>
                 ))}
               </div>
@@ -571,18 +558,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         <div className="mt-3 flex justify-center pb-2 lg:hidden overflow-visible">
           <div className="brand-search-tabs brand-search-tabs-mobile flex w-full flex-wrap items-stretch justify-center gap-2 sm:gap-2.5 md:inline-flex md:w-auto md:flex-nowrap md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1">
-            {SEARCH_TABS.map((tab) => (
+            {SEARCH_MODE_IDS.map((tabId) => (
               <button
-                key={tab.id}
+                key={tabId}
                 type="button"
-                onClick={() => handleTabChange(tab.id)}
+                onClick={() => handleTabChange(tabId)}
                 className={`min-h-11 flex-1 basis-[calc(50%-0.25rem)] sm:min-h-12 sm:basis-[calc(50%-0.375rem)] rounded-full px-2.5 py-2 text-center text-[11.5px] sm:text-sm font-medium leading-snug md:min-h-9 md:flex-none md:basis-auto md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
-                  searchMode === tab.id
+                  searchMode === tabId
                     ? 'brand-search-tab-active'
-                    : 'brand-search-tab-idle'
+                    : `brand-search-tab-idle brand-search-tab--${tabId}`
                 }`}
               >
-                {tab.label}
+                {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
               </button>
             ))}
           </div>
@@ -610,12 +597,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
           {hasSearchQuery && searchMode === 'ai' && !aiLoading && !aiError && aiDomains.length === 0 && (
             <p className="text-left text-gray-500 text-sm py-4">
-              Enter a business idea to generate AI-powered domain names.
+              {t('searchAiEmptyHint')}
             </p>
           )}
 
           {hasSearchQuery && searchMode === 'new' && loading && results.every(r => r.status === 'loading') && (
-            <p className="text-center text-gray-400 text-sm mb-6">Checking domains…</p>
+            <p className="text-center text-gray-400 text-sm mb-6">{t('searchCheckingDomains')}</p>
           )}
 
           {/* New Domains */}
@@ -687,13 +674,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
           {hasSearchQuery && searchMode === 'new' && !loading && completedNewResults.length === 0 && (
             <p className="text-center text-gray-500 text-sm py-6">
-              No registrar domains available for this query right now.
+              {t('searchNoRegistrarDomains')}
             </p>
           )}
 
           {/* Premium domains */}
           {hasSearchQuery && searchMode === 'premium' && premiumLoading && (
-            <p className="text-center text-gray-400 text-sm mb-6">Loading listed domains...</p>
+            <p className="text-center text-gray-400 text-sm mb-6">{t('searchLoadingListedDomains')}</p>
           )}
           {hasSearchQuery && searchMode === 'premium' && !premiumLoading && filteredPremiumDomains.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -725,13 +712,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
           {hasSearchQuery && searchMode === 'premium' && !premiumLoading && filteredPremiumDomains.length === 0 && (
             <p className="text-center text-gray-500 text-sm py-6">
-              No listed domains found.
+              {t('searchNoListedDomains')}
             </p>
           )}
 
           {/* Ongoing domain auctions */}
           {hasSearchQuery && searchMode === 'auction' && auctionsLoading && (
-            <p className="text-center text-gray-400 text-sm mb-6">Loading live auctions…</p>
+            <p className="text-center text-gray-400 text-sm mb-6">{t('searchLoadingAuctions')}</p>
           )}
           {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -771,7 +758,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           )}
           {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length === 0 && (
             <p className="text-center text-gray-500 text-sm py-6">
-              No ongoing auctions found right now.
+              {t('searchNoOngoingAuctions')}
             </p>
           )}
         </div>
@@ -814,11 +801,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           overflow: visible;
         }
 
-        .brand-search-tab-active,
-        .brand-search-tab-idle {
-          transition: none;
-        }
-
         .brand-search-tab-active {
           background: #000000;
           color: #ffffff;
@@ -826,35 +808,81 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           border: 1px solid #000000;
         }
 
-        /* While hovering another tab, show only one black pill at a time */
-        .brand-search-tabs:has(.brand-search-tab-idle:hover) .brand-search-tab-active,
-        .brand-search-tabs:has(.brand-search-tab-idle:focus-visible) .brand-search-tab-active {
-          background: #ffffff;
-          color: #000000;
-          border: 1px solid rgba(0, 0, 0, 0.12);
-          box-shadow: none;
-        }
-
         .brand-search-tab-active:hover,
         .brand-search-tab-active:focus-visible {
           background: #000000;
           color: #ffffff;
           border-color: #000000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
 
         .brand-search-tab-idle {
+          position: relative;
+          isolation: isolate;
           background: #ffffff;
           color: #000000;
           border: 1px solid rgba(0, 0, 0, 0.12);
           box-shadow: none;
+          transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .brand-search-tab-idle:hover,
-        .brand-search-tab-idle:focus-visible {
-          background: #000000;
-          border-color: #000000;
-          color: #ffffff;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        .brand-search-tab-idle::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          z-index: -1;
+        }
+
+        .brand-search-tab-idle:hover::before,
+        .brand-search-tab-idle:focus-visible::before {
+          opacity: 1;
+        }
+
+        .brand-search-tab--ai::before {
+          background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 45%, #f5d0fe 100%);
+        }
+
+        .brand-search-tab--ai:hover,
+        .brand-search-tab--ai:focus-visible {
+          border-color: rgba(139, 92, 246, 0.45);
+          color: #5b21b6;
+          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.22);
+        }
+
+        .brand-search-tab--new::before {
+          background: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 50%, #bae6fd 100%);
+        }
+
+        .brand-search-tab--new:hover,
+        .brand-search-tab--new:focus-visible {
+          border-color: rgba(14, 165, 233, 0.45);
+          color: #0369a1;
+          box-shadow: 0 4px 14px rgba(56, 189, 248, 0.28);
+        }
+
+        .brand-search-tab--premium::before {
+          background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 50%, #c7d2fe 100%);
+        }
+
+        .brand-search-tab--premium:hover,
+        .brand-search-tab--premium:focus-visible {
+          border-color: rgba(99, 102, 241, 0.45);
+          color: #3730a3;
+          box-shadow: 0 4px 14px rgba(99, 102, 241, 0.22);
+        }
+
+        .brand-search-tab--auction::before {
+          background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 50%, #fdba74 100%);
+        }
+
+        .brand-search-tab--auction:hover,
+        .brand-search-tab--auction:focus-visible {
+          border-color: rgba(245, 158, 11, 0.5);
+          color: #b45309;
+          box-shadow: 0 4px 14px rgba(251, 191, 36, 0.3);
         }
 
         @media (min-width: 768px) {

@@ -150,10 +150,16 @@ function markdownToHtml(value = '') {
     .replace(/^(.+)$/s, '<p>$1</p>');
 }
 
-function MarkdownMessage({ content }) {
+function MarkdownMessage({ content, isDark = false, isUser = false }) {
+  const toneClass = isUser
+    ? 'text-[#111827] prose-p:text-[#111827] prose-headings:text-[#111827] prose-strong:text-[#111827] prose-li:text-[#111827]'
+    : isDark
+      ? 'prose-invert text-slate-50 prose-p:text-slate-50 prose-headings:text-white prose-strong:text-white prose-li:text-slate-100'
+      : 'text-slate-800 prose-p:text-slate-800';
+
   return (
     <div
-      className="prose prose-sm max-w-none leading-6 prose-p:my-0 prose-ul:my-2 prose-li:my-1"
+      className={`prose prose-sm max-w-none leading-6 prose-p:my-0 prose-ul:my-2 prose-li:my-1 ${toneClass}`}
       dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }}
     />
   );
@@ -229,13 +235,20 @@ function iconForItem(item) {
   return Globe2;
 }
 
-function BroAIIcon({ isDark, className }) {
+function BroAIIcon({ isDark, className = '' }) {
   return (
-    <img
-      src={broAILogo}
-      alt=""
-      className={`rounded-full object-contain ${isDark ? 'brightness-0 invert drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]' : ''} ${className}`}
-    />
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-visible ${className}`}
+      aria-hidden
+    >
+      <img
+        src={broAILogo}
+        alt=""
+        className={`h-[84%] w-[84%] object-contain object-center ${
+          isDark ? 'brightness-0 invert drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]' : ''
+        }`}
+      />
+    </span>
   );
 }
 
@@ -1016,7 +1029,7 @@ export default function CoBrotherAI() {
                               isUser
                                 ? 'bg-[#D4AF37] text-[#111827]'
                                 : isDark
-                                  ? 'border border-white/10 bg-[#111827] text-slate-100'
+                                  ? 'border border-white/10 bg-[#111827] text-slate-50'
                                   : 'border border-slate-200 bg-white text-slate-800'
                             }`}
                           >
@@ -1029,7 +1042,7 @@ export default function CoBrotherAI() {
                               </span>
                             </div>
                             {message.content ? (
-                              <MarkdownMessage content={message.content} />
+                              <MarkdownMessage content={message.content} isDark={isDark} isUser={isUser} />
                             ) : (
                               <span className="inline-flex items-center gap-2 text-sm">
                                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -8,7 +8,7 @@ import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingAvailabilityBadge from './ListingAvailabilityBadge';
-import ListingStatsRow from './ListingStatsRow';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { ListingCardBadge } from './MarketplaceListingCardFrame';
 
 const CARD_CLASS =
@@ -148,18 +148,7 @@ export default function DomainListingCard({
 
   const renderPrimaryAction = () => {
     if (browseMode) {
-      return (
-        <button
-          type="button"
-          className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
-          onClick={(e) => {
-            stop(e);
-            onView?.();
-          }}
-        >
-          {t('listingCardViewDetails', 'View Details')}
-        </button>
-      );
+      return null;
     }
 
     if (isOwner) {
@@ -356,16 +345,17 @@ export default function DomainListingCard({
         />
       )}
 
-      <div onClick={stop} onMouseDown={stop} role="presentation">
-        <ListingStatsRow
-          views={domain.views}
-          likeState={likeState}
-          onLike={onLike}
-          className="domain-listing-card__stats"
-        />
-      </div>
+      <ListingCardStatsFooter
+        viewCount={Number(domain.views ?? domain.view_count ?? domain.viewCount ?? 0)}
+        likeState={likeState}
+        onLike={onLike}
+        onView={onView}
+        className={browseMode ? '' : 'mb-2'}
+      />
 
-      <div className="mt-auto">{renderPrimaryAction()}</div>
+      {renderPrimaryAction() ? (
+        <div className="mt-auto">{renderPrimaryAction()}</div>
+      ) : null}
     </article>
   );
 }

@@ -1,5 +1,8 @@
+import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import ListingStatsRow from './ListingStatsRow';
+import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
+import CreatorFollowButton from '../creators/CreatorFollowButton';
+import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 
 function formatLabel(value) {
@@ -34,6 +37,9 @@ export default function CommunityListingCard({
   onEdit,
   likeState,
   onLike,
+  followState,
+  onFollow,
+  followLoading = false,
 }) {
   const { t } = useTranslation();
   const imageUrl = profile.imageUrl || profile.image_url || null;
@@ -44,6 +50,7 @@ export default function CommunityListingCard({
   const primarySkill = skills[0] || '';
   const headline = [roleLabel, industryLabel].filter(Boolean).join(' · ');
   const metaLine = [locationLabel, primarySkill].filter(Boolean).join(' · ');
+  const viewCount = Number(profile.views ?? profile.view_count ?? 0);
 
   const stop = (e) => {
     e.stopPropagation();
@@ -110,23 +117,56 @@ export default function CommunityListingCard({
           </p>
         </div>
 
-        <div className="creator-profile-card__footer">
-          <ListingStatsRow
-            views={profile.views}
-            likeState={likeState}
-            onLike={onLike}
-            className="creator-profile-card__stats"
-          />
+        {!isMe && onFollow ? (
+          <div className="creator-profile-card__follow-row">
+            <CreatorFollowButton
+              following={followState?.following}
+              count={followState?.count ?? profile.followerCount ?? profile.follower_count ?? 0}
+              loading={followLoading}
+              onToggle={onFollow}
+            />
+          </div>
+        ) : null}
+
+        <div
+          className="creator-profile-card__footer"
+          onClick={stop}
+          onMouseDown={stop}
+          role="presentation"
+        >
+          <div className="creator-profile-card__stat-group">
+            <span
+              className="creator-profile-card__views"
+              title={t('creatorProfileViews', 'Profile views')}
+            >
+              <img
+                src={cobrotherViewMark}
+                alt=""
+                aria-hidden
+                className="creator-profile-card__brand-mark"
+              />
+              <span>{viewCount}</span>
+            </span>
+            {onLike ? (
+              <LikeButton
+                liked={likeState?.liked}
+                count={likeState?.count}
+                onToggle={onLike}
+                forceRed
+              />
+            ) : null}
+          </div>
 
           <button
             type="button"
             className="creator-profile-card__cta"
+            aria-label={t('listingCardViewDetails', 'View details')}
             onClick={(e) => {
               stop(e);
               onView?.();
             }}
           >
-            {t('listingCardViewDetails', 'View Details')}
+            <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
           </button>
         </div>
       </div>

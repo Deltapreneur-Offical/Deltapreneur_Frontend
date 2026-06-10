@@ -65,7 +65,7 @@ export default function DomainsSection() {
                 <ListingCardShell>
                   <DomainListingCard
                     domain={domain}
-                    browseMode
+                    browseMode={true}
                     likeState={getLike(domain.id)}
                     onLike={() => toggleLike(domain.id)}
                     onView={() => handleViewDetails(domain.id)}

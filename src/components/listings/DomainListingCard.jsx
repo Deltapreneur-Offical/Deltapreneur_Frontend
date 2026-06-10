@@ -292,7 +292,7 @@ export default function DomainListingCard({
 
   return (
     <article
-      className={`${CARD_CLASS}${interactive ? ' cursor-pointer' : ''}`}
+      className={`${CARD_CLASS}${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
       onClick={interactive ? onView : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}

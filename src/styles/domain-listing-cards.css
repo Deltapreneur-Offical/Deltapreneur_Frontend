@@ -10,15 +10,77 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  height: auto;
+  height: 100%;
   min-height: 0;
+  padding: 1.25rem;
+  border-radius: 1.5rem;
+  overflow: hidden;
   cursor: default;
+  box-sizing: border-box;
+}
+
+.domain-listing-card__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.domain-listing-card__footer {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: auto;
+  padding-top: 0.625rem;
+  width: 100%;
+}
+
+.domain-listing-card__cta {
+  width: 100%;
+  min-width: 0;
+}
+
+.domain-listing-card__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.5rem;
+  text-align: center;
+}
+
+.domain-listing-card__price-box {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.domain-listing-card__price-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.domain-listing-card__price-caption {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: lowercase;
 }
 
 .domain-listing-card__header {
   margin-bottom: 0.55rem;
+  flex: 0 0 auto;
   flex-shrink: 0;
 }
 
@@ -122,7 +184,7 @@
 }
 
 .domain-listing-card__stats {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
 }
 
 /* Shared marketplace card header (Technology, Venture frame) */
@@ -470,60 +532,13 @@
   border: 1px solid #a7f3d0;
 }
 
-.domain-listing-card__body {
-  padding: 0 1rem 0.75rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 88px;
-}
-
-.domain-listing-card__price-box {
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-  border: 1px solid #bbf7d0;
-}
-
 .domain-listing-card__price-box--auction {
-  background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  background: #faf5ff;
   border-color: #e9d5ff;
-}
-
-.domain-listing-card__price-label {
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.domain-listing-card__price-value {
-  margin-top: 0.15rem;
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #059669;
-  line-height: 1.1;
 }
 
 .domain-listing-card__price-box--auction .domain-listing-card__price-value {
   color: #7c3aed;
-}
-
-.domain-listing-card__footer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  padding: 0.75rem 1rem 1rem;
-  border-top: 1px solid #f1f5f9;
-  margin-top: auto;
-  background: #fafbfc;
-}
-
-.domain-listing-card__footer--browse {
-  background: transparent;
 }
 
 .domain-listing-card__stat {

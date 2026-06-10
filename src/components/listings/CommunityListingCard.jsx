@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
+import { isCreatorProfileComplete } from '../../utils/creatorProfile';
 import CreatorFollowButton from '../creators/CreatorFollowButton';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
@@ -42,6 +43,10 @@ export default function CommunityListingCard({
   followLoading = false,
 }) {
   const { t } = useTranslation();
+
+  if (!profile) return null;
+  if (!isMe && !isCreatorProfileComplete(profile)) return null;
+
   const imageUrl = profile.imageUrl || profile.image_url || null;
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
   const roleLabel = formatLabel(profile.role);

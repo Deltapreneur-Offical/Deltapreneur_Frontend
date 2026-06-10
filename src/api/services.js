@@ -74,6 +74,7 @@ export const ventureAuctionAPI = {
 // ─── Creator (community profiles) ────────────────────────────────────────────
 export const creatorAPI = {
   getAll:           ()        => api.get('/api/v1/creator/all'),
+  getMy:            ()        => api.get('/api/v1/creator/my'),
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),

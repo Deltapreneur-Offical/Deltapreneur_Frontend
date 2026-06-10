@@ -12,10 +12,10 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { ListingCardBadge } from './MarketplaceListingCardFrame';
 
 const CARD_CLASS =
-  'domain-listing-card card-glow-hover relative flex aspect-square h-full w-full flex-col rounded-2xl bg-white p-3 sm:p-4';
+  'domain-listing-card card-glow-hover relative flex h-full w-full min-h-0 flex-col overflow-hidden rounded-3xl bg-white';
 
 const PRIMARY_BTN =
-  'w-full rounded-lg px-4 py-2.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+  'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
 
 function resolveDomainInitial(name) {
   const cleaned = (name || '').replace(/[^a-zA-Z0-9]/g, '');
@@ -58,12 +58,12 @@ function DomainListingHeader({ logo, logoAlt, initial, name, fullDomain, statusB
 
 function DomainListingPriceBox({ amount, caption }) {
   return (
-    <div className="mb-2 flex-shrink-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+    <div className="domain-listing-card__price-box">
       <div className="flex min-w-0 items-baseline gap-1.5">
-        <span className="truncate text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
+        <span className="domain-listing-card__price-value truncate">
           {amount}
         </span>
-        <span className="whitespace-nowrap text-[10px] font-semibold text-gray-500 sm:text-[11px]">
+        <span className="domain-listing-card__price-caption whitespace-nowrap">
           {caption}
         </span>
       </div>
@@ -239,7 +239,7 @@ export default function DomainListingCard({
             onViewAuction?.();
           }}
         >
-          <Gavel size={14} />
+          <Gavel size={13} />
           {auctionLive ? t('listingCardJoinAuction') : t('listingCardViewAuction')}
         </button>
       );
@@ -263,7 +263,7 @@ export default function DomainListingCard({
               onEnquire?.();
             }}
           >
-            <MessageSquare size={14} />
+            <MessageSquare size={13} />
             {t('listingCardEnquire')}
           </button>
         );
@@ -277,7 +277,7 @@ export default function DomainListingCard({
             onBuy?.();
           }}
         >
-          <ShoppingCart size={14} />
+          <ShoppingCart size={13} />
           {t('listingCardBuyNowArrow', 'Buy Now ΓåÆ')}
         </button>
       );
@@ -332,18 +332,20 @@ export default function DomainListingCard({
         )}
       />
 
-      {description ? (
-        <p className="domain-listing-card__description">{description}</p>
-      ) : null}
+      <div className="domain-listing-card__content">
+        {description ? (
+          <p className="domain-listing-card__description">{description}</p>
+        ) : null}
+
+        {Number(priceAmount) > 0 && (
+          <DomainListingPriceBox
+            amount={formatPrice(priceAmount)}
+            caption={priceCaption}
+          />
+        )}
+      </div>
 
       <div className="min-h-0 flex-1" aria-hidden />
-
-      {Number(priceAmount) > 0 && (
-        <DomainListingPriceBox
-          amount={formatPrice(priceAmount)}
-          caption={priceCaption}
-        />
-      )}
 
       <ListingCardStatsFooter
         viewCount={Number(domain.views ?? domain.view_count ?? domain.viewCount ?? 0)}

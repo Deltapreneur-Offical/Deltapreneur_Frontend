@@ -200,7 +200,7 @@ function formatTimeLeft(value) {
 function transcriptMarkdown(messages) {
   return messages
     .map((message) => {
-      const role = message.role === 'user' ? 'You' : 'Bro AI';
+      const role = message.role === 'user' ? 'You' : 'Bro';
       return `## ${role} - ${message.createdAt || ''}\n\n${message.content || ''}`;
     })
     .join('\n\n---\n\n');
@@ -606,7 +606,7 @@ export default function CoBrotherAI() {
             }
 
             if (event === 'error') {
-              throw new Error(data?.message || 'Bro AI hit a response error.');
+              throw new Error(data?.message || 'Bro hit a response error.');
             }
 
             if (event === 'done') {
@@ -644,7 +644,7 @@ export default function CoBrotherAI() {
                 ...message,
                 content:
                   error?.message ||
-                  'Bro AI is unavailable right now. Please try again in a moment.',
+                  'Bro is unavailable right now. Please try again in a moment.',
               }
             : message,
         ),
@@ -723,7 +723,7 @@ export default function CoBrotherAI() {
     if (!popup) return;
     popup.document.write(`
       <html>
-        <head><title>Bro AI Conversation</title></head>
+        <head><title>Bro Conversation</title></head>
         <body style="font-family: Inter, system-ui, sans-serif; line-height: 1.6; padding: 32px;">${html}</body>
       </html>
     `);
@@ -736,7 +736,7 @@ export default function CoBrotherAI() {
     const text = transcriptMarkdown(messages);
     if (!text) return;
     if (navigator.share) {
-      await navigator.share({ title: 'Bro AI conversation', text });
+      await navigator.share({ title: 'Bro conversation', text });
     } else {
       await navigator.clipboard.writeText(text);
       setVoiceNotice('Conversation copied.');
@@ -759,7 +759,7 @@ export default function CoBrotherAI() {
             ? 'border-[#D4AF37]/35 bg-[#0B0F14] text-[#D4AF37] hover:border-[#D4AF37]/70'
             : 'border-slate-200 bg-white text-[var(--cobrother-brand-green)] hover:border-[var(--cobrother-brand-green)]'
         } ${open ? 'pointer-events-none scale-95 opacity-0' : 'opacity-100'}`}
-        aria-label="Open Bro AI"
+        aria-label="Open Bro"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.96 }}
       >
@@ -780,7 +780,7 @@ export default function CoBrotherAI() {
                 : 'border-slate-200 bg-white text-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)]'
             }`}
             role="dialog"
-            aria-label="Bro AI marketplace assistant"
+            aria-label="Bro marketplace assistant"
           >
             <div className="flex min-h-0 w-full flex-col">
               <header
@@ -836,7 +836,7 @@ export default function CoBrotherAI() {
                       className={`hidden h-9 w-9 items-center justify-center rounded-xl transition sm:flex ${
                         isDark ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
                       }`}
-                      aria-label={fullscreen ? 'Exit full screen' : 'Expand Bro AI'}
+                      aria-label={fullscreen ? 'Exit full screen' : 'Expand Bro'}
                     >
                       {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                     </button>
@@ -847,7 +847,7 @@ export default function CoBrotherAI() {
                         className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
                           isDark ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
                         }`}
-                        aria-label="Open Bro AI menu"
+                        aria-label="Open Bro menu"
                         aria-expanded={moreOpen}
                       >
                         <MoreHorizontal className="h-4 w-4" />
@@ -901,14 +901,14 @@ export default function CoBrotherAI() {
                       className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
                         isDark ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
                       }`}
-                      aria-label="Close Bro AI"
+                      aria-label="Close Bro"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
 
-                <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Bro AI modes">
+                <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Bro modes">
                   {MODES.map((item) => {
                     const Icon = item.icon;
                     const active = mode === item.id;
@@ -1035,7 +1035,7 @@ export default function CoBrotherAI() {
                           >
                             <div className="mb-1 flex items-center gap-2">
                               <span className={`text-xs font-semibold ${isUser ? 'text-[#111827]' : isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                                {isUser ? 'You' : 'Bro AI'}
+                                {isUser ? 'You' : 'Bro'}
                               </span>
                               <span className={`text-[11px] ${isUser ? 'text-[#111827]/70' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                 {message.createdAt}

@@ -300,7 +300,7 @@ export default function HomeTopNavActions() {
                 <div className="border-t border-gray-100">
                   <button
                     type="button"
-                    className="block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-0 bg-transparent"
                     onClick={() => {
                       setProfileDropdownOpen(false);
                       setShowLogoutConfirm(true);

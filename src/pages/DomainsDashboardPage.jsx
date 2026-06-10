@@ -24,6 +24,16 @@ const PAYMENT_COLORS = {
   FAILED:    { color: '#c86e6e' },
 };
 
+function DashboardStatCard({ label, value, hint }) {
+  return (
+    <div className="domains-stat-card">
+      <div className="domains-stat-label">{label}</div>
+      <div className="domains-stat-value">{value}</div>
+      {hint ? <div className="domains-stat-hint">{hint}</div> : null}
+    </div>
+  );
+}
+
 export default function DomainsDashboardPage() {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -76,36 +86,37 @@ export default function DomainsDashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatTotalListings')}</div>
-            <div className="text-2xl font-bold text-black/70">{listings.length}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatListings')}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatActive')}</div>
-            <div className="text-2xl font-bold text-black/70">{listings.filter(d => d.domainStatus === 'AVAILABLE').length}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatActiveListings')}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatSold')}</div>
-            <div className="text-2xl font-bold text-black/70">{listings.filter(d => d.domainStatus === 'SOLD').length}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatSoldListings')}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatRevenue')}</div>
-            <div className="text-2xl font-bold text-black/70">{formatPrice(totalRevenue)}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatTotalRevenue')}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatPurchased', { defaultValue: 'Purchased' })}</div>
-            <div className="text-2xl font-bold text-black/70">{purchaseCount}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatPurchases', { defaultValue: 'Purchases' })}</div>
-          </div>          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-gray-600 mb-2">{t('domainsDashboardStatTotalSpent')}</div>
-            <div className="text-2xl font-bold text-black/70">{formatPrice(totalSpent)}</div>
-            <div className="text-xs text-gray-600 font-semibold mt-1">{t('domainsDashboardStatTotalSpent')}</div>
-          </div>
+        <div className="domains-stats-grid">
+          <DashboardStatCard
+            label={t('domainsDashboardStatTotalListings')}
+            value={listings.length}
+            hint={t('domainsDashboardStatListings')}
+          />
+          <DashboardStatCard
+            label={t('domainsDashboardStatActive')}
+            value={listings.filter((d) => d.domainStatus === 'AVAILABLE').length}
+            hint={t('domainsDashboardStatActiveListings')}
+          />
+          <DashboardStatCard
+            label={t('domainsDashboardStatSold')}
+            value={listings.filter((d) => d.domainStatus === 'SOLD').length}
+            hint={t('domainsDashboardStatSoldListings')}
+          />
+          <DashboardStatCard
+            label={t('domainsDashboardStatRevenue')}
+            value={formatPrice(totalRevenue)}
+            hint={t('domainsDashboardStatTotalRevenue')}
+          />
+          <DashboardStatCard
+            label={t('domainsDashboardStatPurchased', { defaultValue: 'Purchased' })}
+            value={purchaseCount}
+            hint={t('domainsDashboardStatPurchases', { defaultValue: 'Purchases' })}
+          />
+          <DashboardStatCard
+            label={t('domainsDashboardStatTotalSpent')}
+            value={formatPrice(totalSpent)}
+            hint={t('domainsDashboardStatTotalSpent')}
+          />
         </div>
 
         <div className="flex gap-2 mb-6">

@@ -73,6 +73,7 @@ export default function AppLayout({ children }) {
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const bellRef = useRef(null);
+  const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
 
   const updateNotifPanelPosition = useCallback(() => {
@@ -152,10 +153,12 @@ export default function AppLayout({ children }) {
     return () => clearInterval(interval);
   }, [userId, refreshUnreadCount]);
 
-  // Close bell / profile menus on outside click
+  // Close bell / profile menus on outside click (panel is portaled — include notifPanelRef)
   useEffect(() => {
     const handler = (e) => {
-      if (bellRef.current && !bellRef.current.contains(e.target)) {
+      const insideBell = bellRef.current?.contains(e.target);
+      const insideNotifPanel = notifPanelRef.current?.contains(e.target);
+      if (!insideBell && !insideNotifPanel) {
         setBellOpen(false);
       }
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -561,6 +564,7 @@ export default function AppLayout({ children }) {
                 typeof document !== 'undefined' &&
                 createPortal(
                   <div
+                    ref={notifPanelRef}
                     className="app-notif-dropdown bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
                     style={notifPanelStyle}
                     role="dialog"
@@ -623,9 +627,9 @@ export default function AppLayout({ children }) {
                       <Link
                         to="/notifications"
                         onClick={() => setBellOpen(false)}
-                        className="text-xs text-gray-600 hover:text-gray-900"
+                        className="inline-block w-full py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
                       >
-                        View all notifications
+                        {t('viewAllNotifications')}
                       </Link>
                     </div>
                   </div>,

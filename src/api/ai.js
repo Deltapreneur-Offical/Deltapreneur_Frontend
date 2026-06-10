@@ -33,7 +33,7 @@ export async function streamCoBrotherAI(payload, { signal, onEvent }) {
   }
 
   if (!response.ok || !response.body) {
-    let message = 'Bro AI is unavailable right now.';
+    let message = 'Bro is unavailable right now.';
     try {
       const body = await response.json();
       message = body?.message || body?.error || message;

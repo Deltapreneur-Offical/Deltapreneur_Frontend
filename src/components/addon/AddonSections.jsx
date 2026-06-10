@@ -12,7 +12,7 @@ export default function AddonSections({
   className = 'mt-4',
 }) {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 items-start ${className}`}>
+    <div className={`flex flex-col gap-3 ${className}`}>
       <AddonSelector
         selected={businessSelected}
         onChange={onBusinessChange}

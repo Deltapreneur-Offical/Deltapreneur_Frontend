@@ -28,7 +28,7 @@ import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
 import AddonSections from '../components/addon/AddonSections';
 import { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/AddonSelector';
-import { vaLabel, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
+import { vaLabel, vaTotal, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
 import { isPremiumDomain } from '../utils/domainPricing';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import FormSelect from '../components/common/FormSelect';
@@ -807,8 +807,9 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
   });
 
   const addonExtra  = addonTotal(addons);
+  const vaExtra     = vaTotal(vaAddons);
   const domainPrice = Number(domain.askingPrice);
-  const totalPrice  = domainPrice + addonExtra;
+  const totalPrice  = domainPrice + addonExtra + vaExtra;
 
   const handlePhoneChange = (e) => {
     setBuyer(b => ({ ...b, buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }));
@@ -876,7 +877,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[520px] md:max-w-[680px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 overflow-x-hidden">
+      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 overflow-x-hidden">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
@@ -952,13 +953,16 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
               </div>
             ) : null;
           })}
-          {vaAddons.map((k) => (
-            <div key={k} className="flex justify-between text-amber-700 mb-1">
-              <span className="truncate mr-2">{vaLabel(k)}</span>
-              <span className="text-xs">{t('addonSelectorContact')}</span>
-            </div>
-          ))}
-          {(addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) || vaAddons.length > 0) && (
+          {vaAddons.map((k) => {
+            const svc = VA_SERVICES.find((s) => s.key === k);
+            return svc ? (
+              <div key={k} className="flex justify-between text-[#7c6fe0] mb-1">
+                <span className="truncate mr-2">{vaLabel(k)}</span>
+                <span>{formatPrice(svc.price)}</span>
+              </div>
+            ) : null;
+          })}
+          {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
             <div className="text-xs text-amber-600 mb-1">{t('domainsPageContactServicesNote')}</div>
           )}
           <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2 mt-1">

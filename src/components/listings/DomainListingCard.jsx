@@ -351,7 +351,7 @@ export default function DomainListingCard({
         viewCount={Number(domain.views ?? domain.view_count ?? domain.viewCount ?? 0)}
         likeState={likeState}
         onLike={onLike}
-        onView={onView}
+        onView={browseMode ? onView : undefined}
         className={browseMode ? '' : 'mb-2'}
       />
 

@@ -109,7 +109,7 @@ function SupportLabel({ className = 'home-nav-support-label' }) {
   );
 }
 
-export default function HomeTopNavActions() {
+export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const { t } = useTranslation();
   const { user, logout, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -204,12 +204,16 @@ export default function HomeTopNavActions() {
         </span>
         <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
       </div>
-      <HomeNavToolbarSeparator />
-      <div className="home-nav-contact-wrap relative block">
-        <a href="/contact" className="home-nav-contact-link">
-          {t('contactUs')}
-        </a>
-      </div>
+      {!hideContactUs ? (
+        <>
+          <HomeNavToolbarSeparator />
+          <div className="home-nav-contact-wrap relative block">
+            <a href="/contact" className="home-nav-contact-link">
+              {t('contactUs')}
+            </a>
+          </div>
+        </>
+      ) : null}
       <HomeNavToolbarSeparator />
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button
@@ -321,13 +325,15 @@ export default function HomeTopNavActions() {
                 >
                   {t('signIn')}
                 </button>
-                <a
-                  href="/contact"
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('contactUs')}
-                </a>
+                {!hideContactUs ? (
+                  <a
+                    href="/contact"
+                    className="home-profile-mobile-only px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    {t('contactUs')}
+                  </a>
+                ) : null}
                 <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium">
                   <SupportLabel />
                 </div>

@@ -243,7 +243,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
 
           <div className="home-main-nav-toolbar">
             <div className="home-top-nav-actions">
-              <HomeTopNavActions />
+              <HomeTopNavActions hideContactUs />
             </div>
             <button
               type="button"

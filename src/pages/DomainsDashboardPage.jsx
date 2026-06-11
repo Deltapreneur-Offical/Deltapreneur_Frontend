@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
-import { domainAPI, domainStorefrontAPI } from '../api/services';
+import { domainAPI, domainStorefrontAPI, domainTransferAPI } from '../api/services';
 import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import useCurrency from '../context/CurrencyContext';
@@ -34,6 +34,7 @@ export default function DomainsDashboardPage() {
   const [regOrders, setRegOrders]     = useState([]);
   const [loading, setLoading]       = useState(true);
   const [verifyTarget, setVerifyTarget] = useState(null);
+  const [soldTransfers, setSoldTransfers] = useState([]);
 
   const purchaseCount = purchases.length + regOrders.length;
 
@@ -42,12 +43,14 @@ export default function DomainsDashboardPage() {
       domainAPI.getMyListings(),
       domainAPI.getMyPurchases(),
       domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
+      domainTransferAPI.listSeller().catch(() => ({ data: { items: [] } })),
     ])
-      .then(([l, p, reg]) => {
+      .then(([l, p, reg, transfers]) => {
         setListings(extractDomainList(l.data));
         setPurchases(extractDomainList(p.data));
         const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
         setRegOrders(regList.filter(isRegistrationPurchase));
+        setSoldTransfers(transfers.data?.items || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -114,10 +117,38 @@ export default function DomainsDashboardPage() {
           </button>
           <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('purchases')}>
             {t('domainsDashboardTabPurchases', { count: purchaseCount, defaultValue: `My Purchases (${purchaseCount})` })}
-          </button>        </div>
+          </button>
+          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('sold')}>
+            {t('domainsDashboardTabSoldTransfers', { count: soldTransfers.length, defaultValue: `Sold transfers (${soldTransfers.length})` })}
+          </button>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+        ) : tab === 'sold' ? (
+          soldTransfers.length === 0 ? (
+            <div className="text-center py-16 text-gray-600">
+              {t('domainsDashboardNoSoldTransfers', { defaultValue: 'No sold domain transfers yet.' })}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {soldTransfers.map((tx) => (
+                <Link
+                  key={tx.id}
+                  to={`/domains/transfers/${tx.id}`}
+                  className="flex items-center justify-between bg-white border rounded-lg px-5 py-4 hover:border-indigo-300"
+                >
+                  <div>
+                    <div className="font-bold text-gray-900">{tx.domainFqdn}</div>
+                    <div className="text-sm text-gray-500">{tx.transferStatus}</div>
+                  </div>
+                  <span className="text-indigo-600 text-sm font-semibold">
+                    {t('domainsDashboardManageTransfer', { defaultValue: 'Manage' })}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )
         ) : tab === 'listings' ? (
           listings.length === 0 ? (
             <div className="text-center py-20">

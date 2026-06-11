@@ -818,6 +818,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
 // ─── Buy Domain Modal ─────────────────────────────────────────────────────────
 function BuyDomainModal({ domain, onClose, onSuccess }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { currency, formatPrice } = useCurrency();
   const [loading, setLoading] = useState(false);
@@ -865,17 +866,21 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
         description: `Purchase ${domain.domainName}${domain.domainExtension}`,
         onSuccess: async (response) => {
           try {
-            await domainAPI.verifyPayment(domain.id, {
+            const { data: verifyData } = await domainAPI.verifyPayment(domain.id, {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId:   response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
+            const transactionId = verifyData?.transactionId;
             onSuccess({
               ...domain,
               domainStatus:  'SOLD',
               paymentStatus: 'COMPLETED',
               _addons:       addons,
             });
+            if (transactionId) {
+              navigate(`/purchases/transfers/${transactionId}`);
+            }
           } catch {
             setError(t('storefrontVerifyFailed'));
             setLoading(false);

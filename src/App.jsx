@@ -64,6 +64,8 @@ const loadAuctionsPage = () => import('./pages/AuctionsPage');
 const AuctionsPage = lazy(loadAuctionsPage);
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
+const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSellerPage'));
+const DomainTransferBuyerPage = lazy(() => import('./pages/DomainTransferBuyerPage'));
 const CoBrotherAI = lazy(() => import('./components/ai/CoBrotherAI'));
 
 function preloadPostLoginRoutes() {
@@ -286,6 +288,24 @@ export default function App() {
               element={
                 <ProfileGuard>
                   <DomainsDashboardPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/domains/transfers/:transactionId"
+              element={
+                <ProfileGuard>
+                  <DomainTransferSellerPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/purchases/transfers/:transactionId"
+              element={
+                <ProfileGuard>
+                  <DomainTransferBuyerPage />
                 </ProfileGuard>
               }
             />

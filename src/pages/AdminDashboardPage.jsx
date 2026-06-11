@@ -14,6 +14,7 @@ import RequestIcon from '../assets/Request.png';
 import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
+import DomainTransferAdminTab from './DomainTransferAdminTab';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
@@ -119,7 +120,10 @@ export default function AdminDashboardPage() {
       'addon-orders':      adminAPI.getAddonOrders,
     };
   
-    if (!fetchers[currentTab]) return;
+    if (!fetchers[currentTab]) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetchers[currentTab]()
       .then(({ data }) => {
@@ -242,6 +246,7 @@ export default function AdminDashboardPage() {
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
+    { id: 'domain-transfers',   label: t('adminTabDomainTransfers', { defaultValue: 'Domain transfers' }), icon: DomainsIcon },
   ];
 
   const handleSaveListingFees = async () => {
@@ -375,6 +380,8 @@ export default function AdminDashboardPage() {
               <HomepageFeatureSelector type="software" />
               <HomepageFeatureSelector type="community" />
             </div>
+          ) : tab === 'domain-transfers' ? (
+            <DomainTransferAdminTab />
           ) : tab === 'requests' ? (
             <RequestsTable requests={requests} />
           ) : data.length === 0 ? (

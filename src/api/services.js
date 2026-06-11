@@ -98,6 +98,8 @@ export const currencyAPI = {
     api.get('/api/v1/currency/convert-to-inr', { params: { amount, from } }),
 };
 
+export { domainTransferAPI, domainTransferAdminAPI, payoutProfileAPI } from './domainTransferAPI';
+
 export const domainAPI = {
   getAll:          (params)  => api.get('/api/v1/domain/all', { params }),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),

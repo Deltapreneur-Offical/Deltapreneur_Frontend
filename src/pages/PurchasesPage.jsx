@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { domainAPI, domainStorefrontAPI, technologyAPI } from '../api/services';
+import { domainAPI, domainStorefrontAPI, technologyAPI, domainTransferAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -34,6 +34,7 @@ export default function PurchasesPage() {
   const [loading, setLoading] = useState(true);
   const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
+  const [domainTransfers, setDomainTransfers] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -41,11 +42,13 @@ export default function PurchasesPage() {
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
       domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
-    ]).then(([d, reg, s]) => {
+      domainTransferAPI.listBuyer().catch(() => ({ data: { items: [] } })),
+    ]).then(([d, reg, s, transfers]) => {
       setDomains(extractDomainList(d.data));
       const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
       setRegistrations(regList.filter(isRegistrationPurchase));
       setSwPurchases(asArray(s.data));
+      setDomainTransfers(transfers.data?.items || []);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -57,10 +60,11 @@ export default function PurchasesPage() {
   );
   const completedRegistrations = asArray(registrations);
   const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
-  const domainTabCount = completedDomains.length + completedRegistrations.length;
+  const domainTabCount = completedDomains.length + completedRegistrations.length + domainTransfers.length;
   const totalItems = domainTabCount + completedSoftware.length;
 
   const domainTabItems = [
+    ...domainTransfers.map((tx) => ({ ...tx, _type: 'domain_transfer' })),
     ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
     ...completedRegistrations.map(o => ({ ...o, _type: 'domain_registration' })),
   ];
@@ -146,7 +150,21 @@ export default function PurchasesPage() {
         ) : (
           <div className="flex flex-col gap-3.5">
             {displayItems.map((item) =>
-              item._type === 'domain_registration' ? (
+              item._type === 'domain_transfer' ? (
+                <Link
+                  key={'tx-' + item.id}
+                  to={`/purchases/transfers/${item.id}`}
+                  className="flex items-center justify-between bg-white border border-indigo-100 rounded-xl px-5 py-4 hover:border-indigo-300"
+                >
+                  <div>
+                    <div className="font-bold text-gray-900">{item.domainFqdn}</div>
+                    <div className="text-sm text-gray-500">{item.transferStatus}</div>
+                  </div>
+                  <span className="text-indigo-600 text-sm font-semibold">
+                    {t('purchasesManageTransfer', { defaultValue: 'Manage transfer' })}
+                  </span>
+                </Link>
+              ) : item._type === 'domain_registration' ? (
                 <RegistrationPurchaseRow
                   key={'reg-' + item.id}
                   order={item}

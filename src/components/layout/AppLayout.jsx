@@ -7,8 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
 import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
 import { useNotificationSocket } from '../../hooks/useNotificationSocket';
-import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
+import BrandNavLogo from '../common/BrandNavLogo';
 import DomainsIcon from '../../assets/CoBranding.png';
 import CreatorIcon from '../../assets/Cobrother_Profile.png';
 import CurrencyDropdown from '../common/CurrencyDropdown';
@@ -18,6 +18,7 @@ import HomeFooter from '../common/HomeFooter';
 import BackButton from '../common/BackButton';
 import { getAppBackTarget } from '../../utils/appNavigation';
 import { resolveUserDisplayName } from '../../utils/userDisplayName';
+import { SUPPORT_PHONE_DISPLAY, SUPPORT_PHONE_TEL } from '../../config/contactLinks';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
@@ -72,6 +73,7 @@ export default function AppLayout({ children }) {
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const bellRef = useRef(null);
+  const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
 
   const updateNotifPanelPosition = useCallback(() => {
@@ -151,10 +153,12 @@ export default function AppLayout({ children }) {
     return () => clearInterval(interval);
   }, [userId, refreshUnreadCount]);
 
-  // Close bell / profile menus on outside click
+  // Close bell / profile menus on outside click (panel is portaled — include notifPanelRef)
   useEffect(() => {
     const handler = (e) => {
-      if (bellRef.current && !bellRef.current.contains(e.target)) {
+      const insideBell = bellRef.current?.contains(e.target);
+      const insideNotifPanel = notifPanelRef.current?.contains(e.target);
+      if (!insideBell && !insideNotifPanel) {
         setBellOpen(false);
       }
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -232,8 +236,8 @@ export default function AppLayout({ children }) {
       >
         <div className="app-sidebar-header">
           {!sidebarCollapsed && (
-            <Link to="/" className="app-sidebar-logo-link">
-              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
+            <Link to="/" className="app-sidebar-logo-link brand-logo-interactive">
+              <BrandNavLogo />
             </Link>
           )}
           <button
@@ -383,8 +387,8 @@ export default function AppLayout({ children }) {
           />
           <aside className="app-chrome-panel app-sidebar app-sidebar--drawer lg:hidden fixed inset-y-0 left-0 flex flex-col">
             <div className="app-sidebar-header">
-              <Link to="/" className="app-sidebar-logo-link" onClick={() => setMobileOpen(false)}>
-                <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
+              <Link to="/" className="app-sidebar-logo-link brand-logo-interactive" onClick={() => setMobileOpen(false)}>
+                <BrandNavLogo />
               </Link>
               <button
                 type="button"
@@ -512,9 +516,9 @@ export default function AppLayout({ children }) {
 
             <Link
               to="/"
-              className="app-layout-mobile-brand lg:hidden flex items-center shrink-0"
+              className="app-layout-mobile-brand brand-logo-interactive lg:hidden flex items-center shrink-0"
             >
-              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
+              <BrandNavLogo />
             </Link>
           </div>
 
@@ -524,6 +528,12 @@ export default function AppLayout({ children }) {
               role="group"
               aria-label="Regional settings"
             >
+              <a href={SUPPORT_PHONE_TEL} className="home-nav-phone-number whitespace-nowrap">
+                {SUPPORT_PHONE_DISPLAY}
+              </a>
+              <span className="home-nav-util-divider" aria-hidden="true">
+                |
+              </span>
               <LanguageDropdown variant="minimal" className="home-nav-util-language" />
               <span className="home-nav-util-divider" aria-hidden="true">
                 |
@@ -554,6 +564,7 @@ export default function AppLayout({ children }) {
                 typeof document !== 'undefined' &&
                 createPortal(
                   <div
+                    ref={notifPanelRef}
                     className="app-notif-dropdown bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
                     style={notifPanelStyle}
                     role="dialog"
@@ -616,9 +627,9 @@ export default function AppLayout({ children }) {
                       <Link
                         to="/notifications"
                         onClick={() => setBellOpen(false)}
-                        className="text-xs text-gray-600 hover:text-gray-900"
+                        className="inline-block w-full py-1 text-xs font-medium text-gray-600 hover:text-gray-900"
                       >
-                        View all notifications
+                        {t('viewAllNotifications')}
                       </Link>
                     </div>
                   </div>,

@@ -293,9 +293,7 @@ export default function AdminDashboardPage() {
                 {tabItem.icon ? (
                   <img src={tabItem.icon} alt="" className="admin-dashboard-tab-icon" />
                 ) : tabItem.Icon ? (
-                  <span className="admin-dashboard-tab-lucide" aria-hidden>
-                    <tabItem.Icon size={22} strokeWidth={2} />
-                  </span>
+                  <tabItem.Icon size={28} strokeWidth={1.85} className="admin-dashboard-tab-lucide-icon" aria-hidden />
                 ) : (
                   <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
                 )}

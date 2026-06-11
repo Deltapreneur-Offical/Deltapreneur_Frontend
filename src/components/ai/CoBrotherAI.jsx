@@ -6,6 +6,7 @@ import {
   Check,
   Clock3,
   Copy,
+  Cpu,
   Download,
   ExternalLink,
   Gavel,
@@ -20,7 +21,6 @@ import {
   MoreHorizontal,
   Plus,
   RefreshCw,
-  Search,
   Send,
   Share2,
   Sparkles,
@@ -37,41 +37,74 @@ import broAILogo from '../../assets/Cobrother_Profile.png';
 import { useAuth } from '../../context/AuthContext';
 
 const MODES = [
-  { id: 'explore', label: 'Explore', icon: Search },
   { id: 'domains', label: 'Domains', icon: Globe2 },
   { id: 'ventures', label: 'Ventures', icon: BriefcaseBusiness },
+  { id: 'technologies', label: 'Technologies', icon: Cpu },
   { id: 'auctions', label: 'Auctions', icon: Gavel },
 ];
 
 const MODE_TO_API = {
-  explore: 'marketplace',
   domains: 'broker',
   ventures: 'founder',
+  technologies: 'marketplace',
   auctions: 'auction',
 };
 
-const QUICK_STARTS = [
-  {
-    icon: Globe2,
-    text: 'How do I buy a domain?',
-    prompt: 'How do I buy a premium domain on CoBrother?',
-  },
-  {
-    icon: BriefcaseBusiness,
-    text: 'How do I list my domain?',
-    prompt: 'Explain how to list my domain or venture on CoBrother.',
-  },
-  {
-    icon: Gavel,
-    text: 'Show active domain auctions',
-    prompt: 'Show me active domain auctions and explain what I should compare before bidding.',
-  },
-];
+const QUICK_STARTS_BY_MODE = {
+  domains: [
+    {
+      icon: Globe2,
+      text: 'How do I buy a domain?',
+      prompt: 'How do I buy a premium domain on CoBrother?',
+    },
+    {
+      icon: Globe2,
+      text: 'How do I list my domain?',
+      prompt: 'Explain how to list my domain on CoBrother.',
+    },
+  ],
+  ventures: [
+    {
+      icon: BriefcaseBusiness,
+      text: 'How do I list a venture?',
+      prompt: 'Explain how to list my venture on CoBrother.',
+    },
+    {
+      icon: BriefcaseBusiness,
+      text: 'Evaluate venture opportunities',
+      prompt: 'Help me evaluate venture listings and what to compare before investing or partnering.',
+    },
+  ],
+  technologies: [
+    {
+      icon: Cpu,
+      text: 'Find technology listings',
+      prompt: 'Show me software and technology listings on CoBrother and explain how to evaluate them.',
+    },
+    {
+      icon: Cpu,
+      text: 'How do I buy software?',
+      prompt: 'How do I buy or acquire a technology listing on CoBrother?',
+    },
+  ],
+  auctions: [
+    {
+      icon: Gavel,
+      text: 'Show active domain auctions',
+      prompt: 'Show me active domain auctions and explain what I should compare before bidding.',
+    },
+    {
+      icon: Gavel,
+      text: 'Auction bidding tips',
+      prompt: 'What should I know before placing a bid in a CoBrother domain auction?',
+    },
+  ],
+};
 
 const EMPTY_SECTIONS = {
-  explore: 'Ask about marketplace strategy, deal discovery, branding, or CoBrother workflows.',
   domains: 'Compare domain names, pricing signals, SEO value, and acquisition steps.',
   ventures: 'Evaluate venture listings, founder fit, monetization, and negotiation questions.',
+  technologies: 'Discover software listings, compare tech assets, and plan acquisition or licensing steps.',
   auctions: 'Prepare bids, compare auctions, estimate time pressure, and plan next actions.',
 };
 
@@ -117,10 +150,16 @@ function markdownToHtml(value = '') {
     .replace(/^(.+)$/s, '<p>$1</p>');
 }
 
-function MarkdownMessage({ content }) {
+function MarkdownMessage({ content, isDark = false, isUser = false }) {
+  const toneClass = isUser
+    ? 'text-[#111827] prose-p:text-[#111827] prose-headings:text-[#111827] prose-strong:text-[#111827] prose-li:text-[#111827]'
+    : isDark
+      ? 'prose-invert text-slate-50 prose-p:text-slate-50 prose-headings:text-white prose-strong:text-white prose-li:text-slate-100'
+      : 'text-slate-800 prose-p:text-slate-800';
+
   return (
     <div
-      className="prose prose-sm max-w-none leading-6 prose-p:my-0 prose-ul:my-2 prose-li:my-1"
+      className={`prose prose-sm max-w-none leading-6 prose-p:my-0 prose-ul:my-2 prose-li:my-1 ${toneClass}`}
       dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }}
     />
   );
@@ -161,7 +200,7 @@ function formatTimeLeft(value) {
 function transcriptMarkdown(messages) {
   return messages
     .map((message) => {
-      const role = message.role === 'user' ? 'You' : 'Bro AI';
+      const role = message.role === 'user' ? 'You' : 'Bro';
       return `## ${role} - ${message.createdAt || ''}\n\n${message.content || ''}`;
     })
     .join('\n\n---\n\n');
@@ -196,13 +235,20 @@ function iconForItem(item) {
   return Globe2;
 }
 
-function BroAIIcon({ isDark, className }) {
+function BroAIIcon({ isDark, className = '' }) {
   return (
-    <img
-      src={broAILogo}
-      alt=""
-      className={`rounded-full object-contain ${isDark ? 'brightness-0 invert drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]' : ''} ${className}`}
-    />
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-visible ${className}`}
+      aria-hidden
+    >
+      <img
+        src={broAILogo}
+        alt=""
+        className={`h-[84%] w-[84%] object-contain object-center ${
+          isDark ? 'brightness-0 invert drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]' : ''
+        }`}
+      />
+    </span>
   );
 }
 
@@ -350,7 +396,7 @@ export default function CoBrotherAI() {
   const { hasAccessToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState('domains');
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
@@ -361,7 +407,7 @@ export default function CoBrotherAI() {
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [voiceNotice, setVoiceNotice] = useState('');
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [moreOpen, setMoreOpen] = useState(false);
   const [history, setHistory] = useState([]);
   const [marketplacePreview, setMarketplacePreview] = useState([]);
@@ -373,6 +419,7 @@ export default function CoBrotherAI() {
   const recognitionRef = useRef(null);
 
   const isDark = theme === 'dark';
+  const quickStarts = QUICK_STARTS_BY_MODE[mode] || QUICK_STARTS_BY_MODE.domains;
   const marketplaceItems = useMemo(
     () => extractMarketplaceItems(metadata).concat(marketplacePreview).slice(0, 4),
     [metadata, marketplacePreview],
@@ -381,16 +428,16 @@ export default function CoBrotherAI() {
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      if (saved.theme) setTheme(saved.theme);
       if (typeof saved.voiceOutputEnabled === 'boolean') {
         setVoiceOutputEnabled(saved.voiceOutputEnabled);
       }
     } catch {}
+    setTheme('light');
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme, voiceOutputEnabled }));
-  }, [theme, voiceOutputEnabled]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ voiceOutputEnabled }));
+  }, [voiceOutputEnabled]);
 
   useEffect(() => {
     if (!open || !hasAccessToken) return;
@@ -559,7 +606,7 @@ export default function CoBrotherAI() {
             }
 
             if (event === 'error') {
-              throw new Error(data?.message || 'Bro AI hit a response error.');
+              throw new Error(data?.message || 'Bro hit a response error.');
             }
 
             if (event === 'done') {
@@ -597,7 +644,7 @@ export default function CoBrotherAI() {
                 ...message,
                 content:
                   error?.message ||
-                  'Bro AI is unavailable right now. Please try again in a moment.',
+                  'Bro is unavailable right now. Please try again in a moment.',
               }
             : message,
         ),
@@ -676,7 +723,7 @@ export default function CoBrotherAI() {
     if (!popup) return;
     popup.document.write(`
       <html>
-        <head><title>Bro AI Conversation</title></head>
+        <head><title>Bro Conversation</title></head>
         <body style="font-family: Inter, system-ui, sans-serif; line-height: 1.6; padding: 32px;">${html}</body>
       </html>
     `);
@@ -689,7 +736,7 @@ export default function CoBrotherAI() {
     const text = transcriptMarkdown(messages);
     if (!text) return;
     if (navigator.share) {
-      await navigator.share({ title: 'Bro AI conversation', text });
+      await navigator.share({ title: 'Bro conversation', text });
     } else {
       await navigator.clipboard.writeText(text);
       setVoiceNotice('Conversation copied.');
@@ -712,7 +759,7 @@ export default function CoBrotherAI() {
             ? 'border-[#D4AF37]/35 bg-[#0B0F14] text-[#D4AF37] hover:border-[#D4AF37]/70'
             : 'border-slate-200 bg-white text-[var(--cobrother-brand-green)] hover:border-[var(--cobrother-brand-green)]'
         } ${open ? 'pointer-events-none scale-95 opacity-0' : 'opacity-100'}`}
-        aria-label="Open Bro AI"
+        aria-label="Open Bro"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.96 }}
       >
@@ -733,7 +780,7 @@ export default function CoBrotherAI() {
                 : 'border-slate-200 bg-white text-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)]'
             }`}
             role="dialog"
-            aria-label="Bro AI marketplace assistant"
+            aria-label="Bro marketplace assistant"
           >
             <div className="flex min-h-0 w-full flex-col">
               <header
@@ -750,10 +797,10 @@ export default function CoBrotherAI() {
                       }`}
                       style={{ fontFamily: '"Plus Jakarta Sans", Inter, system-ui, sans-serif' }}
                     >
-                      Bro AI
+                      Bro
                     </h2>
                     <p className={`truncate text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Marketplace Intelligence Assistant
+                      AI Assistant
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -789,7 +836,7 @@ export default function CoBrotherAI() {
                       className={`hidden h-9 w-9 items-center justify-center rounded-xl transition sm:flex ${
                         isDark ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
                       }`}
-                      aria-label={fullscreen ? 'Exit full screen' : 'Expand Bro AI'}
+                      aria-label={fullscreen ? 'Exit full screen' : 'Expand Bro'}
                     >
                       {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                     </button>
@@ -800,7 +847,7 @@ export default function CoBrotherAI() {
                         className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
                           isDark ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
                         }`}
-                        aria-label="Open Bro AI menu"
+                        aria-label="Open Bro menu"
                         aria-expanded={moreOpen}
                       >
                         <MoreHorizontal className="h-4 w-4" />
@@ -854,14 +901,14 @@ export default function CoBrotherAI() {
                       className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
                         isDark ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
                       }`}
-                      aria-label="Close Bro AI"
+                      aria-label="Close Bro"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
 
-                <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Bro AI modes">
+                <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Bro modes">
                   {MODES.map((item) => {
                     const Icon = item.icon;
                     const active = mode === item.id;
@@ -904,14 +951,14 @@ export default function CoBrotherAI() {
                           isDark ? 'text-white' : 'text-slate-950'
                         }`}
                       >
-                        Welcome to Bro AI
+                        Welcome to CoBrother
                       </h3>
                       <p className={`mx-auto mt-2 max-w-sm text-sm leading-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                         {EMPTY_SECTIONS[mode]} Get focused guidance without leaving the marketplace.
                       </p>
                     </div>
                     <div className="mt-6 grid gap-2">
-                      {QUICK_STARTS.map((item) => {
+                      {quickStarts.map((item) => {
                         const Icon = item.icon;
                         return (
                           <button
@@ -982,20 +1029,20 @@ export default function CoBrotherAI() {
                               isUser
                                 ? 'bg-[#D4AF37] text-[#111827]'
                                 : isDark
-                                  ? 'border border-white/10 bg-[#111827] text-slate-100'
+                                  ? 'border border-white/10 bg-[#111827] text-slate-50'
                                   : 'border border-slate-200 bg-white text-slate-800'
                             }`}
                           >
                             <div className="mb-1 flex items-center gap-2">
                               <span className={`text-xs font-semibold ${isUser ? 'text-[#111827]' : isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                                {isUser ? 'You' : 'Bro AI'}
+                                {isUser ? 'You' : 'Bro'}
                               </span>
                               <span className={`text-[11px] ${isUser ? 'text-[#111827]/70' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                 {message.createdAt}
                               </span>
                             </div>
                             {message.content ? (
-                              <MarkdownMessage content={message.content} />
+                              <MarkdownMessage content={message.content} isDark={isDark} isUser={isUser} />
                             ) : (
                               <span className="inline-flex items-center gap-2 text-sm">
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1066,7 +1113,7 @@ export default function CoBrotherAI() {
                       }
                     }}
                     rows={1}
-                    placeholder="Ask about domains, ventures, auctions, branding..."
+                    placeholder="Ask about domains, ventures, technologies, auctions..."
                     className={`max-h-28 min-h-11 flex-1 resize-none border-0 bg-transparent px-1 py-2.5 text-sm leading-6 outline-none placeholder:opacity-100 ${
                       isDark ? 'text-white placeholder:text-slate-400' : 'text-slate-950 placeholder:text-slate-500'
                     }`}

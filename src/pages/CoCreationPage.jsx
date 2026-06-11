@@ -20,7 +20,9 @@ import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import { softwareAuctionAPI } from '../api/services';
-import AddonSelector, { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import AddonSections from '../components/addon/AddonSections';
+import { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import { vaLabel, vaTotal, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
@@ -711,11 +713,13 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState('');
   const [addons, setAddons]                 = useState([]);
+  const [vaAddons, setVaAddons]             = useState([]);
 
   const basePrice    = item.price;
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
   const addonExtra     = addonTotal(addons);
-  const totalPrice   = basePrice + coBrotherFee + addonExtra;
+  const vaExtra        = vaTotal(vaAddons);
+  const totalPrice   = basePrice + coBrotherFee + addonExtra + vaExtra;
 
   const handlePhoneChange = (e) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -741,7 +745,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
       const { data: orderData } = await technologyAPI.createOrder(item.id, {
         ...form,
         coBrotherOptIn,
-        services: addons,
+        services: [...addons, ...vaAddons],
         ...buildOrderCurrencyPayload(currency),
       });
 
@@ -765,7 +769,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
               githubLink:       verifyData.githubLink,
               coBrotherOptIn,
               coBrotherHelpPaid: coBrotherOptIn,
-              _addons:           addons,
+              _addons:           [...addons, ...vaAddons],
             });
           } catch {
             setError('Payment verification failed. Contact support.');
@@ -861,7 +865,12 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           </div>
         </div>
         
-        <AddonSelector selected={addons} onChange={setAddons} />
+        <AddonSections
+          businessSelected={addons}
+          onBusinessChange={setAddons}
+          vaSelected={vaAddons}
+          onVaChange={setVaAddons}
+        />
 
         {/* ── Billing breakdown ── */}
         <div className="bg-gray-50 border border-gray-200 rounded-[10px] p-4 mb-5">
@@ -878,6 +887,12 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             return svc ? (
               <BillingLine key={k} label={svc.label}
                 value={formatPrice(svc.price)} accent />
+            ) : null;
+          })}
+          {vaAddons.map((k) => {
+            const svc = VA_SERVICES.find((s) => s.key === k);
+            return svc ? (
+              <BillingLine key={k} label={vaLabel(k)} value={formatPrice(svc.price)} accent />
             ) : null;
           })}
           {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (

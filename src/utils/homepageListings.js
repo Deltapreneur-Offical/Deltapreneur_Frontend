@@ -1,4 +1,5 @@
 import { asArray } from './asArray';
+import { isCreatorProfileComplete } from './creatorProfile';
 import { isPublicMarketplaceListing } from './listingVisibility';
 
 /** Whether a listing is visible on marketplace browse pages and can be homepage-featured. */
@@ -40,14 +41,7 @@ export function isHomepageVerifiedListing(item, type = 'domain') {
   if (type === 'software') return Boolean(item.verified);
   if (type === 'venture') return Boolean(item.verified || item.gstinVerified);
   if (type === 'community') {
-    if (Boolean(item.isApproved ?? item.is_approved)) return true;
-    // Completed creator profiles are public on /creator — show them on homepage too.
-    return Boolean(
-      item.role
-      || item.name
-      || item.linkedInId
-      || item.linked_in_id,
-    );
+    return isCreatorProfileComplete(item);
   }
   return Boolean(item.verified);
 }

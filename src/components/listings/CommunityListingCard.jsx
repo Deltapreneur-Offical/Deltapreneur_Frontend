@@ -1,5 +1,8 @@
-import { Eye } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
+import { isCreatorProfileComplete } from '../../utils/creatorProfile';
+// import CreatorFollowButton from '../creators/CreatorFollowButton';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -35,8 +38,15 @@ export default function CommunityListingCard({
   onEdit,
   likeState,
   onLike,
+  followState,
+  onFollow,
+  followLoading = false,
 }) {
   const { t } = useTranslation();
+
+  if (!profile) return null;
+  if (!isMe && !isCreatorProfileComplete(profile)) return null;
+
   const imageUrl = profile.imageUrl || profile.image_url || null;
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
   const roleLabel = formatLabel(profile.role);
@@ -45,6 +55,7 @@ export default function CommunityListingCard({
   const primarySkill = skills[0] || '';
   const headline = [roleLabel, industryLabel].filter(Boolean).join(' · ');
   const metaLine = [locationLabel, primarySkill].filter(Boolean).join(' · ');
+  const viewCount = Number(profile.views ?? profile.view_count ?? 0);
 
   const stop = (e) => {
     e.stopPropagation();
@@ -111,18 +122,43 @@ export default function CommunityListingCard({
           </p>
         </div>
 
-        <div className="creator-profile-card__footer">
-          <div className="creator-profile-card__likes">
-            <span className="creator-profile-card__views inline-flex items-center gap-1">
-              <Eye size={12} />
-              {profile.views || 0}
+        {/* Follow button — commented out for now; uncomment when ready to re-enable
+        {!isMe && onFollow ? (
+          <div className="creator-profile-card__follow-row">
+            <CreatorFollowButton
+              following={followState?.following}
+              count={followState?.count ?? profile.followerCount ?? profile.follower_count ?? 0}
+              loading={followLoading}
+              onToggle={onFollow}
+            />
+          </div>
+        ) : null}
+        */}
+
+        <div
+          className="creator-profile-card__footer"
+          onClick={stop}
+          onMouseDown={stop}
+          role="presentation"
+        >
+          <div className="creator-profile-card__stat-group">
+            <span
+              className="creator-profile-card__views"
+              title={t('creatorProfileViews', 'Profile views')}
+            >
+              <img
+                src={cobrotherViewMark}
+                alt=""
+                aria-hidden
+                className="creator-profile-card__brand-mark"
+              />
+              <span>{viewCount}</span>
             </span>
             {onLike ? (
               <LikeButton
                 liked={likeState?.liked}
                 count={likeState?.count}
                 onToggle={onLike}
-                forceRed
               />
             ) : null}
           </div>
@@ -130,12 +166,13 @@ export default function CommunityListingCard({
           <button
             type="button"
             className="creator-profile-card__cta"
+            aria-label={t('listingCardViewDetails', 'View details')}
             onClick={(e) => {
               stop(e);
               onView?.();
             }}
           >
-            {t('listingCardViewDetails', 'View Details')}
+            <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
           </button>
         </div>
       </div>

@@ -4,9 +4,8 @@ import { Share2 } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
 import { VENTURE_EQUITY_TYPE_LABELS } from '../../constants/ventureLabels';
-import LikeButton from '../common/LikeButton';
 import EditActionLabel from '../common/EditActionLabel';
-import ListingBrowseFooter from './ListingBrowseFooter';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { LISTING_CARD_HEADER_CLASS } from './MarketplaceListingCardFrame';
 
 export default function VentureListingCard({
@@ -164,55 +163,15 @@ export default function VentureListingCard({
           </div>
         ) : null}
 
+        <ListingCardStatsFooter
+          viewCount={venture.views || 0}
+          likeState={likeState}
+          onLike={onLike}
+          onView={onView}
+          className="mt-2 border-t border-gray-100"
+        />
+
         {!browseMode && (
-        <div className="flex items-center gap-1.5 md:gap-2.5 text-[10px] md:text-[11px] text-gray-400 font-medium py-1.5 md:py-2 border-t border-gray-100 mt-auto">
-          <span className="flex items-center gap-0.5 md:gap-1">👁 {venture.views || 0}</span>
-          {!isAuction && (
-            <span className="flex items-center gap-0.5 md:gap-1">📋 {venture.coVentureApplicationCount || 0}</span>
-          )}
-          {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-
-          <div className="relative ml-auto" ref={shareRef}>
-            <button
-              type="button"
-              className="p-0.5 md:p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
-              onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
-              title="Share"
-            >
-              <Share2 size={11} className="md:w-[13px] md:h-[13px]" />
-            </button>
-            {shareOpen && (
-              <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
-                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
-                </div>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
-                  LinkedIn
-                </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
-                  Facebook
-                </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
-                  WhatsApp
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        )}
-
-        {browseMode ? (
-          <ListingBrowseFooter onViewDetails={onView} className="mt-2 border-t border-gray-100">
-            <span className="flex items-center gap-2">
-              <span>👁 {venture.views || 0}</span>
-              {!isAuction && <span>📋 {venture.coVentureApplicationCount || 0}</span>}
-            </span>
-            {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-          </ListingBrowseFooter>
-        ) : (
         <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
           <a
             href={b.website || '#'}
@@ -296,6 +255,35 @@ export default function VentureListingCard({
               )}
             </>
           )}
+          <div className="relative shrink-0" ref={shareRef}>
+            <button
+              type="button"
+              className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-gray-500 hover:bg-gray-100"
+              onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
+              title="Share"
+            >
+              <Share2 size={12} />
+            </button>
+            {shareOpen && (
+              <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
+                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
+                </div>
+                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
+                  LinkedIn
+                </button>
+                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
+                  Facebook
+                </button>
+                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
+                  WhatsApp
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         )}
       </div>

@@ -4,7 +4,7 @@
 export const LISTING_CARD_HEIGHT = 'h-[355px] max-h-[355px]';
 
 export const LISTING_CARD_HEADER_CLASS =
-  'relative border-b border-gray-100 bg-white px-4 pt-3.5 pb-3.5 min-h-[90px] max-h-[90px] flex items-end flex-shrink-0';
+  'relative border-b border-gray-100 bg-white px-4 pt-3 pb-3 min-h-[88px] flex items-start flex-shrink-0';
 
 export const listingCardBaseClass = (extra = '') =>
   `listing-card-glow card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-all duration-300 ${LISTING_CARD_HEIGHT} min-h-[355px] ${extra}`.trim();
@@ -14,6 +14,8 @@ export default function MarketplaceListingCardFrame({
   image,
   imageAlt = '',
   initial = '?',
+  headerTitle = '',
+  headerSubtitle = '',
   headerBadges = null,
   onClick,
   browseMode = false,
@@ -38,21 +40,31 @@ export default function MarketplaceListingCardFrame({
             className="absolute top-0 right-0 w-full h-full object-cover opacity-[0.06] group-hover:opacity-[0.1] transition-opacity duration-300"
           />
         ) : null}
-        <div className="relative z-10 flex items-end justify-between w-full min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
-            {image ? (
-              <img
-                src={image}
-                alt={imageAlt}
-                className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100 shadow-sm flex-shrink-0"
-              />
-            ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-gray-900 ring-2 ring-gray-100 shadow-sm bg-gray-100 flex-shrink-0">
-                {initial}
-              </div>
-            )}
+        <div className="listing-card-header__identity relative z-10 w-full min-w-0">
+          {image ? (
+            <img
+              src={image}
+              alt={imageAlt}
+              className="listing-card-header__avatar object-cover"
+            />
+          ) : (
+            <div className="listing-card-header__avatar listing-card-header__avatar--fallback">
+              {initial}
+            </div>
+          )}
+          <div className="listing-card-header__text min-w-0 flex-1">
+            {headerTitle ? (
+              <h3 className="listing-card-header__title truncate" title={headerTitle}>
+                {headerTitle}
+              </h3>
+            ) : null}
+            {headerSubtitle ? (
+              <p className="listing-card-header__subtitle truncate" title={headerSubtitle}>
+                {headerSubtitle}
+              </p>
+            ) : null}
             {headerBadges ? (
-              <div className="flex flex-wrap items-start content-start gap-x-1 gap-y-0.5 min-w-0 max-w-[9.5rem] sm:max-w-[10.5rem] self-end pb-0.5">
+              <div className="listing-card-header__badges">
                 {headerBadges}
               </div>
             ) : null}

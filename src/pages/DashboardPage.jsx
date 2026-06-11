@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { communityAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import VentureIcon from '../assets/Coventure_logo.png';
 import CommunityIcon from '../assets/Cobrother_Profile.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -33,8 +35,37 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [greetingIdx] = useState(readNextGreetingIndex);
+  const [creatorProfile, setCreatorProfile] = useState(null);
+  const [creatorProfileReady, setCreatorProfileReady] = useState(false);
 
   const welcomeMessage = t(`dashboardGreeting_${greetingIdx}`);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setCreatorProfile(null);
+      setCreatorProfileReady(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setCreatorProfileReady(false);
+
+    communityAPI
+      .getMy()
+      .then(({ data }) => {
+        if (!cancelled) setCreatorProfile(data?.data ?? data ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCreatorProfile(null);
+      })
+      .finally(() => {
+        if (!cancelled) setCreatorProfileReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const cards = [
     {
@@ -157,24 +188,28 @@ export default function DashboardPage() {
           </div>
         </section>
 
+        {creatorProfileReady && creatorProfile ? (
+          <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
+        ) : null}
+
         <section className="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 min-w-0">
           {cards.map((c) => (
             <article
               key={c.to}
-              className="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 flex flex-col items-center text-center min-w-0 hover:shadow-[0_8px_30px_rgba(99,102,241,0.15)] hover:-translate-y-0.5 hover:border-indigo-300 transition-all duration-300"
+              className="app-dashboard-feature-card group bg-white border border-gray-200 rounded-2xl px-5 flex flex-col items-center text-center min-w-0 hover:shadow-[0_8px_24px_rgba(99,102,241,0.12)] hover:-translate-y-0.5 hover:border-indigo-200 transition-all duration-300"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-4 bg-gray-50 rounded-2xl group-hover:scale-105 transition-transform">
+              <div className="app-dashboard-feature-card__icon mb-3.5 flex items-center justify-center group-hover:scale-[1.03] transition-transform">
                 <img src={c.icon} alt="" className="w-9 h-9 sm:w-10 sm:h-10 object-contain" />
               </div>
-              <h3 className="font-display text-base sm:text-lg font-semibold text-gray-900 mb-2 w-full">
+              <h3 className="font-display text-base sm:text-[1.05rem] font-semibold text-gray-900 mb-1.5 w-full">
                 {c.title}
               </h3>
-              <p className="text-sm text-gray-500 mb-5 flex-1 w-full leading-relaxed line-clamp-3 sm:line-clamp-none">
+              <p className="text-sm text-gray-500 mb-4 flex-1 w-full leading-relaxed line-clamp-3 sm:line-clamp-none">
                 {c.desc}
               </p>
               <Link
                 to={c.to}
-                className="btn-glow w-full min-h-[50px] sm:min-h-[54px] px-5 sm:px-6 py-3.5 sm:py-4 text-[0.9375rem] sm:text-base font-semibold text-center leading-snug whitespace-normal"
+                className="btn-glow app-dashboard-card-cta"
               >
                 {c.cta} →
               </Link>
@@ -191,7 +226,7 @@ export default function DashboardPage() {
               <Link
                 key={action.to}
                 to={action.to}
-                className="btn-glow flex items-center justify-center gap-2 py-3 px-4 text-sm text-center min-h-[48px] whitespace-normal leading-snug"
+                className="btn-glow app-dashboard-quick-action"
               >
                 {action.icon}
                 <span>{action.label}</span>

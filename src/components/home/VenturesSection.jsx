@@ -6,12 +6,11 @@ import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
-import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
-import HomeUnifiedListingCard from './HomeUnifiedListingCard';
+import VentureListingCard from '../listings/VentureListingCard';
 
 export default function VenturesSection() {
   const { t } = useTranslation();
@@ -34,15 +33,9 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
-  const isMobile = useHomepageMobile();
-
   const previewVentures = useMemo(
-    () => pickHomepagePreviewListings(
-      ventures,
-      'venture',
-      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
-    ),
-    [ventures, isMobile],
+    () => pickHomepagePreviewListings(ventures, 'venture', HOMEPAGE_PREVIEW_LIMIT),
+    [ventures],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewVentures);
@@ -56,7 +49,7 @@ export default function VenturesSection() {
   }
 
   return (
-    <section className="bg-white py-4 md:py-6 min-w-0 overflow-visible">
+    <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('coVentures')} to="/ventures" />
         {previewVentures.length === 0 ? (
@@ -66,9 +59,9 @@ export default function VenturesSection() {
             {previewVentures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 <ListingCardShell>
-                  <HomeUnifiedListingCard
-                    type="venture"
-                    listing={venture}
+                  <VentureListingCard
+                    venture={venture}
+                    browseMode
                     likeState={getLike(venture.id)}
                     onLike={() => toggleLike(venture.id)}
                     onView={() => handleViewDetails(venture.id)}

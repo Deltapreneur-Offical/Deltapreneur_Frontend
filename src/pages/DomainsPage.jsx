@@ -27,7 +27,9 @@ import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
-import AddonSelector, { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import AddonSections from '../components/addon/AddonSections';
+import { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import { vaLabel, vaTotal, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
 import { isPremiumDomain } from '../utils/domainPricing';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import FormSelect from '../components/common/FormSelect';
@@ -353,6 +355,9 @@ export default function DomainsPage() {
           isOwner={isListingOwner(detailTarget, user, 'domain')}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
+          onViewsUpdated={(id, views) => {
+            setAllDomains((prev) => prev.map((row) => (row.id === id ? { ...row, views } : row)));
+          }}
           onClose={() => { closeListingDetail(); refreshDomains(); }}
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
           onEnquire={() => { setEnquireTarget(detailTarget); closeListingDetail(); }}
@@ -824,6 +829,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
   const [addons, setAddons]   = useState([]);
+  const [vaAddons, setVaAddons] = useState([]);
   const [buyer, setBuyer] = useState({
     buyerFullName: `${user?.firstname || user?.firstName || ''} ${user?.lastname || user?.lastName || ''}`.trim(),
     buyerEmail: user?.email || '',
@@ -831,8 +837,9 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
   });
 
   const addonExtra  = addonTotal(addons);
+  const vaExtra     = vaTotal(vaAddons);
   const domainPrice = Number(domain.askingPrice);
-  const totalPrice  = domainPrice + addonExtra;
+  const totalPrice  = domainPrice + addonExtra + vaExtra;
 
   const handlePhoneChange = (e) => {
     setBuyer(b => ({ ...b, buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }));
@@ -846,7 +853,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
     setLoading(true); setError('');
     try {
       const { data: orderData } = await domainAPI.createOrder(domain.id, {
-        services: addons,
+        services: [...addons, ...vaAddons],
         ...buyer,
         ...buildOrderCurrencyPayload(currency),
       });
@@ -855,7 +862,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           ...domain,
           domainStatus: 'SOLD',
           paymentStatus: orderData.paymentStatus || 'CONTACT_PENDING',
-          _addons: addons,
+          _addons: [...addons, ...vaAddons],
         });
         setLoading(false);
         return;
@@ -876,7 +883,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
               ...domain,
               domainStatus:  'SOLD',
               paymentStatus: 'COMPLETED',
-              _addons:       addons,
+              _addons:       [...addons, ...vaAddons],
             });
             if (transactionId) {
               navigate(`/purchases/transfers/${transactionId}`);
@@ -956,8 +963,13 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           </div>
         </div>
 
-        {/* ── Add-on selector ── */}
-        <AddonSelector selected={addons} onChange={setAddons} />
+        {/* ── Add-on selectors ── */}
+        <AddonSections
+          businessSelected={addons}
+          onBusinessChange={setAddons}
+          vaSelected={vaAddons}
+          onVaChange={setVaAddons}
+        />
 
         {/* ── Billing breakdown ── */}
         <div className="mt-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm">
@@ -971,6 +983,15 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
             return svc ? (
               <div key={k} className="flex justify-between text-indigo-600 mb-1">
                 <span className="truncate mr-2">{addonLabel(k)}</span>
+                <span>{formatPrice(svc.price)}</span>
+              </div>
+            ) : null;
+          })}
+          {vaAddons.map((k) => {
+            const svc = VA_SERVICES.find((s) => s.key === k);
+            return svc ? (
+              <div key={k} className="flex justify-between text-[#7c6fe0] mb-1">
+                <span className="truncate mr-2">{vaLabel(k)}</span>
                 <span>{formatPrice(svc.price)}</span>
               </div>
             ) : null;
@@ -1024,7 +1045,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
 
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
 function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
-                              onViewAuction, onEdit, likeState, onLike }) {
+                              onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
@@ -1035,7 +1056,11 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
     if (hasFetched.current) return;
     hasFetched.current = true;
     domainAPI.get(domain.id)
-      .then(({ data }) => setDetail(normalizeDomainRecord(data?.data ?? data)))
+      .then(({ data }) => {
+        const normalized = normalizeDomainRecord(data?.data ?? data);
+        setDetail(normalized);
+        onViewsUpdated?.(normalized.id, normalized.views);
+      })
       .catch(() => setDetail(domain))
       .finally(() => setLoading(false));
   }, [domain.id]);

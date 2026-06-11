@@ -74,11 +74,19 @@ export const ventureAuctionAPI = {
 // ─── Creator (community profiles) ────────────────────────────────────────────
 export const creatorAPI = {
   getAll:           ()        => api.get('/api/v1/creator/all'),
+  getMy:            ()        => api.get('/api/v1/creator/my'),
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
   linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth'),
   linkedInCallback: (code)    => api.get(`/api/v1/community/linkedin/callback?code=${code}`),
+};
+
+export const creatorFollowAPI = {
+  toggle:      (communityId) => api.post(`/api/v1/creator/${communityId}/follow/toggle`),
+  getStatus:   (communityId) => api.get(`/api/v1/creator/${communityId}/follow/status`),
+  bulkStatus:  (communityIds) => api.post('/api/v1/creator/follow/bulk-status', communityIds),
+  bulkCounts:  (communityIds) => api.post('/api/v1/creator/follow/bulk-counts', communityIds),
 };
 
 /** @deprecated Use creatorAPI */

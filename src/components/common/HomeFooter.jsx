@@ -125,9 +125,7 @@ const socialRowTwo = [
 
 
 
-const socialLinkClass =
-
-  'home-footer-social-link flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-colors duration-300 sm:h-10 sm:w-10';
+const socialLinkClass = 'home-footer-social-link';
 
 
 

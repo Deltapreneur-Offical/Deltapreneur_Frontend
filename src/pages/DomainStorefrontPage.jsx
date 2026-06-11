@@ -10,7 +10,7 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
-const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
+const DEFAULT_TLD = 'com';
 
 function readApiError(err, fallback) {
   const payload = err?.response?.data;
@@ -90,7 +90,6 @@ export default function DomainStorefrontPage() {
   const initialDomain = searchParams.get('domain') || '';
 
   const [query, setQuery] = useState(initialDomain);
-  const [tld, setTld] = useState('com');
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState(null);
   const [checkError, setCheckError] = useState('');
@@ -140,7 +139,7 @@ export default function DomainStorefrontPage() {
 
   const runCheck = useCallback(
     async (raw) => {
-      const fqdn = parseDomainInput(raw, tld);
+      const fqdn = parseDomainInput(raw, DEFAULT_TLD);
       if (!fqdn) return;
 
       setChecking(true);
@@ -163,7 +162,7 @@ export default function DomainStorefrontPage() {
         setChecking(false);
       }
     },
-    [period, setSearchParams, t, tld],
+    [period, setSearchParams, t],
   );
 
   useEffect(() => {
@@ -314,18 +313,6 @@ export default function DomainStorefrontPage() {
                   placeholder={t('domainSearchPlaceholder')}
                   className="storefront-search-form__input border-none bg-transparent py-2 text-base text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0 sm:py-1.5 sm:text-[15px]"
                 />
-                <select
-                  value={tld}
-                  onChange={(e) => setTld(e.target.value)}
-                  className="storefront-search__tld w-[5.25rem] shrink-0 cursor-pointer rounded-full border border-indigo-200/80 bg-indigo-50/90 py-1.5 pl-2.5 text-xs font-semibold text-indigo-900 outline-none transition-colors hover:border-indigo-300 hover:bg-indigo-100/90 focus:border-indigo-400 sm:w-[5.5rem] sm:py-2 sm:pl-3"
-                  aria-label="TLD"
-                >
-                  {TLDS.map((ext) => (
-                    <option key={ext} value={ext}>
-                      .{ext}
-                    </option>
-                  ))}
-                </select>
               </div>
               <button
                 type="submit"

@@ -1,5 +1,21 @@
 /* Shared outer border glow — all listing cards (homepage + dashboards + future listings) */
 
+:root {
+  --listing-card-gradient: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+  --listing-card-gradient-hover: linear-gradient(180deg, #ffffff 0%, #f5f7ff 52%, #eef2ff 100%);
+}
+
+.listing-card-glow.card-glow-hover,
+.technology-listing-card.card-glow-hover,
+.home-feature-card.card-glow-hover,
+.domain-listing-card.card-glow-hover,
+.venture-listing-card.card-glow-hover,
+.community-listing-card.card-glow-hover,
+.creator-profile-card.card-glow-hover,
+.listing-card-skeleton {
+  background: var(--listing-card-gradient) !important;
+}
+
 .listing-card-glow-grid,
 .technology-listing-grid,
 .domain-listing-grid,
@@ -72,13 +88,13 @@
   transition:
     box-shadow 0.35s ease,
     border-color 0.35s ease,
-    background-color 0.35s ease,
+    background 0.35s ease,
     transform 0.35s ease;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
 }
 
-.technology-listing-card.card-glow-hover,
+.technology-listing-card.card-glow-hover:not(.technology-listing-card--browse),
 .venture-listing-card.card-glow-hover,
 .community-listing-card.card-glow-hover {
   border: none !important;
@@ -86,9 +102,25 @@
   overflow: hidden;
 }
 
+.technology-listing-card.technology-listing-card--browse.card-glow-hover,
+.technology-listing-card.domain-listing-card--browse.card-glow-hover {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.creator-profile-card.community-listing-card.card-glow-hover {
+  overflow: visible;
+}
+
 .domain-listing-card.card-glow-hover,
 .home-feature-card.card-glow-hover {
   border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
 }
 
 .listing-card-glow.card-glow-hover:hover,
@@ -99,7 +131,7 @@
 .community-listing-card.card-glow-hover:hover {
   transform: translateY(-3px) translateZ(0);
   border-color: rgba(15, 23, 42, 0.18) !important;
-  background-color: #fff;
+  background: var(--listing-card-gradient-hover) !important;
   box-shadow:
     0 12px 32px rgba(15, 23, 42, 0.12),
     0 4px 20px rgba(15, 23, 42, 0.06);

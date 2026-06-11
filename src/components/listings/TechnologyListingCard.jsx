@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Share2 } from 'lucide-react';
+import { ArrowRight, Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import LikeButton from '../common/LikeButton';
-import ListingBrowseFooter from './ListingBrowseFooter';
+import ListingAvailabilityBadge from './ListingAvailabilityBadge';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import VerificationStatusBadge from './VerificationStatusBadge';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
@@ -20,6 +20,15 @@ import MarketplaceListingCardFrame, {
   ListingCardBadge,
   ListingPriceBox,
 } from './MarketplaceListingCardFrame';
+import verifiedIcon from '../../assets/Verified_Icon.png';
+import '../../styles/domain-listing-cards.css';
+
+function resolveSoftwareStatusDotClass(status) {
+  const key = (status || 'AVAILABLE').toUpperCase();
+  if (key === 'AVAILABLE') return 'listing-availability-badge__dot--available';
+  if (key === 'SOLD') return 'listing-availability-badge__dot--sold';
+  return 'listing-availability-badge__dot--muted';
+}
 
 function isDirectPurchase(item, auctionStatus) {
   if (isTechnologyAuctionLive(item, auctionStatus)) return false;
@@ -70,6 +79,10 @@ export default function TechnologyListingCard({
     REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !item.verified;
 
   useEffect(() => {
+    setImgFailed(false);
+  }, [item.imageUrl, item.id]);
+
+  useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
     };
@@ -109,18 +122,16 @@ export default function TechnologyListingCard({
     </>
   );
 
+  const techName = item.name || t('listingCardTechnology');
+  const techCategory = (item.category || 'Technology').replace(/_/g, ' ');
+
   const body = (
     <>
-      <div className="flex flex-col gap-1 mb-1 flex-shrink-0">
-        <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug line-clamp-1">
-          {item.name || t('listingCardTechnology')}
-        </h3>
-        <div className="flex items-center gap-1 flex-wrap max-h-[22px] overflow-hidden">
+      <div className="flex flex-col gap-1.5 mb-2 flex-shrink-0">
+        <ListingAvailabilityBadge status={item.softwareStatus || 'AVAILABLE'} />
+        <div className="flex items-center gap-1 flex-wrap">
           <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-            {(item.category || 'Technology').replace(/_/g, ' ')}
-          </span>
-          <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-            {item.softwareStatus || 'AVAILABLE'}
+            {techCategory}
           </span>
         </div>
       </div>
@@ -137,13 +148,14 @@ export default function TechnologyListingCard({
     </>
   );
 
-  const statsRow = (
-    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium py-1.5 border-t border-gray-100">
-      <span className="flex items-center gap-0.5">
-        <Eye size={11} /> {item.views || 0}
-      </span>
-      {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-    </div>
+  const statsFooter = (
+    <ListingCardStatsFooter
+      viewCount={item.views || 0}
+      likeState={likeState}
+      onLike={onLike}
+      onView={onView}
+      className={browseMode ? '' : 'border-t border-gray-100'}
+    />
   );
 
   const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors inline-flex items-center justify-center gap-1';
@@ -287,23 +299,98 @@ export default function TechnologyListingCard({
   );
 
   if (browseMode) {
+    const techImage = item.imageUrl && !imgFailed ? item.imageUrl : null;
+    const useCase = item.whatItDoes || item.what_it_does || item.description || '';
+    const industry = techCategory;
+    const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
+    const priceAmount = Number(item.price || 0);
+    const handleViewDetails = onView
+      ? (e) => {
+        stop(e);
+        onView();
+      }
+      : undefined;
+
     return (
-      <MarketplaceListingCardFrame
-        cardClassName="technology-listing-card"
-        image={item.imageUrl && !imgFailed ? item.imageUrl : null}
-        imageAlt={item.name}
-        initial={(item.name || '?').slice(0, 1).toUpperCase()}
-        headerBadges={headerBadges}
-        browseMode
-        onClick={onView}
-        footer={(
-          <ListingBrowseFooter className="border-t-0 pt-0" onViewDetails={onView}>
-            {statsRow}
-          </ListingBrowseFooter>
-        )}
-      >
-        {body}
-      </MarketplaceListingCardFrame>
+      <article className="domain-listing-card domain-listing-card--browse home-preview-browse-card card-glow-hover relative flex h-auto w-full flex-col overflow-hidden rounded-3xl bg-white">
+        <div className="domain-listing-card__cover">
+          {techImage ? (
+            <img
+              src={techImage}
+              alt={techName}
+              className="domain-listing-card__cover-img"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div className="domain-listing-card__cover-fallback" aria-hidden>
+              <span className="domain-listing-card__cover-fallback-domain">{techName}</span>
+            </div>
+          )}
+          {item.verified ? (
+            <img
+              src={verifiedIcon}
+              alt=""
+              className="domain-listing-card__verified-icon"
+              aria-hidden
+            />
+          ) : null}
+        </div>
+
+        <div className="domain-listing-card__body">
+          <div className="domain-listing-card__domain-row">
+            <p className="domain-listing-card__domain" title={techName}>
+              {techName}
+            </p>
+            <span
+              className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveSoftwareStatusDotClass(statusKey)}`}
+              title={statusKey}
+              aria-hidden
+            />
+          </div>
+
+          <p
+            className="technology-listing-card__use-case"
+            title={useCase || undefined}
+          >
+            {useCase || '\u00A0'}
+          </p>
+
+          {industry ? (
+            <p className="technology-listing-card__industry" title={industry}>
+              {industry}
+            </p>
+          ) : null}
+
+          {(priceAmount > 0 || handleViewDetails) && (
+            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+              {priceAmount > 0 ? (
+                <div className="domain-listing-card__price-text min-w-0">
+                  <span className="domain-listing-card__price-value truncate">
+                    {formatPrice(priceAmount)}
+                  </span>
+                </div>
+              ) : null}
+              {handleViewDetails ? (
+                <button
+                  type="button"
+                  className="domain-listing-card__price-cta"
+                  aria-label={t('listingCardViewDetails', 'View details')}
+                  onClick={handleViewDetails}
+                >
+                  <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          <ListingCardStatsFooter
+            viewCount={item.views || 0}
+            likeState={likeState}
+            onLike={onLike}
+            className="domain-listing-card__stats"
+          />
+        </div>
+      </article>
     );
   }
 
@@ -311,14 +398,16 @@ export default function TechnologyListingCard({
     <MarketplaceListingCardFrame
       cardClassName="technology-listing-card"
       image={item.imageUrl && !imgFailed ? item.imageUrl : null}
-      imageAlt={item.name}
-      initial={(item.name || '?').slice(0, 1).toUpperCase()}
+      imageAlt={techName}
+      initial={(techName || '?').slice(0, 1).toUpperCase()}
+      headerTitle={techName}
+      headerSubtitle={techCategory}
       headerBadges={headerBadges}
       onClick={onView}
       footer={(
         <>
           <div onClick={stop} role="presentation">
-            {statsRow}
+            {statsFooter}
           </div>
           {actionButtons}
         </>

@@ -8,8 +8,8 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 import CreatorIcon from '../assets/Cobrother_Profile.png';
+import { useCreatorFollows } from '../hooks/useCreatorFollows';
 import { useLikes } from '../hooks/useLikes';
-import LikeButton from '../components/common/LikeButton';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import CommunityListingCard from '../components/listings/CommunityListingCard';
@@ -18,7 +18,13 @@ import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
-import { getLinkedInProfileUrl, hasLinkedInAccount } from '../utils/creatorProfile';
+import {
+  evaluateCreatorProfileCompletion,
+  getLinkedInProfileUrl,
+  hasLinkedInAccount,
+  isCreatorProfileComplete,
+} from '../utils/creatorProfile';
+import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -70,6 +76,7 @@ export default function CommunityPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [profiles, setProfiles]             = useState([]);
+  const { toggle: toggleFollow, get: getFollow } = useCreatorFollows(profiles);
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', profiles);
   const [loading, setLoading]               = useState(true);
   const [showForm, setShowForm]             = useState(false);
@@ -99,9 +106,17 @@ export default function CommunityPage() {
   };
 
   const reloadProfiles = async ({ preferProfile } = {}) => {
-    const { data } = await communityAPI.getAll();
-    const list = Array.isArray(data) ? data : (data?.data ?? []);
-    applyProfilesList(list, { preferProfile });
+    const requests = [communityAPI.getAll()];
+    if (user?.id) {
+      requests.push(communityAPI.getMy().catch(() => null));
+    }
+
+    const [allRes, myRes] = await Promise.all(requests);
+    const list = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.data ?? []);
+    const myFromApi = myRes
+      ? (myRes.data?.data ?? myRes.data ?? null)
+      : null;
+    applyProfilesList(list, { preferProfile: preferProfile || myFromApi });
     return list;
   };
 
@@ -120,12 +135,18 @@ export default function CommunityPage() {
   });
 
   const profilesForDisplay = useMemo(() => {
-    if (!myProfile) return filteredProfiles;
-    if (filteredProfiles.some(p => String(p.id) === String(myProfile.id))) {
-      return filteredProfiles;
+    const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileComplete(profile));
+    if (!myProfile) return publicProfiles;
+    if (publicProfiles.some((p) => String(p.id) === String(myProfile.id))) {
+      return publicProfiles;
     }
-    return [myProfile, ...filteredProfiles];
+    return [myProfile, ...publicProfiles];
   }, [filteredProfiles, myProfile]);
+
+  const myProfileCompletion = useMemo(
+    () => (myProfile ? evaluateCreatorProfileCompletion(myProfile) : null),
+    [myProfile],
+  );
 
   const showEmptyCreators = !loading && profilesForDisplay.length === 0 && !myProfile;
 
@@ -361,6 +382,13 @@ export default function CommunityPage() {
           </div>
         </div>
 
+        {myProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
+          <CreatorProfileCompletionBanner
+            profile={myProfile}
+            onEdit={() => setShowForm(true)}
+          />
+        ) : null}
+
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
@@ -400,6 +428,8 @@ export default function CommunityPage() {
                 isMe={profileMatchesUser(p, user)}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
+                followState={getFollow(p.id)}
+                onFollow={() => toggleFollow(p.id)}
                 onView={() => openDetailIfAllowed(p)}
                 onEdit={() => { setMyProfile(p); setShowForm(true); }}
               />
@@ -863,7 +893,13 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
                   </p>
                 ) : null}
                 <p className="text-xs text-blue-600 mt-1.5 m-0">
-                  ✓ {linkedInUrl ? 'Name, photo, and LinkedIn URL imported from LinkedIn' : 'Name and photo imported from LinkedIn'}
+                  ✓ {linkedInUrl
+                    ? (initial.imageUrl
+                      ? 'Name, photo, and LinkedIn URL imported from LinkedIn'
+                      : 'Name and LinkedIn URL imported from LinkedIn')
+                    : (initial.imageUrl
+                      ? 'Name and photo imported from LinkedIn'
+                      : 'Name imported from LinkedIn')}
                 </p>
               </div>
             </div>
@@ -881,6 +917,9 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
       )}
       <h3 className="font-display text-2xl text-gray-900 font-semibold">{t('completeCreatorProfile')}</h3>
       <p className="text-gray-500 text-sm mt-1">Help others understand what you bring to the table.</p>
+      {!evaluateCreatorProfileCompletion(initial).isComplete ? (
+        <CreatorProfileCompletionBanner profile={initial} />
+      ) : null}
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
@@ -899,12 +938,12 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Skills <span className="text-gray-400 text-xs">(comma-separated)</span></label>
-          <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          <label className="text-sm font-medium text-gray-700">Skills <span className="text-red-500">*</span></label>
+          <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Location</label>
-          <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          <label className="text-sm font-medium text-gray-700">Location <span className="text-red-500">*</span></label>
+          <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
         {linkedInImported && (
           <div className="flex flex-col gap-1.5">
@@ -925,8 +964,8 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
           </div>
         )}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-gray-400 text-xs">(optional)</span></label>
-          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
+          <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-red-500">*</span></label>
+          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">

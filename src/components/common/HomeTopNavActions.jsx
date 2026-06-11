@@ -99,15 +99,17 @@ function HomeNavToolbarSeparator({ variant = 'desktop' }) {
 }
 
 function SupportLabel({ className = 'home-nav-support-label' }) {
+  const { t } = useTranslation();
+
   return (
     <span className={className}>
-      <span className="home-nav-support-prefix">24x7</span>
-      <span className="home-nav-support-emphasis">Support</span>
+      <span className="home-nav-support-prefix">{t('navSupport24x7')}</span>
+      <span className="home-nav-support-emphasis">{t('navSupportLabel')}</span>
     </span>
   );
 }
 
-export default function HomeTopNavActions() {
+export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const { t } = useTranslation();
   const { user, logout, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -202,12 +204,16 @@ export default function HomeTopNavActions() {
         </span>
         <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
       </div>
-      <HomeNavToolbarSeparator />
-      <div className="home-nav-contact-wrap relative block">
-        <a href="/contact" className="home-nav-contact-link">
-          {t('contactUs')}
-        </a>
-      </div>
+      {!hideContactUs ? (
+        <>
+          <HomeNavToolbarSeparator />
+          <div className="home-nav-contact-wrap relative block">
+            <a href="/contact" className="home-nav-contact-link">
+              {t('contactUs')}
+            </a>
+          </div>
+        </>
+      ) : null}
       <HomeNavToolbarSeparator />
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button
@@ -298,7 +304,7 @@ export default function HomeTopNavActions() {
                 <div className="border-t border-gray-100">
                   <button
                     type="button"
-                    className="block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-0 bg-transparent"
                     onClick={() => {
                       setProfileDropdownOpen(false);
                       setShowLogoutConfirm(true);
@@ -319,13 +325,15 @@ export default function HomeTopNavActions() {
                 >
                   {t('signIn')}
                 </button>
-                <a
-                  href="/contact"
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('contactUs')}
-                </a>
+                {!hideContactUs ? (
+                  <a
+                    href="/contact"
+                    className="home-profile-mobile-only px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    {t('contactUs')}
+                  </a>
+                ) : null}
                 <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium">
                   <SupportLabel />
                 </div>

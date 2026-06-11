@@ -6,12 +6,12 @@ import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { fetchAllListPages } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
-import { useHomepageMobile } from '../../hooks/useHomepageMobile';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
-import HomeUnifiedListingCard from './HomeUnifiedListingCard';
+import TechnologyListingCard from '../listings/TechnologyListingCard';
+import '../../styles/domain-listing-cards.css';
 
 export default function TechnologySection() {
   const { t } = useTranslation();
@@ -34,15 +34,9 @@ export default function TechnologySection() {
     fetchSoftwares();
   }, []);
 
-  const isMobile = useHomepageMobile();
-
   const previewSoftwares = useMemo(
-    () => pickHomepagePreviewListings(
-      softwares,
-      'software',
-      isMobile ? 1 : HOMEPAGE_PREVIEW_LIMIT,
-    ),
-    [softwares, isMobile],
+    () => pickHomepagePreviewListings(softwares, 'software', HOMEPAGE_PREVIEW_LIMIT),
+    [softwares],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', previewSoftwares);
@@ -56,7 +50,7 @@ export default function TechnologySection() {
   }
 
   return (
-    <section className="bg-white py-4 md:py-6 min-w-0 overflow-visible">
+    <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('technologySoftware')} to="/technology" />
         {previewSoftwares.length === 0 ? (
@@ -65,10 +59,10 @@ export default function TechnologySection() {
           <HomePreviewRow>
             {previewSoftwares.map((item) => (
               <HomePreviewRowItem key={item.id}>
-                <ListingCardShell>
-                  <HomeUnifiedListingCard
-                    type="technology"
-                    listing={item}
+                <ListingCardShell className="home-preview-card-shell">
+                  <TechnologyListingCard
+                    item={item}
+                    browseMode
                     likeState={getLike(item.id)}
                     onLike={() => toggleLike(item.id)}
                     onView={() => handleViewDetails(item.id)}

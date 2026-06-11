@@ -1,93 +1,77 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Gavel, ShoppingCart, MessageSquare, Trash2, Share2, Eye } from 'lucide-react';
+import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
-import { isAdminCreatedListing } from '../../utils/homepageListings';
 import { APP_BASE_URL } from '../../config/urls';
-import LikeButton from '../common/LikeButton';
-import { ListingCardBadge } from './MarketplaceListingCardFrame';
-
-const CARD_CLASS =
-  'domain-listing-card card-glow-hover relative flex aspect-square h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_14px_30px_rgba(59,130,246,0.14)] sm:p-4';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
+import verifiedIcon from '../../assets/Verified_Icon.png';
 
 const PRIMARY_BTN =
-  'w-full rounded-lg px-4 py-2.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+  'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
 
-function ListingStatus({ status }) {
+function resolveStatusDotClass(status) {
   const key = (status || 'AVAILABLE').toUpperCase();
-  const isAvailable = key === 'AVAILABLE';
-  const config = isAvailable
-    ? {
-        dot: 'bg-[var(--cobrother-brand-green)]',
-        text: 'Available',
-        tone: 'text-[var(--cobrother-brand-green)]',
-      }
-    : key === 'SOLD'
-      ? { dot: 'bg-rose-500', text: 'Taken', tone: 'text-rose-600' }
-      : {
-          dot: 'bg-slate-300',
-          text: key.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase()),
-          tone: 'text-slate-500',
-        };
-
-  return (
-    <span
-      className={`inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${config.dot}`}
-      role="img"
-      aria-label={config.text}
-      title={config.text}
-    />
-  );
+  if (key === 'AVAILABLE') return 'listing-availability-badge__dot--available';
+  if (key === 'SOLD') return 'listing-availability-badge__dot--sold';
+  return 'listing-availability-badge__dot--muted';
 }
 
-function resolveDomainInitial(name) {
-  const cleaned = (name || '').replace(/[^a-zA-Z0-9]/g, '');
-  return (cleaned.slice(0, 1) || '?').toUpperCase();
-}
-
-function DomainListingIdentity({ logo, logoAlt, initial, children }) {
+function DomainListingCover({
+  logo,
+  logoAlt,
+  fullDomain,
+  verified,
+  onCoverError,
+}) {
   return (
-    <div className="relative mb-3 flex min-h-[3.5rem] items-end gap-3">
+    <div className="domain-listing-card__cover">
       {logo ? (
-        <>
-          <img
-            src={logo}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-full rounded-xl object-cover opacity-[0.06]"
-          />
-          <img
-            src={logo}
-            alt={logoAlt}
-            className="relative z-10 h-14 w-14 flex-shrink-0 rounded-xl object-cover shadow-sm ring-2 ring-gray-100"
-          />
-        </>
+        <img
+          src={logo}
+          alt={logoAlt}
+          className="domain-listing-card__cover-img"
+          onError={onCoverError}
+        />
       ) : (
-        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100 font-display text-2xl font-extrabold text-gray-900 shadow-sm ring-2 ring-gray-100">
-          {initial}
+        <div className="domain-listing-card__cover-fallback" aria-hidden>
+          <span className="domain-listing-card__cover-fallback-domain">{fullDomain}</span>
         </div>
       )}
-      <div className="relative z-10 flex min-w-0 flex-1 flex-wrap items-center gap-1.5 pb-0.5">
-        {children}
-      </div>
+      {verified ? (
+        <img
+          src={verifiedIcon}
+          alt=""
+          className="domain-listing-card__verified-icon"
+          aria-hidden
+        />
+      ) : null}
     </div>
   );
 }
 
-function DomainListingPriceBox({ amount, caption }) {
+function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel }) {
   return (
-    <div className="mb-2 flex-shrink-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-      <div className="flex min-w-0 items-baseline gap-1.5">
-        <span className="truncate text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
-          {amount}
-        </span>
-        <span className="whitespace-nowrap text-[10px] font-semibold text-gray-500 sm:text-[11px]">
-          {caption}
-        </span>
-      </div>
+    <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+      {amount ? (
+        <div className="domain-listing-card__price-text min-w-0">
+          <span className="domain-listing-card__price-value truncate">
+            {amount}
+          </span>
+        </div>
+      ) : null}
+      {onViewDetails ? (
+        <button
+          type="button"
+          className="domain-listing-card__price-cta"
+          aria-label={viewLabel}
+          onClick={onViewDetails}
+        >
+          <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -112,30 +96,20 @@ export default function DomainListingCard({
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
   const isHighValue = isPremiumDomain(domain);
-  const isAdminListed = isAdminCreatedListing(domain, 'domain');
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
   const display = resolveDomainDisplay(domain);
-  const domainInitial = resolveDomainInitial(display.name);
   const domainLogo = domain.logo && !imgFailed ? domain.logo : null;
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const needsVerification = !domain.verified;
   const purchaseBlocked = needsVerification && !isOwner;
 
-  const description =
-    domain.description?.trim()
-    || (!domain.verified ? `ΓÅ│ ${t('listingCardVerificationPending')}` : '');
-
   const priceAmount = isAuction
     ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
     : domain.askingPrice;
-
-  const priceCaption = isAuction
-    ? (auctionLive ? t('listingCardCurrentBid') : t('listingCardStartingBid'))
-    : t('listingCardPrice');
 
   useEffect(() => {
     setImgFailed(false);
@@ -167,20 +141,16 @@ export default function DomainListingCard({
 
   const interactive = !browseMode && onView;
 
+  const handleViewDetails = onView
+    ? (e) => {
+      stop(e);
+      onView();
+    }
+    : undefined;
+
   const renderPrimaryAction = () => {
     if (browseMode) {
-      return (
-        <button
-          type="button"
-          className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
-          onClick={(e) => {
-            stop(e);
-            onView?.();
-          }}
-        >
-          {t('listingCardViewDetails', 'View Details')} ΓåÆ
-        </button>
-      );
+      return null;
     }
 
     if (isOwner) {
@@ -271,7 +241,7 @@ export default function DomainListingCard({
             onViewAuction?.();
           }}
         >
-          <Gavel size={14} />
+          <Gavel size={13} />
           {auctionLive ? t('listingCardJoinAuction') : t('listingCardViewAuction')}
         </button>
       );
@@ -295,7 +265,7 @@ export default function DomainListingCard({
               onEnquire?.();
             }}
           >
-            <MessageSquare size={14} />
+            <MessageSquare size={13} />
             {t('listingCardEnquire')}
           </button>
         );
@@ -309,8 +279,8 @@ export default function DomainListingCard({
             onBuy?.();
           }}
         >
-          <ShoppingCart size={14} />
-          {t('listingCardBuyNowArrow', 'Buy Now ΓåÆ')}
+          <ShoppingCart size={13} />
+          {t('listingCardBuyNowArrow', 'Buy Now →')}
         </button>
       );
     }
@@ -322,9 +292,13 @@ export default function DomainListingCard({
     );
   };
 
+  const cardLayoutClass = browseMode
+    ? 'h-auto home-preview-browse-card'
+    : 'h-full min-h-0';
+
   return (
     <article
-      className={`${CARD_CLASS}${interactive ? ' cursor-pointer' : ''}`}
+      className={`domain-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
       onClick={interactive ? onView : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
@@ -336,68 +310,46 @@ export default function DomainListingCard({
         </span>
       )}
 
-      {domain.logo && !imgFailed ? (
-        <img src={domain.logo} alt="" className="hidden" onError={() => setImgFailed(true)} />
-      ) : null}
-
-      <DomainListingIdentity
+      <DomainListingCover
         logo={domainLogo}
         logoAlt={display.fullDomain}
-        initial={domainInitial}
-      >
-        <ListingCardBadge variant={isAuction ? 'auction' : isAdminListed ? 'admin' : 'glass'}>
-          {isAuction ? 'Auction' : isAdminListed ? 'Admin' : 'Direct'}
-        </ListingCardBadge>
-        {domain.verified ? (
-          <ListingCardBadge variant="verified">Verified</ListingCardBadge>
-        ) : (
-          <ListingCardBadge variant="pending">Pending</ListingCardBadge>
-        )}
-        {isOwner && (
-          <ListingCardBadge variant="owner">Owner</ListingCardBadge>
-        )}
-      </DomainListingIdentity>
+        fullDomain={display.fullDomain}
+        verified={domain.verified}
+        onCoverError={() => setImgFailed(true)}
+      />
 
-      <h2 className="mb-1 truncate text-lg font-extrabold text-slate-950 sm:text-xl" title={display.fullDomain}>
-        {display.name}
-      </h2>
-
-      {description ? (
-        <p className="mb-2 line-clamp-2 text-xs leading-relaxed text-slate-500">{description}</p>
-      ) : null}
-
-      <div className="mb-0 text-sm">
-        <div className="flex items-center justify-between gap-3">
-          <span className="truncate font-semibold text-slate-700">{display.fullDomain}</span>
-          <ListingStatus status={statusKey} />
+      <div className="domain-listing-card__body">
+        <div className="domain-listing-card__domain-row">
+          <p className="domain-listing-card__domain" title={display.fullDomain}>
+            {display.fullDomain}
+          </p>
+          <span
+            className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveStatusDotClass(statusKey)}`}
+            title={statusKey}
+            aria-hidden
+          />
         </div>
-      </div>
 
-      <div className="min-h-0 flex-1" aria-hidden />
-
-      {Number(priceAmount) > 0 && (
-        <DomainListingPriceBox
-          amount={formatPrice(priceAmount)}
-          caption={priceCaption}
-        />
-      )}
-
-      <div
-        className="mb-3 flex items-center justify-between text-[11px] font-medium text-slate-400"
-        onClick={stop}
-        onMouseDown={stop}
-        role="presentation"
-      >
-        <span className="inline-flex items-center gap-1">
-          <Eye size={12} />
-          {domain.views || 0}
-        </span>
-        {onLike && (
-          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
+        {(Number(priceAmount) > 0 || handleViewDetails) && (
+          <DomainListingPriceBox
+            amount={Number(priceAmount) > 0 ? formatPrice(priceAmount) : null}
+            isAuction={isAuction}
+            onViewDetails={handleViewDetails}
+            viewLabel={t('listingCardViewDetails', 'View details')}
+          />
         )}
-      </div>
 
-      <div className="mt-auto">{renderPrimaryAction()}</div>
+        <ListingCardStatsFooter
+          viewCount={Number(domain.views ?? domain.view_count ?? domain.viewCount ?? 0)}
+          likeState={likeState}
+          onLike={onLike}
+          className="domain-listing-card__stats"
+        />
+
+        {renderPrimaryAction() ? (
+          <div className="domain-listing-card__actions">{renderPrimaryAction()}</div>
+        ) : null}
+      </div>
     </article>
   );
 }

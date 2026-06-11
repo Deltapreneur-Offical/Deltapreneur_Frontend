@@ -74,6 +74,62 @@
 }
 
 .domain-listing-card .listing-card-stats-footer {
-  padding-top: 0.5rem;
+  padding-top: 0.2rem;
+  margin-top: 0;
   margin-bottom: 0;
+}
+
+.domain-listing-card .listing-card-stats-footer__cta {
+  display: none;
+}
+
+/* Like control — venture, domain, technology, creator profile cards */
+.listing-card-stats-footer .listing-like-btn,
+.creator-profile-card__stat-group .listing-like-btn {
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.listing-card-stats-footer .listing-like-btn--light,
+.listing-card-stats-footer .listing-like-btn--readonly,
+.creator-profile-card__stat-group .listing-like-btn--light,
+.creator-profile-card__stat-group .listing-like-btn--readonly {
+  background: transparent;
+}
+
+.listing-card-stats-footer .listing-like-btn--interactive:hover,
+.listing-card-stats-footer .listing-like-btn--interactive:focus-visible,
+.creator-profile-card__stat-group .listing-like-btn--interactive:hover,
+.creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible {
+  background: transparent;
+  box-shadow: none;
+}
+
+.listing-card-stats-footer .listing-like-btn__icon--idle,
+.creator-profile-card__stat-group .listing-like-btn__icon--idle {
+  color: #d1d5db;
+}
+
+.listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.creator-profile-card__stat-group .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
+  color: #cbd5e1;
+}
+
+.listing-card-stats-footer .listing-like-btn__icon--active,
+.creator-profile-card__stat-group .listing-like-btn__icon--active {
+  color: #fca5a5;
+}
+
+.listing-card-stats-footer .listing-like-btn__count,
+.creator-profile-card__stat-group .listing-like-btn__count {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #94a3b8;
+  line-height: 1;
 }

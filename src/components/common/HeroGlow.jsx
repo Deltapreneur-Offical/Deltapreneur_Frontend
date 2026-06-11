@@ -16,12 +16,12 @@ export default function HeroGlow() {
               {t('heroEyebrow')}
             </p>
             <h1 className="hero-headline m-0 font-sans font-normal text-black">
-              <span className="hero-emphasis">Creator?</span> Let&apos;s get ventured with{' '}
+              Let&apos;s Get Ventured With{' '}
               <span className="hero-emphasis">CoBrother!</span>
             </h1>
           </div>
 
-          <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-8" />
+          <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />
         </div>
       </div>
 

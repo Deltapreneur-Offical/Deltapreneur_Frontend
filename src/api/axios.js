@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL, API_ORIGIN } from '../config/urls';
+import { isPublicBrowsePath } from '../utils/authSession';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -135,7 +136,7 @@ api.interceptors.response.use(
         localStorage.removeItem('refreshToken');
         notifyAuthCleared();
         const path = window.location.pathname;
-        if (!path.startsWith('/login') && !path.startsWith('/auth/callback')) {
+        if (!isPublicBrowsePath(path)) {
           window.location.href = '/login';
         }
       }

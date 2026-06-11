@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../api/services';
+import { getStoredAccessToken, hasCookieAuthSession } from '../utils/authSession';
 
 /** Stable fallback so `useAuth()` never returns null (avoids destructuring errors outside provider). */
 const authContextDefault = {
@@ -14,8 +15,7 @@ const authContextDefault = {
 const AuthContext = createContext(authContextDefault);
 
 function getAccessToken() {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken') || localStorage.getItem('token');
+  return getStoredAccessToken();
 }
 
 function clearAuthTokens() {
@@ -55,6 +55,13 @@ export function AuthProvider({ children }) {
   // ── fetchMe: reads token, hits /profile/me, normalises response ──────────
   const fetchMe = useCallback(async () => {
     const token = getAccessToken();
+    const cookieSession = hasCookieAuthSession();
+    if (!token && !cookieSession) {
+      setUser(null);
+      setHasAccessToken(false);
+      setLoading(false);
+      return null;
+    }
     if (token) setHasAccessToken(true);
     try {
       const { data } = await profileAPI.getMe();

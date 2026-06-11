@@ -62,7 +62,7 @@ export default function DomainsSection() {
           <HomePreviewRow>
             {previewDomains.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
-                <ListingCardShell>
+                <ListingCardShell className="home-preview-card-shell">
                   <DomainListingCard
                     domain={domain}
                     browseMode={true}

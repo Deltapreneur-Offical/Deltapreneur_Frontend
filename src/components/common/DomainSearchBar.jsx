@@ -525,7 +525,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none ${
                       searchMode === tabId
                         ? 'brand-search-tab-active'
-                        : `brand-search-tab-idle brand-search-tab--${tabId}`
+                        : 'brand-search-tab-idle'
                     }`}
                   >
                     {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
@@ -566,7 +566,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 className={`min-h-11 flex-1 basis-[calc(50%-0.25rem)] sm:min-h-12 sm:basis-[calc(50%-0.375rem)] rounded-full px-2.5 py-2 text-center text-[11.5px] sm:text-sm font-medium leading-snug md:min-h-9 md:flex-none md:basis-auto md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
                   searchMode === tabId
                     ? 'brand-search-tab-active'
-                    : `brand-search-tab-idle brand-search-tab--${tabId}`
+                    : 'brand-search-tab-idle'
                 }`}
               >
                 {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
@@ -817,72 +817,19 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         }
 
         .brand-search-tab-idle {
-          position: relative;
-          isolation: isolate;
           background: #ffffff;
           color: #000000;
           border: 1px solid rgba(0, 0, 0, 0.12);
           box-shadow: none;
-          transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+          transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .brand-search-tab-idle::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          opacity: 0;
-          transition: opacity 0.2s ease;
-          z-index: -1;
-        }
-
-        .brand-search-tab-idle:hover::before,
-        .brand-search-tab-idle:focus-visible::before {
-          opacity: 1;
-        }
-
-        .brand-search-tab--ai::before {
-          background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 45%, #f5d0fe 100%);
-        }
-
-        .brand-search-tab--ai:hover,
-        .brand-search-tab--ai:focus-visible {
-          border-color: rgba(139, 92, 246, 0.45);
-          color: #5b21b6;
-          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.22);
-        }
-
-        .brand-search-tab--new::before {
-          background: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 50%, #bae6fd 100%);
-        }
-
-        .brand-search-tab--new:hover,
-        .brand-search-tab--new:focus-visible {
-          border-color: rgba(14, 165, 233, 0.45);
-          color: #0369a1;
-          box-shadow: 0 4px 14px rgba(56, 189, 248, 0.28);
-        }
-
-        .brand-search-tab--premium::before {
-          background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 50%, #c7d2fe 100%);
-        }
-
-        .brand-search-tab--premium:hover,
-        .brand-search-tab--premium:focus-visible {
-          border-color: rgba(99, 102, 241, 0.45);
-          color: #3730a3;
-          box-shadow: 0 4px 14px rgba(99, 102, 241, 0.22);
-        }
-
-        .brand-search-tab--auction::before {
-          background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 50%, #fdba74 100%);
-        }
-
-        .brand-search-tab--auction:hover,
-        .brand-search-tab--auction:focus-visible {
-          border-color: rgba(245, 158, 11, 0.5);
-          color: #b45309;
-          box-shadow: 0 4px 14px rgba(251, 191, 36, 0.3);
+        .brand-search-tab-idle:hover,
+        .brand-search-tab-idle:focus-visible {
+          background: #000000;
+          color: #ffffff;
+          border-color: #000000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
 
         @media (min-width: 768px) {

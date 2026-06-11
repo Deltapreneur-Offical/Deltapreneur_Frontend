@@ -10,15 +10,91 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 1.25rem;
+  padding: 0;
   border-radius: 1.5rem;
   overflow: hidden;
   cursor: default;
   box-sizing: border-box;
+}
+
+.domain-listing-card__cover {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  height: 6.25rem;
+  overflow: hidden;
+  border-bottom: none;
+  background: #eceff3;
+}
+
+.domain-listing-card__cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.domain-listing-card__cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem 1rem;
+  background: #eceff3;
+  text-align: center;
+}
+
+.domain-listing-card__cover-fallback-domain {
+  max-width: 100%;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #8b95a5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.domain-listing-card__verified-icon {
+  position: absolute;
+  top: 0.35rem;
+  right: 1rem;
+  left: auto;
+  z-index: 3;
+  width: 2.65rem;
+  height: 2.65rem;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.domain-listing-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 0;
+  padding: 0.75rem 0.9rem 0.65rem;
+  justify-content: flex-start;
+}
+
+.domain-listing-card__domain-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.domain-listing-card__status-dot {
+  flex-shrink: 0;
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 50%;
 }
 
 .domain-listing-card__content {
@@ -55,19 +131,85 @@
 }
 
 .domain-listing-card__price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
   flex-shrink: 0;
-  margin-top: auto;
-  padding: 0.75rem 1rem;
-  border-radius: 1.25rem;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  margin-top: 0;
+  padding: 0.32rem 0.45rem 0.32rem 0.6rem;
+  border-radius: 1rem;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
+  box-shadow:
+    -8px 0 16px -8px rgba(0, 195, 255, 0.22),
+    8px 0 16px -8px rgba(255, 48, 108, 0.18),
+    0 0 10px -4px rgba(120, 80, 220, 0.18);
+  transition: box-shadow 0.3s ease;
+}
+
+.domain-listing-card__price-text {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.domain-listing-card__price-cta {
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
+  transition:
+    background-color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.domain-listing-card__price-cta:hover {
+  background: #000000;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.28);
+}
+
+.domain-listing-card__price-cta:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2);
+}
+
+.domain-listing-card__stats.listing-card-stats-footer {
+  margin-top: 0;
+  padding-top: 0.2rem;
+}
+
+.domain-listing-card__stats .listing-card-stats-footer__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.domain-listing-card__actions {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
 }
 
 .domain-listing-card__price-value {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: #0f172a;
 }
 
@@ -152,10 +294,10 @@
 
 .domain-listing-card__domain {
   margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.25;
-  color: #64748b;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #334155;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -532,13 +674,8 @@
   border: 1px solid #a7f3d0;
 }
 
-.domain-listing-card__price-box--auction {
-  background: #faf5ff;
-  border-color: #e9d5ff;
-}
-
 .domain-listing-card__price-box--auction .domain-listing-card__price-value {
-  color: #7c3aed;
+  color: #0f172a;
 }
 
 .domain-listing-card__stat {
@@ -654,10 +791,48 @@
 
 .domain-listing-card--browse {
   cursor: default;
+  height: auto;
+  min-height: min-content;
+  flex: 0 0 auto;
+}
+
+.domain-listing-card--browse .domain-listing-card__body {
+  flex: 0 1 auto;
 }
 
 .domain-listing-card--browse:not(.listing-card-glow):hover {
   transform: none;
+}
+
+.home-preview-browse-card .domain-listing-card__body {
+  flex: 0 1 auto;
+}
+
+.technology-listing-card__use-case {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.35;
+  min-height: calc(0.72rem * 1.35 * 2);
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.technology-listing-card__industry {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .listing-browse-footer {

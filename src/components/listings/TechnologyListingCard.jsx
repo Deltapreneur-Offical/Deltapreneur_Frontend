@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Share2 } from 'lucide-react';
+import { ArrowRight, Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
@@ -20,6 +20,15 @@ import MarketplaceListingCardFrame, {
   ListingCardBadge,
   ListingPriceBox,
 } from './MarketplaceListingCardFrame';
+import verifiedIcon from '../../assets/Verified_Icon.png';
+import '../../styles/domain-listing-cards.css';
+
+function resolveSoftwareStatusDotClass(status) {
+  const key = (status || 'AVAILABLE').toUpperCase();
+  if (key === 'AVAILABLE') return 'listing-availability-badge__dot--available';
+  if (key === 'SOLD') return 'listing-availability-badge__dot--sold';
+  return 'listing-availability-badge__dot--muted';
+}
 
 function isDirectPurchase(item, auctionStatus) {
   if (isTechnologyAuctionLive(item, auctionStatus)) return false;
@@ -68,6 +77,10 @@ export default function TechnologyListingCard({
   const isAuction = item.purchaseType === 'AUCTION';
   const showVerificationNotice =
     REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !item.verified;
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [item.imageUrl, item.id]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -286,21 +299,98 @@ export default function TechnologyListingCard({
   );
 
   if (browseMode) {
+    const techImage = item.imageUrl && !imgFailed ? item.imageUrl : null;
+    const useCase = item.whatItDoes || item.what_it_does || item.description || '';
+    const industry = techCategory;
+    const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
+    const priceAmount = Number(item.price || 0);
+    const handleViewDetails = onView
+      ? (e) => {
+        stop(e);
+        onView();
+      }
+      : undefined;
+
     return (
-      <MarketplaceListingCardFrame
-        cardClassName="technology-listing-card"
-        image={item.imageUrl && !imgFailed ? item.imageUrl : null}
-        imageAlt={techName}
-        initial={(techName || '?').slice(0, 1).toUpperCase()}
-        headerTitle={techName}
-        headerSubtitle={techCategory}
-        headerBadges={headerBadges}
-        browseMode
-        onClick={onView}
-        footer={statsFooter}
-      >
-        {body}
-      </MarketplaceListingCardFrame>
+      <article className="domain-listing-card domain-listing-card--browse home-preview-browse-card card-glow-hover relative flex h-auto w-full flex-col overflow-hidden rounded-3xl bg-white">
+        <div className="domain-listing-card__cover">
+          {techImage ? (
+            <img
+              src={techImage}
+              alt={techName}
+              className="domain-listing-card__cover-img"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div className="domain-listing-card__cover-fallback" aria-hidden>
+              <span className="domain-listing-card__cover-fallback-domain">{techName}</span>
+            </div>
+          )}
+          {item.verified ? (
+            <img
+              src={verifiedIcon}
+              alt=""
+              className="domain-listing-card__verified-icon"
+              aria-hidden
+            />
+          ) : null}
+        </div>
+
+        <div className="domain-listing-card__body">
+          <div className="domain-listing-card__domain-row">
+            <p className="domain-listing-card__domain" title={techName}>
+              {techName}
+            </p>
+            <span
+              className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveSoftwareStatusDotClass(statusKey)}`}
+              title={statusKey}
+              aria-hidden
+            />
+          </div>
+
+          <p
+            className="technology-listing-card__use-case"
+            title={useCase || undefined}
+          >
+            {useCase || '\u00A0'}
+          </p>
+
+          {industry ? (
+            <p className="technology-listing-card__industry" title={industry}>
+              {industry}
+            </p>
+          ) : null}
+
+          {(priceAmount > 0 || handleViewDetails) && (
+            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+              {priceAmount > 0 ? (
+                <div className="domain-listing-card__price-text min-w-0">
+                  <span className="domain-listing-card__price-value truncate">
+                    {formatPrice(priceAmount)}
+                  </span>
+                </div>
+              ) : null}
+              {handleViewDetails ? (
+                <button
+                  type="button"
+                  className="domain-listing-card__price-cta"
+                  aria-label={t('listingCardViewDetails', 'View details')}
+                  onClick={handleViewDetails}
+                >
+                  <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          <ListingCardStatsFooter
+            viewCount={item.views || 0}
+            likeState={likeState}
+            onLike={onLike}
+            className="domain-listing-card__stats"
+          />
+        </div>
+      </article>
     );
   }
 

@@ -425,8 +425,8 @@ export default function App() {
               }
             />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* Fallback — unknown URLs go home, not login */}
+            <Route path="*" element={<Navigate to="/" replace />} />
 
                   </Routes>
                 </Suspense>

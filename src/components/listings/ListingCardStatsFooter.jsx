@@ -42,7 +42,6 @@ export default function ListingCardStatsFooter({
             liked={likeState?.liked}
             count={likeState?.count}
             onToggle={onLike}
-            forceRed
           />
         ) : null}
       </div>

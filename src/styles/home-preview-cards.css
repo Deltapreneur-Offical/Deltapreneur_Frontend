@@ -120,7 +120,7 @@
 
 
 
-.home-preview-row .listing-card-glow-shell > * {
+.home-preview-row .listing-card-glow-shell:not(.home-preview-card-shell) > * {
 
   width: 100%;
 
@@ -144,17 +144,44 @@
     border-color 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Domain + technology homepage browse cards — content height, no collapse */
+.home-preview-row .home-preview-card-shell {
+  height: auto !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+}
 
+.home-preview-row .home-preview-card-shell > .home-preview-browse-card,
+.home-preview-row .home-preview-card-shell > article.home-preview-browse-card {
+  width: 100%;
+  max-width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: min-content;
+  height: auto !important;
+  max-height: none;
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+.home-preview-row__card:has(.home-preview-card-shell),
+.home-preview-row__card:has(.home-preview-card-shell) > div {
+  min-height: 0;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.home-preview-row:has(.home-preview-card-shell) {
+  align-items: stretch;
+}
 
 .home-preview-row .venture-listing-card,
 
-.home-preview-row .technology-listing-card,
+.home-preview-row .technology-listing-card:not(.technology-listing-card--browse),
 
 .home-preview-row .community-listing-card,
 
-.home-preview-row .community-profile-card,
-
-.home-preview-row .domain-listing-card {
+.home-preview-row .community-profile-card {
 
   min-height: var(--home-preview-card-height);
 
@@ -172,8 +199,26 @@
 
 }
 
+.home-preview-row .home-preview-browse-card {
+
+  min-height: min-content;
+
+  height: auto;
+
+  max-height: none;
+
+  flex: 0 0 auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+}
+
 /* Technology/venture/community: listing-card-glow sets border:none — restore a single border */
-.home-preview-row .technology-listing-card,
+.home-preview-row .technology-listing-card:not(.technology-listing-card--browse),
 .home-preview-row .venture-listing-card,
 .home-preview-row .community-listing-card,
 .home-preview-row .community-profile-card,
@@ -190,12 +235,13 @@
   transform: translateY(-2px) translateZ(0);
 }
 
-.home-preview-row .domain-listing-card .listing-card-stats-footer {
+.home-preview-row .home-preview-browse-card .listing-card-stats-footer,
+.home-preview-row .venture-listing-card .listing-card-stats-footer {
   flex-shrink: 0;
 }
 
-.home-preview-row .domain-listing-card .listing-card-stats-footer__cta {
-  display: inline-flex;
+.home-preview-row .home-preview-browse-card .listing-card-stats-footer__cta {
+  display: none;
 }
 
 

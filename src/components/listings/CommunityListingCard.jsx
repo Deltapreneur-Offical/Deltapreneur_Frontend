@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { isCreatorProfileComplete } from '../../utils/creatorProfile';
-import CreatorFollowButton from '../creators/CreatorFollowButton';
+// import CreatorFollowButton from '../creators/CreatorFollowButton';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -122,6 +122,7 @@ export default function CommunityListingCard({
           </p>
         </div>
 
+        {/* Follow button — commented out for now; uncomment when ready to re-enable
         {!isMe && onFollow ? (
           <div className="creator-profile-card__follow-row">
             <CreatorFollowButton
@@ -132,6 +133,7 @@ export default function CommunityListingCard({
             />
           </div>
         ) : null}
+        */}
 
         <div
           className="creator-profile-card__footer"
@@ -157,7 +159,6 @@ export default function CommunityListingCard({
                 liked={likeState?.liked}
                 count={likeState?.count}
                 onToggle={onLike}
-                forceRed
               />
             ) : null}
           </div>

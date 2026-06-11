@@ -17,7 +17,7 @@
 }
 
 .listing-card-glow-shell > .venture-listing-card,
-.listing-card-glow-shell > .technology-listing-card,
+.listing-card-glow-shell > .technology-listing-card:not(.technology-listing-card--browse),
 .listing-card-glow-shell > .community-listing-card {
   width: 100%;
   height: var(--listing-card-height);
@@ -40,4 +40,19 @@
   max-height: none;
   aspect-ratio: unset;
   overflow: hidden;
+}
+
+.listing-card-glow-shell > .domain-listing-card.domain-listing-card--browse,
+.listing-card-glow-shell > article.domain-listing-card.domain-listing-card--browse,
+.listing-card-glow-shell > .home-preview-browse-card,
+.listing-card-glow-shell > article.home-preview-browse-card {
+  min-height: min-content;
+  height: auto;
+  max-height: none;
+}
+
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell > .domain-listing-card,
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell > article.domain-listing-card {
+  min-height: min-content;
+  height: auto !important;
 }

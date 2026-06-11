@@ -94,12 +94,20 @@
   --tw-ring-shadow: 0 0 #0000;
 }
 
-.technology-listing-card.card-glow-hover,
+.technology-listing-card.card-glow-hover:not(.technology-listing-card--browse),
 .venture-listing-card.card-glow-hover,
 .community-listing-card.card-glow-hover {
   border: none !important;
   border-radius: 1rem;
   overflow: hidden;
+}
+
+.technology-listing-card.technology-listing-card--browse.card-glow-hover,
+.technology-listing-card.domain-listing-card--browse.card-glow-hover {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .creator-profile-card.community-listing-card.card-glow-hover {

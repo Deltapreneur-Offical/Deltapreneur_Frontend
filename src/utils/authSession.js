@@ -10,6 +10,30 @@ export function hasCookieAuthSession() {
   return /(?:^|; )csrf_token=([^;]*)/.test(document.cookie);
 }
 
+/** Paths that should never force-redirect to /login when a session expires. */
+const PUBLIC_NO_AUTH_REDIRECT_PATHS = [
+  '/',
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/auth/callback',
+  '/about',
+  '/contact',
+  '/privacy-policy',
+  '/terms-and-conditions',
+  '/join-form',
+];
+
+/** True on marketing/home routes where guests may browse without signing in. */
+export function isPublicBrowsePath(pathname) {
+  const path = (pathname || (typeof window !== 'undefined' ? window.location.pathname : '') || '').trim();
+  if (!path || path === '/') return true;
+  return PUBLIC_NO_AUTH_REDIRECT_PATHS.some(
+    (publicPath) => publicPath !== '/' && (path === publicPath || path.startsWith(`${publicPath}/`)),
+  );
+}
+
 /** True when the browser likely has an authenticated session. */
 export function hasAuthSession() {
   return Boolean(getStoredAccessToken() || hasCookieAuthSession());

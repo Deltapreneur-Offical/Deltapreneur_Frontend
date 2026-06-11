@@ -4,19 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import searchIcon from '../assets/Cobrother_Profile.png';
-
-import communityIcon from '../assets/cobrother_community_profil.png';
-
-import cobrotherProfile from '../assets/Community-profileicon.png';
-
-import coBrandingIcon from '../assets/CoBranding.png';
-
-import coVentureIcon from '../assets/Coventure_logo.png';
-
-import coCreationIcon from '../assets/CoCreation.png';
-
-import auctionIcon from '../assets/Auction.png';
+import { FaClock, FaPuzzlePiece } from 'react-icons/fa';
 
 import TopNavbar from '../components/common/TopNavbar';
 
@@ -156,67 +144,16 @@ export default function Home() {
 
 
   const features = [
-
     {
-
-      icon: <img src={coBrandingIcon} alt="Domain" className="w-10 h-10 object-contain" />,
-
-      titleKey: 'domainTitle',
-
-      descKey: 'domainDesc',
-
-      link: '/domains'
-
+      icon: <FaPuzzlePiece className="w-10 h-10 text-gray-900" aria-hidden />,
+      title: 'Addons',
+      link: '/domains',
     },
-
     {
-
-      icon: <img src={coVentureIcon} alt="Venture" className="w-10 h-10 object-contain" />,
-
-      titleKey: 'ventureTitle',
-
-      descKey: 'ventureDesc',
-
-      link: '/ventures'
-
+      icon: <FaClock className="w-10 h-10 text-gray-900" aria-hidden />,
+      title: 'Coming Soon',
+      comingSoon: true,
     },
-
-    {
-
-      icon: <img src={coCreationIcon} alt="Technologies" className="w-10 h-10 object-contain" />,
-
-      titleKey: 'technologyTitle',
-
-      descKey: 'technologyDesc',
-
-      link: '/technology'
-
-    },
-
-    // {
-
-    //   icon: <img src={auctionIcon} alt="Auctions" className="w-10 h-10 object-contain" />,
-
-    //   titleKey: 'auctionsTitle',
-
-    //   descKey: 'auctionsDesc',
-
-    //   link: '/auctions'
-
-    // },
-
-    {
-
-      icon: <img src={cobrotherProfile} alt="Creators" className="community-profile-icon" />,
-
-      titleKey: 'disruptorsTitle',
-
-      descKey: 'disruptorsDesc',
-
-      link: '/creator'
-
-    }
-
   ];
 
 
@@ -256,20 +193,20 @@ export default function Home() {
       <section className="home-features-section py-12 md:py-20">
         <div className="home-features-section-grid" aria-hidden="true" />
         <div className="home-features-section-content home-hero-align-inner">
-          <div className="home-features-card-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className="home-features-card-grid grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto">
             {features.map((feature, index) => (
               <ListingCardShell key={index} className="home-feature-card-shell">
                 <div className="listing-card-glow home-feature-card card-glow-hover p-5 md:p-8 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center h-full">
                   <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">
                     {feature.icon}
                   </div>
-                  <h3 className="font-display text-lg md:text-xl font-medium text-gray-900 mb-2 md:mb-3">
-                    {t(feature.titleKey)}
+                  <h3 className="font-display text-lg md:text-xl font-medium text-gray-900 mb-5 md:mb-6 flex-1">
+                    {feature.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">
-                    {t(feature.descKey)}
-                  </p>
-                  <GlowButton onClick={() => navigate(feature.link)}>
+                  <GlowButton
+                    onClick={feature.link ? () => navigate(feature.link) : undefined}
+                    disabled={Boolean(feature.comingSoon)}
+                  >
                     {t('exploreBtn')} →
                   </GlowButton>
                 </div>

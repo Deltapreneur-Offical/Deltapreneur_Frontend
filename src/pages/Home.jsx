@@ -146,12 +146,12 @@ export default function Home() {
   const features = [
     {
       icon: <Headset className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeVirtualAssistanceTitle', { defaultValue: 'Virtual Assistance' }),
+      title: t('homeVirtualAssistanceTitle', { defaultValue: 'Virtual Assistant' }),
       link: '/domains',
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeComplianceTitle', { defaultValue: 'Compliance' }),
+      title: t('homeComplianceTitle', { defaultValue: 'Compliances' }),
       link: '/domains',
     },
   ];

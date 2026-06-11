@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { FaClock, FaPuzzlePiece } from 'react-icons/fa';
+import { Headset, ShieldCheck } from 'lucide-react';
 
 import TopNavbar from '../components/common/TopNavbar';
 
@@ -145,14 +145,14 @@ export default function Home() {
 
   const features = [
     {
-      icon: <FaPuzzlePiece className="w-10 h-10 text-gray-900" aria-hidden />,
-      title: 'Addons',
+      icon: <Headset className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
+      title: t('homeVirtualAssistanceTitle', { defaultValue: 'Virtual Assistance' }),
       link: '/domains',
     },
     {
-      icon: <FaClock className="w-10 h-10 text-gray-900" aria-hidden />,
-      title: 'Coming Soon',
-      comingSoon: true,
+      icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
+      title: t('homeComplianceTitle', { defaultValue: 'Compliance' }),
+      link: '/domains',
     },
   ];
 
@@ -193,10 +193,26 @@ export default function Home() {
       <section className="home-features-section py-12 md:py-20">
         <div className="home-features-section-grid" aria-hidden="true" />
         <div className="home-features-section-content home-hero-align-inner">
+          <header className="home-features-section-header">
+            <p className="home-features-section-eyebrow">
+              {t('homeServicesEyebrow', { defaultValue: 'SERVICES' })}
+            </p>
+            <h2 className="home-features-section-title">
+              {t('homeServicesTitle', { defaultValue: 'Business Support Solutions' })}
+            </h2>
+            <p className="home-features-section-subtitle">
+              {t('homeServicesSubtitle', {
+                defaultValue:
+                  'Choose the right service to streamline operations and stay compliant.',
+              })}
+            </p>
+          </header>
           <div className="home-features-card-grid grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto">
             {features.map((feature, index) => (
               <ListingCardShell key={index} className="home-feature-card-shell">
-                <div className="listing-card-glow home-feature-card card-glow-hover p-5 md:p-8 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center h-full">
+                <div className="home-feature-card-border h-full rounded-[16px] md:rounded-[20px]">
+                  <div className="home-feature-card-beam-spinner" aria-hidden="true" />
+                  <div className="listing-card-glow home-feature-card card-glow-hover p-5 md:p-8 rounded-[14px] md:rounded-[18px] shadow-sm flex flex-col items-center text-center h-full">
                   <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">
                     {feature.icon}
                   </div>
@@ -209,6 +225,7 @@ export default function Home() {
                   >
                     {t('exploreBtn')} →
                   </GlowButton>
+                </div>
                 </div>
               </ListingCardShell>
             ))}

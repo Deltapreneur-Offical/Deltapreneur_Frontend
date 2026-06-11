@@ -1,4 +1,4 @@
-{
+﻿{
   "footerCopyright": "© {{year}} CoBrother™ Alle Rechte vorbehalten.",
   "footerMade": "Mit ❤️ in Indien gemacht.",
   "contactUs": "Kontaktieren Sie uns",
@@ -988,10 +988,10 @@
   "ventureDashboardPageTitle": "Venture Dashboard",
   "ventureDashboardPageSubtitle": "Manage your venture listings, applications, and auctions.",
   "ventureDashboardPageBack": "← Back to Ventures",
-  "ventureDashboardTabListings": "📋 My Listings",
-  "ventureDashboardTabLikes": "❤️ Likes Received",
-  "ventureDashboardTabIncoming": "📥 Incoming Applications",
-  "ventureDashboardTabApplied": "🚀 My Applications",
+  "ventureDashboardTabListings": "My Listings",
+  "ventureDashboardTabLikes": "Likes Received",
+  "ventureDashboardTabIncoming": "Incoming Applications",
+  "ventureDashboardTabApplied": "My Applications",
   "ventureDashboardNoListingsTitle": "No ventures listed yet",
   "ventureDashboardNoListingsBody": "List your first venture to start finding co-founders and collaborators.",
   "ventureDashboardListVenture": "List a Venture",

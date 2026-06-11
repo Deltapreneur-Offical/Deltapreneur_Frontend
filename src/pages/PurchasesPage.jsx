@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ShoppingBag, Globe, Cpu, BadgeCheck } from 'lucide-react';
 import { domainAPI, domainStorefrontAPI, technologyAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
-import PurchaseIcon from '../assets/purchase.png';
-import DomainsIcon from '../assets/CoBranding.png';
-import SoftwareIcon from '../assets/CoCreation.png';
-import CoBrotherIcon from '../assets/Community-profileicon.png';
 import { generateInvoice } from '../utils/generateInvoice';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -21,6 +18,8 @@ import {
   registrationStatusLabel,
 } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
+
+const PURCHASES_STAT_ICON = { size: 18, strokeWidth: 2, 'aria-hidden': true };
 
 export default function PurchasesPage() {
   const { t } = useTranslation();
@@ -90,13 +89,27 @@ export default function PurchasesPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })} value={totalItems} iconSrc={PurchaseIcon} />
-          <StatCard label={t('purchasesStatDomains', { defaultValue: 'Domains' })} value={domainTabCount} iconSrc={DomainsIcon} color="#6eadc8" />
-          <StatCard label={t('purchasesStatSoftware', { defaultValue: 'Software' })} value={completedSoftware.length} iconSrc={SoftwareIcon} color="#a06ec8" />
+          <StatCard
+            label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })}
+            value={totalItems}
+            icon={<ShoppingBag {...PURCHASES_STAT_ICON} />}
+          />
+          <StatCard
+            label={t('purchasesStatDomains', { defaultValue: 'Domains' })}
+            value={domainTabCount}
+            icon={<Globe {...PURCHASES_STAT_ICON} />}
+            color="#6eadc8"
+          />
+          <StatCard
+            label={t('purchasesStatSoftware', { defaultValue: 'Software' })}
+            value={completedSoftware.length}
+            icon={<Cpu {...PURCHASES_STAT_ICON} />}
+            color="#a06ec8"
+          />
           <StatCard
             label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
             value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
-            iconSrc={CoBrotherIcon}
+            icon={<BadgeCheck {...PURCHASES_STAT_ICON} />}
             color="#6ec896"
           />
         </div>
@@ -124,7 +137,11 @@ export default function PurchasesPage() {
           </div>
         ) : displayItems.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">🛒</div>
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400">
+                <ShoppingBag size={36} strokeWidth={1.75} aria-hidden />
+              </div>
+            </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
               {t('purchasesEmpty', { defaultValue: 'No purchases yet' })}
             </h3>
@@ -473,11 +490,11 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   );
 }
 
-function StatCard({ label, value, iconSrc, color = '#111827' }) {
+function StatCard({ label, value, icon, color = '#111827' }) {
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
-      <div className="w-8 h-8 mb-2">
-        <img src={iconSrc} alt={label} className="w-full h-full object-contain" />
+      <div className="w-9 h-9 mb-3 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600">
+        {icon}
       </div>
       <div className="text-2xl font-bold font-display" style={{ color }}>{value}</div>
       <div className="text-xs text-gray-600 font-semibold mt-1">{label}</div>

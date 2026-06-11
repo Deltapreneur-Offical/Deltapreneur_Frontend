@@ -9,6 +9,7 @@ export default function ListingCardStatsFooter({
   onLike,
   onView,
   className = '',
+  likesFirst = false,
 }) {
   const { t } = useTranslation();
 
@@ -24,7 +25,16 @@ export default function ListingCardStatsFooter({
       onMouseDown={stop}
       role="presentation"
     >
-      <div className="listing-card-stats-footer__group">
+      <div
+        className={`listing-card-stats-footer__group${likesFirst ? ' listing-card-stats-footer__group--likes-first' : ''}`}
+      >
+        {likesFirst && onLike ? (
+          <LikeButton
+            liked={likeState?.liked}
+            count={likeState?.count}
+            onToggle={onLike}
+          />
+        ) : null}
         <span
           className="listing-card-stats-footer__views"
           title={t('creatorProfileViews', 'Profile views')}
@@ -37,7 +47,7 @@ export default function ListingCardStatsFooter({
           />
           <span>{Number(viewCount) || 0}</span>
         </span>
-        {onLike ? (
+        {!likesFirst && onLike ? (
           <LikeButton
             liked={likeState?.liked}
             count={likeState?.count}

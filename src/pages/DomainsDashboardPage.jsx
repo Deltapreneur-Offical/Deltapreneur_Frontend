@@ -7,6 +7,7 @@ import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/do
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
+import DomainsIcon from '../assets/CoBranding.png';
 import DomainVerificationModal from './DomainVerificationModal';
 import { APP_BASE_URL } from '../config/urls';
 import { extractDomainList } from '../utils/domainApiAdapter';
@@ -132,7 +133,9 @@ export default function DomainsDashboardPage() {
         ) : tab === 'listings' ? (
           listings.length === 0 ? (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">◇</div>
+              <div className="flex justify-center mb-6">
+                <img src={DomainsIcon} alt="" className="w-20 h-20 object-contain opacity-30" />
+              </div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('domainsDashboardNoListingsTitle')}</h3>
               <p className="text-gray-600 mb-6">{t('domainsDashboardNoListingsBody')}</p>
               <button className="btn-glow" onClick={() => navigate('/domains')}>{t('domainsDashboardListDomain')}</button>

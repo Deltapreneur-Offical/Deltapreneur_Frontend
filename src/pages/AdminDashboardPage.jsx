@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Calendar } from 'lucide-react';
-import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI } from '../api/services';
+import { Calendar, Headset } from 'lucide-react';
+import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
 import VentureIcon from '../assets/Coventure_logo.png';
@@ -15,6 +15,7 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import OperationsAdminTab from './OperationsAdminTab';
 import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
@@ -150,13 +151,15 @@ export default function AdminDashboardPage() {
     cocreations:        adminAPI.getTechnologies,
     auctions:           adminAPI.getAllAuctions,
     'venture-auctions': adminAPI.getAllVentureAuctions,
-    meetings:           meetingAPI.adminGetAll, 
+    meetings:           meetingAPI.adminGetAll,
+    operations:         operationsAdminAPI.list,
     'software-auctions': softwareAuctionAPI.adminGetAll,
     'community-auctions': communityAuctionAPI.adminGetAll,
     'addon-orders':     adminAPI.getAddonOrders,
   };
 
-  const loadTab = (currentTab) => {
+  const loadTab = (currentTab, options = {}) => {
+    const { silent = false } = options;
     const fetchers = {
       ventures:            adminAPI.getVentures,
       domains:             adminAPI.getDomains,
@@ -165,6 +168,7 @@ export default function AdminDashboardPage() {
       auctions:            adminAPI.getAllAuctions,
       'venture-auctions':  adminAPI.getAllVentureAuctions,
       meetings:            meetingAPI.adminGetAll,
+      operations:          operationsAdminAPI.list,
       'software-auctions': softwareAuctionAPI.adminGetAll,
       'community-auctions': communityAuctionAPI.adminGetAll,
       'addon-orders':      adminAPI.getAddonOrders,
@@ -174,7 +178,7 @@ export default function AdminDashboardPage() {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!silent) setLoading(true);
     fetchers[currentTab]()
       .then(({ data }) => {
         let rows = extractAdminList(data);
@@ -199,7 +203,9 @@ export default function AdminDashboardPage() {
         const msg = e.response?.data?.error || detailText || e.message || t('adminLoadFailed', { tab: currentTab });
         alert(msg);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   };
   
   useEffect(() => {
@@ -287,6 +293,7 @@ export default function AdminDashboardPage() {
     { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
     { id: 'venture-auctions',   label: t('adminTabVentureAuctions'),   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
+    { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
@@ -416,6 +423,8 @@ export default function AdminDashboardPage() {
             <CommunityAuctionsAdminTable auctions={data} />
           ) : tab === 'meetings' ? (
             <MeetingsAdminTab meetings={data} />
+          ) : tab === 'operations' ? (
+            <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
           ) : tab === 'homepage-features' ? (
             <div className="admin-homepage-features-grid">
               <HomepageFeatureSelector type="domain" />

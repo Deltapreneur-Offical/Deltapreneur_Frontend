@@ -206,6 +206,18 @@ export const likeAPI = {
   myLiked:    (type)           => api.get(`/api/v1/likes/${type}/my-liked`),
 };
 
+export const operationsAdminAPI = {
+  list:   () => api.get('/api/v1/admin/operations-services'),
+  create: (body) => api.post('/api/v1/admin/operations-services', body),
+  update: (id, body) => api.put(`/api/v1/admin/operations-services/${id}`, body),
+  remove: (id) => api.delete(`/api/v1/admin/operations-services/${id}`),
+};
+
+export const operationsAPI = {
+  list: (params) => api.get('/api/v1/operations/services', { params }),
+  get:  (id) => api.get(`/api/v1/operations/services/${id}`),
+};
+
 export const adminAPI = {
   
   getCoVentures:        ()              => api.get('/api/v1/admin/coventures'),

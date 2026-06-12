@@ -20,6 +20,7 @@ import ExploreSection from '../components/common/ExploreSection';
 import HomeFooter from '../components/common/HomeFooter';
 
 import GlowButton from '../components/common/GlowButton';
+import { operationsPathForSection, operationsReturnLocation } from '../utils/operationsSections';
 
 
 
@@ -145,11 +146,12 @@ export default function Home() {
 
 
 
-  const goToOperations = () => {
+  const goToOperations = (section = 'assistance') => {
+    const targetPath = operationsPathForSection(section);
     if (user || hasAccessToken) {
-      navigate('/operations');
+      navigate(targetPath);
     } else {
-      navigate('/login', { state: { from: { pathname: '/operations' } } });
+      navigate('/login', { state: { from: operationsReturnLocation(section) } });
     }
   };
 
@@ -157,12 +159,12 @@ export default function Home() {
     {
       icon: <Headset className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
       title: t('homeVirtualAssistanceTitle', { defaultValue: 'Virtual Assistant' }),
-      onClick: goToOperations,
+      onClick: () => goToOperations('assistance'),
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
       title: t('homeComplianceTitle', { defaultValue: 'Compliances' }),
-      link: '/domains',
+      onClick: () => goToOperations('compliance'),
     },
   ];
 

@@ -10,18 +10,9 @@ import { useTranslation } from 'react-i18next';
 import useCurrency from '../../context/CurrencyContext';
 import i18n from '../../i18n';
 import AddonAccordionCard from './AddonAccordionCard';
+import { ADDON_SERVICES_FROM_CATALOG } from '../../utils/complianceServicesCatalog';
 
-export const ADDON_SERVICES = [
-  { key: 'GST_REGISTRATION', labelKey: 'addonGstRegistration', price: 3000, contactOnly: false },
-  { key: 'TRADEMARK_REGISTRATION', labelKey: 'addonTrademarkRegistration', price: 0, contactOnly: true },
-  { key: 'COMPANY_REGISTRATION', labelKey: 'addonCompanyRegistration', price: 0, contactOnly: true },
-  { key: 'UDYAM_REGISTRATION', labelKey: 'addonUdyamRegistration', price: 1500, contactOnly: false },
-  { key: 'WEBSITE_DEVELOPMENT', labelKey: 'addonWebsiteDevelopment', price: 0, contactOnly: true },
-  { key: 'IEC_REGISTRATION', labelKey: 'addonIecRegistration', price: 2000, contactOnly: false },
-  { key: 'DIGITAL_SIGNATURE', labelKey: 'addonDigitalSignature', price: 3000, contactOnly: false },
-  { key: 'PROFESSIONAL_TAX', labelKey: 'addonProfessionalTax', price: 2500, contactOnly: false },
-  { key: 'STARTUP_INDIA', labelKey: 'addonStartupIndia', price: 3000, contactOnly: false },
-];
+export const ADDON_SERVICES = ADDON_SERVICES_FROM_CATALOG;
 
 export function addonTotal(selected) {
   return ADDON_SERVICES

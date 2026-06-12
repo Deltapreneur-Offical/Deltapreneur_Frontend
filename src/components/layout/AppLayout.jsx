@@ -19,6 +19,8 @@ import BackButton from '../common/BackButton';
 import { getAppBackTarget } from '../../utils/appNavigation';
 import { resolveUserDisplayName } from '../../utils/userDisplayName';
 import { SUPPORT_PHONE_DISPLAY, SUPPORT_PHONE_TEL } from '../../config/contactLinks';
+import { useDomainPendingVerification } from '../../hooks/useDomainPendingVerification';
+import { PendingVerificationDot } from '../domains/DomainVerificationPendingBanner';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
@@ -50,6 +52,66 @@ function getNavItems(user) {
   const purchasesIdx = sidebarItems.findIndex((item) => item.to === '/purchases');
   const insertAt = purchasesIdx >= 0 ? purchasesIdx + 1 : sidebarItems.length;
   return [...sidebarItems.slice(0, insertAt), adminNavItem, ...sidebarItems.slice(insertAt)];
+}
+
+function SidebarNavItem({
+  item,
+  active,
+  accent,
+  collapsed,
+  domainPendingCount,
+  onClick,
+  t,
+}) {
+  const Icon = item.icon;
+  const showDomainPending = item.to === '/domains' && domainPendingCount > 0;
+
+  return (
+    <Link
+      to={item.to}
+      onClick={onClick}
+      className={[
+        'app-sidebar-link',
+        active && 'is-active',
+        accent && 'is-admin',
+        collapsed && 'is-collapsed',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      title={collapsed ? t(item.labelKey) : undefined}
+      aria-label={
+        showDomainPending
+          ? `${t(item.labelKey)} — ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
+          : t(item.labelKey)
+      }
+    >
+      <span className="app-sidebar-icon-slot">
+        {item.isImage ? (
+          <img
+            src={item.icon}
+            alt=""
+            className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
+            draggable={false}
+          />
+        ) : (
+          <Icon size={20} strokeWidth={2} />
+        )}
+        {showDomainPending && collapsed ? (
+          <span className="app-sidebar-pending-dot" aria-hidden />
+        ) : null}
+      </span>
+      {!collapsed ? (
+        <span className="app-sidebar-link-label">
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <span className="truncate">{t(item.labelKey)}</span>
+            {showDomainPending ? (
+              <PendingVerificationDot className="h-2 w-2 shrink-0" />
+            ) : null}
+          </span>
+        </span>
+      ) : null}
+    </Link>
+  );
 }
 
 export default function AppLayout({ children }) {
@@ -112,6 +174,7 @@ export default function AppLayout({ children }) {
   
   const displayName = resolveUserDisplayName(user);
   const userId = user?.id ?? user?.userId ?? null;
+  const { pendingVerificationCount: domainPendingCount } = useDomainPendingVerification();
 
   const refreshUnreadCount = useCallback(() => {
     if (!userId) {
@@ -260,42 +323,17 @@ export default function AppLayout({ children }) {
           <nav className="app-sidebar-nav" aria-label="Main navigation">
             {!sidebarCollapsed && <p className="app-sidebar-section-label">{t('navMenu')}</p>}
             <div className="app-sidebar-nav-list">
-              {navItems.map((item) => {
-                const active = isActive(item.to);
-                const Icon = item.icon;
-                const accent = item.adminAccent;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={[
-                      'app-sidebar-link',
-                      active && 'is-active',
-                      accent && 'is-admin',
-                      sidebarCollapsed && 'is-collapsed',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    title={sidebarCollapsed ? t(item.labelKey) : ''}
-                  >
-                    <span className="app-sidebar-icon-slot">
-                      {item.isImage ? (
-                        <img
-                          src={item.icon}
-                          alt={t(item.labelKey)}
-                          className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
-                          draggable={false}
-                        />
-                      ) : (
-                        <Icon size={20} strokeWidth={2} />
-                      )}
-                    </span>
-                    {!sidebarCollapsed && (
-                      <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
-                    )}
-                  </Link>
-                );
-              })}
+              {navItems.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  item={item}
+                  active={isActive(item.to)}
+                  accent={item.adminAccent}
+                  collapsed={sidebarCollapsed}
+                  domainPendingCount={domainPendingCount}
+                  t={t}
+                />
+              ))}
             </div>
           </nav>
 
@@ -405,39 +443,18 @@ export default function AppLayout({ children }) {
               <nav className="app-sidebar-nav" aria-label="Main navigation">
                 <p className="app-sidebar-section-label">{t('navMenu')}</p>
                 <div className="app-sidebar-nav-list">
-                  {navItems.map((item) => {
-                    const active = isActive(item.to);
-                    const Icon = item.icon;
-                    const accent = item.adminAccent;
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => setMobileOpen(false)}
-                        className={[
-                          'app-sidebar-link',
-                          active && 'is-active',
-                          accent && 'is-admin',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                      >
-                        <span className="app-sidebar-icon-slot">
-                          {item.isImage ? (
-                            <img
-                              src={item.icon}
-                              alt={t(item.labelKey)}
-                              className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
-                              draggable={false}
-                            />
-                          ) : (
-                            <Icon size={20} strokeWidth={2} />
-                          )}
-                        </span>
-                        <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
-                      </Link>
-                    );
-                  })}
+                  {navItems.map((item) => (
+                    <SidebarNavItem
+                      key={item.to}
+                      item={item}
+                      active={isActive(item.to)}
+                      accent={item.adminAccent}
+                      collapsed={false}
+                      domainPendingCount={domainPendingCount}
+                      onClick={() => setMobileOpen(false)}
+                      t={t}
+                    />
+                  ))}
                 </div>
               </nav>
 

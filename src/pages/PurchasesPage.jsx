@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShoppingBag, Globe, Cpu, BadgeCheck } from 'lucide-react';
-import { domainAPI, domainStorefrontAPI, technologyAPI } from '../api/services';
+import { ShoppingBag, Globe, Cpu, BadgeCheck, Handshake } from 'lucide-react';
+import { domainAPI, domainStorefrontAPI, technologyAPI, ventureAPI } from '../api/services';
+import { unwrapApiList } from '../utils/apiResponse';
 import AppLayout from '../components/layout/AppLayout';
 import { generateInvoice } from '../utils/generateInvoice';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +20,7 @@ import {
 } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
-const PURCHASES_STAT_ICON = { size: 18, strokeWidth: 2, 'aria-hidden': true };
+const PURCHASES_STAT_ICON = { size: 20, strokeWidth: 2, 'aria-hidden': true };
 
 export default function PurchasesPage() {
   const { t } = useTranslation();
@@ -30,6 +31,7 @@ export default function PurchasesPage() {
   const [domains, setDomains] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [swPurchases, setSwPurchases] = useState([]);
+  const [venturePurchases, setVenturePurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
@@ -40,11 +42,13 @@ export default function PurchasesPage() {
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
       domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
-    ]).then(([d, reg, s]) => {
+      ventureAPI.getMyPurchases().catch(() => ({ data: [] })),
+    ]).then(([d, reg, s, v]) => {
       setDomains(extractDomainList(d.data));
       const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
       setRegistrations(regList.filter(isRegistrationPurchase));
       setSwPurchases(asArray(s.data));
+      setVenturePurchases(unwrapApiList(v));
     }).finally(() => setLoading(false));
   }, []);
 
@@ -55,22 +59,31 @@ export default function PurchasesPage() {
     d.purchased_by_user_id
   );
   const completedRegistrations = asArray(registrations);
-  const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
+  const completedTechnology = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
+  const ventureItems = asArray(venturePurchases).map((v) => ({ ...v, _type: 'venture' }));
   const domainTabCount = completedDomains.length + completedRegistrations.length;
-  const totalItems = domainTabCount + completedSoftware.length;
+  const technologyCount = completedTechnology.length;
+  const ventureCount = ventureItems.length;
+  const totalItems = domainTabCount + technologyCount + ventureCount;
 
   const domainTabItems = [
     ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
     ...completedRegistrations.map(o => ({ ...o, _type: 'domain_registration' })),
   ];
+  const technologyTabItems = completedTechnology.map(p => ({ ...p, _type: 'technology' }));
 
   const displayItems =
     tab === 'domains' ? domainTabItems
-    : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
-    : [
-        ...domainTabItems,
-        ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
-      ];
+    : tab === 'ventures' ? ventureItems
+    : tab === 'technology' ? technologyTabItems
+    : [...domainTabItems, ...ventureItems, ...technologyTabItems];
+
+  const purchaseTabs = [
+    { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
+    { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
+    { id: 'ventures', label: `${t('purchasesTabVentures', { defaultValue: 'Ventures' })} (${ventureCount})` },
+    { id: 'technology', label: `${t('purchasesTabTechnology', { defaultValue: 'Technology' })} (${technologyCount})` },
+  ];
 
   return (
     <AppLayout>
@@ -82,13 +95,13 @@ export default function PurchasesPage() {
             </h1>
             <p className="text-gray-600 mt-1">
               {t('purchasesSubtitle', {
-                defaultValue: 'Marketplace buys, new domain registrations, and software in one place.',
+                defaultValue: 'Domains, ventures, and technology purchases in one place.',
               })}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="flex flex-wrap gap-3 mb-6">
           <StatCard
             label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })}
             value={totalItems}
@@ -98,28 +111,26 @@ export default function PurchasesPage() {
             label={t('purchasesStatDomains', { defaultValue: 'Domains' })}
             value={domainTabCount}
             icon={<Globe {...PURCHASES_STAT_ICON} />}
-            color="#6eadc8"
           />
           <StatCard
-            label={t('purchasesStatSoftware', { defaultValue: 'Software' })}
-            value={completedSoftware.length}
+            label={t('purchasesStatVentures', { defaultValue: 'Ventures' })}
+            value={ventureCount}
+            icon={<Handshake {...PURCHASES_STAT_ICON} />}
+          />
+          <StatCard
+            label={t('purchasesStatSoftware', { defaultValue: 'Technologies' })}
+            value={technologyCount}
             icon={<Cpu {...PURCHASES_STAT_ICON} />}
-            color="#a06ec8"
           />
           <StatCard
             label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
-            value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
+            value={completedTechnology.filter(p => p.coBrotherHelpPaid).length}
             icon={<BadgeCheck {...PURCHASES_STAT_ICON} />}
-            color="#6ec896"
           />
         </div>
 
-        <div className="flex gap-2 mb-6">
-          {[
-            { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
-            { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
-            { id: 'software', label: `${t('purchasesTabSoftware', { defaultValue: 'Software' })} (${completedSoftware.length})` },
-          ].map((tabItem) => (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {purchaseTabs.map((tabItem) => (
             <button
               key={tabItem.id}
               type="button"
@@ -146,7 +157,7 @@ export default function PurchasesPage() {
               {t('purchasesEmpty', { defaultValue: 'No purchases yet' })}
             </h3>
             <p className="text-gray-600 mb-6">
-              {t('purchasesBrowseHint', { defaultValue: 'Browse domains and software to make your first purchase.' })}
+              {t('purchasesBrowseHint', { defaultValue: 'Browse domains, ventures, and technology to make your first purchase.' })}
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
@@ -154,6 +165,9 @@ export default function PurchasesPage() {
               </button>
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/storefront')}>
                 {t('storefront', { defaultValue: 'Register a Domain' })}
+              </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures')}>
+                {t('browseVentures', { defaultValue: 'Browse Ventures' })}
               </button>
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
                 {t('browseTechnology', { defaultValue: 'Browse Technology' })}
@@ -176,8 +190,13 @@ export default function PurchasesPage() {
                   domain={item}
                   user={user}
                 />
+              ) : item._type === 'venture' ? (
+                <VenturePurchaseRow
+                  key={'v-' + (item.ventureId || item.id)}
+                  purchase={item}
+                />
               ) : (
-                <SoftwarePurchaseRow
+                <TechnologyPurchaseRow
                   key={'s-' + item.id}
                   purchase={item}
                   onGetHelp={() => setHelpModal(item)}
@@ -308,7 +327,69 @@ function RegistrationPurchaseRow({ order, user, t }) {
   );
 }
 
-function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
+function VenturePurchaseRow({ purchase }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
+  const brandName = purchase.brandName || purchase.brand_name || t('venture', { defaultValue: 'Venture' });
+  const amount = Number(purchase.amount ?? purchase.dealValue ?? 0);
+  const isAuction = purchase.purchaseSource === 'auction' || purchase.auctionId;
+  const purchasedAt = purchase.purchasedAt || purchase.purchased_at;
+
+  return (
+    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded">
+              ◇ {t('purchasesBadgeVenture', { defaultValue: 'Venture' })}
+            </span>
+            {isAuction && (
+              <span className="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full">
+                {t('purchasesAuctionWin', { defaultValue: 'Auction win' })}
+              </span>
+            )}
+          </div>
+          <div className="font-bold text-lg text-gray-900">{brandName}</div>
+          {purchase.industry && (
+            <div className="text-xs text-gray-600">{purchase.industry}</div>
+          )}
+          {purchasedAt && (
+            <div className="text-xs text-gray-500 mt-0.5">
+              {new Date(purchasedAt).toLocaleDateString('en-IN')}
+            </div>
+          )}
+        </div>
+        <div className="text-right flex flex-col items-end gap-2">
+          {amount > 0 && (
+            <div className="text-xl font-semibold tabular-nums text-gray-900">
+              {formatPrice(amount)}
+            </div>
+          )}
+          {purchase.auctionId ? (
+            <button
+              type="button"
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+              onClick={() => navigate(`/venture-auction/${purchase.auctionId}`)}
+            >
+              {t('purchasesViewAuction', { defaultValue: 'View auction →' })}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+              onClick={() => navigate('/ventures')}
+            >
+              {t('browseVentures', { defaultValue: 'Browse Ventures' })} →
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const sw = purchase.software || {};
@@ -335,7 +416,7 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
           )}
         </div>
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
-          <div className="font-display text-xl font-bold text-purple-700">
+          <div className="text-xl font-semibold tabular-nums text-gray-900">
             {formatPrice(sw.price || 0)}
           </div>
           {helpPaid && <div className="text-xs text-gray-600">+ {formatPrice(HELP_FEE_INR)} CoBrother</div>}
@@ -490,14 +571,20 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   );
 }
 
-function StatCard({ label, value, icon, color = '#111827' }) {
+function StatCard({ label, value, icon }) {
   return (
-    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
-      <div className="w-9 h-9 mb-3 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600">
-        {icon}
+    <div className="flex flex-1 min-w-[9.5rem] sm:min-w-[11rem] lg:min-w-[calc(20%-0.75rem)] items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white px-3.5 py-3 sm:px-4 sm:py-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 leading-tight truncate">
+          {label}
+        </p>
+        <p className="mt-1 text-xl sm:text-2xl font-semibold tabular-nums text-slate-900 leading-none tracking-tight">
+          {value}
+        </p>
       </div>
-      <div className="text-2xl font-bold font-display" style={{ color }}>{value}</div>
-      <div className="text-xs text-gray-600 font-semibold mt-1">{label}</div>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-400 border border-slate-100">
+        {icon}
+      </span>
     </div>
   );
 }

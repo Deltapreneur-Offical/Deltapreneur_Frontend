@@ -32,6 +32,7 @@ export const profileAPI = {
 export const ventureAPI = {
   getAll:       (params)  => api.get('/api/v1/venture/all', { params }),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
+  getMyPurchases: ()      => api.get('/api/v1/venture/my-purchases'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
   create:       (data)    => api.post('/api/v1/venture/', data),
   update:       (id, data)=> api.put(`/api/v1/venture/${id}`, data),

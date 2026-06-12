@@ -18,5 +18,5 @@ jobs:
           cd ~/projects/CoBrother_Frontend
           git pull origin main
           npm install
-          npm run build
+          VITE_API_URL=https://backend.cobrother.com npm run build
           sudo systemctl restart nginx

@@ -11,6 +11,12 @@ import DomainsIcon from '../assets/CoBranding.png';
 import DomainVerificationModal from './DomainVerificationModal';
 import { APP_BASE_URL } from '../config/urls';
 import { extractDomainList } from '../utils/domainApiAdapter';
+import DomainVerificationPendingBanner, { PendingVerificationDot } from '../components/domains/DomainVerificationPendingBanner';
+import {
+  countDomainsPendingVerification,
+  isDomainPendingVerification,
+} from '../utils/domainVerification';
+import { notifyDomainVerificationChanged } from '../utils/domainVerificationEvents';
 
 
 const STATUS_COLORS = {
@@ -73,13 +79,20 @@ export default function DomainsDashboardPage() {
     .reduce((sum, d) => sum + d.askingPrice, 0);
   const regSpent = regOrders.reduce((sum, o) => sum + Number(o.priceInr || 0), 0);
   const totalSpent = resaleSpent + regSpent;
+  const pendingVerificationCount = countDomainsPendingVerification(listings);
+  const firstPendingListing = listings.find(isDomainPendingVerification) ?? null;
 
   return (
     <AppLayout>
       <div className="container mx-auto p-4 pt-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-0">{t('domainsDashboardPageTitle')}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-0 inline-flex items-center gap-2">
+              {t('domainsDashboardPageTitle')}
+              {pendingVerificationCount > 0 ? (
+                <PendingVerificationDot className="h-2.5 w-2.5" title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
+              ) : null}
+            </h1>
             <p className="text-gray-600 mt-1">{t('domainsDashboardPageSubtitle')}</p>
           </div>
           <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
@@ -120,9 +133,24 @@ export default function DomainsDashboardPage() {
           />
         </div>
 
+        {pendingVerificationCount > 0 ? (
+          <DomainVerificationPendingBanner
+            count={pendingVerificationCount}
+            onVerifyClick={() => {
+              setTab('listings');
+              if (firstPendingListing) setVerifyTarget(firstPendingListing);
+            }}
+          />
+        ) : null}
+
         <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('listings')}>
+          <button className={`btn-glow btn-glow-sm relative ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('listings')}>
             {t('domainsDashboardTabListings', { count: listings.length })}
+            {pendingVerificationCount > 0 ? (
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
+                <PendingVerificationDot className="h-2.5 w-2.5" />
+              </span>
+            ) : null}
           </button>
           <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('purchases')}>
             {t('domainsDashboardTabPurchases', { count: purchaseCount, defaultValue: `My Purchases (${purchaseCount})` })}
@@ -220,6 +248,7 @@ export default function DomainsDashboardPage() {
               d.id === verifyTarget.id ? { ...d, verified: true } : d
             ));
             setVerifyTarget(null);
+            notifyDomainVerificationChanged();
           }}
         />
       )}
@@ -376,6 +405,9 @@ function DomainRow({ domain, type, onVerify }) {
     <div className="relative flex items-center justify-between overflow-visible bg-white border border-gray-200 rounded-[10px] px-5 py-4 gap-3 transition-all hover:-translate-y-px hover:shadow-lg">
       <div>
         <div className="font-bold text-gray-900 text-base flex items-center gap-2">
+          {type === 'listing' && isDomainPendingVerification(domain) ? (
+            <PendingVerificationDot title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
+          ) : null}
           {domain.domainName}{domain.domainExtension}
           {isAuction && (
             <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full">

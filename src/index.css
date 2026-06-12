@@ -3539,12 +3539,30 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
 }
 
 .app-sidebar-icon-slot {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   width: 1.25rem;
   height: 1.25rem;
+}
+
+.app-sidebar-pending-dot {
+  position: absolute;
+  top: -3px;
+  right: -4px;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: #f97316;
+  box-shadow: 0 0 0 2px #f8fafc;
+  pointer-events: none;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.app-sidebar-link.is-active .app-sidebar-pending-dot {
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .app-sidebar-icon-slot svg {

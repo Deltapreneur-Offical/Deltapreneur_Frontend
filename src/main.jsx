@@ -13,9 +13,15 @@ import './styles/domain-ticker.css'
 import './i18n/index';
 import App from './App.jsx'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'
+import { LanguageProvider } from './context/LanguageContext'
+import { CurrencyProvider } from './context/CurrencyContext'
 
 createRoot(document.getElementById('root')).render(
   <ErrorBoundary>
-    <App />
+    <LanguageProvider>
+      <CurrencyProvider>
+        <App />
+      </CurrencyProvider>
+    </LanguageProvider>
   </ErrorBoundary>,
 )

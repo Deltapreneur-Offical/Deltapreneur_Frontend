@@ -42,6 +42,10 @@ import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdap
 import { fetchAllListPages } from '../utils/listPagination';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
+import DomainVerificationPendingBanner, { PendingVerificationDot } from '../components/domains/DomainVerificationPendingBanner';
+import { isDomainPendingVerification } from '../utils/domainVerification';
+import { useDomainPendingVerification } from '../hooks/useDomainPendingVerification';
+import { notifyDomainVerificationChanged } from '../utils/domainVerificationEvents';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -98,6 +102,7 @@ export default function DomainsPage() {
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
   const [globalNotice, setGlobalNotice]     = useState('');
+  const { pendingVerificationCount } = useDomainPendingVerification();
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
@@ -193,7 +198,19 @@ export default function DomainsPage() {
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">🌐</div>
             <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">{t('domainsPageListedSuccessTitle')}</h2>
-            <p className="text-sm text-gray-500">{t('domainsPageListedSuccessSubtitle')}</p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+              {t('domainsPageListedSuccessSubtitle', {
+                defaultValue:
+                  'Your domain is saved. Complete verification in Domains Dashboard to show it in the public marketplace.',
+              })}
+            </p>
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm pointer-events-auto"
+              onClick={() => navigate('/domains/dashboard')}
+            >
+              {t('domainsVerifyPendingAction', { defaultValue: 'Verify now' })}
+            </button>
           </div>
         </div>
       )}
@@ -222,12 +239,20 @@ export default function DomainsPage() {
                       d?._warning
                         || (isPremiumDomain(normalizedSaved)
                           ? t('domainsPagePremiumListedNotice')
-                          : ''),
+                          : isDomainPendingVerification(normalizedSaved)
+                            ? t('domainsVerifyPendingShort', {
+                                defaultValue:
+                                  'Listed successfully. Verify ownership in Domains Dashboard to publish in the marketplace.',
+                              })
+                            : ''),
                     );
                   }
                 });
                 scheduleRestoreAppLayoutScroll(snap);
-                if (!editTarget) setTimeout(() => setShowConfetti(false), 4000);
+                if (!editTarget) {
+                  notifyDomainVerificationChanged();
+                  setTimeout(() => setShowConfetti(false), 4000);
+                }
               }}
               onCancel={() => { setShowForm(false); setEditTarget(null); }}
             />
@@ -236,12 +261,23 @@ export default function DomainsPage() {
           <>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domains')}</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
+              {t('domains')}
+              {pendingVerificationCount > 0 ? (
+                <PendingVerificationDot className="h-2.5 w-2.5" title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
+              ) : null}
+            </h1>
             <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
           </div>
           <div className="flex gap-2 md:gap-3">
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
-              <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
+            <button className="btn-glow btn-glow-sm relative flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
+              <LayoutDashboard size={14} className="md:w-4 md:h-4" />
+              <span className="truncate">{t('dashboard')}</span>
+              {pendingVerificationCount > 0 ? (
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
+                  <PendingVerificationDot className="h-2.5 w-2.5" />
+                </span>
+              ) : null}
             </button>
             <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
               <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
@@ -255,6 +291,13 @@ export default function DomainsPage() {
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
+
+        {filterTab === 'mine' && pendingVerificationCount > 0 ? (
+          <DomainVerificationPendingBanner
+            count={pendingVerificationCount}
+            onVerifyClick={() => navigate('/domains/dashboard')}
+          />
+        ) : null}
 
         {globalNotice && (
           <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">

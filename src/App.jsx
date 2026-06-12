@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from '
 import { lazy, Suspense, useEffect, useRef } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
+import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
@@ -112,6 +113,7 @@ function RedirectLegacySoftwareAuction() {
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop />
       <LanguageProvider>
         <CurrencyProvider>
           <CookieConsentProvider>

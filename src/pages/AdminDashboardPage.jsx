@@ -15,11 +15,11 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
-import DomainVerificationModal from './DomainVerificationModal';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -58,6 +58,56 @@ function VerificationBadge({ verified, verifiedLabel, unverifiedLabel }) {
     <span style={verifiedBadgeStyle}>✓ {vLabel}</span>
   ) : (
     <span style={unverifiedBadgeStyle}>○ {uLabel}</span>
+  );
+}
+
+const DOMAIN_LISTING_TYPE_BADGE = {
+  domain_auction: { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', labelKey: 'adminDomainBadgeAuction' },
+  normal_domain:  { color: '#0369a1', bg: 'rgba(3,105,161,0.1)', labelKey: 'adminDomainBadgeNormal' },
+};
+
+const DOMAIN_VERIFICATION_STATUS_BADGE = {
+  PENDING:             { color: '#b45309', bg: 'rgba(245,158,11,0.12)', labelKey: 'adminDomainVerificationPending' },
+  VERIFIED:            { color: '#059669', bg: 'rgba(5,150,105,0.1)', labelKey: 'adminDomainVerificationVerified' },
+  REJECTED:            { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', labelKey: 'adminDomainVerificationRejected' },
+  MORE_INFO_REQUESTED: { color: '#b45309', bg: 'rgba(245,158,11,0.12)', labelKey: 'adminDomainVerificationMoreInfo' },
+};
+
+function DomainAdminBadge({ color, bg, children }) {
+  return (
+    <span style={{
+      fontSize: '0.68rem', fontWeight: 700, color, background: bg,
+      border: `1px solid ${color}44`, padding: '0.15rem 0.45rem', borderRadius: 4,
+    }}>
+      {children}
+    </span>
+  );
+}
+
+function domainListingType(item) {
+  return item.listingType ?? (item.saleType === 'AUCTION' ? 'domain_auction' : 'normal_domain');
+}
+
+function domainNeedsMarkVerified(item) {
+  const isAuction = domainListingType(item) === 'domain_auction';
+  if (isAuction) {
+    const status = String(item.verificationStatus ?? 'PENDING').toUpperCase();
+    return status !== 'VERIFIED' && status !== 'REJECTED';
+  }
+  return !item.verified;
+}
+
+function DomainListingBadges({ item }) {
+  const { t } = useTranslation();
+  const listingType = domainListingType(item);
+  const verificationStatus = item.verificationStatus ?? (item.verified ? 'VERIFIED' : 'PENDING');
+  const typeStyle = DOMAIN_LISTING_TYPE_BADGE[listingType] || DOMAIN_LISTING_TYPE_BADGE.normal_domain;
+  const statusStyle = DOMAIN_VERIFICATION_STATUS_BADGE[verificationStatus] || DOMAIN_VERIFICATION_STATUS_BADGE.PENDING;
+  return (
+    <>
+      <DomainAdminBadge color={typeStyle.color} bg={typeStyle.bg}>{t(typeStyle.labelKey)}</DomainAdminBadge>
+      <DomainAdminBadge color={statusStyle.color} bg={statusStyle.bg}>{t(statusStyle.labelKey)}</DomainAdminBadge>
+    </>
   );
 }
 
@@ -131,11 +181,6 @@ export default function AdminDashboardPage() {
         if (currentTab === 'ventures') {
           rows = rows.filter(
             (v) => v.saleType !== 'AUCTION' && v.sale_type !== 'AUCTION',
-          );
-        }
-        if (currentTab === 'domains') {
-          rows = rows.filter(
-            (d) => d.saleType !== 'AUCTION' && d.sale_type !== 'AUCTION',
           );
         }
         if (currentTab === 'addon-orders') {
@@ -697,13 +742,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                 {t('adminTakenDown')}
               </span>
             )}
-            {tabType === 'domains' && (
-              <VerificationBadge
-                verified={item.verified}
-                verifiedLabel={t('adminDomainVerified')}
-                unverifiedLabel={t('adminNotVerified')}
-              />
-            )}
+            {tabType === 'domains' && <DomainListingBadges item={item} />}
             {tabType === 'cocreations' && (
               <VerificationBadge
                 verified={item.verified}
@@ -752,6 +791,20 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
             <div style={{ fontSize: '0.8rem', color: '#c86e6e', marginBottom: '0.75rem',
                           fontStyle: 'italic' }}>
               {t('adminTakedownReason', { reason: item.takeDownReason })}
+            </div>
+          )}
+
+          {tabType === 'domains' && item.auction && (
+            <div style={{ fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.75rem',
+                          background: 'rgba(124,58,237,0.06)', borderRadius: 8,
+                          border: '1px solid rgba(124,58,237,0.15)' }}>
+              <div className="admin-field-label" style={{ marginBottom: '0.5rem' }}>{t('adminDomainAuctionDetails')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem' }}>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionStatus')}</span><br />{item.auction.status}</div>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionMinBid')}</span><br />{formatPrice(item.auction.minBidPrice ?? 0)}</div>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionDuration')}</span><br />{item.auction.duration || '—'}</div>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionBids')}</span><br />{item.auction.totalBids ?? 0}</div>
+              </div>
             </div>
           )}
 
@@ -817,7 +870,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                 >
                   {item.verified ? t('adminReverifyDomain') : t('adminVerifyDomain')}
                 </button>
-                {!item.verified && (
+                {domainNeedsMarkVerified(item) && (
                   <button
                     type="button"
                     className="btn-ghost btn-sm"
@@ -828,7 +881,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                         alert(i18n.t('adminDomainMarkedVerified'));
                         onRefresh?.();
                       } catch (e) {
-                        alert(e.response?.data?.error || i18n.t('adminMarkVerifiedFailed'));
+                        alert(e.response?.data?.error || e.response?.data?.message || i18n.t('adminMarkVerifiedFailed'));
                       }
                     }}
                   >

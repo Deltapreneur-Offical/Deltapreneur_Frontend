@@ -52,7 +52,9 @@
 }
 
 .home-preview-row .listing-card-glow-shell.home-preview-card-shell > .domain-listing-card,
-.home-preview-row .listing-card-glow-shell.home-preview-card-shell > article.domain-listing-card {
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell > article.domain-listing-card,
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell > .home-creator-listing-card,
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell > article.home-creator-listing-card {
   min-height: min-content;
   height: auto !important;
 }

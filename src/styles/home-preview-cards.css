@@ -152,7 +152,9 @@
 }
 
 .home-preview-row .home-preview-card-shell > .home-preview-browse-card,
-.home-preview-row .home-preview-card-shell > article.home-preview-browse-card {
+.home-preview-row .home-preview-card-shell > article.home-preview-browse-card,
+.home-preview-row .home-preview-card-shell > .home-creator-listing-card,
+.home-preview-row .home-preview-card-shell > article.home-creator-listing-card {
   width: 100%;
   max-width: 100%;
   flex: 0 0 auto;
@@ -256,12 +258,45 @@
 
 .home-preview-row .creator-profile-card:hover,
 
-.home-preview-row .domain-listing-card:hover {
+.home-preview-row .domain-listing-card:hover,
+.home-preview-row .home-creator-listing-card:hover {
 
   transform: translate3d(0, -3px, 0);
 
   background-color: #fff;
 
+}
+
+/* Homepage creator cards — match domain browse proportions */
+.home-preview-row .home-creator-listing-card .domain-listing-card__cover {
+  height: 5.5rem;
+}
+
+.home-preview-row .home-creator-listing-card .domain-listing-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem 0.55rem;
+  min-height: 0;
+}
+
+.home-preview-row .home-creator-listing-card .domain-listing-card__domain {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.home-preview-row .home-creator-listing-card .domain-listing-card__price-box {
+  margin-top: 0.15rem;
+}
+
+.home-preview-row .home-creator-listing-card .domain-listing-card__stats {
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+.home-preview-row .home-creator-listing-card .domain-listing-card__stats .listing-card-stats-footer__cta {
+  display: none;
 }
 
 

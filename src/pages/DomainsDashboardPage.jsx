@@ -421,6 +421,11 @@ function DomainRow({ domain, type, onVerify }) {
                 : ''}
             </span>
           )}
+          {isAuction && auction?.status === 'DRAFT' && ['PENDING', 'MORE_INFO_REQUESTED'].includes(domain.verificationStatus) && (
+            <span className="block text-[0.75rem] text-amber-700 mt-1">
+              {t('domainsDashboardAuctionPendingAdmin')}
+            </span>
+          )}
         </div>
       </div>
 

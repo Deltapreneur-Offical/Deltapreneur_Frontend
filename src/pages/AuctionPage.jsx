@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
@@ -40,7 +40,7 @@ export default function AuctionPage() {
   const { auctionId }  = useParams();
   const { user }       = useAuth();
   const navigate       = useNavigate();
-  const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid }
+  const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid, refresh }
                        = useAuction(auctionId);
   const { timeLeft, isUrgent } = useCountdown(resolveAuctionEndTime(auction));
   const { formatPrice, getSymbol } = useCurrency();
@@ -54,6 +54,8 @@ export default function AuctionPage() {
   const [participation, setParticipation] = useState({ loading: true, paid: false, fee: 0 });
   const [participationError, setParticipationError] = useState('');
   const [payingParticipation, setPayingParticipation] = useState(false);
+  const [payingWinnerBid, setPayingWinnerBid] = useState(false);
+  const [winnerPaymentError, setWinnerPaymentError] = useState('');
   const bidListRef = useRef(null);
 
   // FIX #13: access domain.listedBy safely — it comes through because
@@ -63,7 +65,17 @@ export default function AuctionPage() {
     participation,
   );
   const isActive = LIVE_AUCTION_STATUSES.has(auction?.status);
-  const hasFinalWinner = FINAL_WINNER_STATUSES.has(auction?.status);
+  const isPaymentPending = auction?.status === 'PAYMENT_PENDING';
+  const isCompleted = auction?.status === 'COMPLETED';
+  const isWinner = Boolean(
+    user?.id && auction?.currentWinnerId
+    && String(user.id) === String(auction.currentWinnerId),
+  );
+  const hasFinalWinner = (
+    FINAL_WINNER_STATUSES.has(auction?.status)
+    && Number(auction?.currentHighestBid) > 0
+  );
+  const awaitingWinnerPayment = isPaymentPending && isWinner && !auction?.winnerPaymentPaid;
   const biddingBlocked = REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !auction?.domain?.verified;
 
   // Flash on new bid
@@ -167,6 +179,50 @@ export default function AuctionPage() {
     } catch (err) {
       setParticipationError(err?.response?.data?.error || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
+    }
+  };
+
+  const handlePayWinningBid = async () => {
+    if (!auction?.id || !user) return;
+    setPayingWinnerBid(true);
+    setWinnerPaymentError('');
+    try {
+      const { data: res } = await auctionAPI.winnerPaymentCreateOrder(auction.id);
+      const orderData = res?.data ?? res;
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: t('auctionDetailBidFee', {
+          defaultValue: `Winning bid for ${auction.domainDisplayName || 'domain auction'}`,
+        }),
+        onSuccess: async (response) => {
+          try {
+            await auctionAPI.winnerPaymentVerify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            await refresh();
+          } catch {
+            setWinnerPaymentError(t('auctionDetailPaymentVerifyFailedRetry'));
+          } finally {
+            setPayingWinnerBid(false);
+          }
+        },
+        onFailure: async () => {
+          setWinnerPaymentError(t('auctionDetailPaymentFailed'));
+          setPayingWinnerBid(false);
+        },
+        onDismiss: async () => setPayingWinnerBid(false),
+      });
+    } catch (err) {
+      setWinnerPaymentError(
+        err?.response?.data?.error
+        || err?.response?.data?.message
+        || err?.message
+        || t('auctionDetailFailedStartPayment'),
+      );
+      setPayingWinnerBid(false);
     }
   };
 
@@ -414,20 +470,65 @@ export default function AuctionPage() {
               </div>
             )}
 
-            {/* ENDED — winner announcement */}
+            {/* ENDED / PAYMENT_PENDING / COMPLETED — winner announcement */}
             {hasFinalWinner && (
               <div className="p-6 text-center bg-green-50 border border-green-200 rounded-[14px]">
-                <div className="text-[2.5rem] mb-2">🏆</div>
-                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">{t('auctionDetailWon')}</h3>
+                <div className="text-[2.5rem] mb-2">{isCompleted ? '✅' : '🏆'}</div>
+                <h3 className="font-display text-[1.5rem] text-green-700 mb-2">
+                  {isCompleted ? t('auctionDetailComplete') : t('auctionDetailWon')}
+                </h3>
                 <p className="text-gray-500">
                   {t('auctionDetailWonLine', {
                     name: auction.currentWinnerName || t('auctionDetailWonGenericBidder'),
                     amount: formatPrice(auction.currentHighestBid),
                   })}
                 </p>
-                <p className="text-[0.82rem] text-gray-500 mt-2">
-                  {t('auctionDetailAdminTransferDomain')}
-                </p>
+                {awaitingWinnerPayment && (
+                  <div className="mt-4 p-4 bg-white border border-green-200 rounded-lg text-left">
+                    <div className="text-sm text-gray-700 mb-3">
+                      {t('auctionDetailWonPayPrompt')}
+                    </div>
+                    <button
+                      className="btn-glow w-full"
+                      onClick={handlePayWinningBid}
+                      disabled={payingWinnerBid}
+                    >
+                      {payingWinnerBid
+                        ? t('auctionDetailProcessing')
+                        : t('auctionDetailPayWinningBid', {
+                          amount: formatPrice(auction.currentHighestBid),
+                        })}
+                    </button>
+                    {winnerPaymentError && (
+                      <div className="text-xs text-red-600 mt-2">{winnerPaymentError}</div>
+                    )}
+                  </div>
+                )}
+                {isCompleted && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-[0.82rem] text-green-700 font-semibold">
+                      {t('auctionDetailPaymentReceivedDomain')}
+                    </p>
+                    {isWinner && auction.transferTransactionId && (
+                      <Link
+                        to={`/purchases/transfers/${auction.transferTransactionId}`}
+                        className="inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                      >
+                        {t('auctionDetailViewTransfer')} →
+                      </Link>
+                    )}
+                  </div>
+                )}
+                {isPaymentPending && !isWinner && (
+                  <p className="text-[0.82rem] text-gray-500 mt-2">
+                    {t('auctionDetailWaitingWinnerPayment')}
+                  </p>
+                )}
+                {isPaymentPending && isOwner && (
+                  <p className="text-[0.82rem] text-gray-500 mt-2">
+                    {t('auctionDetailWinnerMustPay')}
+                  </p>
+                )}
               </div>
             )}
           </div>

@@ -21,6 +21,12 @@ export function normalizeDomainRecord(raw) {
     askingPrice: Number(raw.askingPrice ?? raw.asking_price ?? 0),
     pricingDemand: raw.pricingDemand ?? raw.pricing_demand ?? null,
     saleType: raw.saleType ?? raw.sale_type ?? 'ONE_TIME',
+    listingType: raw.listingType ?? raw.listing_type ?? (
+      (raw.saleType ?? raw.sale_type) === 'AUCTION' ? 'domain_auction' : 'normal_domain'
+    ),
+    verificationStatus: raw.verificationStatus ?? raw.verification_status ?? 'PENDING',
+    verificationRejectionReason: raw.verificationRejectionReason ?? raw.verification_rejection_reason ?? null,
+    verificationAdminNote: raw.verificationAdminNote ?? raw.verification_admin_note ?? null,
     adminListed: Boolean(raw.adminListed ?? raw.admin_listed ?? false),
     listedBy: raw.listedBy ?? raw.listed_by ?? null,
     listedByUserId: raw.listedByUserId ?? raw.listed_by_user_id ?? null,

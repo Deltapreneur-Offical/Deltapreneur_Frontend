@@ -228,6 +228,10 @@ export const adminAPI = {
   restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
   markDomainVerified:   (id)    => api.post(`/api/v1/admin/domains/${id}/mark-verified`),
+  getDomainVerificationReview: (id) => api.get(`/api/v1/admin/domains/${id}/verification-review`),
+  approveDomainVerification:   (id) => api.post(`/api/v1/admin/domains/${id}/verification/approve`),
+  rejectDomainVerification:    (id, reason) => api.post(`/api/v1/admin/domains/${id}/verification/reject`, { reason }),
+  requestDomainVerificationInfo: (id, message) => api.post(`/api/v1/admin/domains/${id}/verification/request-info`, { message }),
   markTechnologyVerified: (id)  => api.post(`/api/v1/admin/softwares/${id}/mark-verified`),
   domainVerifyInit:     (id, m) => api.post(`/api/v1/admin/domains/${id}/verification/init`, { method: m }),
   domainVerifyCheck:    (id, t) => api.post(`/api/v1/admin/domains/${id}/verification/check`, t ? { token: t } : {}),
@@ -287,6 +291,8 @@ export const auctionAPI = {
   participationVerify: (auctionId, data) => api.post(`/api/v1/auction/${auctionId}/participation/verify`, data),
   getParticipationFees: () => api.get('/api/v1/auction/participation-fees'),
   updateParticipationFees: (data) => api.put('/api/v1/auction/admin/participation-fees', data),
+  winnerPaymentCreateOrder: (auctionId) => api.post(`/api/v1/payment/create-order/${auctionId}`),
+  winnerPaymentVerify: (data) => api.post('/api/v1/payment/verify', data),
 };
 
 export const feedbackAPI = {

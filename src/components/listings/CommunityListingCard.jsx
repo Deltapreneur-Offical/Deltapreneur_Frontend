@@ -5,6 +5,7 @@ import { isCreatorProfileComplete } from '../../utils/creatorProfile';
 // import CreatorFollowButton from '../creators/CreatorFollowButton';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
+import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 
 function formatLabel(value) {
   if (!value || typeof value !== 'string') return '';
@@ -120,6 +121,8 @@ export default function CommunityListingCard({
           <p className="creator-profile-card__meta">
             {metaLine || '\u00A0'}
           </p>
+
+          <CreatorExpectedRateCard profile={profile} />
         </div>
 
         {/* Follow button — commented out for now; uncomment when ready to re-enable

@@ -1,4 +1,4 @@
-{
+﻿{
   "footerCopyright": "© {{year}} CoBrother™ 保留所有权利。",
   "footerMade": "用 ❤️ 在印度制作。",
   "contactUs": "联系我们",
@@ -6,6 +6,7 @@
   "joinUs": "加入我们",
   "joinCoBrother": "加入 CoBrother",
   "signIn": "登录",
+  "operations": "Operations",
   "domains": "域名",
   "storefront": "店面",
   "storefrontEyebrow": "Domain registration",
@@ -1006,10 +1007,10 @@
   "ventureDashboardPageTitle": "Venture Dashboard",
   "ventureDashboardPageSubtitle": "Manage your venture listings, applications, and auctions.",
   "ventureDashboardPageBack": "← Back to Ventures",
-  "ventureDashboardTabListings": "📋 My Listings",
-  "ventureDashboardTabLikes": "❤️ Likes Received",
-  "ventureDashboardTabIncoming": "📥 Incoming Applications",
-  "ventureDashboardTabApplied": "🚀 My Applications",
+  "ventureDashboardTabListings": "My Listings",
+  "ventureDashboardTabLikes": "Likes Received",
+  "ventureDashboardTabIncoming": "Incoming Applications",
+  "ventureDashboardTabApplied": "My Applications",
   "ventureDashboardNoListingsTitle": "No ventures listed yet",
   "ventureDashboardNoListingsBody": "List your first venture to start finding co-founders and collaborators.",
   "ventureDashboardListVenture": "List a Venture",

@@ -154,7 +154,8 @@ export default function TechnologyListingCard({
       likeState={likeState}
       onLike={onLike}
       onView={onView}
-      className={browseMode ? '' : 'border-t border-gray-100'}
+      likesFirst
+      className={browseMode ? 'domain-listing-card__stats domain-listing-card__stats--split' : 'border-t border-gray-100 technology-listing-card__stats'}
     />
   );
 
@@ -348,18 +349,18 @@ export default function TechnologyListingCard({
             />
           </div>
 
+          {industry ? (
+            <p className="technology-listing-card__industry" title={industry}>
+              {industry}
+            </p>
+          ) : null}
+
           <p
             className="technology-listing-card__use-case"
             title={useCase || undefined}
           >
             {useCase || '\u00A0'}
           </p>
-
-          {industry ? (
-            <p className="technology-listing-card__industry" title={industry}>
-              {industry}
-            </p>
-          ) : null}
 
           {(priceAmount > 0 || handleViewDetails) && (
             <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
@@ -387,7 +388,8 @@ export default function TechnologyListingCard({
             viewCount={item.views || 0}
             likeState={likeState}
             onLike={onLike}
-            className="domain-listing-card__stats"
+            likesFirst
+            className="domain-listing-card__stats domain-listing-card__stats--split"
           />
         </div>
       </article>

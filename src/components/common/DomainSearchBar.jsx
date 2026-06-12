@@ -806,6 +806,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           color: #ffffff;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
           border: 1px solid #000000;
+          transition:
+            background 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+            color 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.52s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .brand-search-tab-active:hover,
@@ -821,7 +826,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           color: #000000;
           border: 1px solid rgba(0, 0, 0, 0.12);
           box-shadow: none;
-          transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+          transition:
+            background 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+            color 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.52s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .brand-search-tab-idle:hover,
@@ -830,6 +839,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           color: #ffffff;
           border-color: #000000;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .brand-search-tab-active,
+          .brand-search-tab-idle {
+            transition-duration: 0.01ms;
+          }
         }
 
         @media (min-width: 768px) {

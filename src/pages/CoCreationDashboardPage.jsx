@@ -5,6 +5,7 @@ import { ArrowLeft, Boxes, IndianRupee, ShoppingCart, CreditCard, Clock3 } from 
 import { technologyAPI, softwareAuctionAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
+import TechnologyIcon from '../assets/CoCreation.png';
 import { formatAuctionDate } from '../utils/auctionDate';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import VerificationStatusBadge from '../components/listings/VerificationStatusBadge';
@@ -143,7 +144,9 @@ export default function CoCreationDashboardPage() {
         ) : tab === 'listings' ? (
           listings.length === 0 ? (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">⟁</div>
+              <div className="flex justify-center mb-6">
+                <img src={TechnologyIcon} alt="" className="w-20 h-20 object-contain opacity-30" />
+              </div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No listings yet</h3>
               <button className="btn-glow" onClick={() => navigate('/technology')}>
                 List Software

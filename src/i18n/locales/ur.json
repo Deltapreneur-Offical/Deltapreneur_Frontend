@@ -1,4 +1,4 @@
-{
+﻿{
   "footerCopyright": "© {{year}} CoBrother™ تمام حقوق محفوظ ہیں۔",
   "footerMade": "بھارت میں ❤️ سے بنایا گیا۔",
   "contactUs": "ہم سے رابطہ کریں",
@@ -6,6 +6,7 @@
   "joinUs": "ہمارے ساتھ شامل ہوں",
   "joinCoBrother": "CoBrother میں شامل ہوں",
   "signIn": "سائن ان",
+  "operations": "Operations",
   "domains": "ڈومینز",
   "storefront": "اسٹور فرنٹ",
   "storefrontEyebrow": "Domain registration",
@@ -988,10 +989,10 @@
   "ventureDashboardPageTitle": "Venture Dashboard",
   "ventureDashboardPageSubtitle": "Manage your venture listings, applications, and auctions.",
   "ventureDashboardPageBack": "← Back to Ventures",
-  "ventureDashboardTabListings": "📋 My Listings",
-  "ventureDashboardTabLikes": "❤️ Likes Received",
-  "ventureDashboardTabIncoming": "📥 Incoming Applications",
-  "ventureDashboardTabApplied": "🚀 My Applications",
+  "ventureDashboardTabListings": "My Listings",
+  "ventureDashboardTabLikes": "Likes Received",
+  "ventureDashboardTabIncoming": "Incoming Applications",
+  "ventureDashboardTabApplied": "My Applications",
   "ventureDashboardNoListingsTitle": "No ventures listed yet",
   "ventureDashboardNoListingsBody": "List your first venture to start finding co-founders and collaborators.",
   "ventureDashboardListVenture": "List a Venture",

@@ -25,7 +25,10 @@
   align-items: stretch;
 }
 
-.domain-listing-grid .listing-card-glow-shell,
+.domain-listing-grid .listing-card-glow-shell {
+  height: auto;
+}
+
 .technology-listing-grid .listing-card-glow-shell {
   height: 100%;
 }

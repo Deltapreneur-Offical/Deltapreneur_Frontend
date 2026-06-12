@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ClipboardList, Heart, Inbox, Send } from 'lucide-react';
 import { coVentureAPI, likeAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
+import VentureIcon from '../assets/Coventure_logo.png';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import EditActionLabel from '../components/common/EditActionLabel';
 import { asArray } from '../utils/asArray';
@@ -30,6 +32,13 @@ const AUCTION_STATUS_COLORS = {
   CLOSED:   'text-gray-400',
 };
 
+const VENTURE_DASHBOARD_TABS = [
+  { id: 'listings', labelKey: 'ventureDashboardTabListings', Icon: ClipboardList },
+  { id: 'likes', labelKey: 'ventureDashboardTabLikes', Icon: Heart },
+  { id: 'incoming', labelKey: 'ventureDashboardTabIncoming', Icon: Inbox },
+  { id: 'applied', labelKey: 'ventureDashboardTabApplied', Icon: Send },
+];
+
 export default function VentureDashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -49,30 +58,17 @@ export default function VentureDashboardPage() {
         </div>
 
         <div className="flex gap-2 mb-6 flex-wrap">
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('listings')}
-          >
-            {t('ventureDashboardTabListings')}
-          </button>
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'likes' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('likes')}
-          >
-            {t('ventureDashboardTabLikes')}
-          </button>
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'incoming' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('incoming')}
-          >
-            {t('ventureDashboardTabIncoming')}
-          </button>
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'applied' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('applied')}
-          >
-            {t('ventureDashboardTabApplied')}
-          </button>
+          {VENTURE_DASHBOARD_TABS.map(({ id, labelKey, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              className={`btn-glow btn-glow-sm inline-flex items-center gap-1.5 ${tab === id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              onClick={() => setTab(id)}
+            >
+              <Icon className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden />
+              {t(labelKey)}
+            </button>
+          ))}
         </div>
 
         {tab === 'listings'  && <MyListings />}
@@ -117,7 +113,9 @@ function MyListings() {
 
   if (ventures.length === 0) return (
     <div className="text-center py-20">
-      <div className="text-6xl mb-4">📋</div>
+      <div className="flex justify-center mb-6">
+        <img src={VentureIcon} alt="" className="w-20 h-20 object-contain opacity-30" />
+      </div>
       <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('ventureDashboardNoListingsTitle')}</h3>
       <p className="text-gray-600 mb-4">{t('ventureDashboardNoListingsBody')}</p>
       <button className="btn-glow" onClick={() => navigate('/ventures')}>

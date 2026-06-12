@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 import { useTranslation } from 'react-i18next';
 
@@ -75,6 +76,7 @@ export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') =>
 export default function Home() {
 
   const navigate = useNavigate();
+  const { user, hasAccessToken } = useAuth();
 
   const { t } = useTranslation();
 
@@ -143,11 +145,19 @@ export default function Home() {
 
 
 
+  const goToOperations = () => {
+    if (user || hasAccessToken) {
+      navigate('/operations');
+    } else {
+      navigate('/login', { state: { from: { pathname: '/operations' } } });
+    }
+  };
+
   const features = [
     {
       icon: <Headset className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
       title: t('homeVirtualAssistanceTitle', { defaultValue: 'Virtual Assistant' }),
-      link: '/domains',
+      onClick: goToOperations,
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
@@ -220,7 +230,7 @@ export default function Home() {
                     {feature.title}
                   </h3>
                   <GlowButton
-                    onClick={feature.link ? () => navigate(feature.link) : undefined}
+                    onClick={feature.onClick ?? (feature.link ? () => navigate(feature.link) : undefined)}
                     disabled={Boolean(feature.comingSoon)}
                   >
                     {t('exploreBtn')} →

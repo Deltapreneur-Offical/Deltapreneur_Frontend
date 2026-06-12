@@ -1,6 +1,7 @@
 /** Main app hub routes — no layout back button on exact match */
 export const APP_HUB_ROUTES = new Set([
   '/dashboard',
+  '/operations',
   '/ventures',
   '/domains',
   '/technology',
@@ -45,6 +46,7 @@ const BACK_RULES = [
   { test: (p) => p.startsWith('/meetings'), to: '/meetings', label: 'Meetings' },
   { test: (p) => p.startsWith('/notifications'), to: '/notifications', label: 'Notifications' },
   { test: (p) => p.startsWith('/cobrother'), to: '/cobrother-dashboard', label: 'CoBrother' },
+  { test: (p) => p.startsWith('/operations'), to: '/operations', label: 'Operations' },
   { test: (p) => p.startsWith('/dashboard'), to: '/dashboard', label: 'Dashboard' },
 ];
 

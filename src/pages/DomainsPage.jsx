@@ -183,7 +183,7 @@ export default function DomainsPage() {
       await domainAPI.delete(deleteTarget);
       setAllDomains(d => asArray(d).filter(x => x.id !== deleteTarget));
     } catch (e) {
-      alert(e.response?.data?.error || t('domainsPageRemoveListingFailed'));
+      alert(readApiError(e, t('domainsPageRemoveListingFailed')));
     } finally { setDeleteTarget(null); }
   };
 
@@ -494,6 +494,10 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
       setError(t('domainsPageErrorMinBid'));
       return;
     }
+    if (!form.pricingDemand) {
+      setError(t('domainsPagePricingTypeSelect'));
+      return;
+    }
     setLoading(true); setError(''); setWarning('');
     try {
       const rawPrice = form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice);
@@ -508,9 +512,11 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         domainName:      form.domainName.trim(),
         domainExtension: extNorm.full,
         askingPrice:     askingPriceInr,
-        pricingDemand:   form.pricingDemand,
         contactInfo:     form.contactInfo,
       };
+      if (form.pricingDemand) {
+        payload.pricingDemand = form.pricingDemand;
+      }
       let saved = null;
       if (isEdit) {
         const { data: updated } = await domainAPI.update(editDomain.id, payload);

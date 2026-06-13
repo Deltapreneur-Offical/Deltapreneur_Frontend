@@ -165,23 +165,17 @@ export default function DashboardPage() {
                 </h1>
                 <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>
-              <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
-                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/10 backdrop-blur rounded-full">
-                  <span className="text-xs text-white/70">{t('dashboardRoleLabel')}</span>
-                  <span className="text-sm font-semibold text-white">{rolePillText}</span>
-                </div>
+              <div className="dashboard-hero-meta">
+                <span className={`dashboard-hero-meta__tag${showAdmin ? ' is-orange' : ''}`}>
+                  {rolePillText}
+                </span>
                 {profileComplete ? (
-                  <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/15 backdrop-blur rounded-full border border-white/20">
-                    <span className="text-xs text-white/70">{t('dashboardProfileLabel')}</span>
-                    <span className="text-sm font-semibold text-white">{t('dashboardProfileComplete')}</span>
-                  </div>
+                  <span className="dashboard-hero-meta__tag is-green">
+                    {t('dashboardProfileLabel')} {t('dashboardProfileComplete')}
+                  </span>
                 ) : (
-                  <Link
-                    to="/complete-profile"
-                    className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-amber-400/25 backdrop-blur rounded-full border border-amber-200/50 hover:bg-amber-400/35 transition-colors"
-                  >
-                    <span className="text-xs text-amber-100">{t('dashboardProfileLabel')}</span>
-                    <span className="text-sm font-semibold text-white">{t('dashboardProfilePending')}</span>
+                  <Link to="/complete-profile" className="dashboard-hero-meta__tag is-amber dashboard-hero-meta__tag--link">
+                    {t('dashboardProfileLabel')} {t('dashboardProfilePending')}
                   </Link>
                 )}
               </div>

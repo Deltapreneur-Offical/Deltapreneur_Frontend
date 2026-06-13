@@ -25,11 +25,21 @@ function LegacyCommunityRedirect() {
   return <Navigate to={{ pathname: '/creator', search }} replace />;
 }
 
-const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/auth/callback'];
+const AI_HIDDEN_PATHS = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/auth/callback',
+  '/complete-profile',
+  '/password-security',
+  '/privacy-policy',
+  '/terms-and-conditions',
+];
 
 function CoBrotherAIGuard() {
   const { pathname } = useLocation();
-  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) return null;
+  if (AI_HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
   return (
     <Suspense fallback={null}>
       <CoBrotherAI />

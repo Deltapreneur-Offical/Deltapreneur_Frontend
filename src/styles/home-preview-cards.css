@@ -64,6 +64,26 @@
     scroll-snap-align: unset;
     scroll-snap-stop: unset;
   }
+
+  /* Auctions (and other long rows): keep horizontal scroll on desktop */
+  .home-preview-row.home-preview-row--always-scroll {
+    display: flex;
+    flex-wrap: nowrap;
+    grid-template-columns: unset;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+    padding-bottom: 1rem;
+  }
+
+  .home-preview-row.home-preview-row--always-scroll .home-preview-row__item {
+    flex: 0 0 auto;
+    width: min(22vw, 280px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 }
 
 
@@ -145,7 +165,8 @@
 }
 
 /* Domain + technology homepage browse cards — content height, no collapse */
-.home-preview-row .home-preview-card-shell {
+.home-preview-row .home-preview-card-shell,
+.home-auto-scroll-row .home-preview-card-shell {
   height: auto !important;
   min-height: 0 !important;
   flex: 0 0 auto !important;
@@ -154,7 +175,9 @@
 .home-preview-row .home-preview-card-shell > .home-preview-browse-card,
 .home-preview-row .home-preview-card-shell > article.home-preview-browse-card,
 .home-preview-row .home-preview-card-shell > .home-creator-listing-card,
-.home-preview-row .home-preview-card-shell > article.home-creator-listing-card {
+.home-preview-row .home-preview-card-shell > article.home-creator-listing-card,
+.home-auto-scroll-row .home-preview-card-shell > .home-preview-browse-card,
+.home-auto-scroll-row .home-preview-card-shell > article.home-preview-browse-card {
   width: 100%;
   max-width: 100%;
   flex: 0 0 auto;
@@ -201,7 +224,8 @@
 
 }
 
-.home-preview-row .home-preview-browse-card {
+.home-preview-row .home-preview-browse-card,
+.home-auto-scroll-row .home-preview-browse-card {
 
   min-height: min-content;
 
@@ -233,7 +257,8 @@
   overflow: visible;
 }
 
-.home-preview-row .card-glow-hover:hover {
+.home-preview-row .card-glow-hover:hover,
+.home-auto-scroll-row .card-glow-hover:hover {
   transform: translateY(-2px) translateZ(0);
 }
 
@@ -259,7 +284,8 @@
 .home-preview-row .creator-profile-card:hover,
 
 .home-preview-row .domain-listing-card:hover,
-.home-preview-row .home-creator-listing-card:hover {
+.home-preview-row .home-creator-listing-card:hover,
+.home-auto-scroll-row .domain-listing-card:hover {
 
   transform: translate3d(0, -3px, 0);
 
@@ -446,6 +472,261 @@
   .home-section-header {
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
+  }
+}
+
+/* Homepage auction preview cards — bid stats inside blue price pill */
+.home-auction-preview-card__category-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.home-auction-preview-card__category-badge--domain {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+}
+
+.home-auction-preview-card__category-badge--venture {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.28);
+}
+
+.home-auction-preview-card__category-badge--technology {
+  color: #4f46e5;
+  background: rgba(79, 70, 229, 0.12);
+  border: 1px solid rgba(79, 70, 229, 0.28);
+}
+
+.home-auction-preview-card__category-badge--creator {
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.12);
+  border: 1px solid rgba(13, 148, 136, 0.28);
+}
+
+.home-auction-preview-card__price-box {
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.45rem 0.45rem 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.home-preview-row .home-preview-browse-card .home-auction-preview-card__price-box,
+.home-auto-scroll-row .home-preview-browse-card .home-auction-preview-card__price-box {
+  display: flex;
+  margin-top: 0.15rem;
+}
+
+.home-auction-preview-card__price-box .home-auction-preview-card__bid-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.home-auction-preview-card__price-box .home-auction-preview-card__bid-box {
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-width: 0;
+}
+
+.home-auction-preview-card__bid-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #1e293b;
+  margin-bottom: 0.15rem;
+  line-height: 1.2;
+}
+
+.home-auction-preview-card__bid-value {
+  font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-auction-preview-card__bid-value--starting {
+  color: #d97706;
+}
+
+.home-auction-preview-card__footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding-top: 0.55rem;
+  margin-top: 0.1rem;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.home-auction-preview-card__footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.home-auction-preview-card__footer-col--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.home-auction-preview-card__footer-col--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.home-auction-preview-card__footer-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex-shrink: 0;
+  padding-inline: 0.15rem;
+}
+
+.home-auction-preview-card__footer-symbol-img {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+  opacity: 0.85;
+}
+
+.home-auction-preview-card__footer-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.home-auction-preview-card__footer-value {
+  font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.home-auction-preview-card__footer-time {
+  font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #d97706;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* Auto-scrolling homepage row (e.g. Auctions) */
+.home-auto-scroll-row {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.home-auto-scroll-row__viewport {
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 1.25rem,
+    #000 calc(100% - 1.25rem),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 1.25rem,
+    #000 calc(100% - 1.25rem),
+    transparent 100%
+  );
+}
+
+.home-auto-scroll-row__track {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  width: max-content;
+  will-change: transform;
+  animation: home-auto-scroll-row-marquee var(--home-auto-scroll-duration, 45s) linear infinite;
+}
+
+.home-auto-scroll-row:hover .home-auto-scroll-row__track {
+  animation-play-state: paused;
+}
+
+.home-auto-scroll-row__item {
+  flex: 0 0 auto;
+  width: min(86vw, 300px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-auto-scroll-row__item {
+    width: min(42vw, 292px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-auto-scroll-row__item {
+    width: min(22vw, 280px);
+  }
+}
+
+@keyframes home-auto-scroll-row-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-auto-scroll-row__track--static {
+    animation: none;
+    overflow-x: auto;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding-bottom: 1rem;
+    scrollbar-width: none;
+  }
+
+  .home-auto-scroll-row__track--static::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-auto-scroll-row__viewport {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 }
 

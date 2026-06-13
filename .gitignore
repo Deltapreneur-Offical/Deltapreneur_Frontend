@@ -26,6 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+gcm-diagnose.log
 
 # OS files
 .DS_Store

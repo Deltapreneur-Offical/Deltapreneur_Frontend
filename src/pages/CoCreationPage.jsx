@@ -191,7 +191,7 @@ export default function CoCreationPage() {
 
   return (
     <AppLayout>
-      <div>
+      <div className="cocreation-page">
         {(showForm || editTarget) && user ? (
           <>
             <ListingBackLink
@@ -298,7 +298,7 @@ export default function CoCreationPage() {
           </div>
         ) : (
           <>
-  <div className="listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+  <div className="listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {paginated.map(s => (
         <ListingCardShell key={s.id}>
         <TechnologyListingCard

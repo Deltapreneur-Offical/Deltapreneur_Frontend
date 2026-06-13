@@ -21,12 +21,19 @@ import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/do
 import { pickMediaUrl } from '../utils/mediaUrl';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
-function AuctionCategoryIcon({ src, className = 'w-4 h-4 object-contain shrink-0' }) {
-  return <img src={src} alt="" aria-hidden className={className} />;
+function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      className={`${className} transition-all duration-200 ${selected ? 'brightness-0 invert' : ''}`}
+    />
+  );
 }
 
-function AuctionTabIcon({ icon, lucideIcon: Lucide, prefix }) {
-  if (icon) return <AuctionCategoryIcon src={icon} />;
+function AuctionTabIcon({ icon, lucideIcon: Lucide, prefix, selected }) {
+  if (icon) return <AuctionCategoryIcon src={icon} selected={selected} />;
   if (Lucide) return <Lucide className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden />;
   if (prefix) return <span aria-hidden>{prefix}</span>;
   return null;
@@ -270,7 +277,7 @@ export default function AuctionsPage() {
                 setSection(t.id);
                 navigate(t.id === 'all' ? '/auctions' : `/auctions?section=${t.id}`, { replace: true });
               }}>
-              <AuctionTabIcon icon={t.icon} lucideIcon={t.lucideIcon} prefix={t.prefix} />
+              <AuctionTabIcon icon={t.icon} lucideIcon={t.lucideIcon} prefix={t.prefix} selected={section === t.id} />
               {t.label}
             </button>
           ))}
@@ -286,7 +293,7 @@ export default function AuctionsPage() {
             <button key={t.id}
               className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
               onClick={() => setFilter(t.id)}>
-              <AuctionTabIcon lucideIcon={t.lucideIcon} />
+              <AuctionTabIcon lucideIcon={t.lucideIcon} selected={filter === t.id} />
               {t.label}
             </button>
           ))}

@@ -30,7 +30,7 @@
 }
 
 .technology-listing-grid .listing-card-glow-shell {
-  height: 100%;
+  height: auto;
 }
 
 .listing-card-glow-shell,
@@ -97,7 +97,7 @@
   --tw-ring-shadow: 0 0 #0000;
 }
 
-.technology-listing-card.card-glow-hover:not(.technology-listing-card--browse),
+.technology-listing-card.card-glow-hover:not(.technology-listing-card--browse):not(.domain-listing-card),
 .venture-listing-card.card-glow-hover,
 .community-listing-card.card-glow-hover {
   border: none !important;

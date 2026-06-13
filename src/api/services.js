@@ -17,7 +17,7 @@ export const authAPI = {
   verifyEmail:        (token)         => api.get(`/api/v1/auth/verify-email?token=${token}`),
   resendVerification: (email, extra = {}) => api.post('/api/v1/auth/resend-verification', { email, ...extra }),
   refresh:            (refreshToken)  => api.post('/api/v1/auth/refresh', { refreshToken }),
-  logout:             ()              => api.post('/api/v1/auth/logout'),
+  logout:             (refreshToken = '') => api.post('/api/v1/auth/logout', { refreshToken }),
   completeProfile:    (data)          => api.post('/api/v1/auth/complete-profile', data),
 };
 
@@ -32,6 +32,7 @@ export const profileAPI = {
 export const ventureAPI = {
   getAll:       (params)  => api.get('/api/v1/venture/all', { params }),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
+  getMyPurchases: ()      => api.get('/api/v1/venture/my-purchases'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
   create:       (data)    => api.post('/api/v1/venture/', data),
   update:       (id, data)=> api.put(`/api/v1/venture/${id}`, data),

@@ -16,7 +16,7 @@ export default function HeroGlow() {
               {t('heroEyebrow')}
             </p>
             <h1 className="hero-headline m-0 font-sans font-normal text-black">
-              Let&apos;s Get Ventured With{' '}
+              Start It Up With{' '}
               <span className="hero-emphasis">CoBrother!</span>
             </h1>
           </div>

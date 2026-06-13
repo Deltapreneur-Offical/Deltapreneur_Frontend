@@ -2,15 +2,15 @@
  * API / backend origin resolution.
  *
  * **Production defaults** (switch to local before local dev):
- *   Backend: https://cobrother-backend.onrender.com
- *   App:     https://co-brother-frontend.vercel.app
+ *   Backend: https://backend.cobrother.com
+ *   App:     https://cobrother.com (runtime uses window.location.origin when unset)
  *
- * **Override** — set in `.env` / Vercel:
- *   VITE_API_URL=https://cobrother-backend.onrender.com
- *   VITE_APP_URL=https://co-brother-frontend.vercel.app
+ * **Override** — set in `.env` or deploy build:
+ *   VITE_API_URL=https://backend.cobrother.com
+ *   VITE_APP_URL=https://cobrother.com
  */
-export const PRODUCTION_API_ORIGIN = 'https://cobrother-backend.onrender.com';
-export const PRODUCTION_APP_URL = 'https://co-brother-frontend.vercel.app';
+export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
+export const PRODUCTION_APP_URL = 'https://cobrother.com';
 
 /**
  * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` causes ERR_SSL_PROTOCOL_ERROR.

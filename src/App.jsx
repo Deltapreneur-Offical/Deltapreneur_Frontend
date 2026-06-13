@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from '
 import { lazy, Suspense, useEffect, useRef } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
+import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
@@ -22,6 +23,18 @@ import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 function LegacyCommunityRedirect() {
   const { search } = useLocation();
   return <Navigate to={{ pathname: '/creator', search }} replace />;
+}
+
+const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/auth/callback'];
+
+function CoBrotherAIGuard() {
+  const { pathname } = useLocation();
+  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) return null;
+  return (
+    <Suspense fallback={null}>
+      <CoBrotherAI />
+    </Suspense>
+  );
 }
 
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
@@ -115,6 +128,7 @@ function RedirectLegacySoftwareAuction() {
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop />
       <LanguageProvider>
         <CurrencyProvider>
           <CookieConsentProvider>
@@ -122,9 +136,7 @@ export default function App() {
               <RoutePreloader />
               <SiteGradientBorder />
               <CookieConsentBanner />
-              <Suspense fallback={null}>
-                <CoBrotherAI />
-              </Suspense>
+              <CoBrotherAIGuard />
               <AppErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>

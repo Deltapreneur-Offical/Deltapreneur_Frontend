@@ -124,10 +124,20 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = async () => {
-    try { await authAPI.logout(); } catch {}
-    localStorage.clear();
-    setHasAccessToken(false);
-    setUser(null);
+    const refreshToken = localStorage.getItem('refreshToken') || '';
+    try {
+      await authAPI.logout(refreshToken);
+    } catch (err) {
+      // Keep local logout behavior, but surface backend failures for debugging.
+      console.warn(
+        '[Auth] Logout request failed; cleared local session anyway.',
+        err?.response?.data || err?.message || err,
+      );
+    } finally {
+      localStorage.clear();
+      setHasAccessToken(false);
+      setUser(null);
+    }
   };
 
   // refreshUser returns the fetched user so callers can use it immediately

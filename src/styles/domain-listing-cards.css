@@ -6,6 +6,12 @@
   align-items: stretch;
 }
 
+.technology-listing-grid {
+  display: grid;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
 .domain-listing-card {
   position: relative;
   display: flex;

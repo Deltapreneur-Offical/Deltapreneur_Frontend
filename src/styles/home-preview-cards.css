@@ -476,6 +476,18 @@
 }
 
 /* Homepage auction preview cards — bid stats inside blue price pill */
+.home-auction-preview-card__verified-icon {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.65rem;
+  left: auto;
+  z-index: 15;
+  width: 2.65rem;
+  height: 2.65rem;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .home-auction-preview-card__category-badge {
   position: absolute;
   top: 0.75rem;
@@ -673,10 +685,13 @@
   gap: 1rem;
   width: max-content;
   will-change: transform;
+}
+
+.home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
   animation: home-auto-scroll-row-marquee var(--home-auto-scroll-duration, 45s) linear infinite;
 }
 
-.home-auto-scroll-row:hover .home-auto-scroll-row__track {
+.home-auto-scroll-row:hover .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
   animation-play-state: paused;
 }
 
@@ -709,24 +724,42 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .home-auto-scroll-row__track--static {
-    animation: none;
-    overflow-x: auto;
-    width: 100%;
-    flex-wrap: nowrap;
-    padding-bottom: 1rem;
-    scrollbar-width: none;
-  }
-
-  .home-auto-scroll-row__track--static::-webkit-scrollbar {
-    display: none;
-  }
-
-  .home-auto-scroll-row__viewport {
-    overflow-x: auto;
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
+.home-auto-scroll-row__track--static {
+  animation: none !important;
+  overflow-x: auto;
+  width: max-content;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
 }
 
+.home-auto-scroll-row__track--static::-webkit-scrollbar {
+  display: none;
+}
+
+/* Auction homepage cards — smooth hover like technology browse cards, no outer glow/shadow */
+.home-auto-scroll-row .home-preview-card-shell:has(.home-auction-preview-card)::before,
+.home-preview-row .home-preview-card-shell:has(.home-auction-preview-card)::before {
+  display: none;
+}
+
+.home-auto-scroll-row .home-auction-preview-card,
+.home-preview-row .home-auction-preview-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  box-shadow: none !important;
+  transition:
+    border-color 0.35s ease,
+    background 0.35s ease,
+    transform 0.35s ease;
+}
+
+.home-auto-scroll-row .home-auction-preview-card:hover,
+.home-preview-row .home-auction-preview-card:hover {
+  transform: translateY(-2px) translateZ(0);
+  border-color: rgba(15, 23, 42, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 52%, #eef2ff 100%);
+  box-shadow: none !important;
+}

@@ -9,6 +9,7 @@ export default function HomeAutoScrollRow({
   className = '',
   durationSec = 45,
   ariaLabel,
+  minItemsToScroll = 6,
 }) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const items = Children.toArray(children).filter(Boolean);
@@ -22,6 +23,9 @@ export default function HomeAutoScrollRow({
   }, []);
 
   if (items.length === 0) return null;
+
+  // Only animate when card count exceeds 5 (6+). Otherwise render a static row.
+  const shouldLoop = !reduceMotion && items.length >= minItemsToScroll;
 
   const renderTrack = (duplicatePrefix = '') =>
     items.map((child, index) => {
@@ -45,10 +49,10 @@ export default function HomeAutoScrollRow({
     >
       <div className="home-auto-scroll-row__viewport">
         <div
-          className={`home-auto-scroll-row__track${reduceMotion ? ' home-auto-scroll-row__track--static' : ''}`}
+          className={`home-auto-scroll-row__track${shouldLoop ? '' : ' home-auto-scroll-row__track--static'}`}
         >
           {renderTrack()}
-          {!reduceMotion ? renderTrack('dup') : null}
+          {shouldLoop ? renderTrack('dup') : null}
         </div>
       </div>
     </div>

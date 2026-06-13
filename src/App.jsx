@@ -60,6 +60,8 @@ const EditVenturePage = lazy(() => import('./pages/EditVenturePage'));
 const VentureDashboardPage = lazy(() => import('./pages/VentureDashboardPage'));
 const VentureAnalyticsPage = lazy(() => import('./pages/VentureAnalyticsPage'));
 const ProfileAnalyticsPage = lazy(() => import('./pages/ProfileAnalyticsPage'));
+const PlatformAnalyticsHubPage = lazy(() => import('./pages/PlatformAnalyticsHubPage'));
+const PlatformAnalyticsCategoryPage = lazy(() => import('./pages/PlatformAnalyticsCategoryPage'));
 const DomainsDashboardPage = lazy(() => import('./pages/DomainsDashboardPage'));
 const CoCreationDashboardPage = lazy(() => import('./pages/CoCreationDashboardPage'));
 const CoCreationAnalyticsPage = lazy(() => import('./pages/CoCreationAnalyticsPage'));
@@ -218,6 +220,24 @@ export default function App() {
             />
 
             {/* Analytics */}
+            <Route
+              path="/analytics"
+              element={
+                <ProfileGuard>
+                  <PlatformAnalyticsHubPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/analytics/:category"
+              element={
+                <ProfileGuard>
+                  <PlatformAnalyticsCategoryPage />
+                </ProfileGuard>
+              }
+            />
+
             <Route
               path="/ventures/analytics"
               element={

@@ -1,15 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, CreditCard, Shield } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  Briefcase,
+  Code2,
+  Gavel,
+  Globe,
+  Lightbulb,
+  LineChart,
+  MoreVertical,
+  Plus,
+  Settings,
+  ShoppingBag,
+  UserRound,
+} from 'lucide-react';
+import CreatorDashboardIcon from '../components/common/CreatorDashboardIcon';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { communityAPI } from '../api/services';
+import { adminAPI, communityAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
-import VentureIcon from '../assets/Coventure_logo.png';
-import CommunityIcon from '../assets/Cobrother_Profile.png';
-import DomainsIcon from '../assets/CoBranding.png';
-import TechnologyIcon from '../assets/CoCreation.png';
 import { resolveUserDisplayName } from '../utils/userDisplayName';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
@@ -31,14 +42,174 @@ function displayRoleLabel(role, t) {
   return raw;
 }
 
+const STAT_CARD_ICONS = {
+  ventures: { Icon: Briefcase, tone: 'purple' },
+  domains: { Icon: Globe, tone: 'green' },
+  technologies: { Icon: Code2, tone: 'blue' },
+  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+};
+
+const MODULE_ICONS = {
+  ventures: { Icon: Briefcase, tone: 'purple' },
+  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+  domains: { Icon: Globe, tone: 'blue' },
+  technology: { Icon: Lightbulb, tone: 'orange' },
+  auctions: { Icon: Gavel, tone: 'purple' },
+  purchases: { Icon: ShoppingBag, tone: 'blue' },
+};
+
+const QUICK_ACTION_ICONS = {
+  venture: { Icon: Plus, tone: 'purple' },
+  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+  domains: { Icon: Globe, tone: 'blue' },
+  technology: { Icon: Lightbulb, tone: 'orange' },
+};
+
+function formatStatValue(value) {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  return Number(value).toLocaleString();
+}
+
+function renderDashboardIcon(iconConfig, size) {
+  if (iconConfig.Image) {
+    const ImageIcon = iconConfig.Image;
+    return <ImageIcon />;
+  }
+  const { Icon } = iconConfig;
+  return <Icon size={size} strokeWidth={2} aria-hidden />;
+}
+
+function dashboardIconClass(baseClass, tone, iconConfig) {
+  if (iconConfig.Image) {
+    return `${baseClass} ${baseClass}--${tone} ${baseClass}--asset`;
+  }
+  return `${baseClass} ${baseClass}--${tone}`;
+}
+
+function DashboardStatCard({ label, value, tone, loading }) {
+  const iconConfig = STAT_CARD_ICONS[tone];
+
+  return (
+    <article className="dashboard-stat-card">
+      <div className="dashboard-stat-card__top">
+        <div className={dashboardIconClass('dashboard-stat-card__icon', tone, iconConfig)}>
+          {renderDashboardIcon(iconConfig, 18)}
+        </div>
+        <button type="button" className="dashboard-stat-card__menu" aria-label="More options">
+          <MoreVertical size={16} aria-hidden />
+        </button>
+      </div>
+      <p className="dashboard-stat-card__label">{label}</p>
+      <p className="dashboard-stat-card__value">{loading ? '…' : formatStatValue(value)}</p>
+    </article>
+  );
+}
+
+function DashboardModuleCard({ title, desc, cta, to, tone }) {
+  const iconConfig = MODULE_ICONS[tone];
+
+  return (
+    <article className="dashboard-module-card">
+      <div className="dashboard-module-card__head">
+        <div className={dashboardIconClass('dashboard-module-card__icon', tone, iconConfig)}>
+          {renderDashboardIcon(iconConfig, 20)}
+        </div>
+        <div className="dashboard-module-card__copy">
+          <h3>{title}</h3>
+          <p>{desc}</p>
+        </div>
+      </div>
+      <div className="dashboard-module-card__actions">
+        <Link to={to} className="dashboard-module-card__cta">
+          {cta}
+        </Link>
+        <Link to={to} className="dashboard-module-card__arrow" aria-label={cta}>
+          <ArrowRight size={16} strokeWidth={2.25} aria-hidden />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+function DashboardQuickAction({ to, label, tone }) {
+  const iconConfig = QUICK_ACTION_ICONS[tone];
+
+  return (
+    <Link to={to} className="dashboard-quick-action">
+      <span className={dashboardIconClass('dashboard-quick-action__icon', tone, iconConfig)}>
+        {renderDashboardIcon(iconConfig, 16)}
+      </span>
+      <span className="dashboard-quick-action__label">{label}</span>
+      <ArrowRight size={16} strokeWidth={2.25} className="dashboard-quick-action__arrow" aria-hidden />
+    </Link>
+  );
+}
+
+function DashboardWelcomeBanner({ user, t }) {
+  const [greetingIdx] = useState(readNextGreetingIndex);
+  const displayName = resolveUserDisplayName(user);
+  const rolePillText = displayRoleLabel(user?.role, t);
+  const profileComplete = Boolean(user?.profileComplete);
+  const welcomeMessage = t(`dashboardGreeting_${greetingIdx}`);
+
+  return (
+    <section className="dashboard-welcome-shell">
+      {!profileComplete ? (
+        <div className="dashboard-welcome-shell__alert">
+          <div className="dashboard-welcome-shell__alert-copy">
+            <AlertCircle size={18} strokeWidth={2} aria-hidden />
+            <p>{t('dashboardProfilePendingBanner')}</p>
+          </div>
+          <Link to="/complete-profile" className="dashboard-welcome-shell__alert-cta">
+            {t('dashboardCompleteProfileCTA')}
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="dashboard-welcome-hero">
+        <div className="dashboard-welcome-hero__content">
+          <p className="dashboard-welcome-hero__eyebrow">{t('dashboardWelcomeBack')}</p>
+          <h2>{t('dashboardHello', { name: displayName })}</h2>
+          <p className="dashboard-welcome-hero__message">{welcomeMessage}</p>
+        </div>
+
+        <div className="dashboard-welcome-hero__badges">
+          <div className="dashboard-welcome-hero__badge">
+            <span className="dashboard-welcome-hero__badge-dot dashboard-welcome-hero__badge-dot--role" aria-hidden />
+            <span>{rolePillText}</span>
+          </div>
+          {profileComplete ? (
+            <div className="dashboard-welcome-hero__badge">
+              <span className="dashboard-welcome-hero__badge-dot dashboard-welcome-hero__badge-dot--complete" aria-hidden />
+              <span>{t('dashboardProfileComplete')}</span>
+            </div>
+          ) : (
+            <Link to="/complete-profile" className="dashboard-welcome-hero__badge dashboard-welcome-hero__badge--link">
+              <span className="dashboard-welcome-hero__badge-dot dashboard-welcome-hero__badge-dot--pending" aria-hidden />
+              <span>{t('dashboardProfilePending')}</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [greetingIdx] = useState(readNextGreetingIndex);
   const [creatorProfile, setCreatorProfile] = useState(null);
   const [creatorProfileReady, setCreatorProfileReady] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [stats, setStats] = useState({
+    totalVentures: null,
+    totalDomains: null,
+    totalTechnologies: null,
+    totalCreators: null,
+  });
 
-  const welcomeMessage = t(`dashboardGreeting_${greetingIdx}`);
+  const roleUpper = (user?.role ?? '').toString().toUpperCase();
+  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
 
   useEffect(() => {
     if (!user?.id) {
@@ -67,169 +238,205 @@ export default function DashboardPage() {
     };
   }, [user?.id]);
 
-  const cards = [
+  useEffect(() => {
+    if (!isAdmin) return undefined;
+
+    let cancelled = false;
+    setStatsLoading(true);
+
+    adminAPI
+      .getDashboard()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const payload = data?.data ?? data ?? {};
+        setStats({
+          totalVentures: payload.totalVentures ?? null,
+          totalDomains: payload.totalDomains ?? null,
+          totalTechnologies: payload.totalTechnologies ?? null,
+          totalCreators: payload.totalCreators ?? null,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setStats({
+            totalVentures: null,
+            totalDomains: null,
+            totalTechnologies: null,
+            totalCreators: null,
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setStatsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  const modules = [
     {
-      icon: VentureIcon,
+      key: 'ventures',
       title: t('venture'),
       desc: t('ventureDesc'),
       to: '/ventures',
       cta: t('manageVentures'),
+      tone: 'ventures',
     },
     {
-      icon: CommunityIcon,
+      key: 'creators',
       title: t('disruptors'),
       desc: t('communityDesc'),
       to: '/creator',
       cta: t('exploreDisruptors'),
+      tone: 'creators',
     },
     {
-      icon: DomainsIcon,
+      key: 'domains',
       title: t('domains'),
       desc: t('domainsDesc'),
       to: '/domains',
       cta: t('manageDomains'),
+      tone: 'domains',
     },
     {
-      icon: TechnologyIcon,
+      key: 'technology',
       title: t('technology'),
       desc: t('technologyDesc'),
       to: '/technology',
       cta: t('distributeSoftware'),
+      tone: 'technology',
+    },
+    {
+      key: 'auctions',
+      title: t('auctions'),
+      desc: t('dashboardModuleAuctionsDesc'),
+      to: '/auctions',
+      cta: t('dashboardViewAuctions'),
+      tone: 'auctions',
+    },
+    {
+      key: 'purchases',
+      title: t('purchases'),
+      desc: t('dashboardModulePurchasesDesc'),
+      to: '/purchases',
+      cta: t('dashboardViewPurchases'),
+      tone: 'purchases',
     },
   ];
 
   const quickActions = [
-    { to: '/ventures/new', label: t('dashboardListVenturesQuick'), icon: <span className="text-lg font-semibold leading-none">+</span> },
-    { to: '/creator', label: t('dashboardViewDisruptorsQuick'), icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
-    { to: '/domains', label: t('dashboardManageDomainsQuick'), icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
-    { to: '/settings/payouts', label: 'Payout Settings', icon: <CreditCard className="h-5 w-5 shrink-0" /> },
-    { to: '/technology', label: t('dashboardExploreTechnologyQuick'), icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    {
+      key: 'venture',
+      to: '/ventures/new',
+      label: t('dashboardCreateVentureQuick'),
+      tone: 'venture',
+    },
+    {
+      key: 'creators',
+      to: '/creator',
+      label: t('dashboardExploreCreatorsQuick'),
+      tone: 'creators',
+    },
+    {
+      key: 'domains',
+      to: '/domains',
+      label: t('dashboardManageDomainsQuick'),
+      tone: 'domains',
+    },
+    {
+      key: 'technology',
+      to: '/technology',
+      label: t('dashboardExploreTechnologyQuick'),
+      tone: 'technology',
+    },
   ];
 
-  const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  const showAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
-
-  const displayName = resolveUserDisplayName(user);
-  const rolePillText = displayRoleLabel(user?.role, t);
-  const profileComplete = Boolean(user?.profileComplete);
+  const statCards = [
+    { key: 'ventures', label: t('dashboardTotalVentures'), value: stats.totalVentures, tone: 'ventures' },
+    { key: 'domains', label: t('dashboardActiveDomains'), value: stats.totalDomains, tone: 'domains' },
+    { key: 'technologies', label: t('dashboardTechnologies'), value: stats.totalTechnologies, tone: 'technologies' },
+    { key: 'creators', label: t('dashboardCreators'), value: stats.totalCreators, tone: 'creators' },
+  ];
 
   return (
     <AppLayout>
-      <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-6 lg:gap-8 min-w-0">
-        <section className="rounded-2xl shadow-sm border border-slate-200/80 bg-white">
-          {showAdmin && (
-            <div className="rounded-t-2xl border-b border-indigo-200/90 bg-gradient-to-r from-slate-50 via-indigo-50/80 to-violet-50/60 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 shadow-[0_6px_20px_rgba(99,102,241,0.16),0_2px_8px_rgba(15,23,42,0.1)] relative z-[1]">
-              <div className="flex items-start sm:items-center gap-3 min-w-0">
-                <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 border border-indigo-200/80">
-                  <Shield size={20} strokeWidth={2} aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wide text-indigo-900/90">{t('dashboardAdminTitle')}</p>
-                  <p className="text-sm text-slate-600 mt-0.5 leading-snug">
-                    {t('dashboardAdminBody')}
-                  </p>
-                </div>
-              </div>
-              <Link
-                to="/admin"
-                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
-              >
-                {t('dashboardAdminCTA')}
-              </Link>
-            </div>
-          )}
-
-          {!profileComplete && (
-            <div className={`border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50/80 to-amber-50 px-4 py-3.5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3${!showAdmin ? ' rounded-t-2xl' : ''}`}>
-              <div className="flex items-start sm:items-center gap-2.5 min-w-0">
-                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 sm:mt-0" aria-hidden />
-                <p className="text-sm text-amber-900 leading-snug m-0">
-                  {t('dashboardProfilePendingBanner')}
-                </p>
-              </div>
-              <Link
-                to="/complete-profile"
-                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
-              >
-                {t('dashboardCompleteProfileCTA')}
-              </Link>
-            </div>
-          )}
-
-          <div className={`bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 p-5 sm:p-6 lg:p-8 text-white rounded-b-2xl shadow-[0_6px_20px_rgba(99,102,241,0.16),0_2px_8px_rgba(15,23,42,0.1)] relative z-[1]${!showAdmin && profileComplete ? ' rounded-t-2xl' : ''}${showAdmin || !profileComplete ? ' border-t border-indigo-400/25' : ''}`}>
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div className="min-w-0">
-                <p className="text-white/80 text-sm mb-1">{t('dashboardWelcomeBack')}</p>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white break-words">
-                  {t('dashboardHello', { name: displayName })}
-                </h1>
-                <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
-              </div>
-              <div className="dashboard-hero-meta">
-                <span className={`dashboard-hero-meta__tag${showAdmin ? ' is-orange' : ''}`}>
-                  {rolePillText}
+      <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-6 lg:gap-8 min-w-0">
+        {isAdmin ? (
+          <section className="dashboard-admin-header">
+            <div className="dashboard-admin-header__copy">
+              <div className="dashboard-admin-header__title-row">
+                <h1>{t('dashboard')}</h1>
+                <span className="dashboard-admin-header__badge">
+                  <UserRound size={14} strokeWidth={2} aria-hidden />
+                  {t('dashboardAdministratorBadge')}
                 </span>
-                {profileComplete ? (
-                  <span className="dashboard-hero-meta__tag is-green">
-                    {t('dashboardProfileLabel')} {t('dashboardProfileComplete')}
-                  </span>
-                ) : (
-                  <Link to="/complete-profile" className="dashboard-hero-meta__tag is-amber dashboard-hero-meta__tag--link">
-                    {t('dashboardProfileLabel')} {t('dashboardProfilePending')}
-                  </Link>
-                )}
               </div>
+              <p>{t('dashboardSubtitle')}</p>
             </div>
-          </div>
-        </section>
+            <div className="dashboard-admin-header__actions">
+              <Link to="/analytics" className="dashboard-admin-header__btn dashboard-admin-header__btn--ghost">
+                <LineChart size={16} strokeWidth={2} aria-hidden />
+                {t('dashboardViewAnalytics')}
+              </Link>
+              <Link to="/admin" className="dashboard-admin-header__btn dashboard-admin-header__btn--primary">
+                <Settings size={16} strokeWidth={2} aria-hidden />
+                {t('dashboardAdminPanel')}
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
-        {creatorProfileReady && creatorProfile ? (
+        {isAdmin ? (
+          <section className="dashboard-stat-grid">
+            {statCards.map((card) => (
+              <DashboardStatCard
+                key={card.key}
+                label={card.label}
+                value={card.value}
+                tone={card.tone}
+                loading={statsLoading}
+              />
+            ))}
+          </section>
+        ) : null}
+
+        {!isAdmin && creatorProfileReady && creatorProfile ? (
           <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
         ) : null}
 
-        <section className="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 min-w-0">
-          {cards.map((c) => (
-            <article
-              key={c.to}
-              className="app-dashboard-feature-card group bg-white border border-gray-200 rounded-2xl px-5 flex flex-col items-center text-center min-w-0 hover:shadow-[0_8px_24px_rgba(99,102,241,0.12)] hover:-translate-y-0.5 hover:border-indigo-200 transition-all duration-300"
-            >
-              <div className="app-dashboard-feature-card__icon mb-3.5 flex items-center justify-center group-hover:scale-[1.03] transition-transform">
-                <img src={c.icon} alt="" className="w-9 h-9 sm:w-10 sm:h-10 object-contain" />
-              </div>
-              <h3 className="font-display text-base sm:text-[1.05rem] font-semibold text-gray-900 mb-1.5 w-full">
-                {c.title}
-              </h3>
-              <p className="text-sm text-gray-500 mb-4 flex-1 w-full leading-relaxed line-clamp-3 sm:line-clamp-none">
-                {c.desc}
-              </p>
-              <Link
-                to={c.to}
-                className="btn-glow app-dashboard-card-cta"
-              >
-                {c.cta} →
-              </Link>
-            </article>
-          ))}
-        </section>
+        {!isAdmin ? <DashboardWelcomeBanner user={user} t={t} /> : null}
 
-        <section className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm min-w-0">
-          <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-5">
-            {t('dashboardQuickActions')}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-            {quickActions.map((action) => (
-              <Link
-                key={action.to}
-                to={action.to}
-                className="btn-glow app-dashboard-quick-action"
-              >
-                {action.icon}
-                <span>{action.label}</span>
-              </Link>
+        <section className="dashboard-section">
+          <h2 className="dashboard-section__title">{t('dashboardPlatformModules')}</h2>
+          <div className="dashboard-module-grid">
+            {modules.map((module) => (
+              <DashboardModuleCard
+                key={module.key}
+                title={module.title}
+                desc={module.desc}
+                cta={module.cta}
+                to={module.to}
+                tone={module.tone}
+              />
             ))}
           </div>
         </section>
 
+        <section className="dashboard-section">
+          <h2 className="dashboard-section__title">{t('dashboardQuickActions')}</h2>
+          <div className="dashboard-quick-action-grid">
+            {quickActions.map((action) => (
+              <DashboardQuickAction
+                key={action.key}
+                to={action.to}
+                label={action.label}
+                tone={action.tone}
+              />
+            ))}
+          </div>
+        </section>
       </div>
     </AppLayout>
   );

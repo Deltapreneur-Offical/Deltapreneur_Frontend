@@ -49,6 +49,8 @@ export default defineConfig(({ mode }) => {
               if (id.includes('i18next')) return 'vendor-i18n';
               return 'vendor';
             }
+            if (id.includes('/src/components/analytics/')) return 'shared-analytics';
+            if (id.includes('/src/pages/PlatformAnalytics')) return 'route-platform-analytics';
             if (id.includes('/src/pages/Admin')) return 'route-admin';
             if (id.includes('/src/pages/Domains')) return 'route-domains';
             if (id.includes('/src/pages/Ventures')) return 'route-ventures';

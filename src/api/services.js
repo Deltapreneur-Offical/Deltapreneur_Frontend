@@ -17,7 +17,7 @@ export const authAPI = {
   verifyEmail:        (token)         => api.get(`/api/v1/auth/verify-email?token=${token}`),
   resendVerification: (email, extra = {}) => api.post('/api/v1/auth/resend-verification', { email, ...extra }),
   refresh:            (refreshToken)  => api.post('/api/v1/auth/refresh', { refreshToken }),
-  logout:             ()              => api.post('/api/v1/auth/logout'),
+  logout:             (refreshToken = '') => api.post('/api/v1/auth/logout', { refreshToken }),
   completeProfile:    (data)          => api.post('/api/v1/auth/complete-profile', data),
 };
 

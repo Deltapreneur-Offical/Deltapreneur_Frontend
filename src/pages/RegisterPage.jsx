@@ -3,20 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import coBrotherLogo from '../assets/Cobrother_logo.png';
-import AuthRegionalSettings from '../components/common/AuthRegionalSettings';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
+import { resolveAfterAuthNavigation } from '../utils/authSession';
+import { startGoogleOAuth } from '../utils/googleOAuth';
+import AuthShell from '../components/auth/AuthShell';
+import AuthMethodToggle from '../components/auth/AuthMethodToggle';
+import AuthAlert from '../components/auth/AuthAlert';
+import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
+import AuthRecoverActions from '../components/auth/AuthRecoverActions';
+import GoogleIcon from '../components/auth/GoogleIcon';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, refreshUser } = useAuth();
+  const [authMethod, setAuthMethod] = useState('google');
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ email: '', password: '', confirm: '', otpCode: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [emailConflict, setEmailConflict] = useState(false);
   const {
     requiresTurnstile,
     getProtectionPayload,
@@ -24,7 +32,23 @@ export default function RegisterPage() {
     botProtectionProps,
   } = useBotProtection();
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    if (name === 'email' && emailConflict) {
+      setEmailConflict(false);
+      setError('');
+    }
+  };
+
+  const handleAuthMethodChange = (method) => {
+    setAuthMethod(method);
+    setEmailConflict(false);
+    if (method === 'google') {
+      setError('');
+      setInfo('');
+    }
+  };
 
   const handleLoginSuccess = async (data) => {
     const payload = data?.data ?? data;
@@ -35,10 +59,8 @@ export default function RegisterPage() {
 
     login({ accessToken, refreshToken }, null);
     const fetchedUser = await refreshUser();
-    navigate(
-      fetchedUser?.profileComplete ? '/' : '/complete-profile',
-      { replace: true },
-    );
+    const destination = resolveAfterAuthNavigation(null, fetchedUser);
+    navigate(destination.pathname, { replace: true, state: destination.state });
   };
 
   const handleSendOtp = async (e) => {
@@ -58,6 +80,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
     setInfo('');
+    setEmailConflict(false);
     try {
       await authAPI.sendRegisterOtp({
         email: form.email,
@@ -72,8 +95,10 @@ export default function RegisterPage() {
       const status = err.response?.status;
       const body = err.response?.data;
       if (status === 409) {
-        setError(body?.error || body?.message || t('emailAlreadyRegistered', 'This email is already registered. Sign in or use Forgot password.'));
+        setEmailConflict(true);
+        setError(t('emailAlreadyRegistered'));
       } else {
+        setEmailConflict(false);
         setError(body?.error || body?.message || t('failedToSendOtp', 'Failed to send verification code.'));
       }
     } finally {
@@ -126,98 +151,147 @@ export default function RegisterPage() {
     }
   };
 
+  const showMethodToggle = step === 1;
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 relative overflow-hidden bg-gradient-to-b from-gray-50 to-indigo-50">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute w-[500px] h-[500px] bg-purple/16 rounded-full blur-[80px] opacity-70 -top-[150px] -right-[100px]" />
-        <div className="absolute w-[400px] h-[400px] bg-blue-500/12 rounded-full blur-[80px] opacity-70 -bottom-[100px] -left-[100px]" />
-      </div>
+    <AuthShell
+      title={t('registerTitle')}
+      subtitle={
+        step === 1
+          ? t('registerSubtitle')
+          : t('registerOtpSubtitle', 'Enter the verification code sent to your email.')
+      }
+      onBack={() => navigate('/')}
+      brandTagline={t('loginBrandTagline')}
+      brandBullets={[
+        t('loginBrandBullet1'),
+        t('loginBrandBullet2'),
+        t('loginBrandBullet3'),
+      ]}
+      footer={(
+        <>
+          <span>{t('alreadyHaveAccount')} </span>
+          <Link to="/login">{t('signIn')}</Link>
+        </>
+      )}
+    >
+      {showMethodToggle && (
+        <AuthMethodToggle
+          value={authMethod}
+          onChange={handleAuthMethodChange}
+          googleLabel={t('authMethodGoogle')}
+          emailLabel={t('authMethodEmail')}
+        />
+      )}
 
-      <div className="relative z-10 w-full max-w-[440px] bg-white/92 p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl">
-        <AuthRegionalSettings />
-        <div className="text-center mb-8">
-          <img src={coBrotherLogo} alt="CoBrother" className="w-[100px] h-auto object-contain mx-auto mb-4 block" />
-          <h1 className="font-display text-[2rem] font-semibold text-gray-900">{t('registerTitle')}</h1>
-          <p className="text-gray-600 text-[0.95rem] mt-1.5">
-            {step === 1
-              ? t('registerSubtitle')
-              : t('registerOtpSubtitle', 'Enter the verification code sent to your email.')}
-          </p>
+      <AuthAlert variant="error">{error}</AuthAlert>
+      <AuthRecoverActions email={form.email} show={emailConflict} />
+      <AuthAlert variant="info">{info}</AuthAlert>
+
+      {authMethod === 'google' && step === 1 && (
+        <div className="flex flex-col gap-3">
+          <button type="button" className="btn-oauth" onClick={() => startGoogleOAuth()}>
+            <GoogleIcon />
+            {t('continueWithGoogle')}
+          </button>
+          <p className="auth-google-hint">{t('registerGoogleHint')}</p>
         </div>
+      )}
 
-        {error && <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-400 text-sm mb-4">{error}</div>}
-        {info && <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-[10px] text-emerald-700 text-sm mb-4">{info}</div>}
+      {authMethod === 'email' && step === 1 && (
+        <form onSubmit={handleSendOtp} className="auth-form flex flex-col gap-4">
+          <div className="auth-form-field">
+            <label className="auth-form-label" htmlFor="register-email">{t('emailLabel')}</label>
+            <input
+              id="register-email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder={t('emailPlaceholder')}
+              required
+              className="auth-form-input"
+            />
+          </div>
+          <div className="auth-form-field">
+            <label className="auth-form-label" htmlFor="register-password">{t('passwordLabel')}</label>
+            <input
+              id="register-password"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder={t('passwordPlaceholder')}
+              required
+              className="auth-form-input"
+            />
+          </div>
+          <div className="auth-form-field">
+            <label className="auth-form-label" htmlFor="register-confirm">{t('confirmPasswordLabel')}</label>
+            <input
+              id="register-confirm"
+              name="confirm"
+              type="password"
+              value={form.confirm}
+              onChange={handleChange}
+              placeholder={t('confirmPasswordPlaceholder')}
+              required
+              className="auth-form-input"
+            />
+          </div>
+          <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
+          <AuthPrimaryButton type="submit" busy={loading} disabled={requiresTurnstile}>
+            {t('sendVerificationCode', 'Send Verification Code')}
+          </AuthPrimaryButton>
+        </form>
+      )}
 
-        {step === 1 ? (
-          <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">{t('emailLabel')}</label>
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder={t('emailPlaceholder')} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">{t('passwordLabel')}</label>
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder={t('passwordPlaceholder')} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">{t('confirmPasswordLabel')}</label>
-              <input name="confirm" type="password" value={form.confirm} onChange={handleChange} placeholder={t('confirmPasswordPlaceholder')} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]" />
-            </div>
-            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
-            <button type="submit" className="btn-glow w-full" disabled={loading || requiresTurnstile}>
-              {loading ? <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : t('sendVerificationCode', 'Send Verification Code')}
+      {authMethod === 'email' && step === 2 && (
+        <form onSubmit={handleVerifyOtp} className="auth-form flex flex-col gap-4">
+          <div className="auth-form-field">
+            <label className="auth-form-label" htmlFor="register-otp">{t('otpLabel', 'Verification Code')}</label>
+            <input
+              id="register-otp"
+              name="otpCode"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={form.otpCode}
+              onChange={handleChange}
+              placeholder={t('otpPlaceholder', 'Enter 6-digit code')}
+              required
+              maxLength={6}
+              className="auth-form-input otp-input"
+            />
+          </div>
+          <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
+          <AuthPrimaryButton type="submit" busy={loading} disabled={requiresTurnstile}>
+            {t('verifyAndCreateAccount', 'Verify & Create Account')}
+          </AuthPrimaryButton>
+          <div className="auth-form-links">
+            <button
+              type="button"
+              className="auth-form-link-btn"
+              onClick={() => {
+                setStep(1);
+                setError('');
+                setInfo('');
+                setForm((prev) => ({ ...prev, otpCode: '' }));
+              }}
+            >
+              {t('back', 'Back')}
             </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">{t('otpLabel', 'Verification Code')}</label>
-              <input
-                name="otpCode"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={form.otpCode}
-                onChange={handleChange}
-                placeholder={t('otpPlaceholder', 'Enter 6-digit code')}
-                required
-                maxLength={6}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)] tracking-widest text-center text-lg"
-              />
-            </div>
-            <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
-            <button type="submit" className="btn-glow w-full" disabled={loading || requiresTurnstile}>
-              {loading ? <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : t('verifyAndCreateAccount', 'Verify & Create Account')}
+            <button
+              type="button"
+              className="auth-form-link-btn"
+              onClick={handleResendOtp}
+              disabled={loading}
+            >
+              {t('resendCode', 'Resend code')}
             </button>
-            <div className="flex items-center justify-between text-sm">
-              <button
-                type="button"
-                className="text-gray-500 hover:text-gray-700"
-                onClick={() => {
-                  setStep(1);
-                  setError('');
-                  setInfo('');
-                  setForm((prev) => ({ ...prev, otpCode: '' }));
-                }}
-              >
-                {t('back', 'Back')}
-              </button>
-              <button
-                type="button"
-                className="text-purple-600 font-medium hover:underline"
-                onClick={handleResendOtp}
-                disabled={loading}
-              >
-                {t('resendCode', 'Resend code')}
-              </button>
-            </div>
-          </form>
-        )}
-
-        <div className="flex gap-2 justify-center mt-6 text-sm text-gray-500">
-          <span>{t('alreadyHaveAccount')}</span>
-          <Link to="/login" className="text-purple-600 font-medium hover:underline">{t('signIn')}</Link>
-        </div>
-      </div>
-    </div>
+          </div>
+        </form>
+      )}
+    </AuthShell>
   );
 }

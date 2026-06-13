@@ -25,6 +25,18 @@ function LegacyCommunityRedirect() {
   return <Navigate to={{ pathname: '/creator', search }} replace />;
 }
 
+const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/auth/callback'];
+
+function CoBrotherAIGuard() {
+  const { pathname } = useLocation();
+  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) return null;
+  return (
+    <Suspense fallback={null}>
+      <CoBrotherAI />
+    </Suspense>
+  );
+}
+
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
@@ -121,9 +133,7 @@ export default function App() {
               <RoutePreloader />
               <SiteGradientBorder />
               <CookieConsentBanner />
-              <Suspense fallback={null}>
-                <CoBrotherAI />
-              </Suspense>
+              <CoBrotherAIGuard />
               <AppErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>

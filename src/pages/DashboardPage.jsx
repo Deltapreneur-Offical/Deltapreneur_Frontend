@@ -9,7 +9,6 @@ import {
   Globe,
   Lightbulb,
   LineChart,
-  MoreVertical,
   Plus,
   Settings,
   ShoppingBag,
@@ -95,9 +94,6 @@ function DashboardStatCard({ label, value, tone, loading }) {
         <div className={dashboardIconClass('dashboard-stat-card__icon', tone, iconConfig)}>
           {renderDashboardIcon(iconConfig, 18)}
         </div>
-        <button type="button" className="dashboard-stat-card__menu" aria-label="More options">
-          <MoreVertical size={16} aria-hidden />
-        </button>
       </div>
       <p className="dashboard-stat-card__label">{label}</p>
       <p className="dashboard-stat-card__value">{loading ? '…' : formatStatValue(value)}</p>

@@ -4676,19 +4676,6 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   object-fit: contain;
 }
 
-.dashboard-stat-card__menu {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: #9ca3af;
-  cursor: default;
-}
-
 .dashboard-stat-card__label {
   margin: 0;
   color: #6b7280;

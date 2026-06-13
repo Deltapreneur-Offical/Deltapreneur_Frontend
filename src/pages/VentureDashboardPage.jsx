@@ -1,24 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { coVentureAPI, likeAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
+import { coVentureAPI, likeAPI, ventureAPI, ventureDealAPI, venturePitchAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import EditActionLabel from '../components/common/EditActionLabel';
+import PartnershipTimelineCard from '../components/venture/PartnershipTimelineCard';
 import { asArray } from '../utils/asArray';
 import { pickMediaUrl } from '../utils/mediaUrl';
+import VentureSubNav from '../components/venture/VentureSubNav';
+import { isVentureProfileComplete } from '../utils/ventureProfileUtils';
+import { formatEquityOfferedPct, formatEquityPercent } from '../constants/ventureLabels';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import FormCheckbox from '../components/common/FormCheckbox';
 
 const STATUS_META = {
   PENDING:  { label: 'Pending',  color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', icon: '⏳' },
-  APPROVED: { label: 'Approved', color: '#6ec896', bg: 'rgba(110,200,150,0.12)', icon: '✓'  },
-  REJECTED: { label: 'Rejected', color: '#c86e6e', bg: 'rgba(200,110,110,0.12)', icon: '✕'  },
+  APPROVED: { label: 'Under Review', color: '#6ea8c8', bg: 'rgba(110,168,200,0.12)', icon: '★' },
+  REJECTED: { label: 'Not Selected', color: '#c86e6e', bg: 'rgba(200,110,110,0.12)', icon: '✕'  },
+  SELECTED: { label: 'Partner Selected', color: '#6ec896', bg: 'rgba(110,200,150,0.12)', icon: '🤝' },
 };
 
-const TYPE_LABELS = {
-  FIFTY_FIFTY: '50:50', SIXTY_FORTY: '60:40', SEVENTY_THIRTY: '70:30',
-  EIGHTY_TWENTY: '80:20', NINETY_TEN: '90:10', NEGOTIABLE: 'Negotiable',
+const PITCH_STATUS_META = {
+  PENDING: { label: 'Pending', color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', icon: '⏳' },
+  SHORTLISTED: { label: 'Shortlisted', color: '#6ea8c8', bg: 'rgba(110,168,200,0.12)', icon: '★' },
+  SELLER_ACCEPTED: { label: 'Accepted', color: '#6ec896', bg: 'rgba(110,200,150,0.12)', icon: '✓' },
+  SELLER_REJECTED: { label: 'Rejected', color: '#c86e6e', bg: 'rgba(200,110,110,0.12)', icon: '✕' },
+  DEAL_SELECTED: { label: 'Deal Selected', color: '#8b6ec8', bg: 'rgba(139,110,200,0.12)', icon: '🤝' },
+  CANCELLED: { label: 'Withdrawn', color: '#888', bg: 'rgba(136,136,136,0.12)', icon: '—' },
 };
 
 const AUCTION_STATUS_COLORS = {
@@ -30,55 +42,97 @@ const AUCTION_STATUS_COLORS = {
   CLOSED:   'text-gray-400',
 };
 
+const SECTION_META = {
+  venture: { label: 'Venture', icon: '💼', desc: 'Acquisition & equity sale listings' },
+  coventure: { label: 'Co-Venture', icon: '🤝', desc: 'Partnership & co-founder listings' },
+};
+
+const VENTURE_TABS = [
+  { id: 'incoming', label: 'Pitches Received' },
+  { id: 'applied', label: 'My Pitches' },
+  { id: 'deals', label: 'Deals' },
+];
+
+const COVENTURE_TABS = [
+  { id: 'applications', label: 'Partnership Applications' },
+  { id: 'my-partnerships', label: 'My Partnerships' },
+  { id: 'deals', label: 'Deals' },
+];
+
 export default function VentureDashboardPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [tab, setTab] = useState('listings');
+  const [section, setSection] = useState('venture');
+  const [ventureTab, setVentureTab] = useState('incoming');
+  const [coTab, setCoTab] = useState('applications');
+
+  const activeTabs = section === 'venture' ? VENTURE_TABS : COVENTURE_TABS;
+  const activeTab = section === 'venture' ? ventureTab : coTab;
+  const setActiveTab = section === 'venture' ? setVentureTab : setCoTab;
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('ventureDashboardPageTitle')}</h1>
-            <p className="text-gray-600 mt-1">{t('ventureDashboardPageSubtitle')}</p>
-          </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures')}>
-            {t('ventureDashboardPageBack')}
-          </button>
+      <div className="max-w-5xl mx-auto">
+        <Link
+          to="/ventures"
+          className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 mb-4 text-sm font-medium"
+        >
+          <ArrowLeft size={16} aria-hidden />
+          Back to Ventures
+        </Link>
+
+        <div className="mb-6">
+          <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('ventureDashboardPageTitle')}</h1>
+          <p className="text-gray-600 mt-1">{t('ventureDashboardPageSubtitle')}</p>
         </div>
 
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('listings')}
-          >
-            {t('ventureDashboardTabListings')}
-          </button>
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'likes' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('likes')}
-          >
-            {t('ventureDashboardTabLikes')}
-          </button>
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'incoming' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('incoming')}
-          >
-            {t('ventureDashboardTabIncoming')}
-          </button>
-          <button
-            className={`btn-glow btn-glow-sm ${tab === 'applied' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setTab('applied')}
-          >
-            {t('ventureDashboardTabApplied')}
-          </button>
+        <VentureSubNav activeRoute="dashboard" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          {Object.entries(SECTION_META).map(([key, meta]) => {
+            const selected = section === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSection(key)}
+                className={`text-left rounded-2xl border p-4 transition-all duration-200 ${
+                  selected
+                    ? 'border-indigo-300 bg-gradient-to-br from-indigo-50 to-white shadow-sm ring-1 ring-indigo-200'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl" aria-hidden>{meta.icon}</span>
+                  <span className="font-display text-lg font-semibold text-gray-900">{meta.label}</span>
+                </div>
+                <p className="text-sm text-gray-500 m-0">{meta.desc}</p>
+              </button>
+            );
+          })}
         </div>
 
-        {tab === 'listings'  && <MyListings />}
-        {tab === 'incoming'  && <IncomingApplications />}
-        {tab === 'applied'   && <MyApplications />}
-        {tab === 'likes'     && <LikesReceived />}
+        <div className="flex gap-2 mb-6 flex-wrap p-1 rounded-xl border border-gray-200 bg-gray-50/80">
+          {activeTabs.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              className={`btn-glow btn-glow-sm ${activeTab === id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              onClick={() => setActiveTab(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {section === 'venture' && ventureTab === 'incoming' && <IncomingPitches />}
+        {section === 'venture' && ventureTab === 'applied' && <MyPitches />}
+        {section === 'venture' && ventureTab === 'deals' && <MyDeals dealKind="VENTURE_SALE" emptyLabel="No venture deals yet" />}
+
+        {section === 'coventure' && coTab === 'applications' && <IncomingApplications />}
+        {section === 'coventure' && coTab === 'my-partnerships' && <MyApplications />}
+        {section === 'coventure' && coTab === 'deals' && (
+          <MyDeals dealKind="CO_VENTURE" emptyLabel="No partnership deals yet" />
+        )}
       </div>
     </AppLayout>
   );
@@ -106,11 +160,9 @@ function MyListings() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleVerified = (ventureId) => {
+  const handleVerified = () => {
     loadVentures();
     setVerifyTarget(null);
-    const venture = ventures.find(v => v.id === ventureId);
-    if (venture?.auction?.id) navigate(`/venture-auction/${venture.auction.id}`);
   };
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>;
@@ -134,7 +186,6 @@ function MyListings() {
             key={v.id}
             venture={v}
             onVerify={() => setVerifyTarget(v)}
-            onViewAuction={auctionId => navigate(`/venture-auction/${auctionId}`)}
             onListingChanged={loadVentures}
           />
         ))}
@@ -144,58 +195,47 @@ function MyListings() {
         <VentureGstinVerificationModal
           venture={verifyTarget}
           onClose={() => setVerifyTarget(null)}
-          onVerified={() => handleVerified(verifyTarget.id)}
+          onVerified={() => handleVerified()}
         />
       )}
     </>
   );
 }
 
-function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged }) {
+function VentureListingRow({ venture, onVerify, onListingChanged }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const navigate   = useNavigate();
-  const b          = venture.brandDetails || {};
-  const isAuction  = venture.saleType === 'AUCTION';
-  const auction    = venture.auction;
-  const auctionId  = auction?.id;
+  const navigate = useNavigate();
+  const b = venture.brandDetails || {};
+  const listingMode = venture.listingMode || 'VENTURE';
   const isInactive = venture.status === false;
   const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
-
-  const handleReactivate = async () => {
-    try {
-      await ventureAPI.setActive(venture.id, true);
-      onListingChanged?.();
-    } catch (err) {
-      alert(err.response?.data?.message || err.response?.data?.error || t('ventureDashboardCouldNotReactivate'));
-    }
-  };
+  const profileComplete = isVentureProfileComplete(venture);
 
   return (
     <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl flex-wrap gap-2 shadow-sm">
       <div>
-        <div className="font-semibold text-gray-900 flex items-center gap-2">
+        <div className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
           {b.brandName || '—'}
-          {isAuction ? (
-            <span className="text-[0.72rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
-              {t('ventureDashboardAuctionBadge')}
-            </span>
-          ) : (
-            <span className="text-[0.72rem] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
-              {t('ventureDashboardRegularBadge')}
-            </span>
-          )}
+          <span className={`text-[0.72rem] font-bold px-2 py-0.5 rounded border ${
+            listingMode === 'CO_VENTURE'
+              ? 'text-teal-600 bg-teal-50 border-teal-200'
+              : 'text-blue-600 bg-blue-50 border-blue-200'
+          }`}>
+            {listingMode === 'CO_VENTURE' ? 'Co-Venture' : 'Venture'}
+          </span>
+          <span className={`text-[0.68rem] font-semibold px-2 py-0.5 rounded border ${
+            profileComplete
+              ? 'text-green-700 bg-green-50 border-green-200'
+              : 'text-amber-700 bg-amber-50 border-amber-200'
+          }`}>
+            {profileComplete ? 'Profile complete' : 'Profile incomplete'}
+          </span>
         </div>
         <div className="text-xs text-gray-500 mt-1">
           {b.industry?.replace(/_/g, ' ')}
           {venture.stage && ` · ${venture.stage.replace(/_/g, ' ')}`}
-          {isAuction && auction && (
-            <span className={`ml-2 ${AUCTION_STATUS_COLORS[auction.status] || 'text-gray-500'}`}>
-              · Auction: {auction.status}
-              {(auction.status === 'ACTIVE' || auction.status === 'EXTENDED') &&
-                ` · ${auction.totalBids} bid${auction.totalBids !== 1 ? 's' : ''}`}
-            </span>
-          )}
+          {venture.ventureListingStatus && ` · ${venture.ventureListingStatus.replace(/_/g, ' ')}`}
         </div>
       </div>
 
@@ -220,45 +260,37 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
           </span>
         )}
 
-        {isAuction && auction?.currentHighestBid > 0 && (
-          <span className="text-sm font-bold text-green-600">
-            Top: {formatPrice(auction.currentHighestBid)}
-          </span>
-        )}
-        {isAuction && auction?.minBidPrice > 0 && !auction?.currentHighestBid && (
-          <span className="text-sm font-bold text-yellow-600">
-            Min: {formatPrice(auction.minBidPrice)}
-          </span>
+        {b.dealValue > 0 && listingMode === 'VENTURE' && (
+          <span className="text-sm font-bold text-green-600">{formatPrice(b.dealValue)}</span>
         )}
 
-        {isAuction && auctionId && auction.status !== 'DRAFT' && (
-          <button className="btn-glow btn-glow-sm"
-            onClick={() => onViewAuction(auctionId)}>
-            🔨 View Auction →
+        {!isGstinVerified && !isInactive && (
+          <button className="btn-glow btn-glow-sm" onClick={onVerify}>
+            Verify GSTIN (optional)
           </button>
         )}
 
-        {!isGstinVerified && !isInactive && (!isAuction || auction?.status === 'DRAFT') && (
-          <button className="btn-glow btn-glow-sm"
-            onClick={onVerify}>
-            {isAuction ? '🔍 Verify GSTIN (Starts Auction)' : '🔍 Verify GSTIN'}
-          </button>
-        )}
+        <button
+          type="button"
+          className="btn-secondary btn-sm text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200"
+          onClick={() => navigate(`/ventures/${venture.id}/edit#company-profile`)}
+        >
+          Edit Company Profile
+        </button>
 
         {isInactive && (
-          <>
-            <button className="btn-glow btn-glow-sm" onClick={handleReactivate}>
-              List again
-            </button>
-            <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => navigate(`/ventures/${venture.id}/edit`)}>
-              <EditActionLabel iconSize={16}>Edit</EditActionLabel>
-            </button>
-          </>
+          <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => navigate(`/ventures/${venture.id}/edit`)}>
+            <EditActionLabel iconSize={16}>Edit</EditActionLabel>
+          </button>
         )}
 
-        {!isAuction && !isInactive && (
+        {listingMode === 'CO_VENTURE' && venture.ventureListingStatus === 'PARTNERSHIP_FINALIZED' && (
+          <PartnershipTimelineCard ventureName={b.brandName} />
+        )}
+
+        {listingMode === 'CO_VENTURE' && venture.ventureListingStatus !== 'PARTNERSHIP_FINALIZED' && !isInactive && (
           <span className="text-xs text-gray-500">
-            {venture.coVentureApplicationCount || 0} application{venture.coVentureApplicationCount !== 1 ? 's' : ''}
+            {venture.coVentureApplicationCount || 0} partnership application{venture.coVentureApplicationCount !== 1 ? 's' : ''}
           </span>
         )}
       </div>
@@ -266,21 +298,382 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
   );
 }
 
-// ─── Incoming Applications (to MY ventures) ───────────────────────────────────
-function IncomingApplications() {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [expandedId, setExpandedId]     = useState(null);
+// ─── Incoming Pitches (venture sale) ──────────────────────────────────────────
+function isAcquisitionOffer(pitch) {
+  return pitch.venture?.dealType === 'FULL_ACQUISITION'
+    && Number(pitch.requestedEquityPercent) === 100;
+}
+
+function IncomingPitches() {
+  const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
+  const [pitches, setPitches] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [acceptAcknowledged, setAcceptAcknowledged] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
-    coVentureAPI.getMyVentureApplications(statusFilter || undefined)
+    venturePitchAPI.getReceived()
+      .then(({ data }) => setPitches(asArray(unwrapApiData(data) || data)))
+      .catch(() => setPitches([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const openAction = (type, pitch) => {
+    setAcceptAcknowledged(false);
+    setPendingAction({ type, pitch });
+  };
+
+  const closeAction = () => {
+    if (actionLoading) return;
+    setPendingAction(null);
+    setAcceptAcknowledged(false);
+  };
+
+  const confirmAction = async () => {
+    if (!pendingAction) return;
+    const { type, pitch } = pendingAction;
+    if (type === 'accept' && !acceptAcknowledged) return;
+
+    setActionLoading(pitch.id);
+    try {
+      if (type === 'accept') {
+        const { data } = await venturePitchAPI.finalizeDeal(pitch.ventureId, pitch.id);
+        const payload = unwrapApiData(data) || data;
+        const dealId = payload?.deal?.id;
+        if (dealId) navigate(`/ventures/deals/${dealId}`);
+        else load();
+      } else {
+        await venturePitchAPI.sellerReject(pitch.id);
+        load();
+      }
+      setPendingAction(null);
+      setAcceptAcknowledged(false);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Action failed.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const pendingPitch = pendingAction?.pitch;
+  const pendingAcquisition = pendingPitch ? isAcquisitionOffer(pendingPitch) : false;
+
+  if (loading) return <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>;
+  if (pitches.length === 0) return (
+    <div className="text-center py-20">
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No pitches yet</h3>
+      <p className="text-gray-600">Buyer pitches on your venture listings will appear here.</p>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        {pitches.map((pitch) => {
+          const s = PITCH_STATUS_META[pitch.status] || PITCH_STATUS_META.PENDING;
+          const buyer = pitch.buyer || {};
+          const acquisition = isAcquisitionOffer(pitch);
+          const buyerName = [buyer.firstname, buyer.lastname].filter(Boolean).join(' ') || 'Buyer';
+          return (
+            <div key={pitch.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="font-semibold text-gray-900">
+                      {pitch.venture?.brandName || 'Venture'}
+                    </div>
+                    {acquisition && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Acquisition Offer
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-700 mt-1">
+                    {buyerName} · {buyer.email}
+                    {buyer.phoneNumber && (
+                      <> · <a href={`tel:${buyer.phoneNumber}`} className="text-indigo-600 hover:underline">{buyer.phoneNumber}</a></>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-2">
+                    {acquisition ? (
+                      <>Offer Amount: {formatPrice(pitch.offeredAmount)} · 100% Acquisition</>
+                    ) : (
+                      <>Investor Offer: {formatPrice(pitch.offeredAmount)} · Requested Equity: {formatEquityPercent(pitch.requestedEquityPercent)}%</>
+                    )}
+                  </div>
+                  {pitch.investmentProposal && (
+                    <div className="mt-2">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Proposal</div>
+                      <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{pitch.investmentProposal}</p>
+                    </div>
+                  )}
+                  {pitch.additionalNotes && (
+                    <div className="mt-2">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Additional Notes</div>
+                      <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{pitch.additionalNotes}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                  style={{ background: s.bg, color: s.color }}>
+                  {s.icon} {s.label}
+                </div>
+              </div>
+              {['PENDING', 'SHORTLISTED', 'SELLER_ACCEPTED'].includes(pitch.status) && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="btn-glow btn-glow-sm"
+                    disabled={!!actionLoading}
+                    onClick={() => openAction('accept', pitch)}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm"
+                    disabled={!!actionLoading}
+                    onClick={() => openAction('reject', pitch)}
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {pendingAction?.type === 'accept' && pendingPitch && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
+          style={{ background: 'rgba(17, 24, 39, 0.42)' }}
+          onClick={(e) => e.target === e.currentTarget && closeAction()}
+        >
+          <div className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-2xl shadow-[0_24px_60px_rgba(17,24,39,0.2)] animate-slideUp overflow-hidden p-9 mx-4 md:mx-0">
+            <div className="text-[2rem] mb-3 text-center">🤝</div>
+            <h2 className="font-display text-[1.65rem] font-semibold mb-2 text-gray-900 text-center">
+              {pendingAcquisition ? 'Accept buyer and finalize deal?' : 'Accept pitch and finalize deal?'}
+            </h2>
+            <p className="text-gray-600 text-[0.9rem] mb-4 leading-relaxed text-center">
+              {pendingAcquisition
+                ? `You are selecting ${[pendingPitch.buyer?.firstname, pendingPitch.buyer?.lastname].filter(Boolean).join(' ') || 'this buyer'} for a full acquisition. Your listing will close and other pitches will be declined.`
+                : 'Accepting will select this investor, close your listing, and start the deal workflow with CoBrother.'}
+            </p>
+            <FormCheckbox
+              checked={acceptAcknowledged}
+              onChange={(e) => setAcceptAcknowledged(e.target.checked)}
+              className="mb-6 w-full"
+            >
+              I understand this action is final and will close my venture listing to other buyers
+            </FormCheckbox>
+            <div className="flex gap-3 justify-center items-center w-full max-w-[360px] mx-auto">
+              <button
+                type="button"
+                className="btn-glow flex-1 min-w-0"
+                disabled={!acceptAcknowledged || !!actionLoading}
+                onClick={confirmAction}
+              >
+                {actionLoading ? 'Processing…' : 'Accept & Finalize'}
+              </button>
+              <button type="button" className="btn-glow flex-1 min-w-0" onClick={closeAction} disabled={!!actionLoading}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={pendingAction?.type === 'reject'}
+        title="Reject this pitch?"
+        message="The buyer will be notified that their pitch was declined. This cannot be undone."
+        confirmLabel="Reject Pitch"
+        danger
+        onConfirm={confirmAction}
+        onCancel={closeAction}
+      />
+    </>
+  );
+}
+
+function MyPitches() {
+  const { formatPrice } = useCurrency();
+  const [pitches, setPitches] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    venturePitchAPI.getMy()
+      .then(({ data }) => setPitches(asArray(unwrapApiData(data) || data)))
+      .catch(() => setPitches([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>;
+  if (pitches.length === 0) return (
+    <div className="text-center py-20">
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No pitches yet</h3>
+      <p className="text-gray-600">Browse ventures and submit investment pitches.</p>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      {pitches.map((pitch) => {
+        const s = PITCH_STATUS_META[pitch.status] || PITCH_STATUS_META.PENDING;
+        return (
+          <div key={pitch.id} className="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap items-center gap-4 shadow-sm">
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-gray-900">{pitch.venture?.brandName || 'Venture'}</div>
+              <div className="text-xs text-gray-500">
+                Investor Offer: {formatPrice(pitch.offeredAmount)} · Requested Equity: {formatEquityPercent(pitch.requestedEquityPercent)}%
+              </div>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+              style={{ background: s.bg, color: s.color }}>
+              {s.icon} {s.label}
+            </div>
+            {pitch.status === 'PENDING' && (
+              <button className="btn-glow btn-glow-sm" onClick={() => venturePitchAPI.withdraw(pitch.id).then(() => setPitches((p) => p.filter((x) => x.id !== pitch.id)))}>
+                Withdraw
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MyDeals({ dealKind, emptyLabel = 'No deals yet' }) {
+  const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
+  const [deals, setDeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadDeals = useCallback(() => {
+    setLoading(true);
+    ventureDealAPI.getMy()
+      .then(({ data }) => {
+        const all = asArray(unwrapApiData(data) || data);
+        setDeals(dealKind ? all.filter((d) => d.dealKind === dealKind) : all);
+      })
+      .catch(() => setDeals([]))
+      .finally(() => setLoading(false));
+  }, [dealKind]);
+
+  useEffect(() => {
+    loadDeals();
+  }, [loadDeals]);
+
+  if (loading) return <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>;
+  if (deals.length === 0) return (
+    <div className="text-center py-20 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50">
+      <div className="text-5xl mb-4">{dealKind === 'CO_VENTURE' ? '🤝' : '💼'}</div>
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{emptyLabel}</h3>
+      <p className="text-gray-600">
+        {dealKind === 'CO_VENTURE'
+          ? 'Finalized partnership deals will appear here after you select a partner.'
+          : 'Finalized venture deals will appear here after you accept a pitch.'}
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      {deals.map((deal) => {
+        const isPartnership = deal.dealKind === 'CO_VENTURE';
+        const counterparty = isPartnership
+          ? (deal.partnerName || deal.buyer?.name || 'Partner')
+          : (deal.buyer?.name || deal.seller?.name || 'Counterparty');
+        const equityLabel = deal.venture?.equityPercentOffered != null
+          ? `${formatEquityPercent(deal.venture.equityPercentOffered)}% equity`
+          : null;
+
+        return (
+          <div key={deal.id} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-indigo-200 transition-colors">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="font-semibold text-gray-900">{deal.venture?.brandName || 'Deal'}</span>
+                  {isPartnership && (
+                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
+                      Partnership
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {isPartnership ? `Partner: ${counterparty}` : `Buyer: ${counterparty}`}
+                  {equityLabel ? ` · ${equityLabel}` : ''}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {(deal.dealStatus || '').replace(/_/g, ' ')}
+                  {!isPartnership && deal.grossAmountInr > 0 ? ` · ${formatPrice(deal.grossAmountInr)}` : ''}
+                  {isPartnership ? ' · CoBrother assisted' : ''}
+                </div>
+              </div>
+              <button type="button" className="btn-glow btn-glow-sm shrink-0" onClick={() => navigate(`/ventures/deals/${deal.id}`)}>
+                View Deal →
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function groupApplicationsByVenture(applications) {
+  const buckets = applications.reduce((acc, app) => {
+    const ventureId = app.venture?.id || app.ventureId || 'unknown';
+    if (!acc[ventureId]) {
+      acc[ventureId] = { venture: app.venture, apps: [] };
+    }
+    acc[ventureId].apps.push(app);
+    return acc;
+  }, {});
+
+  const nameCounts = {};
+  Object.values(buckets).forEach(({ venture }) => {
+    const name = venture?.brandDetails?.brandName || 'Unknown';
+    nameCounts[name] = (nameCounts[name] || 0) + 1;
+  });
+
+  return Object.entries(buckets).map(([ventureId, { venture, apps }]) => {
+    const brandName = venture?.brandDetails?.brandName || 'Unknown Venture';
+    const industry = venture?.brandDetails?.industry?.replace(/_/g, ' ');
+    const title = nameCounts[brandName] > 1
+      ? `${brandName}${industry ? ` · ${industry}` : ''}`
+      : brandName;
+    const subtitle = nameCounts[brandName] > 1
+      ? `Listing ${String(ventureId).slice(0, 8)}…`
+      : (industry || null);
+    return { ventureId, title, subtitle, venture, apps };
+  });
+}
+
+// ─── Incoming Applications (to MY ventures) ───────────────────────────────────
+function IncomingApplications() {
+  const navigate = useNavigate();
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [expandedId, setExpandedId]     = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [selectTarget, setSelectTarget] = useState(null);
+  const [selectAcknowledged, setSelectAcknowledged] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    coVentureAPI.getMyVentureApplications()
       .then(({ data }) => setApplications(Array.isArray(data) ? data : []))
       .catch(() => setApplications([]))
       .finally(() => setLoading(false));
-  }, [statusFilter]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -298,9 +691,38 @@ function IncomingApplications() {
     }
   };
 
+  const openSelectPartner = (app) => {
+    setSelectAcknowledged(false);
+    setSelectTarget(app);
+  };
+
+  const closeSelectPartner = () => {
+    if (actionLoading) return;
+    setSelectTarget(null);
+    setSelectAcknowledged(false);
+  };
+
+  const confirmSelectPartner = async () => {
+    if (!selectTarget || !selectAcknowledged) return;
+    setActionLoading(`${selectTarget.id}SELECT`);
+    try {
+      const { data } = await coVentureAPI.selectPartner(selectTarget.id);
+      const payload = data?.data ?? data ?? {};
+      const dealId = payload.dealId;
+      setSelectTarget(null);
+      setSelectAcknowledged(false);
+      if (dealId) navigate(`/ventures/deals/${dealId}`);
+      else load();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to select partner.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const exportCSV = () => {
     const rows = [
-      ['Applicant Name', 'Phone', 'Location', 'GST No', 'Venture', 'Status', 'Applied For', 'How can the User Help?'],
+      ['Partner Name', 'Phone', 'Location', 'GST No', 'Venture', 'Status', 'Equity Offered (%)', 'Contribution', 'Contribution Plan'],
       ...applications.map(a => [
         a.fullName || '',
         a.phone || '',
@@ -308,8 +730,9 @@ function IncomingApplications() {
         a.gstNo || '',
         a.venture?.brandDetails?.brandName || '',
         a.status || '',
-        TYPE_LABELS[a.venture?.brandDetails?.ventureType] || '',
+        formatEquityOfferedPct(a.venture?.equityPercentOffered ?? a.venture?.equity_percent_offered) || '',
         a.description || '',
+        a.contributionPlan || '',
       ])
     ];
     const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
@@ -320,30 +743,14 @@ function IncomingApplications() {
     URL.revokeObjectURL(url);
   };
 
-  const grouped = applications.reduce((acc, app) => {
-    const name = app.venture?.brandDetails?.brandName || 'Unknown Venture';
-    if (!acc[name]) acc[name] = [];
-    acc[name].push(app);
-    return acc;
-  }, {});
+  const grouped = groupApplicationsByVenture(applications);
 
   return (
     <div>
-      {/* Controls */}
-      <div className="flex gap-3 items-center mb-6 flex-wrap">
-        <div className="flex gap-2">
-          {['', 'PENDING', 'APPROVED', 'REJECTED'].map(s => (
-            <button
-              key={s}
-              className={`btn-glow btn-glow-sm ${statusFilter === s ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-              onClick={() => setStatusFilter(s)}
-            >
-              {s === '' ? 'All' : STATUS_META[s].label}
-            </button>
-          ))}
-        </div>
+      <div className="flex gap-3 items-center mb-6 flex-wrap justify-end">
         <button
-          className="btn-glow btn-glow-sm ml-auto"
+          type="button"
+          className="btn-glow btn-glow-sm"
           onClick={exportCSV}
           disabled={applications.length === 0}
         >
@@ -354,21 +761,25 @@ function IncomingApplications() {
       {loading ? (
         <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
       ) : applications.length === 0 ? (
-        <div className="text-center py-20">
+        <div className="text-center py-20 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50">
           <div className="text-6xl mb-4">📋</div>
-          <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No applications yet</h3>
-          <p className="text-gray-600">When someone applies to your ventures, they'll appear here.</p>
+          <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No partnership applications yet</h3>
+          <p className="text-gray-600">When someone applies to partner on your co-venture listings, they will appear here.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {Object.entries(grouped).map(([ventureName, apps]) => (
-            <div key={ventureName}>
-              <h3 className="text-gray-900 mb-3 text-base font-semibold">
-                {ventureName}
-                <span className="ml-2 text-gray-600 font-normal text-sm">
+          {grouped.map(({ ventureId, title, subtitle, apps }) => (
+            <div key={ventureId}>
+              <h3 className="text-gray-900 mb-1 text-base font-semibold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-teal-500" aria-hidden />
+                {title}
+                <span className="text-gray-500 font-normal text-sm">
                   ({apps.length} application{apps.length !== 1 ? 's' : ''})
                 </span>
               </h3>
+              {subtitle && (
+                <p className="text-xs text-gray-400 mb-3 ml-4">{subtitle}</p>
+              )}
               <div className="flex flex-col gap-3">
                 {apps.map(app => (
                   <ApplicationCard
@@ -378,6 +789,7 @@ function IncomingApplications() {
                     onToggle={() => setExpandedId(expandedId === app.id ? null : app.id)}
                     onApprove={() => handleStatusUpdate(app.id, 'APPROVED')}
                     onReject={() => handleStatusUpdate(app.id, 'REJECTED')}
+                    onSelectPartner={() => openSelectPartner(app)}
                     actionLoading={actionLoading}
                   />
                 ))}
@@ -386,74 +798,178 @@ function IncomingApplications() {
           ))}
         </div>
       )}
+
+      {selectTarget && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
+          style={{ background: 'rgba(17, 24, 39, 0.42)' }}
+          onClick={(e) => e.target === e.currentTarget && closeSelectPartner()}
+        >
+          <div className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-2xl shadow-[0_24px_60px_rgba(17,24,39,0.2)] animate-slideUp overflow-hidden p-9 mx-4 md:mx-0">
+            <div className="text-[2rem] mb-3 text-center">🤝</div>
+            <h2 className="font-display text-[1.65rem] font-semibold mb-2 text-gray-900 text-center">
+              Select partner and finalize partnership?
+            </h2>
+            <p className="text-gray-600 text-[0.9rem] mb-4 leading-relaxed text-center">
+              You are selecting <strong>{selectTarget.fullName || 'this applicant'}</strong> as your partner
+              for <strong>{selectTarget.venture?.brandDetails?.brandName || 'this co-venture'}</strong>.
+              Your listing will close to other applicants and CoBrother will assist both parties with next steps.
+            </p>
+            <FormCheckbox
+              checked={selectAcknowledged}
+              onChange={(e) => setSelectAcknowledged(e.target.checked)}
+              className="mb-6 w-full"
+            >
+              I understand this action is final and will close my co-venture listing to other applicants
+            </FormCheckbox>
+            <div className="flex gap-3">
+              <button type="button" className="btn-secondary flex-1" onClick={closeSelectPartner} disabled={!!actionLoading}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-glow flex-1"
+                disabled={!selectAcknowledged || !!actionLoading}
+                onClick={confirmSelectPartner}
+              >
+                {actionLoading === `${selectTarget.id}SELECT` ? 'Processing…' : 'Select Partner & Finalize'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function ApplicationCard({ app, expanded, onToggle, onApprove, onReject, actionLoading }) {
+function ApplicationCard({ app, expanded, onToggle, onApprove, onReject, onSelectPartner, actionLoading }) {
   const s = STATUS_META[app.status] || STATUS_META.PENDING;
+  const equityLabel = formatEquityOfferedPct(
+    app.venture?.equityPercentOffered ?? app.venture?.equity_percent_offered,
+  );
+
+  const stop = (e) => e.stopPropagation();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-      {/* Header row */}
-      <div
-        className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:border-teal-200/80 transition-colors">
+      <button
+        type="button"
+        className="w-full flex items-center gap-4 p-4 text-left hover:bg-gray-50/80 transition-colors"
         onClick={onToggle}
       >
-        <div className="w-[38px] h-[38px] rounded-full bg-purple-100 flex items-center justify-center font-bold text-purple-600 text-base flex-shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-100 to-indigo-100 flex items-center justify-center font-bold text-teal-700 text-base flex-shrink-0">
           {app.fullName?.[0]?.toUpperCase() || '?'}
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-gray-900">{app.fullName || 'Unknown'}</div>
-          <div className="text-xs text-gray-500">
-            {app.phone || '—'}{app.location ? ` · ${app.location}` : ''}
+          <div className="font-semibold text-gray-900">{app.fullName || 'Unknown applicant'}</div>
+          <div className="text-xs text-gray-500 mt-0.5 truncate">
+            {[app.phone, app.location].filter(Boolean).join(' · ') || 'No contact info'}
           </div>
+          {!expanded && app.description && (
+            <p className="text-xs text-gray-400 mt-1 line-clamp-1">{app.description}</p>
+          )}
         </div>
 
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium flex-shrink-0"
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0"
           style={{ background: s.bg, color: s.color }}>
           {s.icon} {s.label}
         </div>
 
-        <span className="text-gray-500 text-sm flex-shrink-0">
+        <span className="text-gray-400 text-sm flex-shrink-0 w-5 text-center" aria-hidden>
           {expanded ? '▲' : '▼'}
         </span>
-      </div>
+      </button>
 
-      {/* Expanded details */}
       {expanded && (
-        <div className="border-t border-gray-100 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <Detail label="Full Name" value={app.fullName} />
-            <Detail label="Phone" value={app.phone} />
-            <Detail label="Location" value={app.location} />
-            <Detail label="GST No" value={app.gstNo || 'Not provided'} />
-            <Detail label="How can the User Help?" value={app.description} />
-          </div>
+        <div className="border-t border-gray-100 px-4 pb-4 pt-3 bg-gradient-to-b from-gray-50/50 to-white">
+          {equityLabel && (
+            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-100 text-xs font-semibold text-teal-800">
+              Equity offered on listing: {equityLabel}
+            </div>
+          )}
 
-          {app.status === 'PENDING' && (
-            <div className="flex gap-3 mt-2">
+          <ApplicationDetailSection title="Contact & Identity">
+            <DetailGrid>
+              <Detail label="Full Name" value={app.fullName} />
+              <Detail label="Phone" value={app.phone} />
+              <Detail label="Location" value={app.location} />
+              <Detail label="GST No" value={app.gstNo || 'Not provided'} />
+            </DetailGrid>
+          </ApplicationDetailSection>
+
+          <ApplicationDetailSection title="Contribution">
+            <DetailGrid>
+              <Detail label="Contribution Statement" value={app.description} wide />
+              <Detail label="Contribution Plan" value={app.contributionPlan} wide />
+              <Detail label="Motivation" value={app.motivation} wide />
+            </DetailGrid>
+          </ApplicationDetailSection>
+
+          {(app.experienceSummary || app.relevantExperience || app.skills || app.previousVentures) && (
+            <ApplicationDetailSection title="Partner Profile">
+              <DetailGrid>
+                <Detail label="Experience Summary" value={app.experienceSummary} wide />
+                <Detail label="Relevant Experience" value={app.relevantExperience} wide />
+                <Detail label="Skills" value={app.skills} />
+                <Detail label="Previous Ventures" value={app.previousVentures} wide />
+              </DetailGrid>
+            </ApplicationDetailSection>
+          )}
+
+          {(app.linkedinUrl || app.portfolioUrl) && (
+            <ApplicationDetailSection title="Links">
+              <DetailGrid>
+                {app.linkedinUrl && (
+                  <Detail label="LinkedIn" value={<a href={app.linkedinUrl} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline break-all">{app.linkedinUrl}</a>} />
+                )}
+                {app.portfolioUrl && (
+                  <Detail label="Portfolio" value={<a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline break-all">{app.portfolioUrl}</a>} />
+                )}
+              </DetailGrid>
+            </ApplicationDetailSection>
+          )}
+
+          {(app.status === 'PENDING' || app.status === 'APPROVED') && (
+            <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100 flex-wrap" onClick={stop}>
+              {app.status === 'PENDING' && (
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm flex items-center gap-2"
+                  onClick={onApprove}
+                  disabled={actionLoading !== null}
+                >
+                  {actionLoading === app.id + 'APPROVED' ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : '★ Shortlist'}
+                </button>
+              )}
               <button
-                className="btn-glow btn-glow-sm flex items-center gap-2"
-                onClick={onApprove}
+                type="button"
+                className="btn-glow btn-glow-sm bg-gray-900 text-white border-gray-900 flex items-center gap-2"
+                onClick={onSelectPartner}
                 disabled={actionLoading !== null}
               >
-                {actionLoading === app.id + 'APPROVED' ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : '✓ Approve'}
+                {actionLoading === `${app.id}SELECT` ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '🤝 Select Partner'}
               </button>
               <button
+                type="button"
                 className="px-4 py-2 bg-red-500 border border-red-500 text-white rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 onClick={onReject}
                 disabled={actionLoading !== null}
               >
-                {actionLoading === app.id + 'REJECTED' ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '✕ Reject'}
+                {actionLoading === app.id + 'REJECTED' ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '✕ Decline'}
               </button>
             </div>
           )}
 
-          {app.status !== 'PENDING' && (
-            <div className="text-xs text-gray-500 mt-1">
-              Application has been {app.status.toLowerCase()}.
+          {app.status === 'SELECTED' && (
+            <div className="mt-4">
+              <PartnershipTimelineCard ventureName={app.venture?.brandDetails?.brandName} partnerName={app.fullName} />
+            </div>
+          )}
+
+          {app.status === 'REJECTED' && (
+            <div className="text-xs text-gray-500 mt-3 px-1">
+              This partnership application was declined.
             </div>
           )}
         </div>
@@ -466,6 +982,7 @@ function ApplicationCard({ app, expanded, onToggle, onApprove, onReject, actionL
 function MyApplications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading]           = useState(true);
+  const [expandedId, setExpandedId]     = useState(null);
 
   useEffect(() => {
     coVentureAPI.getMyApplications()
@@ -477,35 +994,64 @@ function MyApplications() {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>;
 
   if (applications.length === 0) return (
-    <div className="text-center py-20">
+    <div className="text-center py-20 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50">
       <div className="text-6xl mb-4">🚀</div>
-      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No applications yet</h3>
-      <p className="text-gray-600">Browse ventures and apply to co-venture with other founders.</p>
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No partnership applications yet</h3>
+      <p className="text-gray-600">Browse co-venture listings and apply to join as a partner or co-founder.</p>
     </div>
   );
 
   return (
     <div className="flex flex-col gap-3">
       {applications.map(app => {
-        const b = app.venture?.brandDetails || {};
+        const venture = app.venture || {};
+        const b = venture.brandDetails || {};
         const s = STATUS_META[app.status] || STATUS_META.PENDING;
         const brandImage = pickMediaUrl(b);
+        const equityLabel = formatEquityOfferedPct(
+          venture.equityPercentOffered ?? venture.equity_percent_offered,
+        );
+        const expanded = expandedId === app.id;
+
         return (
-          <div key={app.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4 flex-wrap shadow-sm">
-            {brandImage
-              ? <img src={brandImage} alt={b.brandName} className="w-10 h-10 rounded-lg object-cover" />
-              : <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center font-bold text-purple-600">{b.brandName?.[0] || '?'}</div>
-            }
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-gray-900">{b.brandName || 'Unknown Venture'}</div>
-              <div className="text-xs text-gray-500">
-                {b.industry?.replace(/_/g, ' ')}{b.ventureType ? ` · ${TYPE_LABELS[b.ventureType] || b.ventureType}` : ''}
+          <div key={app.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            <button
+              type="button"
+              className="w-full p-4 flex items-center gap-4 text-left hover:bg-gray-50/80 transition-colors"
+              onClick={() => setExpandedId(expanded ? null : app.id)}
+            >
+              {brandImage
+                ? <img src={brandImage} alt={b.brandName} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+                : <div className="w-11 h-11 rounded-xl bg-teal-100 flex items-center justify-center font-bold text-teal-700 flex-shrink-0">{b.brandName?.[0] || '?'}</div>
+              }
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-gray-900">{b.brandName || 'Unknown Venture'}</div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  {b.industry?.replace(/_/g, ' ')}{equityLabel ? ` · ${equityLabel} equity` : ''}
+                </div>
               </div>
-            </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
-              style={{ background: s.bg, color: s.color }}>
-              {s.icon} {s.label}
-            </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0"
+                style={{ background: s.bg, color: s.color }}>
+                {s.icon} {s.label}
+              </div>
+              <span className="text-gray-400 text-sm flex-shrink-0">{expanded ? '▲' : '▼'}</span>
+            </button>
+
+            {expanded && (
+              <div className="border-t border-gray-100 px-4 pb-4 pt-3 bg-gray-50/40">
+                <ApplicationDetailSection title="Your Application">
+                  <DetailGrid>
+                    <Detail label="Contribution" value={app.description} wide />
+                    <Detail label="Contribution Plan" value={app.contributionPlan} wide />
+                    <Detail label="Skills" value={app.skills} />
+                    <Detail label="Location" value={app.location} />
+                  </DetailGrid>
+                </ApplicationDetailSection>
+                {app.status === 'SELECTED' && (
+                  <PartnershipTimelineCard ventureName={b.brandName} partnerName={app.fullName} />
+                )}
+              </div>
+            )}
           </div>
         );
       })}
@@ -514,11 +1060,25 @@ function MyApplications() {
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
-function Detail({ label, value }) {
+function ApplicationDetailSection({ title, children }) {
   return (
-    <div>
-      <div className="text-xs text-gray-500 mb-1">{label}</div>
-      <div className="text-sm text-gray-700">{value || '—'}</div>
+    <section className="mb-4 last:mb-0">
+      <h4 className="text-[0.68rem] font-bold uppercase tracking-wider text-gray-500 mb-2 m-0">{title}</h4>
+      {children}
+    </section>
+  );
+}
+
+function DetailGrid({ children }) {
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{children}</div>;
+}
+
+function Detail({ label, value, wide = false }) {
+  if (!value) return null;
+  return (
+    <div className={`rounded-xl border border-gray-100 bg-white px-3 py-2.5 ${wide ? 'md:col-span-2' : ''}`}>
+      <div className="text-[0.65rem] font-semibold uppercase tracking-wide text-gray-400 mb-1">{label}</div>
+      <div className="text-sm text-gray-800 whitespace-pre-wrap break-words">{value}</div>
     </div>
   );
 }

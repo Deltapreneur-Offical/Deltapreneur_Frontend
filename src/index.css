@@ -2081,13 +2081,14 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 20px 60px rgba(17, 24, 39, 0.18);
+  -webkit-overflow-scrolling: touch;
 }
 .venture-detail-modal .modal-header h2,
 .venture-detail-modal h2 { color: #111827; }
 
 @media (max-width: 639px) {
   .venture-detail-modal {
-    -webkit-overflow-scrolling: touch;
+    max-height: 92vh;
   }
 }
 

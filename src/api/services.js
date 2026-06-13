@@ -36,7 +36,6 @@ export const ventureAPI = {
   create:       (data)    => api.post('/api/v1/venture/', data),
   update:       (id, data)=> api.put(`/api/v1/venture/${id}`, data),
   delete:       (id)      => api.delete(`/api/v1/venture/${id}`),
-  // Add to ventureAPI:
   uploadImage: (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -44,15 +43,45 @@ export const ventureAPI = {
         headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
+  upsertCompanyProfile: (id, data) => api.put(`/api/v1/venture/${id}/company-profile`, data),
 };
 
-// ─── CoVenture ───────────────────────────────────────────────────────────────
+// Submits both equity-sale investment pitches and full-acquisition offers
+// (seller-selected flow); the backend distinguishes by listing deal type.
+export const venturePitchAPI = {
+  submit:         (ventureId, data) => api.post(`/api/v1/venture-pitches/venture/${ventureId}`, data),
+  getMy:          ()                => api.get('/api/v1/venture-pitches/my'),
+  getReceived:    ()                => api.get('/api/v1/venture-pitches/received'),
+  getOne:         (id)               => api.get(`/api/v1/venture-pitches/${id}`),
+  sellerAccept:   (id)               => api.post(`/api/v1/venture-pitches/${id}/seller/accept`),
+  sellerReject:   (id)               => api.post(`/api/v1/venture-pitches/${id}/seller/reject`),
+  sellerShortlist:(id)               => api.post(`/api/v1/venture-pitches/${id}/seller/shortlist`),
+  withdraw:       (id)               => api.post(`/api/v1/venture-pitches/${id}/cancel`),
+  finalizeDeal:   (ventureId, pitchId) =>
+    api.post(`/api/v1/venture-pitches/venture/${ventureId}/finalize-deal`, { pitchId }),
+  closeListing:   (ventureId)        => api.post(`/api/v1/venture-pitches/venture/${ventureId}/close`),
+  adminGetAll:    ()                 => api.get('/api/v1/venture-pitches/admin/all'),
+};
+
+export const ventureDealAPI = {
+  getMy:              ()     => api.get('/api/v1/venture-deals/my'),
+  get:                (id)   => api.get(`/api/v1/venture-deals/${id}`),
+  createPaymentOrder: (id)   => api.post(`/api/v1/venture-deals/${id}/payment/create-order`),
+  verifyPayment:      (id, data) => api.post(`/api/v1/venture-deals/${id}/payment/verify`, data),
+  adminGetAll:        ()     => api.get('/api/v1/venture-deals/admin/all'),
+  adminApproveDeal:   (id)   => api.post(`/api/v1/venture-deals/${id}/admin/approve`),
+  adminRejectDeal:    (id, reason) => api.post(`/api/v1/venture-deals/${id}/admin/reject`, { reason }),
+  adminReleaseEscrow: (id)   => api.post(`/api/v1/venture-deals/admin/${id}/release-escrow`),
+};
+
+// ─── CoVenture (partnership applications) ────────────────────────────────────
 export const coVentureAPI = {
   apply:                  (ventureId, data) => api.post(`/api/v1/coventure/${ventureId}`, data),
   checkApplied:           (ventureId)       => api.get(`/api/v1/coventure/${ventureId}/my-status`),
   getMyApplications:      ()                => api.get('/api/v1/coventure/my-applications'),
   getMyVentureApplications: (status)        => api.get('/api/v1/coventure/my-venture-applications', { params: { status } }),
   updateStatus:           (id, status)      => api.put(`/api/v1/coventure/${id}/status`, { status }),
+  selectPartner:          (id)              => api.post(`/api/v1/coventure/${id}/select-partner`),
 };
 
 // ─── Venture Auction ─────────────────────────────────────────────────────────
@@ -70,6 +99,23 @@ export const ventureAuctionAPI = {
   participationCreateOrder: (auctionId) => api.post(`/api/v1/venture-auction/${auctionId}/participation/create-order`),
   participationVerify: (auctionId, data) => api.post(`/api/v1/venture-auction/${auctionId}/participation/verify`, data),
   adminGetAll:   ()                   => api.get('/api/v1/venture-auction/admin/all'),
+  adminApprove:  (auctionId)          => api.post(`/api/v1/venture-auction/admin/${auctionId}/approve`),
+  adminReject:   (auctionId, reason)  => api.post(`/api/v1/venture-auction/admin/${auctionId}/reject`, { reason }),
+  sellerAcceptWinner: (auctionId)     => api.post(`/api/v1/venture-auction/${auctionId}/seller/accept-winner`),
+  sellerRejectWinner: (auctionId)     => api.post(`/api/v1/venture-auction/${auctionId}/seller/reject-winner`),
+};
+
+// ─── Venture Acquisitions ────────────────────────────────────────────────────
+export const ventureAcquisitionAPI = {
+  apply:         (ventureId, data)    => api.post(`/api/v1/venture-acquisitions/venture/${ventureId}/apply`, data),
+  getMy:         ()                   => api.get('/api/v1/venture-acquisitions/my'),
+  getReceived:   ()                   => api.get('/api/v1/venture-acquisitions/received'),
+  getOne:        (id)                 => api.get(`/api/v1/venture-acquisitions/${id}`),
+  sellerAccept:  (id)                 => api.post(`/api/v1/venture-acquisitions/${id}/seller/accept`),
+  sellerReject:  (id)                 => api.post(`/api/v1/venture-acquisitions/${id}/seller/reject`),
+  cancel:        (id)                 => api.post(`/api/v1/venture-acquisitions/${id}/cancel`),
+  adminGetAll:   ()                   => api.get('/api/v1/venture-acquisitions/admin/all'),
+  adminComplete: (id)                 => api.post(`/api/v1/venture-acquisitions/admin/${id}/complete`),
 };
 // ─── Creator (community profiles) ────────────────────────────────────────────
 export const creatorAPI = {

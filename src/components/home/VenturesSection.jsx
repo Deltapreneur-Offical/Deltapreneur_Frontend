@@ -11,6 +11,7 @@ import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import VentureListingCard from '../listings/VentureListingCard';
+import '../../styles/domain-listing-cards.css';
 
 export default function VenturesSection() {
   const { t } = useTranslation();
@@ -58,7 +59,7 @@ export default function VenturesSection() {
           <HomePreviewRow>
             {previewVentures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
-                <ListingCardShell>
+                <ListingCardShell className="home-preview-card-shell">
                   <VentureListingCard
                     venture={venture}
                     browseMode

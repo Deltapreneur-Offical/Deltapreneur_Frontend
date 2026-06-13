@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { domainAPI, domainStorefrontAPI, technologyAPI, domainTransferAPI } from '../api/services';
+import { domainAPI, domainStorefrontAPI, technologyAPI, domainTransferAPI, ventureDealAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -13,6 +13,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import { asArray } from '../utils/asArray';
+import { unwrapApiData } from '../utils/apiResponse';
 import { extractDomainList } from '../utils/domainApiAdapter';
 import {
   isRegistrationPurchase,
@@ -35,6 +36,7 @@ export default function PurchasesPage() {
   const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
   const [domainTransfers, setDomainTransfers] = useState([]);
+  const [venturePurchases, setVenturePurchases] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -43,14 +45,19 @@ export default function PurchasesPage() {
       domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
       domainTransferAPI.listBuyer().catch(() => ({ data: { items: [] } })),
-    ]).then(([d, reg, s, transfers]) => {
+      ventureDealAPI.getMy().catch(() => ({ data: [] })),
+    ]).then(([d, reg, s, transfers, ventureDeals]) => {
       setDomains(extractDomainList(d.data));
       const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
       setRegistrations(regList.filter(isRegistrationPurchase));
       setSwPurchases(asArray(s.data));
       setDomainTransfers(transfers.data?.items || []);
+      const deals = asArray(unwrapApiData(ventureDeals.data) || ventureDeals.data);
+      setVenturePurchases(
+        deals.filter((deal) => deal.buyerId && user?.id && deal.buyerId === user.id)
+      );
     }).finally(() => setLoading(false));
-  }, []);
+  }, [user?.id]);
 
   const completedDomains = asArray(domains).filter(d =>
     d.paymentStatus === 'COMPLETED' ||
@@ -60,8 +67,9 @@ export default function PurchasesPage() {
   );
   const completedRegistrations = asArray(registrations);
   const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
+  const completedVentures = asArray(venturePurchases);
   const domainTabCount = completedDomains.length + completedRegistrations.length + domainTransfers.length;
-  const totalItems = domainTabCount + completedSoftware.length;
+  const totalItems = domainTabCount + completedSoftware.length + completedVentures.length;
 
   const domainTabItems = [
     ...domainTransfers.map((tx) => ({ ...tx, _type: 'domain_transfer' })),
@@ -72,9 +80,11 @@ export default function PurchasesPage() {
   const displayItems =
     tab === 'domains' ? domainTabItems
     : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
+    : tab === 'ventures' ? completedVentures.map(d => ({ ...d, _type: 'venture' }))
     : [
         ...domainTabItems,
         ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
+        ...completedVentures.map(d => ({ ...d, _type: 'venture' })),
       ];
 
   return (
@@ -93,10 +103,16 @@ export default function PurchasesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatCard label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })} value={totalItems} iconSrc={PurchaseIcon} />
           <StatCard label={t('purchasesStatDomains', { defaultValue: 'Domains' })} value={domainTabCount} iconSrc={DomainsIcon} color="#6eadc8" />
           <StatCard label={t('purchasesStatSoftware', { defaultValue: 'Software' })} value={completedSoftware.length} iconSrc={SoftwareIcon} color="#a06ec8" />
+          <StatCard
+            label={t('purchasesStatVentures', { defaultValue: 'Ventures' })}
+            value={completedVentures.length}
+            iconSrc={CoBrotherIcon}
+            color="#d97706"
+          />
           <StatCard
             label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
             value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
@@ -110,6 +126,7 @@ export default function PurchasesPage() {
             { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
             { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
             { id: 'software', label: `${t('purchasesTabSoftware', { defaultValue: 'Software' })} (${completedSoftware.length})` },
+            { id: 'ventures', label: `${t('purchasesTabVentures', { defaultValue: 'Ventures' })} (${completedVentures.length})` },
           ].map((tabItem) => (
             <button
               key={tabItem.id}
@@ -145,6 +162,9 @@ export default function PurchasesPage() {
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
                 {t('browseTechnology', { defaultValue: 'Browse Technology' })}
               </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures')}>
+                {t('browseVentures', { defaultValue: 'Browse Ventures' })}
+              </button>
             </div>
           </div>
         ) : (
@@ -171,6 +191,8 @@ export default function PurchasesPage() {
                   user={user}
                   t={t}
                 />
+              ) : item._type === 'venture' ? (
+                <VenturePurchaseRow key={'v-' + item.id} deal={item} formatPrice={formatPrice} />
               ) : item._type === 'domain' ? (
                 <DomainPurchaseRow
                   key={'d-' + item.id}
@@ -224,6 +246,35 @@ export default function PurchasesPage() {
         </div>
       )}
     </AppLayout>
+  );
+}
+
+function VenturePurchaseRow({ deal, formatPrice }) {
+  const { t } = useTranslation();
+  const statusLabel = deal.dealStatus?.replace(/_/g, ' ') || '—';
+  return (
+    <Link
+      to={`/ventures/deals/${deal.id}`}
+      className="flex items-center justify-between bg-white border border-amber-100 rounded-xl px-5 py-4 hover:border-amber-300 shadow-sm"
+    >
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded">
+            ◇ {t('purchasesBadgeVenture', { defaultValue: 'Venture' })}
+          </span>
+        </div>
+        <div className="font-bold text-gray-900">{deal.venture?.brandName || 'Venture deal'}</div>
+        <div className="text-sm text-gray-500">{statusLabel}</div>
+      </div>
+      <div className="text-right">
+        <div className="font-display text-lg font-bold text-amber-700">
+          {formatPrice(deal.grossAmountInr || 0)}
+        </div>
+        <span className="text-amber-600 text-sm font-semibold">
+          {t('purchasesViewDeal', { defaultValue: 'View deal' })} →
+        </span>
+      </div>
+    </Link>
   );
 }
 

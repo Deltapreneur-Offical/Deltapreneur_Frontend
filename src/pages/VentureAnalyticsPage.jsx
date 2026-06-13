@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { analyticsAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import VentureSubNav from '../components/venture/VentureSubNav';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 
@@ -108,24 +109,16 @@ export default function VentureAnalyticsPage() {
 
   return (
     <AppLayout>
-<div className="flex items-start justify-between mb-6">
-  <div>
-    <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
-      {t('ventureAnalyticsTitle')}
-    </h1>
+      <div className="mb-2">
+        <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
+          {t('ventureAnalyticsTitle')}
+        </h1>
+        <p className="text-gray-600 mt-1 font-medium">
+          {t('ventureAnalyticsSubtitle')}
+        </p>
+      </div>
 
-    <p className="text-gray-600 mt-1 font-medium">
-      {t('ventureAnalyticsSubtitle')}
-    </p>
-  </div>
-
-  <button
-    className="btn-glow btn-glow-sm"
-    onClick={() => navigate('/ventures')}
-  >
-    {t('ventureAnalyticsBack')}
-  </button>
-</div>
+      <VentureSubNav activeRoute="analytics" />
 
 
         {/* Venture selector */}

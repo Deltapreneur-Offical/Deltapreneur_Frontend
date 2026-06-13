@@ -39,7 +39,10 @@ export function isHomepageVerifiedListing(item, type = 'domain') {
   if (!item) return false;
   if (type === 'domain') return Boolean(item.verified);
   if (type === 'software') return Boolean(item.verified);
-  if (type === 'venture') return Boolean(item.verified || item.gstinVerified);
+  if (type === 'venture') {
+    const status = item.listingApprovalStatus ?? item.listing_approval_status;
+    return status === 'APPROVED';
+  }
   if (type === 'community') {
     return isCreatorProfileComplete(item);
   }

@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import VentureListingCard from '../components/listings/VentureListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
-import { VENTURE_EQUITY_TYPE_LABELS } from '../constants/ventureLabels';
+import { VENTURE_EQUITY_TYPE_LABELS, formatEquityOfferedPct } from '../constants/ventureLabels';
 import { useTranslation } from 'react-i18next';
-import { coVentureAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
+import { coVentureAPI, ventureAPI, ventureDealAPI, venturePitchAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import CoVentureModal from '../components/venture/CoVentureModal';
+import VenturePitchModal from '../components/venture/VenturePitchModal';
+import VentureOfferModal from '../components/venture/VentureOfferModal';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
@@ -19,20 +21,27 @@ import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import DashboardIcon from '../assets/Dashboard.png';
 import VentureLogo from '../assets/Coventure_logo.png';
+import VentureSubNav from '../components/venture/VentureSubNav';
+import { resolveVenturePublicContact } from '../utils/ventureProfileUtils';
 import { APP_BASE_URL } from '../config/urls';
 import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { asArray } from '../utils/asArray';
 import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
+import VentureListingTypeGuide from '../components/venture/VentureListingTypeGuide';
+import { isCoVentureListing, isFullAcquisitionListing, isEquitySaleListing, resolveSellerAskSummary, resolveVentureInterestCount, formatVentureAskingPrice } from '../utils/ventureListingHelpers';
+import { unwrapApiData } from '../utils/apiResponse';
+import VentureCompanyProfileSummary from '../components/venture/VentureCompanyProfileSummary';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading }  = useAuth();
   const { currency, getSymbol } = useCurrency();
   const navigate  = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') === 'mine' ? 'mine' : 'all';
 
   const [allVentures, setAllVentures]       = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -40,8 +49,22 @@ export default function VenturesPage() {
   const [verifyTarget, setVerifyTarget]     = useState(null);
   const [detailTarget, setDetailTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget]     = useState(null);
-  const [filterTab, setFilterTab]           = useState('all');
+  const [filterTab, setFilterTab]           = useState(tabFromUrl);
+
+  const handleMarketplaceTabChange = (tab) => {
+    setFilterTab(tab);
+    if (tab === 'mine') {
+      setSearchParams({ tab: 'mine' }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  useEffect(() => {
+    setFilterTab(tabFromUrl);
+  }, [tabFromUrl]);
   const [appliedVentureIds, setAppliedVentureIds] = useState(() => new Set());
+  const [ventureDealByVentureId, setVentureDealByVentureId] = useState(() => new Map());
   const [accessNotice, setAccessNotice]       = useState('');
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', allVentures);
@@ -93,18 +116,49 @@ export default function VenturesPage() {
   }, [filterTab]);
 
   useEffect(() => {
-    coVentureAPI.getMyApplications()
-      .then(({ data }) => {
-        const items = asArray(data);
-        const ids = new Set(
-          items
-            .map((item) => item?.ventureId || item?.venture_id || item?.venture?.id)
-            .filter(Boolean),
-        );
-        setAppliedVentureIds(ids);
-      })
-      .catch(() => setAppliedVentureIds(new Set()));
+    Promise.all([
+      venturePitchAPI.getMy().catch(() => ({ data: [] })),
+      coVentureAPI.getMyApplications().catch(() => ({ data: [] })),
+    ]).then(([pitchRes, coRes]) => {
+      const ids = new Set();
+      asArray(pitchRes.data)
+        .filter((p) => ['PENDING', 'SHORTLISTED', 'SELLER_ACCEPTED', 'DEAL_SELECTED'].includes(p.status))
+        .forEach((p) => { if (p.ventureId) ids.add(p.ventureId); });
+      asArray(coRes.data)
+        .filter((a) => a.status === 'PENDING' || a.status === 'APPROVED')
+        .forEach((a) => {
+          const id = a.ventureId || a.venture?.id;
+          if (id) ids.add(id);
+        });
+      setAppliedVentureIds(ids);
+    });
   }, []);
+
+  useEffect(() => {
+    ventureDealAPI.getMy()
+      .then(({ data }) => {
+        const deals = asArray(unwrapApiData(data) ?? data);
+        const map = new Map();
+        deals.forEach((deal) => {
+          const ventureId = deal.ventureId;
+          if (!ventureId) return;
+          if (['PENDING_ADMIN_APPROVAL', 'PENDING_PAYMENT', 'PAYMENT_HELD', 'IN_PROGRESS', 'COMPLETED'].includes(deal.dealStatus)) {
+            map.set(ventureId, deal);
+          }
+        });
+        setVentureDealByVentureId(map);
+      })
+      .catch(() => setVentureDealByVentureId(new Map()));
+  }, []);
+
+  const handleBuyerAction = (venture) => {
+    const existingDeal = ventureDealByVentureId.get(venture.id);
+    if (existingDeal?.id) {
+      navigate(`/ventures/deals/${existingDeal.id}`);
+      return;
+    }
+    setApplyTarget(venture);
+  };
 
   const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: allVentures,
@@ -144,54 +198,18 @@ export default function VenturesPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-start lg:justify-between min-w-0">
-          <div className="min-w-0">
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">{t('venturesPageSubtitle')}</p>
-          </div>
-          <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto lg:justify-end shrink-0">
-            <button
-              type="button"
-              className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none"
-              onClick={() => navigate('/ventures/dashboard')}
-            >
-              <img src={DashboardIcon} alt="" className="w-[18px] h-[18px] shrink-0" />
-              <span>{t('dashboard')}</span>
-            </button>
-            <button
-              type="button"
-              className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none"
-              onClick={() => navigate('/ventures/analytics')}
-            >
-              <span aria-hidden>📈</span>
-              <span>{t('analytics')}</span>
-            </button>
-            <Link
-              to="/ventures/new"
-              className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap"
-            >
-              {t('venturesPageListVentureCta')}
-            </Link>
-          </div>
-        </div>
+      <div className="mb-2 min-w-0">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
+        <p className="text-gray-600 mt-1 text-sm sm:text-base">{t('venturesPageSubtitle')}</p>
+      </div>
 
-        {/* ── Tabs ── */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button
-            type="button"
-            className={`btn-glow btn-glow-sm text-sm py-2.5 px-4 min-h-[44px] ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}
-          >
-            {t('allVentures')}
-          </button>
-          <button
-            type="button"
-            className={`btn-glow btn-glow-sm text-sm py-2.5 px-4 min-h-[44px] ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}
-          >
-            {t('venturesPageMyVentures')}
-          </button>
-        </div>
+      <VentureSubNav
+        activeRoute="marketplace"
+        marketplaceTab={filterTab}
+        onMarketplaceTabChange={handleMarketplaceTabChange}
+      />
+
+      <VentureListingTypeGuide />
 
         {accessNotice && (
           <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
@@ -252,11 +270,12 @@ export default function VenturesPage() {
                   venture={v}
                   isOwner={isListingOwner(v, user, 'venture')}
                   hasApplied={appliedVentureIds.has(v.id)}
+                  hasActiveDeal={ventureDealByVentureId.has(v.id)}
                   showVerifyButton={false}
                   likeState={getLike(v.id)}
                   onLike={() => toggleLike(v.id)}
                   onView={() => openDetailIfAllowed(v)}
-                  onApply={() => setApplyTarget(v)}
+                  onApply={() => handleBuyerAction(v)}
                   onVerify={() => setVerifyTarget(v)}
                   onEdit={() => navigate(`/ventures/${v.id}/edit`)}
                   onDelete={() => setDeleteTarget(v.id)}
@@ -277,24 +296,47 @@ export default function VenturesPage() {
           venture={detailTarget}
           isOwner={isListingOwner(detailTarget, user, 'venture')}
           hasApplied={appliedVentureIds.has(detailTarget.id)}
+          hasActiveDeal={ventureDealByVentureId.has(detailTarget.id)}
+          activeDealId={ventureDealByVentureId.get(detailTarget.id)?.id}
           onClose={() => { closeListingDetail(); refreshVentures(); }}
-          onApply={() => { setApplyTarget(detailTarget); closeListingDetail(); }}
+          onApply={() => { handleBuyerAction(detailTarget); closeListingDetail(); }}
           onEdit={() => { navigate(`/ventures/${detailTarget.id}/edit`); closeListingDetail(); }}
           onDelete={() => { setDeleteTarget(detailTarget.id); closeListingDetail(); }}
         />
       )}
 
-      {applyTarget && (
+      {applyTarget && isFullAcquisitionListing(applyTarget) && (
+        <VentureOfferModal
+          venture={applyTarget}
+          onClose={() => setApplyTarget(null)}
+          onSubmitted={() => {
+            setAppliedVentureIds((prev) => new Set(prev).add(applyTarget.id));
+            setApplyTarget(null);
+            refreshVentures();
+          }}
+        />
+      )}
+
+      {applyTarget && isEquitySaleListing(applyTarget) && (
+        <VenturePitchModal
+          venture={applyTarget}
+          onClose={() => setApplyTarget(null)}
+          onSubmitted={() => {
+            setAppliedVentureIds((prev) => new Set(prev).add(applyTarget.id));
+            setApplyTarget(null);
+            refreshVentures();
+          }}
+        />
+      )}
+
+      {applyTarget && isCoVentureListing(applyTarget) && (
         <CoVentureModal
           venture={applyTarget}
           onClose={() => setApplyTarget(null)}
-          onApplied={(ventureId) => {
-            if (!ventureId) return;
-            setAppliedVentureIds((prev) => {
-              const next = new Set(prev);
-              next.add(ventureId);
-              return next;
-            });
+          onApplied={() => {
+            setAppliedVentureIds((prev) => new Set(prev).add(applyTarget.id));
+            setApplyTarget(null);
+            refreshVentures();
           }}
         />
       )}
@@ -325,7 +367,17 @@ export default function VenturesPage() {
 
 
 // ─── Venture Detail Modal ─────────────────────────────────────────────────────
-function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onApply, onEdit, onDelete }) {
+function VentureDetailModal({
+  venture,
+  isOwner,
+  hasApplied = false,
+  hasActiveDeal = false,
+  activeDealId,
+  onClose,
+  onApply,
+  onEdit,
+  onDelete,
+}) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
 
@@ -340,6 +392,14 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
   const hasFetched            = useRef(false);
 
   useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
     ventureAPI.get(venture.id)
@@ -349,14 +409,26 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
   }, [venture.id]);
 
   const b = (detail || venture)?.brandDetails || {};
-  const c = (detail || venture)?.contactInfo  || {};
-  const isGstinVerified = Boolean((detail || venture)?.verified || (detail || venture)?.gstinVerified);
+  const resolved = detail || venture;
+  const publicContact = resolveVenturePublicContact(resolved, isOwner);
+  const isCoVenture = isCoVentureListing(resolved);
+  const isFullAcquisition = isFullAcquisitionListing(resolved);
+  const equityPctLabel = formatEquityOfferedPct(
+    resolved?.equityPercentOffered ?? resolved?.equity_percent_offered,
+  );
+  const sellerAsk = resolveSellerAskSummary(resolved);
+  const interestCount = resolveVentureInterestCount(resolved);
+  const interestLabel = isCoVenture ? 'applications' : 'pitches';
+  const companyProfile = resolved?.companyProfile || resolved?.company_profile;
+  const isListingApproved = (resolved?.listingApprovalStatus ?? resolved?.listing_approval_status) === 'APPROVED';
+  const canSubmit = isListingApproved && !hasActiveDeal;
+  const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="venture-detail-modal relative w-full max-w-[620px] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-t-[18px] sm:rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-slideUp">
+      <div className="venture-detail-modal relative w-full max-w-[640px] h-[92dvh] sm:h-auto sm:max-h-[90vh] flex flex-col min-h-0 bg-white border border-gray-200 rounded-t-[18px] sm:rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
-        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors duration-200 hover:text-gray-700" onClick={onClose}>✕</button>
+        <button type="button" className="absolute top-4 right-4 z-30 bg-white/90 border border-gray-200 rounded-full w-9 h-9 text-gray-500 hover:text-gray-900 shadow-sm" onClick={onClose} aria-label="Close">✕</button>
 
         {loading ? (
           <div className="flex justify-center p-12">
@@ -364,49 +436,57 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
           </div>
         ) : (
           <>
-            {/* Header */}
-            <div className="relative z-10 p-4 sm:p-8 pb-4 sm:pb-6">
-              <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="relative z-10 flex-shrink-0 px-4 sm:px-8 pt-6 pb-4 border-b border-gray-100 bg-white/95">
+              <div className="flex items-start gap-3 sm:gap-4 pr-10">
                 {b.ventureImageUrl
-                  ? <img src={b.ventureImageUrl} alt={b.brandName}
-                         className="w-14 h-14 rounded-xl object-cover" />
-                  : <div className="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center font-display text-2xl font-bold text-indigo-600">
+                  ? <img src={b.ventureImageUrl} alt={b.brandName} className="w-16 h-16 rounded-xl object-cover ring-2 ring-white shadow-md" />
+                  : <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-display text-2xl font-bold text-white shadow-md">
                       {b.brandName?.[0] || '?'}
                     </div>
                 }
-                <div>
-                  <h2 className="font-display text-xl sm:text-[1.75rem] font-semibold text-gray-900 m-0 break-words">{b.brandName}</h2>
-                  <div className="flex gap-2 flex-wrap mt-1">
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-display text-xl sm:text-2xl font-semibold text-gray-900 m-0 break-words">{b.brandName}</h2>
+                  <div className="flex gap-2 flex-wrap mt-2">
                     {b.industry && (
-                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded">{b.industry.replace(/_/g, ' ')}</span>
+                      <span className="px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">{b.industry.replace(/_/g, ' ')}</span>
                     )}
-                    {b.ventureType && (
-                      <span className="px-2 py-0.5 bg-purple-50 text-purple-600 text-xs font-semibold rounded">
-                        {VENTURE_EQUITY_TYPE_LABELS[b.ventureType] || b.ventureType}
-                      </span>
+                    {equityPctLabel && isCoVenture && (
+                      <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 text-xs font-semibold rounded-full">{equityPctLabel} equity offered</span>
+                    )}
+                    {sellerAsk.equityLabel && !isCoVenture && (
+                      <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 text-xs font-semibold rounded-full">{sellerAsk.equityLabel} equity</span>
+                    )}
+                    {sellerAsk.dealTypeLabel && !isCoVenture && (
+                      <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full">{sellerAsk.dealTypeLabel}</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6 flex-wrap">
-                {b.dealValue && (
-                  <div className="px-3 sm:px-4 py-2 bg-green-50 border border-green-300 rounded-lg text-sm text-green-700">
-                    💰 {formatPrice(b.dealValue)}
-                  </div>
-                )}
-                <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-                  {t('venturesPageViewsLabel', { count: (detail?.views ?? venture.views) || 0 })}
+              {(sellerAsk.price || sellerAsk.equityLabel) && (
+                <div className="mt-4 rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 flex flex-wrap items-center gap-4">
+                  {sellerAsk.price ? (
+                    <div>
+                      <div className="text-[0.68rem] font-bold uppercase tracking-wide text-emerald-700">Asking price</div>
+                      <div className="text-xl font-bold text-emerald-800">{formatVentureAskingPrice(sellerAsk.price, formatPrice)}</div>
+                    </div>
+                  ) : null}
+                  {sellerAsk.equityLabel ? (
+                    <div>
+                      <div className="text-[0.68rem] font-bold uppercase tracking-wide text-purple-700">Equity offered</div>
+                      <div className="text-lg font-bold text-purple-800">{sellerAsk.equityLabel}</div>
+                    </div>
+                  ) : null}
                 </div>
-                <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-                  {t('venturesPageApplicationsLabel', { count: (detail?.coVentureApplicationCount ??
-                       venture.coVentureApplicationCount) || 0 })}
-                </div>
+              )}
+
+              <div className="flex gap-2 mt-3 flex-wrap text-xs">
+                <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">{t('venturesPageViewsLabel', { count: (detail?.views ?? venture.views) || 0 })}</span>
+                <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800">{interestCount} {interestLabel}</span>
               </div>
             </div>
 
-            <div className="relative z-10 px-4 sm:px-8">
+            <div className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-8 py-5">
               {b.description && (
                 <Section title={t('venturesPageAboutSection')}>
                   <p className="text-gray-700 leading-relaxed text-sm">
@@ -415,11 +495,18 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
                 </Section>
               )}
 
-              {(c.email || c.phoneNumber) && (
+              {(publicContact.email || publicContact.phone || publicContact.contactPerson) && (
                 <Section title={t('venturesPageContactSection')}>
-                  <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-4">
-                    {c.email       && <DetailItem label={t('emailLabel')} value={c.email} />}
-                    {c.phoneNumber && <DetailItem label={t('domainsPagePhoneLabel')} value={c.phoneNumber} />}
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {publicContact.contactPerson && (
+                      <DetailItem label="Contact person" value={publicContact.contactPerson} />
+                    )}
+                    {publicContact.email && (
+                      <DetailItem label={t('emailLabel')} value={publicContact.email} />
+                    )}
+                    {publicContact.phone && (
+                      <DetailItem label={t('domainsPagePhoneLabel')} value={publicContact.phone} />
+                    )}
                   </div>
                 </Section>
               )}
@@ -463,6 +550,14 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
                 </Section>
               )}
 
+              {companyProfile && (
+                <Section title="Company Profile">
+                  <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <VentureCompanyProfileSummary profile={companyProfile} formatPrice={formatPrice} />
+                  </div>
+                </Section>
+              )}
+
               {detail?.listedBy && (
                 <Section title={t('venturesPageListedBySection')}>
                   <div className="flex items-center gap-3">
@@ -482,8 +577,7 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
               )}
             </div>
 
-            {/* Actions */}
-            <div className="relative z-10 px-4 sm:px-8 pb-6 sm:pb-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 border-t border-gray-100 pt-4 sm:pt-0 sm:border-t-0 mt-2 sm:mt-0">
+            <div className="relative z-20 flex-shrink-0 px-4 sm:px-8 py-4 border-t border-gray-100 bg-white/95 backdrop-blur-sm flex flex-col sm:flex-row sm:flex-wrap gap-3">
               {isOwner ? (
                 <>
                   <button type="button" className="btn-glow btn-glow-sm w-full sm:w-auto inline-flex items-center justify-center" onClick={onEdit}>
@@ -491,27 +585,39 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
                   </button>
                   <button type="button" className="w-full sm:w-auto px-5 py-2.5 bg-red-500 border border-red-500 text-white rounded-[10px] text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-red-600" onClick={onDelete}>{t('delete')}</button>
                 </>
+              ) : hasActiveDeal && activeDealId ? (
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm w-full sm:w-auto"
+                  onClick={() => navigate(`/ventures/deals/${activeDealId}`)}
+                >
+                  Continue Purchase
+                </button>
               ) : (
                 <button
                   type="button"
                   className={
                     hasApplied
                       ? 'w-full sm:w-auto px-5 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-sm font-semibold cursor-not-allowed'
-                      : isGstinVerified
+                      : canSubmit
                         ? 'btn-glow btn-glow-sm w-full sm:w-auto'
                         : 'w-full sm:w-auto px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-sm font-semibold cursor-not-allowed'
                   }
-                  onClick={isGstinVerified && !hasApplied ? onApply : undefined}
-                  disabled={!isGstinVerified || hasApplied}
+                  onClick={canSubmit && !hasApplied ? onApply : undefined}
+                  disabled={!canSubmit || hasApplied}
                   title={
                     hasApplied
-                      ? t('venturesPageAlreadyAppliedTitle')
-                      : !isGstinVerified
-                        ? t('venturesPageGstRequiredTitle')
+                      ? (isCoVenture ? 'Partnership application already submitted' : 'Pitch already submitted')
+                      : !canSubmit
+                        ? 'Listing pending admin approval'
                         : undefined
                   }
                 >
-                  {hasApplied ? t('venturesPageApplied') : isGstinVerified ? t('venturesPageCoVenture') : t('venturesPageGstPending')}
+                  {hasApplied
+                    ? (isCoVenture ? 'Applied' : 'Pitched')
+                    : (isCoVenture
+                      ? 'Apply as Partner'
+                      : (isFullAcquisition ? 'Submit Acquisition Offer' : 'Submit Pitch'))}
                 </button>
               )}
               <button type="button" className="w-full sm:w-auto px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-600 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50" onClick={onClose}>{t('close')}</button>
@@ -525,18 +631,18 @@ function VentureDetailModal({ venture, isOwner, hasApplied = false, onClose, onA
 
 function Section({ title, children }) {
   return (
-    <div className="mb-5">
-      <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">{title}</div>
+    <section className="mb-6 last:mb-2">
+      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 m-0">{title}</h3>
       {children}
-    </div>
+    </section>
   );
 }
 
 function DetailItem({ label, value }) {
   return (
     <div className="min-w-0">
-      <div className="text-xs text-gray-600 mb-1">{label}</div>
-      <div className="text-sm text-gray-900 break-all">{value}</div>
+      <div className="text-[0.68rem] font-semibold uppercase tracking-wide text-gray-500 mb-1">{label}</div>
+      <div className="text-sm font-medium text-gray-900 break-all">{value}</div>
     </div>
   );
 }

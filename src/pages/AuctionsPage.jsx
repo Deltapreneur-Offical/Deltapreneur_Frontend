@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   auctionAPI,
   ventureAPI,
-  ventureAuctionAPI,
   communityAuctionAPI,
   softwareAuctionAPI,
 } from '../api/services';
@@ -156,7 +155,7 @@ function useCountdown(endTime) {
   return { timeLeft, isUrgent };
 }
 
-const SECTION_IDS = new Set(['all', 'ventures', 'domains', 'community', 'technology']);
+const SECTION_IDS = new Set(['all', 'domains', 'community', 'technology']);
 
 export default function AuctionsPage() {
   const { t } = useTranslation();
@@ -181,32 +180,13 @@ export default function AuctionsPage() {
     setLoading(true);
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-      ventureAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-      fetchAllListPages((params) => ventureAPI.getAll(params))
-        .then((rows) => rows
-          .map(normalizeListedVentureAuction)
-          .filter(Boolean))
-        .catch(() => []),
-      ventureAPI.getMyVentures()
-        .then(({ data }) => asArray(data)
-          .map(normalizeListedVentureAuction)
-          .filter(Boolean))
-        .catch(() => []),
       communityAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
       softwareAuctionAPI.getActive()
         .then(({ data }) => extractActiveList(data).map(normalizeSoftwareAuction))
         .catch(() => []),
-    ]).then(([domains, activeVentures, allListedVentures, myListedVentures, community, software]) => {
-      const mergedVentures = new Map();
-      activeVentures.forEach((a) => mergedVentures.set(String(a.id), a));
-      allListedVentures.forEach((a) => {
-        if (!mergedVentures.has(String(a.id))) mergedVentures.set(String(a.id), a);
-      });
-      myListedVentures.forEach((a) => {
-        if (!mergedVentures.has(String(a.id))) mergedVentures.set(String(a.id), a);
-      });
+    ]).then(([domains, community, software]) => {
       setDomainAuctions(domains);
-      setVentureAuctions(Array.from(mergedVentures.values()).filter(isVisibleVentureAuction));
+      setVentureAuctions([]);
       setCommunityAuctions(community);
       setSoftwareAuctions(software);
     }).finally(() => setLoading(false));
@@ -230,7 +210,7 @@ export default function AuctionsPage() {
   const shownVentures   = (section === 'domains' || section === 'community' || section === 'technology') ? [] : applyFilter(ventureAuctions);
   const shownCommunity  = (section === 'ventures' || section === 'domains' || section === 'technology') ? [] : applyFilter(communityAuctions);
   const shownSoftware   = (section === 'ventures' || section === 'domains' || section === 'community') ? [] : applyFilter(softwareAuctions);
-  const totalLive       = domainAuctions.length + ventureAuctions.length + communityAuctions.length + softwareAuctions.length;
+  const totalLive       = domainAuctions.length + communityAuctions.length + softwareAuctions.length;
 
   return (
     <AppLayout>
@@ -250,7 +230,6 @@ export default function AuctionsPage() {
         <div className="flex gap-2 mb-3 flex-wrap">
           {[
             { id: 'all', label: `All (${totalLive})` },
-            { id: 'ventures', label: `Ventures (${ventureAuctions.length})`, prefix: '🔨' },
             { id: 'domains', label: `Domains (${domainAuctions.length})`, icon: DomainsIcon },
             { id: 'technology', label: `Technology (${softwareAuctions.length})`, prefix: '💻' },
             { id: 'community', label: `Creators (${communityAuctions.length})`, icon: CreatorIcon },
@@ -284,7 +263,7 @@ export default function AuctionsPage() {
 
         {loading ? (
           <PageContentSkeleton variant="cards" rows={6} />
-        ) : (shownDomains.length === 0 && shownVentures.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
+        ) : (shownDomains.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
               <img src={AuctionImg} alt="Auction" className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
@@ -307,27 +286,6 @@ export default function AuctionsPage() {
           </div>
         ) : (
           <>
-            {/* ── Venture Auctions section ── */}
-            {shownVentures.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-purple-600 m-0">🔨 Venture Auctions</h2>
-                  <span className="text-xs text-gray-500 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownVentures.length} live
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {shownVentures.map(auction => (
-                    <VentureAuctionCard
-                      key={auction.id}
-                      auction={auction}
-                      onClick={() => navigate(`/venture-auction/${auction.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* ── Domain Auctions section ── */}
             {shownDomains.length > 0 && (
               <div className="mb-8">

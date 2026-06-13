@@ -205,6 +205,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => toggleDesktopDropdown('venture')}
               >
                 <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
+                <DropdownLink onClick={() => go('/ventures/new?type=co-venture')}>List Co-Venture</DropdownLink>
                 <DropdownLink onClick={() => go('/ventures/new')}>{t('listVenture')}</DropdownLink>
               </NavDropdown>
 

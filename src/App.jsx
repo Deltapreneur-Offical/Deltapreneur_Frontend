@@ -29,6 +29,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
 const PasswordSecurityPage = lazy(() => import('./pages/PasswordSecurityPage'));
+const PayoutSettingsPage = lazy(() => import('./pages/PayoutSettingsPage'));
 const loadDashboardPage = () => import('./pages/DashboardPage');
 const DashboardPage = lazy(loadDashboardPage);
 const NewVenturePage = lazy(() => import('./pages/NewVenturePage'));
@@ -452,6 +453,14 @@ export default function App() {
                 <ProtectedRoute>
                   <PasswordSecurityPage />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/payouts"
+              element={
+                <ProfileGuard>
+                  <PayoutSettingsPage />
+                </ProfileGuard>
               }
             />
 

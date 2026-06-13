@@ -31,6 +31,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { cobrotherAIAPI, streamCoBrotherAI } from '../../api/ai';
 import broAILogo from '../../assets/Cobrother_Profile.png';
@@ -56,6 +57,26 @@ const QUICK_STARTS_BY_MODE = {
       icon: Globe2,
       text: 'How do I buy a domain?',
       prompt: 'How do I buy a premium domain on CoBrother?',
+    },
+    {
+      icon: Globe2,
+      text: 'Domain transfer after purchase',
+      prompt: 'Explain the CoBrother domain transfer process after I buy a domain.',
+    },
+    {
+      icon: Globe2,
+      text: 'When will I get paid?',
+      prompt: 'When will I get paid as a seller after a domain transfer on CoBrother?',
+    },
+    {
+      icon: Globe2,
+      text: 'What should I do next?',
+      prompt: 'What should I do next in my domain transfer on CoBrother?',
+    },
+    {
+      icon: Globe2,
+      text: 'Where is the auth code?',
+      prompt: 'I cannot see the auth code. What should I do?',
     },
     {
       icon: Globe2,
@@ -109,6 +130,18 @@ const EMPTY_SECTIONS = {
 };
 
 const STORAGE_KEY = 'bro-ai-state-v2';
+
+const TRANSFER_ROUTE_PATTERN =
+  /\/(?:purchases|domains)\/transfers\/([0-9a-f-]{36})/i;
+
+function buildPageContext(pathname = '') {
+  const route = pathname || (typeof window !== 'undefined' ? window.location.pathname : '');
+  const match = route.match(TRANSFER_ROUTE_PATTERN);
+  return {
+    current_route: route,
+    transaction_id: match?.[1] || undefined,
+  };
+}
 
 function nowLabel() {
   return new Intl.DateTimeFormat(undefined, {
@@ -394,6 +427,8 @@ function LoadingBubble({ isDark }) {
 
 export default function CoBrotherAI() {
   const { hasAccessToken } = useAuth();
+  const location = useLocation();
+  const pageContext = useMemo(() => buildPageContext(location.pathname), [location.pathname]);
   const [open, setOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [mode, setMode] = useState('domains');
@@ -592,6 +627,7 @@ export default function CoBrotherAI() {
           mode: MODE_TO_API[mode] || 'marketplace',
           conversation_id: conversationId || undefined,
           voice: voiceOutputEnabled,
+          page_context: pageContext,
         },
         {
           signal: controller.signal,

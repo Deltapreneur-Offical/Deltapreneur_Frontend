@@ -19,6 +19,10 @@ export function normalizeDomainRecord(raw) {
     domainExtension: raw.domainExtension ?? raw.domain_extension ?? '',
     domainStatus: raw.domainStatus ?? raw.domain_status ?? 'AVAILABLE',
     askingPrice: Number(raw.askingPrice ?? raw.asking_price ?? 0),
+    listingPrice: Number(raw.listingPrice ?? raw.listing_price ?? raw.askingPrice ?? raw.asking_price ?? 0),
+    commissionPercentage: Number(raw.commissionPercentage ?? raw.commission_percentage ?? raw.platformCommissionPercent ?? raw.platform_commission_percent ?? 0),
+    commissionAmount: Number(raw.commissionAmount ?? raw.commission_amount ?? raw.platformCommissionAmount ?? raw.platform_commission_amount ?? 0),
+    sellerPayoutAmount: Number(raw.sellerPayoutAmount ?? raw.seller_payout_amount ?? raw.sellerPrice ?? raw.seller_price ?? 0),
     pricingDemand: raw.pricingDemand ?? raw.pricing_demand ?? null,
     saleType: raw.saleType ?? raw.sale_type ?? 'ONE_TIME',
     listingType: raw.listingType ?? raw.listing_type ?? (

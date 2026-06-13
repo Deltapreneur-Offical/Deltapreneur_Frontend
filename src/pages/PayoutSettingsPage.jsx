@@ -302,9 +302,92 @@ function TextField({
   );
 }
 
+function formatPayoutMethod(method) {
+  if (method === 'BANK_ACCOUNT') return 'Bank Account';
+  if (method === 'UPI') return 'UPI';
+  return method || '—';
+}
+
+function resolveMaskedAccount(profile) {
+  return (
+    profile?.maskedAccountNumber ||
+    profile?.masked_account_number ||
+    profile?.maskedBankAccount ||
+    ''
+  );
+}
+
+function SavedPayoutDetailsPanel({ profile, onEdit }) {
+  const isBank = profile?.payoutMethod === 'BANK_ACCOUNT';
+  const maskedAccount = resolveMaskedAccount(profile);
+  const maskedUpi = profile?.maskedUpiId || '';
+
+  return (
+    <section className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            <h2 className="text-lg font-bold text-gray-950">Your saved payout details</h2>
+          </div>
+          <p className="mt-1 text-sm text-gray-600">
+            Review these details to confirm they are correct. Sensitive fields are partially hidden for security.
+          </p>
+          <p className="mt-2 text-xs font-medium text-gray-500">
+            Last saved: {formatDateTime(profile?.updatedAt)}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50"
+        >
+          Change payout details
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <DetailRow label="Payout method" value={formatPayoutMethod(profile?.payoutMethod)} />
+        <DetailRow
+          label="Status"
+          value={profile?.isComplete ? 'Complete — ready for payouts' : 'Incomplete — add missing fields'}
+        />
+        {isBank ? (
+          <>
+            <DetailRow label="Account holder name" value={profile?.accountHolderName} />
+            <DetailRow label="Bank name" value={profile?.bankName} />
+            <DetailRow label="Account number" value={maskedAccount || 'Not on file'} mono />
+            <DetailRow label="IFSC code" value={profile?.bankIfsc} mono />
+          </>
+        ) : (
+          <DetailRow label="UPI ID" value={maskedUpi || 'Not on file'} mono className="sm:col-span-2" />
+        )}
+      </div>
+
+      {!profile?.isComplete ? (
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Your payout profile is incomplete. Use &quot;Change payout details&quot; to finish setup.
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function DetailRow({ label, value, mono = false, className = '' }) {
+  return (
+    <div className={`rounded-lg border border-white/80 bg-white px-4 py-3 shadow-sm ${className}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`mt-1 break-all text-sm font-semibold text-gray-900 ${mono ? 'font-mono' : ''}`}>
+        {value || '—'}
+      </p>
+    </div>
+  );
+}
+
 export default function PayoutSettingsPage() {
   const [form, setForm] = useState(initialForm);
   const [profile, setProfile] = useState(null);
+  const [isEditing, setIsEditing] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -315,11 +398,7 @@ export default function PayoutSettingsPage() {
 
   const isBank = form.payoutMethod === 'BANK_ACCOUNT';
   const selectedBankName = form.bankName === OTHER_BANK_OPTION ? form.customBankName.trim() : form.bankName.trim();
-  const existingMaskedAccountNumber =
-    profile?.maskedAccountNumber ||
-    profile?.masked_account_number ||
-    profile?.maskedBankAccount ||
-    '';
+  const existingMaskedAccountNumber = resolveMaskedAccount(profile);
   const usingExistingMaskedAccount =
     Boolean(existingMaskedAccountNumber) && form.bankAccountNumber === existingMaskedAccountNumber;
   const hasStoredAccountNumber = Boolean(
@@ -379,6 +458,7 @@ export default function PayoutSettingsPage() {
         if (nextProfile) {
           const bankSelection = resolveBankSelection(nextProfile.bankName || '');
           setProfile(nextProfile);
+          setIsEditing(false);
           setAccountReplacementStarted(false);
           setForm((current) => ({
             ...current,
@@ -386,14 +466,12 @@ export default function PayoutSettingsPage() {
             upiId: '',
             accountHolderName: nextProfile.accountHolderName || '',
             bankIfsc: nextProfile.bankIfsc || '',
-            bankAccountNumber:
-              nextProfile.maskedAccountNumber ||
-              nextProfile.masked_account_number ||
-              nextProfile.maskedBankAccount ||
-              '',
+            bankAccountNumber: resolveMaskedAccount(nextProfile),
             confirmBankAccountNumber: '',
             ...bankSelection,
           }));
+        } else {
+          setIsEditing(true);
         }
       })
       .catch((err) => {
@@ -462,6 +540,45 @@ export default function PayoutSettingsPage() {
     return '';
   };
 
+  const beginEditing = () => {
+    setIsEditing(true);
+    setError('');
+    setSuccess('');
+    if (profile) {
+      const bankSelection = resolveBankSelection(profile.bankName || '');
+      setAccountReplacementStarted(false);
+      setForm((current) => ({
+        ...current,
+        payoutMethod: profile.payoutMethod || 'UPI',
+        upiId: '',
+        accountHolderName: profile.accountHolderName || '',
+        bankIfsc: profile.bankIfsc || '',
+        bankAccountNumber: resolveMaskedAccount(profile),
+        confirmBankAccountNumber: '',
+        ...bankSelection,
+      }));
+    }
+  };
+
+  const cancelEditing = () => {
+    if (!profile) return;
+    setIsEditing(false);
+    setError('');
+    setSuccess('');
+    setAccountReplacementStarted(false);
+    const bankSelection = resolveBankSelection(profile.bankName || '');
+    setForm((current) => ({
+      ...current,
+      payoutMethod: profile.payoutMethod || 'UPI',
+      upiId: '',
+      accountHolderName: profile.accountHolderName || '',
+      bankIfsc: profile.bankIfsc || '',
+      bankAccountNumber: resolveMaskedAccount(profile),
+      confirmBankAccountNumber: '',
+      ...bankSelection,
+    }));
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setError('');
@@ -494,17 +611,19 @@ export default function PayoutSettingsPage() {
       const { data } = await payoutProfileAPI.upsert(payload);
       const nextProfile = unwrapProfile(data);
       setProfile(nextProfile);
-      setSuccess('Payout settings saved successfully.');
-      showToast('success', 'Payout settings saved successfully.');
+      setIsEditing(false);
+      setSuccess('Payout settings saved successfully. Review your saved details below.');
+      showToast('success', 'Payout settings saved. Please verify your details.');
+      const bankSelection = resolveBankSelection(nextProfile?.bankName || '');
       setForm((current) => ({
         ...current,
-        bankAccountNumber:
-          nextProfile?.maskedAccountNumber ||
-          nextProfile?.masked_account_number ||
-          nextProfile?.maskedBankAccount ||
-          '',
+        payoutMethod: nextProfile?.payoutMethod || current.payoutMethod,
+        accountHolderName: nextProfile?.accountHolderName || current.accountHolderName,
+        bankIfsc: nextProfile?.bankIfsc || current.bankIfsc,
+        bankAccountNumber: resolveMaskedAccount(nextProfile),
         confirmBankAccountNumber: '',
         upiId: '',
+        ...bankSelection,
       }));
       setAccountReplacementStarted(false);
     } catch (err) {
@@ -568,12 +687,16 @@ export default function PayoutSettingsPage() {
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <button
               type="button"
-              onClick={() => selectMethod('UPI')}
+              onClick={() => {
+                selectMethod('UPI');
+                if (!isEditing) beginEditing();
+              }}
+              disabled={!isEditing && Boolean(profile)}
               className={`rounded-xl border p-4 text-left transition ${
                 !isBank
                   ? 'border-teal-400 bg-teal-50 shadow-sm'
                   : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
+              } ${!isEditing && profile ? 'cursor-default opacity-80' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-600 text-white">
@@ -587,12 +710,16 @@ export default function PayoutSettingsPage() {
             </button>
             <button
               type="button"
-              onClick={() => selectMethod('BANK_ACCOUNT')}
+              onClick={() => {
+                selectMethod('BANK_ACCOUNT');
+                if (!isEditing) beginEditing();
+              }}
+              disabled={!isEditing && Boolean(profile)}
               className={`rounded-xl border p-4 text-left transition ${
                 isBank
                   ? 'border-blue-400 bg-blue-50 shadow-sm'
                   : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
+              } ${!isEditing && profile ? 'cursor-default opacity-80' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
@@ -606,22 +733,52 @@ export default function PayoutSettingsPage() {
             </button>
           </div>
 
+          {profile && !isEditing ? (
+            <div className="mt-6 space-y-4">
+              <MessageBlock type="error" message={error} />
+              <MessageBlock type="success" message={success} />
+              <SavedPayoutDetailsPanel profile={profile} onEdit={beginEditing} />
+            </div>
+          ) : (
           <form onSubmit={submit} className="mt-6 space-y-5">
+            {profile ? (
+              <div className="flex flex-col gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-blue-900">
+                  Update your payout details below. Account number and UPI changes require re-entry for security.
+                </p>
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className="inline-flex min-h-10 items-center justify-center rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-800 transition hover:bg-blue-100"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : null}
             <MessageBlock type="error" message={error} />
             <MessageBlock type="success" message={success} />
 
             {!isBank ? (
-              <TextField
-                id="upi-id"
-                label="UPI ID"
-                value={form.upiId}
-                onChange={updateField('upiId')}
-                placeholder={profile?.maskedUpiId || 'name@bank'}
-                required
-                autoComplete="off"
-                error={fieldErrors.upiId}
-                success={upiValid ? 'UPI ID format looks good.' : ''}
-              />
+              <div className="space-y-2">
+                {profile?.maskedUpiId ? (
+                  <p className="text-sm text-gray-600">
+                    Current saved UPI:{' '}
+                    <span className="font-mono font-semibold text-gray-900">{profile.maskedUpiId}</span>
+                    {' '}— enter a new UPI ID below to replace it.
+                  </p>
+                ) : null}
+                <TextField
+                  id="upi-id"
+                  label="UPI ID"
+                  value={form.upiId}
+                  onChange={updateField('upiId')}
+                  placeholder={profile?.maskedUpiId ? 'Enter new UPI ID' : 'name@bank'}
+                  required
+                  autoComplete="off"
+                  error={fieldErrors.upiId}
+                  success={upiValid ? 'UPI ID format looks good.' : ''}
+                />
+              </div>
             ) : (
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -718,7 +875,9 @@ export default function PayoutSettingsPage() {
                     placeholder={
                       accountReplacementStarted
                         ? 'Enter new account number'
-                        : existingMaskedAccountNumber || 'Enter account number'
+                        : existingMaskedAccountNumber
+                          ? `Saved: ${existingMaskedAccountNumber} — click to replace`
+                          : 'Enter account number'
                     }
                     required={!preservingExistingAccount}
                     autoComplete="off"
@@ -773,6 +932,7 @@ export default function PayoutSettingsPage() {
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
     </main>

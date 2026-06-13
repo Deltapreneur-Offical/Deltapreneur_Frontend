@@ -1,20 +1,18 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Headset, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Headset, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
 import FilterBar from '../components/common/FilterBar';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
+import OperationsRequestModal from '../components/operations/OperationsRequestModal';
+import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
 import { operationsAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
 import { resolveOperationsIcon } from '../utils/operationsIcons';
-import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
+import { formatOperationsPrice, isComplianceService } from '../utils/operationsPricing';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
-
-function formatInr(amount) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
-}
 
 export default function OperationsPage() {
   const { t } = useTranslation();
@@ -30,6 +28,8 @@ export default function OperationsPage() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState('price_asc');
+  const [requestTarget, setRequestTarget] = useState(null);
+  const [requestSuccess, setRequestSuccess] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -246,6 +246,8 @@ export default function OperationsPage() {
               {filtered.map((service) => {
                 const Icon = resolveOperationsIcon(service);
                 const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
+                const cardCompliance = isComplianceService(service);
+                const priceInfo = formatOperationsPrice(service, { t });
                 return (
                   <article
                     key={service.id}
@@ -268,23 +270,31 @@ export default function OperationsPage() {
                       })}
                     </p>
                     <div className="mt-3 pt-3 border-t border-gray-100 flex items-end justify-between gap-2">
-                      {isCompliance && (!service.price || Number(service.price) <= 0) ? (
+                      {cardCompliance && !priceInfo.showPrice ? (
                         <div className="min-h-[2.5rem]" />
-                      ) : (
+                      ) : priceInfo.showPrice ? (
                         <div>
                           <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">
                             {t('operationsFrom', { defaultValue: 'Starting at' })}
                           </p>
                           <p className="text-base font-bold text-gray-900">
-                            {formatInr(service.price)}
-                            {!isCompliance && (
-                              <span className="text-xs font-medium text-gray-400">/mo</span>
+                            {priceInfo.amount}
+                            {priceInfo.suffix && (
+                              <span className="text-xs font-medium text-gray-400">{priceInfo.suffix}</span>
                             )}
                           </p>
                         </div>
+                      ) : (
+                        <div className="min-h-[2.5rem]" />
                       )}
-                      <button type="button" className="btn-glow shrink-0 text-xs px-3.5 py-1.5" onClick={() => {}}>
-                        {t('operationsHire', { defaultValue: 'Hire' })} →
+                      <button
+                        type="button"
+                        className="btn-glow shrink-0 text-xs px-3.5 py-1.5"
+                        onClick={() => setRequestTarget(service)}
+                      >
+                        {cardCompliance
+                          ? t('operationsBookSlot', { defaultValue: 'Book Your Slot' })
+                          : t('operationsHire', { defaultValue: 'Hire' })} →
                       </button>
                     </div>
                   </article>
@@ -294,6 +304,56 @@ export default function OperationsPage() {
           )}
         </section>
       </div>
+
+      {requestTarget && (
+        <OperationsRequestModal
+          service={requestTarget}
+          onClose={() => setRequestTarget(null)}
+          onSuccess={(payload) => {
+            setRequestTarget(null);
+            setRequestSuccess(payload);
+          }}
+        />
+      )}
+
+      {requestSuccess && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setRequestSuccess(null)}
+        >
+          <div
+            className="relative w-full max-w-[420px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+            <div className="text-green-600 flex justify-center mb-4">
+              <CheckCircle size={46} />
+            </div>
+            <h2 className="font-display text-[1.75rem] text-gray-900 mb-2">
+              {requestSuccess.type === 'booking'
+                ? t('operationsBookSuccessTitle', { defaultValue: 'Slot Booked!' })
+                : t('operationsHireSuccessTitle', { defaultValue: 'Hire Request Confirmed!' })}
+            </h2>
+            <p className="text-gray-500 mb-2">
+              {requestSuccess.type === 'booking'
+                ? t('operationsBookSuccessBody', {
+                    defaultValue:
+                      "You'll be notified soon. Our team will contact you regarding this one-time service and next steps.",
+                  })
+                : t('operationsHireSuccessBody', {
+                    defaultValue:
+                      "You'll be notified soon. Our team will contact you to confirm your monthly engagement and onboarding.",
+                  })}
+            </p>
+            {requestSuccess.serviceName && (
+              <p className="text-sm font-semibold text-gray-800 mb-4">{requestSuccess.serviceName}</p>
+            )}
+            <button type="button" className="btn-glow w-full" onClick={() => setRequestSuccess(null)}>
+              {t('close', { defaultValue: 'Close' })}
+            </button>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

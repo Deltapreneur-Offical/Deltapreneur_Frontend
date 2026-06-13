@@ -211,6 +211,12 @@ export const operationsAdminAPI = {
   create: (body) => api.post('/api/v1/admin/operations-services', body),
   update: (id, body) => api.put(`/api/v1/admin/operations-services/${id}`, body),
   remove: (id) => api.delete(`/api/v1/admin/operations-services/${id}`),
+  listRequests: (params) => api.get('/api/v1/admin/operations-requests', { params }),
+  patchRequestStatus: (id, body) => api.patch(`/api/v1/admin/operations-requests/${id}`, body),
+};
+
+export const operationsRequestAPI = {
+  submit: (body) => api.post('/api/v1/operations/requests', body),
 };
 
 export const operationsAPI = {

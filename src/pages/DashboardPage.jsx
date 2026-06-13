@@ -165,14 +165,24 @@ export default function DashboardPage() {
                 <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>
               <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
-                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/10 backdrop-blur rounded-full">
-                  <span className="text-xs text-white/70">{t('dashboardRoleLabel')}</span>
-                  <span className="text-sm font-semibold text-white">{rolePillText}</span>
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-2 sm:px-4 backdrop-blur rounded-full border ${
+                    showAdmin
+                      ? 'bg-orange-500/30 border-orange-300/60'
+                      : 'bg-white/10 border-transparent'
+                  }`}
+                >
+                  <span className={`text-xs ${showAdmin ? 'text-orange-100' : 'text-white/70'}`}>
+                    {t('dashboardRoleLabel')}
+                  </span>
+                  <span className={`text-sm font-semibold ${showAdmin ? 'text-orange-50' : 'text-white'}`}>
+                    {rolePillText}
+                  </span>
                 </div>
                 {profileComplete ? (
-                  <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/15 backdrop-blur rounded-full border border-white/20">
-                    <span className="text-xs text-white/70">{t('dashboardProfileLabel')}</span>
-                    <span className="text-sm font-semibold text-white">{t('dashboardProfileComplete')}</span>
+                  <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-emerald-500/30 backdrop-blur rounded-full border border-emerald-300/60">
+                    <span className="text-xs text-emerald-100">{t('dashboardProfileLabel')}</span>
+                    <span className="text-sm font-semibold text-emerald-50">{t('dashboardProfileComplete')}</span>
                   </div>
                 ) : (
                   <Link

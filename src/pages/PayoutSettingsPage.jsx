@@ -384,6 +384,20 @@ function DetailRow({ label, value, mono = false, className = '' }) {
   );
 }
 
+function PayoutSupportHint({ className = '' }) {
+  return (
+    <p className={`text-sm text-gray-500 ${className}`}>
+      Confused?{' '}
+      <Link
+        to="/contact"
+        className="font-semibold text-teal-700 underline-offset-2 transition hover:text-teal-800 hover:underline"
+      >
+        Contact our support
+      </Link>
+    </p>
+  );
+}
+
 export default function PayoutSettingsPage() {
   const [form, setForm] = useState(initialForm);
   const [profile, setProfile] = useState(null);
@@ -738,6 +752,7 @@ export default function PayoutSettingsPage() {
               <MessageBlock type="error" message={error} />
               <MessageBlock type="success" message={success} />
               <SavedPayoutDetailsPanel profile={profile} onEdit={beginEditing} />
+              <PayoutSupportHint className="border-t border-gray-100 pt-4" />
             </div>
           ) : (
           <form onSubmit={submit} className="mt-6 space-y-5">
@@ -919,9 +934,12 @@ export default function PayoutSettingsPage() {
             )}
 
             <div className="flex flex-col gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-gray-500">
-                Payouts are released manually by CoBrother after transfer completion.
-              </p>
+              <div className="space-y-1.5">
+                <p className="text-sm text-gray-500">
+                  Payouts are released manually by CoBrother after transfer completion.
+                </p>
+                <PayoutSupportHint />
+              </div>
               <button
                 type="submit"
                 disabled={saving || !formCanSave}

@@ -695,6 +695,53 @@
   animation-play-state: paused;
 }
 
+.home-auto-scroll-row__track--static {
+  animation: none;
+  transform: none;
+  will-change: auto;
+  overflow-x: auto;
+  width: max-content;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.home-auto-scroll-row__track--static::-webkit-scrollbar {
+  display: none;
+}
+
+.home-auto-scroll-row--fits .home-auto-scroll-row__viewport {
+  overflow: visible;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.home-auto-scroll-row--fits .home-auto-scroll-row__track--static {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-auto-scroll-row__track--static {
+    animation: none;
+    overflow-x: auto;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding-bottom: 1rem;
+    scrollbar-width: none;
+  }
+
+  .home-auto-scroll-row__track--static::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-auto-scroll-row__viewport {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
 .home-auto-scroll-row__item {
   flex: 0 0 auto;
   width: min(86vw, 300px);
@@ -722,20 +769,6 @@
   100% {
     transform: translateX(-50%);
   }
-}
-
-.home-auto-scroll-row__track--static {
-  animation: none !important;
-  overflow-x: auto;
-  width: max-content;
-  max-width: 100%;
-  flex-wrap: nowrap;
-  padding-bottom: 0.25rem;
-  scrollbar-width: none;
-}
-
-.home-auto-scroll-row__track--static::-webkit-scrollbar {
-  display: none;
 }
 
 /* Auction homepage cards — smooth hover like technology browse cards, no outer glow/shadow */

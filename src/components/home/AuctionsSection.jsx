@@ -20,14 +20,23 @@ import {
   normalizeVentureAuction,
   resolveHomeAuctionPath,
 } from '../../utils/homepageAuctions';
+import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/home-preview-cards.css';
+
+function AuctionPreviewCard({ auction, onView }) {
+  return (
+    <ListingCardShell className="home-preview-card-shell">
+      <HomeAuctionPreviewCard auction={auction} onView={onView} />
+    </ListingCardShell>
+  );
+}
 
 function mergeVentureAuctionRows(activeRows, listedRows) {
   const merged = new Map();
@@ -110,11 +119,11 @@ export default function AuctionsSection() {
     [auctions],
   );
 
+  const shouldAutoScroll = previewAuctions.length > HOMEPAGE_PREVIEW_LIMIT;
+
   const handleViewAuction = (auction) => {
     navigate(resolveHomeAuctionPath(auction));
   };
-
-  const useAutoScroll = previewAuctions.length > 5;
 
   if (loading) {
     return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" />;
@@ -126,21 +135,18 @@ export default function AuctionsSection() {
         <HomeSectionHeader title={t('auctions')} to="/auctions" />
         {previewAuctions.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noAuctions')}</p>
-        ) : useAutoScroll ? (
+        ) : shouldAutoScroll ? (
           <HomeAutoScrollRow
-            className="home-preview-row--always-scroll"
             durationSec={50}
-            minItemsToScroll={6}
             ariaLabel={t('auctions')}
+            onlyWhenOverflow
           >
             {previewAuctions.map((auction) => (
               <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
-                <ListingCardShell className="home-preview-card-shell">
-                  <HomeAuctionPreviewCard
-                    auction={auction}
-                    onView={() => handleViewAuction(auction)}
-                  />
-                </ListingCardShell>
+                <AuctionPreviewCard
+                  auction={auction}
+                  onView={() => handleViewAuction(auction)}
+                />
               </HomeAutoScrollRowItem>
             ))}
           </HomeAutoScrollRow>
@@ -148,12 +154,10 @@ export default function AuctionsSection() {
           <HomePreviewRow>
             {previewAuctions.map((auction) => (
               <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>
-                <ListingCardShell className="home-preview-card-shell">
-                  <HomeAuctionPreviewCard
-                    auction={auction}
-                    onView={() => handleViewAuction(auction)}
-                  />
-                </ListingCardShell>
+                <AuctionPreviewCard
+                  auction={auction}
+                  onView={() => handleViewAuction(auction)}
+                />
               </HomePreviewRowItem>
             ))}
           </HomePreviewRow>
@@ -162,4 +166,3 @@ export default function AuctionsSection() {
     </section>
   );
 }
-

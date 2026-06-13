@@ -1,17 +1,28 @@
-import { Children, cloneElement, isValidElement, useEffect, useState } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 /**
  * Horizontally auto-scrolling row. Duplicates children for a seamless infinite loop.
  * Pauses on hover; respects prefers-reduced-motion.
+ * When onlyWhenOverflow is true, stays static until the track is wider than the viewport.
  */
 export default function HomeAutoScrollRow({
   children,
   className = '',
   durationSec = 45,
   ariaLabel,
-  minItemsToScroll = 6,
+  onlyWhenOverflow = false,
 }) {
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(!onlyWhenOverflow);
+  const viewportRef = useRef(null);
+  const trackRef = useRef(null);
   const items = Children.toArray(children).filter(Boolean);
 
   useEffect(() => {
@@ -22,10 +33,33 @@ export default function HomeAutoScrollRow({
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  useEffect(() => {
+    if (!onlyWhenOverflow) {
+      setHasOverflow(true);
+      return undefined;
+    }
+
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+    if (!viewport || !track) return undefined;
+
+    const measure = () => {
+      setHasOverflow(track.scrollWidth > viewport.clientWidth + 1);
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    observer.observe(track);
+
+    return () => observer.disconnect();
+  }, [onlyWhenOverflow, items.length]);
+
   if (items.length === 0) return null;
 
-  // Only animate when card count exceeds 5 (6+). Otherwise render a static row.
-  const shouldLoop = !reduceMotion && items.length >= minItemsToScroll;
+  const shouldAnimate = hasOverflow && !reduceMotion;
+  const fitsInViewport = onlyWhenOverflow && !hasOverflow;
 
   const renderTrack = (duplicatePrefix = '') =>
     items.map((child, index) => {
@@ -41,18 +75,27 @@ export default function HomeAutoScrollRow({
     '--home-auto-scroll-duration': `${durationSec}s`,
   };
 
+  const rootClassName = [
+    'home-auto-scroll-row',
+    fitsInViewport ? 'home-auto-scroll-row--fits' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const trackClassName = [
+    'home-auto-scroll-row__track',
+    !shouldAnimate ? 'home-auto-scroll-row__track--static' : '',
+  ]
+    .filter(Boolean)
+    .join('');
+
   return (
-    <div
-      className={`home-auto-scroll-row${className ? ` ${className}` : ''}`}
-      style={style}
-      aria-label={ariaLabel}
-    >
-      <div className="home-auto-scroll-row__viewport">
-        <div
-          className={`home-auto-scroll-row__track${shouldLoop ? '' : ' home-auto-scroll-row__track--static'}`}
-        >
+    <div className={rootClassName} style={style} aria-label={ariaLabel}>
+      <div className="home-auto-scroll-row__viewport" ref={viewportRef}>
+        <div className={trackClassName} ref={trackRef}>
           {renderTrack()}
-          {shouldLoop ? renderTrack('dup') : null}
+          {shouldAnimate ? renderTrack('dup') : null}
         </div>
       </div>
     </div>

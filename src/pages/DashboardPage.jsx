@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, CheckCircle2, Shield } from 'lucide-react';
+import { AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { communityAPI } from '../api/services';
@@ -164,41 +164,17 @@ export default function DashboardPage() {
                 </h1>
                 <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>
-              <div className="dashboard-hero-chips">
-                <div className="dashboard-hero-chip">
-                  <span className="dashboard-hero-chip__label">{t('dashboardRoleLabel')}</span>
-                  <span className="dashboard-hero-chip__divider" aria-hidden />
-                  <span
-                    className={`dashboard-hero-chip__value ${
-                      showAdmin ? 'dashboard-hero-chip__value--orange' : ''
-                    }`}
-                  >
-                    <span
-                      className={`dashboard-hero-chip__dot ${
-                        showAdmin ? 'dashboard-hero-chip__dot--orange' : 'dashboard-hero-chip__dot--neutral'
-                      }`}
-                      aria-hidden
-                    />
-                    {rolePillText}
-                  </span>
-                </div>
+              <div className="dashboard-hero-meta">
+                <span className={`dashboard-hero-meta__tag${showAdmin ? ' is-orange' : ''}`}>
+                  {rolePillText}
+                </span>
                 {profileComplete ? (
-                  <div className="dashboard-hero-chip">
-                    <span className="dashboard-hero-chip__label">{t('dashboardProfileLabel')}</span>
-                    <span className="dashboard-hero-chip__divider" aria-hidden />
-                    <span className="dashboard-hero-chip__value dashboard-hero-chip__value--green">
-                      <CheckCircle2 className="dashboard-hero-chip__icon dashboard-hero-chip__icon--green" aria-hidden />
-                      {t('dashboardProfileComplete')}
-                    </span>
-                  </div>
+                  <span className="dashboard-hero-meta__tag is-green">
+                    {t('dashboardProfileLabel')} {t('dashboardProfileComplete')}
+                  </span>
                 ) : (
-                  <Link to="/complete-profile" className="dashboard-hero-chip dashboard-hero-chip--link">
-                    <span className="dashboard-hero-chip__label">{t('dashboardProfileLabel')}</span>
-                    <span className="dashboard-hero-chip__divider" aria-hidden />
-                    <span className="dashboard-hero-chip__value dashboard-hero-chip__value--amber">
-                      <span className="dashboard-hero-chip__dot dashboard-hero-chip__dot--amber" aria-hidden />
-                      {t('dashboardProfilePending')}
-                    </span>
+                  <Link to="/complete-profile" className="dashboard-hero-meta__tag is-amber dashboard-hero-meta__tag--link">
+                    {t('dashboardProfileLabel')} {t('dashboardProfilePending')}
                   </Link>
                 )}
               </div>

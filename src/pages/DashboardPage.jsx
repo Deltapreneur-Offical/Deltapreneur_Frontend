@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Shield } from 'lucide-react';
+import { AlertCircle, CreditCard, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { communityAPI } from '../api/services';
@@ -102,6 +102,7 @@ export default function DashboardPage() {
     { to: '/ventures/new', label: t('dashboardListVenturesQuick'), icon: <span className="text-lg font-semibold leading-none">+</span> },
     { to: '/creator', label: t('dashboardViewDisruptorsQuick'), icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
     { to: '/domains', label: t('dashboardManageDomainsQuick'), icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/settings/payouts', label: 'Payout Settings', icon: <CreditCard className="h-5 w-5 shrink-0" /> },
     { to: '/technology', label: t('dashboardExploreTechnologyQuick'), icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
   ];
 
@@ -115,9 +116,9 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-6 lg:gap-8 min-w-0">
-        <section className="rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 bg-white">
+        <section className="rounded-2xl shadow-sm border border-slate-200/80 bg-white">
           {showAdmin && (
-            <div className="border-b border-indigo-100 bg-gradient-to-r from-slate-50 via-indigo-50/80 to-violet-50/60 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="rounded-t-2xl border-b border-indigo-200/90 bg-gradient-to-r from-slate-50 via-indigo-50/80 to-violet-50/60 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 shadow-[0_6px_20px_rgba(99,102,241,0.16),0_2px_8px_rgba(15,23,42,0.1)] relative z-[1]">
               <div className="flex items-start sm:items-center gap-3 min-w-0">
                 <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 border border-indigo-200/80">
                   <Shield size={20} strokeWidth={2} aria-hidden />
@@ -139,7 +140,7 @@ export default function DashboardPage() {
           )}
 
           {!profileComplete && (
-            <div className="border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50/80 to-amber-50 px-4 py-3.5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className={`border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50/80 to-amber-50 px-4 py-3.5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3${!showAdmin ? ' rounded-t-2xl' : ''}`}>
               <div className="flex items-start sm:items-center gap-2.5 min-w-0">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 sm:mt-0" aria-hidden />
                 <p className="text-sm text-amber-900 leading-snug m-0">
@@ -155,7 +156,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 p-5 sm:p-6 lg:p-8 text-white">
+          <div className={`bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 p-5 sm:p-6 lg:p-8 text-white rounded-b-2xl shadow-[0_6px_20px_rgba(99,102,241,0.16),0_2px_8px_rgba(15,23,42,0.1)] relative z-[1]${!showAdmin && profileComplete ? ' rounded-t-2xl' : ''}${showAdmin || !profileComplete ? ' border-t border-indigo-400/25' : ''}`}>
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
                 <p className="text-white/80 text-sm mb-1">{t('dashboardWelcomeBack')}</p>
@@ -164,23 +165,17 @@ export default function DashboardPage() {
                 </h1>
                 <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>
-              <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
-                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/10 backdrop-blur rounded-full">
-                  <span className="text-xs text-white/70">{t('dashboardRoleLabel')}</span>
-                  <span className="text-sm font-semibold text-white">{rolePillText}</span>
-                </div>
+              <div className="dashboard-hero-meta">
+                <span className={`dashboard-hero-meta__tag${showAdmin ? ' is-orange' : ''}`}>
+                  {rolePillText}
+                </span>
                 {profileComplete ? (
-                  <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/15 backdrop-blur rounded-full border border-white/20">
-                    <span className="text-xs text-white/70">{t('dashboardProfileLabel')}</span>
-                    <span className="text-sm font-semibold text-white">{t('dashboardProfileComplete')}</span>
-                  </div>
+                  <span className="dashboard-hero-meta__tag is-green">
+                    {t('dashboardProfileLabel')} {t('dashboardProfileComplete')}
+                  </span>
                 ) : (
-                  <Link
-                    to="/complete-profile"
-                    className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-amber-400/25 backdrop-blur rounded-full border border-amber-200/50 hover:bg-amber-400/35 transition-colors"
-                  >
-                    <span className="text-xs text-amber-100">{t('dashboardProfileLabel')}</span>
-                    <span className="text-sm font-semibold text-white">{t('dashboardProfilePending')}</span>
+                  <Link to="/complete-profile" className="dashboard-hero-meta__tag is-amber dashboard-hero-meta__tag--link">
+                    {t('dashboardProfileLabel')} {t('dashboardProfilePending')}
                   </Link>
                 )}
               </div>

@@ -72,9 +72,16 @@ export function payBidFee({
 }
 
 export function computeCommissionBreakdown(sellerAmount, commissionPercent = 15) {
-  const seller = Number(sellerAmount) || 0;
+  const listingPrice = Number(sellerAmount) || 0;
   const pct = Number(commissionPercent) || 0;
-  const commission = Math.round(seller * pct) / 100;
-  const finalPrice = Math.round((seller + commission) * 100) / 100;
-  return { sellerAmount: seller, commissionAmount: commission, finalListingPrice: finalPrice, commissionPercent: pct };
+  const commission = Math.round(listingPrice * pct) / 100;
+  const sellerEarnings = Math.round((listingPrice - commission) * 100) / 100;
+  return {
+    listingPrice,
+    sellerAmount: sellerEarnings,
+    sellerEarnings,
+    commissionAmount: commission,
+    finalListingPrice: listingPrice,
+    commissionPercent: pct,
+  };
 }

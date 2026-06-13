@@ -155,28 +155,30 @@ export default function DomainListingCard({
 
     if (isOwner) {
       return (
-        <div className="flex gap-2" onClick={stop} onMouseDown={stop} role="presentation">
-          <button
-            type="button"
-            className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 inline-flex items-center justify-center gap-1"
-            onClick={(e) => {
-              stop(e);
-              onEdit?.();
-            }}
-          >
-            <EditIcon size={14} /> {t('edit')}
-          </button>
-          <button
-            type="button"
-            className="flex-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1"
-            onClick={(e) => {
-              stop(e);
-              onDelete?.();
-            }}
-          >
-            <Trash2 size={12} /> {t('remove')}
-          </button>
-          <div className="relative" ref={shareRef}>
+        <div className="flex w-full items-center gap-2" onClick={stop} onMouseDown={stop} role="presentation">
+          <div className="flex min-w-0 flex-1 gap-2">
+            <button
+              type="button"
+              className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 inline-flex items-center justify-center gap-1"
+              onClick={(e) => {
+                stop(e);
+                onEdit?.();
+              }}
+            >
+              <EditIcon size={14} /> {t('edit')}
+            </button>
+            <button
+              type="button"
+              className="flex-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1"
+              onClick={(e) => {
+                stop(e);
+                onDelete?.();
+              }}
+            >
+              <Trash2 size={12} /> {t('remove')}
+            </button>
+          </div>
+          <div className="relative shrink-0" ref={shareRef}>
             <button
               type="button"
               className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
@@ -343,7 +345,8 @@ export default function DomainListingCard({
           viewCount={Number(domain.views ?? domain.view_count ?? domain.viewCount ?? 0)}
           likeState={likeState}
           onLike={onLike}
-          className="domain-listing-card__stats"
+          likesFirst
+          className="domain-listing-card__stats domain-listing-card__stats--split"
         />
 
         {renderPrimaryAction() ? (

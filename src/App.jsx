@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from '
 import { lazy, Suspense, useEffect, useRef } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
+import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
@@ -24,11 +25,34 @@ function LegacyCommunityRedirect() {
   return <Navigate to={{ pathname: '/creator', search }} replace />;
 }
 
+const AI_HIDDEN_PATHS = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/auth/callback',
+  '/complete-profile',
+  '/password-security',
+  '/privacy-policy',
+  '/terms-and-conditions',
+];
+
+function CoBrotherAIGuard() {
+  const { pathname } = useLocation();
+  if (AI_HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
+  return (
+    <Suspense fallback={null}>
+      <CoBrotherAI />
+    </Suspense>
+  );
+}
+
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
 const PasswordSecurityPage = lazy(() => import('./pages/PasswordSecurityPage'));
+const PayoutSettingsPage = lazy(() => import('./pages/PayoutSettingsPage'));
 const loadDashboardPage = () => import('./pages/DashboardPage');
 const DashboardPage = lazy(loadDashboardPage);
 const NewVenturePage = lazy(() => import('./pages/NewVenturePage'));
@@ -65,6 +89,7 @@ const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const loadAuctionsPage = () => import('./pages/AuctionsPage');
 const AuctionsPage = lazy(loadAuctionsPage);
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
+const OperationsPage = lazy(() => import('./pages/OperationsPage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
 const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSellerPage'));
 const DomainTransferBuyerPage = lazy(() => import('./pages/DomainTransferBuyerPage'));
@@ -115,6 +140,7 @@ function RedirectLegacySoftwareAuction() {
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop />
       <LanguageProvider>
         <CurrencyProvider>
           <CookieConsentProvider>
@@ -122,9 +148,7 @@ export default function App() {
               <RoutePreloader />
               <SiteGradientBorder />
               <CookieConsentBanner />
-              <Suspense fallback={null}>
-                <CoBrotherAI />
-              </Suspense>
+              <CoBrotherAIGuard />
               <AppErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
@@ -217,6 +241,15 @@ export default function App() {
                 <ProtectedRoute>
                   <DashboardPage />
                 </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/operations"
+              element={
+                <ProfileGuard>
+                  <OperationsPage />
+                </ProfileGuard>
               }
             />
 
@@ -460,6 +493,14 @@ export default function App() {
                 <ProtectedRoute>
                   <PasswordSecurityPage />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/payouts"
+              element={
+                <ProfileGuard>
+                  <PayoutSettingsPage />
+                </ProfileGuard>
               }
             />
 

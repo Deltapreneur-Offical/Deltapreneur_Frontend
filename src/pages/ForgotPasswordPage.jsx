@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
@@ -8,7 +8,8 @@ import { useBotProtection } from '../hooks/useBotProtection';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const [email, setEmail] = useState(() => location.state?.email || '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');

@@ -10,6 +10,7 @@ import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
 import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
+import { operationsPathForSection, operationsReturnLocation } from '../../utils/operationsSections';
 
 function NavDropdown({ label, open, onToggle, children }) {
   const triggerRef = useRef(null);
@@ -103,7 +104,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false }) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user, loading: authLoading } = useAuth();
+  const { user, hasAccessToken, loading: authLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState(null);
 
@@ -119,6 +120,16 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
 
   const go = (path, state) => {
     navigate(path, state ? { state } : undefined);
+    closeMobileMenu();
+  };
+
+  const goToOperations = (section = 'assistance') => {
+    const targetPath = operationsPathForSection(section);
+    if (user || hasAccessToken) {
+      go(targetPath);
+      return;
+    }
+    navigate('/login', { state: { from: operationsReturnLocation(section) } });
     closeMobileMenu();
   };
 
@@ -238,6 +249,19 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</DropdownLink>
                 <DropdownLink onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</DropdownLink>
               </NavDropdown>
+
+              <NavDropdown
+                label={t('operations')}
+                open={openDropdown === 'operations'}
+                onToggle={() => toggleDesktopDropdown('operations')}
+              >
+                <DropdownLink onClick={() => goToOperations('assistance')}>
+                  {t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance' })}
+                </DropdownLink>
+                <DropdownLink onClick={() => goToOperations('compliance')}>
+                  {t('operationsSectionCompliances', { defaultValue: 'Compliances' })}
+                </DropdownLink>
+              </NavDropdown>
             </div>
           </div>
           </div>
@@ -338,6 +362,19 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</button>
                 <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</button>
                 <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</button>
+              </MobileAccordion>
+
+              <MobileAccordion
+                title={t('operations')}
+                open={mobileAccordion === 'operations'}
+                onToggle={() => setMobileAccordion((v) => (v === 'operations' ? null : 'operations'))}
+              >
+                <button type="button" className="home-mobile-link" onClick={() => goToOperations('assistance')}>
+                  {t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance' })}
+                </button>
+                <button type="button" className="home-mobile-link" onClick={() => goToOperations('compliance')}>
+                  {t('operationsSectionCompliances', { defaultValue: 'Compliances' })}
+                </button>
               </MobileAccordion>
             </div>
 

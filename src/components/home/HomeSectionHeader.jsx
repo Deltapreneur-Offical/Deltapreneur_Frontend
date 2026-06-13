@@ -8,7 +8,6 @@ export default function HomeSectionHeader({ title, to }) {
   return (
     <div className="home-section-header">
       <div className="home-section-header__title-wrap">
-        <span className="home-section-header__accent" aria-hidden="true" />
         <h2 className="home-section-header__title">{title}</h2>
       </div>
       {to ? (

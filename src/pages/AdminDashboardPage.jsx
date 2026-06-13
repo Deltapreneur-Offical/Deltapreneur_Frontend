@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Calendar } from 'lucide-react';
-import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI } from '../api/services';
+import { Calendar, Headset } from 'lucide-react';
+import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
 import VentureIcon from '../assets/Coventure_logo.png';
@@ -15,11 +16,12 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import OperationsAdminTab from './OperationsAdminTab';
+import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI, ventureDealAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
-import DomainVerificationModal from './DomainVerificationModal';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
@@ -63,6 +65,56 @@ function VerificationBadge({ verified, verifiedLabel, unverifiedLabel }) {
   );
 }
 
+const DOMAIN_LISTING_TYPE_BADGE = {
+  domain_auction: { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', labelKey: 'adminDomainBadgeAuction' },
+  normal_domain:  { color: '#0369a1', bg: 'rgba(3,105,161,0.1)', labelKey: 'adminDomainBadgeNormal' },
+};
+
+const DOMAIN_VERIFICATION_STATUS_BADGE = {
+  PENDING:             { color: '#b45309', bg: 'rgba(245,158,11,0.12)', labelKey: 'adminDomainVerificationPending' },
+  VERIFIED:            { color: '#059669', bg: 'rgba(5,150,105,0.1)', labelKey: 'adminDomainVerificationVerified' },
+  REJECTED:            { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', labelKey: 'adminDomainVerificationRejected' },
+  MORE_INFO_REQUESTED: { color: '#b45309', bg: 'rgba(245,158,11,0.12)', labelKey: 'adminDomainVerificationMoreInfo' },
+};
+
+function DomainAdminBadge({ color, bg, children }) {
+  return (
+    <span style={{
+      fontSize: '0.68rem', fontWeight: 700, color, background: bg,
+      border: `1px solid ${color}44`, padding: '0.15rem 0.45rem', borderRadius: 4,
+    }}>
+      {children}
+    </span>
+  );
+}
+
+function domainListingType(item) {
+  return item.listingType ?? (item.saleType === 'AUCTION' ? 'domain_auction' : 'normal_domain');
+}
+
+function domainNeedsMarkVerified(item) {
+  const isAuction = domainListingType(item) === 'domain_auction';
+  if (isAuction) {
+    const status = String(item.verificationStatus ?? 'PENDING').toUpperCase();
+    return status !== 'VERIFIED' && status !== 'REJECTED';
+  }
+  return !item.verified;
+}
+
+function DomainListingBadges({ item }) {
+  const { t } = useTranslation();
+  const listingType = domainListingType(item);
+  const verificationStatus = item.verificationStatus ?? (item.verified ? 'VERIFIED' : 'PENDING');
+  const typeStyle = DOMAIN_LISTING_TYPE_BADGE[listingType] || DOMAIN_LISTING_TYPE_BADGE.normal_domain;
+  const statusStyle = DOMAIN_VERIFICATION_STATUS_BADGE[verificationStatus] || DOMAIN_VERIFICATION_STATUS_BADGE.PENDING;
+  return (
+    <>
+      <DomainAdminBadge color={typeStyle.color} bg={typeStyle.bg}>{t(typeStyle.labelKey)}</DomainAdminBadge>
+      <DomainAdminBadge color={statusStyle.color} bg={statusStyle.bg}>{t(statusStyle.labelKey)}</DomainAdminBadge>
+    </>
+  );
+}
+
 const STATUS_COLORS = {
   PAYMENT_PENDING:   '#b45309',
   PAYMENT_COMPLETED: '#0369a1',
@@ -74,6 +126,7 @@ const STATUS_COLORS = {
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
+  const location = useLocation();
   const [tab, setTab]                       = useState('ventures');
   const [data, setData]                     = useState([]);
   const [coBrothers, setCoBrothers]         = useState([]);
@@ -85,19 +138,8 @@ export default function AdminDashboardPage() {
   const [verifyVenture, setVerifyVenture] = useState(null);
   const [listCount, setListCount]         = useState(null);
 
-  const fetchers = {
-    domains:            adminAPI.getDomains,
-    'domain-enquiries': adminAPI.getDomainEnquiries,
-    cocreations:        adminAPI.getTechnologies,
-    auctions:           adminAPI.getAllAuctions,
-    'venture-deals': ventureDealAPI.adminGetAll,
-    meetings:           meetingAPI.adminGetAll, 
-    'software-auctions': softwareAuctionAPI.adminGetAll,
-    'community-auctions': communityAuctionAPI.adminGetAll,
-    'addon-orders':     adminAPI.getAddonOrders,
-  };
-
-  const loadTab = (currentTab) => {
+  const loadTab = (currentTab, options = {}) => {
+    const { silent = false } = options;
     const fetchers = {
       ventures:            adminAPI.getVentures,
       domains:             adminAPI.getDomains,
@@ -106,6 +148,7 @@ export default function AdminDashboardPage() {
       auctions:            adminAPI.getAllAuctions,
       'venture-auctions':  adminAPI.getAllVentureAuctions,
       meetings:            meetingAPI.adminGetAll,
+      operations:          operationsAdminAPI.list,
       'software-auctions': softwareAuctionAPI.adminGetAll,
       'community-auctions': communityAuctionAPI.adminGetAll,
       'addon-orders':      adminAPI.getAddonOrders,
@@ -122,18 +165,13 @@ export default function AdminDashboardPage() {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!silent) setLoading(true);
     fetchers[currentTab]()
       .then(({ data }) => {
         let rows = extractAdminList(data);
         if (currentTab === 'ventures') {
           rows = rows.filter(
             (v) => v.saleType !== 'AUCTION' && v.sale_type !== 'AUCTION',
-          );
-        }
-        if (currentTab === 'domains') {
-          rows = rows.filter(
-            (d) => d.saleType !== 'AUCTION' && d.sale_type !== 'AUCTION',
           );
         }
         if (currentTab === 'addon-orders') {
@@ -152,7 +190,9 @@ export default function AdminDashboardPage() {
         const msg = e.response?.data?.error || detailText || e.message || t('adminLoadFailed', { tab: currentTab });
         alert(msg);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   };
   
   useEffect(() => {
@@ -164,6 +204,28 @@ export default function AdminDashboardPage() {
       .catch(() => {});
   }, []);
 
+
+  useEffect(() => {
+    const requestedTab = new URLSearchParams(location.search).get('tab');
+    const allowedTabs = new Set([
+      'ventures',
+      'domains',
+      'domain-enquiries',
+      'cocreations',
+      'requests',
+      'auctions',
+      'venture-auctions',
+      'meetings',
+      'homepage-features',
+      'software-auctions',
+      'community-auctions',
+      'addon-orders',
+      'domain-transfers',
+    ]);
+    if (requestedTab && allowedTabs.has(requestedTab)) {
+      setTab(requestedTab);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     loadTab(tab);
@@ -221,6 +283,7 @@ export default function AdminDashboardPage() {
     { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
+    { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
@@ -292,6 +355,8 @@ export default function AdminDashboardPage() {
             <CommunityAuctionsAdminTable auctions={data} />
           ) : tab === 'meetings' ? (
             <MeetingsAdminTab meetings={data} />
+          ) : tab === 'operations' ? (
+            <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
           ) : tab === 'homepage-features' ? (
             <div className="admin-homepage-features-grid">
               <HomepageFeatureSelector type="domain" />
@@ -727,13 +792,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                 {t('adminTakenDown')}
               </span>
             )}
-            {tabType === 'domains' && (
-              <VerificationBadge
-                verified={item.verified}
-                verifiedLabel={t('adminDomainVerified')}
-                unverifiedLabel={t('adminNotVerified')}
-              />
-            )}
+            {tabType === 'domains' && <DomainListingBadges item={item} />}
             {tabType === 'cocreations' && (
               <VerificationBadge
                 verified={item.verified}
@@ -782,6 +841,20 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
             <div style={{ fontSize: '0.8rem', color: '#c86e6e', marginBottom: '0.75rem',
                           fontStyle: 'italic' }}>
               {t('adminTakedownReason', { reason: item.takeDownReason })}
+            </div>
+          )}
+
+          {tabType === 'domains' && item.auction && (
+            <div style={{ fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.75rem',
+                          background: 'rgba(124,58,237,0.06)', borderRadius: 8,
+                          border: '1px solid rgba(124,58,237,0.15)' }}>
+              <div className="admin-field-label" style={{ marginBottom: '0.5rem' }}>{t('adminDomainAuctionDetails')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem' }}>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionStatus')}</span><br />{item.auction.status}</div>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionMinBid')}</span><br />{formatPrice(item.auction.minBidPrice ?? 0)}</div>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionDuration')}</span><br />{item.auction.duration || '—'}</div>
+                <div><span className="admin-field-meta">{t('adminDomainAuctionBids')}</span><br />{item.auction.totalBids ?? 0}</div>
+              </div>
             </div>
           )}
 
@@ -847,7 +920,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                 >
                   {item.verified ? t('adminReverifyDomain') : t('adminVerifyDomain')}
                 </button>
-                {!item.verified && (
+                {domainNeedsMarkVerified(item) && (
                   <button
                     type="button"
                     className="btn-ghost btn-sm"
@@ -858,7 +931,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                         alert(i18n.t('adminDomainMarkedVerified'));
                         onRefresh?.();
                       } catch (e) {
-                        alert(e.response?.data?.error || i18n.t('adminMarkVerifiedFailed'));
+                        alert(e.response?.data?.error || e.response?.data?.message || i18n.t('adminMarkVerifiedFailed'));
                       }
                     }}
                   >

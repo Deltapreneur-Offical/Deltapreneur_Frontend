@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
@@ -25,6 +25,13 @@ import {
   isCreatorProfileComplete,
 } from '../utils/creatorProfile';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
+import { useCreatorAuctionProfileSync } from '../hooks/useCreatorAuctionProfileSync';
+import {
+  auctionSummaryFromAuction,
+  buildAuctionsMapFromProfiles,
+  normalizeCreatorAuctionSummary,
+} from '../utils/creatorAuctionSummary';
+import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpectedRate, buildCreatorExpectedRate, CREATOR_RATE_PERIODS } from '../utils/creatorExpectedRate';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -93,14 +100,34 @@ export default function CommunityPage() {
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [accessNotice, setAccessNotice] = useState('');
+  const [auctionsByCommunity, setAuctionsByCommunity] = useState({});
 
   const applyProfilesList = (list, { preferProfile } = {}) => {
     setProfiles(list);
+    setAuctionsByCommunity((prev) => ({
+      ...buildAuctionsMapFromProfiles(list),
+      ...prev,
+    }));
     const mine = preferProfile || list.find(p => profileMatchesUser(p, user));
     if (mine) {
       setMyProfile(mine);
+      const summary = normalizeCreatorAuctionSummary(mine.auctionSummary);
+      if (summary) {
+        setMyAuction(summary);
+        return;
+      }
       communityAuctionAPI.getByCommunity(mine.id)
-        .then(({ data: ad }) => setMyAuction(ad?.auction ?? ad))
+        .then(({ data: ad }) => {
+          const auction = ad?.auction ?? ad;
+          setMyAuction(auction);
+          const normalized = auctionSummaryFromAuction(auction);
+          if (normalized) {
+            setAuctionsByCommunity((prev) => ({
+              ...prev,
+              [mine.id]: normalized,
+            }));
+          }
+        })
         .catch(() => setMyAuction(null));
     }
   };
@@ -142,6 +169,32 @@ export default function CommunityPage() {
     }
     return [myProfile, ...publicProfiles];
   }, [filteredProfiles, myProfile]);
+
+  const profileCommunityIds = useMemo(
+    () => profilesForDisplay.map((profile) => profile.id),
+    [profilesForDisplay],
+  );
+
+  const handleAuctionProfileUpdate = useCallback((communityId, summary) => {
+    setAuctionsByCommunity((prev) => ({
+      ...prev,
+      [String(communityId)]: {
+        ...prev[String(communityId)],
+        ...summary,
+      },
+    }));
+    if (myProfile && String(myProfile.id) === String(communityId)) {
+      setMyAuction((prev) => ({ ...prev, ...summary }));
+    }
+  }, [myProfile?.id]);
+
+  useCreatorAuctionProfileSync({
+    communityIds: profileCommunityIds,
+    onUpdate: handleAuctionProfileUpdate,
+    onReconnect: () => {
+      reloadProfiles().catch(() => {});
+    },
+  });
 
   const myProfileCompletion = useMemo(
     () => (myProfile ? evaluateCreatorProfileCompletion(myProfile) : null),
@@ -237,7 +290,14 @@ export default function CommunityPage() {
   };
 
   const handleAuctionCreated = (auction) => {
-    setMyAuction(auction);
+    const summary = auctionSummaryFromAuction(auction);
+    setMyAuction(summary || auction);
+    if (summary && myProfile?.id) {
+      setAuctionsByCommunity((prev) => ({
+        ...prev,
+        [String(myProfile.id)]: summary,
+      }));
+    }
     setShowAuctionModal(false);
   };
 
@@ -265,14 +325,18 @@ export default function CommunityPage() {
   // Active auction badge text
   const auctionStatusLabel = () => {
     if (!myAuction) return null;
+    const display = myAuction.displayStatus;
     const s = myAuction.status;
-    if (s === 'PAYMENT_PENDING') return { text: '⏳ Auction pending payment', color: 'amber' };
-    if (s === 'ACTIVE')          return { text: '🟢 Auction live!',           color: 'green' };
-    if (s === 'EXTENDED')        return { text: '⚡ Auction extended',         color: 'amber' };
-    if (s === 'ENDED')           return { text: '🏆 Auction ended',            color: 'purple' };
-    if (s === 'COMPLETED')       return { text: '✅ Auction completed',         color: 'purple' };
-    if (s === 'UNSOLD')          return { text: 'Auction ended — no bids',     color: 'red' };
-    if (s === 'CLOSED')          return { text: 'Auction closed',              color: 'red' };
+    if (display === 'LIVE' || s === 'ACTIVE') return { text: '🟢 Auction live!', color: 'green' };
+    if (s === 'EXTENDED') return { text: '⚡ Auction extended', color: 'amber' };
+    if (display === 'DRAFT' || s === 'PAYMENT_PENDING') {
+      return { text: '⏳ Auction draft', color: 'amber' };
+    }
+    if (s === 'ENDED') return { text: '🏆 Auction ended', color: 'purple' };
+    if (s === 'COMPLETED') return { text: '✅ Auction completed', color: 'purple' };
+    if (s === 'UNSOLD') return { text: 'Auction ended — no bids', color: 'red' };
+    if (s === 'CLOSED') return { text: 'Auction closed', color: 'red' };
+    if (display === 'ENDED') return { text: '🏆 Auction ended', color: 'purple' };
     return null;
   };
   const auctionBadge = auctionStatusLabel();
@@ -333,6 +397,11 @@ export default function CommunityPage() {
                     onClick={() => {
                       if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
                         navigate(`/creator-auction/${myAuction.id}`);
+                        return;
+                      }
+                      if (!readCreatorExpectedRate(myProfile)) {
+                        setAccessNotice('Add your Expected Rate in Edit Profile before putting your profile to auction.');
+                        setShowForm(true);
                         return;
                       }
                       setShowAuctionModal(true);
@@ -444,6 +513,7 @@ export default function CommunityPage() {
       {detailProfile && (
         <CommunityDetailModal
           profile={detailProfile}
+          auction={auctionsByCommunity[detailProfile.id] ?? detailProfile.auctionSummary ?? null}
           isMe={profileMatchesUser(detailProfile, user)}
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
@@ -466,6 +536,7 @@ export default function CommunityPage() {
         <CreateAuctionModal
           communityId={myProfile.id}
           profileName={myProfile.name}
+          profileExpectedRate={readCreatorExpectedRate(myProfile)}
           onClose={() => setShowAuctionModal(false)}
           onSuccess={handleAuctionCreated}
         />
@@ -475,7 +546,7 @@ export default function CommunityPage() {
 }
 
 // ─── Create Auction Modal (form + Razorpay ₹118) ─────────────────────────────
-function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
+function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onClose, onSuccess }) {
   const { user } = useAuth();
   const { currency, formatPrice, getSymbol } = useCurrency();
   const [creationFeeInr, setCreationFeeInr] = useState(118);
@@ -485,7 +556,6 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
     auctionTitle: '',
     auctionSkills: '',
     workType: 'OPEN_TO_ALL',
-    expectedRate: '',
     availableFrom: '',
     additionalInfo: '',
     minBidPrice: '',
@@ -509,6 +579,10 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
     e.preventDefault();
     if (!form.auctionTitle.trim()) { setError('Auction title is required.'); return; }
     if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) { setError('Enter a valid minimum bid.'); return; }
+    if (!profileExpectedRate) {
+      setError('Expected Rate is missing on your profile. Save it in Edit Profile first.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       const { payAuctionCreationFee } = await import('../utils/auctionFees');
@@ -520,6 +594,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
       });
       const payload = {
         ...form,
+        expectedRate: profileExpectedRate,
         minBidPrice: parseFloat(form.minBidPrice),
         creationFeeOrderId,
       };
@@ -565,21 +640,25 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
                   className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">Work Type</label>
-                  <select name="workType" value={form.workType} onChange={handleChange}
-                    className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-                    {WORK_TYPES.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">Expected Rate</label>
-                  <input name="expectedRate" value={form.expectedRate} onChange={handleChange}
-                    placeholder="e.g. ₹60–80 LPA or ₹800/hr"
-                    className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Work Type</label>
+                <select name="workType" value={form.workType} onChange={handleChange}
+                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+                  {WORK_TYPES.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
+                </select>
               </div>
+
+              {profileExpectedRate ? (
+                <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-3 py-2.5">
+                  <div className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+                    Expected Rate
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    {formatCreatorExpectedRate({ expectedRate: profileExpectedRate }, formatPrice) || profileExpectedRate}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 m-0">From your creator profile</p>
+                </div>
+              ) : null}
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Available From</label>
@@ -641,11 +720,20 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 const MODAL_OUTLINE_BTN =
   'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-900 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors';
 
-function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onViewAuction }) {
+function CommunityDetailModal({
+  profile,
+  auction: auctionFromParent,
+  isMe,
+  onClose,
+  onEdit,
+  onDelete,
+  onViewAuction,
+}) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [detail, setDetail]     = useState(null);
   const [loading, setLoading]   = useState(true);
-  const [auction, setAuction]   = useState(null);
+  const [auction, setAuction]   = useState(auctionFromParent ?? null);
   const p = detail || profile;
   const skills = p.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
   const linkedInUrl = getLinkedInProfileUrl(p);
@@ -657,12 +745,28 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
       .catch(() => setDetail(profile))
       .finally(() => setLoading(false));
 
+    if (auctionFromParent) {
+      setAuction(auctionFromParent);
+      return;
+    }
     communityAuctionAPI.getByCommunity(profile.id)
-      .then(({ data }) => setAuction(data?.auction ?? data))
+      .then(({ data }) => {
+        const payload = data?.auction ?? data;
+        setAuction(auctionSummaryFromAuction(payload) || payload);
+      })
       .catch(() => {});
-  }, [profile.id, profile]);
+  }, [profile.id, profile, auctionFromParent]);
 
-  const isAuctionLive = auction && (auction.status === 'ACTIVE' || auction.status === 'EXTENDED');
+  useEffect(() => {
+    if (auctionFromParent) setAuction(auctionFromParent);
+  }, [auctionFromParent]);
+
+  const auctionStatus = auction?.status ?? auction?.displayStatus;
+  const isAuctionLive = auction && (
+    auctionStatus === 'ACTIVE'
+    || auctionStatus === 'EXTENDED'
+    || auction?.displayStatus === 'LIVE'
+  );
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
@@ -717,9 +821,9 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
                     {auction.auctionTitle}
                   </div>
                   <div className="text-[0.78rem] text-[#92400e] mt-1">
-                    {auction.currentHighestBid > 0
-                      ? `Highest bid: ${formatPrice(auction.currentHighestBid)}`
-                      : `Starting at ${formatPrice(auction.minBidPrice)}`}
+                    {(auction.currentBid ?? auction.currentHighestBid) > 0
+                      ? `Highest bid: ${formatPrice(auction.currentBid ?? auction.currentHighestBid)}`
+                      : `Starting at ${formatPrice(auction.startingBid ?? auction.minBidPrice)}`}
                   </div>
                 </div>
                 <button
@@ -744,6 +848,17 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
                 </span>
               ) : null}
             </div>
+
+            {readCreatorExpectedRate(p) ? (
+              <div className="mb-5">
+                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  {t('creatorExpectedRateLabel', 'Expected Rate')}
+                </div>
+                <p className="text-gray-900 font-semibold text-base m-0">
+                  {formatCreatorExpectedRate(p, formatPrice)}
+                </p>
+              </div>
+            ) : null}
 
             <div className="mb-5">
               <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</div>
@@ -809,14 +924,19 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
   const { t } = useTranslation();
-  const buildForm = (profile) => ({
-    role: profile?.role || '',
-    skills: profile?.skills || '',
-    industry: profile?.industry || '',
-    location: profile?.location || '',
-    whyImHere: profile?.whyImHere || profile?.why_im_here || '',
-    linkedInProfileUrl: getLinkedInProfileUrl(profile),
-  });
+  const buildForm = (profile) => {
+    const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
+    return {
+      role: profile?.role || '',
+      skills: profile?.skills || '',
+      industry: profile?.industry || '',
+      location: profile?.location || '',
+      whyImHere: profile?.whyImHere || profile?.why_im_here || '',
+      expectedRateAmount: amount,
+      expectedRatePeriod: period,
+      linkedInProfileUrl: getLinkedInProfileUrl(profile),
+    };
+  };
   const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -831,6 +951,8 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
     initial?.linked_in_id,
     initial?.name,
     initial?.imageUrl,
+    initial?.expectedRate,
+    initial?.expected_rate,
   ]);
 
   const linkedInUrl = useMemo(
@@ -848,6 +970,14 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
+    const expectedRate = buildCreatorExpectedRate(
+      form.expectedRateAmount,
+      form.expectedRatePeriod,
+    );
+    if (!expectedRate) {
+      setError('Enter a valid Expected Rate amount and select a period.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       const payload = {
@@ -856,6 +986,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
         industry: form.industry,
         location: form.location,
         whyImHere: form.whyImHere,
+        expectedRate,
       };
       const { data } = await communityAPI.update(initial.id, payload);
       onSaved(data?.data ?? data);
@@ -944,6 +1075,33 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Location <span className="text-red-500">*</span></label>
           <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Expected Rate <span className="text-red-500">*</span></label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              name="expectedRateAmount"
+              type="number"
+              min="1"
+              step="1"
+              value={form.expectedRateAmount}
+              onChange={handleChange}
+              placeholder="e.g. 4000"
+              required
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+            />
+            <select
+              name="expectedRatePeriod"
+              value={form.expectedRatePeriod}
+              onChange={handleChange}
+              required
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
+            >
+              {CREATOR_RATE_PERIODS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         {linkedInImported && (
           <div className="flex flex-col gap-1.5">

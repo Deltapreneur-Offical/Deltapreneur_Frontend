@@ -11,10 +11,31 @@ function toNum(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function withUtcIfNeeded(value) {
+  if (!value || typeof value !== 'string') return value ?? null;
+  return value.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(value) ? value : `${value}Z`;
+}
+
+function normalizeBid(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const isWinning = Boolean(
+    raw.isWinningBid ?? raw.is_winning_bid ?? raw.winningBid ?? false,
+  );
+  return {
+    ...raw,
+    id: raw.id ?? null,
+    amount: toNum(raw.amount, 0),
+    bidTime: withUtcIfNeeded(raw.bidTime ?? raw.created_at ?? raw.createdAt ?? null),
+    bidderName: raw.bidderName ?? raw.bidder_name ?? '',
+    isWinningBid: isWinning,
+    winningBid: isWinning,
+  };
+}
+
 function normalizeAuctionPayload(payload) {
   if (!payload || typeof payload !== 'object') return null;
   const domainRaw = payload.domain || {};
-  return {
+  const normalized = {
     ...payload,
     id: payload.id ?? null,
     status: payload.status ?? null,
@@ -22,8 +43,9 @@ function normalizeAuctionPayload(payload) {
       payload.domainDisplayName
       ?? payload.domain_display_name
       ?? domainRaw.fullDomain
+      ?? domainRaw.full_domain
       ?? null,
-    domain: domainRaw.domainName || domainRaw.domain_name || domainRaw.fullDomain
+    domain: domainRaw.domainName || domainRaw.domain_name || domainRaw.fullDomain || domainRaw.full_domain
       ? {
           ...domainRaw,
           fullDomain: domainRaw.fullDomain ?? domainRaw.full_domain ?? '',
@@ -37,51 +59,102 @@ function normalizeAuctionPayload(payload) {
     currentHighestBid: toNum(payload.currentHighestBid ?? payload.current_highest_bid, 0),
     totalBids: toNum(payload.totalBids ?? payload.total_bids, 0),
     duration: payload.duration ?? null,
-    startTime: normalizeAuctionTimestamp(payload.startTime ?? payload.start_time),
-    endTime: resolveAuctionEndTime(payload) ?? normalizeAuctionTimestamp(payload.endTime ?? payload.end_time),
+    startTime: withUtcIfNeeded(normalizeAuctionTimestamp(payload.startTime ?? payload.start_time)),
+    endTime: withUtcIfNeeded(
+      resolveAuctionEndTime(payload) ?? normalizeAuctionTimestamp(payload.endTime ?? payload.end_time),
+    ),
+    currentWinnerId:
+      payload.currentWinnerId
+      ?? payload.current_winner_id
+      ?? payload.winner?.user_id
+      ?? payload.winner?.userId
+      ?? null,
     currentWinnerName:
-      payload.currentWinnerName ?? payload.current_winner_name ?? payload.winner?.name ?? null,
+      payload.currentWinnerName
+      ?? payload.current_winner_name
+      ?? payload.winner?.name
+      ?? null,
+    winnerPaymentPaid: Boolean(
+      payload.winnerPaymentPaid ?? payload.winner_payment_paid ?? false,
+    ),
+    transferTransactionId:
+      payload.transferTransactionId
+      ?? payload.transfer_transaction_id
+      ?? null,
   };
+  const resolvedEnd = resolveAuctionEndTime(normalized);
+  if (resolvedEnd) normalized.endTime = withUtcIfNeeded(resolvedEnd);
+  return normalized;
 }
 
-function normalizeBidPayload(raw) {
-  if (!raw || typeof raw !== 'object') return raw;
-  return {
-    ...raw,
-    bidTime: raw.bidTime ?? raw.created_at ?? raw.createdAt ?? null,
-    bidderName: raw.bidderName ?? raw.bidder_name ?? null,
-    isWinningBid: Boolean(raw.isWinningBid ?? raw.is_winning_bid ?? raw.winningBid ?? false),
-    amount: toNum(raw.amount, 0),
-  };
+function extractDetailPayload(data) {
+  if (!data || typeof data !== 'object') return null;
+  if (data.auction != null) return data;
+  if (data.data?.auction != null) return data.data;
+  return null;
+}
+
+function extractBidList(data, root) {
+  if (Array.isArray(data?.bids)) return data.bids;
+  if (Array.isArray(data?.recent_bids)) return data.recent_bids;
+  if (Array.isArray(root?.recent_bids)) return root.recent_bids;
+  if (Array.isArray(root?.bids)) return root.bids;
+  return [];
 }
 
 export function useAuction(auctionId) {
-  const [auction, setAuction]       = useState(null);
-  const [bids, setBids]             = useState([]);
+  const [auction, setAuction] = useState(null);
+  const [bids, setBids] = useState([]);
   const [minNextBid, setMinNextBid] = useState(0);
   const [maxBidPrice, setMaxBidPrice] = useState(0);
-  const [connected, setConnected]   = useState(false);
-  const [loading, setLoading]       = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const clientRef                   = useRef(null);
-
-  // FIX #11: define handleUpdate BEFORE the WebSocket useEffect
-  // so the subscription callback always captures the latest version via ref
+  const clientRef = useRef(null);
   const handleUpdateRef = useRef(null);
+
+  const fetchAuctionDetail = useCallback(async () => {
+    if (!auctionId) return;
+    const { data } = await auctionAPI.get(auctionId);
+    const payload = extractDetailPayload(data) ?? data;
+    const root = payload?.auction && typeof payload.auction === 'object'
+      ? payload.auction
+      : payload;
+    const a = normalizeAuctionPayload(root);
+    const limits = resolveAuctionBidLimits({
+      maxBidPrice: payload?.maxBidPrice ?? payload?.max_bid_price ?? data?.maxBidPrice ?? data?.max_bid_price,
+      minNextBid: payload?.minNextBid ?? payload?.min_next_bid ?? data?.minNextBid ?? data?.min_next_bid,
+      currentHighestBid: a?.currentHighestBid,
+      minBidPrice: a?.minBidPrice,
+    });
+    setMinNextBid(limits.minNextBid);
+    setMaxBidPrice(limits.maxBidPrice);
+    if (a) {
+      setAuction({ ...a, ...limits });
+    } else {
+      setAuction(a);
+    }
+    setBids(extractBidList(payload ?? data, root).map(normalizeBid));
+  }, [auctionId]);
 
   const handleUpdate = useCallback((msg) => {
     setLastUpdate(msg);
 
     if (msg.type === 'BID_PLACED') {
-      setAuction(prev => {
+      setAuction((prev) => {
         if (!prev) return prev;
         const next = {
           ...prev,
-          currentHighestBid: msg.currentHighestBid,
-          totalBids:         msg.totalBids,
-          endTime: normalizeAuctionTimestamp(msg.endTime ?? msg.end_time) ?? prev.endTime,
-          status:            msg.status,
-          currentWinnerName: msg.currentWinnerName,
+          currentHighestBid: toNum(
+            msg.currentHighestBid ?? msg.current_highest_bid,
+            prev.currentHighestBid,
+          ),
+          totalBids: toNum(msg.totalBids ?? msg.total_bids, prev.totalBids),
+          endTime: msg.endTime || msg.end_time
+            ? withUtcIfNeeded(msg.endTime ?? msg.end_time)
+            : prev.endTime,
+          status: msg.status ?? prev.status,
+          currentWinnerName: msg.currentWinnerName ?? msg.current_winner_name ?? prev.currentWinnerName,
         };
         const limits = resolveAuctionBidLimits({
           maxBidPrice: prev.maxBidPrice,
@@ -93,76 +166,93 @@ export function useAuction(auctionId) {
         setMaxBidPrice(limits.maxBidPrice);
         return { ...next, ...limits };
       });
-      if (msg.latestBid) {
-        setBids(prev => [normalizeBidPayload(msg.latestBid), ...prev]);
+
+      const latest = msg.latestBid ?? msg.bid ?? msg.latest_bid;
+      if (latest) {
+        const normalized = normalizeBid(latest);
+        setBids((prev) => {
+          const withoutDup = prev.filter(
+            (b) => !normalized.id || b.id !== normalized.id,
+          );
+          return [
+            normalized,
+            ...withoutDup.map((b) => ({ ...b, isWinningBid: false, winningBid: false })),
+          ];
+        });
       }
     } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
-      setAuction(prev => prev ? { ...prev, status: msg.status } : prev);
-    } else if (msg.type === 'AUCTION_EXTENDED' || msg.type === 'BID_PLACED') {
-      // endTime update already handled above — also handle standalone EXTENDED message
-      if (msg.endTime || msg.end_time) {
-        setAuction(prev => prev ? {
+      setAuction((prev) => {
+        if (!prev) return prev;
+        return {
           ...prev,
-          endTime: normalizeAuctionTimestamp(msg.endTime ?? msg.end_time) ?? prev.endTime,
-          status: msg.status,
-        } : prev);
+          status: msg.status ?? prev.status,
+          currentHighestBid: toNum(
+            msg.currentHighestBid ?? msg.current_highest_bid,
+            prev.currentHighestBid,
+          ),
+          currentWinnerId:
+            msg.currentWinnerId
+            ?? msg.current_winner_id
+            ?? msg.winner?.user_id
+            ?? prev.currentWinnerId,
+          currentWinnerName:
+            msg.currentWinnerName
+            ?? msg.current_winner_name
+            ?? msg.winner?.name
+            ?? prev.currentWinnerName,
+          winnerPaymentPaid: Boolean(
+            msg.winnerPaymentPaid ?? msg.winner_payment_paid ?? prev.winnerPaymentPaid,
+          ),
+        };
+      });
+      fetchAuctionDetail().catch(() => {});
+    } else if (msg.type === 'PAYMENT_COMPLETED') {
+      setAuction((prev) => (prev ? {
+        ...prev,
+        status: msg.status ?? 'COMPLETED',
+        winnerPaymentPaid: true,
+        transferTransactionId:
+          msg.transferTransactionId
+          ?? msg.transfer_transaction_id
+          ?? prev.transferTransactionId,
+      } : prev));
+      fetchAuctionDetail().catch(() => {});
+    } else if (msg.type === 'AUCTION_EXTENDED') {
+      if (msg.endTime || msg.end_time) {
+        setAuction((prev) => (prev ? {
+          ...prev,
+          endTime: withUtcIfNeeded(msg.endTime ?? msg.end_time),
+          status: msg.status ?? prev.status,
+        } : prev));
       }
     } else if (msg.type === 'AUCTION_STARTED') {
-      setAuction(prev => prev ? { ...prev, status: 'ACTIVE' } : prev);
+      setAuction((prev) => (prev ? { ...prev, status: 'ACTIVE' } : prev));
     }
-  }, []);
+  }, [fetchAuctionDetail]);
 
-  // Keep ref in sync so WebSocket callback is never stale
   handleUpdateRef.current = handleUpdate;
 
-  // Initial data load
   useEffect(() => {
     if (!auctionId) return;
     setLoading(true);
-    auctionAPI.get(auctionId)
-      .then(({ data }) => {
-        const root = data?.auction && typeof data.auction === 'object' ? data.auction : data;
-        const a = normalizeAuctionPayload(root);
-        const limits = resolveAuctionBidLimits({
-          maxBidPrice: data?.maxBidPrice ?? data?.max_bid_price,
-          minNextBid: data?.minNextBid ?? data?.min_next_bid,
-          currentHighestBid: a?.currentHighestBid,
-          minBidPrice: a?.minBidPrice,
-        });
-        setMinNextBid(limits.minNextBid);
-        setMaxBidPrice(limits.maxBidPrice);
-        if (a) {
-          setAuction({ ...a, ...limits });
-        } else {
-          setAuction(a);
-        }
-
-        const bidList = Array.isArray(data?.bids)
-          ? data.bids
-          : Array.isArray(data?.recent_bids)
-            ? data.recent_bids
-            : Array.isArray(root?.recent_bids)
-              ? root.recent_bids
-              : [];
-        setBids(bidList.map(normalizeBidPayload));
-      })
+    fetchAuctionDetail()
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [auctionId]);
+  }, [auctionId, fetchAuctionDetail]);
 
-  // WebSocket connection — uses ref so callback is never stale
   useEffect(() => {
-    if (!auctionId) return;
+    if (!auctionId) return undefined;
 
     const client = new Client({
       webSocketFactory: () => new SockJS(`${resolveRealtimeOrigin()}/ws`),
       reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
       onConnect: () => {
         setConnected(true);
         client.subscribe(`/topic/auction/${auctionId}`, (frame) => {
           try {
             const msg = JSON.parse(frame.body);
-            // Use ref so we always call the latest version of handleUpdate
             handleUpdateRef.current(msg);
           } catch (e) {
             console.error('Failed to parse auction message:', e);
@@ -189,8 +279,20 @@ export function useAuction(auctionId) {
     const body = typeof payload === 'object' && payload !== null
       ? payload
       : { amount: payload };
-    return auctionAPI.placeBid(auctionId, body);
-  }, [auctionId]);
+    const res = await auctionAPI.placeBid(auctionId, body);
+    await fetchAuctionDetail();
+    return res;
+  }, [auctionId, fetchAuctionDetail]);
 
-  return { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid };
+  return {
+    auction,
+    bids,
+    minNextBid,
+    maxBidPrice,
+    connected,
+    loading,
+    lastUpdate,
+    placeBid,
+    refresh: fetchAuctionDetail,
+  };
 }

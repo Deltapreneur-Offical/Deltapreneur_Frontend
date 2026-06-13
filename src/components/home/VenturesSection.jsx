@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
 import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { fetchAllListPages } from '../../utils/listPagination';
+import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -23,7 +23,9 @@ export default function VenturesSection() {
     const fetchVentures = async () => {
       try {
         setLoading(true);
-        const items = await fetchAllListPages((params) => ventureAPI.getAll(params));
+        const { items } = await fetchListPage((params) => ventureAPI.getAll(params), {
+          pageSize: HOME_PREVIEW_PAGE_SIZE,
+        });
         setVentures(items);
       } catch {
         setVentures([]);

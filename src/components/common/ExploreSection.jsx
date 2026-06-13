@@ -7,6 +7,7 @@ import VenturesSection from '../home/VenturesSection';
 import TechnologySection from '../home/TechnologySection';
 import FeedbackSection from '../home/FeedbackSection';
 import CommunitySection from '../home/CommunitySection';
+import AuctionsSection from '../home/AuctionsSection';
 
 export default function ExploreSection() {
   const { t } = useTranslation();
@@ -64,6 +65,11 @@ export default function ExploreSection() {
       <TechnologySection />
 
       <CommunitySection />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          AUCTIONS SECTION (Separate Component)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <AuctionsSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
           FEEDBACK WIDGET (Separate Component)

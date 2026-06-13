@@ -4,7 +4,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 355px;
+  min-height: 380px;
   height: auto;
   overflow: visible;
   border-radius: 1rem;
@@ -329,7 +329,7 @@
 
 .home-preview-row .creator-profile-card,
 .listing-card-glow-grid .creator-profile-card {
-  min-height: 355px;
+  min-height: 380px;
   height: auto;
 }
 
@@ -345,6 +345,109 @@
 .home-preview-row .creator-profile-card__cta {
   width: 2.25rem;
   height: 2.25rem;
+}
+
+.creator-expected-rate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  flex-shrink: 0;
+  border-radius: 0.6rem;
+  border: 1px solid #e8ecf4;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 3.1rem;
+  text-align: center;
+}
+
+.creator-expected-rate__label {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.creator-expected-rate__value {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.creator-auction-bids {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.5rem 0.55rem;
+  flex-shrink: 0;
+  border-radius: 0.6rem;
+  border: 1px solid #e8ecf4;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 3.1rem;
+}
+
+.creator-auction-bids__item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  text-align: center;
+  padding: 0 0.2rem;
+}
+
+.creator-auction-bids__divider {
+  width: 1px;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: #e2e8f0;
+  margin: 0.1rem 0;
+}
+
+.creator-auction-bids__label {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.creator-auction-bids__value {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.creator-auction-bids__value--active {
+  color: #059669;
 }
 
 @media (max-width: 640px) {

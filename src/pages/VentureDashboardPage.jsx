@@ -6,6 +6,7 @@ import { coVentureAPI, likeAPI, ventureAPI, ventureDealAPI, venturePitchAPI } fr
 import { unwrapApiData } from '../utils/apiResponse';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
+import VentureIcon from '../assets/Coventure_logo.png';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import EditActionLabel from '../components/common/EditActionLabel';
 import PartnershipTimelineCard from '../components/venture/PartnershipTimelineCard';
@@ -169,7 +170,9 @@ function MyListings() {
 
   if (ventures.length === 0) return (
     <div className="text-center py-20">
-      <div className="text-6xl mb-4">📋</div>
+      <div className="flex justify-center mb-6">
+        <img src={VentureIcon} alt="" className="w-20 h-20 object-contain opacity-30" />
+      </div>
       <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('ventureDashboardNoListingsTitle')}</h3>
       <p className="text-gray-600 mb-4">{t('ventureDashboardNoListingsBody')}</p>
       <button className="btn-glow" onClick={() => navigate('/ventures')}>

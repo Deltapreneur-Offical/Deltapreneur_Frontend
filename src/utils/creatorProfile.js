@@ -11,6 +11,7 @@ const REQUIRED_CREATOR_FIELDS = [
   { key: 'location', aliases: ['location'], label: 'Location' },
   { key: 'linked_in_id', aliases: ['linkedInId'], label: 'LinkedIn account' },
   { key: 'why_im_here', aliases: ['whyImHere'], label: 'Bio' },
+  { key: 'expected_rate', aliases: ['expectedRate'], label: 'Expected Rate' },
 ];
 
 function readProfileField(profile, field) {

@@ -5,9 +5,7 @@ import { ArrowRight, Share2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import ListingAvailabilityBadge from './ListingAvailabilityBadge';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
-import VerificationStatusBadge from './VerificationStatusBadge';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
   canRequestTechnologyAuction,
@@ -16,10 +14,6 @@ import {
   isTechnologyListingOwner,
   technologyAuctionId,
 } from '../../utils/technologyAuctionUi';
-import MarketplaceListingCardFrame, {
-  ListingCardBadge,
-  ListingPriceBox,
-} from './MarketplaceListingCardFrame';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import '../../styles/domain-listing-cards.css';
 
@@ -108,55 +102,6 @@ export default function TechnologyListingCard({
   };
 
   const stop = (e) => e.stopPropagation();
-
-  const headerBadges = (
-    <>
-      <ListingCardBadge variant={isAuction ? 'auction' : 'glass'}>
-        {isAuction ? '🔨 Auction' : '💻 Regular'}
-      </ListingCardBadge>
-      <VerificationStatusBadge item={item} type="technology" />
-      {owner && <ListingCardBadge variant="owner">✦ {t('listingCardOwner')}</ListingCardBadge>}
-      {item.official && (
-        <ListingCardBadge variant="glass">✦ Official</ListingCardBadge>
-      )}
-    </>
-  );
-
-  const techName = item.name || t('listingCardTechnology');
-  const techCategory = (item.category || 'Technology').replace(/_/g, ' ');
-
-  const body = (
-    <>
-      <div className="flex flex-col gap-1.5 mb-2 flex-shrink-0">
-        <ListingAvailabilityBadge status={item.softwareStatus || 'AVAILABLE'} />
-        <div className="flex items-center gap-1 flex-wrap">
-          <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-            {techCategory}
-          </span>
-        </div>
-      </div>
-      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-2 min-h-[30px] flex-shrink-0">
-        {owner && showVerificationNotice
-          ? t('listingCardAwaitingVerification')
-          : (item.description || t('listingCardTechnology'))}
-      </p>
-      <ListingPriceBox
-        variant={isAuction ? 'auction' : 'deal'}
-        amount={formatPrice(item.price || 0)}
-        caption={isAuction ? 'listing value' : 'price'}
-      />
-    </>
-  );
-
-  const statsFooter = (
-    <ListingCardStatsFooter
-      viewCount={item.views || 0}
-      likeState={likeState}
-      onLike={onLike}
-      onView={onView}
-      className={browseMode ? '' : 'border-t border-gray-100'}
-    />
-  );
 
   const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors inline-flex items-center justify-center gap-1';
   const btnEdit = `${btnPill} bg-white border border-gray-300 text-gray-800 font-semibold hover:bg-gray-50`;
@@ -298,125 +243,118 @@ export default function TechnologyListingCard({
     </div>
   );
 
-  if (browseMode) {
-    const techImage = item.imageUrl && !imgFailed ? item.imageUrl : null;
-    const useCase = item.whatItDoes || item.what_it_does || item.description || '';
-    const industry = techCategory;
-    const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
-    const priceAmount = Number(item.price || 0);
-    const handleViewDetails = onView
-      ? (e) => {
-        stop(e);
-        onView();
-      }
-      : undefined;
+  const techName = item.name || t('listingCardTechnology');
+  const techCategory = (item.category || 'Technology').replace(/_/g, ' ');
+  const techImage = item.imageUrl && !imgFailed ? item.imageUrl : null;
+  const useCase = item.whatItDoes || item.what_it_does || item.description || '';
+  const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
+  const priceAmount = Number(item.price || 0);
+  const interactive = !browseMode && onView;
 
-    return (
-      <article className="domain-listing-card domain-listing-card--browse home-preview-browse-card card-glow-hover relative flex h-auto w-full flex-col overflow-hidden rounded-3xl bg-white">
-        <div className="domain-listing-card__cover">
-          {techImage ? (
-            <img
-              src={techImage}
-              alt={techName}
-              className="domain-listing-card__cover-img"
-              onError={() => setImgFailed(true)}
-            />
-          ) : (
-            <div className="domain-listing-card__cover-fallback" aria-hidden>
-              <span className="domain-listing-card__cover-fallback-domain">{techName}</span>
-            </div>
-          )}
-          {item.verified ? (
-            <img
-              src={verifiedIcon}
-              alt=""
-              className="domain-listing-card__verified-icon"
-              aria-hidden
-            />
-          ) : null}
-        </div>
+  const handleViewDetails = onView
+    ? (e) => {
+      stop(e);
+      onView();
+    }
+    : undefined;
 
-        <div className="domain-listing-card__body">
-          <div className="domain-listing-card__domain-row">
-            <p className="domain-listing-card__domain" title={techName}>
-              {techName}
-            </p>
-            <span
-              className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveSoftwareStatusDotClass(statusKey)}`}
-              title={statusKey}
-              aria-hidden
-            />
-          </div>
-
-          <p
-            className="technology-listing-card__use-case"
-            title={useCase || undefined}
-          >
-            {useCase || '\u00A0'}
-          </p>
-
-          {industry ? (
-            <p className="technology-listing-card__industry" title={industry}>
-              {industry}
-            </p>
-          ) : null}
-
-          {(priceAmount > 0 || handleViewDetails) && (
-            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-              {priceAmount > 0 ? (
-                <div className="domain-listing-card__price-text min-w-0">
-                  <span className="domain-listing-card__price-value truncate">
-                    {formatPrice(priceAmount)}
-                  </span>
-                </div>
-              ) : null}
-              {handleViewDetails ? (
-                <button
-                  type="button"
-                  className="domain-listing-card__price-cta"
-                  aria-label={t('listingCardViewDetails', 'View details')}
-                  onClick={handleViewDetails}
-                >
-                  <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
-                </button>
-              ) : null}
-            </div>
-          )}
-
-          <ListingCardStatsFooter
-            viewCount={item.views || 0}
-            likeState={likeState}
-            onLike={onLike}
-            className="domain-listing-card__stats"
-          />
-        </div>
-      </article>
-    );
-  }
+  const showPriceBox = browseMode
+    ? (priceAmount > 0 || handleViewDetails)
+    : true;
 
   return (
-    <MarketplaceListingCardFrame
-      cardClassName="technology-listing-card"
-      image={item.imageUrl && !imgFailed ? item.imageUrl : null}
-      imageAlt={techName}
-      initial={(techName || '?').slice(0, 1).toUpperCase()}
-      headerTitle={techName}
-      headerSubtitle={techCategory}
-      headerBadges={headerBadges}
-      onClick={onView}
-      footer={(
-        <>
-          <div onClick={stop} role="presentation">
-            {statsFooter}
-          </div>
-          {actionButtons}
-        </>
-      )}
+    <article
+      className={`domain-listing-card technology-listing-card card-glow-hover relative flex w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse technology-listing-card--browse home-preview-browse-card' : ''}${interactive ? ' cursor-pointer' : ''}`}
+      onClick={interactive ? onView : undefined}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
     >
-      {item.imageUrl && !imgFailed ? (
-        <img src={item.imageUrl} alt="" className="hidden" onError={() => setImgFailed(true)} />
-      ) : null}
-      {body}
-    </MarketplaceListingCardFrame>
+      <div className="domain-listing-card__cover">
+        {techImage ? (
+          <img
+            src={techImage}
+            alt={techName}
+            className="domain-listing-card__cover-img"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="domain-listing-card__cover-fallback" aria-hidden>
+            <span className="domain-listing-card__cover-fallback-domain">{techName}</span>
+          </div>
+        )}
+        {item.verified ? (
+          <img
+            src={verifiedIcon}
+            alt=""
+            className="domain-listing-card__verified-icon"
+            aria-hidden
+          />
+        ) : null}
+      </div>
+
+      <div className="domain-listing-card__body">
+        <div className="domain-listing-card__domain-row">
+          <p className="domain-listing-card__domain" title={techName}>
+            {techName}
+          </p>
+          <span
+            className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveSoftwareStatusDotClass(statusKey)}`}
+            title={statusKey}
+            aria-hidden
+          />
+        </div>
+
+        {techCategory ? (
+          <p className="technology-listing-card__industry" title={techCategory}>
+            {techCategory}
+          </p>
+        ) : null}
+
+        <p
+          className="technology-listing-card__use-case"
+          title={useCase || undefined}
+        >
+          {owner && showVerificationNotice
+            ? t('listingCardAwaitingVerification')
+            : (useCase || '\u00A0')}
+        </p>
+
+        {showPriceBox && (
+          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+            <div className="domain-listing-card__price-text min-w-0">
+              <span className="domain-listing-card__price-value truncate">
+                {formatPrice(priceAmount)}
+              </span>
+            </div>
+            {browseMode && handleViewDetails ? (
+              <button
+                type="button"
+                className="domain-listing-card__price-cta"
+                aria-label={t('listingCardViewDetails', 'View details')}
+                onClick={handleViewDetails}
+              >
+                <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+              </button>
+            ) : null}
+          </div>
+        )}
+
+        <ListingCardStatsFooter
+          viewCount={item.views || 0}
+          likeState={likeState}
+          onLike={onLike}
+          onView={browseMode ? undefined : onView}
+          likesFirst
+          className="domain-listing-card__stats domain-listing-card__stats--split technology-listing-card__stats"
+        />
+
+        {!browseMode && (
+          <div className="domain-listing-card__actions">
+            {actionButtons}
+          </div>
+        )}
+      </div>
+    </article>
   );
 }

@@ -17,7 +17,7 @@ export const authAPI = {
   verifyEmail:        (token)         => api.get(`/api/v1/auth/verify-email?token=${token}`),
   resendVerification: (email, extra = {}) => api.post('/api/v1/auth/resend-verification', { email, ...extra }),
   refresh:            (refreshToken)  => api.post('/api/v1/auth/refresh', { refreshToken }),
-  logout:             ()              => api.post('/api/v1/auth/logout'),
+  logout:             (refreshToken = '') => api.post('/api/v1/auth/logout', { refreshToken }),
   completeProfile:    (data)          => api.post('/api/v1/auth/complete-profile', data),
 };
 
@@ -32,6 +32,7 @@ export const profileAPI = {
 export const ventureAPI = {
   getAll:       (params)  => api.get('/api/v1/venture/all', { params }),
   getMyVentures:()        => api.get('/api/v1/venture/my'),
+  getMyPurchases: ()      => api.get('/api/v1/venture/my-purchases'),
   get:          (id)      => api.get(`/api/v1/venture/${id}`),
   create:       (data)    => api.post('/api/v1/venture/', data),
   update:       (id, data)=> api.put(`/api/v1/venture/${id}`, data),
@@ -252,6 +253,24 @@ export const likeAPI = {
   myLiked:    (type)           => api.get(`/api/v1/likes/${type}/my-liked`),
 };
 
+export const operationsAdminAPI = {
+  list:   () => api.get('/api/v1/admin/operations-services'),
+  create: (body) => api.post('/api/v1/admin/operations-services', body),
+  update: (id, body) => api.put(`/api/v1/admin/operations-services/${id}`, body),
+  remove: (id) => api.delete(`/api/v1/admin/operations-services/${id}`),
+  listRequests: (params) => api.get('/api/v1/admin/operations-requests', { params }),
+  patchRequestStatus: (id, body) => api.patch(`/api/v1/admin/operations-requests/${id}`, body),
+};
+
+export const operationsRequestAPI = {
+  submit: (body) => api.post('/api/v1/operations/requests', body),
+};
+
+export const operationsAPI = {
+  list: (params) => api.get('/api/v1/operations/services', { params }),
+  get:  (id) => api.get(`/api/v1/operations/services/${id}`),
+};
+
 export const adminAPI = {
   
   getCoVentures:        ()              => api.get('/api/v1/admin/coventures'),
@@ -274,6 +293,10 @@ export const adminAPI = {
   restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
   markDomainVerified:   (id)    => api.post(`/api/v1/admin/domains/${id}/mark-verified`),
+  getDomainVerificationReview: (id) => api.get(`/api/v1/admin/domains/${id}/verification-review`),
+  approveDomainVerification:   (id) => api.post(`/api/v1/admin/domains/${id}/verification/approve`),
+  rejectDomainVerification:    (id, reason) => api.post(`/api/v1/admin/domains/${id}/verification/reject`, { reason }),
+  requestDomainVerificationInfo: (id, message) => api.post(`/api/v1/admin/domains/${id}/verification/request-info`, { message }),
   markTechnologyVerified: (id)  => api.post(`/api/v1/admin/softwares/${id}/mark-verified`),
   domainVerifyInit:     (id, m) => api.post(`/api/v1/admin/domains/${id}/verification/init`, { method: m }),
   domainVerifyCheck:    (id, t) => api.post(`/api/v1/admin/domains/${id}/verification/check`, t ? { token: t } : {}),
@@ -333,6 +356,8 @@ export const auctionAPI = {
   participationVerify: (auctionId, data) => api.post(`/api/v1/auction/${auctionId}/participation/verify`, data),
   getParticipationFees: () => api.get('/api/v1/auction/participation-fees'),
   updateParticipationFees: (data) => api.put('/api/v1/auction/admin/participation-fees', data),
+  winnerPaymentCreateOrder: (auctionId) => api.post(`/api/v1/payment/create-order/${auctionId}`),
+  winnerPaymentVerify: (data) => api.post('/api/v1/payment/verify', data),
 };
 
 export const feedbackAPI = {

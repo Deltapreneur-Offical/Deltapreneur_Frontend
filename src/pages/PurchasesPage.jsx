@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ShoppingBag, Globe, Cpu, BadgeCheck, Handshake } from 'lucide-react';
 import { domainAPI, domainStorefrontAPI, technologyAPI, domainTransferAPI, ventureDealAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
-import PurchaseIcon from '../assets/purchase.png';
-import DomainsIcon from '../assets/CoBranding.png';
-import SoftwareIcon from '../assets/CoCreation.png';
-import CoBrotherIcon from '../assets/Community-profileicon.png';
 import { generateInvoice } from '../utils/generateInvoice';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -23,6 +20,8 @@ import {
 } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
+const PURCHASES_STAT_ICON = { size: 20, strokeWidth: 2, 'aria-hidden': true };
+
 export default function PurchasesPage() {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -32,11 +31,11 @@ export default function PurchasesPage() {
   const [domains, setDomains] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [swPurchases, setSwPurchases] = useState([]);
+  const [venturePurchases, setVenturePurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
   const [domainTransfers, setDomainTransfers] = useState([]);
-  const [venturePurchases, setVenturePurchases] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -66,26 +65,32 @@ export default function PurchasesPage() {
     d.purchased_by_user_id
   );
   const completedRegistrations = asArray(registrations);
-  const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
-  const completedVentures = asArray(venturePurchases);
+  const completedTechnology = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
+  const ventureItems = asArray(venturePurchases).map((d) => ({ ...d, _type: 'venture' }));
   const domainTabCount = completedDomains.length + completedRegistrations.length + domainTransfers.length;
-  const totalItems = domainTabCount + completedSoftware.length + completedVentures.length;
+  const technologyCount = completedTechnology.length;
+  const ventureCount = ventureItems.length;
+  const totalItems = domainTabCount + technologyCount + ventureCount;
 
   const domainTabItems = [
     ...domainTransfers.map((tx) => ({ ...tx, _type: 'domain_transfer' })),
     ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
     ...completedRegistrations.map(o => ({ ...o, _type: 'domain_registration' })),
   ];
+  const technologyTabItems = completedTechnology.map(p => ({ ...p, _type: 'technology' }));
 
   const displayItems =
     tab === 'domains' ? domainTabItems
-    : tab === 'software' ? completedSoftware.map(p => ({ ...p, _type: 'software' }))
-    : tab === 'ventures' ? completedVentures.map(d => ({ ...d, _type: 'venture' }))
-    : [
-        ...domainTabItems,
-        ...completedSoftware.map(p => ({ ...p, _type: 'software' })),
-        ...completedVentures.map(d => ({ ...d, _type: 'venture' })),
-      ];
+    : tab === 'ventures' ? ventureItems
+    : tab === 'technology' ? technologyTabItems
+    : [...domainTabItems, ...ventureItems, ...technologyTabItems];
+
+  const purchaseTabs = [
+    { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
+    { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
+    { id: 'ventures', label: `${t('purchasesTabVentures', { defaultValue: 'Ventures' })} (${ventureCount})` },
+    { id: 'technology', label: `${t('purchasesTabTechnology', { defaultValue: 'Technology' })} (${technologyCount})` },
+  ];
 
   return (
     <AppLayout>
@@ -97,37 +102,42 @@ export default function PurchasesPage() {
             </h1>
             <p className="text-gray-600 mt-1">
               {t('purchasesSubtitle', {
-                defaultValue: 'Marketplace buys, new domain registrations, and software in one place.',
+                defaultValue: 'Domains, ventures, and technology purchases in one place.',
               })}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <StatCard label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })} value={totalItems} iconSrc={PurchaseIcon} />
-          <StatCard label={t('purchasesStatDomains', { defaultValue: 'Domains' })} value={domainTabCount} iconSrc={DomainsIcon} color="#6eadc8" />
-          <StatCard label={t('purchasesStatSoftware', { defaultValue: 'Software' })} value={completedSoftware.length} iconSrc={SoftwareIcon} color="#a06ec8" />
+        <div className="flex flex-wrap gap-3 mb-6">
+          <StatCard
+            label={t('purchasesStatTotal', { defaultValue: 'Total Purchases' })}
+            value={totalItems}
+            icon={<ShoppingBag {...PURCHASES_STAT_ICON} />}
+          />
+          <StatCard
+            label={t('purchasesStatDomains', { defaultValue: 'Domains' })}
+            value={domainTabCount}
+            icon={<Globe {...PURCHASES_STAT_ICON} />}
+          />
           <StatCard
             label={t('purchasesStatVentures', { defaultValue: 'Ventures' })}
-            value={completedVentures.length}
-            iconSrc={CoBrotherIcon}
-            color="#d97706"
+            value={ventureCount}
+            icon={<Handshake {...PURCHASES_STAT_ICON} />}
+          />
+          <StatCard
+            label={t('purchasesStatSoftware', { defaultValue: 'Technologies' })}
+            value={technologyCount}
+            icon={<Cpu {...PURCHASES_STAT_ICON} />}
           />
           <StatCard
             label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
-            value={completedSoftware.filter(p => p.coBrotherHelpPaid).length}
-            iconSrc={CoBrotherIcon}
-            color="#6ec896"
+            value={completedTechnology.filter(p => p.coBrotherHelpPaid).length}
+            icon={<BadgeCheck {...PURCHASES_STAT_ICON} />}
           />
         </div>
 
-        <div className="flex gap-2 mb-6">
-          {[
-            { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
-            { id: 'domains', label: `${t('purchasesTabDomains', { defaultValue: 'Domains' })} (${domainTabCount})` },
-            { id: 'software', label: `${t('purchasesTabSoftware', { defaultValue: 'Software' })} (${completedSoftware.length})` },
-            { id: 'ventures', label: `${t('purchasesTabVentures', { defaultValue: 'Ventures' })} (${completedVentures.length})` },
-          ].map((tabItem) => (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {purchaseTabs.map((tabItem) => (
             <button
               key={tabItem.id}
               type="button"
@@ -145,12 +155,16 @@ export default function PurchasesPage() {
           </div>
         ) : displayItems.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">🛒</div>
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400">
+                <ShoppingBag size={36} strokeWidth={1.75} aria-hidden />
+              </div>
+            </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
               {t('purchasesEmpty', { defaultValue: 'No purchases yet' })}
             </h3>
             <p className="text-gray-600 mb-6">
-              {t('purchasesBrowseHint', { defaultValue: 'Browse domains and software to make your first purchase.' })}
+              {t('purchasesBrowseHint', { defaultValue: 'Browse domains, ventures, and technology to make your first purchase.' })}
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
@@ -159,11 +173,11 @@ export default function PurchasesPage() {
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/storefront')}>
                 {t('storefront', { defaultValue: 'Register a Domain' })}
               </button>
-              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
-                {t('browseTechnology', { defaultValue: 'Browse Technology' })}
-              </button>
               <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures')}>
                 {t('browseVentures', { defaultValue: 'Browse Ventures' })}
+              </button>
+              <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
+                {t('browseTechnology', { defaultValue: 'Browse Technology' })}
               </button>
             </div>
           </div>
@@ -200,7 +214,7 @@ export default function PurchasesPage() {
                   user={user}
                 />
               ) : (
-                <SoftwarePurchaseRow
+                <TechnologyPurchaseRow
                   key={'s-' + item.id}
                   purchase={item}
                   onGetHelp={() => setHelpModal(item)}
@@ -360,7 +374,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
   );
 }
 
-function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
+function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const sw = purchase.software || {};
@@ -387,7 +401,7 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
           )}
         </div>
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
-          <div className="font-display text-xl font-bold text-purple-700">
+          <div className="text-xl font-semibold tabular-nums text-gray-900">
             {formatPrice(sw.price || 0)}
           </div>
           {helpPaid && <div className="text-xs text-gray-600">+ {formatPrice(HELP_FEE_INR)} CoBrother</div>}
@@ -542,14 +556,20 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   );
 }
 
-function StatCard({ label, value, iconSrc, color = '#111827' }) {
+function StatCard({ label, value, icon }) {
   return (
-    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
-      <div className="w-8 h-8 mb-2">
-        <img src={iconSrc} alt={label} className="w-full h-full object-contain" />
+    <div className="flex flex-1 min-w-[9.5rem] sm:min-w-[11rem] lg:min-w-[calc(20%-0.75rem)] items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white px-3.5 py-3 sm:px-4 sm:py-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 leading-tight truncate">
+          {label}
+        </p>
+        <p className="mt-1 text-xl sm:text-2xl font-semibold tabular-nums text-slate-900 leading-none tracking-tight">
+          {value}
+        </p>
       </div>
-      <div className="text-2xl font-bold font-display" style={{ color }}>{value}</div>
-      <div className="text-xs text-gray-600 font-semibold mt-1">{label}</div>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-400 border border-slate-100">
+        {icon}
+      </span>
     </div>
   );
 }

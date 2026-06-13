@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Handshake, Clock, CircleDot } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   auctionAPI,
@@ -9,6 +10,7 @@ import {
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import DomainsIcon from '../assets/CoBranding.png';
+import TechnologyIcon from '../assets/CoCreation.png';
 import CreatorIcon from '../assets/Cobrother_Profile.png';
 import { asArray } from '../utils/asArray';
 import { fetchAllListPages } from '../utils/listPagination';
@@ -18,8 +20,22 @@ import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/do
 import { pickMediaUrl } from '../utils/mediaUrl';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
-function AuctionCategoryIcon({ src, className = 'w-4 h-4 object-contain shrink-0' }) {
-  return <img src={src} alt="" aria-hidden className={className} />;
+function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      className={`${className} transition-all duration-200 ${selected ? 'brightness-0 invert' : ''}`}
+    />
+  );
+}
+
+function AuctionTabIcon({ icon, lucideIcon: Lucide, prefix, selected }) {
+  if (icon) return <AuctionCategoryIcon src={icon} selected={selected} />;
+  if (Lucide) return <Lucide className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden />;
+  if (prefix) return <span aria-hidden>{prefix}</span>;
+  return null;
 }
 
 const toNum = (value, fallback = 0) => {
@@ -231,7 +247,7 @@ export default function AuctionsPage() {
           {[
             { id: 'all', label: `All (${totalLive})` },
             { id: 'domains', label: `Domains (${domainAuctions.length})`, icon: DomainsIcon },
-            { id: 'technology', label: `Technology (${softwareAuctions.length})`, prefix: '💻' },
+            { id: 'technology', label: `Technology (${softwareAuctions.length})`, icon: TechnologyIcon },
             { id: 'community', label: `Creators (${communityAuctions.length})`, icon: CreatorIcon },
           ].map(t => (
             <button key={t.id}
@@ -240,7 +256,7 @@ export default function AuctionsPage() {
                 setSection(t.id);
                 navigate(t.id === 'all' ? '/auctions' : `/auctions?section=${t.id}`, { replace: true });
               }}>
-              {t.icon ? <AuctionCategoryIcon src={t.icon} /> : t.prefix ? <span aria-hidden>{t.prefix}</span> : null}
+              <AuctionTabIcon icon={t.icon} lucideIcon={t.lucideIcon} prefix={t.prefix} selected={section === t.id} />
               {t.label}
             </button>
           ))}
@@ -249,13 +265,14 @@ export default function AuctionsPage() {
         {/* ── Sub-filter tabs ── */}
         <div className="flex gap-2 mb-6">
           {[
-            { id: 'all',          label: 'All' },
-            { id: 'ending_soon',  label: '⚡ Ending Soon' },
-            { id: 'no_bids',      label: '🆕 No Bids Yet' },
+            { id: 'all', label: 'All' },
+            { id: 'ending_soon', label: 'Ending Soon', lucideIcon: Clock },
+            { id: 'no_bids', label: 'No Bids Yet', lucideIcon: CircleDot },
           ].map(t => (
             <button key={t.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
+              className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
               onClick={() => setFilter(t.id)}>
+              <AuctionTabIcon lucideIcon={t.lucideIcon} selected={filter === t.id} />
               {t.label}
             </button>
           ))}
@@ -314,7 +331,10 @@ export default function AuctionsPage() {
             {shownSoftware.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-indigo-600 m-0">💻 Technology Auctions</h2>
+                  <h2 className="text-base font-bold text-indigo-600 m-0 inline-flex items-center gap-2">
+                    <AuctionCategoryIcon src={TechnologyIcon} className="w-5 h-5 object-contain" />
+                    Technology Auctions
+                  </h2>
                   <span className="text-xs text-gray-500 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-semibold">
                     {shownSoftware.length} live
                   </span>
@@ -396,7 +416,10 @@ function VentureAuctionCard({ auction, onClick }) {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{brand.brandName || '—'}</h3>
           <div className="flex gap-1.5 flex-wrap items-center">
-            <span className="text-xs text-purple-600 font-semibold">🔨 Equity Auction</span>
+            <span className="text-xs text-purple-600 font-semibold inline-flex items-center gap-1">
+              <Handshake className="w-3 h-3 shrink-0" strokeWidth={2} aria-hidden />
+              Equity Auction
+            </span>
             {brand.industry && <span className="text-xs text-gray-500">· {brand.industry.replace(/_/g, ' ')}</span>}
           </div>
         </div>
@@ -616,13 +639,16 @@ function SoftwareAuctionCard({ auction, onClick }) {
           />
         ) : (
           <div className="w-11 h-11 rounded-[10px] bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center text-lg font-bold text-indigo-600 flex-shrink-0">
-            {title[0]?.toUpperCase() || '💻'}
+            {title[0]?.toUpperCase() || 'T'}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{title}</h3>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-indigo-600 font-semibold">💻 Technology Auction</span>
+            <span className="text-xs text-indigo-600 font-semibold inline-flex items-center gap-1">
+              <AuctionCategoryIcon src={TechnologyIcon} className="w-3.5 h-3.5 object-contain" />
+              Technology Auction
+            </span>
             {category && (
               <span className="text-xs text-gray-500">
                 · {String(category).replace(/_/g, ' ')}

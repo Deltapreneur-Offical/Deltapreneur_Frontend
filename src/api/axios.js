@@ -97,6 +97,10 @@ api.interceptors.request.use((config) => {
   const token = getStoredAccessToken();
   config.headers = config.headers || {};
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  const method = String(config.method || 'get').toLowerCase();
+  if (method !== 'get' && method !== 'head' && method !== 'options') {
+    config.headers = { ...csrfHeader(), ...config.headers };
+  }
   return config;
 });
 

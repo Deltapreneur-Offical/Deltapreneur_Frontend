@@ -17,6 +17,18 @@
   gap: 0.55rem;
   flex-wrap: nowrap;
   min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Technology cards — likes left, views right */
+.listing-card-stats-footer__group--likes-first {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: 100%;
+  max-width: 100%;
+  column-gap: 0.5rem;
+  align-items: center;
 }
 
 .listing-card-stats-footer__views {
@@ -132,4 +144,19 @@
   font-weight: 600;
   color: #94a3b8;
   line-height: 1;
+}
+
+/* Domain + technology cards — likes left [icon][count], views right [count][icon] */
+.listing-card-stats-footer .listing-card-stats-footer__group--likes-first .listing-like-btn {
+  display: inline-flex;
+  justify-self: start;
+  flex-direction: row;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.listing-card-stats-footer .listing-card-stats-footer__group--likes-first .listing-card-stats-footer__views {
+  justify-self: end;
+  flex-direction: row-reverse;
+  gap: 0.3rem;
 }

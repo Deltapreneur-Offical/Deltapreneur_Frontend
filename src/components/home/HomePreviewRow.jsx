@@ -1,6 +1,6 @@
-export default function HomePreviewRow({ children }) {
+export default function HomePreviewRow({ children, className = '' }) {
   return (
-    <div className="home-preview-row">
+    <div className={`home-preview-row${className ? ` ${className}` : ''}`}>
       {children}
     </div>
   );

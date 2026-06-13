@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown, Globe, CircleDollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronDown, Globe, CircleDollarSign, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -108,6 +109,20 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
           {email ? <p className="truncate text-xs text-gray-500">{email}</p> : null}
         </div>
       )}
+
+      <Link
+        to="/settings/payouts"
+        className="flex w-full items-center gap-3 border-b border-gray-100 px-4 py-3.5 text-left transition-colors hover:bg-gray-50"
+        role="menuitem"
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+          <CreditCard size={16} strokeWidth={2} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-gray-900">Payout Settings</span>
+          <span className="block text-xs text-gray-500">UPI and bank account details</span>
+        </span>
+      </Link>
 
       <AccordionRow
         id="language"

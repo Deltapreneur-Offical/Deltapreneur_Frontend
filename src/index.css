@@ -4339,6 +4339,109 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   min-width: 0;
 }
 
+.dashboard-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.dashboard-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.9rem 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 9999px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 6px 18px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.dashboard-hero-chip--link {
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-hero-chip--link:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 8px 22px rgba(15, 23, 42, 0.12);
+}
+
+.dashboard-hero-chip__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.dashboard-hero-chip__divider {
+  width: 1px;
+  height: 1.125rem;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.dashboard-hero-chip__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.dashboard-hero-chip__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-hero-chip__dot--neutral {
+  background: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.22);
+}
+
+.dashboard-hero-chip__dot--orange {
+  background: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.22);
+}
+
+.dashboard-hero-chip__dot--amber {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.22);
+}
+
+.dashboard-hero-chip__value--orange {
+  color: #c2410c;
+}
+
+.dashboard-hero-chip__value--green {
+  color: #15803d;
+}
+
+.dashboard-hero-chip__value--amber {
+  color: #b45309;
+}
+
+.dashboard-hero-chip__icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.dashboard-hero-chip__icon--green {
+  color: #16a34a;
+}
+
 .app-dashboard .btn-glow {
   max-width: 100%;
 }

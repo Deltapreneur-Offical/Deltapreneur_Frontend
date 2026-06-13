@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { Calendar, Headset } from 'lucide-react';
@@ -123,6 +124,7 @@ const STATUS_COLORS = {
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
+  const location = useLocation();
   const [tab, setTab]                       = useState('ventures');
   const [data, setData]                     = useState([]);
   const [coBrothers, setCoBrothers]         = useState([]);
@@ -236,6 +238,28 @@ export default function AdminDashboardPage() {
       .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(() => setPendingVentures([]));
   }, []);
+
+  useEffect(() => {
+    const requestedTab = new URLSearchParams(location.search).get('tab');
+    const allowedTabs = new Set([
+      'ventures',
+      'domains',
+      'domain-enquiries',
+      'cocreations',
+      'requests',
+      'auctions',
+      'venture-auctions',
+      'meetings',
+      'homepage-features',
+      'software-auctions',
+      'community-auctions',
+      'addon-orders',
+      'domain-transfers',
+    ]);
+    if (requestedTab && allowedTabs.has(requestedTab)) {
+      setTab(requestedTab);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     loadTab(tab);

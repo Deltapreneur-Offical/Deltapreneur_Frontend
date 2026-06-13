@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
@@ -59,6 +59,13 @@ const readApiError = (err, fallback) => {
   if (Array.isArray(payload?.detail)) return payload.detail.map(x => x?.msg || String(x)).join(', ');
   return fallback;
 };
+
+const formatInr = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(Number(value || 0));
 
 function buildDomainFormState(domain, navCurrency) {
   const display = domain ? resolveDomainDisplay(domain) : { name: '', ext: null, fullDomain: '' };
@@ -241,6 +248,9 @@ export default function DomainsPage() {
             <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
           </div>
           <div className="flex gap-2 md:gap-3">
+            <Link className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" to="/settings/payouts">
+              <CreditCard size={14} className="md:w-4 md:h-4" /> <span className="truncate">Payout Settings</span>
+            </Link>
             <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
               <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
@@ -682,9 +692,12 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         )}
         {commissionBreakdown && (
           <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
-            <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
-            <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+            <div className="flex justify-between"><span>Listing Price</span><span>{formatInr(commissionBreakdown.listingPrice)}</span></div>
+            <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatInr(commissionBreakdown.commissionAmount)}</span></div>
+            <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatInr(commissionBreakdown.sellerEarnings)}</span></div>
+            <p className="pt-2 text-xs leading-5 text-gray-600">
+              CoBrother charges a 15% commission on successful sales. The commission is deducted from the final sale amount. You will receive approximately 85% of the sale price.
+            </p>
           </div>
         )}
 

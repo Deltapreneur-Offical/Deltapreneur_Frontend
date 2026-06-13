@@ -32,12 +32,14 @@ export const domainTransferAdminAPI = {
   list: (params) => api.get('/api/v1/admin/domain-transfers/', { params }),
   get: (id) => api.get(`/api/v1/admin/domain-transfers/${id}`),
   approvePayout: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/approve-payout`),
-  releasePayout: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/release-payout`),
+  releasePayout: (id, data) => api.post(`/api/v1/admin/domain-transfers/${id}/release-payout`, data),
   refund: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/refund`),
   resolveAdminReview: (id, data) =>
     api.post(`/api/v1/admin/domain-transfers/${id}/resolve-admin-review`, data),
   forceComplete: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/force-complete`),
   syncWhois: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/sync-whois`),
+  sendPayoutProfileReminder: (id) =>
+    api.post('/api/admin/seller-payout-reminder', { transactionId: id }),
   resolveDispute: (id, disputeId, data) =>
     api.post(`/api/v1/admin/domain-transfers/${id}/disputes/${disputeId}/resolve`, data),
   verifyPayoutProfile: (userId) =>

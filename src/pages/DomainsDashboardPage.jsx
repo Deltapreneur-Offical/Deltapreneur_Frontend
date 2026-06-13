@@ -80,14 +80,19 @@ export default function DomainsDashboardPage() {
   return (
     <AppLayout>
       <div className="container mx-auto p-4 pt-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-0">{t('domainsDashboardPageTitle')}</h1>
             <p className="text-gray-600 mt-1">{t('domainsDashboardPageSubtitle')}</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
-            <ArrowLeft size={16} /> {t('domainsDashboardPageBack')}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <Link className="btn-glow btn-glow-sm" to="/settings/payouts">
+              <CreditCard size={16} /> Payout Settings
+            </Link>
+            <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>
+              <ArrowLeft size={16} /> {t('domainsDashboardPageBack')}
+            </button>
+          </div>
         </div>
 
         <div className="domains-stats-grid">

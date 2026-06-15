@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Share2 } from 'lucide-react';
+import { ArrowRight, Gavel, Share2, Trash2 } from 'lucide-react';
+import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import { VENTURE_EQUITY_TYPE_LABELS, formatEquityOfferedPct } from '../../constants/ventureLabels';
-import LikeButton from '../common/LikeButton';
-import EditActionLabel from '../common/EditActionLabel';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
-import VentureListingTypeBadge from './VentureListingTypeBadge';
-import { ListingCardBadge } from './MarketplaceListingCardFrame';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import {
   isCoVentureListing,
@@ -17,10 +13,17 @@ import {
   isVentureGstinVerified,
   resolveVentureApprovalStatus,
   resolveSellerAskSummary,
-  resolveVentureInterestCount,
   formatVentureAskingPrice,
 } from '../../utils/ventureListingHelpers';
 import '../../styles/domain-listing-cards.css';
+
+const PRIMARY_BTN =
+  'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+
+function resolveVentureStatusDotClass(venture) {
+  if (venture?.status === false) return 'listing-availability-badge__dot--muted';
+  return 'listing-availability-badge__dot--available';
+}
 
 export default function VentureListingCard({
   venture,
@@ -41,12 +44,11 @@ export default function VentureListingCard({
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
-  const [optionsOpen, setOptionsOpen] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   const shareRef = useRef(null);
-  const optionsRef = useRef(null);
+
   const b = venture.brandDetails || {};
-  const shortDesc = `${b.description?.slice(0, 130) || ''}${b.description?.length > 130 ? '…' : ''}`;
+  const brandName = b.brandName || t('listingCardUnnamedVenture', 'Unnamed venture');
   const isAuction = venture.saleType === 'AUCTION';
   const auction = venture.auction;
   const isCoVenture = isCoVentureListing(venture);
@@ -56,21 +58,22 @@ export default function VentureListingCard({
   const isGstinVerified = isVentureGstinVerified(venture);
   const canInteract = !isOwner && isListingApproved && !isAuction && !hasApplied && !hasActiveDeal;
   const ctaLabel = isCoVenture
-    ? 'Apply'
-    : (isFullAcquisition ? 'Offer' : 'Pitch');
-
-  const equityPct = venture.equityPercentOffered ?? venture.equity_percent_offered;
+    ? t('listingCardApply', 'Apply')
+    : (isFullAcquisition ? t('listingCardOffer', 'Offer') : t('listingCardPitch', 'Pitch'));
   const sellerAsk = resolveSellerAskSummary(venture);
-  const equityLabel = sellerAsk.equityLabel
-    || (isCoVenture
-      ? formatEquityOfferedPct(equityPct)
-      : (b.ventureType ? (VENTURE_EQUITY_TYPE_LABELS[b.ventureType] || b.ventureType) : ''));
-  const interestCount = resolveVentureInterestCount(venture);
+  const ventureImage = b.ventureImageUrl && !imgFailed ? b.ventureImageUrl : null;
+
+  const priceAmount = isAuction
+    ? Number(auction?.currentHighestBid || auction?.minBidPrice || 0)
+    : Number(sellerAsk.price || b.dealValue || 0);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [b.ventureImageUrl, venture.id]);
 
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
-      if (optionsRef.current && !optionsRef.current.contains(e.target)) setOptionsOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -78,9 +81,12 @@ export default function VentureListingCard({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/ventures?id=${venture.id}`
-      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures?id=${venture.id}`;
-  const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
+      ? `${window.location.origin}/ventures/${venture.id}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}`;
+  const shareText = t('listingCardShareVenture', {
+    name: brandName,
+    defaultValue: `Check out this venture: ${brandName} - Listed on CoBrother!`,
+  });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -90,368 +96,268 @@ export default function VentureListingCard({
     setShareOpen(false);
   };
 
-  const accentGrad = isAuction
-    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-    : 'from-indigo-600 via-blue-500 to-cyan-400';
+  const stop = (e) => e.stopPropagation();
+  const interactive = Boolean(onView);
 
-  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-sm transition-all duration-300 h-full${
-    browseMode ? '' : ' cursor-pointer'
-  }`;
+  const handleViewDetails = onView
+    ? (e) => {
+      stop(e);
+      onView();
+    }
+    : undefined;
 
-  if (browseMode) {
-    const brandName = b.brandName || 'Unnamed venture';
-    const ventureImage = b.ventureImageUrl && !imgFailed ? b.ventureImageUrl : null;
-    const description = b.description || '';
-    const industry = b.industry ? b.industry.replace(/_/g, ' ') : '';
-    const browseEquityPct = venture.equityPercentOffered ?? venture.equity_percent_offered;
-    const equityLabelBrowse = isCoVentureListing(venture)
-      ? formatEquityOfferedPct(browseEquityPct)
-      : (b.ventureType ? (VENTURE_EQUITY_TYPE_LABELS[b.ventureType] || b.ventureType) : '');
-    const priceAmount = isAuction
-      ? Number(auction?.currentHighestBid || auction?.minBidPrice || 0)
-      : Number(b.dealValue || 0);
-    const statusDotClass = venture.status === false
-      ? 'listing-availability-badge__dot--muted'
-      : 'listing-availability-badge__dot--available';
-    const handleViewDetails = onView
-      ? (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onView();
-      }
-      : undefined;
-
-    return (
-      <article className="domain-listing-card domain-listing-card--browse home-preview-browse-card card-glow-hover relative flex h-auto w-full flex-col overflow-hidden rounded-3xl bg-white">
-        <div className="domain-listing-card__cover">
-          {ventureImage ? (
-            <img
-              src={ventureImage}
-              alt={brandName}
-              className="domain-listing-card__cover-img"
-              onError={() => setImgFailed(true)}
-            />
-          ) : (
-            <div className="domain-listing-card__cover-fallback" aria-hidden>
-              <span className="domain-listing-card__cover-fallback-domain">{brandName}</span>
-            </div>
-          )}
-          {isGstinVerified ? (
-            <img
-              src={verifiedIcon}
-              alt=""
-              className="domain-listing-card__verified-icon"
-              title="GST verified"
-              aria-hidden
-            />
-          ) : null}
+  const shareButton = (
+    <div className="relative shrink-0" ref={shareRef}>
+      <button
+        type="button"
+        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
+        onClick={(e) => {
+          stop(e);
+          setShareOpen(!shareOpen);
+        }}
+        title={t('listingCardShare')}
+      >
+        <Share2 size={12} />
+      </button>
+      {shareOpen && (
+        <div
+          className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+          onClick={stop}
+        >
+          <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+            <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+          </div>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            onClick={() => handleShare(linkedinShare)}
+          >
+            {t('listingCardLinkedIn')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+            onClick={() => handleShare(facebookShare)}
+          >
+            {t('listingCardFacebook')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
+            onClick={() => handleShare(whatsappShare)}
+          >
+            {t('listingCardWhatsApp')}
+          </button>
         </div>
+      )}
+    </div>
+  );
 
-        <div className="domain-listing-card__body">
-          <div className="domain-listing-card__domain-row">
-            <p className="domain-listing-card__domain" title={brandName}>
-              {brandName}
-            </p>
-            <span
-              className={`domain-listing-card__status-dot listing-availability-badge__dot ${statusDotClass}`}
-              title={venture.status === false ? 'INACTIVE' : 'AVAILABLE'}
-              aria-hidden
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-1 mt-1.5">
-            <VentureListingTypeBadge venture={venture} />
-            {isGstinVerified && (
-              <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
+  const renderPrimaryAction = () => {
+    if (browseMode) return null;
+
+    if (isOwner) {
+      return (
+        <div className="flex w-full items-center gap-2" onClick={stop} onMouseDown={stop} role="presentation">
+          <div className="flex min-w-0 flex-1 gap-2">
+            {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
+              <button
+                type="button"
+                className="flex-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100"
+                onClick={(e) => {
+                  stop(e);
+                  onVerify?.();
+                }}
+              >
+                {t('listingCardVerifyGstin', 'Verify GSTIN')}
+              </button>
             )}
-            {isOwner && !isListingApproved && (
-              <ListingCardBadge variant={approvalStatus === 'rejected' ? 'rejected' : 'review'}>
-                {approvalStatus === 'rejected' ? 'Rejected' : 'Pending Approval'}
-              </ListingCardBadge>
-            )}
-          </div>
-
-          <p className="technology-listing-card__use-case" title={description || undefined}>
-            {description || '\u00A0'}
-          </p>
-
-          {(industry || equityLabelBrowse) ? (
-            <p className="technology-listing-card__industry" title={industry || equityLabelBrowse}>
-              {industry || equityLabelBrowse}
-            </p>
-          ) : null}
-
-          {(priceAmount > 0 || handleViewDetails) && (
-            <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-              {priceAmount > 0 ? (
-                <div className="domain-listing-card__price-text min-w-0">
-                  <span className="domain-listing-card__price-value truncate">
-                    {formatVentureAskingPrice(priceAmount, formatPrice)}
-                  </span>
-                </div>
-              ) : null}
-              {handleViewDetails ? (
-                <button
-                  type="button"
-                  className="domain-listing-card__price-cta"
-                  aria-label={t('listingCardViewDetails', 'View details')}
-                  onClick={handleViewDetails}
-                >
-                  <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
-                </button>
-              ) : null}
-            </div>
-          )}
-
-          <ListingCardStatsFooter
-            viewCount={venture.views || 0}
-            likeState={likeState}
-            onLike={onLike}
-            className="domain-listing-card__stats"
-          />
-        </div>
-      </article>
-    );
-  }
-
-  return (
-    <div
-      className={cardClass}
-      onClick={browseMode ? undefined : onView}
-      role={browseMode ? undefined : 'button'}
-      tabIndex={browseMode ? undefined : 0}
-      onKeyDown={browseMode ? undefined : (e) => { if (e.key === 'Enter') onView?.(); }}
-    >
-      <div className={`relative bg-gradient-to-r ${accentGrad} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
-        {b.ventureImageUrl ? (
-          <img
-            src={b.ventureImageUrl}
-            alt={b.brandName}
-            className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
-          />
-        ) : null}
-        <div className="relative z-10 flex items-end justify-between w-full">
-          <div className="flex items-center gap-2">
-            {b.ventureImageUrl ? (
-              <img
-                src={b.ventureImageUrl}
-                alt={b.brandName}
-                className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg"
-              />
-            ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
-                {b.brandName?.[0] || '?'}
-              </div>
-            )}
-            <div className="flex flex-wrap items-center gap-1">
-              <VentureListingTypeBadge venture={venture} className="!text-white !bg-white/20 !border-white/30" />
-              {isOwner && (
-                <span className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✦ Owner
-                </span>
-              )}
-              {isGstinVerified && (
-                <ListingCardBadge variant="verified">✓ Verified</ListingCardBadge>
-              )}
-              {isOwner && !isListingApproved && (
-                <ListingCardBadge variant={approvalStatus === 'rejected' ? 'rejected' : 'review'}>
-                  {approvalStatus === 'rejected' ? 'Rejected' : 'Pending Approval'}
-                </ListingCardBadge>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
-        <div className="flex flex-col gap-1 mb-1">
-          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words">
-            {b.brandName}
-          </h3>
-          <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
-            {b.industry && (
-              <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-                {b.industry.replace(/_/g, ' ')}
-              </span>
-            )}
-            {equityLabel && (
-              <span className="px-1.5 py-[2px] bg-indigo-50 text-indigo-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-                {equityLabel}
-              </span>
-            )}
-          </div>
-        </div>
-        <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3">
-          {shortDesc || <span className="italic text-gray-300">No description yet</span>}
-        </p>
-
-        {isAuction && auction ? (
-          <div className="rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-purple-700 tracking-tight">
-                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0))}
-              </span>
-              <span className="text-[9px] md:text-[10px] text-purple-400 font-semibold">
-                {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
-              </span>
-            </div>
-            <span className="text-[9px] md:text-[10px] text-purple-400">
-              {auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}
-            </span>
-          </div>
-        ) : (sellerAsk.price || sellerAsk.equityLabel) ? (
-          <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
-            {sellerAsk.price ? (
-              <div className="flex items-baseline gap-1">
-                <span className="text-lg md:text-xl font-extrabold text-emerald-700 tracking-tight">
-                  {formatVentureAskingPrice(sellerAsk.price, formatPrice)}
-                </span>
-                <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">asking price</span>
-              </div>
-            ) : null}
-            {sellerAsk.equityLabel ? (
-              <div className={`text-[10px] md:text-[11px] font-semibold text-emerald-700 ${sellerAsk.price ? 'mt-0.5' : ''}`}>
-                {sellerAsk.equityLabel} equity offered
-                {sellerAsk.dealTypeLabel ? ` · ${sellerAsk.dealTypeLabel}` : ''}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        {!browseMode && (
-        <div className="flex items-center gap-1.5 md:gap-2.5 text-[10px] md:text-[11px] text-gray-400 font-medium py-1.5 md:py-2 border-t border-gray-100 mt-auto">
-          <span className="flex items-center gap-0.5 md:gap-1">👁 {venture.views || 0}</span>
-          {!isAuction && (
-            <span className="flex items-center gap-0.5 md:gap-1">
-              📋 {interestCount}
-            </span>
-          )}
-          {onLike && <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />}
-
-          <div className="relative ml-auto" ref={shareRef}>
             <button
               type="button"
-              className="p-0.5 md:p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
-              onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
-              title="Share"
+              className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 inline-flex items-center justify-center gap-1"
+              onClick={(e) => {
+                stop(e);
+                onEdit?.();
+              }}
             >
-              <Share2 size={11} className="md:w-[13px] md:h-[13px]" />
+              <EditIcon size={14} /> {t('edit')}
             </button>
-            {shareOpen && (
-              <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
-                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
-                </div>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
-                  LinkedIn
-                </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
-                  Facebook
-                </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
-                  WhatsApp
-                </button>
-              </div>
-            )}
+            <button
+              type="button"
+              className="flex-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1"
+              onClick={(e) => {
+                stop(e);
+                onDelete?.();
+              }}
+            >
+              <Trash2 size={12} /> {t('remove')}
+            </button>
           </div>
+          {shareButton}
         </div>
+      );
+    }
+
+    if (isAuction && auction?.id && auction.status !== 'DRAFT') {
+      return (
+        <button
+          type="button"
+          className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center justify-center gap-1.5`}
+          onClick={(e) => {
+            stop(e);
+            navigate(`/venture-auction/${auction.id}`);
+          }}
+        >
+          <Gavel size={13} />
+          {t('listingCardPlaceBid', 'Place Bid')}
+        </button>
+      );
+    }
+
+    if (!isAuction) {
+      if (canInteract) {
+        return (
+          <button
+            type="button"
+            className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
+            onClick={(e) => {
+              stop(e);
+              onApply?.();
+            }}
+          >
+            {`${ctaLabel} →`}
+          </button>
+        );
+      }
+      if (hasActiveDeal) {
+        return (
+          <button
+            type="button"
+            className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
+            onClick={(e) => {
+              stop(e);
+              onApply?.();
+            }}
+          >
+            {t('listingCardContinue', 'Continue →')}
+          </button>
+        );
+      }
+      if (hasApplied) {
+        return (
+          <button
+            type="button"
+            disabled
+            className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
+            title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already pitched')}
+          >
+            {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched')}
+          </button>
+        );
+      }
+      return (
+        <button
+          type="button"
+          disabled
+          className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
+          title={!isListingApproved ? t('listingCardPendingApproval', 'Listing pending admin approval') : undefined}
+        >
+          {!isListingApproved ? t('listingCardPendingApproval', 'Pending Approval') : t('listingCardUnavailable', 'Unavailable')}
+        </button>
+      );
+    }
+
+    return (
+      <button type="button" disabled className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}>
+        {t('listingCardUnavailable', 'Unavailable')}
+      </button>
+    );
+  };
+
+  const cardLayoutClass = browseMode
+    ? 'h-auto home-preview-browse-card'
+    : 'h-full min-h-0';
+
+  const showPriceBox = Number(priceAmount) > 0 || handleViewDetails;
+
+  return (
+    <article
+      className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
+      onClick={interactive ? onView : undefined}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+    >
+      <div className="domain-listing-card__cover">
+        {ventureImage ? (
+          <img
+            src={ventureImage}
+            alt={brandName}
+            className="domain-listing-card__cover-img"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="domain-listing-card__cover-fallback" aria-hidden>
+            <span className="domain-listing-card__cover-fallback-domain">{brandName}</span>
+          </div>
+        )}
+        {isGstinVerified ? (
+          <img
+            src={verifiedIcon}
+            alt=""
+            className="domain-listing-card__verified-icon"
+            title={t('listingCardGstVerified', 'GST verified')}
+            aria-hidden
+          />
+        ) : null}
+      </div>
+
+      <div className="domain-listing-card__body">
+        <div className="domain-listing-card__domain-row">
+          <p className="domain-listing-card__domain" title={brandName}>
+            {brandName}
+          </p>
+          <span
+            className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveVentureStatusDotClass(venture)}`}
+            title={venture.status === false ? 'INACTIVE' : 'AVAILABLE'}
+            aria-hidden
+          />
+        </div>
+
+        {showPriceBox && (
+          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+            {Number(priceAmount) > 0 ? (
+              <div className="domain-listing-card__price-text min-w-0">
+                <span className="domain-listing-card__price-value truncate">
+                  {formatVentureAskingPrice(priceAmount, formatPrice)}
+                </span>
+              </div>
+            ) : null}
+            {handleViewDetails ? (
+              <button
+                type="button"
+                className="domain-listing-card__price-cta"
+                aria-label={t('listingCardViewDetails', 'View details')}
+                onClick={handleViewDetails}
+              >
+                <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+              </button>
+            ) : null}
+          </div>
         )}
 
-        <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-          <a
-            href={b.website || '#'}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold rounded transition-all hover:bg-gray-200 hover:text-black flex items-center justify-center gap-1"
-            onClick={(e) => !b.website && e.preventDefault()}
-          >
-            Website ↗
-          </a>
-          {isOwner ? (
-            <>
-              {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
-                <button
-                  type="button"
-                  className="flex-1 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold rounded transition-all hover:bg-amber-200"
-                  onClick={(e) => { e.stopPropagation(); onVerify?.(); }}
-                >
-                  {isAuction ? '🔍 Verify GSTIN' : '🔍 Verify Business GSTIN'}
-                </button>
-              )}
-              <div className="relative flex-1" ref={optionsRef}>
-                <button
-                  type="button"
-                  className="w-full py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded transition-all hover:bg-gray-800 flex items-center justify-center gap-1"
-                  onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}
-                >
-                  Options ▼
-                </button>
-                {optionsOpen && (
-                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[100px]">
-                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView?.(); }}>View</button>
-                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left inline-flex items-center" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onEdit?.(); }}>
-                      <EditActionLabel iconSize={14}>Edit</EditActionLabel>
-                    </button>
-                    <button type="button" className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete?.(); }}>Delete</button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              {isAuction && auction?.id && auction.status !== 'DRAFT' ? (
-                <button
-                  type="button"
-                  className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
-                  onClick={() => navigate(`/venture-auction/${auction.id}`)}
-                >
-                  🔨 Bid
-                </button>
-              ) : !isAuction ? (
-                canInteract ? (
-                  <button
-                    type="button"
-                    className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
-                    onClick={() => onApply?.()}
-                  >
-                    {ctaLabel}
-                  </button>
-                ) : hasActiveDeal ? (
-                  <button
-                    type="button"
-                    className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
-                    onClick={() => onApply?.()}
-                  >
-                    Continue
-                  </button>
-                ) : hasApplied ? (
-                  <button
-                    type="button"
-                    className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded cursor-not-allowed"
-                    title={isCoVenture ? 'You already applied' : 'You already pitched'}
-                    disabled
-                  >
-                    {isCoVenture ? 'Applied' : 'Pitched'}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed"
-                    title={!isListingApproved ? 'Listing pending admin approval' : undefined}
-                    disabled
-                  >
-                    {!isListingApproved ? 'Pending Approval' : 'Unavailable'}
-                  </button>
-                )
-              ) : (
-                <button type="button" className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed">View</button>
-              )}
-            </>
-          )}
-        </div>
+        <ListingCardStatsFooter
+          viewCount={venture.views || 0}
+          likeState={likeState}
+          onLike={onLike}
+          likesFirst
+          className="domain-listing-card__stats domain-listing-card__stats--split"
+        />
+
+        {renderPrimaryAction() ? (
+          <div className="domain-listing-card__actions">{renderPrimaryAction()}</div>
+        ) : null}
       </div>
-    </div>
+    </article>
   );
 }

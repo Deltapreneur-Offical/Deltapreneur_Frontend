@@ -19,6 +19,7 @@ const PARTNER_PROFILE_FIELDS = [
   { name: 'previousVentures', label: 'Previous Ventures', type: 'textarea', placeholder: 'Past startups or projects you have built or co-founded…' },
   { name: 'linkedinUrl', label: 'LinkedIn URL', type: 'url', placeholder: 'https://linkedin.com/in/…' },
   { name: 'portfolioUrl', label: 'Portfolio / Website', type: 'url', placeholder: 'https://…' },
+  { name: 'videoIntroductionUrl', label: 'Video Introduction', type: 'url', placeholder: 'YouTube, Drive, Loom, Vimeo, or any valid URL' },
 ];
 
 const fieldCls =
@@ -30,7 +31,7 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
     fullName: '', phone: '', location: '', gstNo: '', description: '',
     experienceSummary: '', relevantExperience: '', skills: '',
     contributionPlan: '', motivation: '', previousVentures: '',
-    linkedinUrl: '', portfolioUrl: '',
+    linkedinUrl: '', portfolioUrl: '', videoIntroductionUrl: '',
   });
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);

@@ -16,6 +16,8 @@ import {
   isTechnologyAuctionPending,
   technologyAuctionId,
 } from '../utils/technologyAuctionUi';
+import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
+import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 
 export default function CoCreationDashboardPage() {
   const { formatPrice } = useCurrency();
@@ -60,7 +62,7 @@ export default function CoCreationDashboardPage() {
   const handleAuctionSubmitted = () => {
     const targetId = auctionTarget?.id;
     setAuctionTarget(null);
-    alert('Auction request submitted! Admin will review it shortly.');
+    alert('Auction request submitted! An admin will review it shortly.');
     if (targetId) {
       softwareAuctionAPI.getBySoftware(targetId)
         .then(({ data }) => {
@@ -102,10 +104,15 @@ export default function CoCreationDashboardPage() {
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology Dashboard</h1>
             <p className="text-gray-600 mt-1">Manage your software listings and purchases.</p>
           </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
-            <ArrowLeft size={16} /> Back to Technology
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <PayoutSettingsButton />
+            <button className="btn-glow btn-glow-sm" onClick={() => navigate('/technology')}>
+              <ArrowLeft size={16} /> Back to Technology
+            </button>
+          </div>
         </div>
+
+        <PayoutProfileBanner context="technology" className="mb-6" />
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <StatCard label="Total Listings" value={listings.length} icon={<Boxes size={18} />} />
@@ -314,7 +321,7 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
               style={{ background: 'rgba(200,169,110,0.12)', color: '#c8a96e', border: '1px solid rgba(200,169,110,0.35)' }}
               onClick={onAuction}
             >
-              🔨 Put to Auction
+              🔨 List for auction
             </button>
           )}
           {isTechnologyAuctionPending(item, auctionStatus) && (

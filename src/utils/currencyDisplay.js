@@ -3,6 +3,7 @@ import {
   DEFAULT_LISTING_CURRENCY,
   SUPPORTED_CURRENCIES,
 } from '../constants/currencies';
+import { normalizeInrDisplay, roundInr, roundMoney } from './money';
 
 const SYMBOLS = {
   INR: '₹',
@@ -77,11 +78,11 @@ export function convertForeignToInr(amount, fromCurrency, meta = FALLBACK_META) 
   const m = meta && typeof meta === 'object' ? meta : buildFallbackMetaFromRates();
   const value = safeNumber(amount, 0);
   const code = (fromCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
-  if (code === 'INR') return Math.round(value);
+  if (code === 'INR') return roundInr(value);
   const fallback = buildFallbackMetaFromRates();
   const rate = safeNumber(m[code]?.rateFromInr ?? fallback[code]?.rateFromInr, 0);
-  if (!rate) return Math.round(value);
-  return Math.round(value / rate);
+  if (!rate) return roundInr(value);
+  return roundInr(value / rate);
 }
 
 /**
@@ -96,18 +97,17 @@ export function convertInrAmount(inrAmount, currencyCode, meta = FALLBACK_META) 
   const m = meta && typeof meta === 'object' ? meta : buildFallbackMetaFromRates();
   const inr = safeNumber(inrAmount, 0);
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
-  if (code === 'INR') return inr;
+  if (code === 'INR') return roundInr(inr);
   const fallback = buildFallbackMetaFromRates();
   const rate = safeNumber(m[code]?.rateFromInr ?? fallback[code]?.rateFromInr, 0);
-  if (!rate) return inr;
-  return Math.round(inr * rate * 100) / 100;
+  if (!rate) return roundInr(inr);
+  return roundMoney(inr * rate);
 }
 
 function fractionDigitsFor(amount, code) {
-  if (code === 'INR') {
-    return Number.isInteger(amount) ? 0 : 2;
-  }
-  return Number.isInteger(amount) ? 0 : 2;
+  if (code === 'INR') return 0;
+  const normalized = roundMoney(amount);
+  return Number.isInteger(normalized) ? 0 : 2;
 }
 
 /**
@@ -116,7 +116,7 @@ function fractionDigitsFor(amount, code) {
 export function formatCurrency(amount, currencyCode, meta = FALLBACK_META) {
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
   const safeMeta = meta && typeof meta === 'object' ? meta : buildFallbackMetaFromRates();
-  const amt = safeNumber(amount, 0);
+  const amt = code === 'INR' ? normalizeInrDisplay(amount) : roundMoney(safeNumber(amount, 0));
   const cfg = CURRENCY_FORMAT[code] || {};
   const locale = cfg.locale || 'en-US';
   const fractionDigits = fractionDigitsFor(amt, code);
@@ -149,7 +149,10 @@ export function formatInrAsCurrency(inrAmount, currencyCode, meta = FALLBACK_MET
     return formatCurrency(converted, code, meta);
   } catch {
     const sym = buildFallbackMetaFromRates().INR.symbol;
-    return `${sym}${safeNumber(inrAmount, 0)}`;
+    return `${sym}${normalizeInrDisplay(inrAmount).toLocaleString('en-IN', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })}`;
   }
 }
 

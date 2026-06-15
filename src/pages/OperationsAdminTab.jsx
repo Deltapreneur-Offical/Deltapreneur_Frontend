@@ -46,7 +46,7 @@ const SECTION_META = {
   compliance: {
     icon: ShieldCheck,
     titleKey: 'adminOperationsComplianceTitle',
-    defaultTitle: 'Compliances',
+    defaultTitle: 'Compliance',
     subtitleKey: 'adminOperationsComplianceSubtitle',
     defaultSubtitle: 'Manage one-time compliance and registration services.',
     addKey: 'adminOperationsAddComplianceService',

@@ -27,19 +27,26 @@ export default function VentureCompanyProfileSummary({ profile, formatPrice }) {
   if (!cp) return null;
 
   const financialItems = [
-    { label: 'Annual revenue', value: fmtInr(cp.annualRevenueInr, formatPrice) },
+    { label: 'Current year revenue', value: fmtInr(cp.currentYearRevenueInr, formatPrice) },
+    { label: 'Previous year revenue', value: fmtInr(cp.previousYearRevenueInr, formatPrice) },
+    { label: 'Two years ago revenue', value: fmtInr(cp.twoYearsAgoRevenueInr, formatPrice) },
     { label: 'Valuation', value: fmtInr(cp.valuationInr, formatPrice) },
     { label: 'Profitability', value: cp.profitabilityStatus || null },
     { label: 'Funding raised', value: cp.fundingRaisedSummary || null },
-    { label: 'Customers', value: cp.customerCount ? String(cp.customerCount) : null },
     { label: 'User base', value: cp.userBase || null },
   ];
 
-  const teamItems = [
-    { label: 'Founder', value: cp.founderName || null },
-    { label: 'Team size', value: cp.teamSize ? String(cp.teamSize) : null },
-    { label: 'Key team', value: cp.keyTeamMembers || null },
-  ];
+  const teamMembers = Array.isArray(cp.teamMembers) ? cp.teamMembers : [];
+  const teamItems = teamMembers.length > 0
+    ? teamMembers.map((member, index) => ({
+      label: member.role || `Member ${index + 1}`,
+      value: `${member.name}${member.equityPercent != null ? ` · ${member.equityPercent}%` : ''}`,
+    }))
+    : [
+      { label: 'Founder', value: cp.founderName || null },
+      { label: 'Team size', value: cp.teamSize ? String(cp.teamSize) : null },
+      { label: 'Key team', value: cp.keyTeamMembers || null },
+    ];
 
   const hasBusiness = cp.businessDescription || cp.productsServices || cp.targetMarket || cp.businessModel;
   const hasFinancial = financialItems.some((item) => item.value);

@@ -7,17 +7,12 @@ export const VENTURE_EQUITY_TYPE_LABELS = {
   NEGOTIABLE: 'Negotiable',
 };
 
-/** Collapse float noise and snap near-whole values (e.g. 9.99 → 10). */
+/** Round to 2 dp; do not snap near-whole values (avoids 9.99 → 10 display bugs). */
 export function normalizeEquityPercent(value) {
   if (value == null || value === '') return null;
   const num = Number(value);
   if (!Number.isFinite(num)) return null;
-  const snapped = Math.round(num * 100) / 100;
-  const nearest = Math.round(snapped);
-  if (Math.abs(snapped - nearest) <= 0.011) {
-    return nearest;
-  }
-  return snapped;
+  return Math.round(num * 100) / 100;
 }
 
 function formatEquityPercentCore(value) {

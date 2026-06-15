@@ -19,6 +19,8 @@ import {
   registrationStatusLabel,
 } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
+import VentureDealRow from '../components/venture/VentureDealRow';
+import { isVentureDealBuyer } from '../utils/ventureDeal';
 
 const PURCHASES_STAT_ICON = { size: 20, strokeWidth: 2, 'aria-hidden': true };
 
@@ -53,7 +55,7 @@ export default function PurchasesPage() {
       setDomainTransfers(transfers.data?.items || []);
       const deals = asArray(unwrapApiData(ventureDeals.data) || ventureDeals.data);
       setVenturePurchases(
-        deals.filter((deal) => deal.buyerId && user?.id && deal.buyerId === user.id)
+        deals.filter((deal) => isVentureDealBuyer(deal, user))
       );
     }).finally(() => setLoading(false));
   }, [user?.id]);
@@ -206,7 +208,13 @@ export default function PurchasesPage() {
                   t={t}
                 />
               ) : item._type === 'venture' ? (
-                <VenturePurchaseRow key={'v-' + item.id} deal={item} formatPrice={formatPrice} />
+                <VentureDealRow
+                  key={'v-' + item.id}
+                  deal={item}
+                  formatPrice={formatPrice}
+                  user={user}
+                  onPayNow={(deal) => navigate(`/ventures/deals/${deal.id}`)}
+                />
               ) : item._type === 'domain' ? (
                 <DomainPurchaseRow
                   key={'d-' + item.id}
@@ -260,35 +268,6 @@ export default function PurchasesPage() {
         </div>
       )}
     </AppLayout>
-  );
-}
-
-function VenturePurchaseRow({ deal, formatPrice }) {
-  const { t } = useTranslation();
-  const statusLabel = deal.dealStatus?.replace(/_/g, ' ') || '—';
-  return (
-    <Link
-      to={`/ventures/deals/${deal.id}`}
-      className="flex items-center justify-between bg-white border border-amber-100 rounded-xl px-5 py-4 hover:border-amber-300 shadow-sm"
-    >
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded">
-            ◇ {t('purchasesBadgeVenture', { defaultValue: 'Venture' })}
-          </span>
-        </div>
-        <div className="font-bold text-gray-900">{deal.venture?.brandName || 'Venture deal'}</div>
-        <div className="text-sm text-gray-500">{statusLabel}</div>
-      </div>
-      <div className="text-right">
-        <div className="font-display text-lg font-bold text-amber-700">
-          {formatPrice(deal.grossAmountInr || 0)}
-        </div>
-        <span className="text-amber-600 text-sm font-semibold">
-          {t('purchasesViewDeal', { defaultValue: 'View deal' })} →
-        </span>
-      </div>
-    </Link>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import CurrencyPriceInput from '../common/CurrencyPriceInput';
@@ -6,20 +6,32 @@ import FormSelect from '../common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../../constants/currencies';
 import { VENTURE_INDUSTRIES } from '../../constants/listingCategories';
 import { normalizeEquityPercent } from '../../constants/ventureLabels';
+import { computeInrCommission, parseInrInput } from '../../utils/money';
 import { fetchListingFeesAndCharges } from '../../utils/auctionFees';
+import {
+  resolveRoleEquityOffer,
+  resolveRoleInvestmentSeeking,
+} from '../../utils/ventureListingHelpers';
 import CompanyProfileSections, {
   isCompanyProfileComplete,
   EMPTY_COMPANY_PROFILE,
 } from './CompanyProfileSections';
+import TeamMembersSection, { normalizeTeamMembers } from './TeamMembersSection';
+import VentureVerificationSection from './VentureVerificationSection';
+import { ventureAPI } from '../../api/services';
 import {
   applyPrivateContactToProfile,
   buildCompanyProfileFromBrand,
+  buildVentureSubmitPayload,
   contactsAreSynced,
+  normalizeBrandDetails,
   normalizeCompanyProfile,
   normalizeContactInfo,
   sanitizeCompanyProfileForApi,
   syncBrandToProfile,
 } from '../../utils/ventureProfileUtils';
+
+const OWNERSHIP_LIQUIDATION_SUGGESTIONS = [0.5, 1, 2.5, 10, 25, 50, 100];
 
 const STAGES = [
   { value: 'IDEA', label: '💡 Idea — Concept stage, not yet built' },
@@ -42,8 +54,17 @@ const EMPTY = {
   lookingFor: '',
   currentProblem: '',
   saleType: 'REGULAR',
-  dealType: 'FULL_ACQUISITION',
+  dealType: null,
+  ownershipLiquidationPercent: '',
   equityPercentOffered: '',
+  roleOffer: '',
+  equityOffer: '',
+  investmentSeeking: '',
+  verificationRequested: false,
+  verificationVideoUrl: '',
+  verificationDocuments: [],
+  verificationStatus: 'NONE',
+  verificationRejectionReason: '',
   companyProfile: null,
   auctionMinBidPrice: '',
   auctionDuration: '',
@@ -57,10 +78,12 @@ const ventureSelectCls =
 const ventureFieldSelectCls =
   'w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]';
 const ventureLabelCls = 'text-sm font-medium text-gray-700';
+const sectionHeadingCls = 'font-display text-xl font-bold text-gray-900 mb-1';
 
 export default function VentureForm({
   initialData,
   onSubmit,
+  onCancel,
   loading,
   error,
   submitLabel,
@@ -69,7 +92,7 @@ export default function VentureForm({
   defaultListingType = 'VENTURE',
 }) {
   const { t } = useTranslation();
-  const { currency: navCurrency, convertToInr, formatPrice } = useCurrency();
+  const { currency: navCurrency, convertToInr, convertFromInr, formatPrice } = useCurrency();
   const [listingType, setListingType] = useState(
     coVentureMode ? 'CO_VENTURE' : defaultListingType,
   );
@@ -94,21 +117,64 @@ export default function VentureForm({
     const companyProfile = normalizeCompanyProfile(
       initialData.companyProfile || initialData.company_profile,
     );
+    const brandDetails = normalizeBrandDetails(
+      initialData.brandDetails || initialData.brand_details,
+      initialData,
+    );
     const base = {
       ...EMPTY,
       ...initialData,
+      brandDetails: { ...EMPTY.brandDetails, ...brandDetails },
       contactInfo,
-      saleType: initialData.saleType || 'REGULAR',
-      companyProfile: companyProfile || buildCompanyProfileFromBrand({
-        brandDetails: initialData.brandDetails || initialData.brand_details,
-        companyProfile: null,
-      }),
-      roleTitle: initialData.roles?.[0]?.title || initialData.roleTitle || '',
+      agreement: {
+        terms: Boolean(initialData.agreement?.terms),
+      },
+      saleType: initialData.saleType || initialData.sale_type || 'REGULAR',
+      companyProfile: {
+        ...(companyProfile || buildCompanyProfileFromBrand({
+          brandDetails: initialData.brandDetails || initialData.brand_details,
+          companyProfile: null,
+        })),
+        teamMembers: normalizeTeamMembers(
+          companyProfile?.teamMembers || companyProfile?.team_members,
+        ),
+      },
+      ownershipLiquidationPercent: (() => {
+        const raw = initialData.ownershipLiquidationPercent
+          ?? initialData.ownership_liquidation_percent
+          ?? initialData.equityPercentOffered
+          ?? initialData.equity_percent_offered
+          ?? '';
+        if (raw === '' || raw == null) return '';
+        return normalizeEquityPercent(raw) ?? '';
+      })(),
       equityPercentOffered: (() => {
         const raw = initialData.equityPercentOffered ?? initialData.equity_percent_offered ?? '';
         if (raw === '' || raw == null) return '';
         return normalizeEquityPercent(raw) ?? '';
       })(),
+      roleOffer: initialData.roles?.[0]?.title
+        ?? initialData.roles?.[0]?.roleOffer
+        ?? initialData.roles?.[0]?.role_offer
+        ?? initialData.roleTitle
+        ?? '',
+      equityOffer: resolveRoleEquityOffer(initialData.roles?.[0], initialData),
+      investmentSeeking: resolveRoleInvestmentSeeking(initialData.roles?.[0]),
+      verificationRequested: Boolean(
+        initialData.verificationRequested ?? initialData.verification_requested,
+      ),
+      verificationVideoUrl: initialData.verificationVideoUrl
+        ?? initialData.verification_video_url
+        ?? '',
+      verificationDocuments: initialData.verificationDocuments
+        ?? initialData.verification_documents
+        ?? [],
+      verificationStatus: initialData.verificationStatus
+        ?? initialData.verification_status
+        ?? 'NONE',
+      verificationRejectionReason: initialData.verificationRejectionReason
+        ?? initialData.verification_rejection_reason
+        ?? '',
       auctionMinBidPrice: initialData.auctionMinBidPrice || '',
       auctionDuration: initialData.auctionDuration || '',
       currency: initialData.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
@@ -132,6 +198,10 @@ export default function VentureForm({
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(form.brandDetails?.ventureImageUrl || null);
+  const [verificationUploading, setVerificationUploading] = useState(false);
+  const [verificationUploadError, setVerificationUploadError] = useState('');
+  const [pendingVerificationFiles, setPendingVerificationFiles] = useState([]);
+  const hasConvertedListingAmount = useRef(false);
 
   const setBrand = useCallback((key, value) => {
     setForm((f) => {
@@ -168,6 +238,43 @@ export default function VentureForm({
 
   const setCompanyProfile = (profile) => setForm((f) => ({ ...f, companyProfile: profile }));
 
+  const handleVerificationUpload = async (file) => {
+    if (!file) return;
+
+    if (!initialData?.id) {
+      setVerificationUploadError('');
+      setPendingVerificationFiles((prev) => [
+        ...prev,
+        {
+          localId: `${Date.now()}-${file.name}`,
+          fileName: file.name,
+          file,
+        },
+      ]);
+      return;
+    }
+
+    setVerificationUploadError('');
+    setVerificationUploading(true);
+    try {
+      const res = await ventureAPI.uploadVerificationDocument(initialData.id, file);
+      const docs = res.data?.verificationDocuments || res.data?.verification_documents || [];
+      setForm((f) => ({ ...f, verificationDocuments: docs }));
+    } catch (err) {
+      setVerificationUploadError(
+        err.response?.data?.error
+        || err.response?.data?.message
+        || 'Could not upload verification document.',
+      );
+    } finally {
+      setVerificationUploading(false);
+    }
+  };
+
+  const handleRemovePendingVerificationFile = (localId) => {
+    setPendingVerificationFiles((prev) => prev.filter((item) => item.localId !== localId));
+  };
+
   const isAuction = false;
   const isAuctionEligible = AUCTION_ELIGIBLE_STAGES.includes(form.stage);
   const listingApprovalStatus = initialData?.listingApprovalStatus
@@ -193,15 +300,65 @@ export default function VentureForm({
     }));
   }, [syncPublicContact, form.contactInfo.email, form.contactInfo.phoneNumber]);
 
+  useEffect(() => {
+    if (!initialData || hasConvertedListingAmount.current) return;
+    const inrAmount = parseInrInput(form.brandDetails?.dealValue);
+    if (inrAmount == null) {
+      hasConvertedListingAmount.current = true;
+      return;
+    }
+    const listingCurrency = form.currency || DEFAULT_LISTING_CURRENCY;
+    if (listingCurrency === 'INR') {
+      hasConvertedListingAmount.current = true;
+      return;
+    }
+    const converted = convertFromInr(inrAmount);
+    if (converted != null && Number.isFinite(converted)) {
+      setForm((f) => ({
+        ...f,
+        brandDetails: {
+          ...f.brandDetails,
+          dealValue: String(Math.round(converted * 100) / 100),
+        },
+      }));
+    }
+    hasConvertedListingAmount.current = true;
+  }, [initialData, form.currency, form.brandDetails?.dealValue, convertFromInr]);
+
+  useEffect(() => {
+    if (!initialData?.id) return;
+    const role = initialData.roles?.[0];
+    if (!role) return;
+
+    const nextRoleOffer = role.title ?? role.roleOffer ?? role.role_offer ?? '';
+    const nextEquityOffer = resolveRoleEquityOffer(role, initialData);
+    const nextInvestmentSeeking = resolveRoleInvestmentSeeking(role);
+
+    setForm((f) => {
+      const unchanged = (
+        String(f.roleOffer || '') === String(nextRoleOffer || '')
+        && String(f.equityOffer ?? '') === String(nextEquityOffer ?? '')
+        && String(f.investmentSeeking ?? '') === String(nextInvestmentSeeking ?? '')
+      );
+      if (unchanged) return f;
+      return {
+        ...f,
+        roleOffer: nextRoleOffer || f.roleOffer,
+        equityOffer: nextEquityOffer !== '' ? nextEquityOffer : f.equityOffer,
+        investmentSeeking: nextInvestmentSeeking !== '' ? nextInvestmentSeeking : f.investmentSeeking,
+      };
+    });
+  }, [initialData]);
+
   const sellerDealAmount = parseFloat(form.brandDetails.dealValue) || 0;
   const acquisitionBreakdown = !isAuction && sellerDealAmount > 0
     ? (() => {
-        const commission = Math.round(sellerDealAmount * acquisitionCommissionPercent) / 100;
+        const breakdown = computeInrCommission(sellerDealAmount, acquisitionCommissionPercent);
         return {
-          askingPrice: sellerDealAmount,
-          commissionAmount: commission,
-          sellerReceives: Math.round((sellerDealAmount - commission) * 100) / 100,
-          commissionPercent: acquisitionCommissionPercent,
+          askingPrice: breakdown.amount,
+          commissionAmount: breakdown.commission,
+          sellerReceives: breakdown.net,
+          commissionPercent: breakdown.percent,
         };
       })()
     : null;
@@ -220,36 +377,41 @@ export default function VentureForm({
       alert(t('ventureFormAuctionStageAlert'));
       return;
     }
-    if (!isCoVenture && !form.dealType) {
-      alert('Please select a deal type (full acquisition or equity sale).');
-      return;
-    }
-    if (!isCoVenture && form.dealType === 'EQUITY_SALE' && !form.equityPercentOffered) {
-      alert('Please enter the equity percentage offered for sale.');
-      return;
-    }
-    if (isCoVenture) {
-      if (!form.roleTitle?.trim()) {
-        alert('Please enter the partnership role you are looking for.');
+    if (!isCoVenture) {
+      const pct = Number(form.ownershipLiquidationPercent);
+      if (!Number.isFinite(pct) || pct <= 0 || pct > 100) {
+        alert('Please enter ownership liquidation (%) between 0.01 and 100.');
         return;
       }
-      const eq = Number(form.equityPercentOffered);
+    }
+    if (isCoVenture) {
+      if (!form.roleOffer?.trim()) {
+        alert('Please enter the role offer you are recruiting for.');
+        return;
+      }
+      const eq = Number(form.equityOffer);
       if (!Number.isFinite(eq) || eq < 0 || eq > 100) {
-        alert('Please enter equity offered (%) between 0 and 100.');
+        alert('Please enter an equity offer (%) between 0 and 100.');
+        return;
+      }
+      const investment = Number(form.investmentSeeking);
+      if (!Number.isFinite(investment) || investment < 0) {
+        alert('Please enter investment seeking amount (0 or more).');
         return;
       }
     }
     if (!isCompanyProfileComplete(form.companyProfile)) {
-      alert('Please complete all required company profile fields before publishing.');
+      alert('Please complete all required company profile fields before submitting.');
       return;
     }
 
     const listingCurrency = form.currency || DEFAULT_LISTING_CURRENCY;
     const toStoredInr = (value) => {
-      const n = Number(value);
+      if (value == null || value === '') return null;
+      const n = Number(String(value).replace(/,/g, '').trim());
       if (!Number.isFinite(n) || n <= 0) return null;
       const inr = listingCurrency === 'INR' ? n : convertToInr(n, listingCurrency);
-      return Math.round(inr);
+      return parseInrInput(inr);
     };
 
     const mergedProfile = syncPublicContact
@@ -257,40 +419,13 @@ export default function VentureForm({
       : buildCompanyProfileFromBrand(form);
     const sanitizedProfile = sanitizeCompanyProfileForApi(mergedProfile);
 
-    const payload = {
-      ...form,
-      listingMode: isCoVenture ? 'CO_VENTURE' : 'VENTURE',
-      saleType: 'REGULAR',
-      dealType: isCoVenture ? null : form.dealType,
-      acquisitionFlow: (
-        !isCoVenture && form.dealType === 'FULL_ACQUISITION'
-          ? 'SELLER_SELECTS'
-          : null
-      ),
-      companyProfile: sanitizedProfile,
-      lookingFor: form.lookingFor?.trim() || null,
-      equityPercentOffered: isCoVenture
-        ? normalizeEquityPercent(parseFloat(form.equityPercentOffered))
-        : (
-          form.dealType === 'EQUITY_SALE'
-            ? normalizeEquityPercent(parseFloat(form.equityPercentOffered))
-            : (form.dealType === 'FULL_ACQUISITION' ? 100 : null)
-        ),
-      roles: isCoVenture
-        ? (form.roles?.length ? form.roles : [{ title: form.roleTitle || 'Partner', type: 'CO_FOUNDER' }])
-        : [],
-      brandDetails: {
-        ...form.brandDetails,
-        industry: form.brandDetails.industry || null,
-        ventureType: null,
-        dealValue:
-          !isCoVenture && form.brandDetails.dealValue !== ''
-            ? toStoredInr(form.brandDetails.dealValue)
-            : null,
-      },
-    };
+    const payload = buildVentureSubmitPayload(form, {
+      isCoVenture,
+      sanitizedProfile,
+      toStoredInr,
+    });
 
-    onSubmit(payload, imageFile);
+    onSubmit(payload, imageFile, pendingVerificationFiles);
   };
 
   return (
@@ -298,7 +433,7 @@ export default function VentureForm({
 
       {showListingTypePicker && !initialData && (
         <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-          <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Listing Type</h3>
+          <h3 className={sectionHeadingCls}>Listing Type</h3>
           <p className="text-sm text-gray-500 mb-2">
             Choose whether you are listing for sale or seeking a co-founder / partner to build together.
           </p>
@@ -329,46 +464,51 @@ export default function VentureForm({
 
       {!isCoVenture && (
         <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-          <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Deal Type</h3>
+          <h3 className={sectionHeadingCls}>Ownership Liquidation</h3>
           <p className="text-sm text-gray-500 mb-2">
-            Full acquisition listings accept buyer offers — you select the preferred buyer after admin review.
-            Equity sale listings accept investment pitches.
+            Percentage ownership available for sale. Buyers cannot request more equity than this amount in their bids.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              { value: 'FULL_ACQUISITION', label: 'Full Acquisition', desc: 'Sell 100% of the company' },
-              { value: 'EQUITY_SALE', label: 'Equity Sale', desc: 'Sell a partial stake — buyers submit investment pitches' },
-            ].map((opt) => {
-              const selected = form.dealType === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setField('dealType', opt.value)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    selected ? 'border-blue-400 bg-blue-50/40' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="font-semibold text-sm text-gray-900">{opt.label}</div>
-                  <div className="text-xs text-gray-500 mt-1">{opt.desc}</div>
-                </button>
-              );
-            })}
-          </div>
-
-          {form.dealType === 'EQUITY_SALE' && (
-            <div className="flex flex-col gap-1.5 max-w-xs">
-              <label className={ventureLabelCls}>Equity offered for sale (%) <span className="text-red-400">*</span></label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className={ventureLabelCls}>Equity (%) <span className="text-red-400">*</span></label>
               <input
                 type="number"
                 min="0.01"
                 max="100"
                 step="0.01"
-                value={form.equityPercentOffered}
-                onChange={(e) => setField('equityPercentOffered', e.target.value)}
+                list="ownership-liquidation-suggestions"
+                value={form.ownershipLiquidationPercent}
+                onChange={(e) => setField('ownershipLiquidationPercent', e.target.value)}
                 className={ventureInputCls}
                 placeholder="e.g. 25"
+                required
               />
+              <datalist id="ownership-liquidation-suggestions">
+                {OWNERSHIP_LIQUIDATION_SUGGESTIONS.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+            </div>
+            {!isAuction && (
+              <CurrencyPriceInput
+                id="venture-deal-value"
+                label="Asking Price (buyer pays)"
+                value={form.brandDetails.dealValue}
+                onChange={(v) => setBrand('dealValue', v)}
+                currency={form.currency}
+                onCurrencyChange={(code) => setField('currency', code)}
+                placeholder="e.g. 500000"
+                inputClassName={ventureInputCls}
+                labelClassName={ventureLabelCls}
+                selectClassName={ventureSelectCls}
+              />
+            )}
+          </div>
+          {acquisitionBreakdown && (
+            <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
+              <div className="flex justify-between"><span>Asking price (listing)</span><span>{formatPrice(acquisitionBreakdown.askingPrice)}</span></div>
+              <div className="flex justify-between"><span>Platform commission ({acquisitionBreakdown.commissionPercent}%)</span><span>{formatPrice(acquisitionBreakdown.commissionAmount)}</span></div>
+              <div className="flex justify-between font-semibold text-gray-900"><span>You receive (after commission)</span><span>{formatPrice(acquisitionBreakdown.sellerReceives)}</span></div>
             </div>
           )}
         </section>
@@ -376,37 +516,50 @@ export default function VentureForm({
 
       {isCoVenture && (
         <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-          <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Partnership Role</h3>
+          <h3 className={sectionHeadingCls}>Investment Seeking</h3>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Role title <span className="text-red-400">*</span></label>
+            <label className="text-sm font-medium text-gray-700">Role Offer <span className="text-red-400">*</span></label>
             <input
-              value={form.roleTitle || ''}
-              onChange={(e) => setField('roleTitle', e.target.value)}
+              value={form.roleOffer || ''}
+              onChange={(e) => setField('roleOffer', e.target.value)}
               placeholder="e.g. Technical Co-founder, Growth Lead"
               required
               className={ventureInputCls}
             />
           </div>
-          <div className="flex flex-col gap-1.5 max-w-xs">
-            <label className={ventureLabelCls}>Equity Offered (%) <span className="text-red-400">*</span></label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="1"
-              value={form.equityPercentOffered}
-              onChange={(e) => setField('equityPercentOffered', e.target.value)}
-              className={ventureInputCls}
-              placeholder="e.g. 25"
-              required
-            />
-            <span className="text-xs text-gray-500">Exact percentage you are willing to offer a partner (0–100).</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className={ventureLabelCls}>Equity Offer (%) <span className="text-red-400">*</span></label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={form.equityOffer}
+                onChange={(e) => setField('equityOffer', e.target.value)}
+                className={ventureInputCls}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className={ventureLabelCls}>Investment Seeking <span className="text-red-400">*</span></label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={form.investmentSeeking}
+                onChange={(e) => setField('investmentSeeking', e.target.value)}
+                className={ventureInputCls}
+                placeholder="Amount expected from incoming partner"
+                required
+              />
+            </div>
           </div>
         </section>
       )}
 
       <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-        <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Brand Details</h3>
+        <h3 className={sectionHeadingCls}>Brand Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Brand / Company Name <span className="text-red-400">*</span></label>
@@ -438,10 +591,10 @@ export default function VentureForm({
             <label className="text-sm font-medium text-gray-700">Website <span className="text-red-400">*</span></label>
             <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" required className={ventureInputCls} />
           </div>
-          {!isAuction && !isCoVenture && (
+          {isCoVenture && !isAuction && (
             <CurrencyPriceInput
               id="venture-deal-value"
-              label="Asking Price (buyer pays)"
+              label="Partnership fee (partner pays)"
               value={form.brandDetails.dealValue}
               onChange={(v) => setBrand('dealValue', v)}
               currency={form.currency}
@@ -454,64 +607,15 @@ export default function VentureForm({
           )}
         </div>
 
-        {acquisitionBreakdown && !isCoVenture && (
-          <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Asking price (listing)</span><span>{formatPrice(acquisitionBreakdown.askingPrice)}</span></div>
-            <div className="flex justify-between"><span>Platform commission ({acquisitionBreakdown.commissionPercent}%)</span><span>{formatPrice(acquisitionBreakdown.commissionAmount)}</span></div>
-            <div className="flex justify-between font-semibold text-gray-900"><span>You receive (after commission)</span><span>{formatPrice(acquisitionBreakdown.sellerReceives)}</span></div>
-          </div>
-        )}
-
         {isPendingApproval && (
           <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
-            Your venture listing is pending admin approval and is not visible publicly yet.
+            Your venture listing is pending admin approval and is not yet visible publicly.
           </div>
         )}
       </section>
 
       <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-        <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Private Contact</h3>
-        <p className="text-sm text-gray-500 m-0">
-          Used by CoBrother for listing verification. Enable sync in Company Profile to copy these into your public contact fields.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Private Email <span className="text-red-400">*</span></label>
-            <input value={form.contactInfo.email} onChange={(e) => setContact('email', e.target.value)} type="email" required className={ventureInputCls} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Private Phone</label>
-            <input value={form.contactInfo.phoneNumber} onChange={(e) => setContact('phoneNumber', e.target.value)} className={ventureInputCls} />
-          </div>
-        </div>
-      </section>
-
-      <section id="company-profile" className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4 scroll-mt-24">
-        <div>
-          <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Company Profile</h3>
-          <p className="text-sm text-gray-500 m-0">
-            Required public fields must be complete before admin can approve your listing.
-          </p>
-        </div>
-        <CompanyProfileSections
-          profile={form.companyProfile || EMPTY_COMPANY_PROFILE}
-          onChange={setCompanyProfile}
-          syncPublicContact={syncPublicContact}
-          onSyncPublicContactChange={handleSyncToggle}
-        />
-        <div className={`p-3 rounded-lg text-sm border ${
-          profileComplete
-            ? 'bg-green-50 border-green-200 text-green-800'
-            : 'bg-amber-50 border-amber-200 text-amber-800'
-        }`}>
-          {profileComplete
-            ? `✓ Company profile complete — ${form.companyProfile?.companyName || 'Ready for review'}`
-            : 'Complete all required company profile fields above before publishing.'}
-        </div>
-      </section>
-
-      <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-        <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Venture Status</h3>
+        <h3 className={sectionHeadingCls}>Venture Stage</h3>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Current Stage <span className="text-red-400">*</span></label>
           <FormSelect value={form.stage} onChange={(e) => setField('stage', e.target.value)} required className={ventureFieldSelectCls}>
@@ -521,7 +625,7 @@ export default function VentureForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">
-            {isCoVenture ? 'Partnership opportunity' : 'Looking For'} <span className="text-red-400">*</span>
+            {isCoVenture ? 'Partnership opportunity' : 'Looking for'} <span className="text-red-400">*</span>
           </label>
           <input
             value={form.lookingFor}
@@ -546,7 +650,104 @@ export default function VentureForm({
       </section>
 
       <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
-        <h3 className="font-display text-xl font-medium text-gray-900 mb-1">Agreement</h3>
+        <h3 className={sectionHeadingCls}>Private Contact</h3>
+        <p className="text-sm text-gray-500 m-0">
+          Used by CoBrother for listing verification. Enable sync in Company Profile to copy these into your public contact fields.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Private Email <span className="text-red-400">*</span></label>
+            <input value={form.contactInfo.email} onChange={(e) => setContact('email', e.target.value)} type="email" required className={ventureInputCls} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Private Phone</label>
+            <input value={form.contactInfo.phoneNumber} onChange={(e) => setContact('phoneNumber', e.target.value)} className={ventureInputCls} />
+          </div>
+        </div>
+      </section>
+
+      <section id="company-profile" className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4 scroll-mt-24">
+        <div>
+          <h3 className={sectionHeadingCls}>Company Profile</h3>
+          <p className="text-sm text-gray-500 m-0">
+            Required public fields must be complete before admin can approve your listing.
+          </p>
+        </div>
+        <CompanyProfileSections
+          profile={form.companyProfile || EMPTY_COMPANY_PROFILE}
+          onChange={setCompanyProfile}
+          syncPublicContact={syncPublicContact}
+          onSyncPublicContactChange={handleSyncToggle}
+          showCompany
+          showFinancials={false}
+          showLegal={false}
+        />
+        <div className={`p-3 rounded-lg text-sm border ${
+          profileComplete
+            ? 'bg-green-50 border-green-200 text-green-800'
+            : 'bg-amber-50 border-amber-200 text-amber-800'
+        }`}>
+          {profileComplete
+            ? `✓ Company profile complete — ${form.companyProfile?.companyName || 'Ready for review'}`
+            : 'Complete all required company profile fields above before submitting for approval.'}
+        </div>
+      </section>
+
+      <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
+        <h3 className={sectionHeadingCls}>Team</h3>
+        <TeamMembersSection
+          members={form.companyProfile?.teamMembers}
+          onChange={(teamMembers) => setCompanyProfile({
+            ...(form.companyProfile || EMPTY_COMPANY_PROFILE),
+            teamMembers,
+          })}
+          inputCls={ventureInputCls}
+          labelCls={ventureLabelCls}
+        />
+      </section>
+
+      <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
+        <h3 className={sectionHeadingCls}>Financials</h3>
+        <CompanyProfileSections
+          profile={form.companyProfile || EMPTY_COMPANY_PROFILE}
+          onChange={setCompanyProfile}
+          showCompany={false}
+          showFinancials
+          showLegal={false}
+        />
+      </section>
+
+      <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
+        <h3 className={sectionHeadingCls}>Legal</h3>
+        <CompanyProfileSections
+          profile={form.companyProfile || EMPTY_COMPANY_PROFILE}
+          onChange={setCompanyProfile}
+          showCompany={false}
+          showFinancials={false}
+          showLegal
+        />
+      </section>
+
+      <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
+        <h3 className={sectionHeadingCls}>Verification</h3>
+        <VentureVerificationSection
+          requested={form.verificationRequested}
+          videoUrl={form.verificationVideoUrl}
+          documents={form.verificationDocuments}
+          pendingDocuments={pendingVerificationFiles}
+          status={form.verificationStatus}
+          rejectionReason={form.verificationRejectionReason}
+          onRequestedChange={(checked) => setField('verificationRequested', checked)}
+          onVideoUrlChange={(value) => setField('verificationVideoUrl', value)}
+          onUploadDocument={handleVerificationUpload}
+          onRemovePendingDocument={handleRemovePendingVerificationFile}
+          uploading={verificationUploading}
+          uploadError={verificationUploadError}
+        />
+      </section>
+
+      <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
+        <h3 className={sectionHeadingCls}>Agreement</h3>
         <label className="inline-flex items-center gap-3 text-sm text-gray-600 cursor-pointer max-w-full self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5">
           <input
             type="checkbox"
@@ -568,9 +769,21 @@ export default function VentureForm({
 
       {error && <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-400 text-sm mb-4">{error}</div>}
 
-      <button type="submit" className="btn-glow" disabled={loading}>
-        {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : resolvedSubmitLabel}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        {onCancel && (
+          <button
+            type="button"
+            className="btn-glow flex-1"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            {t('cancel')}
+          </button>
+        )}
+        <button type="submit" className={`btn-glow${onCancel ? ' flex-1' : ''}`} disabled={loading}>
+          {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : resolvedSubmitLabel}
+        </button>
+      </div>
     </form>
   );
 }

@@ -70,6 +70,7 @@ export default function EditVenturePage() {
         <VentureForm
           initialData={venture}
           onSubmit={handleSubmit}
+          onCancel={() => navigate('/ventures/dashboard')}
           loading={loading}
           error={error}
           coVentureMode={coVentureMode}

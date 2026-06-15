@@ -668,7 +668,7 @@ export default function PayoutSettingsPage() {
                 Payout Settings
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-                Configure how you would like to receive payments when your domains are sold.
+                Configure how you receive seller payouts for domain sales, venture deals, and technology listings.
               </p>
               <p className="mt-2 text-xs font-medium text-gray-500">
                 Last updated: {formatDateTime(profile?.updatedAt)}

@@ -44,13 +44,20 @@ export const ventureAPI = {
         headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
+  uploadVerificationDocument: (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/api/v1/venture/${id}/verification-documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
   upsertCompanyProfile: (id, data) => api.put(`/api/v1/venture/${id}/company-profile`, data),
 };
 
-// Submits both equity-sale investment pitches and full-acquisition offers
-// (seller-selected flow); the backend distinguishes by listing deal type.
+// Submits venture bids (ownership liquidation listings).
 export const venturePitchAPI = {
   submit:         (ventureId, data) => api.post(`/api/v1/venture-pitches/venture/${ventureId}`, data),
+  getPublicBids:  (ventureId)       => api.get(`/api/v1/venture-pitches/venture/${ventureId}/public-bids`),
   getMy:          ()                => api.get('/api/v1/venture-pitches/my'),
   getReceived:    ()                => api.get('/api/v1/venture-pitches/received'),
   getOne:         (id)               => api.get(`/api/v1/venture-pitches/${id}`),
@@ -73,6 +80,7 @@ export const ventureDealAPI = {
   adminApproveDeal:   (id)   => api.post(`/api/v1/venture-deals/${id}/admin/approve`),
   adminRejectDeal:    (id, reason) => api.post(`/api/v1/venture-deals/${id}/admin/reject`, { reason }),
   adminReleaseEscrow: (id)   => api.post(`/api/v1/venture-deals/admin/${id}/release-escrow`),
+  adminRefund:        (id)   => api.post(`/api/v1/venture-deals/admin/${id}/refund`),
 };
 
 // ─── CoVenture (partnership applications) ────────────────────────────────────
@@ -314,6 +322,8 @@ export const adminAPI = {
   getPendingVentures:        ()         => api.get('/api/v1/admin/ventures/pending'),
   approveVenture:            (id)       => api.post(`/api/v1/admin/ventures/${id}/approve`),
   rejectVenture:             (id, r)    => api.post(`/api/v1/admin/ventures/${id}/reject`, { reason: r }),
+  approveVentureVerification:(id)       => api.post(`/api/v1/admin/ventures/${id}/verification/approve`),
+  rejectVentureVerification: (id, r)    => api.post(`/api/v1/admin/ventures/${id}/verification/reject`, { reason: r }),
   getListingFeesAndCharges:  ()         => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
   updateListingFeesAndCharges: (data)   => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
 

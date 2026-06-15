@@ -13,6 +13,7 @@ import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainD
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { computeCommissionBreakdown } from '../utils/auctionFees';
+import { roundInr } from '../utils/money';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
@@ -526,7 +527,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         form.saleType === 'AUCTION'
           ? 0
           : form.currency === 'INR'
-            ? Math.round(rawPrice)
+            ? roundInr(rawPrice)
             : convertToInr(rawPrice, form.currency);
 
       const payload = {
@@ -613,14 +614,16 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     ? computeCommissionBreakdown(sellerAmount, commissionPercent)
     : null;
   const selectedExt = normalizeDomainExtension(form.domainExtension);
+  const baseExtensions = ['.com', '.in', '.io', '.net', '.org', '.co', '.ai'];
+  const extensionOptions =
+    selectedExt?.full && !baseExtensions.includes(selectedExt.full)
+      ? [...baseExtensions, selectedExt.full]
+      : baseExtensions;
 
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-purple-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
 
   const extPreview = normalizeDomainExtension(form.domainExtension);
-  const previewFull = extPreview
-    ? `${form.domainName}${extPreview.full}`
-    : form.domainName;
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
@@ -646,8 +649,8 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>{t('domainsPageExtensionLabel')} <span className="text-red-500">*</span></label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {['.com', '.in', '.io', '.net', '.org', '.co', '.ai'].map((ext) => (
+            <div className="flex flex-wrap gap-2">
+              {extensionOptions.map((ext) => (
                 <button
                   key={ext}
                   type="button"
@@ -662,22 +665,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                 </button>
               ))}
             </div>
-            <input
-              className={inputCls}
-              value={form.domainExtension}
-              onChange={e => setExtension(e.target.value)}
-              placeholder={t('domainsPageExtensionPlaceholder')}
-              required
-            />
           </div>
         </div>
         {form.domainName && extPreview && (
           <p className="text-sm text-slate-600 -mt-2 flex items-center gap-2 flex-wrap">
             <span>{t('domainsPagePreview')}</span>
+            <strong>{form.domainName}</strong>
             <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${extPreview.cssKey}`}>
               {extPreview.label}
             </span>
-            <strong>{previewFull}</strong>
           </p>
         )}
 

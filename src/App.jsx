@@ -57,6 +57,7 @@ const loadDashboardPage = () => import('./pages/DashboardPage');
 const DashboardPage = lazy(loadDashboardPage);
 const NewVenturePage = lazy(() => import('./pages/NewVenturePage'));
 const EditVenturePage = lazy(() => import('./pages/EditVenturePage'));
+const VentureDetailPage = lazy(() => import('./pages/VentureDetailPage'));
 const VentureDashboardPage = lazy(() => import('./pages/VentureDashboardPage'));
 const VentureAnalyticsPage = lazy(() => import('./pages/VentureAnalyticsPage'));
 const ProfileAnalyticsPage = lazy(() => import('./pages/ProfileAnalyticsPage'));
@@ -306,6 +307,15 @@ export default function App() {
               element={
                 <ProfileGuard>
                   <VentureDashboardPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/ventures/:id"
+              element={
+                <ProfileGuard>
+                  <VentureDetailPage />
                 </ProfileGuard>
               }
             />

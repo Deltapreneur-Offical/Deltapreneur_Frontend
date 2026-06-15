@@ -29,14 +29,15 @@ export const EMPTY_COMPANY_PROFILE = {
   productsServices: '',
   targetMarket: '',
   businessModel: '',
-  annualRevenueInr: '',
+  currentYearRevenueInr: '',
+  previousYearRevenueInr: '',
+  twoYearsAgoRevenueInr: '',
   profitabilityStatus: '',
   fundingRaisedSummary: '',
   valuationInr: '',
   founderName: '',
   teamSize: '',
   keyTeamMembers: '',
-  customerCount: '',
   userBase: '',
   growthMetrics: '',
   marketReach: '',
@@ -93,6 +94,12 @@ export default function CompanyProfileSections({
   inputCls = DEFAULT_INPUT_CLS,
   syncPublicContact = false,
   onSyncPublicContactChange,
+  showCompany = true,
+  showFinancials = true,
+  showLegal = true,
+  listingCurrency = 'INR',
+  onCurrencyChange,
+  convertToInr,
 }) {
   const draft = { ...EMPTY_COMPANY_PROFILE, ...(profile || {}) };
   const textareaCls = `${inputCls} resize-none`;
@@ -100,6 +107,8 @@ export default function CompanyProfileSections({
 
   return (
     <div className="flex flex-col gap-4">
+      {showCompany && (
+        <>
       <SectionTitle badge="Public">Company</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Company Name" required>
@@ -169,25 +178,26 @@ export default function CompanyProfileSections({
           Use the same email and phone from my private listing contact (above) for these public fields
         </FormCheckbox>
       )}
+        </>
+      )}
 
-      <SectionTitle badge="Optional Public">Team</SectionTitle>
+      {showFinancials && (
+        <>
+      <SectionTitle badge="Optional Public">Revenue History</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Field label="Founder Name">
-          <input value={draft.founderName} onChange={set('founderName')} className={inputCls} />
+        <Field label="Current Year Revenue (INR)">
+          <input value={draft.currentYearRevenueInr} onChange={set('currentYearRevenueInr')} type="number" min="0" className={inputCls} />
         </Field>
-        <Field label="Team Size">
-          <input value={draft.teamSize} onChange={set('teamSize')} type="number" min="0" className={inputCls} />
+        <Field label="Previous Year Revenue (INR)">
+          <input value={draft.previousYearRevenueInr} onChange={set('previousYearRevenueInr')} type="number" min="0" className={inputCls} />
         </Field>
-        <Field label="Key Team Members">
-          <input value={draft.keyTeamMembers} onChange={set('keyTeamMembers')} className={inputCls} placeholder="Names / roles" />
+        <Field label="Two Years Ago Revenue (INR)">
+          <input value={draft.twoYearsAgoRevenueInr} onChange={set('twoYearsAgoRevenueInr')} type="number" min="0" className={inputCls} />
         </Field>
       </div>
 
       <SectionTitle badge="Optional Public">Financials & Traction</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Annual Revenue (INR)">
-          <input value={draft.annualRevenueInr} onChange={set('annualRevenueInr')} type="number" min="0" className={inputCls} />
-        </Field>
         <Field label="Profitability Status">
           <input value={draft.profitabilityStatus} onChange={set('profitabilityStatus')} className={inputCls} placeholder="e.g. Profitable, Break-even" />
         </Field>
@@ -196,9 +206,6 @@ export default function CompanyProfileSections({
         </Field>
         <Field label="Valuation (INR)">
           <input value={draft.valuationInr} onChange={set('valuationInr')} type="number" min="0" className={inputCls} />
-        </Field>
-        <Field label="Customer Count">
-          <input value={draft.customerCount} onChange={set('customerCount')} type="number" min="0" className={inputCls} />
         </Field>
         <Field label="User Base">
           <input value={draft.userBase} onChange={set('userBase')} className={inputCls} placeholder="e.g. 10k MAU" />
@@ -210,7 +217,11 @@ export default function CompanyProfileSections({
       <Field label="Market Reach">
         <textarea value={draft.marketReach} onChange={set('marketReach')} rows={2} className={textareaCls} placeholder="Geographies, channels, partnerships" />
       </Field>
+        </>
+      )}
 
+      {showLegal && (
+        <>
       <SectionTitle badge="Private">Legal (visible to you and CoBrother only)</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Legal Entity Name">
@@ -231,6 +242,8 @@ export default function CompanyProfileSections({
           </select>
         </Field>
       </div>
+        </>
+      )}
     </div>
   );
 }

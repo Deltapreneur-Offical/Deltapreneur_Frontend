@@ -7,17 +7,24 @@
  */
 
 import { formatAuctionDate } from './auctionDate';
+import { formatInr } from './money';
 
 function formatINR(amount) {
-    return '₹' + Number(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-  }
+  return formatInr(amount);
+}
 
-  function formatMoney(amount, currencyCode = 'INR') {
-    const code = (currencyCode || 'INR').toUpperCase();
-    const symbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$', AUD: 'A$', CAD: 'C$' };
-    const sym = symbols[code] || `${code} `;
-    return sym + Number(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function formatMoney(amount, currencyCode = 'INR') {
+  const code = (currencyCode || 'INR').toUpperCase();
+  if (code === 'INR') {
+    return formatInr(amount);
   }
+  const symbols = { USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$', AUD: 'A$', CAD: 'C$' };
+  const sym = symbols[code] || `${code} `;
+  return sym + Number(amount || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
   
   function today() {
     return new Date().toLocaleDateString('en-IN', {

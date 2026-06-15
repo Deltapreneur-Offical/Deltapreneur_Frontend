@@ -42,7 +42,7 @@ export default function NewVenturePage() {
     navigate('/login', { state: { from: { pathname: '/ventures/new', search } }, replace: true });
   };
 
-  const handleSubmit = async (form, imageFile) => {
+  const handleSubmit = async (form, imageFile, pendingVerificationFiles = []) => {
     if (!hasAccessToken) {
       setError(t('newVentureSignInRequired'));
       clearAuthAndGoLogin();
@@ -50,13 +50,20 @@ export default function NewVenturePage() {
     }
     setLoading(true); setError('');
     try {
-        const payload = { ...form, saleType: 'REGULAR' };
-        setCreatedListingMode(payload.listingMode || 'VENTURE');
-        const { data } = await ventureAPI.create(payload);
+        setCreatedListingMode(form.listingMode || 'VENTURE');
+        const { data } = await ventureAPI.create(form);
         const savedId = data?.id ?? data?.data?.id;
 
         if (imageFile && savedId) {
             await ventureAPI.uploadImage(savedId, imageFile);
+        }
+
+        if (savedId && pendingVerificationFiles.length > 0) {
+          await Promise.all(
+            pendingVerificationFiles.map((item) =>
+              ventureAPI.uploadVerificationDocument(savedId, item.file),
+            ),
+          );
         }
 
         setShowConfetti(true);

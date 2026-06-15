@@ -1,13 +1,37 @@
 import { EMPTY_COMPANY_PROFILE } from '../components/venture/CompanyProfileSections';
+import { normalizeEquityPercent } from '../constants/ventureLabels';
+import { isCoVentureListing, resolveEditableListingAmount } from './ventureListingHelpers';
 
 const NUMERIC_PROFILE_FIELDS = [
-  'annualRevenueInr',
+  'currentYearRevenueInr',
+  'previousYearRevenueInr',
+  'twoYearsAgoRevenueInr',
   'valuationInr',
   'teamSize',
-  'customerCount',
 ];
 
 const normalizeIndustry = (value) => String(value ?? '').replace(/_/g, ' ').trim();
+
+/** Normalize API brand details (camelCase or snake_case) into form shape. */
+export function normalizeBrandDetails(brand, ventureOrMode = null) {
+  const raw = brand || {};
+  const isCoVenture = typeof ventureOrMode === 'boolean'
+    ? ventureOrMode
+    : isCoVentureListing(ventureOrMode);
+  const dealValue = resolveEditableListingAmount(raw, isCoVenture);
+
+  return {
+    brandName: raw.brandName ?? raw.brand_name ?? '',
+    description: raw.description ?? '',
+    website: raw.website ?? '',
+    videoUrl: raw.videoUrl ?? raw.video_url ?? '',
+    industry: raw.industry ?? '',
+    dealValue,
+    referenceImageUrl: raw.referenceImageUrl ?? raw.reference_image_url ?? '',
+    ventureType: raw.ventureType ?? raw.venture_type ?? '',
+    ventureImageUrl: raw.ventureImageUrl ?? raw.venture_image_url ?? '',
+  };
+}
 
 /** Normalize API company profile (camelCase or snake_case) into form shape. */
 export function normalizeCompanyProfile(profile) {
@@ -26,14 +50,16 @@ export function normalizeCompanyProfile(profile) {
     productsServices: profile.productsServices ?? profile.products_services ?? '',
     targetMarket: profile.targetMarket ?? profile.target_market ?? '',
     businessModel: profile.businessModel ?? profile.business_model ?? '',
-    annualRevenueInr: profile.annualRevenueInr ?? profile.annual_revenue_inr ?? '',
+    currentYearRevenueInr: profile.currentYearRevenueInr ?? profile.current_year_revenue_inr ?? profile.annualRevenueInr ?? profile.annual_revenue_inr ?? '',
+    previousYearRevenueInr: profile.previousYearRevenueInr ?? profile.previous_year_revenue_inr ?? '',
+    twoYearsAgoRevenueInr: profile.twoYearsAgoRevenueInr ?? profile.two_years_ago_revenue_inr ?? '',
     profitabilityStatus: profile.profitabilityStatus ?? profile.profitability_status ?? '',
     fundingRaisedSummary: profile.fundingRaisedSummary ?? profile.funding_raised_summary ?? '',
     valuationInr: profile.valuationInr ?? profile.valuation_inr ?? '',
     founderName: profile.founderName ?? profile.founder_name ?? '',
     teamSize: profile.teamSize ?? profile.team_size ?? '',
     keyTeamMembers: profile.keyTeamMembers ?? profile.key_team_members ?? '',
-    customerCount: profile.customerCount ?? profile.customer_count ?? '',
+    teamMembers: profile.teamMembers ?? profile.team_members ?? [],
     userBase: profile.userBase ?? profile.user_base ?? '',
     growthMetrics: profile.growthMetrics ?? profile.growth_metrics ?? '',
     marketReach: profile.marketReach ?? profile.market_reach ?? '',
@@ -83,6 +109,20 @@ export function sanitizeCompanyProfileForApi(profile) {
     }
     const num = Number(raw);
     out[key] = Number.isNaN(num) ? null : num;
+  }
+  if (Array.isArray(out.teamMembers)) {
+    out.teamMembers = out.teamMembers
+      .filter((member) => String(member?.name || '').trim() && String(member?.role || '').trim())
+      .map((member) => ({
+        name: String(member.name).trim(),
+        role: String(member.role).trim(),
+        equityPercent: Number(member.equityPercent ?? member.equity_percent),
+        linkedinUrl: String((member.linkedinUrl ?? member.linkedin_url) || '').trim() || null,
+      }))
+      .filter((member) => Number.isFinite(member.equityPercent) && member.equityPercent > 0);
+  }
+  if (out.currentYearRevenueInr != null) {
+    out.annualRevenueInr = out.currentYearRevenueInr;
   }
   return out;
 }
@@ -156,4 +196,76 @@ export function isVentureProfileComplete(venture) {
   if (typeof cp?.isComplete === 'boolean') return cp.isComplete;
   if (typeof cp?.is_complete === 'boolean') return cp.is_complete;
   return false;
+}
+
+/** Build a venture create/update payload that matches backend request schemas. */
+export function buildVentureSubmitPayload(form, {
+  isCoVenture,
+  sanitizedProfile,
+  toStoredInr,
+}) {
+  const imageUrl = (
+    form.brandDetails?.ventureImageUrl
+    || form.brandDetails?.referenceImageUrl
+    || ''
+  ).trim() || null;
+
+  const brandDetails = {
+    brandName: form.brandDetails?.brandName?.trim() || undefined,
+    description: form.brandDetails?.description?.trim() || null,
+    website: form.brandDetails?.website?.trim() || null,
+    videoUrl: form.brandDetails?.videoUrl?.trim() || null,
+    industry: form.brandDetails?.industry || null,
+    ventureType: null,
+    dealValue:
+      form.brandDetails?.dealValue !== ''
+        ? toStoredInr(form.brandDetails.dealValue)
+        : null,
+  };
+  if (imageUrl) {
+    brandDetails.ventureImageUrl = imageUrl;
+  }
+
+  const payload = {
+    listingMode: isCoVenture ? 'CO_VENTURE' : 'VENTURE',
+    brandDetails,
+    contactInfo: {
+      email: form.contactInfo?.email?.trim() || null,
+      phoneNumber: form.contactInfo?.phoneNumber?.trim() || null,
+    },
+    agreement: { terms: Boolean(form.agreement?.terms) },
+    status: form.status,
+    stage: form.stage || null,
+    currentProblem: form.currentProblem?.trim() || null,
+    lookingFor: form.lookingFor?.trim() || null,
+    saleType: 'REGULAR',
+    equityPercentOffered: !isCoVenture
+      ? normalizeEquityPercent(parseFloat(form.ownershipLiquidationPercent))
+      : normalizeEquityPercent(parseFloat(form.equityOffer)),
+    companyProfile: sanitizedProfile,
+    verificationRequested: Boolean(form.verificationRequested),
+    verificationVideoUrl: form.verificationVideoUrl?.trim() || null,
+    roles: isCoVenture
+      ? [{
+        title: form.roleOffer?.trim(),
+        equityOffer: Number(form.equityOffer),
+        investmentSeeking: Number(form.investmentSeeking),
+        type: 'CO_FOUNDER',
+      }]
+      : [],
+  };
+
+  if (!isCoVenture) {
+    payload.dealType = null;
+    payload.acquisitionFlow = 'SELLER_SELECTS';
+  }
+
+  if (form.auctionMinBidPrice !== '' && form.auctionMinBidPrice != null) {
+    payload.auctionMinBidPrice = Number(form.auctionMinBidPrice);
+  }
+  if (form.auctionDuration) {
+    payload.auctionDuration = form.auctionDuration;
+  }
+
+  return payload;
 }

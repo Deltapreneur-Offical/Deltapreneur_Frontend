@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { communityAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
+import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import VentureIcon from '../assets/Coventure_logo.png';
 import CommunityIcon from '../assets/Cobrother_Profile.png';
 import DomainsIcon from '../assets/CoBranding.png';
@@ -186,6 +187,8 @@ export default function DashboardPage() {
         {creatorProfileReady && creatorProfile ? (
           <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
         ) : null}
+
+        {user?.id ? <PayoutProfileBanner context="default" /> : null}
 
         <section className="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 min-w-0">
           {cards.map((c) => (

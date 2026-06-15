@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { coVentureAPI, likeAPI, ventureAPI, ventureDealAPI, venturePitchAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
@@ -8,15 +8,26 @@ import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureIcon from '../assets/Coventure_logo.png';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
+import VentureVerifyListingModal from '../components/venture/VentureVerificationModal';
+import VentureVerificationPendingBanner from '../components/venture/VentureVerificationPendingBanner';
 import EditActionLabel from '../components/common/EditActionLabel';
 import PartnershipTimelineCard from '../components/venture/PartnershipTimelineCard';
 import { asArray } from '../utils/asArray';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import VentureSubNav from '../components/venture/VentureSubNav';
+import VentureDealRow from '../components/venture/VentureDealRow';
+import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
+import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
+import { useAuth } from '../context/AuthContext';
 import { isVentureProfileComplete } from '../utils/ventureProfileUtils';
 import { formatEquityOfferedPct, formatEquityPercent } from '../constants/ventureLabels';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import FormCheckbox from '../components/common/FormCheckbox';
+import {
+  countVenturesPendingVerification,
+  filterVenturesForSection,
+} from '../utils/ventureVerification';
+import { PendingVerificationDot } from '../components/domains/DomainVerificationPendingBanner';
 
 const STATUS_META = {
   PENDING:  { label: 'Pending',  color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', icon: '⏳' },
@@ -49,8 +60,8 @@ const SECTION_META = {
 };
 
 const VENTURE_TABS = [
-  { id: 'incoming', label: 'Pitches Received' },
-  { id: 'applied', label: 'My Pitches' },
+  { id: 'incoming', label: 'Bids Received' },
+  { id: 'applied', label: 'My Bids' },
   { id: 'deals', label: 'Deals' },
 ];
 
@@ -62,9 +73,29 @@ const COVENTURE_TABS = [
 
 export default function VentureDashboardPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [section, setSection] = useState('venture');
   const [ventureTab, setVentureTab] = useState('incoming');
   const [coTab, setCoTab] = useState('applications');
+  const [myVentures, setMyVentures] = useState([]);
+  const [verifyListingOpen, setVerifyListingOpen] = useState(false);
+
+  const loadMyVentures = useCallback(() => {
+    ventureAPI.getMyVentures()
+      .then(({ data }) => setMyVentures(asArray(data)))
+      .catch(() => setMyVentures([]));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    loadMyVentures();
+  }, [user, loadMyVentures]);
+
+  const sectionVentures = filterVenturesForSection(myVentures, section);
+  const pendingVerificationCount = countVenturesPendingVerification(sectionVentures);
+  const showVerifyOnTabs = ['incoming', 'applied', 'applications', 'my-partnerships'].includes(
+    section === 'venture' ? ventureTab : coTab,
+  );
 
   const activeTabs = section === 'venture' ? VENTURE_TABS : COVENTURE_TABS;
   const activeTab = section === 'venture' ? ventureTab : coTab;
@@ -81,10 +112,15 @@ export default function VentureDashboardPage() {
           Back to Ventures
         </Link>
 
-        <div className="mb-6">
-          <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('ventureDashboardPageTitle')}</h1>
-          <p className="text-gray-600 mt-1">{t('ventureDashboardPageSubtitle')}</p>
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('ventureDashboardPageTitle')}</h1>
+            <p className="text-gray-600 mt-1">{t('ventureDashboardPageSubtitle')}</p>
+          </div>
+          {user ? <PayoutSettingsButton /> : null}
         </div>
+
+        {user ? <PayoutProfileBanner context="venture" className="mb-6" /> : null}
 
         <VentureSubNav activeRoute="dashboard" />
 
@@ -112,17 +148,41 @@ export default function VentureDashboardPage() {
           })}
         </div>
 
-        <div className="flex gap-2 mb-6 flex-wrap p-1 rounded-xl border border-gray-200 bg-gray-50/80">
+        {showVerifyOnTabs && pendingVerificationCount > 0 ? (
+          <VentureVerificationPendingBanner
+            count={pendingVerificationCount}
+            onVerifyClick={() => setVerifyListingOpen(true)}
+          />
+        ) : null}
+
+        <div className="flex gap-2 mb-6 flex-wrap items-center p-1 rounded-xl border border-gray-200 bg-gray-50/80">
           {activeTabs.map(({ id, label }) => (
             <button
               key={id}
               type="button"
-              className={`btn-glow btn-glow-sm ${activeTab === id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              className={`btn-glow btn-glow-sm relative ${activeTab === id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
               onClick={() => setActiveTab(id)}
             >
               {label}
+              {showVerifyOnTabs
+                && pendingVerificationCount > 0
+                && (id === 'incoming' || id === 'applied' || id === 'applications' || id === 'my-partnerships') ? (
+                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
+                    <PendingVerificationDot className="h-2.5 w-2.5" />
+                  </span>
+                ) : null}
             </button>
           ))}
+          {showVerifyOnTabs && sectionVentures.length > 0 ? (
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm ml-auto inline-flex items-center gap-1.5"
+              onClick={() => setVerifyListingOpen(true)}
+            >
+              <ShieldCheck size={14} aria-hidden />
+              Verify listing (optional)
+            </button>
+          ) : null}
         </div>
 
         {section === 'venture' && ventureTab === 'incoming' && <IncomingPitches />}
@@ -133,6 +193,14 @@ export default function VentureDashboardPage() {
         {section === 'coventure' && coTab === 'my-partnerships' && <MyApplications />}
         {section === 'coventure' && coTab === 'deals' && (
           <MyDeals dealKind="CO_VENTURE" emptyLabel="No partnership deals yet" />
+        )}
+
+        {verifyListingOpen && (
+          <VentureVerifyListingModal
+            ventures={sectionVentures}
+            onClose={() => setVerifyListingOpen(false)}
+            onSaved={loadMyVentures}
+          />
         )}
       </div>
     </AppLayout>
@@ -369,8 +437,8 @@ function IncomingPitches() {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>;
   if (pitches.length === 0) return (
     <div className="text-center py-20">
-      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No pitches yet</h3>
-      <p className="text-gray-600">Buyer pitches on your venture listings will appear here.</p>
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No bids yet</h3>
+      <p className="text-gray-600">Buyer bids on your venture listings will appear here.</p>
     </div>
   );
 
@@ -555,6 +623,7 @@ function MyPitches() {
 
 function MyDeals({ dealKind, emptyLabel = 'No deals yet' }) {
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -588,45 +657,16 @@ function MyDeals({ dealKind, emptyLabel = 'No deals yet' }) {
   );
 
   return (
-    <div className="flex flex-col gap-3">
-      {deals.map((deal) => {
-        const isPartnership = deal.dealKind === 'CO_VENTURE';
-        const counterparty = isPartnership
-          ? (deal.partnerName || deal.buyer?.name || 'Partner')
-          : (deal.buyer?.name || deal.seller?.name || 'Counterparty');
-        const equityLabel = deal.venture?.equityPercentOffered != null
-          ? `${formatEquityPercent(deal.venture.equityPercentOffered)}% equity`
-          : null;
-
-        return (
-          <div key={deal.id} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-indigo-200 transition-colors">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="font-semibold text-gray-900">{deal.venture?.brandName || 'Deal'}</span>
-                  {isPartnership && (
-                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
-                      Partnership
-                    </span>
-                  )}
-                </div>
-                <div className="text-sm text-gray-600">
-                  {isPartnership ? `Partner: ${counterparty}` : `Buyer: ${counterparty}`}
-                  {equityLabel ? ` · ${equityLabel}` : ''}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {(deal.dealStatus || '').replace(/_/g, ' ')}
-                  {!isPartnership && deal.grossAmountInr > 0 ? ` · ${formatPrice(deal.grossAmountInr)}` : ''}
-                  {isPartnership ? ' · CoBrother assisted' : ''}
-                </div>
-              </div>
-              <button type="button" className="btn-glow btn-glow-sm shrink-0" onClick={() => navigate(`/ventures/deals/${deal.id}`)}>
-                View Deal →
-              </button>
-            </div>
-          </div>
-        );
-      })}
+    <div className="flex flex-col gap-3.5">
+      {deals.map((deal) => (
+        <VentureDealRow
+          key={deal.id}
+          deal={deal}
+          formatPrice={formatPrice}
+          user={user}
+          onPayNow={(d) => navigate(`/ventures/deals/${d.id}`)}
+        />
+      ))}
     </div>
   );
 }

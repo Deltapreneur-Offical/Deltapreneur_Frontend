@@ -6,6 +6,7 @@ import { Calendar, Headset } from 'lucide-react';
 import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
+import { formatInr } from '../utils/money';
 import VentureIcon from '../assets/Coventure_logo.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
@@ -16,9 +17,10 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import VentureDealsAdminTab from './VentureDealsAdminTab';
 import OperationsAdminTab from './OperationsAdminTab';
 import DomainVerificationModal from './DomainVerificationModal';
-import { softwareAuctionAPI, ventureDealAPI } from '../api/services';
+import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
@@ -26,6 +28,7 @@ import VentureGstinVerificationModal from '../components/venture/VentureGstinVer
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
+import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
 
@@ -152,10 +155,9 @@ export default function AdminDashboardPage() {
       'software-auctions': softwareAuctionAPI.adminGetAll,
       'community-auctions': communityAuctionAPI.adminGetAll,
       'addon-orders':      adminAPI.getAddonOrders,
-      'venture-deals':     ventureDealAPI.adminGetAll,
     };
   
-    if (currentTab === 'fees-charges') {
+    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals') {
       setLoading(false);
       setData([]);
       return;
@@ -221,6 +223,7 @@ export default function AdminDashboardPage() {
       'community-auctions',
       'addon-orders',
       'domain-transfers',
+      'venture-deals',
     ]);
     if (requestedTab && allowedTabs.has(requestedTab)) {
       setTab(requestedTab);
@@ -346,7 +349,7 @@ export default function AdminDashboardPage() {
           ) : tab === 'auctions' ? (
             <AuctionsAdminTable auctions={data} />
           ) : tab === 'venture-deals' ? (
-            <VentureDealsAdminTable deals={data} onRefresh={() => loadTab(tab)} />
+            <VentureDealsAdminTab />
           ) : tab === 'addon-orders' ? (
             <AddonOrdersTable orders={data} />
           ) : tab === 'software-auctions' ? (
@@ -474,6 +477,10 @@ function VentureAdminRow({
     : pitchCount;
   const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
   const showGstinVerify = true;
+  const listingVerificationStatus = resolveVentureVerificationStatus(venture);
+  const showListingVerificationSection = ['PENDING', 'APPROVED', 'REJECTED'].includes(
+    listingVerificationStatus,
+  );
   const listingApproval = venture.listingApprovalStatus || venture.listing_approval_status || 'PENDING_APPROVAL';
   const profileComplete = venture.companyProfileComplete
     ?? venture.companyProfile?.isComplete
@@ -532,7 +539,7 @@ function VentureAdminRow({
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#4f46e5', background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
                 {isCoVentureListing
                   ? t('adminCoVentureApps', { count: applicationCount })
-                  : `${applicationCount} pitch${applicationCount !== 1 ? 'es' : ''}`}
+                  : `${applicationCount} bid${applicationCount !== 1 ? 's' : ''}`}
               </span>
             )}
           </div>
@@ -570,13 +577,93 @@ function VentureAdminRow({
               {venture.brandDetails?.dealValue != null && (
                 <div>
                   <div className="admin-field-label">Asking price</div>
-                  <div className="admin-field-value">₹{Number(venture.brandDetails.dealValue).toLocaleString('en-IN')}</div>
+                  <div className="admin-field-value">{formatInr(venture.brandDetails.dealValue)}</div>
                 </div>
               )}
               {venture.equityPercentOffered != null && (
                 <div>
-                  <div className="admin-field-label">Equity offered</div>
+                  <div className="admin-field-label">
+                    {isCoVentureListing ? 'Equity offer' : 'Ownership liquidation'}
+                  </div>
                   <div className="admin-field-value">{formatEquityPercent(venture.equityPercentOffered)}%</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(venture.companyProfile?.currentYearRevenueInr != null
+            || venture.companyProfile?.previousYearRevenueInr != null
+            || venture.companyProfile?.twoYearsAgoRevenueInr != null) && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              {venture.companyProfile?.currentYearRevenueInr != null && (
+                <div>
+                  <div className="admin-field-label">Current year revenue</div>
+                  <div className="admin-field-value">{formatInr(venture.companyProfile.currentYearRevenueInr)}</div>
+                </div>
+              )}
+              {venture.companyProfile?.previousYearRevenueInr != null && (
+                <div>
+                  <div className="admin-field-label">Previous year revenue</div>
+                  <div className="admin-field-value">{formatInr(venture.companyProfile.previousYearRevenueInr)}</div>
+                </div>
+              )}
+              {venture.companyProfile?.twoYearsAgoRevenueInr != null && (
+                <div>
+                  <div className="admin-field-label">Revenue from two years ago</div>
+                  <div className="admin-field-value">{formatInr(venture.companyProfile.twoYearsAgoRevenueInr)}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {showListingVerificationSection && (
+            <div className="mb-4 rounded-lg border border-gray-200 p-3">
+              <div className="admin-field-label admin-field-label--spaced">
+                {t('adminVentureListingVerification')}
+              </div>
+              <p className="text-xs text-gray-500 mb-2">{t('adminVentureListingVerificationHint')}</p>
+              <div className="text-sm text-gray-700 space-y-1">
+                <div>{t('adminVentureListingVerificationStatus', { status: listingVerificationStatus })}</div>
+                {venture.verificationVideoUrl && (
+                  <div>
+                    {t('adminVentureListingVerificationVideo')}:{' '}
+                    <a href={venture.verificationVideoUrl} target="_blank" rel="noreferrer" className="admin-link">
+                      {venture.verificationVideoUrl}
+                    </a>
+                  </div>
+                )}
+                {(venture.verificationDocuments || []).map((doc) => (
+                  <div key={doc.id}>
+                    {t('adminVentureListingVerificationDocument')}:{' '}
+                    <a href={doc.fileUrl || doc.file_url} target="_blank" rel="noreferrer" className="admin-link">
+                      {doc.fileName || doc.file_name || 'View'}
+                    </a>
+                  </div>
+                ))}
+              </div>
+              {listingVerificationStatus === 'PENDING' && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm text-[0.8rem]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      adminAPI.approveVentureVerification(venture.id).then(() => onRefresh?.());
+                    }}
+                  >
+                    {t('adminVentureApproveListingVerification')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm text-[0.8rem]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const reason = window.prompt(t('adminVentureListingVerificationRejectPrompt')) || '';
+                      adminAPI.rejectVentureVerification(venture.id, reason).then(() => onRefresh?.());
+                    }}
+                  >
+                    {t('adminVentureRejectListingVerification')}
+                  </button>
                 </div>
               )}
             </div>
@@ -606,7 +693,7 @@ function VentureAdminRow({
                   onClick={(e) => {
                     e.stopPropagation();
                     adminAPI.approveVenture(venture.id).then(() => onRefresh?.()).catch((err) => {
-                      alert(err?.response?.data?.error || 'Approve failed');
+                      alert(err?.response?.data?.error || 'Approval failed.');
                     });
                   }}
                 >
@@ -719,7 +806,7 @@ function VentureAdminRow({
             </div>
           ) : !isCoVentureListing && pitches.length > 0 ? (
             <div>
-              <div className="admin-field-label admin-field-label--spaced">Buyer pitches</div>
+              <div className="admin-field-label admin-field-label--spaced">Buyer bids</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {pitches.map((pitch) => (
                   <div
@@ -733,7 +820,7 @@ function VentureAdminRow({
                       {pitch.buyerEmail || pitch.buyer?.email || '—'}
                     </div>
                     <div className="admin-field-meta" style={{ marginTop: '0.25rem' }}>
-                      Offer: ₹{Number(pitch.offeredAmount || 0).toLocaleString('en-IN')}
+                      Offer: {formatInr(pitch.offeredAmount || 0)}
                       {pitch.requestedEquityPercent != null ? ` · ${formatEquityPercent(pitch.requestedEquityPercent)}% equity requested` : ''}
                     </div>
                     <div className="admin-field-meta" style={{ marginTop: '0.2rem', fontSize: '0.72rem' }}>
@@ -750,7 +837,7 @@ function VentureAdminRow({
             </div>
           ) : (
             <p className="admin-muted-note" style={{ margin: 0 }}>
-              {isCoVentureListing ? t('adminNoCoVentureApps') : 'No buyer pitches yet.'}
+              {isCoVentureListing ? t('adminNoCoVentureApps') : 'No buyer bids yet.'}
             </p>
           )}
         </div>
@@ -1184,81 +1271,6 @@ function CommunityAuctionAdminRow({ auction, community }) {
   );
 }
 
-function VentureDealsAdminTable({ deals, onRefresh }) {
-  const { formatPrice } = useCurrency();
-  if (!deals.length) {
-    return (
-      <div className="text-center py-20">
-        <h3 className="font-display text-2xl font-bold text-gray-900">No venture deals yet</h3>
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col gap-3">
-      {deals.map((deal) => (
-        <div key={deal.id} className="admin-record-card p-4 flex flex-wrap items-center gap-4 justify-between">
-          <div>
-            <div className="font-semibold text-gray-900">{deal.venture?.brandName || 'Venture Deal'}</div>
-            <div className="text-sm text-gray-600">
-              {deal.dealStatus} · {formatPrice(deal.grossAmountInr)} · Escrow: {deal.escrowStatus}
-            </div>
-          </div>
-          {deal.dealStatus === 'PENDING_ADMIN_APPROVAL' && (
-            <>
-              <button
-                type="button"
-                className="btn-glow btn-glow-sm"
-                onClick={async () => {
-                  try {
-                    await ventureDealAPI.adminApproveDeal(deal.id);
-                    onRefresh?.();
-                  } catch (err) {
-                    alert(err.response?.data?.error || 'Approve failed');
-                  }
-                }}
-              >
-                Approve Deal
-              </button>
-              <button
-                type="button"
-                className="btn-secondary btn-sm"
-                onClick={async () => {
-                  const reason = window.prompt('Rejection reason (optional)') || '';
-                  try {
-                    await ventureDealAPI.adminRejectDeal(deal.id, reason);
-                    onRefresh?.();
-                  } catch (err) {
-                    alert(err.response?.data?.error || 'Reject failed');
-                  }
-                }}
-              >
-                Reject Deal
-              </button>
-            </>
-          )}
-          {deal.dealStatus === 'PAYMENT_HELD' && (
-            <button
-              type="button"
-              className="btn-glow btn-glow-sm"
-              onClick={async () => {
-                if (!confirm('Release escrow and mark deal completed?')) return;
-                try {
-                  await ventureDealAPI.adminReleaseEscrow(deal.id);
-                  onRefresh?.();
-                } catch (err) {
-                  alert(err.response?.data?.error || 'Release failed');
-                }
-              }}
-            >
-              Release Escrow
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function VentureAuctionsAdminTable({ auctions, onRefresh }) {
   const { t } = useTranslation();
   if (!auctions.length) return (
@@ -1294,7 +1306,7 @@ function VentureAuctionAdminRow({ auction, bids, onRefresh }) {
       await ventureAuctionAPI.adminApprove(auction.id);
       onRefresh?.();
     } catch (err) {
-      alert(err.response?.data?.error || 'Approve failed');
+      alert(err.response?.data?.error || 'Approval failed.');
     } finally {
       setLoading(false);
     }
@@ -1309,7 +1321,7 @@ function VentureAuctionAdminRow({ auction, bids, onRefresh }) {
       await ventureAuctionAPI.adminReject(auction.id, reason.trim());
       onRefresh?.();
     } catch (err) {
-      alert(err.response?.data?.error || 'Reject failed');
+      alert(err.response?.data?.error || 'Rejection failed.');
     } finally {
       setLoading(false);
     }

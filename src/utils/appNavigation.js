@@ -28,6 +28,8 @@ const PAGE_OWN_BACK = [
   /^\/technology\/auction\//,
   /^\/software-auction/,
   /^\/ventures\/analytics$/,
+  /^\/analytics$/,
+  /^\/analytics\/[^/]+$/,
   /^\/technology\/[^/]+\/analytics$/,
 ];
 

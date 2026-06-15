@@ -9,7 +9,9 @@ import { analyticsAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import CommunityProfileIcon from '../assets/Community-profileicon.png';
 
-const COLORS = ['#c8a96e','#6e9ec8','#6ec896','#c86e6e','#9b6ec8','#c8b06e'];
+import AnalyticsChartTooltip from '../components/analytics/AnalyticsChartTooltip';
+
+const COLORS = ['#c8a96e', '#6e9ec8', '#6ec896', '#c86e6e', '#9b6ec8', '#c8b06e'];
 
 function normalizeAnalyticsPayload(payload) {
   const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
@@ -31,23 +33,13 @@ const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
 );
 
 const ChartCard = ({ title, children }) => (
-  <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl">
+  <div className="card-glow-hover analytics-page-charts p-6 bg-white border border-gray-200 rounded-xl">
     <div className="text-sm font-semibold text-gray-900 mb-5">{title}</div>
     {children}
   </div>
 );
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs">
-      <div className="text-gray-500 mb-1">{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color || '#c8a96e' }}>{p.name}: <strong>{p.value}</strong></div>
-      ))}
-    </div>
-  );
-};
+const CustomTooltip = AnalyticsChartTooltip;
 
 export default function ProfileAnalyticsPage() {
   const { t } = useTranslation();

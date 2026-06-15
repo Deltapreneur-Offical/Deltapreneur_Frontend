@@ -147,7 +147,9 @@ export function resolveHomeAuctionImage(auction) {
 
 export function resolveHomeAuctionVerified(auction) {
   if (!auction) return false;
-  if (auction.category === 'domain') return Boolean(auction.domain?.verified);
+  if (auction.category === 'domain') {
+    return Boolean(auction.domain?.verified ?? auction.verified);
+  }
   if (auction.category === 'technology') return Boolean(auction.software?.verified);
   if (auction.category === 'venture') {
     return Boolean(auction.venture?.verified || auction.venture?.gstinVerified);
@@ -211,10 +213,18 @@ export function mergeHomepageAuctions({
     merged.push(item);
   };
 
-  extractActiveList(domains).map(normalizeDomainAuction).filter(Boolean).forEach(add);
-  extractActiveList(ventures).map(normalizeVentureAuction).filter(Boolean).forEach(add);
-  extractActiveList(community).map(normalizeCommunityAuction).filter(Boolean).forEach(add);
-  extractActiveList(software).map(normalizeSoftwareAuction).filter(Boolean).forEach(add);
+  extractActiveList(domains).map((row) => (
+    row?.category === 'domain' ? row : normalizeDomainAuction(row)
+  )).filter(Boolean).forEach(add);
+  extractActiveList(ventures).map((row) => (
+    row?.category === 'venture' ? row : normalizeVentureAuction(row)
+  )).filter(Boolean).forEach(add);
+  extractActiveList(community).map((row) => (
+    row?.category === 'community' ? row : normalizeCommunityAuction(row)
+  )).filter(Boolean).forEach(add);
+  extractActiveList(software).map((row) => (
+    row?.category === 'technology' ? row : normalizeSoftwareAuction(row)
+  )).filter(Boolean).forEach(add);
 
   return merged.sort((a, b) => {
     const endA = Date.parse(a.endTime || '') || Number.MAX_SAFE_INTEGER;

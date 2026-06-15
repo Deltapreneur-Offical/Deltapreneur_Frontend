@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Handshake, Clock, CircleDot } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Handshake, Gavel, Search, ChevronDown, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   auctionAPI,
   ventureAPI,
+  ventureAuctionAPI,
   communityAuctionAPI,
   softwareAuctionAPI,
 } from '../api/services';
@@ -19,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/domainDisplay';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
+import '../styles/auctions-page.css';
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
   return (
@@ -29,13 +31,6 @@ function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contai
       className={`${className} transition-all duration-200 ${selected ? 'brightness-0 invert' : ''}`}
     />
   );
-}
-
-function AuctionTabIcon({ icon, lucideIcon: Lucide, prefix, selected }) {
-  if (icon) return <AuctionCategoryIcon src={icon} selected={selected} />;
-  if (Lucide) return <Lucide className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden />;
-  if (prefix) return <span aria-hidden>{prefix}</span>;
-  return null;
 }
 
 const toNum = (value, fallback = 0) => {
@@ -171,7 +166,85 @@ function useCountdown(endTime) {
   return { timeLeft, isUrgent };
 }
 
-const SECTION_IDS = new Set(['all', 'domains', 'community', 'technology']);
+function AuctionFilterSelect({ label, value, onChange, options }) {
+  return (
+    <div className="auctions-page-select-wrap">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="auctions-page-select"
+        aria-label={label}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="auctions-page-select-chevron" size={16} strokeWidth={2.25} aria-hidden />
+    </div>
+  );
+}
+
+const getAuctionPrice = (auction) => {
+  const highest = toNum(auction.currentHighestBid, 0);
+  const min = toNum(auction.minBidPrice, 0);
+  return highest > 0 ? highest : min;
+};
+
+const getAuctionEndMs = (auction) => {
+  const end = parseAuctionDate(auction.endTime);
+  return end ? end.getTime() : Number.MAX_SAFE_INTEGER;
+};
+
+const sortAuctionList = (list, sortBy) => {
+  if (sortBy === 'default' || !list.length) return list;
+  const sorted = [...list];
+  if (sortBy === 'ending_soon') {
+    sorted.sort((a, b) => getAuctionEndMs(a) - getAuctionEndMs(b));
+  } else if (sortBy === 'price_asc') {
+    sorted.sort((a, b) => getAuctionPrice(a) - getAuctionPrice(b));
+  } else if (sortBy === 'price_desc') {
+    sorted.sort((a, b) => getAuctionPrice(b) - getAuctionPrice(a));
+  }
+  return sorted;
+};
+
+const SECTION_IDS = new Set(['all', 'ventures', 'domains', 'community', 'technology']);
+
+const matchesAuctionSearch = (auction, query) => {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return true;
+
+  if (auction.venture) {
+    const brand = auction.venture.brandDetails || {};
+    const haystack = [brand.brandName, brand.industry].filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(q);
+  }
+
+  if (auction.domain) {
+    return resolveAuctionDomainTitle(auction).toLowerCase().includes(q);
+  }
+
+  if (auction.software || auction.auctionTitle || auction.name) {
+    const software = auction.software || {};
+    const haystack = [
+      auction.auctionTitle,
+      auction.name,
+      software.name,
+      auction.category,
+      software.category,
+    ].filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(q);
+  }
+
+  const community = auction.community || {};
+  const haystack = [
+    auction.auctionTitle,
+    community.name,
+    auction.workType,
+    auction.auctionSkills,
+  ].filter(Boolean).join(' ').toLowerCase();
+  return haystack.includes(q);
+};
 
 export default function AuctionsPage() {
   const { t } = useTranslation();
@@ -184,6 +257,8 @@ export default function AuctionsPage() {
   const [loading, setLoading]   = useState(true);
   const [section, setSection]   = useState('all'); // all | ventures | domains | community | technology
   const [filter, setFilter]     = useState('all'); // all | ending_soon | no_bids
+  const [sortBy, setSortBy]     = useState('default');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fromUrl = searchParams.get('section');
@@ -196,19 +271,39 @@ export default function AuctionsPage() {
     setLoading(true);
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
+      ventureAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
+      fetchAllListPages((params) => ventureAPI.getAll(params))
+        .then((rows) => rows
+          .map(normalizeListedVentureAuction)
+          .filter(Boolean))
+        .catch(() => []),
+      ventureAPI.getMyVentures()
+        .then(({ data }) => asArray(data)
+          .map(normalizeListedVentureAuction)
+          .filter(Boolean))
+        .catch(() => []),
       communityAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
       softwareAuctionAPI.getActive()
         .then(({ data }) => extractActiveList(data).map(normalizeSoftwareAuction))
         .catch(() => []),
-    ]).then(([domains, community, software]) => {
+    ]).then(([domains, activeVentures, allListedVentures, myListedVentures, community, software]) => {
+      const mergedVentures = new Map();
+      activeVentures.forEach((a) => mergedVentures.set(String(a.id), a));
+      allListedVentures.forEach((a) => {
+        if (!mergedVentures.has(String(a.id))) mergedVentures.set(String(a.id), a);
+      });
+      myListedVentures.forEach((a) => {
+        if (!mergedVentures.has(String(a.id))) mergedVentures.set(String(a.id), a);
+      });
       setDomainAuctions(domains);
-      setVentureAuctions([]);
+      setVentureAuctions(Array.from(mergedVentures.values()).filter(isVisibleVentureAuction));
       setCommunityAuctions(community);
       setSoftwareAuctions(software);
     }).finally(() => setLoading(false));
   }, []);
 
   const applyFilter = (list) => list.filter(a => {
+    if (!matchesAuctionSearch(a, searchQuery)) return false;
     if (filter === 'ending_soon') {
       const { timeLeft } = formatCountdown(a.endTime);
       if (timeLeft === 'Ended' || timeLeft === 'Awaiting schedule' || timeLeft === '—') {
@@ -222,91 +317,189 @@ export default function AuctionsPage() {
     return true;
   });
 
-  const shownDomains    = (section === 'ventures' || section === 'community' || section === 'technology') ? [] : applyFilter(domainAuctions);
-  const shownVentures   = (section === 'domains' || section === 'community' || section === 'technology') ? [] : applyFilter(ventureAuctions);
-  const shownCommunity  = (section === 'ventures' || section === 'domains' || section === 'technology') ? [] : applyFilter(communityAuctions);
-  const shownSoftware   = (section === 'ventures' || section === 'domains' || section === 'community') ? [] : applyFilter(softwareAuctions);
-  const totalLive       = domainAuctions.length + communityAuctions.length + softwareAuctions.length;
+  const shownDomains    = sortAuctionList((section === 'ventures' || section === 'community' || section === 'technology') ? [] : applyFilter(domainAuctions), sortBy);
+  const shownVentures   = sortAuctionList((section === 'domains' || section === 'community' || section === 'technology') ? [] : applyFilter(ventureAuctions), sortBy);
+  const shownCommunity  = sortAuctionList((section === 'ventures' || section === 'domains' || section === 'technology') ? [] : applyFilter(communityAuctions), sortBy);
+  const shownSoftware   = sortAuctionList((section === 'ventures' || section === 'domains' || section === 'community') ? [] : applyFilter(softwareAuctions), sortBy);
+  const totalLive       = domainAuctions.length + ventureAuctions.length + communityAuctions.length + softwareAuctions.length;
+  const totalShown      = shownDomains.length + shownVentures.length + shownCommunity.length + shownSoftware.length;
+  const hasActiveFilters = section !== 'all' || filter !== 'all' || sortBy !== 'default' || searchQuery.trim().length > 0;
+
+  const categoryOptions = useMemo(() => ([
+    { value: 'all', label: 'Category' },
+    { value: 'ventures', label: `Ventures (${ventureAuctions.length})` },
+    { value: 'domains', label: `Domains (${domainAuctions.length})` },
+    { value: 'technology', label: `Technology (${softwareAuctions.length})` },
+    { value: 'community', label: `Creators (${communityAuctions.length})` },
+  ]), [ventureAuctions.length, domainAuctions.length, softwareAuctions.length, communityAuctions.length]);
+
+  const statusOptions = useMemo(() => ([
+    { value: 'all', label: 'Status' },
+    { value: 'ending_soon', label: 'Ending Soon' },
+    { value: 'no_bids', label: 'No Bids Yet' },
+  ]), []);
+
+  const sortOptions = useMemo(() => ([
+    { value: 'default', label: 'Sort by' },
+    { value: 'ending_soon', label: 'Ending Soon First' },
+    { value: 'price_asc', label: 'Price: Low to High' },
+    { value: 'price_desc', label: 'Price: High to Low' },
+  ]), []);
+
+  const clearAllFilters = () => {
+    setSection('all');
+    setFilter('all');
+    setSortBy('default');
+    setSearchQuery('');
+    navigate('/auctions', { replace: true });
+  };
+
+  const handleCategoryChange = (value) => {
+    setSection(value);
+    navigate(value === 'all' ? '/auctions' : `/auctions?section=${value}`, { replace: true });
+  };
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Live Auctions</h1>
-            <p className="text-gray-600 mt-1">
-              {totalLive > 0
-                ? `${totalLive} auction${totalLive !== 1 ? 's' : ''} live right now`
-                : 'No live auctions at the moment'}
-            </p>
+      <div className="auctions-page">
+        <div className="auctions-page-toolbar">
+          <div className="auctions-page-toolbar-top">
+            <div className="auctions-page-hero-main">
+              <div className="auctions-page-hero-icon" aria-hidden>
+                <Gavel className="w-[1.15rem] h-[1.15rem]" strokeWidth={2} />
+              </div>
+              <div className="auctions-page-hero-copy">
+                <div className="auctions-page-title-row">
+                  <h1 className="font-display text-3xl font-bold text-gray-900">Live Auctions</h1>
+                  {totalLive > 0 && (
+                    <span className="auctions-page-live-badge" aria-hidden>
+                      <span className="auctions-page-live-dot" />
+                      Live
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600">
+                  {totalLive > 0
+                    ? `${totalLive} auction${totalLive !== 1 ? 's' : ''} live right now`
+                    : 'No live auctions at the moment'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="auctions-page-toolbar-divider" aria-hidden />
+
+          <div className="auctions-page-controls">
+            <div className="auctions-page-search">
+              <Search className="auctions-page-search-icon w-4 h-4" strokeWidth={2} aria-hidden />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search auctions..."
+                className="auctions-page-search-input"
+                aria-label="Search auctions"
+              />
+            </div>
+
+            <AuctionFilterSelect
+              label="Category"
+              value={section}
+              onChange={handleCategoryChange}
+              options={categoryOptions}
+            />
+
+            <AuctionFilterSelect
+              label="Status"
+              value={filter}
+              onChange={setFilter}
+              options={statusOptions}
+            />
+
+            <AuctionFilterSelect
+              label="Sort by"
+              value={sortBy}
+              onChange={setSortBy}
+              options={sortOptions}
+            />
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="auctions-page-clear-filters"
+                onClick={clearAllFilters}
+              >
+                <X size={14} strokeWidth={2.25} aria-hidden />
+                Clear filters
+              </button>
+            )}
           </div>
         </div>
 
-        {/* ── Section tabs ── */}
-        <div className="flex gap-2 mb-3 flex-wrap">
-          {[
-            { id: 'all', label: `All (${totalLive})` },
-            { id: 'domains', label: `Domains (${domainAuctions.length})`, icon: DomainsIcon },
-            { id: 'technology', label: `Technology (${softwareAuctions.length})`, icon: TechnologyIcon },
-            { id: 'community', label: `Creators (${communityAuctions.length})`, icon: CreatorIcon },
-          ].map(t => (
-            <button key={t.id}
-              className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => {
-                setSection(t.id);
-                navigate(t.id === 'all' ? '/auctions' : `/auctions?section=${t.id}`, { replace: true });
-              }}>
-              <AuctionTabIcon icon={t.icon} lucideIcon={t.lucideIcon} prefix={t.prefix} selected={section === t.id} />
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Sub-filter tabs ── */}
-        <div className="flex gap-2 mb-6">
-          {[
-            { id: 'all', label: 'All' },
-            { id: 'ending_soon', label: 'Ending Soon', lucideIcon: Clock },
-            { id: 'no_bids', label: 'No Bids Yet', lucideIcon: CircleDot },
-          ].map(t => (
-            <button key={t.id}
-              className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setFilter(t.id)}>
-              <AuctionTabIcon lucideIcon={t.lucideIcon} selected={filter === t.id} />
-              {t.label}
-            </button>
-          ))}
-        </div>
+        {!loading && totalShown > 0 && hasActiveFilters && (
+          <p className="auctions-page-results-note">
+            Showing {totalShown} auction{totalShown !== 1 ? 's' : ''}
+            {searchQuery.trim() ? ` matching “${searchQuery.trim()}”` : ''}
+          </p>
+        )}
 
         {loading ? (
           <PageContentSkeleton variant="cards" rows={6} />
-        ) : (shownDomains.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
-          <div className="text-center py-20">
+        ) : (shownDomains.length === 0 && shownVentures.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
+          <div className="auctions-page-empty">
             <div className="mb-4 flex justify-center">
               <img src={AuctionImg} alt="Auction" className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
               {section === 'technology'
                 ? 'No live technology auctions'
-                : 'No auctions match your filters'}
+                : searchQuery.trim()
+                  ? 'No auctions match your search'
+                  : 'No auctions match your filters'}
             </h3>
             <p className="text-gray-600 mb-6">
               {section === 'technology'
                 ? 'Approved technology listings appear here once their auction is active. Check Technology after admin verification.'
-                : 'Check back soon — new auctions go live regularly.'}
+                : searchQuery.trim()
+                  ? 'Try a different keyword or clear your search to see all live auctions.'
+                  : 'Check back soon — new auctions go live regularly.'}
             </p>
-            {(section !== 'all' || filter !== 'all') && (
-              <button className="btn-glow btn-glow-sm" onClick={() => { setSection('all'); setFilter('all'); }}>
+            {hasActiveFilters && (
+              <button className="btn-glow btn-glow-sm" type="button" onClick={clearAllFilters}>
                 View All Auctions
               </button>
             )}
           </div>
         ) : (
           <>
+            {/* ── Venture Auctions section ── */}
+            {shownVentures.length > 0 && (
+              <div className="auctions-page-section-block mb-8">
+                <div className="auctions-page-section-head">
+                  <h2 className="text-base font-bold text-purple-600 m-0 inline-flex items-center gap-2">
+                    <Handshake className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden />
+                    Venture Auctions
+                  </h2>
+                  <span className="text-xs text-gray-500 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full font-semibold">
+                    {shownVentures.length} live
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {shownVentures.map(auction => (
+                    <VentureAuctionCard
+                      key={auction.id}
+                      auction={auction}
+                      onClick={() => navigate(`/venture-auction/${auction.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── Domain Auctions section ── */}
             {shownDomains.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="auctions-page-section-block mb-8">
+                <div className="auctions-page-section-head">
                   <h2 className="text-base font-bold text-blue-600 m-0 inline-flex items-center gap-2">
                     <AuctionCategoryIcon src={DomainsIcon} className="w-5 h-5 object-contain" />
                     Domain Auctions
@@ -329,8 +522,8 @@ export default function AuctionsPage() {
 
             {/* ── Technology Auctions section ── */}
             {shownSoftware.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="auctions-page-section-block mb-8">
+                <div className="auctions-page-section-head">
                   <h2 className="text-base font-bold text-indigo-600 m-0 inline-flex items-center gap-2">
                     <AuctionCategoryIcon src={TechnologyIcon} className="w-5 h-5 object-contain" />
                     Technology Auctions
@@ -353,8 +546,8 @@ export default function AuctionsPage() {
 
             {/* ── Creator Profile Auctions section ── */}
             {shownCommunity.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="auctions-page-section-block mb-8">
+                <div className="auctions-page-section-head">
                   <h2 className="text-base font-bold text-teal-600 m-0 inline-flex items-center gap-2">
                     <AuctionCategoryIcon src={CreatorIcon} className="w-5 h-5 object-contain" />
                     Creator Profiles

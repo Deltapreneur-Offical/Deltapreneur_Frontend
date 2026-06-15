@@ -1,10 +1,10 @@
-import logoGreen from '../../assets/Cobrother_Green.png';
 import logoBlack from '../../assets/Cobrother_logo.png';
+import '../../styles/auth.css';
 
 function BackIcon() {
   return (
     <svg
-      className="auth-back-icon"
+      className="auth-page__back-icon"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -24,84 +24,49 @@ export default function AuthShell({
   onBack,
   children,
   footer,
-  brandTagline,
-  brandBullets = [],
   headerActions,
 }) {
   return (
-    <div className="auth-split">
-      <aside className="auth-split-brand" aria-hidden="false">
-        <div className="auth-split-brand-inner">
+    <div className="auth-page">
+      <div className="auth-page__glow auth-page__glow--top" aria-hidden />
+      <div className="auth-page__glow auth-page__glow--bottom" aria-hidden />
+
+      <main className="auth-page__card">
+        <div className="auth-page__toolbar">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="auth-page__back"
+              aria-label="Go back"
+            >
+              <BackIcon />
+              <span>Back</span>
+            </button>
+          ) : (
+            <span aria-hidden />
+          )}
+
           <img
-            src={logoGreen}
+            src={logoBlack}
             alt="CoBrother"
-            className="auth-split-brand-logo"
+            className="auth-page__logo"
           />
-          {brandTagline && (
-            <p className="auth-split-brand-tagline">{brandTagline}</p>
-          )}
-          <div className="auth-split-brand-divider" aria-hidden />
-          {brandBullets.length > 0 && (
-            <ul className="auth-split-brand-list">
-              {brandBullets.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          )}
-          <p className="auth-split-brand-footer">
-            Trusted by entrepreneurs and domain investors across India.
-          </p>
-        </div>
-      </aside>
 
-      <div className="auth-split-form">
-        <div className="auth-split-form-inner">
-          {headerActions && (
-            <div className="auth-split-form-actions">
-              {headerActions}
-            </div>
-          )}
-          <div className="auth-split-mobile-bar">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="auth-back-btn"
-                aria-label="Go back"
-              >
-                <BackIcon />
-              </button>
-            )}
-            <img
-              src={logoBlack}
-              alt="CoBrother"
-              className="auth-split-mobile-logo"
-            />
+          <div className="auth-page__toolbar-end">
+            {headerActions || null}
           </div>
-
-          <div className="auth-split-form-header">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="auth-back-btn auth-back-btn--desktop"
-                aria-label="Go back"
-              >
-                <BackIcon />
-                <span>Back</span>
-              </button>
-            )}
-            <div className="auth-split-form-titles">
-              <h1 className="auth-split-title">{title}</h1>
-              {subtitle && <p className="auth-split-subtitle">{subtitle}</p>}
-            </div>
-          </div>
-
-          <div className="auth-split-form-body">{children}</div>
-
-          {footer && <div className="auth-split-footer">{footer}</div>}
         </div>
-      </div>
+
+        <header className="auth-page__header">
+          <h1 className="auth-page__title">{title}</h1>
+          {subtitle ? <p className="auth-page__subtitle">{subtitle}</p> : null}
+        </header>
+
+        <div className="auth-page__content">{children}</div>
+
+        {footer ? <footer className="auth-page__footer">{footer}</footer> : null}
+      </main>
     </div>
   );
 }

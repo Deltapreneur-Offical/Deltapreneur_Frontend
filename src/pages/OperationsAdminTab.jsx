@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck } from 'lucide-react';
+import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 import OperationsAdminPartitionTabs from '../components/operations/OperationsAdminPartitionTabs';
 import OperationsContactModal from '../components/operations/OperationsContactModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
@@ -148,7 +148,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   const showNotice = useCallback((message, type = 'success') => {
     if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
     setNotice({ message, type });
-    noticeTimerRef.current = setTimeout(() => setNotice(null), 4000);
+    noticeTimerRef.current = setTimeout(() => setNotice(null), 5000);
   }, []);
 
   const loadRequests = useCallback(async () => {
@@ -252,15 +252,40 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     }
   };
 
-  const handleSaved = (saveMode) => {
+  const handleSaved = (saveMode, meta = {}) => {
     onRefresh?.();
+    const isComplianceSection = meta.sectionId === 'compliance';
+    const sectionLabel = isComplianceSection
+      ? t('operationsSectionCompliances', { defaultValue: 'Compliance service' })
+      : t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance role' });
+    const name = meta.name ? `"${meta.name}"` : '';
+
     if (saveMode === 'add') {
-      showNotice(t('adminOperationsAddedSuccess', { defaultValue: 'Role added successfully.' }));
+      showNotice(
+        t('adminOperationsAddedSuccessSection', {
+          section: sectionLabel,
+          name,
+          defaultValue: '{{section}} {{name}} added successfully.',
+        }),
+      );
       return;
     }
     if (saveMode === 'edit') {
-      showNotice(t('adminOperationsUpdatedSuccess', { defaultValue: 'Role updated successfully.' }));
+      showNotice(
+        t('adminOperationsUpdatedSuccessSection', {
+          section: sectionLabel,
+          name,
+          defaultValue: '{{section}} {{name}} updated successfully.',
+        }),
+      );
     }
+  };
+
+  const handleSaveError = (message) => {
+    showNotice(
+      message || t('adminOperationsSaveFailed', { defaultValue: 'Failed to save changes.' }),
+      'error',
+    );
   };
 
   const handleRequestStatus = async (row, status) => {
@@ -387,12 +412,15 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
       />
 
       {notice && (
-        <div
-          className={`operations-admin-toast operations-admin-toast--${notice.type}`}
-          role="status"
-          aria-live="polite"
-        >
-          {notice.message}
+        <div className="operations-admin-notice-stack" role="status" aria-live="polite">
+          <div className={`operations-admin-notice operations-admin-notice--${notice.type}`}>
+            {notice.type === 'error' ? (
+              <AlertCircle className="operations-admin-notice-icon" aria-hidden />
+            ) : (
+              <CheckCircle2 className="operations-admin-notice-icon" aria-hidden />
+            )}
+            <span>{notice.message}</span>
+          </div>
         </div>
       )}
 
@@ -723,6 +751,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
           sectionId={modal.sectionId}
           onClose={() => setModal(null)}
           onSaved={handleSaved}
+          onError={handleSaveError}
         />
       )}
 

@@ -55,6 +55,7 @@ export default function OperationRoleModal({
   record,
   onClose,
   onSaved,
+  onError,
   defaultServiceType = 'virtual_assistance',
   lockServiceType = false,
   sectionId = 'assistance',
@@ -123,14 +124,16 @@ export default function OperationRoleModal({
     try {
       if (mode === 'edit' && record?.id) {
         await operationsAdminAPI.update(record.id, payload);
-        onSaved('edit');
+        onSaved?.('edit', { sectionId, name: payload.name });
       } else {
         await operationsAdminAPI.create(payload);
-        onSaved('add');
+        onSaved?.('add', { sectionId, name: payload.name });
       }
       onClose();
     } catch (err) {
-      alert(readApiError(err) || t('adminOperationsSaveFailed', { defaultValue: 'Failed to save role.' }));
+      onError?.(
+        readApiError(err) || t('adminOperationsSaveFailed', { defaultValue: 'Failed to save changes.' }),
+      );
     } finally {
       setLoading(false);
     }
@@ -298,8 +301,15 @@ export default function OperationRoleModal({
           </div>
 
           <div className="operations-role-modal-actions">
-            <button type="submit" className="btn-primary operations-role-modal-submit" disabled={loading}>
-              {loading ? '…' : t('adminOperationsSaveChanges', { defaultValue: 'Save Changes' })}
+            <button type="submit" className="btn-primary operations-role-modal-submit" disabled={loading} aria-busy={loading}>
+              {loading ? (
+                <>
+                  <span className="btn-spinner" aria-hidden />
+                  <span>{t('adminOperationsSaving', { defaultValue: 'Saving…' })}</span>
+                </>
+              ) : (
+                t('adminOperationsSaveChanges', { defaultValue: 'Save Changes' })
+              )}
             </button>
             <button type="button" className="operations-role-modal-cancel" onClick={onClose} disabled={loading}>
               {t('cancel', { defaultValue: 'Cancel' })}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Share2 } from 'lucide-react';
+import { ArrowRight, Share2, MoreVertical, Trash2, Gavel, ShoppingCart, Pencil, CircleUser } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
@@ -66,7 +66,9 @@ export default function TechnologyListingCard({
   const { user } = useAuth();
   const [imgFailed, setImgFailed] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const shareRef = useRef(null);
+  const menuRef = useRef(null);
   const owner = Boolean(user?.id) && (isOwner === true || isTechnologyListingOwner(item, user));
   const isAuction = item.purchaseType === 'AUCTION';
   const showVerificationNotice =
@@ -79,6 +81,7 @@ export default function TechnologyListingCard({
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -103,50 +106,78 @@ export default function TechnologyListingCard({
 
   const stop = (e) => e.stopPropagation();
 
-  const btnPill = 'flex-1 min-w-0 px-3 py-2 text-xs rounded-full transition-colors inline-flex items-center justify-center gap-1';
-  const btnEdit = `${btnPill} bg-white border border-gray-300 text-gray-800 font-semibold hover:bg-gray-50`;
-  const btnRemove = `${btnPill} bg-red-50 border border-red-300 text-red-600 font-bold hover:bg-red-100`;
-  const btnBuy = `${btnPill} bg-gray-950 text-white font-bold border-0 hover:bg-black`;
-  const btnAuction = `${btnPill} bg-gray-100 text-gray-800 border border-gray-200 font-semibold hover:bg-gray-200`;
-  const btnLive = `${btnPill} bg-gray-100 text-gray-800 border border-gray-200 font-semibold hover:bg-gray-200`;
+  const closeMenus = () => {
+    setShareOpen(false);
+    setMenuOpen(false);
+  };
+
+  const runMenuAction = (action) => (e) => {
+    stop(e);
+    closeMenus();
+    action?.();
+  };
+
+  const primaryBtn = 'domain-listing-card__btn domain-listing-card__btn--primary w-full';
+  const statusChip = 'domain-listing-card__btn domain-listing-card__btn--disabled w-full';
+
+  const renderOwnerListingChip = () => {
+    const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
+    let tone = 'live';
+    let statusLabel = t('listingCardYourListingLive', { defaultValue: 'Live on marketplace' });
+
+    if (statusKey === 'SOLD') {
+      tone = 'sold';
+      statusLabel = t('listingCardSold');
+    } else if (showVerificationNotice) {
+      tone = 'pending';
+      statusLabel = t('listingCardVerificationPending');
+    } else if (isAuction) {
+      tone = 'auction';
+      statusLabel = t('listingCardAuction', { defaultValue: 'Auction' });
+    }
+
+    return (
+      <span
+        className={`domain-listing-card__btn domain-listing-card__btn--owner domain-listing-card__btn--owner-${tone} w-full`}
+        aria-label={t('listingCardYourListingAria', {
+          status: statusLabel,
+          defaultValue: 'Your listing — {{status}}',
+        })}
+      >
+        <CircleUser size={14} strokeWidth={2.1} aria-hidden />
+        <span className="domain-listing-card__owner-chip-text">
+          <span className="domain-listing-card__owner-chip-title">
+            {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+          </span>
+          <span className="domain-listing-card__owner-chip-meta">{statusLabel}</span>
+        </span>
+      </span>
+    );
+  };
 
   const shareButton = (
     <div className="relative shrink-0" ref={shareRef}>
       <button
         type="button"
-        className="py-1.5 px-2 bg-gray-100 text-gray-600 text-[10px] font-bold rounded hover:bg-gray-200"
-        onClick={(e) => { stop(e); setShareOpen(!shareOpen); }}
+        className={`domain-listing-card__btn domain-listing-card__btn--icon${shareOpen ? ' is-active' : ''}`}
+        onClick={(e) => { stop(e); setMenuOpen(false); setShareOpen(!shareOpen); }}
         title={t('listingCardShare')}
+        aria-label={t('listingCardShare')}
       >
-        <Share2 size={12} />
+        <Share2 size={14} strokeWidth={2.1} />
       </button>
       {shareOpen && (
-        <div
-          className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
-          onClick={stop}
-        >
-          <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-            <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+        <div className="domain-listing-card__menu domain-listing-card__menu--trailing domain-listing-card__menu--share" onClick={stop}>
+          <div className="domain-listing-card__menu-heading">
+            {t('listingCardShareVia', { defaultValue: 'Share via' })}
           </div>
-          <button
-            type="button"
-            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            onClick={() => handleShare(linkedinShare)}
-          >
+          <button type="button" className="domain-listing-card__menu-item" onClick={() => handleShare(linkedinShare)}>
             {t('listingCardLinkedIn')}
           </button>
-          <button
-            type="button"
-            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-            onClick={() => handleShare(facebookShare)}
-          >
+          <button type="button" className="domain-listing-card__menu-item" onClick={() => handleShare(facebookShare)}>
             {t('listingCardFacebook')}
           </button>
-          <button
-            type="button"
-            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
-            onClick={() => handleShare(whatsappShare)}
-          >
+          <button type="button" className="domain-listing-card__menu-item" onClick={() => handleShare(whatsappShare)}>
             {t('listingCardWhatsApp')}
           </button>
         </div>
@@ -154,92 +185,196 @@ export default function TechnologyListingCard({
     </div>
   );
 
-  const actionButtons = (
-    <div className="flex gap-2 flex-wrap items-stretch" onClick={stop} role="presentation">
-      {owner ? (
-        <>
-          {onEdit && (
-            <button type="button" className={btnEdit} onClick={(e) => { stop(e); onEdit(); }}>
-              {t('edit')}
-            </button>
-          )}
-          <button type="button" className={btnRemove} onClick={(e) => { stop(e); onDelete?.(); }}>
-            {t('remove')}
+  const buildOwnerMenuItems = () => {
+    const items = [];
+    if (onEdit) {
+      items.push({
+        key: 'edit',
+        icon: Pencil,
+        label: t('listingCardEditListing', { defaultValue: 'Edit listing' }),
+        onClick: onEdit,
+      });
+    }
+    if (canRequestTechnologyAuction(item, auctionStatus) && onAuction) {
+      items.push({
+        key: 'auction',
+        icon: Gavel,
+        label: t('listingCardPutToAuction'),
+        onClick: onAuction,
+      });
+    }
+    if ((auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED')
+      && technologyAuctionId(item, auctionStatus)) {
+      items.push({
+        key: 'view-auction',
+        icon: Gavel,
+        label: isTechnologyAuctionLive(item, auctionStatus)
+          ? t('listingCardViewLiveAuction')
+          : t('listingCardViewAuction'),
+        onClick: () => navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`),
+      });
+    }
+    if (onDelete) {
+      items.push({
+        key: 'remove',
+        icon: Trash2,
+        label: t('remove'),
+        danger: true,
+        onClick: onDelete,
+      });
+    }
+    return items;
+  };
+
+  const buildAdminMenuItems = () => {
+    if (!onDelete) return [];
+    return [{
+      key: 'remove',
+      icon: Trash2,
+      label: t('remove'),
+      danger: true,
+      onClick: onDelete,
+    }];
+  };
+
+  const optionsMenu = (items) => {
+    if (!items.length) return null;
+    return (
+      <div className="relative shrink-0" ref={menuRef}>
+        <button
+          type="button"
+          className={`domain-listing-card__btn domain-listing-card__btn--icon${menuOpen ? ' is-active' : ''}`}
+          onClick={(e) => { stop(e); setShareOpen(false); setMenuOpen(!menuOpen); }}
+          aria-label={t('listingCardOptions', { defaultValue: 'Options' })}
+          aria-expanded={menuOpen}
+          aria-haspopup="menu"
+        >
+          <MoreVertical size={15} strokeWidth={2.25} />
+        </button>
+        {menuOpen && (
+          <div className="domain-listing-card__menu domain-listing-card__menu--leading" role="menu" onClick={stop}>
+            {items.map(({ key, icon: Icon, label, danger, onClick }) => (
+              <button
+                key={key}
+                type="button"
+                role="menuitem"
+                className={`domain-listing-card__menu-item${danger ? ' domain-listing-card__menu-item--danger' : ''}`}
+                onClick={runMenuAction(onClick)}
+              >
+                <Icon size={14} strokeWidth={2.1} aria-hidden />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderPrimaryAction = () => {
+    if (owner) {
+      if (isTechnologyAuctionPending(item, auctionStatus)) {
+        return (
+          <span className={statusChip}>
+            {t('listingCardAuctionPending')}
+          </span>
+        );
+      }
+      if (isTechnologyAuctionLive(item, auctionStatus) && technologyAuctionId(item, auctionStatus)) {
+        return (
+          <button
+            type="button"
+            className={primaryBtn}
+            onClick={(e) => {
+              stop(e);
+              navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
+            }}
+          >
+            <Gavel size={13} aria-hidden />
+            {t('listingCardViewLiveAuction')}
           </button>
-          {canRequestTechnologyAuction(item, auctionStatus) && onAuction && (
-            <button type="button" className={btnAuction} onClick={() => onAuction()}>
-              {t('listingCardPutToAuction')}
-            </button>
-          )}
-          {isTechnologyAuctionPending(item, auctionStatus) && (
-            <span className={`${btnPill} text-center text-gray-700 bg-gray-100 border border-gray-200 font-semibold`}>
-              {t('listingCardAuctionPending')}
-            </span>
-          )}
-          {(auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED')
-            && technologyAuctionId(item, auctionStatus) && (
-            <button
-              type="button"
-              className={btnLive}
-              onClick={(e) => {
-                stop(e);
-                navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
-              }}
-            >
-              {isTechnologyAuctionLive(item, auctionStatus) ? t('listingCardViewLiveAuction') : t('listingCardViewAuction')}
-            </button>
-          )}
-          {shareButton}
-        </>
-      ) : user?.role === 'ADMIN' ? (
-        <>
-          <button type="button" className={btnRemove} onClick={(e) => { stop(e); onDelete?.(); }}>
-            {t('remove')}
-          </button>
-          {isDirectPurchase(item, auctionStatus) && (
-            <button type="button" className={btnBuy} onClick={(e) => { stop(e); onBuy?.(); }}>
-              {t('listingCardBuyNowArrow')}
-            </button>
-          )}
-          {shareButton}
-        </>
-      ) : isTechnologyAuctionLive(item, auctionStatus) ? (
-        <>
-          {isAuctionBlockedByVerification(item) ? (
-            <span className={`${btnPill} text-center text-gray-700 bg-gray-100 border border-gray-200 font-semibold`}>
-              {t('listingCardVerificationPending')}
-            </span>
-          ) : (
-            <button
-              type="button"
-              className={btnBuy}
-              onClick={(e) => {
-                stop(e);
-                navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
-              }}
-            >
-              {t('listingCardPlaceBid')}
-            </button>
-          )}
-          {shareButton}
-        </>
-      ) : isDirectPurchase(item, auctionStatus) ? (
-        <>
-          <button type="button" className={btnBuy} onClick={(e) => { stop(e); onBuy?.(); }}>
+        );
+      }
+      return renderOwnerListingChip();
+    }
+
+    if (user?.role === 'ADMIN') {
+      if (isDirectPurchase(item, auctionStatus)) {
+        return (
+          <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onBuy?.(); }}>
+            <ShoppingCart size={13} aria-hidden />
             {t('listingCardBuyNowArrow')}
           </button>
-          {shareButton}
-        </>
-      ) : isPurchaseBlockedByVerification(item) ? (
-        <span className={`${btnPill} text-center text-gray-700 bg-gray-100 border border-gray-200 font-semibold`}>
+        );
+      }
+      return null;
+    }
+
+    if (isTechnologyAuctionLive(item, auctionStatus)) {
+      if (isAuctionBlockedByVerification(item)) {
+        return (
+          <span className={statusChip}>
+            {t('listingCardVerificationPending')}
+          </span>
+        );
+      }
+      return (
+        <button
+          type="button"
+          className={primaryBtn}
+          onClick={(e) => {
+            stop(e);
+            navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
+          }}
+        >
+          <Gavel size={13} aria-hidden />
+          {t('listingCardPlaceBid')}
+        </button>
+      );
+    }
+
+    if (isDirectPurchase(item, auctionStatus)) {
+      return (
+        <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onBuy?.(); }}>
+          <ShoppingCart size={13} aria-hidden />
+          {t('listingCardBuyNowArrow')}
+        </button>
+      );
+    }
+
+    if (isPurchaseBlockedByVerification(item)) {
+      return (
+        <span className={statusChip}>
           {t('listingCardVerificationPending')}
         </span>
-      ) : (
-        <>
-          <span className={`${btnPill} text-center text-gray-400 italic font-medium`}>{t('listingCardSold')}</span>
-          {shareButton}
-        </>
-      )}
+      );
+    }
+
+    return (
+      <span className={`${statusChip} italic font-medium`}>
+        {t('listingCardSold')}
+      </span>
+    );
+  };
+
+  const primaryAction = renderPrimaryAction();
+  const ownerMenuItems = owner ? buildOwnerMenuItems() : [];
+  const adminMenuItems = !owner && user?.role === 'ADMIN' ? buildAdminMenuItems() : [];
+  const menuItems = ownerMenuItems.length ? ownerMenuItems : adminMenuItems;
+
+  const actionButtons = (
+    <div className="domain-listing-card__actions-bar" onClick={stop} role="presentation">
+      {menuItems.length > 0 ? (
+        <div className="domain-listing-card__actions-leading">
+          {optionsMenu(menuItems)}
+        </div>
+      ) : null}
+      <div className={`domain-listing-card__actions-primary${primaryAction ? '' : ' domain-listing-card__actions-primary--empty'}`}>
+        {primaryAction}
+      </div>
+      <div className="domain-listing-card__actions-trailing">
+        {shareButton}
+      </div>
     </div>
   );
 

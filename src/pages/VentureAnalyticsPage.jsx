@@ -11,6 +11,8 @@ import VentureSubNav from '../components/venture/VentureSubNav';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 
+import AnalyticsChartTooltip from '../components/analytics/AnalyticsChartTooltip';
+
 const COLORS = ['#c8a96e', '#6ec896', '#6e9ec8', '#c86e6e', '#9ec86e', '#c86ec8', '#6ec8c8', '#c8c86e'];
 
 function normalizeAnalyticsPayload(response) {
@@ -37,23 +39,13 @@ const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
 );
 
 const ChartCard = ({ title, children }) => (
-  <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-    <div className="text-sm font-semibold text-gray-300 mb-5">{title}</div>
+  <div className="analytics-page-charts p-6 bg-white border border-gray-200 rounded-xl">
+    <div className="text-sm font-semibold text-gray-900 mb-5">{title}</div>
     {children}
   </div>
 );
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs">
-      <div className="text-gray-500 mb-1">{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color || '#c8a96e' }}>{p.name}: <strong>{p.value}</strong></div>
-      ))}
-    </div>
-  );
-};
+const CustomTooltip = AnalyticsChartTooltip;
 
 export default function VentureAnalyticsPage() {
   const { t } = useTranslation();

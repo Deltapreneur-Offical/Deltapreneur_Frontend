@@ -282,6 +282,7 @@ export const operationsAPI = {
 };
 
 export const adminAPI = {
+  getDashboard:         ()              => api.get('/api/v1/admin/dashboard'),
   
   getCoVentures:        ()              => api.get('/api/v1/admin/coventures'),
   getVentures:          ()              => api.get('/api/v1/admin/ventures'),

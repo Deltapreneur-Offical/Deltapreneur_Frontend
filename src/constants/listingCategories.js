@@ -56,5 +56,27 @@ export const VENTURE_INDUSTRY_OPTIONS = toCategoryOptions(VENTURE_INDUSTRIES);
 
 export const TECHNOLOGY_CATEGORY_OPTIONS = toCategoryOptions(TECHNOLOGY_CATEGORIES);
 
+export const TECHNOLOGY_CATEGORY_LABELS = {
+  SAAS: 'SaaS',
+  MOBILE_APP: 'Mobile App',
+  DESKTOP: 'Desktop',
+  API_TOOL: 'API Tool',
+  AUTOMATION: 'Automation',
+  ECOMMERCE: 'Ecommerce',
+  EDUCATION: 'Education',
+  OTHER: 'Other',
+  WEB_APP: 'Web App',
+  API: 'API',
+  PLUGIN: 'Plugin',
+  TEMPLATE: 'Template',
+};
+
+export function formatTechnologyCategoryLabel(raw) {
+  if (raw == null || raw === '') return '—';
+  const key = String(typeof raw === 'object' && raw?.value != null ? raw.value : raw).trim();
+  if (!key) return '—';
+  return TECHNOLOGY_CATEGORY_LABELS[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 /** @deprecated Use TECHNOLOGY_CATEGORY_OPTIONS */
 export const COCREATION_CATEGORY_OPTIONS = TECHNOLOGY_CATEGORY_OPTIONS;

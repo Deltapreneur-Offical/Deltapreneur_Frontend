@@ -207,9 +207,9 @@ export default function HomeFooter() {
 
       <div className="relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
+        <div className="home-footer-grid grid w-full grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 md:gap-y-10">
 
-          <div className="flex flex-col items-start justify-start sm:col-span-2 md:col-span-4 lg:col-span-3">
+          <div className="home-footer-logo-col flex flex-col items-start justify-start sm:col-span-2 md:col-span-4">
 
             <Link to="/" className="group mb-4 inline-block">
 
@@ -229,10 +229,8 @@ export default function HomeFooter() {
 
 
 
-          <div className="md:col-span-1 lg:col-span-2">
-
+          <div className="home-footer-nav-col md:col-span-1">
             <h3 className={headingClass}>{t('explore')}</h3>
-
             <nav className="flex flex-col">
 
               <button
@@ -255,8 +253,7 @@ export default function HomeFooter() {
 
 
 
-          <div className="md:col-span-1 lg:col-span-2">
-
+          <div className="home-footer-nav-col md:col-span-1">
             <h3 className={headingClass}>{t('Company')}</h3>
 
             <nav className="flex flex-col">
@@ -285,8 +282,7 @@ export default function HomeFooter() {
 
 
 
-          <div className="md:col-span-1 lg:col-span-2">
-
+          <div className="home-footer-nav-col md:col-span-1">
             <h3 className={headingClass}>{t('legal')}</h3>
 
             <nav className="flex flex-col">
@@ -315,7 +311,7 @@ export default function HomeFooter() {
 
 
 
-          <div className="flex flex-col sm:col-span-2 md:col-span-1 lg:col-span-2">
+          <div className="home-footer-social-col flex flex-col sm:col-span-2 md:col-span-1">
 
             <h3 className={headingClass}>{t('Show us some love')}</h3>
 

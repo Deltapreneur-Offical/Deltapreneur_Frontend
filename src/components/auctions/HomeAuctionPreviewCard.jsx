@@ -49,7 +49,15 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   };
 
   return (
-    <article className="domain-listing-card card-glow-hover domain-listing-card--browse home-preview-browse-card relative flex h-auto w-full flex-col overflow-hidden rounded-3xl bg-white">
+    <article className="domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card relative flex h-auto w-full flex-col overflow-hidden rounded-3xl bg-white">
+      {verified ? (
+        <img
+          src={verifiedIcon}
+          alt=""
+          className="domain-listing-card__verified-icon home-auction-preview-card__verified-icon"
+          aria-hidden
+        />
+      ) : null}
       <div className="domain-listing-card__cover">
         {coverImage ? (
           <img
@@ -63,14 +71,6 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             <span className="domain-listing-card__cover-fallback-domain">{title}</span>
           </div>
         )}
-        {verified ? (
-          <img
-            src={verifiedIcon}
-            alt=""
-            className="domain-listing-card__verified-icon"
-            aria-hidden
-          />
-        ) : null}
         <span
           className={`home-auction-preview-card__category-badge ${categoryMeta.badgeClass}`}
         >

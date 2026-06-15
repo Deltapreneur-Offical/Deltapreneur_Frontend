@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { operationsAdminAPI } from '../../api/services';
 import { OPERATIONS_CATEGORY_OPTIONS } from '../../utils/operationsCategories';
 import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
@@ -137,155 +137,171 @@ export default function OperationRoleModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-card operations-role-modal" style={{ maxWidth: 440 }}>
-        <div className="modal-glow" />
-        <button type="button" className="modal-close" onClick={onClose} aria-label={t('close', { defaultValue: 'Close' })}>
-          ✕
+    <div
+      className="operations-role-modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className={`operations-role-modal ${isCompliance ? 'operations-role-modal--compliance' : 'operations-role-modal--assistance'}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="operations-role-modal-title"
+      >
+        <div className={`operations-role-modal-glow ${isCompliance ? 'operations-role-modal-glow--compliance' : 'operations-role-modal-glow--assistance'}`} />
+
+        <button
+          type="button"
+          className="operations-role-modal-close"
+          onClick={onClose}
+          aria-label={t('close', { defaultValue: 'Close' })}
+        >
+          <X size={18} />
         </button>
 
-        <div className="modal-header">
-          <h2>{t(modalMeta.titleKey, { defaultValue: modalMeta.defaultTitle })}</h2>
+        <div className="operations-role-modal-header">
+          <span className={`operations-role-modal-badge ${isCompliance ? 'operations-role-modal-badge--compliance' : 'operations-role-modal-badge--assistance'}`}>
+            {t(activeSection.labelKey, { defaultValue: activeSection.defaultLabel })}
+          </span>
+          <h2 id="operations-role-modal-title" className="operations-role-modal-title">
+            {t(modalMeta.titleKey, { defaultValue: modalMeta.defaultTitle })}
+          </h2>
         </div>
 
         <form onSubmit={handleSubmit} className="operations-role-modal-form">
-          <div className="form-group">
-            <label className="admin-form-label operations-role-label" htmlFor="ops-role-name">
-              {t('adminOperationsFieldName', { defaultValue: 'ROLE NAME' })}
-            </label>
-            <input
-              id="ops-role-name"
-              type="text"
-              value={form.name}
-              onChange={(e) => setField('name', e.target.value)}
-              placeholder={t(modalMeta.namePlaceholderKey, { defaultValue: modalMeta.defaultNamePlaceholder })}
-            />
-          </div>
-
-          {lockServiceType ? (
-            <div className="form-group">
-              <span className="admin-form-label operations-role-label">
-                {t('adminOperationsFieldServiceType', { defaultValue: 'SERVICE TYPE' })}
-              </span>
-              <span className={`operations-admin-service-type operations-admin-service-type--${form.serviceType}`}>
-                {t(activeSection.labelKey, { defaultValue: activeSection.defaultLabel })}
-              </span>
-            </div>
-          ) : (
-            <div className="form-group">
-              <label className="admin-form-label operations-role-label" htmlFor="ops-role-service-type">
-                {t('adminOperationsFieldServiceType', { defaultValue: 'SERVICE TYPE' })}
+          <div className="operations-role-modal-fields">
+            <div className="operations-role-modal-field operations-role-modal-field--full">
+              <label className="operations-role-modal-label" htmlFor="ops-role-name">
+                {t('adminOperationsFieldName', { defaultValue: 'Role Name' })}
               </label>
-              <div className="operations-admin-select-wrap operations-admin-select-wrap--full">
-                <select
-                  id="ops-role-service-type"
-                  className="operations-admin-select"
-                  value={form.serviceType}
-                  onChange={(e) => {
-                    const nextType = e.target.value;
-                    setForm((prev) => ({
-                      ...prev,
-                      serviceType: nextType,
-                      category: nextType === 'compliance' ? 'compliance' : prev.category === 'compliance' ? 'people' : prev.category,
-                    }));
-                  }}
+              <input
+                id="ops-role-name"
+                type="text"
+                value={form.name}
+                onChange={(e) => setField('name', e.target.value)}
+                placeholder={t(modalMeta.namePlaceholderKey, { defaultValue: modalMeta.defaultNamePlaceholder })}
+                className="operations-role-modal-input"
+              />
+            </div>
+
+            {!lockServiceType && (
+              <div className="operations-role-modal-field operations-role-modal-field--full">
+                <label className="operations-role-modal-label" htmlFor="ops-role-service-type">
+                  {t('adminOperationsFieldServiceType', { defaultValue: 'Service Type' })}
+                </label>
+                <div className="operations-admin-select-wrap operations-admin-select-wrap--full">
+                  <select
+                    id="ops-role-service-type"
+                    className="operations-admin-select operations-role-modal-select"
+                    value={form.serviceType}
+                    onChange={(e) => {
+                      const nextType = e.target.value;
+                      setForm((prev) => ({
+                        ...prev,
+                        serviceType: nextType,
+                        category: nextType === 'compliance' ? 'compliance' : prev.category === 'compliance' ? 'people' : prev.category,
+                      }));
+                    }}
+                  >
+                    {OPERATIONS_SECTIONS.map((section) => (
+                      <option key={section.serviceType} value={section.serviceType}>
+                        {t(section.labelKey, { defaultValue: section.defaultLabel })}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+              </div>
+            )}
+
+            {!isCompliance && (
+              <div className="operations-role-modal-field">
+                <label className="operations-role-modal-label" htmlFor="ops-role-category">
+                  {t('adminOperationsFieldCategory', { defaultValue: 'Category' })}
+                </label>
+                <div className="operations-admin-select-wrap operations-admin-select-wrap--full">
+                  <select
+                    id="ops-role-category"
+                    className="operations-admin-select operations-role-modal-select"
+                    value={form.category}
+                    onChange={(e) => setField('category', e.target.value)}
+                  >
+                    {categoryOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+              </div>
+            )}
+
+            <div className={`operations-role-modal-field ${isCompliance ? 'operations-role-modal-field--full' : ''}`}>
+              <label className="operations-role-modal-label" htmlFor="ops-role-price">
+                {t('adminOperationsFieldPrice', { defaultValue: 'Price (₹)' })}
+              </label>
+              <input
+                id="ops-role-price"
+                type="text"
+                inputMode="numeric"
+                value={form.price}
+                onChange={(e) => setField('price', e.target.value)}
+                placeholder={isCompliance ? '3,000' : '18,999'}
+                className="operations-role-modal-input"
+              />
+              <p className="operations-role-modal-hint">
+                {t(modalMeta.priceHintKey, { defaultValue: modalMeta.defaultPriceHint })}
+              </p>
+            </div>
+
+            <div className="operations-role-modal-field operations-role-modal-field--full">
+              <label className="operations-role-modal-label" htmlFor="ops-role-description">
+                {t('adminOperationsFieldDescription', { defaultValue: 'Description' })}
+              </label>
+              <textarea
+                id="ops-role-description"
+                value={form.description}
+                onChange={(e) => setField('description', e.target.value)}
+                rows={2}
+                placeholder={t('adminOperationsFieldDescriptionPlaceholder', {
+                  defaultValue: 'Short summary shown in the admin table and on the Operations card.',
+                })}
+                className="operations-role-modal-input operations-role-modal-textarea"
+              />
+            </div>
+
+            <div className="operations-role-modal-field operations-role-modal-field--full operations-role-modal-status">
+              <div className="operations-role-modal-status-row">
+                <div>
+                  <span className="operations-role-modal-label">
+                    {t('adminOperationsFieldStatus', { defaultValue: 'Status' })}
+                  </span>
+                  <p className="operations-role-modal-hint operations-role-modal-hint--inline">
+                    {t('adminOperationsStatusHint', {
+                      defaultValue: 'Paused roles are hidden from the primary storefront catalog.',
+                    })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.isAvailable}
+                  className={`admin-feature-switch operations-role-switch ${form.isAvailable ? 'is-on' : ''}`}
+                  onClick={() => setField('isAvailable', !form.isAvailable)}
                 >
-                  {OPERATIONS_SECTIONS.map((section) => (
-                    <option key={section.serviceType} value={section.serviceType}>
-                      {t(section.labelKey, { defaultValue: section.defaultLabel })}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                  <span className="admin-feature-switch-track">
+                    <span className="admin-feature-switch-thumb" />
+                  </span>
+                </button>
               </div>
             </div>
-          )}
-
-          {!isCompliance && (
-            <div className="form-group">
-              <label className="admin-form-label operations-role-label" htmlFor="ops-role-category">
-                {t('adminOperationsFieldCategory', { defaultValue: 'CATEGORY' })}
-              </label>
-              <div className="operations-admin-select-wrap operations-admin-select-wrap--full">
-                <select
-                  id="ops-role-category"
-                  className="operations-admin-select"
-                  value={form.category}
-                  onChange={(e) => setField('category', e.target.value)}
-                >
-                  {categoryOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-              </div>
-            </div>
-          )}
-
-          <div className="form-group">
-            <label className="admin-form-label operations-role-label" htmlFor="ops-role-description">
-              {t('adminOperationsFieldDescription', { defaultValue: 'DESCRIPTION' })}
-            </label>
-            <textarea
-              id="ops-role-description"
-              value={form.description}
-              onChange={(e) => setField('description', e.target.value)}
-              rows={3}
-              placeholder={t('adminOperationsFieldDescriptionPlaceholder', {
-                defaultValue: 'Short summary shown in the admin table and on the Operations card.',
-              })}
-              style={{ resize: 'vertical' }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="admin-form-label operations-role-label" htmlFor="ops-role-price">
-              {t('adminOperationsFieldPrice', { defaultValue: 'PRICE (₹)' })}
-            </label>
-            <input
-              id="ops-role-price"
-              type="text"
-              inputMode="numeric"
-              value={form.price}
-              onChange={(e) => setField('price', e.target.value)}
-              placeholder={isCompliance ? '3,000' : '18,999'}
-            />
-            <p className="operations-role-status-hint">
-              {t(modalMeta.priceHintKey, { defaultValue: modalMeta.defaultPriceHint })}
-            </p>
-          </div>
-
-          <div className="form-group operations-role-status-group">
-            <div className="operations-role-status-row">
-              <span className="admin-form-label operations-role-label">
-                {t('adminOperationsFieldStatus', { defaultValue: 'STATUS' })}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.isAvailable}
-                className={`admin-feature-switch operations-role-switch ${form.isAvailable ? 'is-on' : ''}`}
-                onClick={() => setField('isAvailable', !form.isAvailable)}
-              >
-                <span className="admin-feature-switch-track">
-                  <span className="admin-feature-switch-thumb" />
-                </span>
-              </button>
-            </div>
-            <p className="operations-role-status-hint">
-              {t('adminOperationsStatusHint', {
-                defaultValue: 'Paused roles are hidden from the primary storefront catalog.',
-              })}
-            </p>
           </div>
 
           <div className="operations-role-modal-actions">
-            <button type="submit" className="btn-primary" disabled={loading}>
+            <button type="submit" className="btn-primary operations-role-modal-submit" disabled={loading}>
               {loading ? '…' : t('adminOperationsSaveChanges', { defaultValue: 'Save Changes' })}
             </button>
-            <button type="button" className="btn-ghost" onClick={onClose} disabled={loading}>
+            <button type="button" className="operations-role-modal-cancel" onClick={onClose} disabled={loading}>
               {t('cancel', { defaultValue: 'Cancel' })}
             </button>
           </div>

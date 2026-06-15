@@ -2,21 +2,44 @@ name: Automated Deploy to Lightsail
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: SSH into Lightsail and Deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd ~/projects/CoBrother_Frontend
-          git pull origin main
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies & Build
+        run: |
           npm install
-          VITE_API_URL=https://backend.cobrother.com npm run build
-          sudo systemctl restart nginx
+          npm run build
+
+      - name: Sync Production Files to Lightsail
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "dist/*"
+          target: "/home/ubuntu/projects/CoBrother_Frontend/"
+
+      - name: Restart Nginx Web Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            sudo systemctl restart nginx

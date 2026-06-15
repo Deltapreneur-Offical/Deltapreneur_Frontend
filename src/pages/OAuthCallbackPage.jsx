@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { resolveOAuthCallbackNavigation } from '../utils/authSession';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
+import '../styles/auth.css';
 
 /**
  * OAuth success redirects here:
@@ -94,9 +95,11 @@ export default function OAuthCallbackPage() {
   }, [login, navigate, params, refreshUser]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-indigo-50 text-purple-600 gap-6">
-      <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-      <p className="text-gray-500 font-body">{t('oauthCompletingSignIn')}</p>
+    <div className="auth-page auth-page--loading">
+      <div className="auth-page__glow auth-page__glow--top" aria-hidden />
+      <div className="auth-page__glow auth-page__glow--bottom" aria-hidden />
+      <div className="auth-page__spinner" aria-hidden />
+      <p>{t('oauthCompletingSignIn')}</p>
     </div>
   );
 }

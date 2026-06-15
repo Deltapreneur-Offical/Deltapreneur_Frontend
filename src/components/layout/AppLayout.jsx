@@ -133,11 +133,13 @@ export default function AppLayout({ children }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifLoading, setNotifLoading] = useState(false);
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const bellRef = useRef(null);
   const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
+  const notifFetchRef = useRef(0);
 
   const updateNotifPanelPosition = useCallback(() => {
     const anchor = bellRef.current;
@@ -244,18 +246,29 @@ export default function AppLayout({ children }) {
     localStorage.setItem('sidebarCollapsed', sidebarCollapsed.toString());
   }, [sidebarCollapsed]);
 
-  const handleBellOpen = async () => {
+  const handleBellOpen = () => {
     const opening = !bellOpen;
-    if (opening && userId) {
-      try {
-        const items = unwrapApiList(await notificationAPI.getRecent());
-        setNotifications(items);
-        await refreshUnreadCount();
-      } catch {
-        // keep existing panel state
-      }
-    }
     setBellOpen(opening);
+
+    if (!opening || !userId) return;
+
+    const fetchId = ++notifFetchRef.current;
+    setNotifLoading(true);
+
+    Promise.all([
+      notificationAPI.getRecent().then((response) => unwrapApiList(response)),
+      refreshUnreadCount(),
+    ])
+      .then(([items]) => {
+        if (fetchId !== notifFetchRef.current) return;
+        setNotifications(items);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (fetchId === notifFetchRef.current) {
+          setNotifLoading(false);
+        }
+      });
   };
 
   const handleMarkAllRead = async () => {
@@ -264,15 +277,15 @@ export default function AppLayout({ children }) {
     setUnreadCount(0);
   };
 
-  const handleNotificationClick = async (notification) => {
+  const handleNotificationClick = (notification) => {
     if (!notification.read) {
-      await notificationAPI.markOneRead(notification.id);
       setNotifications((items) =>
         items.map((item) =>
           item.id === notification.id ? { ...item, read: true } : item,
         ),
       );
       setUnreadCount((count) => Math.max(0, count - 1));
+      notificationAPI.markOneRead(notification.id).catch(() => {});
     }
     setBellOpen(false);
     if (notification.link) navigate(notification.link);
@@ -601,7 +614,11 @@ export default function AppLayout({ children }) {
                       )}
                     </div>
                     <div className="max-h-[min(380px,calc(100vh-8rem))] overflow-y-auto">
-                      {notifications.length === 0 ? (
+                      {notifLoading && notifications.length === 0 ? (
+                        <div className="py-8 px-4 text-center text-gray-500 text-sm">
+                          {t('loading', { defaultValue: 'Loading…' })}
+                        </div>
+                      ) : notifications.length === 0 ? (
                         <div className="py-8 px-4 text-center text-gray-500 text-sm">
                           {t('noNotificationsYet')}
                         </div>

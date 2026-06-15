@@ -162,12 +162,6 @@ export default function RegisterPage() {
           : t('registerOtpSubtitle', 'Enter the verification code sent to your email.')
       }
       onBack={() => navigate('/')}
-      brandTagline={t('loginBrandTagline')}
-      brandBullets={[
-        t('loginBrandBullet1'),
-        t('loginBrandBullet2'),
-        t('loginBrandBullet3'),
-      ]}
       footer={(
         <>
           <span>{t('alreadyHaveAccount')} </span>

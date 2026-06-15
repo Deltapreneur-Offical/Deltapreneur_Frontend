@@ -267,12 +267,6 @@ export default function LoginPage() {
       title={t('welcomeToCoBrother')}
       subtitle={t('loginSubtitle')}
       onBack={() => navigate('/')}
-      brandTagline={t('loginBrandTagline')}
-      brandBullets={[
-        t('loginBrandBullet1'),
-        t('loginBrandBullet2'),
-        t('loginBrandBullet3'),
-      ]}
       footer={(
         <>
           <span>{t('dontHaveAccount')} </span>

@@ -1,8 +1,33 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback, useContext, useMemo, useRef, createContext } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Calendar, Headset } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  Briefcase,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Cpu,
+  FileQuestion,
+  Filter,
+  Gauge,
+  Globe,
+  Headset,
+  Inbox,
+  Info,
+  LayoutDashboard,
+  Package,
+  RefreshCw,
+  Search,
+  Sparkles,
+  UsersRound,
+  X,
+  XCircle,
+} from 'lucide-react';
 import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
@@ -20,6 +45,7 @@ import OperationsAdminTab from './OperationsAdminTab';
 import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
+import { unwrapApiData } from '../utils/apiResponse';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
@@ -122,10 +148,263 @@ const STATUS_COLORS = {
   CANCELLED:         '#4b5563',
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Inline toast notifications (replaces alert() on in-scope admin actions).
+// Lives inside this file so no new component/folder is created.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const AdminToastContext = createContext(null);
+
+const ADMIN_TOAST_TONE = {
+  success: { Icon: CheckCircle2, border: 'border-emerald-200', iconColor: 'text-emerald-600', text: 'text-emerald-900' },
+  error:   { Icon: XCircle,      border: 'border-red-200',     iconColor: 'text-red-600',     text: 'text-red-900' },
+  info:    { Icon: Info,         border: 'border-indigo-200',  iconColor: 'text-indigo-600',  text: 'text-gray-900' },
+};
+
+function AdminToastStack({ toasts, onDismiss }) {
+  if (!toasts.length) return null;
+  return (
+    <div
+      className="fixed right-4 top-4 z-[1100] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2"
+      role="region"
+      aria-label="Notifications"
+    >
+      {toasts.map((toast) => {
+        const tone = ADMIN_TOAST_TONE[toast.type] || ADMIN_TOAST_TONE.info;
+        const Icon = tone.Icon;
+        return (
+          <div
+            key={toast.id}
+            role={toast.type === 'error' ? 'alert' : 'status'}
+            className={`flex items-start gap-3 rounded-xl border ${tone.border} bg-white p-3 text-sm shadow-lg ring-1 ring-black/5`}
+          >
+            <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone.iconColor}`} aria-hidden />
+            <p className={`min-w-0 flex-1 leading-5 ${tone.text}`}>{toast.message}</p>
+            <button
+              type="button"
+              onClick={() => onDismiss(toast.id)}
+              className="rounded text-gray-400 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              aria-label="Dismiss notification"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function useAdminToastInternal() {
+  const [toasts, setToasts] = useState([]);
+  const idRef = useRef(0);
+  const timersRef = useRef(new Map());
+
+  const dismiss = useCallback((id) => {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
+  }, []);
+
+  const push = useCallback(
+    (type, message, { duration = 4500 } = {}) => {
+      if (!message) return null;
+      idRef.current += 1;
+      const id = idRef.current;
+      setToasts((current) => [...current, { id, type, message }]);
+      if (duration > 0) {
+        const timer = window.setTimeout(() => dismiss(id), duration);
+        timersRef.current.set(id, timer);
+      }
+      return id;
+    },
+    [dismiss],
+  );
+
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
+
+  const api = useMemo(
+    () => ({
+      push,
+      success: (message, opts) => push('success', message, opts),
+      error:   (message, opts) => push('error', message, opts),
+      info:    (message, opts) => push('info', message, opts),
+      dismiss,
+    }),
+    [push, dismiss],
+  );
+
+  return { toasts, dismiss, api };
+}
+
+function useAdminToast() {
+  const ctx = useContext(AdminToastContext);
+  if (!ctx) {
+    return {
+      push: () => {},
+      success: () => {},
+      error: () => {},
+      info: () => {},
+      dismiss: () => {},
+    };
+  }
+  return ctx;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inline pending-counts aggregator. Reads existing admin endpoints only.
+// Used by the Overview header chips and the Review queue tab.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EMPTY_ADMIN_PENDING = Object.freeze({
+  ventures: 0,
+  softwareAuctions: 0,
+  technologies: 0,
+  domains: 0,
+  domainEnquiries: 0,
+  cobrotherPayments: 0,
+  operations: 0,
+});
+
+function isUnverifiedTechnology(item) {
+  if (item?.takenDown || item?.taken_down) return false;
+  return !item?.verified;
+}
+
+function isPendingDomainVerification(item) {
+  if (item?.takenDown || item?.taken_down) return false;
+  const status = String(item?.verificationStatus ?? '').toUpperCase();
+  if (status === 'VERIFIED' || status === 'REJECTED') return false;
+  if (status === 'PENDING') return true;
+  return !item?.verified;
+}
+
+function isPendingDomainEnquiry(item) {
+  const status = String(item?.status ?? '').toUpperCase();
+  return status === 'PENDING' || status === '' || status === 'NEW';
+}
+
+function isPendingCoBrotherPayment(item) {
+  const status = String(item?.status ?? '').toUpperCase();
+  return status === 'PAYMENT_PENDING';
+}
+
+function isPendingOperationsRequest(item) {
+  const status = String(item?.status ?? '').toUpperCase();
+  return status === 'PENDING' || status === 'NEW';
+}
+
+async function safeAdminCount(promise, predicate) {
+  try {
+    const response = await promise;
+    const list = extractAdminList(response?.data);
+    if (!predicate) return list.length;
+    return list.filter(predicate).length;
+  } catch {
+    return 0;
+  }
+}
+
+function useAdminPendingCounts({ enabled = true, intervalMs = 90000 } = {}) {
+  const [counts, setCounts] = useState(EMPTY_ADMIN_PENDING);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
+  const inflightRef = useRef(false);
+  const mountedRef = useRef(true);
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+
+  const refresh = useCallback(async () => {
+    if (!enabledRef.current) return;
+    if (inflightRef.current) return;
+    inflightRef.current = true;
+    if (mountedRef.current) setRefreshing(true);
+
+    const updateOne = (key, value) => {
+      if (!mountedRef.current) return;
+      setCounts((prev) => (prev[key] === value ? prev : { ...prev, [key]: value }));
+    };
+
+    // Update each count independently as it arrives — no waiting on the
+    // slowest endpoint to show progress on the others.
+    await Promise.allSettled([
+      safeAdminCount(adminAPI.getPendingVentures()).then((v) => updateOne('ventures', v)),
+      safeAdminCount(adminAPI.getPendingSoftwareAuctions()).then((v) => updateOne('softwareAuctions', v)),
+      safeAdminCount(adminAPI.getTechnologies(), isUnverifiedTechnology).then((v) => updateOne('technologies', v)),
+      safeAdminCount(adminAPI.getDomains(), isPendingDomainVerification).then((v) => updateOne('domains', v)),
+      safeAdminCount(adminAPI.getDomainEnquiries(), isPendingDomainEnquiry).then((v) => updateOne('domainEnquiries', v)),
+      safeAdminCount(adminAPI.getCoBrotherRequests(), isPendingCoBrotherPayment).then((v) => updateOne('cobrotherPayments', v)),
+      safeAdminCount(operationsAdminAPI.listRequests(), isPendingOperationsRequest).then((v) => updateOne('operations', v)),
+    ]);
+
+    if (mountedRef.current) {
+      setRefreshing(false);
+      setInitialLoading(false);
+      setLastFetchedAt(Date.now());
+    }
+    inflightRef.current = false;
+  }, []); // intentionally empty — uses refs to avoid the infinite re-run loop.
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) {
+      setInitialLoading(false);
+      return undefined;
+    }
+    refresh();
+    if (!intervalMs || intervalMs <= 0) return undefined;
+    const id = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'hidden') refresh();
+    }, intervalMs);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility);
+    }
+    return () => {
+      window.clearInterval(id);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility);
+      }
+    };
+  }, [enabled, intervalMs, refresh]);
+
+  const total =
+    counts.ventures +
+    counts.softwareAuctions +
+    counts.technologies +
+    counts.domains +
+    counts.domainEnquiries +
+    counts.cobrotherPayments +
+    counts.operations;
+
+  return { counts, total, loading: initialLoading, refreshing, lastFetchedAt, refresh };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const location = useLocation();
-  const [tab, setTab]                       = useState('ventures');
+  const { toasts: toastList, dismiss: dismissToast, api: toast } = useAdminToastInternal();
+  const [tab, setTab]                       = useState('overview');
   const [data, setData]                     = useState([]);
   const [coBrothers, setCoBrothers]         = useState([]);
   const [requests, setRequests]             = useState([]);
@@ -146,6 +425,17 @@ export default function AdminDashboardPage() {
   const [verifyDomain, setVerifyDomain]   = useState(null);
   const [verifyVenture, setVerifyVenture] = useState(null);
   const [listCount, setListCount]         = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const {
+    counts: pendingCounts,
+    total: pendingTotal,
+    loading: pendingLoading,
+    refreshing: pendingRefreshing,
+    lastFetchedAt: pendingLastFetchedAt,
+    refresh: refreshPendingCounts,
+  } = useAdminPendingCounts({ intervalMs: 90000 });
 
   const fetchers = {
     domains:            adminAPI.getDomains,
@@ -203,7 +493,7 @@ export default function AdminDashboardPage() {
           ? detail.map((d) => d.msg || d).join(', ')
           : (typeof detail === 'string' ? detail : null);
         const msg = e.response?.data?.error || detailText || e.message || t('adminLoadFailed', { tab: currentTab });
-        alert(msg);
+        toast.error(msg);
       })
       .finally(() => {
         if (!silent) setLoading(false);
@@ -217,6 +507,27 @@ export default function AdminDashboardPage() {
     adminAPI.getCoBrotherRequests()
       .then(({ data }) => setRequests(asArray(data)))
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setStatsLoading(true);
+    adminAPI
+      .getDashboard()
+      .then((response) => {
+        if (cancelled) return;
+        const payload = unwrapApiData(response);
+        setDashboardStats(payload && typeof payload === 'object' ? payload : {});
+      })
+      .catch(() => {
+        if (!cancelled) setDashboardStats({});
+      })
+      .finally(() => {
+        if (!cancelled) setStatsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -242,6 +553,8 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const requestedTab = new URLSearchParams(location.search).get('tab');
     const allowedTabs = new Set([
+      'overview',
+      'review-queue',
       'ventures',
       'domains',
       'domain-enquiries',
@@ -250,6 +563,7 @@ export default function AdminDashboardPage() {
       'auctions',
       'venture-auctions',
       'meetings',
+      'operations',
       'homepage-features',
       'software-auctions',
       'community-auctions',
@@ -269,12 +583,13 @@ export default function AdminDashboardPage() {
   const handleForward = async (entityId, type, coBrotherId) => {
     try {
       const { data } = await adminAPI.forward({ entityId, type, coBrotherId });
-      alert(data?.message || t('adminPaymentSent'));
+      toast.success(data?.message || t('adminPaymentSent'));
       setForwardModal(null);
       adminAPI.getCoBrotherRequests()
         .then(({ data }) => setRequests(asArray(data)));
+      refreshPendingCounts();
     } catch (e) {
-      alert(e.response?.data?.error || t('adminForwardFailed'));
+      toast.error(e.response?.data?.error || t('adminForwardFailed'));
     }
   };
 
@@ -285,13 +600,15 @@ export default function AdminDashboardPage() {
     try {
       const { data } = await adminAPI.takeDown(takeDownTarget.type, takeDownTarget.entityId, reason);
       if (data?.success === false) {
-        alert(data?.error || t('adminTakeDownFailed'));
+        toast.error(data?.error || t('adminTakeDownFailed'));
         return;
       }
       setTakeDownTarget(null);
       loadTab(tab);
+      refreshPendingCounts();
+      toast.success(t('adminTakeDownSuccess', { defaultValue: 'Listing taken down.' }));
     } catch (e) {
-      alert(e.response?.data?.error || t('adminTakeDownFailed'));
+      toast.error(e.response?.data?.error || t('adminTakeDownFailed'));
     }
   };
 
@@ -299,16 +616,20 @@ export default function AdminDashboardPage() {
     try {
       const { data } = await adminAPI.restore(type, entityId);
       if (data?.success === false) {
-        alert(data?.error || t('adminRestoreFailed'));
+        toast.error(data?.error || t('adminRestoreFailed'));
         return;
       }
       loadTab(tab);
+      refreshPendingCounts();
+      toast.success(t('adminRestoreSuccess', { defaultValue: 'Listing restored.' }));
     } catch (e) {
-      alert(e.response?.data?.error || t('adminRestoreFailed'));
+      toast.error(e.response?.data?.error || t('adminRestoreFailed'));
     }
   };
 
   const tabs = [
+    { id: 'overview',           label: t('adminTabOverview', { defaultValue: 'Overview' }),       icon: null, Icon: LayoutDashboard, badge: pendingTotal },
+    { id: 'review-queue',       label: t('adminTabReviewQueue', { defaultValue: 'Review queue' }), icon: null, Icon: Inbox,           badge: pendingTotal },
     { id: 'ventures',           label: t('adminTabVentures'),          icon: VentureIcon    },
     { id: 'domains',            label: t('adminTabDomains'),           icon: DomainsIcon    },
     { id: 'domain-enquiries',   label: t('adminTabDomainEnquiries'),   icon: EnquireIcon    },
@@ -333,9 +654,9 @@ export default function AdminDashboardPage() {
         auctionCreationFeeInr: Number(listingFees.auctionCreationFeeInr),
         auctionBidFeeInr: Number(listingFees.auctionBidFeeInr),
       });
-      alert(t('adminFeesUpdated'));
+      toast.success(t('adminFeesUpdated'));
     } catch (e) {
-      alert(e?.response?.data?.error || t('adminFeesUpdateFailed'));
+      toast.error(e?.response?.data?.error || t('adminFeesUpdateFailed'));
     } finally {
       setSavingFees(false);
     }
@@ -343,39 +664,90 @@ export default function AdminDashboardPage() {
 
   return (
     <AppLayout>
+      <AdminToastContext.Provider value={toast}>
       <div className="admin-page w-full min-w-0 max-w-7xl mx-auto">
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 relative overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600" />
-          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 m-0 break-words">
-                {t('adminDashboardTitle')}
-              </h1>
-              <p className="text-gray-600 mt-2 text-sm sm:text-base">{t('adminDashboardSubtitle')}</p>
+          <div className="relative flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0 flex items-start gap-3 sm:gap-4">
+              <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 sm:flex">
+                <Gauge size={22} strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 m-0 break-words">
+                  {t('adminDashboardTitle')}
+                </h1>
+                <p className="text-gray-600 mt-2 text-sm sm:text-base">{t('adminDashboardSubtitle')}</p>
+                <AdminPendingChips
+                  counts={pendingCounts}
+                  total={pendingTotal}
+                  loading={pendingLoading}
+                  onJump={setTab}
+                />
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  refreshPendingCounts();
+                  if (tab !== 'overview' && tab !== 'review-queue') loadTab(tab, { silent: true });
+                }}
+                disabled={pendingRefreshing}
+                aria-busy={pendingRefreshing || undefined}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                <RefreshCw size={14} strokeWidth={2.2} className={pendingRefreshing ? 'animate-spin' : ''} aria-hidden />
+                <span>
+                  {pendingRefreshing
+                    ? t('adminRefreshing', { defaultValue: 'Refreshing…' })
+                    : t('adminRefresh', { defaultValue: 'Refresh' })}
+                </span>
+              </button>
+              <Link
+                to="/analytics"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                <BarChart3 size={14} strokeWidth={2.2} aria-hidden />
+                <span>{t('adminViewAnalytics', { defaultValue: 'View analytics' })}</span>
+                <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
+              </Link>
             </div>
           </div>
         </div>
 
         <div className="mb-4 sm:mb-6 -mx-1 sm:mx-0 min-w-0">
           <div className="admin-dashboard-tabs">
-            {tabs.map(tabItem => (
-              <button
-                key={tabItem.id}
-                type="button"
-                className={`admin-dashboard-tab admin-dashboard-tab--${tabItem.id} ${tab === tabItem.id ? 'active' : ''}`}
-                aria-pressed={tab === tabItem.id}
-                onClick={() => setTab(tabItem.id)}
-              >
-                {tabItem.icon ? (
-                  <img src={tabItem.icon} alt="" className="admin-dashboard-tab-icon" />
-                ) : tabItem.Icon ? (
-                  <tabItem.Icon size={28} strokeWidth={1.85} className="admin-dashboard-tab-lucide-icon" aria-hidden />
-                ) : (
-                  <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
-                )}
-                <span className="admin-dashboard-tab-label">{tabItem.label}</span>
-              </button>
-            ))}
+            {tabs.map(tabItem => {
+              const isPrimary = tabItem.id === 'overview' || tabItem.id === 'review-queue';
+              const badgeValue = tabItem.badge && tabItem.badge > 0 ? tabItem.badge : null;
+              return (
+                <button
+                  key={tabItem.id}
+                  type="button"
+                  className={`admin-dashboard-tab admin-dashboard-tab--${tabItem.id} ${tab === tabItem.id ? 'active' : ''}`}
+                  aria-pressed={tab === tabItem.id}
+                  onClick={() => setTab(tabItem.id)}
+                >
+                  {tabItem.icon ? (
+                    <img src={tabItem.icon} alt="" className="admin-dashboard-tab-icon" />
+                  ) : tabItem.Icon ? (
+                    <tabItem.Icon size={28} strokeWidth={1.85} className="admin-dashboard-tab-lucide-icon" aria-hidden />
+                  ) : (
+                    <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
+                  )}
+                  <span className="admin-dashboard-tab-label">{tabItem.label}</span>
+                  {isPrimary && badgeValue ? (
+                    <span
+                      aria-label={`${badgeValue} pending`}
+                      className="ml-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-amber-100 px-1.5 text-[11px] font-bold text-amber-800 ring-1 ring-amber-200"
+                    >
+                      {badgeValue > 99 ? '99+' : badgeValue}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -383,6 +755,26 @@ export default function AdminDashboardPage() {
           className="admin-page-content bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden"
           data-admin-section={tab}
         >
+          {tab === 'overview' && (
+            <AdminOverviewSection
+              stats={dashboardStats}
+              statsLoading={statsLoading}
+              counts={pendingCounts}
+              countsLoading={pendingLoading}
+              total={pendingTotal}
+              onJump={setTab}
+            />
+          )}
+
+          {tab === 'review-queue' && (
+            <AdminReviewQueueSection
+              counts={pendingCounts}
+              loading={pendingLoading}
+              onJump={setTab}
+              onRefresh={refreshPendingCounts}
+            />
+          )}
+
           {(tab === 'auctions' || tab === 'venture-auctions' || tab === 'software-auctions' || tab === 'community-auctions' || tab === 'ventures') && (
             <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f9fafb' }}>
               <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Listing Fees &amp; Charges</div>
@@ -428,72 +820,74 @@ export default function AdminDashboardPage() {
               ))}
             </div>
           )}
-          {loading ? (
-            <PageContentSkeleton variant="table" rows={7} />
-          ) : tab === 'domain-enquiries' ? (
-            <DomainEnquiriesTable
-              enquiries={data}
-              onForward={(entityId, type) => setForwardModal({ entityId, type })}
-            />
-          ) : tab === 'auctions' ? (
-            <AuctionsAdminTable auctions={data} />
-          ) : tab === 'venture-auctions' ? (
-            <VentureAuctionsAdminTable auctions={data} />
-          ) : tab === 'addon-orders' ? (
-            <AddonOrdersTable orders={data} />
-          ) : tab === 'software-auctions' ? (
-            <SoftwareAuctionAdminTab auctions={data} onRefresh={() => loadTab(tab)} />
-          ) : tab === 'community-auctions' ? (
-            <CommunityAuctionsAdminTable auctions={data} />
-          ) : tab === 'meetings' ? (
-            <MeetingsAdminTab meetings={data} />
-          ) : tab === 'operations' ? (
-            <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
-          ) : tab === 'homepage-features' ? (
-            <div className="admin-homepage-features-grid">
-              <HomepageFeatureSelector type="domain" />
-              <HomepageFeatureSelector type="venture" />
-              <HomepageFeatureSelector type="software" />
-              <HomepageFeatureSelector type="community" />
-            </div>
-          ) : tab === 'domain-transfers' ? (
-            <DomainTransferAdminTab />
-          ) : tab === 'requests' ? (
-            <RequestsTable requests={requests} />
-          ) : data.length === 0 ? (
-            <div className="text-center py-20">
-              <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoRecords')}</h3>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {listCount != null && data.length > 0 && (
-                <p className="text-sm text-gray-500 mb-3">{t('adminRecordsShown', { count: data.length })}</p>
-              )}
-              {data.map(item => (
-                tab === 'ventures' ? (
-                  <VentureAdminRow
-                    key={`venture-${item.id}`}
-                    venture={item}
-                    onForward={(entityId, type) => setForwardModal({ entityId, type })}
-                    onTakeDown={handleTakeDown}
-                    onRestore={handleRestore}
-                    onVerifyVenture={setVerifyVenture}
-                  />
-                ) : (
-                  <AdminRow
-                    key={`${tab}-${item.id}-${item.purchaseId || ''}`}
-                    item={item}
-                    tabType={tab}
-                    onForward={(entityId, type) => setForwardModal({ entityId, type })}
-                    onTakeDown={handleTakeDown}
-                    onRestore={handleRestore}
-                    onVerifyDomain={setVerifyDomain}
-                    onVerifyVenture={setVerifyVenture}
-                    onRefresh={() => loadTab(tab)}
-                  />
-                )
-              ))}
-            </div>
+          {tab !== 'overview' && tab !== 'review-queue' && (
+            loading ? (
+              <PageContentSkeleton variant="table" rows={7} />
+            ) : tab === 'domain-enquiries' ? (
+              <DomainEnquiriesTable
+                enquiries={data}
+                onForward={(entityId, type) => setForwardModal({ entityId, type })}
+              />
+            ) : tab === 'auctions' ? (
+              <AuctionsAdminTable auctions={data} />
+            ) : tab === 'venture-auctions' ? (
+              <VentureAuctionsAdminTable auctions={data} />
+            ) : tab === 'addon-orders' ? (
+              <AddonOrdersTable orders={data} />
+            ) : tab === 'software-auctions' ? (
+              <SoftwareAuctionAdminTab auctions={data} onRefresh={() => loadTab(tab)} />
+            ) : tab === 'community-auctions' ? (
+              <CommunityAuctionsAdminTable auctions={data} />
+            ) : tab === 'meetings' ? (
+              <MeetingsAdminTab meetings={data} />
+            ) : tab === 'operations' ? (
+              <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
+            ) : tab === 'homepage-features' ? (
+              <div className="admin-homepage-features-grid">
+                <HomepageFeatureSelector type="domain" />
+                <HomepageFeatureSelector type="venture" />
+                <HomepageFeatureSelector type="software" />
+                <HomepageFeatureSelector type="community" />
+              </div>
+            ) : tab === 'domain-transfers' ? (
+              <DomainTransferAdminTab />
+            ) : tab === 'requests' ? (
+              <RequestsTable requests={requests} />
+            ) : data.length === 0 ? (
+              <div className="text-center py-20">
+                <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoRecords')}</h3>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {listCount != null && data.length > 0 && (
+                  <p className="text-sm text-gray-500 mb-3">{t('adminRecordsShown', { count: data.length })}</p>
+                )}
+                {data.map(item => (
+                  tab === 'ventures' ? (
+                    <VentureAdminRow
+                      key={`venture-${item.id}`}
+                      venture={item}
+                      onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                      onTakeDown={handleTakeDown}
+                      onRestore={handleRestore}
+                      onVerifyVenture={setVerifyVenture}
+                    />
+                  ) : (
+                    <AdminRow
+                      key={`${tab}-${item.id}-${item.purchaseId || ''}`}
+                      item={item}
+                      tabType={tab}
+                      onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                      onTakeDown={handleTakeDown}
+                      onRestore={handleRestore}
+                      onVerifyDomain={setVerifyDomain}
+                      onVerifyVenture={setVerifyVenture}
+                      onRefresh={() => loadTab(tab)}
+                    />
+                  )
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>
@@ -540,6 +934,9 @@ export default function AdminDashboardPage() {
           }}
         />
       )}
+
+      <AdminToastStack toasts={toastList} onDismiss={dismissToast} />
+      </AdminToastContext.Provider>
     </AppLayout>
   );
 }
@@ -745,6 +1142,7 @@ function VentureAdminRow({
 function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDomain, onVerifyVenture, onRefresh }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const adminToast = useAdminToast();
   const [expanded, setExpanded] = useState(false);
 
   const getTitle = () => {
@@ -881,10 +1279,10 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                     onClick={async () => {
                       try {
                         await adminAPI.markTechnologyVerified(item.id);
-                        alert(i18n.t('adminTechMarkedVerified'));
+                        adminToast.success(i18n.t('adminTechMarkedVerified'));
                         onRefresh?.();
                       } catch (e) {
-                        alert(e.response?.data?.error || i18n.t('adminMarkVerifiedFailed'));
+                        adminToast.error(e.response?.data?.error || i18n.t('adminMarkVerifiedFailed'));
                       }
                     }}
                   >
@@ -1408,6 +1806,7 @@ function RequestsTable({ requests }) {
 function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const adminToast = useAdminToast();
   const [selectedCoBrother, setSelectedCoBrother] = useState('');
   const [loading, setLoading]                     = useState(false);
 
@@ -1426,10 +1825,13 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
   const handleSubmit = async () => {
     if (noCoBrothers) {
-      alert(i18n.t('adminNoCoBrotherYet'));
+      adminToast.error(i18n.t('adminNoCoBrotherYet'));
       return;
     }
-    if (!selectedCoBrother) { alert(i18n.t('adminSelectCoBrotherAlert')); return; }
+    if (!selectedCoBrother) {
+      adminToast.error(i18n.t('adminSelectCoBrotherAlert'));
+      return;
+    }
     setLoading(true);
     await onForward(entityKey, type, selectedCoBrother);
     setLoading(false);
@@ -1507,11 +1909,15 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
 function TakeDownModal({ target, onConfirm, onClose }) {
   const { t } = useTranslation();
+  const adminToast = useAdminToast();
   const [reason, setReason]   = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!reason.trim()) { alert(i18n.t('adminReasonRequired')); return; }
+    if (!reason.trim()) {
+      adminToast.error(i18n.t('adminReasonRequired'));
+      return;
+    }
     setLoading(true);
     await onConfirm(reason);
     setLoading(false);
@@ -1837,6 +2243,676 @@ function AddonOrderRow({ order, statusColor }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// === Inline admin overview + review queue components =======================
+// Defined here so no new files/folders are created. Used only by the
+// in-place AdminDashboardPage above.
+
+const ADMIN_PENDING_CHIPS = [
+  { key: 'ventures',          tab: 'ventures',          label: 'Ventures',         color: 'bg-emerald-100 text-emerald-700 ring-emerald-200' },
+  { key: 'softwareAuctions',  tab: 'software-auctions', label: 'Software auctions', color: 'bg-violet-100 text-violet-700 ring-violet-200' },
+  { key: 'technologies',      tab: 'cocreations',       label: 'Technology',       color: 'bg-rose-100 text-rose-700 ring-rose-200' },
+  { key: 'domains',           tab: 'domains',           label: 'Domains',          color: 'bg-sky-100 text-sky-700 ring-sky-200' },
+  { key: 'domainEnquiries',   tab: 'domain-enquiries',  label: 'Domain enquiries', color: 'bg-sky-100 text-sky-700 ring-sky-200' },
+  { key: 'cobrotherPayments', tab: 'requests',          label: 'CoBrother payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
+  { key: 'operations',        tab: 'operations',        label: 'Operations',       color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
+];
+
+function formatNumberIN(n) {
+  const value = Number(n ?? 0);
+  if (!Number.isFinite(value)) return '0';
+  return value.toLocaleString('en-IN');
+}
+
+function AdminPendingChips({ counts, total, loading, onJump }) {
+  if (loading && total === 0) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-2" role="status" aria-live="polite" aria-label="Loading pending counts">
+        <span className="admin-loading-pill">
+          <span className="admin-loading-dot" aria-hidden />
+          Live counts
+        </span>
+        {[1, 2, 3, 4].map((i) => (
+          <span key={i} className="admin-skeleton admin-skeleton--chip" aria-hidden />
+        ))}
+      </div>
+    );
+  }
+
+  if (total === 0) {
+    return (
+      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+        <CheckCircle2 size={12} strokeWidth={2.4} aria-hidden />
+        <span>You are all caught up</span>
+      </div>
+    );
+  }
+
+  const visible = ADMIN_PENDING_CHIPS.filter((chip) => (counts?.[chip.key] || 0) > 0);
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {visible.map((chip) => {
+        const count = counts[chip.key] || 0;
+        return (
+          <button
+            key={chip.key}
+            type="button"
+            onClick={() => onJump(chip.tab)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition hover:scale-[1.02] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 ${chip.color}`}
+            aria-label={`${count} ${chip.label} pending. Open tab.`}
+          >
+            <span className="rounded-full bg-white/80 px-1.5 text-[11px] font-bold">{count}</span>
+            <span>{chip.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function AdminStatTile({ icon: Icon, label, value, accent, loading }) {
+  const accents = {
+    indigo:  'bg-indigo-50 text-indigo-600 ring-indigo-100',
+    emerald: 'bg-emerald-50 text-emerald-600 ring-emerald-100',
+    sky:     'bg-sky-50 text-sky-600 ring-sky-100',
+    amber:   'bg-amber-50 text-amber-600 ring-amber-100',
+    violet:  'bg-violet-50 text-violet-600 ring-violet-100',
+    rose:    'bg-rose-50 text-rose-600 ring-rose-100',
+  };
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-gray-300 hover:shadow-md">
+      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ${accents[accent] || accents.indigo}`}>
+        <Icon size={20} strokeWidth={2} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
+        {loading ? (
+          <div className="mt-1 flex items-center gap-2" role="status" aria-live="polite">
+            <span className="admin-skeleton admin-skeleton--stat-value" aria-hidden />
+            <span className="sr-only">{`Loading ${label}`}</span>
+          </div>
+        ) : (
+          <p className="mt-0.5 truncate text-2xl font-semibold text-gray-900">{formatNumberIN(value)}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AdminPendingCard({ icon: Icon, label, hint, count, accent, loading, onClick }) {
+  const accents = {
+    amber:   { bar: 'bg-amber-500',   chip: 'bg-amber-50 text-amber-700 ring-amber-200' },
+    indigo:  { bar: 'bg-indigo-500',  chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200' },
+    sky:     { bar: 'bg-sky-500',     chip: 'bg-sky-50 text-sky-700 ring-sky-200' },
+    violet:  { bar: 'bg-violet-500',  chip: 'bg-violet-50 text-violet-700 ring-violet-200' },
+    emerald: { bar: 'bg-emerald-500', chip: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
+    rose:    { bar: 'bg-rose-500',    chip: 'bg-rose-50 text-rose-700 ring-rose-200' },
+  };
+  const tone = accents[accent] || accents.indigo;
+  const isEmpty = !loading && (!count || count <= 0);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      aria-busy={loading || undefined}
+      className={`group relative flex w-full flex-col gap-3 overflow-hidden rounded-2xl border bg-white p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+        loading
+          ? 'border-gray-200 cursor-progress'
+          : 'border-gray-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md'
+      }`}
+    >
+      <div className={`absolute inset-x-0 top-0 h-1 ${tone.bar} ${loading ? 'opacity-60' : ''}`} aria-hidden />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ${tone.chip}`}>
+            <Icon size={16} strokeWidth={2} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900">{label}</p>
+            {hint ? <p className="mt-0.5 text-xs text-gray-500">{hint}</p> : null}
+          </div>
+        </div>
+        <ArrowUpRight size={16} className={`mt-1 text-gray-400 transition ${loading ? 'opacity-40' : 'group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-gray-700'}`} />
+      </div>
+      <div className="flex items-end justify-between gap-3">
+        {loading ? (
+          <span className="admin-skeleton admin-skeleton--card-value" role="status" aria-live="polite" aria-label={`Loading ${label} count`} />
+        ) : (
+          <p className={`text-2xl font-semibold ${isEmpty ? 'text-gray-400' : 'text-gray-900'}`}>{formatNumberIN(count)}</p>
+        )}
+        {loading ? (
+          <span className="admin-loading-pill">
+            <span className="admin-loading-dot" aria-hidden />
+            Loading
+          </span>
+        ) : (
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${isEmpty ? 'bg-gray-50 text-gray-500 ring-gray-200' : tone.chip}`}>
+            {isEmpty ? 'All clear' : 'Open'}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, total, onJump }) {
+  const platformStats = [
+    { key: 'totalUsers',        Icon: UsersRound,   label: 'Users',       value: stats?.totalUsers,        accent: 'indigo'  },
+    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'CoBrothers',  value: stats?.totalCoBrothers,   accent: 'violet'  },
+    { key: 'totalVentures',     Icon: Briefcase,    label: 'Ventures',    value: stats?.totalVentures,     accent: 'emerald' },
+    { key: 'totalDomains',      Icon: Globe,        label: 'Domains',     value: stats?.totalDomains,      accent: 'sky'     },
+    { key: 'totalTechnologies', Icon: Cpu,          label: 'Technology',  value: stats?.totalTechnologies, accent: 'rose'    },
+    { key: 'totalCreators',     Icon: UsersRound,   label: 'Creators',    value: stats?.totalCreators,     accent: 'amber'   },
+  ];
+
+  const pendingCards = [
+    { key: 'ventures',          Icon: Briefcase,      label: 'Pending ventures',         hint: 'Approve or reject venture submissions',   count: counts?.ventures,          tab: 'ventures',          accent: 'emerald' },
+    { key: 'domains',           Icon: Globe,          label: 'Domain verifications',     hint: 'Awaiting verification from owners',       count: counts?.domains,           tab: 'domains',           accent: 'sky'     },
+    { key: 'domainEnquiries',   Icon: FileQuestion,   label: 'Domain enquiries',         hint: 'Buyer enquiries pending action',          count: counts?.domainEnquiries,   tab: 'domain-enquiries',  accent: 'sky'     },
+    { key: 'technologies',      Icon: Cpu,            label: 'Technology verifications', hint: 'Software/technology awaiting verification', count: counts?.technologies,    tab: 'cocreations',       accent: 'rose'    },
+    { key: 'softwareAuctions',  Icon: Package,        label: 'Software auctions',        hint: 'Pending approval to go live',             count: counts?.softwareAuctions,  tab: 'software-auctions', accent: 'violet'  },
+    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'CoBrother payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
+    { key: 'operations',        Icon: Headset,        label: 'Operations requests',      hint: 'Customer service requests pending',       count: counts?.operations,        tab: 'operations',        accent: 'indigo'  },
+  ];
+
+  const quickLinks = [
+    { Icon: Activity,  label: 'Auctions overview',  hint: 'All live auction activity', tab: 'auctions' },
+    { Icon: Sparkles,  label: 'Homepage features',  hint: 'Pin items to the homepage', tab: 'homepage-features' },
+    { Icon: Inbox,     label: 'Review queue',       hint: 'Items awaiting your review', tab: 'review-queue' },
+  ];
+
+  return (
+    <div className="flex flex-col gap-6">
+      <section aria-labelledby="admin-stats-heading" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="admin-stats-heading" className="text-sm font-semibold uppercase tracking-wide text-gray-500">Platform stats</h2>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {platformStats.map((stat) => (
+            <AdminStatTile
+              key={stat.key}
+              icon={stat.Icon}
+              label={stat.label}
+              value={stat.value}
+              accent={stat.accent}
+              loading={statsLoading}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="admin-attention-heading" className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="admin-attention-heading" className="text-sm font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-2">
+              Needs your attention
+              {countsLoading ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-indigo-200">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
+                  Fetching live data
+                </span>
+              ) : null}
+            </h2>
+            <p className="mt-1 text-xs text-gray-500">
+              {countsLoading
+                ? 'Counting items across all queues — numbers will appear as soon as each source responds.'
+                : total > 0
+                  ? `${total} item${total === 1 ? '' : 's'} waiting on you. Click a card to open the relevant tab.`
+                  : 'You are all caught up. New submissions appear here automatically.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onJump('review-queue')}
+            className="inline-flex items-center gap-1 rounded-md px-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          >
+            Open review queue
+            <ArrowRight size={14} strokeWidth={2.2} />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {pendingCards.map((card) => (
+            <AdminPendingCard
+              key={card.key}
+              icon={card.Icon}
+              label={card.label}
+              hint={card.hint}
+              count={card.count}
+              accent={card.accent}
+              loading={countsLoading}
+              onClick={() => onJump(card.tab)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="admin-quick-links" className="flex flex-col gap-3">
+        <h2 id="admin-quick-links" className="text-sm font-semibold uppercase tracking-wide text-gray-500">Quick links</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {quickLinks.map((link) => {
+            const Icon = link.Icon;
+            return (
+              <button
+                key={link.label}
+                type="button"
+                onClick={() => onJump(link.tab)}
+                className="group flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm transition hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-700 ring-1 ring-gray-200">
+                  <Icon size={18} strokeWidth={2} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-gray-900">{link.label}</p>
+                  <p className="mt-0.5 truncate text-xs text-gray-500">{link.hint}</p>
+                </div>
+                <ArrowUpRight size={14} className="text-gray-400 transition group-hover:text-gray-700" aria-hidden />
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+const QUEUE_TYPE_META = {
+  venture:           { label: 'Venture',           Icon: Briefcase,     chip: 'bg-emerald-50 text-emerald-700 ring-emerald-200', tab: 'ventures' },
+  domain:            { label: 'Domain',            Icon: Globe,         chip: 'bg-sky-50 text-sky-700 ring-sky-200',             tab: 'domains' },
+  domain_enquiry:    { label: 'Domain enquiry',    Icon: FileQuestion,  chip: 'bg-sky-50 text-sky-700 ring-sky-200',             tab: 'domain-enquiries' },
+  technology:        { label: 'Technology',        Icon: Cpu,           chip: 'bg-rose-50 text-rose-700 ring-rose-200',          tab: 'cocreations' },
+  software_auction:  { label: 'Software auction',  Icon: Package,       chip: 'bg-violet-50 text-violet-700 ring-violet-200',    tab: 'software-auctions' },
+  cobrother_payment: { label: 'CoBrother payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
+  operations:        { label: 'Operations',        Icon: Headset,       chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200',    tab: 'operations' },
+};
+
+const QUEUE_FILTER_OPTIONS = [
+  { id: 'all',               label: 'All' },
+  { id: 'venture',           label: 'Ventures' },
+  { id: 'domain',            label: 'Domains' },
+  { id: 'domain_enquiry',    label: 'Domain enquiries' },
+  { id: 'technology',        label: 'Technology' },
+  { id: 'software_auction',  label: 'Software auctions' },
+  { id: 'cobrother_payment', label: 'CoBrother payments' },
+  { id: 'operations',        label: 'Operations' },
+];
+
+function getString(...candidates) {
+  for (const c of candidates) {
+    if (c === null || c === undefined) continue;
+    const s = String(c).trim();
+    if (s) return s;
+  }
+  return '';
+}
+
+function getTimestamp(item) {
+  const candidates = [
+    item?.updatedAt, item?.updated_at,
+    item?.createdAt, item?.created_at,
+    item?.submittedAt, item?.submitted_at,
+    item?.requestedAt, item?.requested_at,
+  ];
+  for (const c of candidates) {
+    if (!c) continue;
+    const d = new Date(c);
+    if (!Number.isNaN(d.getTime())) return d.getTime();
+  }
+  return 0;
+}
+
+function formatRelativeTime(ts) {
+  if (!ts) return '—';
+  const diff = Date.now() - ts;
+  if (diff < 0) return 'just now';
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const days = Math.floor(hr / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  return new Date(ts).toLocaleDateString();
+}
+
+function mapQueueItem(item, type) {
+  const meta = QUEUE_TYPE_META[type];
+  const titleByType = {
+    venture: getString(item?.brandDetails?.brandName, item?.brand_details?.brand_name, item?.name, item?.title, 'Untitled venture'),
+    domain: getString(item?.domainName, item?.name, 'Domain'),
+    domain_enquiry: getString(item?.domainName, item?.domain?.domainName, 'Domain enquiry'),
+    technology: getString(item?.name, item?.title, 'Technology'),
+    software_auction: getString(item?.softwareName, item?.software?.title, item?.software?.name, item?.title, 'Software auction'),
+    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'CoBrother request'),
+    operations: getString(item?.title, item?.serviceName, item?.requestType, 'Operations request'),
+  };
+  return {
+    id: `${type}-${item?.id ?? Math.random().toString(36).slice(2)}`,
+    type,
+    title: titleByType[type] || 'Item',
+    owner: getString(item?.ownerName, item?.userName, item?.user?.name, item?.email, item?.listedBy?.email, item?.buyerName, item?.listerName),
+    status: getString(
+      type === 'venture' ? 'PENDING_APPROVAL' : null,
+      type === 'technology' ? 'PENDING_VERIFICATION' : null,
+      item?.verificationStatus,
+      item?.approvalStatus,
+      item?.status,
+      'PENDING',
+    ),
+    timestamp: getTimestamp(item),
+    tab: meta?.tab,
+  };
+}
+
+function QueueTypeChip({ type }) {
+  const meta = QUEUE_TYPE_META[type];
+  if (!meta) return null;
+  const Icon = meta.Icon;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${meta.chip}`}>
+      <Icon size={11} strokeWidth={2.4} />
+      <span className="whitespace-nowrap">{meta.label}</span>
+    </span>
+  );
+}
+
+function QueueStatusPill({ status }) {
+  const upper = String(status || '').toUpperCase();
+  const tone = upper.includes('PENDING') || upper === 'NEW'
+    ? 'bg-amber-50 text-amber-700 ring-amber-200'
+    : upper.includes('REJECT')
+      ? 'bg-rose-50 text-rose-700 ring-rose-200'
+      : upper.includes('APPROV') || upper.includes('VERIFI')
+        ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+        : 'bg-gray-50 text-gray-700 ring-gray-200';
+  const label = String(status || '—').replace(/_/g, ' ').toLowerCase();
+  return (
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ring-1 ${tone}`}>
+      {label}
+    </span>
+  );
+}
+
+async function fetchQueueList(promise) {
+  try {
+    const res = await promise;
+    return extractAdminList(res?.data);
+  } catch {
+    return [];
+  }
+}
+
+function AdminReviewQueueSection({ counts, loading: countsLoading, onJump, onRefresh }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeType, setActiveType] = useState('all');
+  const [search, setSearch] = useState('');
+  const toast = useAdminToast();
+
+  const load = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
+    try {
+      const [
+        ventures,
+        domains,
+        domainEnquiries,
+        technologies,
+        softwareAuctions,
+        cobrotherRequests,
+        operations,
+      ] = await Promise.all([
+        fetchQueueList(adminAPI.getPendingVentures()),
+        fetchQueueList(adminAPI.getDomains()),
+        fetchQueueList(adminAPI.getDomainEnquiries()),
+        fetchQueueList(adminAPI.getTechnologies()),
+        fetchQueueList(adminAPI.getPendingSoftwareAuctions()),
+        fetchQueueList(adminAPI.getCoBrotherRequests()),
+        fetchQueueList(operationsAdminAPI.listRequests()),
+      ]);
+
+      const merged = [
+        ...ventures.map((it) => mapQueueItem(it, 'venture')),
+        ...domains.filter(isPendingDomainVerification).map((it) => mapQueueItem(it, 'domain')),
+        ...domainEnquiries.filter(isPendingDomainEnquiry).map((it) => mapQueueItem(it, 'domain_enquiry')),
+        ...technologies.filter(isUnverifiedTechnology).map((it) => mapQueueItem(it, 'technology')),
+        ...softwareAuctions.map((it) => mapQueueItem(it, 'software_auction')),
+        ...cobrotherRequests.filter(isPendingCoBrotherPayment).map((it) => mapQueueItem(it, 'cobrother_payment')),
+        ...operations.filter(isPendingOperationsRequest).map((it) => mapQueueItem(it, 'operations')),
+      ];
+      merged.sort((a, b) => b.timestamp - a.timestamp);
+      setItems(merged);
+      if (silent) toast.success('Queue refreshed.');
+      onRefresh?.();
+    } catch {
+      if (silent) toast.error('Could not refresh queue.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [toast, onRefresh]);
+
+  useEffect(() => {
+    load(false);
+  }, [load]);
+
+  const typeCounts = useMemo(() => {
+    const map = { all: items.length };
+    QUEUE_FILTER_OPTIONS.forEach((opt) => { if (opt.id !== 'all') map[opt.id] = 0; });
+    for (const item of items) {
+      if (map[item.type] !== undefined) map[item.type] += 1;
+    }
+    return map;
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((item) => {
+      if (activeType !== 'all' && item.type !== activeType) return false;
+      if (!q) return true;
+      const haystack = `${item.title} ${item.owner} ${item.status}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [items, activeType, search]);
+
+  const hasFilters = activeType !== 'all' || search.trim().length > 0;
+  const isLoading = loading || (countsLoading && items.length === 0);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Items waiting for your review</h2>
+          <p className="mt-0.5 text-xs text-gray-500">
+            Read-only view across all admin sections. Click <span className="font-medium">Open</span> on a row to act on it inside the relevant tab.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => load(true)}
+          disabled={refreshing || loading}
+          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:self-auto"
+        >
+          <RefreshCw size={14} strokeWidth={2.2} className={refreshing ? 'animate-spin' : ''} aria-hidden />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by title, owner, status..."
+              className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+              >
+                <X size={14} />
+              </button>
+            ) : null}
+          </div>
+          {hasFilters ? (
+            <button
+              type="button"
+              onClick={() => { setActiveType('all'); setSearch(''); }}
+              className="inline-flex shrink-0 items-center gap-1 self-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 lg:self-auto"
+            >
+              <X size={14} />
+              <span>Clear filters</span>
+            </button>
+          ) : null}
+        </div>
+        <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-0.5">
+          <span className="hidden shrink-0 items-center gap-1.5 pr-2 text-xs font-semibold uppercase tracking-wide text-gray-500 sm:inline-flex">
+            <Filter size={12} strokeWidth={2.4} />
+            Type
+          </span>
+          {QUEUE_FILTER_OPTIONS.map((opt) => {
+            const isActive = activeType === opt.id;
+            const count = typeCounts[opt.id] ?? 0;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setActiveType(opt.id)}
+                className={[
+                  'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                  isActive
+                    ? 'bg-gray-900 text-white shadow-sm'
+                    : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100',
+                ].join(' ')}
+              >
+                <span>{opt.label}</span>
+                <span className={`inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px] font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-gray-50 text-gray-600 ring-1 ring-gray-200'}`}>
+                  {count > 99 ? '99+' : count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        {isLoading ? (
+          <div className="divide-y divide-gray-100">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4 p-4">
+                <div className="h-8 w-24 animate-pulse rounded-full bg-gray-100" />
+                <div className="h-4 flex-1 animate-pulse rounded bg-gray-100" />
+                <div className="hidden h-4 w-32 animate-pulse rounded bg-gray-100 md:block" />
+                <div className="h-4 w-16 animate-pulse rounded bg-gray-100" />
+                <div className="h-8 w-20 animate-pulse rounded bg-gray-100" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
+              <Inbox size={22} />
+            </div>
+            <p className="text-base font-semibold text-gray-900">
+              {hasFilters ? 'No items match your filter' : 'You are all caught up'}
+            </p>
+            <p className="max-w-sm text-sm text-gray-500">
+              {hasFilters
+                ? 'Try clearing filters or search to see everything.'
+                : 'Nothing needs your review right now. New submissions will appear here automatically.'}
+            </p>
+            {hasFilters ? (
+              <button
+                type="button"
+                onClick={() => { setActiveType('all'); setSearch(''); }}
+                className="mt-1 inline-flex items-center gap-1 rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                <X size={14} />
+                Clear filters
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Type</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Title</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Owner</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Updated</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {filtered.map((row) => (
+                    <tr key={row.id} className="transition hover:bg-gray-50/60">
+                      <td className="px-4 py-3 align-middle"><QueueTypeChip type={row.type} /></td>
+                      <td className="px-4 py-3 align-middle">
+                        <p className="truncate font-semibold text-gray-900" title={row.title}>{row.title}</p>
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <p className="truncate text-gray-700" title={row.owner || '—'}>{row.owner || '—'}</p>
+                      </td>
+                      <td className="px-4 py-3 align-middle"><QueueStatusPill status={row.status} /></td>
+                      <td className="px-4 py-3 align-middle text-gray-500">{formatRelativeTime(row.timestamp)}</td>
+                      <td className="px-4 py-3 text-right align-middle">
+                        <button
+                          type="button"
+                          onClick={() => onJump(row.tab)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                        >
+                          Open
+                          <ArrowUpRight size={12} strokeWidth={2.4} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <ul className="divide-y divide-gray-100 md:hidden">
+              {filtered.map((row) => (
+                <li key={row.id} className="flex flex-col gap-2 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <QueueTypeChip type={row.type} />
+                    <span className="text-xs text-gray-500">{formatRelativeTime(row.timestamp)}</span>
+                  </div>
+                  <p className="truncate text-sm font-semibold text-gray-900" title={row.title}>{row.title}</p>
+                  <p className="truncate text-xs text-gray-600" title={row.owner || '—'}>{row.owner || '—'}</p>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <QueueStatusPill status={row.status} />
+                    <button
+                      type="button"
+                      onClick={() => onJump(row.tab)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+                    >
+                      Open
+                      <ArrowUpRight size={12} strokeWidth={2.4} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
     </div>
   );
 }

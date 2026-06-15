@@ -11,7 +11,7 @@ export const OPERATIONS_SECTIONS = [
   {
     id: 'compliance',
     labelKey: 'operationsSectionCompliances',
-    defaultLabel: 'Compliances',
+    defaultLabel: 'Compliance',
     hintKey: 'operationsSectionComplianceHint',
     defaultHint: 'Registration, filings & compliance services',
     serviceType: 'compliance',

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
 import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from '../../utils/listPagination';
+import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -24,7 +24,7 @@ export default function TechnologySection() {
       try {
         setLoading(true);
         const { items } = await fetchListPage((params) => cocreationAPI.getAll(params), {
-          pageSize: HOME_PREVIEW_PAGE_SIZE,
+          ...HOME_FEATURED_LIST_PARAMS,
         });
         setSoftwares(items);
       } catch {

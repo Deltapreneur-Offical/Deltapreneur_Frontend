@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { adminAPI, communityAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
+import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import { resolveUserDisplayName } from '../utils/userDisplayName';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
@@ -404,6 +405,8 @@ export default function DashboardPage() {
         {!isAdmin && creatorProfileReady && creatorProfile ? (
           <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
         ) : null}
+
+        {user?.id ? <PayoutProfileBanner context="default" /> : null}
 
         {!isAdmin ? <DashboardWelcomeBanner user={user} t={t} /> : null}
 

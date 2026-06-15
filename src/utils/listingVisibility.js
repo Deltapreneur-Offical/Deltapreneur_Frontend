@@ -65,8 +65,7 @@ export function isListingVerified(item, type = 'domain') {
 
   if (listingType === 'venture') {
     const status = item.listingApprovalStatus ?? item.listing_approval_status;
-    if (status) return status === 'APPROVED';
-    return Boolean(item.verified || item.gstinVerified || item.gstin_verified);
+    return status === 'APPROVED';
   }
   if (listingType === 'community') {
     return isCommunityProfilePublic(item);

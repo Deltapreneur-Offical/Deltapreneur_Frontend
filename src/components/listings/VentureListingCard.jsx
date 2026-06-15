@@ -1,20 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Share2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ArrowRight, Gavel, Share2, Trash2 } from 'lucide-react';
+import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
-import { VENTURE_EQUITY_TYPE_LABELS } from '../../constants/ventureLabels';
-import EditActionLabel from '../common/EditActionLabel';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
-import { LISTING_CARD_HEADER_CLASS } from './MarketplaceListingCardFrame';
+import verifiedIcon from '../../assets/Verified_Icon.png';
+import {
+  isCoVentureListing,
+  isFullAcquisitionListing,
+  isVentureGstinVerified,
+  resolveVentureApprovalStatus,
+  resolveSellerAskSummary,
+  formatVentureAskingPrice,
+} from '../../utils/ventureListingHelpers';
+import '../../styles/domain-listing-cards.css';
+
+const PRIMARY_BTN =
+  'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+
+function resolveVentureStatusDotClass(venture) {
+  if (venture?.status === false) return 'listing-availability-badge__dot--muted';
+  return 'listing-availability-badge__dot--available';
+}
 
 export default function VentureListingCard({
   venture,
   isOwner,
   hasApplied = false,
+  hasActiveDeal = false,
   showVerifyButton = true,
   browseMode = false,
-  compact = false,
   onView,
   onApply,
   onVerify,
@@ -23,23 +40,40 @@ export default function VentureListingCard({
   likeState,
   onLike,
 }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
-  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const shareRef = useRef(null);
-  const optionsRef = useRef(null);
+
   const b = venture.brandDetails || {};
-  const shortDesc = `${b.description?.slice(0, 130) || ''}${b.description?.length > 130 ? '…' : ''}`;
+  const brandName = b.brandName || t('listingCardUnnamedVenture', 'Unnamed venture');
   const isAuction = venture.saleType === 'AUCTION';
   const auction = venture.auction;
-  const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
-  const canApply = !isOwner && isGstinVerified && !isAuction && !hasApplied;
+  const isCoVenture = isCoVentureListing(venture);
+  const isFullAcquisition = isFullAcquisitionListing(venture);
+  const approvalStatus = resolveVentureApprovalStatus(venture);
+  const isListingApproved = approvalStatus === 'approved';
+  const isGstinVerified = isVentureGstinVerified(venture);
+  const canInteract = !isOwner && isListingApproved && !isAuction && !hasApplied && !hasActiveDeal;
+  const ctaLabel = isCoVenture
+    ? t('listingCardApply', 'Apply')
+    : (isFullAcquisition ? t('listingCardOffer', 'Offer') : t('listingCardPitch', 'Pitch'));
+  const sellerAsk = resolveSellerAskSummary(venture);
+  const ventureImage = b.ventureImageUrl && !imgFailed ? b.ventureImageUrl : null;
+
+  const priceAmount = isAuction
+    ? Number(auction?.currentHighestBid || auction?.minBidPrice || 0)
+    : Number(sellerAsk.price || b.dealValue || 0);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [b.ventureImageUrl, venture.id]);
 
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
-      if (optionsRef.current && !optionsRef.current.contains(e.target)) setOptionsOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -47,9 +81,12 @@ export default function VentureListingCard({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/ventures?id=${venture.id}`
-      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures?id=${venture.id}`;
-  const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
+      ? `${window.location.origin}/ventures/${venture.id}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}`;
+  const shareText = t('listingCardShareVenture', {
+    name: brandName,
+    defaultValue: `Check out this venture: ${brandName} - Listed on CoBrother!`,
+  });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -59,234 +96,268 @@ export default function VentureListingCard({
     setShareOpen(false);
   };
 
-  const cardClass = `listing-card-glow venture-listing-card card-glow-hover group relative bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-all duration-300 h-[355px] max-h-[355px]${
-    compact ? ' listing-card--compact' : ''
-  }${browseMode ? '' : ' cursor-pointer'}`;
+  const stop = (e) => e.stopPropagation();
+  const interactive = Boolean(onView);
+
+  const handleViewDetails = onView
+    ? (e) => {
+      stop(e);
+      onView();
+    }
+    : undefined;
+
+  const shareButton = (
+    <div className="relative shrink-0" ref={shareRef}>
+      <button
+        type="button"
+        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
+        onClick={(e) => {
+          stop(e);
+          setShareOpen(!shareOpen);
+        }}
+        title={t('listingCardShare')}
+      >
+        <Share2 size={12} />
+      </button>
+      {shareOpen && (
+        <div
+          className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+          onClick={stop}
+        >
+          <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+            <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+          </div>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            onClick={() => handleShare(linkedinShare)}
+          >
+            {t('listingCardLinkedIn')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+            onClick={() => handleShare(facebookShare)}
+          >
+            {t('listingCardFacebook')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
+            onClick={() => handleShare(whatsappShare)}
+          >
+            {t('listingCardWhatsApp')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderPrimaryAction = () => {
+    if (browseMode) return null;
+
+    if (isOwner) {
+      return (
+        <div className="flex w-full items-center gap-2" onClick={stop} onMouseDown={stop} role="presentation">
+          <div className="flex min-w-0 flex-1 gap-2">
+            {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
+              <button
+                type="button"
+                className="flex-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100"
+                onClick={(e) => {
+                  stop(e);
+                  onVerify?.();
+                }}
+              >
+                {t('listingCardVerifyGstin', 'Verify GSTIN')}
+              </button>
+            )}
+            <button
+              type="button"
+              className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 inline-flex items-center justify-center gap-1"
+              onClick={(e) => {
+                stop(e);
+                onEdit?.();
+              }}
+            >
+              <EditIcon size={14} /> {t('edit')}
+            </button>
+            <button
+              type="button"
+              className="flex-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1"
+              onClick={(e) => {
+                stop(e);
+                onDelete?.();
+              }}
+            >
+              <Trash2 size={12} /> {t('remove')}
+            </button>
+          </div>
+          {shareButton}
+        </div>
+      );
+    }
+
+    if (isAuction && auction?.id && auction.status !== 'DRAFT') {
+      return (
+        <button
+          type="button"
+          className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center justify-center gap-1.5`}
+          onClick={(e) => {
+            stop(e);
+            navigate(`/venture-auction/${auction.id}`);
+          }}
+        >
+          <Gavel size={13} />
+          {t('listingCardPlaceBid', 'Place Bid')}
+        </button>
+      );
+    }
+
+    if (!isAuction) {
+      if (canInteract) {
+        return (
+          <button
+            type="button"
+            className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
+            onClick={(e) => {
+              stop(e);
+              onApply?.();
+            }}
+          >
+            {`${ctaLabel} →`}
+          </button>
+        );
+      }
+      if (hasActiveDeal) {
+        return (
+          <button
+            type="button"
+            className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700`}
+            onClick={(e) => {
+              stop(e);
+              onApply?.();
+            }}
+          >
+            {t('listingCardContinue', 'Continue →')}
+          </button>
+        );
+      }
+      if (hasApplied) {
+        return (
+          <button
+            type="button"
+            disabled
+            className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
+            title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already pitched')}
+          >
+            {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched')}
+          </button>
+        );
+      }
+      return (
+        <button
+          type="button"
+          disabled
+          className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
+          title={!isListingApproved ? t('listingCardPendingApproval', 'Listing pending admin approval') : undefined}
+        >
+          {!isListingApproved ? t('listingCardPendingApproval', 'Pending Approval') : t('listingCardUnavailable', 'Unavailable')}
+        </button>
+      );
+    }
+
+    return (
+      <button type="button" disabled className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}>
+        {t('listingCardUnavailable', 'Unavailable')}
+      </button>
+    );
+  };
+
+  const cardLayoutClass = browseMode
+    ? 'h-auto home-preview-browse-card'
+    : 'h-full min-h-0';
+
+  const showPriceBox = Number(priceAmount) > 0 || handleViewDetails;
 
   return (
-    <div
-      className={cardClass}
-      onClick={browseMode ? undefined : onView}
-      role={browseMode ? undefined : 'button'}
-      tabIndex={browseMode ? undefined : 0}
-      onKeyDown={browseMode ? undefined : (e) => { if (e.key === 'Enter') onView?.(); }}
+    <article
+      className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
+      onClick={interactive ? onView : undefined}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
     >
-      <div className={LISTING_CARD_HEADER_CLASS}>
-        {b.ventureImageUrl ? (
+      <div className="domain-listing-card__cover">
+        {ventureImage ? (
           <img
-            src={b.ventureImageUrl}
-            alt={b.brandName}
-            className="absolute top-0 right-0 w-full h-full object-cover opacity-[0.06] group-hover:opacity-[0.1] transition-opacity duration-300"
+            src={ventureImage}
+            alt={brandName}
+            className="domain-listing-card__cover-img"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="domain-listing-card__cover-fallback" aria-hidden>
+            <span className="domain-listing-card__cover-fallback-domain">{brandName}</span>
+          </div>
+        )}
+        {isGstinVerified ? (
+          <img
+            src={verifiedIcon}
+            alt=""
+            className="domain-listing-card__verified-icon"
+            title={t('listingCardGstVerified', 'GST verified')}
+            aria-hidden
           />
         ) : null}
-        <div className="relative z-10 flex items-end justify-between w-full">
-          <div className="flex items-center gap-2">
-            {b.ventureImageUrl ? (
-              <img
-                src={b.ventureImageUrl}
-                alt={b.brandName}
-                className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100 shadow-sm"
-              />
-            ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-gray-900 ring-2 ring-gray-100 shadow-sm bg-gray-100">
-                {b.brandName?.[0] || '?'}
-              </div>
-            )}
-            <div className="flex flex-wrap items-center gap-1">
-              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wide ${isAuction ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                {isAuction ? '🔨 Auction' : '🤝 Regular'}
-              </span>
-              {isOwner && (
-                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-800 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✦ Owner
-                </span>
-              )}
-              {isAuction && isGstinVerified && (
-                <span className="px-1.5 py-0.5 bg-gray-900 text-white text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✓ GSTIN
-                </span>
-              )}
-              {!isAuction && isGstinVerified && (
-                <span className="px-1.5 py-0.5 bg-gray-900 text-white text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
-                  ✓ Verified
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
-        <div className="flex flex-col gap-1 mb-1 min-h-0">
-          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words line-clamp-1">
-            {b.brandName}
-          </h3>
-          <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
-            {b.industry && (
-              <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-                {b.industry.replace(/_/g, ' ')}
-              </span>
-            )}
-            {b.ventureType && (
-              <span className="px-1.5 py-[2px] bg-gray-100 text-gray-600 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-                {VENTURE_EQUITY_TYPE_LABELS[b.ventureType] || b.ventureType}
-              </span>
-            )}
-          </div>
+      <div className="domain-listing-card__body">
+        <div className="domain-listing-card__domain-row">
+          <p className="domain-listing-card__domain" title={brandName}>
+            {brandName}
+          </p>
+          <span
+            className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveVentureStatusDotClass(venture)}`}
+            title={venture.status === false ? 'INACTIVE' : 'AVAILABLE'}
+            aria-hidden
+          />
         </div>
-        <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3">
-          {shortDesc || <span className="italic text-gray-300">No description yet</span>}
-        </p>
 
-        {isAuction && auction ? (
-          <div className="rounded-lg bg-gray-50 border border-gray-200 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">
-                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0))}
-              </span>
-              <span className="text-[9px] md:text-[10px] text-gray-500 font-semibold">
-                {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
-              </span>
-            </div>
-            <span className="text-[9px] md:text-[10px] text-gray-500">
-              {auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}
-            </span>
+        {showPriceBox && (
+          <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
+            {Number(priceAmount) > 0 ? (
+              <div className="domain-listing-card__price-text min-w-0">
+                <span className="domain-listing-card__price-value truncate">
+                  {formatVentureAskingPrice(priceAmount, formatPrice)}
+                </span>
+              </div>
+            ) : null}
+            {handleViewDetails ? (
+              <button
+                type="button"
+                className="domain-listing-card__price-cta"
+                aria-label={t('listingCardViewDetails', 'View details')}
+                onClick={handleViewDetails}
+              >
+                <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+              </button>
+            ) : null}
           </div>
-        ) : b.dealValue ? (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">
-                {formatPrice(b.dealValue)}
-              </span>
-              <span className="text-[9px] md:text-[10px] text-gray-500 font-semibold">price</span>
-            </div>
-          </div>
-        ) : null}
+        )}
 
         <ListingCardStatsFooter
           viewCount={venture.views || 0}
           likeState={likeState}
           onLike={onLike}
-          onView={onView}
-          className="mt-2 border-t border-gray-100"
+          likesFirst
+          className="domain-listing-card__stats domain-listing-card__stats--split"
         />
 
-        {!browseMode && (
-        <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-          <a
-            href={b.website || '#'}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold rounded transition-all hover:bg-gray-200 hover:text-black flex items-center justify-center gap-1"
-            onClick={(e) => !b.website && e.preventDefault()}
-          >
-            Website ↗
-          </a>
-          {isOwner ? (
-            <>
-              {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
-                <button
-                  type="button"
-                  className="flex-1 py-1.5 bg-gray-100 text-gray-800 border border-gray-200 text-[10px] font-bold rounded transition-all hover:bg-gray-200"
-                  onClick={(e) => { e.stopPropagation(); onVerify?.(); }}
-                >
-                  {isAuction ? '🔍 Verify GSTIN' : '🔍 Verify Business GSTIN'}
-                </button>
-              )}
-              <div className="relative flex-1" ref={optionsRef}>
-                <button
-                  type="button"
-                  className="w-full py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded transition-all hover:bg-gray-800 flex items-center justify-center gap-1"
-                  onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}
-                >
-                  Options ▼
-                </button>
-                {optionsOpen && (
-                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[100px]">
-                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView?.(); }}>View</button>
-                    <button type="button" className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left inline-flex items-center" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onEdit?.(); }}>
-                      <EditActionLabel iconSize={14}>Edit</EditActionLabel>
-                    </button>
-                    <button type="button" className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete?.(); }}>Delete</button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              {isAuction && auction?.id && auction.status !== 'DRAFT' ? (
-                <button
-                  type="button"
-                  className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded transition-all hover:bg-black"
-                  onClick={() => navigate(`/venture-auction/${auction.id}`)}
-                >
-                  🔨 Bid
-                </button>
-              ) : !isAuction ? (
-                canApply ? (
-                  <button
-                    type="button"
-                    className="flex-1 py-1.5 bg-gray-950 text-white text-[10px] font-bold rounded transition-all hover:bg-black"
-                    onClick={() => onApply?.()}
-                  >
-                    Apply
-                  </button>
-                ) : hasApplied ? (
-                  <button
-                    type="button"
-                    className="flex-1 py-1.5 bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-bold rounded cursor-not-allowed"
-                    title="You already applied"
-                    disabled
-                  >
-                    Applied
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed"
-                    title="GST verification required"
-                    disabled
-                  >
-                    GST Pending
-                  </button>
-                )
-              ) : (
-                <button type="button" className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed">View</button>
-              )}
-            </>
-          )}
-          <div className="relative shrink-0" ref={shareRef}>
-            <button
-              type="button"
-              className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-gray-500 hover:bg-gray-100"
-              onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
-              title="Share"
-            >
-              <Share2 size={12} />
-            </button>
-            {shareOpen && (
-              <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
-                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
-                </div>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
-                  LinkedIn
-                </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
-                  Facebook
-                </button>
-                <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
-                  WhatsApp
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        )}
+        {renderPrimaryAction() ? (
+          <div className="domain-listing-card__actions">{renderPrimaryAction()}</div>
+        ) : null}
       </div>
-    </div>
+    </article>
   );
 }

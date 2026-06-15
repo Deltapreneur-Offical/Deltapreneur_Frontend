@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import { domainTransferAPI } from '../api/domainTransferAPI';
+import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 
 const sellerLabels = {
   PAYMENT_COMPLETED: 'Domain Sold',
@@ -125,6 +126,7 @@ export default function DomainTransferSellerPage() {
   };
 
   const canSubmit = tx && ['AWAITING_AUTH_CODE', 'ADMIN_REVIEW_REQUIRED'].includes(tx.transferStatus);
+  const payoutPending = tx && ['TRANSFER_COMPLETED', 'PAYOUT_PENDING', 'PAYOUT_APPROVED'].includes(tx.transferStatus);
 
   return (
     <AppLayout>
@@ -155,6 +157,8 @@ export default function DomainTransferSellerPage() {
               )}
               {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             </section>
+
+            {payoutPending ? <PayoutProfileBanner context="domain" /> : null}
 
             {canSubmit && (
               <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">

@@ -2009,13 +2009,14 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 20px 60px rgba(17, 24, 39, 0.18);
+  -webkit-overflow-scrolling: touch;
 }
 .venture-detail-modal .modal-header h2,
 .venture-detail-modal h2 { color: #111827; }
 
 @media (max-width: 639px) {
   .venture-detail-modal {
-    -webkit-overflow-scrolling: touch;
+    max-height: 92vh;
   }
 }
 
@@ -9096,6 +9097,265 @@ body.home-menu-open {
   }
 }
 
+.operations-request-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.operations-request-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 28rem;
+  max-height: min(92vh, 640px);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+.operations-request-modal-glow {
+  position: absolute;
+  top: -6rem;
+  right: -6rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 999px;
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+.operations-request-modal-glow--hire {
+  background: rgba(199, 210, 254, 0.35);
+}
+
+.operations-request-modal-glow--booking {
+  background: rgba(167, 243, 208, 0.35);
+}
+
+.operations-request-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.operations-request-modal-close:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.operations-request-modal-header {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  padding: 1rem 1rem 0.75rem;
+  padding-right: 2.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.operations-request-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  margin-bottom: 0.45rem;
+  border-radius: 0.375rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.operations-request-modal-badge--hire {
+  color: #4338ca;
+  background: #eef2ff;
+}
+
+.operations-request-modal-badge--booking {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.operations-request-modal-title {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.operations-request-modal-service {
+  margin-top: 0.35rem;
+}
+
+.operations-request-modal-service-name {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.operations-request-modal-service-price {
+  margin: 0.1rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.operations-request-modal--booking .operations-request-modal-service-price {
+  color: #059669;
+}
+
+.operations-request-modal-service-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+.operations-request-modal-form {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.operations-request-modal-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.75rem;
+  overflow-y: auto;
+  padding-right: 0.1rem;
+}
+
+.operations-request-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.operations-request-modal-field--full {
+  grid-column: 1 / -1;
+}
+
+.operations-request-modal-textarea {
+  min-height: 4.25rem;
+  max-height: 6.5rem;
+  resize: vertical;
+}
+
+.operations-request-modal-error {
+  flex-shrink: 0;
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.5rem;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  font-size: 0.8125rem;
+}
+
+.operations-request-modal-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.operations-request-modal-submit {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.operations-request-modal-cancel {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.operations-request-modal-cancel:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.operations-request-modal-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #d1d5db;
+  border-top-color: #111827;
+  border-radius: 999px;
+  animation: spin 0.7s linear infinite;
+}
+
+@media (min-width: 640px) {
+  .operations-request-modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .operations-request-modal {
+    max-width: 26rem;
+    max-height: min(88vh, 580px);
+    border-radius: 1rem;
+  }
+
+  .operations-request-modal-header {
+    padding: 1.1rem 1.1rem 0.85rem;
+    padding-right: 2.85rem;
+  }
+
+  .operations-request-modal-form {
+    padding: 0.85rem 1.1rem 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .operations-request-modal-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .operations-request-modal-field--full {
+    grid-column: auto;
+  }
+}
+
 .operations-admin-partition-tabs {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -9159,11 +9419,15 @@ body.home-menu-open {
 .operations-admin-request-status {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.5rem;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.24rem 0.55rem;
   border-radius: 999px;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  text-transform: capitalize;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .operations-admin-request-status--pending {
@@ -9184,11 +9448,20 @@ body.home-menu-open {
   border: 1px solid #e5e7eb;
 }
 
-.operations-admin-request-actions {
-  flex-direction: row;
-  flex-wrap: wrap;
+.operations-admin-request-status-row {
+  display: inline-flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 0.35rem;
+  max-width: 100%;
+}
+
+.operations-admin-request-status-divider {
+  width: 1px;
+  height: 1.15rem;
+  margin: 0 0.05rem;
+  background: #e5e7eb;
+  flex-shrink: 0;
 }
 
 .operations-admin-table--requests .operations-admin-name {
@@ -9217,9 +9490,14 @@ body.home-menu-open {
 }
 
 .operations-admin-request-service-cell,
-.operations-admin-request-contact-cell,
-.operations-admin-request-status-cell {
+.operations-admin-request-contact-cell {
   vertical-align: top;
+}
+
+.operations-admin-request-status-cell {
+  vertical-align: middle;
+  min-width: 15.5rem;
+  white-space: nowrap;
 }
 
 .operations-admin-request-service-meta {
@@ -9245,12 +9523,13 @@ body.home-menu-open {
   word-break: break-word;
 }
 
-.operations-admin-request-status-cell {
-  min-width: 8.5rem;
+.operations-admin-table--requests .operations-admin-request-status-col {
+  min-width: 15.5rem;
+  white-space: nowrap;
 }
 
-.operations-admin-request-status-cell .operations-admin-request-status {
-  margin-bottom: 0.15rem;
+.operations-admin-table--requests .operations-admin-request-status-cell {
+  text-align: left;
 }
 
 .operations-admin-table-wrap:has(.operations-admin-table--requests) {
@@ -9263,28 +9542,63 @@ body.home-menu-open {
   }
 
   .operations-admin-table--requests {
-    min-width: 760px;
+    min-width: 920px;
   }
 }
 
 .operations-admin-request-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border: 1px solid #e5e7eb;
   border-radius: 0.45rem;
   background: #fff;
   color: #374151;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  padding: 0.25rem 0.45rem;
+  line-height: 1;
+  padding: 0.34rem 0.5rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .operations-admin-request-action-btn:hover {
   background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.operations-admin-request-action-btn--primary {
+  color: #fff;
+  background: #4f46e5;
+  border-color: #4338ca;
+}
+
+.operations-admin-request-action-btn--primary:hover {
+  background: #4338ca;
+  border-color: #3730a3;
+}
+
+.operations-admin-request-action-btn--icon {
+  width: 1.75rem;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
 }
 
 .operations-admin-request-action-btn--muted {
   color: #6b7280;
+}
+
+.operations-admin-request-action-btn--danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.operations-admin-request-action-btn--danger:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
 }
 
 @media (max-width: 900px) {
@@ -9471,6 +9785,181 @@ body.home-menu-open {
 
 .operations-admin-notice--error .operations-admin-notice-icon {
   color: #dc2626;
+}
+
+.operations-contact-modal-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.operations-contact-modal-action--email {
+  color: #4338ca;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.operations-contact-modal-action--email:hover {
+  background: #e0e7ff;
+}
+
+.operations-contact-modal-action--phone {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.operations-contact-modal-action--phone:hover {
+  background: #d1fae5;
+}
+
+.operations-contact-modal-btn {
+  min-height: 2.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.operations-contact-modal-btn--muted {
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+}
+
+.operations-contact-modal-btn--primary {
+  color: #fff;
+  background: #4f46e5;
+  border: 1px solid #4338ca;
+}
+
+.operations-contact-modal-btn--primary:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.operations-contact-modal-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.operations-my-requests {
+  margin-top: 0.25rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.operations-my-requests-empty {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px dashed #d1d5db;
+  background: #f9fafb;
+}
+
+.operations-my-requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.operations-my-requests-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.operations-my-requests-date {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+
+.operations-my-requests-service {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.operations-my-requests-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.45rem;
+}
+
+.operations-my-requests-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.operations-my-requests-action--hire {
+  color: #4338ca;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.operations-my-requests-action--booking {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.operations-my-requests-price {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.operations-my-requests-status {
+  flex-shrink: 0;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.operations-my-requests-status--pending {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+
+.operations-my-requests-status--contacted {
+  color: #1d4ed8;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+}
+
+.operations-my-requests-status--closed {
+  color: #374151;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
 }
 
 .operations-admin-toolbar {
@@ -9722,7 +10211,197 @@ body.home-menu-open {
 .operations-role-modal-form {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.operations-role-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.operations-role-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 26rem;
+  max-height: min(92vh, 560px);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+.operations-role-modal-glow {
+  position: absolute;
+  top: -6rem;
+  right: -6rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 999px;
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+.operations-role-modal-glow--assistance {
+  background: rgba(199, 210, 254, 0.35);
+}
+
+.operations-role-modal-glow--compliance {
+  background: rgba(167, 243, 208, 0.35);
+}
+
+.operations-role-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.operations-role-modal-close:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.operations-role-modal-header {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  padding: 1rem 1rem 0.75rem;
+  padding-right: 2.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.operations-role-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  margin-bottom: 0.45rem;
+  border-radius: 0.375rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.operations-role-modal-badge--assistance {
+  color: #4338ca;
+  background: #eef2ff;
+}
+
+.operations-role-modal-badge--compliance {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.operations-role-modal-title {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.operations-role-modal-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.75rem;
+  overflow-y: auto;
+  padding-right: 0.1rem;
+}
+
+.operations-role-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.operations-role-modal-field--full {
+  grid-column: 1 / -1;
+}
+
+.operations-role-modal-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.operations-role-modal-input,
+.operations-role-modal-select {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #111827;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.operations-role-modal-input:focus,
+.operations-role-modal-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.operations-role-modal-textarea {
+  min-height: 4rem;
+  max-height: 6rem;
+  resize: vertical;
+}
+
+.operations-role-modal .operations-admin-select {
+  min-height: 2.25rem;
+  font-size: 0.875rem;
+}
+
+.operations-role-modal-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #9ca3af;
+}
+
+.operations-role-modal-hint--inline {
+  margin-top: 0.2rem;
+}
+
+.operations-role-modal-status {
+  padding-top: 0.15rem;
+}
+
+.operations-role-modal-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .operations-role-label {
@@ -9753,8 +10432,40 @@ body.home-menu-open {
 
 .operations-role-modal-actions {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.operations-role-modal-submit {
+  flex: 1;
+  min-height: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.operations-role-modal-cancel {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.operations-role-modal-cancel:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.operations-role-modal-cancel:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .operations-role-modal-actions .btn-primary {
@@ -9787,4 +10498,36 @@ body.home-menu-open {
   color: #111827;
   border-color: #9ca3af;
   background: #f9fafb;
+}
+
+@media (min-width: 640px) {
+  .operations-role-modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .operations-role-modal {
+    max-width: 24rem;
+    max-height: min(88vh, 520px);
+    border-radius: 1rem;
+  }
+
+  .operations-role-modal-header {
+    padding: 1.1rem 1.1rem 0.85rem;
+    padding-right: 2.85rem;
+  }
+
+  .operations-role-modal-form {
+    padding: 0.85rem 1.1rem 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .operations-role-modal-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .operations-role-modal-field--full {
+    grid-column: auto;
+  }
 }

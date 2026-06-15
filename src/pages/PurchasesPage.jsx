@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ShoppingBag, Globe, Cpu, BadgeCheck, Handshake } from 'lucide-react';
-import { domainAPI, domainStorefrontAPI, technologyAPI, ventureAPI, domainTransferAPI } from '../api/services';
-import { unwrapApiList } from '../utils/apiResponse';
+import { domainAPI, domainStorefrontAPI, technologyAPI, domainTransferAPI, ventureDealAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { generateInvoice } from '../utils/generateInvoice';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +10,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import { asArray } from '../utils/asArray';
+import { unwrapApiData } from '../utils/apiResponse';
 import { extractDomainList } from '../utils/domainApiAdapter';
 import {
   isRegistrationPurchase,
@@ -19,6 +19,8 @@ import {
   registrationStatusLabel,
 } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
+import VentureDealRow from '../components/venture/VentureDealRow';
+import { isVentureDealBuyer } from '../utils/ventureDeal';
 
 const PURCHASES_STAT_ICON = { size: 20, strokeWidth: 2, 'aria-hidden': true };
 
@@ -44,16 +46,19 @@ export default function PurchasesPage() {
       domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
       domainTransferAPI.listBuyer().catch(() => ({ data: { items: [] } })),
-      ventureAPI.getMyPurchases().catch(() => ({ data: [] })),
-    ]).then(([d, reg, s, transfers, v]) => {
+      ventureDealAPI.getMy().catch(() => ({ data: [] })),
+    ]).then(([d, reg, s, transfers, ventureDeals]) => {
       setDomains(extractDomainList(d.data));
       const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
       setRegistrations(regList.filter(isRegistrationPurchase));
       setSwPurchases(asArray(s.data));
       setDomainTransfers(transfers.data?.items || []);
-      setVenturePurchases(unwrapApiList(v));
+      const deals = asArray(unwrapApiData(ventureDeals.data) || ventureDeals.data);
+      setVenturePurchases(
+        deals.filter((deal) => isVentureDealBuyer(deal, user))
+      );
     }).finally(() => setLoading(false));
-  }, []);
+  }, [user?.id]);
 
   const completedDomains = asArray(domains).filter(d =>
     d.paymentStatus === 'COMPLETED' ||
@@ -63,7 +68,7 @@ export default function PurchasesPage() {
   );
   const completedRegistrations = asArray(registrations);
   const completedTechnology = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
-  const ventureItems = asArray(venturePurchases).map((v) => ({ ...v, _type: 'venture' }));
+  const ventureItems = asArray(venturePurchases).map((d) => ({ ...d, _type: 'venture' }));
   const domainTabCount = completedDomains.length + completedRegistrations.length + domainTransfers.length;
   const technologyCount = completedTechnology.length;
   const ventureCount = ventureItems.length;
@@ -202,16 +207,19 @@ export default function PurchasesPage() {
                   user={user}
                   t={t}
                 />
+              ) : item._type === 'venture' ? (
+                <VentureDealRow
+                  key={'v-' + item.id}
+                  deal={item}
+                  formatPrice={formatPrice}
+                  user={user}
+                  onPayNow={(deal) => navigate(`/ventures/deals/${deal.id}`)}
+                />
               ) : item._type === 'domain' ? (
                 <DomainPurchaseRow
                   key={'d-' + item.id}
                   domain={item}
                   user={user}
-                />
-              ) : item._type === 'venture' ? (
-                <VenturePurchaseRow
-                  key={'v-' + (item.ventureId || item.id)}
-                  purchase={item}
                 />
               ) : (
                 <TechnologyPurchaseRow
@@ -339,68 +347,6 @@ function RegistrationPurchaseRow({ order, user, t }) {
           <InvoiceDownloadButton
             onClick={() => generateInvoice({ type: 'domain_registration', item: order, user })}
           />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function VenturePurchaseRow({ purchase }) {
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  const navigate = useNavigate();
-  const brandName = purchase.brandName || purchase.brand_name || t('venture', { defaultValue: 'Venture' });
-  const amount = Number(purchase.amount ?? purchase.dealValue ?? 0);
-  const isAuction = purchase.purchaseSource === 'auction' || purchase.auctionId;
-  const purchasedAt = purchase.purchasedAt || purchase.purchased_at;
-
-  return (
-    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
-      <div className="flex justify-between flex-wrap gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded">
-              ◇ {t('purchasesBadgeVenture', { defaultValue: 'Venture' })}
-            </span>
-            {isAuction && (
-              <span className="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full">
-                {t('purchasesAuctionWin', { defaultValue: 'Auction win' })}
-              </span>
-            )}
-          </div>
-          <div className="font-bold text-lg text-gray-900">{brandName}</div>
-          {purchase.industry && (
-            <div className="text-xs text-gray-600">{purchase.industry}</div>
-          )}
-          {purchasedAt && (
-            <div className="text-xs text-gray-500 mt-0.5">
-              {new Date(purchasedAt).toLocaleDateString('en-IN')}
-            </div>
-          )}
-        </div>
-        <div className="text-right flex flex-col items-end gap-2">
-          {amount > 0 && (
-            <div className="text-xl font-semibold tabular-nums text-gray-900">
-              {formatPrice(amount)}
-            </div>
-          )}
-          {purchase.auctionId ? (
-            <button
-              type="button"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
-              onClick={() => navigate(`/venture-auction/${purchase.auctionId}`)}
-            >
-              {t('purchasesViewAuction', { defaultValue: 'View auction →' })}
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
-              onClick={() => navigate('/ventures')}
-            >
-              {t('browseVentures', { defaultValue: 'Browse Ventures' })} →
-            </button>
-          )}
         </div>
       </div>
     </div>

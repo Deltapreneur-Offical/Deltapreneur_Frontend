@@ -229,7 +229,7 @@ export default function SidebarLayout({ children }) {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
-            <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
+            <p className="text-gray-600 text-sm mb-6">Are you sure you want to log out?</p>
             <div className="flex gap-3">
               <button
                 className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"

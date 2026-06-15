@@ -16,11 +16,13 @@
   height: 100%;
 }
 
-.listing-card-glow-shell > .venture-listing-card,
+.listing-card-glow-shell > .venture-listing-card:not(.domain-listing-card--browse),
+.listing-card-glow-shell > article.venture-listing-card:not(.domain-listing-card--browse),
 .listing-card-glow-shell > .community-listing-card {
   width: 100%;
-  height: var(--listing-card-height);
-  max-height: var(--listing-card-height);
+  height: auto;
+  min-height: min-content;
+  max-height: none;
 }
 
 .listing-card-glow-shell > .technology-listing-card:not(.technology-listing-card--browse),

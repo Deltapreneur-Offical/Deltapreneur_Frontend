@@ -7,15 +7,31 @@ import FilterBar from '../components/common/FilterBar';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import OperationsRequestModal from '../components/operations/OperationsRequestModal';
 import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
-import { operationsAPI } from '../api/services';
+import { useAuth } from '../context/AuthContext';
+import { operationsAPI, operationsRequestAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
 import { resolveOperationsIcon } from '../utils/operationsIcons';
-import { formatOperationsPrice, isComplianceService } from '../utils/operationsPricing';
+import { formatOperationsPrice, formatRequestAdminPrice, isComplianceService } from '../utils/operationsPricing';
+import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
+
+function formatMyRequestDate(value) {
+  if (!value) return '—';
+  try {
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
 
 export default function OperationsPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionId = searchParams.get('section') || 'assistance';
   const activeSection = resolveOperationsSection(sectionId);
@@ -30,6 +46,28 @@ export default function OperationsPage() {
   const [sortBy, setSortBy] = useState('price_asc');
   const [requestTarget, setRequestTarget] = useState(null);
   const [requestSuccess, setRequestSuccess] = useState(null);
+  const [myRequests, setMyRequests] = useState([]);
+  const [myRequestsLoading, setMyRequestsLoading] = useState(false);
+
+  const loadMyRequests = useCallback(async () => {
+    if (!user) {
+      setMyRequests([]);
+      return;
+    }
+    setMyRequestsLoading(true);
+    try {
+      const { data } = await operationsRequestAPI.listMine();
+      setMyRequests(asArray(data));
+    } catch {
+      setMyRequests([]);
+    } finally {
+      setMyRequestsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadMyRequests();
+  }, [loadMyRequests]);
 
   useEffect(() => {
     let cancelled = false;
@@ -303,6 +341,50 @@ export default function OperationsPage() {
             </div>
           )}
         </section>
+
+        {user && (
+          <section className="operations-my-requests">
+            <div className="mb-3">
+              <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
+                {t('operationsMyRequestsTitle', { defaultValue: 'My Requests' })}
+              </h2>
+              <p className="mt-0.5 text-sm text-gray-500">
+                {t('operationsMyRequestsSubtitle', {
+                  defaultValue: 'Track whether you submitted a hire request or booked a compliance slot.',
+                })}
+              </p>
+            </div>
+
+            {myRequestsLoading ? (
+              <PageContentSkeleton variant="table" rows={3} />
+            ) : myRequests.length === 0 ? (
+              <div className="operations-my-requests-empty">
+                <p className="text-sm font-medium text-gray-700">
+                  {t('operationsMyRequestsEmpty', {
+                    defaultValue: 'You have not submitted any hire or booking requests yet.',
+                  })}
+                </p>
+              </div>
+            ) : (
+              <div className="operations-my-requests-list">
+                {myRequests.map((row) => (
+                    <article key={row.id} className="operations-my-requests-item">
+                      <div className="operations-my-requests-item-main">
+                        <p className="operations-my-requests-date">{formatMyRequestDate(row.createdAt)}</p>
+                        <h3 className="operations-my-requests-service">{row.serviceName}</h3>
+                        <div className="operations-my-requests-meta">
+                          <span className="operations-my-requests-price">{formatRequestAdminPrice(row)}</span>
+                        </div>
+                      </div>
+                      <span className={`operations-my-requests-status operations-my-requests-status--${String(row.status || '').toLowerCase()}`}>
+                        {getRequestStatusLabel(row.status, t)}
+                      </span>
+                    </article>
+                  ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       {requestTarget && (
@@ -312,6 +394,7 @@ export default function OperationsPage() {
           onSuccess={(payload) => {
             setRequestTarget(null);
             setRequestSuccess(payload);
+            loadMyRequests();
           }}
         />
       )}

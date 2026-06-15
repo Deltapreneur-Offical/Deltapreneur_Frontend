@@ -6,12 +6,19 @@ export const BROWSE_LIST_PAGE_SIZE = 50;
 /** Home sections only need a small slice before preview selection. */
 export const HOME_PREVIEW_PAGE_SIZE = 48;
 
+/** Params for homepage sections — only admin-featured rows. */
+export const HOME_FEATURED_LIST_PARAMS = {
+  page: 1,
+  pageSize: 5,
+  featured_only: true,
+};
+
 /**
  * Fetch one page from a list API that accepts { page, page_size }.
  * @param {function(object): Promise} requestFn - e.g. (p) => domainAPI.getAll(p)
  */
-export async function fetchListPage(requestFn, { page = 1, pageSize = BROWSE_LIST_PAGE_SIZE } = {}) {
-  const { data } = await requestFn({ page, page_size: pageSize });
+export async function fetchListPage(requestFn, { page = 1, pageSize = BROWSE_LIST_PAGE_SIZE, ...extraParams } = {}) {
+  const { data } = await requestFn({ page, page_size: pageSize, ...extraParams });
   const items = asArray(data);
   const total = Number(data?.total ?? items.length);
   return {

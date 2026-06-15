@@ -1,5 +1,6 @@
 import api from '../api/axios';
 import { openRazorpayCheckout } from './razorpayCheckout';
+import { computeInrCommission } from './money';
 
 export async function fetchListingFeesAndCharges() {
   const { data } = await api.get('/api/v1/auction-fees/listing-fees-and-charges');
@@ -72,16 +73,13 @@ export function payBidFee({
 }
 
 export function computeCommissionBreakdown(sellerAmount, commissionPercent = 15) {
-  const listingPrice = Number(sellerAmount) || 0;
-  const pct = Number(commissionPercent) || 0;
-  const commission = Math.round(listingPrice * pct) / 100;
-  const sellerEarnings = Math.round((listingPrice - commission) * 100) / 100;
+  const breakdown = computeInrCommission(sellerAmount, commissionPercent);
   return {
-    listingPrice,
-    sellerAmount: sellerEarnings,
-    sellerEarnings,
-    commissionAmount: commission,
-    finalListingPrice: listingPrice,
-    commissionPercent: pct,
+    listingPrice: breakdown.amount,
+    sellerAmount: breakdown.net,
+    sellerEarnings: breakdown.net,
+    commissionAmount: breakdown.commission,
+    finalListingPrice: breakdown.amount,
+    commissionPercent: breakdown.percent,
   };
 }

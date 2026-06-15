@@ -163,7 +163,7 @@ export default function Home() {
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeComplianceTitle', { defaultValue: 'Compliances' }),
+      title: t('homeComplianceTitle', { defaultValue: 'Compliance' }),
       onClick: () => goToOperations('compliance'),
     },
   ];

@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck } from 'lucide-react';
 import OperationsAdminPartitionTabs from '../components/operations/OperationsAdminPartitionTabs';
+import OperationsContactModal from '../components/operations/OperationsContactModal';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 import { operationsAdminAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
 import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
 import { formatRequestAdminPrice } from '../utils/operationsPricing';
+import { getRequestActionLabel, getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
@@ -127,6 +130,10 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [modal, setModal] = useState(null);
+  const [contactRequest, setContactRequest] = useState(null);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [deleteRequest, setDeleteRequest] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [notice, setNotice] = useState(null);
   const noticeTimerRef = useRef(null);
 
@@ -260,12 +267,80 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     try {
       await operationsAdminAPI.patchRequestStatus(row.id, { status });
       await loadRequests();
-      showNotice(t('adminOperationsRequestUpdated', { defaultValue: 'Request status updated.' }));
+      if (status === 'CONTACTED') {
+        showNotice(
+          t('adminOperationsRequestContactedSuccess', {
+            defaultValue: 'Customer marked as contacted successfully.',
+          }),
+        );
+      } else if (status === 'PENDING') {
+        showNotice(
+          t('adminOperationsRequestRevertedSuccess', {
+            defaultValue: 'Request reverted to pending.',
+          }),
+        );
+      } else if (status === 'CLOSED') {
+        showNotice(
+          t('adminOperationsRequestClosedSuccess', {
+            defaultValue: 'Request closed successfully.',
+          }),
+        );
+      } else {
+        showNotice(t('adminOperationsRequestUpdated', { defaultValue: 'Request status updated.' }));
+      }
     } catch (err) {
       showNotice(
         readApiError(err) || t('adminOperationsRequestUpdateFailed', { defaultValue: 'Failed to update request.' }),
         'error',
       );
+    }
+  };
+
+  const openContactModal = (row) => {
+    setContactRequest(row);
+  };
+
+  const handleMarkContacted = async () => {
+    if (!contactRequest) return;
+    setContactLoading(true);
+    try {
+      await operationsAdminAPI.patchRequestStatus(contactRequest.id, { status: 'CONTACTED' });
+      await loadRequests();
+      setContactRequest(null);
+      showNotice(
+        t('adminOperationsRequestContactedSuccess', {
+          defaultValue: 'Customer marked as contacted successfully.',
+        }),
+      );
+    } catch (err) {
+      showNotice(
+        readApiError(err) || t('adminOperationsRequestUpdateFailed', { defaultValue: 'Failed to update request.' }),
+        'error',
+      );
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
+  const handleDeleteRequest = async () => {
+    if (!deleteRequest) return;
+    setDeleteLoading(true);
+    try {
+      await operationsAdminAPI.removeRequest(deleteRequest.id);
+      await loadRequests();
+      setDeleteRequest(null);
+      showNotice(
+        t('adminOperationsRequestDeletedSuccess', {
+          defaultValue: 'Request deleted successfully.',
+        }),
+      );
+    } catch (err) {
+      showNotice(
+        readApiError(err) || t('adminOperationsRequestDeleteFailed', { defaultValue: 'Failed to delete request.' }),
+        'error',
+      );
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -313,7 +388,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
 
       {notice && (
         <div
-          className={`operations-admin-notice operations-admin-notice--${notice.type}`}
+          className={`operations-admin-toast operations-admin-toast--${notice.type}`}
           role="status"
           aria-live="polite"
         >
@@ -367,8 +442,8 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   onChange={(e) => setRequestTypeFilter(e.target.value)}
                 >
                   <option value="all">{t('adminOperationsFilterAllRequestTypes', { defaultValue: 'All Types' })}</option>
-                  <option value="hire">{t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance' })}</option>
-                  <option value="booking">{t('operationsSectionCompliances', { defaultValue: 'Compliances' })}</option>
+                  <option value="hire">{t('operationsHire', { defaultValue: 'Hire' })}</option>
+                  <option value="booking">{t('operationsBookSlot', { defaultValue: 'Book Your Slot' })}</option>
                 </select>
                 <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
               </div>
@@ -433,7 +508,9 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   <th>{t('adminOperationsColServiceName', { defaultValue: 'Service' })}</th>
                   <th>{t('adminOperationsColContact', { defaultValue: 'Contact' })}</th>
                   <th>{t('adminOperationsColDescription', { defaultValue: 'Message' })}</th>
-                  <th>{t('adminOperationsColStatus', { defaultValue: 'Status' })}</th>
+                  <th className="operations-admin-request-status-col">
+                    {t('adminOperationsColStatus', { defaultValue: 'Status' })}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -461,9 +538,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                           <div className="operations-admin-name">{row.serviceName}</div>
                           <div className="operations-admin-request-service-meta">
                             <span className={`operations-admin-request-type operations-admin-request-type--${isHire ? 'hire' : 'booking'}`}>
-                              {isHire
-                                ? t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance' })
-                                : t('operationsSectionCompliances', { defaultValue: 'Compliances' })}
+                              {getRequestActionLabel(row, t)}
                             </span>
                             <span className="operations-admin-price">{formatRequestAdminPrice(row)}</span>
                           </div>
@@ -480,28 +555,51 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                           {row.message ? truncate(row.message, 80) : '—'}
                         </td>
                         <td className="operations-admin-request-status-cell">
-                          <span className={`operations-admin-request-status ${REQUEST_STATUS_STYLES[row.status] || ''}`}>
-                            {row.status}
-                          </span>
-                          <div className="operations-admin-request-actions">
+                          <div className="operations-admin-request-status-row">
+                            <span className={`operations-admin-request-status ${REQUEST_STATUS_STYLES[row.status] || ''}`}>
+                              {getRequestStatusLabel(row.status, t)}
+                            </span>
+                            <span className="operations-admin-request-status-divider" aria-hidden />
                             {row.status === 'PENDING' && (
                               <button
                                 type="button"
-                                className="operations-admin-request-action-btn"
-                                onClick={() => handleRequestStatus(row, 'CONTACTED')}
+                                className="operations-admin-request-action-btn operations-admin-request-action-btn--primary"
+                                onClick={() => openContactModal(row)}
                               >
-                                {t('adminOperationsMarkContacted', { defaultValue: 'Contacted' })}
+                                {t('adminOperationsMarkContacted', { defaultValue: 'Contact' })}
+                              </button>
+                            )}
+                            {row.status === 'CONTACTED' && (
+                              <button
+                                type="button"
+                                className="operations-admin-request-action-btn"
+                                onClick={() => handleRequestStatus(row, 'PENDING')}
+                                title={t('adminOperationsRevertToPending', { defaultValue: 'Revert to Pending' })}
+                              >
+                                {t('adminOperationsRevertShort', { defaultValue: 'Revert' })}
                               </button>
                             )}
                             {row.status !== 'CLOSED' && (
                               <button
                                 type="button"
-                                className="operations-admin-request-action-btn operations-admin-request-action-btn--muted"
+                                className="operations-admin-request-action-btn"
                                 onClick={() => handleRequestStatus(row, 'CLOSED')}
                               >
                                 {t('adminOperationsMarkClosed', { defaultValue: 'Close' })}
                               </button>
                             )}
+                            <button
+                              type="button"
+                              className="operations-admin-request-action-btn operations-admin-request-action-btn--icon operations-admin-request-action-btn--danger"
+                              onClick={() => setDeleteRequest(row)}
+                              aria-label={t('adminOperationsDeleteRequestAria', {
+                                name: row.fullName,
+                                defaultValue: 'Delete request from {{name}}',
+                              })}
+                              title={t('delete', { defaultValue: 'Delete' })}
+                            >
+                              <Trash2 size={14} aria-hidden />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -627,6 +725,36 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
           onSaved={handleSaved}
         />
       )}
+
+      {contactRequest && (
+        <OperationsContactModal
+          request={contactRequest}
+          loading={contactLoading}
+          onClose={() => {
+            if (!contactLoading) setContactRequest(null);
+          }}
+          onMarkContacted={handleMarkContacted}
+        />
+      )}
+
+      <ConfirmationModal
+        open={Boolean(deleteRequest)}
+        title={t('adminOperationsDeleteRequestTitle', { defaultValue: 'Delete request?' })}
+        message={t('adminOperationsDeleteRequestMessage', {
+          name: deleteRequest?.fullName || '',
+          service: deleteRequest?.serviceName || '',
+          defaultValue: 'This will permanently remove the request from {{name}} for {{service}}. This cannot be undone.',
+        })}
+        confirmLabel={t('delete', { defaultValue: 'Delete' })}
+        cancelLabel={t('cancel', { defaultValue: 'Cancel' })}
+        variant="red"
+        loading={deleteLoading}
+        loadingLabel={t('adminOperationsDeletingRequest', { defaultValue: 'Deleting…' })}
+        onCancel={() => {
+          if (!deleteLoading) setDeleteRequest(null);
+        }}
+        onConfirm={handleDeleteRequest}
+      />
     </div>
   );
 }

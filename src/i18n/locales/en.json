@@ -2043,7 +2043,7 @@
   "adminOperationsColUser": "User",
   "adminOperationsColPhone": "Phone",
   "adminOperationsColCompany": "Company",
-  "adminOperationsMarkContacted": "Contacted",
+  "adminOperationsMarkContacted": "Contact",
   "adminOperationsMarkContactedConfirm": "Mark as Contacted",
   "adminOperationsRevertToPending": "Revert to Pending",
   "adminOperationsRevertShort": "Revert",

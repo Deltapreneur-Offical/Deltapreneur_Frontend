@@ -566,7 +566,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                                 className="operations-admin-request-action-btn operations-admin-request-action-btn--primary"
                                 onClick={() => openContactModal(row)}
                               >
-                                {t('adminOperationsMarkContacted', { defaultValue: 'Contacted' })}
+                                {t('adminOperationsMarkContacted', { defaultValue: 'Contact' })}
                               </button>
                             )}
                             {row.status === 'CONTACTED' && (

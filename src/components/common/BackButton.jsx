@@ -1,17 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * @param {string} [to] - navigate here; omit to use history back
- * @param {string} [label] - default "Back"
+ * @param {string} [label] - default translated "Back"
  */
 export default function BackButton({
   to,
-  label = 'Back',
+  label,
   className = '',
   variant = 'default',
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('auctionDetailBack');
 
   const handleClick = () => {
     if (to) {
@@ -38,7 +41,7 @@ export default function BackButton({
       className={`${base} ${className}`.trim()}
     >
       <ArrowLeft size={16} className="shrink-0" aria-hidden />
-      <span>{label}</span>
+      <span>{resolvedLabel}</span>
     </button>
   );
 }

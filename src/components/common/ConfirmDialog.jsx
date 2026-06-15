@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+const CONFIRM_BTN_STYLE =
+  'flex w-full min-h-[2.75rem] items-center justify-center rounded-full border border-gray-900 bg-white px-4 text-center text-sm font-semibold leading-none whitespace-nowrap text-gray-900 transition-colors hover:bg-gray-50';
+
 /**
  * Usage:
  * <ConfirmDialog
@@ -15,67 +18,61 @@ import { useTranslation } from 'react-i18next';
  */
 export default function ConfirmDialog({
   open, title, message,
-  confirmLabel = 'Confirm', cancelLabel = 'Cancel',
+  confirmLabel, cancelLabel,
   danger = false,
   onConfirm, onCancel,
 }) {
-  // Close on Escape
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!open) return;
-    const handler = e => { if (e.key === 'Escape') onCancel(); };
+    const handler = (e) => { if (e.key === 'Escape') onCancel(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open, onCancel]);
 
-  const { t } = useTranslation();
-  const resolvedConfirm = confirmLabel ?? t('confirm', 'Confirm');
-  const resolvedCancel = cancelLabel ?? t('cancel', 'Cancel');
+  const resolvedConfirm = confirmLabel ?? t('confirm');
+  const resolvedCancel = cancelLabel ?? t('cancel');
 
   if (!open) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-[999] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
-      style={{ background: 'rgba(17, 24, 39, 0.42)' }}
-      onClick={e => e.target === e.currentTarget && onCancel()}
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900/40 p-6 backdrop-blur-md animate-fadeIn"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
-      <div className="relative w-full max-w-[420px] text-center bg-white border border-gray-200 rounded-2xl shadow-[0_24px_60px_rgba(17,24,39,0.2)] animate-slideUp overflow-hidden p-9 mx-4 md:mx-0">
-        {/* Glow Effect */}
-        <div 
-          className="absolute -top-20 -right-20 w-[250px] h-[250px] rounded-full blur-[80px] pointer-events-none opacity-[0.18]"
-          style={{ background: '#e0e7ff' }}
+      <div className="relative mx-4 w-full max-w-[420px] overflow-hidden rounded-2xl border border-gray-200 bg-white p-9 text-center shadow-[0_24px_60px_rgba(17,24,39,0.2)] animate-slideUp md:mx-0">
+        <div
+          className="pointer-events-none absolute -right-20 -top-20 h-[250px] w-[250px] rounded-full bg-indigo-100 opacity-20 blur-[80px]"
+          aria-hidden
         />
 
-        {/* Icon */}
-        <div className="text-[2rem] mb-3 relative z-10">
+        <div className="relative z-10 mb-3 text-[2rem]">
           {danger ? '⚠️' : '❓'}
         </div>
 
-        {/* Title */}
-        <h2 className="font-display text-[1.65rem] font-semibold mb-2 text-gray-900 relative z-10">
+        <h2 className="relative z-10 mb-2 font-display text-[1.65rem] font-semibold text-gray-900">
           {title}
         </h2>
 
-        {/* Message */}
-        {message && (
-          <p className="text-gray-600 text-[0.9rem] mb-6 leading-relaxed relative z-10">
+        {message ? (
+          <p className="relative z-10 mb-6 text-[0.9rem] leading-relaxed text-gray-600">
             {message}
           </p>
-        )}
+        ) : null}
 
-        {/* Actions */}
-        <div className="flex gap-3 justify-center items-center w-full max-w-[360px] mx-auto relative z-10">
+        <div className="relative z-10 mx-auto grid w-full max-w-[360px] grid-cols-2 gap-3">
           <button
+            type="button"
             onClick={onConfirm}
-            className={`btn-glow flex-1 min-w-0 ${
-              danger ? 'border-red-400 text-red-600' : ''
-            }`}
+            className={CONFIRM_BTN_STYLE}
           >
             {resolvedConfirm}
           </button>
-          <button 
-            onClick={onCancel} 
-            className="btn-glow flex-1 min-w-0"
+          <button
+            type="button"
+            onClick={onCancel}
+            className={CONFIRM_BTN_STYLE}
           >
             {resolvedCancel}
           </button>

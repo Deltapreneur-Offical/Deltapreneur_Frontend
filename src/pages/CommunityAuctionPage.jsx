@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useCommunityAuction } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
@@ -46,6 +47,7 @@ function useCountdown(endTime) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CommunityAuctionPage() {
+  const { t } = useTranslation();
   const { auctionId } = useParams();
   const { user }      = useAuth();
   const navigate      = useNavigate();
@@ -127,7 +129,7 @@ export default function CommunityAuctionPage() {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `Creator auction participation fee`,
+        description: t('auctionDetailParticipationFeeCreator'),
         onSuccess: async (response) => {
           try {
             await communityAuctionAPI.participationVerify(auction.id, {
@@ -137,19 +139,19 @@ export default function CommunityAuctionPage() {
             });
             setParticipation((p) => ({ ...p, paid: true }));
           } catch {
-            setParticipationError('Payment verification failed. Please retry.');
+            setParticipationError(t('auctionDetailPaymentVerifyFailedRetry'));
           } finally {
             setPayingParticipation(false);
           }
         },
         onFailure: async () => {
-          setParticipationError('Participation payment failed. Please retry.');
+          setParticipationError(t('auctionDetailParticipationPaymentFailed'));
           setPayingParticipation(false);
         },
         onDismiss: async () => setPayingParticipation(false),
       });
     } catch (err) {
-      setParticipationError(err?.response?.data?.error || err?.response?.data?.message || 'Failed to start payment.');
+      setParticipationError(err?.response?.data?.error || err?.response?.data?.message || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
     }
   };
@@ -288,9 +290,9 @@ export default function CommunityAuctionPage() {
     try {
       await communityAuctionAPI.close(auction.id);
       await refresh();
-      setCloseMessage('Auction closed successfully. Bidding is disabled.');
+      setCloseMessage(t('auctionDetailClosedSuccess'));
     } catch (e) {
-      setCloseError(resolveApiError(e, 'Failed to close auction.'));
+      setCloseError(resolveApiError(e, t('auctionDetailFailedClose')));
     } finally {
       setClosingAuction(false);
     }
@@ -307,8 +309,8 @@ export default function CommunityAuctionPage() {
   if (!auction) return (
     <AppLayout>
       <div className="text-center py-20">
-        <h3 className="font-display text-2xl font-bold text-gray-900">Auction not found</h3>
-        <button className="btn-glow mt-4" onClick={() => navigate('/auctions')}>Back to Auctions</button>
+        <h3 className="font-display text-2xl font-bold text-gray-900">{t('auctionDetailNotFound')}</h3>
+        <button className="btn-glow mt-4" onClick={() => navigate('/auctions')}>{t('auctionDetailBackToAuctions')}</button>
       </div>
     </AppLayout>
   );
@@ -321,7 +323,7 @@ export default function CommunityAuctionPage() {
         <div className="mb-8">
           <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4"
             onClick={() => navigate('/auctions')}>
-            ← Back to Auctions
+            {t('auctionDetailBackToAuctions')}
           </button>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
@@ -338,7 +340,7 @@ export default function CommunityAuctionPage() {
               <div className="flex items-center gap-2 mt-1">
                 <span className={`w-2 h-2 rounded-full ${wsState === 'live' ? 'bg-green-600' : wsState === 'connecting' ? 'bg-amber-500' : 'bg-red-600'}`} />
                 <span className={`text-xs ${wsState === 'live' ? 'text-green-600' : wsState === 'connecting' ? 'text-amber-600' : 'text-red-600'}`}>
-                  {wsState === 'live' ? 'Live' : wsState === 'connecting' ? 'Connecting…' : 'Live updates paused'}
+                  {wsState === 'live' ? t('auctionDetailLive') : wsState === 'connecting' ? t('auctionDetailConnecting') : t('auctionDetailLivePaused')}
                 </span>
               </div>
             </div>
@@ -347,7 +349,7 @@ export default function CommunityAuctionPage() {
             {isActive && (
               <div className="text-right">
                 <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">
-                  {auction.status === 'EXTENDED' ? '⚡ Extended — Ends in' : 'Ends in'}
+                  {auction.status === 'EXTENDED' ? t('auctionDetailEndsExtended') : t('auctionsPageEndsIn')}
                 </div>
                 <div className={`font-display text-3xl font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-indigo-600'}`}>
                   {timeLeft}
@@ -677,10 +679,10 @@ export default function CommunityAuctionPage() {
 
       <ConfirmDialog
         open={showCloseConfirm}
-        title="Close this auction?"
-        message="Are you sure you want to close this auction? Bidding will stop and the auction will be marked closed."
-        confirmLabel="Close Auction"
-        cancelLabel="Cancel"
+        title={t('auctionDetailCloseTitle')}
+        message={t('auctionDetailCloseMessage')}
+        confirmLabel={t('auctionDetailCloseAuction')}
+        cancelLabel={t('cancel')}
         danger
         onConfirm={handleClose}
         onCancel={() => setShowCloseConfirm(false)}

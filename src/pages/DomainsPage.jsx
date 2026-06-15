@@ -226,7 +226,7 @@ export default function DomainsPage() {
         {(showForm || editTarget) ? (
           <>
             <ListingBackLink
-              label="Back to Domains"
+              label={t('listingBackToDomains')}
               onClick={() => { setShowForm(false); setEditTarget(null); }}
             />
             <DomainForm
@@ -1044,7 +1044,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
             const svc = ADDON_SERVICES.find(s => s.key === k);
             return svc ? (
               <div key={k} className="flex justify-between text-indigo-600 mb-1">
-                <span className="truncate mr-2">{addonLabel(k)}</span>
+                <span className="truncate mr-2">{addonLabel(k, t)}</span>
                 <span>{formatPrice(svc.price)}</span>
               </div>
             ) : null;
@@ -1053,7 +1053,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
             const svc = VA_SERVICES.find((s) => s.key === k);
             return svc ? (
               <div key={k} className="flex justify-between text-[#7c6fe0] mb-1">
-                <span className="truncate mr-2">{vaLabel(k)}</span>
+                <span className="truncate mr-2">{vaLabel(k, t)}</span>
                 <span>{formatPrice(svc.price)}</span>
               </div>
             ) : null;

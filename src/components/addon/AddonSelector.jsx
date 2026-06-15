@@ -8,7 +8,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useCurrency from '../../context/CurrencyContext';
-import i18n from '../../i18n';
 import AddonAccordionCard from './AddonAccordionCard';
 import { ADDON_SERVICES_FROM_CATALOG } from '../../utils/complianceServicesCatalog';
 
@@ -20,9 +19,9 @@ export function addonTotal(selected) {
     .reduce((sum, service) => sum + service.price, 0);
 }
 
-export function addonLabel(key) {
+export function addonLabel(key, translate = (k, opts) => k) {
   const service = ADDON_SERVICES.find((item) => item.key === key);
-  return service ? i18n.t(service.labelKey) : key;
+  return service ? translate(service.labelKey) : key;
 }
 
 function BusinessIcon() {

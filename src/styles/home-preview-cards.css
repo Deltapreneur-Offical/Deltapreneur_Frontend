@@ -567,10 +567,11 @@
 }
 
 .home-auction-preview-card__bid-value {
-  font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.1;
+  letter-spacing: -0.02em;
   color: #0f172a;
   white-space: nowrap;
   overflow: hidden;
@@ -636,17 +637,19 @@
 }
 
 .home-auction-preview-card__footer-value {
-  font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: #0f172a;
   line-height: 1.1;
 }
 
 .home-auction-preview-card__footer-time {
-  font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: #d97706;
   line-height: 1.1;
   white-space: nowrap;

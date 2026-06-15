@@ -90,7 +90,7 @@ export default function NewVenturePage() {
       )}
 
       <div className="max-w-full w-full">
-        <ListingBackLink to="/ventures" label="Back to Ventures" />
+        <ListingBackLink to="/ventures" label={t('listingBackToVentures')} />
         <div className="mb-8">
           <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">{t('newVentureTitle')}</h1>
           <p className="text-gray-600">{t('newVentureSubtitle')}</p>

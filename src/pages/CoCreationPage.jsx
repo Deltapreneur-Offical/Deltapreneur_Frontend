@@ -195,7 +195,7 @@ export default function CoCreationPage() {
         {(showForm || editTarget) && user ? (
           <>
             <ListingBackLink
-              label="Back to Technology"
+              label={t('listingBackToTechnology')}
               onClick={() => { setShowForm(false); setEditTarget(null); }}
             />
             <SoftwareForm
@@ -262,7 +262,7 @@ export default function CoCreationPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search software by name, description or tech stack…"
+          placeholder={t('technologyPageSearchPlaceholder')}
           priceSymbol={getSymbol(currency)}
           theme="light"
         />
@@ -376,9 +376,9 @@ export default function CoCreationPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Remove Software Listing?"
-        message="This will remove your software from the marketplace."
-        confirmLabel="Remove"
+        title={t('technologyPageRemoveTitle')}
+        message={t('technologyPageRemoveMessage')}
+        confirmLabel={t('remove')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -703,6 +703,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
 function BuySoftwareModal({ item, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
     buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
@@ -892,7 +893,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           {vaAddons.map((k) => {
             const svc = VA_SERVICES.find((s) => s.key === k);
             return svc ? (
-              <BillingLine key={k} label={vaLabel(k)} value={formatPrice(svc.price)} accent />
+              <BillingLine key={k} label={vaLabel(k, t)} value={formatPrice(svc.price)} accent />
             ) : null;
           })}
           {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
@@ -985,6 +986,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
 function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction, auctionStatus, likeState, onLike }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1036,7 +1038,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             </div>
 
             {d.description && (
-              <Section title="Description">
+              <Section title={t('technologyPageDescriptionSection')}>
                 <p className="text-gray-600 leading-relaxed text-[0.9rem]">
                   {d.description}
                 </p>
@@ -1044,7 +1046,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {d.whatItDoes && (
-              <Section title="What It Does">
+              <Section title={t('technologyPageWhatItDoes')}>
                 <p className="text-gray-600 leading-relaxed text-[0.9rem]">
                   {d.whatItDoes}
                 </p>
@@ -1052,7 +1054,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {d.howItHelps && (
-              <Section title="How It Helps">
+              <Section title={t('technologyPageHowItHelps')}>
                 <p className="text-gray-600 leading-relaxed text-[0.9rem]">
                   {d.howItHelps}
                 </p>
@@ -1060,7 +1062,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {d.techStack && (
-              <Section title="Tech Stack">
+              <Section title={t('technologyPageTechStack')}>
                 <div className="flex flex-wrap gap-1.5">
                   {d.techStack.split(',').map(t => (
                     <span key={t} className="text-xs px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200">
@@ -1072,7 +1074,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {(d.videoLink || d.liveDemoLink) && (
-              <Section title="Links">
+              <Section title={t('technologyPageLinksSection')}>
                 <div className="flex gap-3 flex-wrap">
                   {d.videoLink && (
                     <a href={d.videoLink} target="_blank" rel="noreferrer"
@@ -1090,14 +1092,14 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
               </Section>
             )}
 
-            <Section title="GitHub">
+            <Section title={t('technologyPageGithubSection')}>
               <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-gray-500">
-                🔒 GitHub link is shared after purchase is confirmed.
+                {t('technologyPageGithubLocked')}
               </div>
             </Section>
 
             {d.listedBy && (
-              <Section title="Listed By">
+              <Section title={t('technologyPageListedBySection')}>
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600">
                     {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}

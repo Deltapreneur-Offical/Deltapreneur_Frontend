@@ -3,7 +3,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -13,6 +12,7 @@ import {
 } from 'recharts';
 
 import AnalyticsChartTooltip from './AnalyticsChartTooltip';
+import { pieDataWithPercentages } from '../../utils/platformAnalyticsData';
 
 const COLORS = ['#6366f1', '#16a34a', '#2563eb', '#ea580c', '#7c3aed', '#0891b2', '#db2777', '#ca8a04'];
 
@@ -22,7 +22,7 @@ function safeNumber(value) {
 }
 
 export function AnalyticsPieCard({ title, data }) {
-  const chartData = (data ?? []).filter((item) => safeNumber(item.value) > 0);
+  const chartData = pieDataWithPercentages((data ?? []).filter((item) => safeNumber(item.value) > 0));
   if (!chartData.length) {
     return (
       <article className="platform-analytics-chart-card">
@@ -33,29 +33,47 @@ export function AnalyticsPieCard({ title, data }) {
   }
 
   return (
-    <article className="platform-analytics-chart-card">
+    <article className="platform-analytics-chart-card platform-analytics-chart-card--pie">
       <h3>{title}</h3>
-      <div className="platform-analytics-chart-card__body">
-        <ResponsiveContainer width="100%" height={240}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={52}
-              outerRadius={84}
-              paddingAngle={2}
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<AnalyticsChartTooltip />} />
-            <Legend verticalAlign="bottom" height={48} />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="platform-analytics-chart-card__body platform-analytics-chart-card__body--split">
+        <div className="platform-analytics-pie-layout">
+          <div className="platform-analytics-pie-layout__chart">
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={54}
+                  outerRadius={86}
+                  paddingAngle={2}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<AnalyticsChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <ul className="platform-analytics-pie-legend">
+            {chartData.map((entry, index) => (
+              <li key={`${entry.name}-${index}`}>
+                <span
+                  className="platform-analytics-pie-legend__swatch"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  aria-hidden
+                />
+                <span className="platform-analytics-pie-legend__label">{entry.name}</span>
+                <span className="platform-analytics-pie-legend__value">
+                  {entry.value} ({entry.percent}%)
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </article>
   );
@@ -78,11 +96,26 @@ export function AnalyticsBarCard({ title, data, dataKey = 'views' }) {
       <div className="platform-analytics-chart-card__body">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} interval={0} angle={-20} textAnchor="end" height={70} />
-            <YAxis allowDecimals={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" vertical={false} />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              interval={0}
+              angle={-18}
+              textAnchor="end"
+              height={64}
+              axisLine={{ stroke: '#e5e7eb' }}
+              tickLine={false}
+            />
+            <YAxis
+              allowDecimals={false}
+              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              width={32}
+            />
             <Tooltip content={<AnalyticsChartTooltip />} />
-            <Bar dataKey={dataKey} fill="#6366f1" radius={[6, 6, 0, 0]} />
+            <Bar dataKey={dataKey} fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={48} />
           </BarChart>
         </ResponsiveContainer>
       </div>

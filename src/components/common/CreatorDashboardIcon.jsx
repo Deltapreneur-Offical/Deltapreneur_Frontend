@@ -1,12 +1,18 @@
-import creatorIcon from '../../assets/CreatorDashboardIcon.png';
+import broAILogo from '../../assets/Cobrother_Profile.png';
 
-export default function CreatorDashboardIcon({ className = 'dashboard-icon-image', alt = '' }) {
+export default function CreatorDashboardIcon({ size = 24, className = '', strokeWidth: _ignored, ...props }) {
   return (
-    <img
-      src={creatorIcon}
-      alt={alt}
-      className={className}
-      aria-hidden={alt ? undefined : true}
-    />
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-visible dashboard-creator-icon${className ? ` ${className}` : ''}`}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+      {...props}
+    >
+      <img
+        src={broAILogo}
+        alt=""
+        className="dashboard-creator-icon__img"
+      />
+    </span>
   );
 }

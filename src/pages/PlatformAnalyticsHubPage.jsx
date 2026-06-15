@@ -17,7 +17,7 @@ const CATEGORY_META = {
   domains: { Icon: Globe, tone: 'blue' },
   ventures: { Icon: Briefcase, tone: 'purple' },
   technology: { Icon: Lightbulb, tone: 'orange' },
-  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+  creators: { Icon: CreatorDashboardIcon, tone: 'creators' },
 };
 
 function formatStatValue(value) {
@@ -25,26 +25,15 @@ function formatStatValue(value) {
   return Number(value).toLocaleString();
 }
 
-function renderCategoryIcon(iconConfig) {
-  if (iconConfig.Image) {
-    const ImageIcon = iconConfig.Image;
-    return <ImageIcon />;
-  }
-  const { Icon } = iconConfig;
-  return <Icon size={20} strokeWidth={2} aria-hidden />;
-}
-
 function AnalyticsCategoryCard({ title, desc, to, cta, tone, stat, loading }) {
-  const iconConfig = CATEGORY_META[tone];
-  const iconClass = iconConfig.Image
-    ? `platform-analytics-card__icon platform-analytics-card__icon--${tone} platform-analytics-card__icon--asset`
-    : `platform-analytics-card__icon platform-analytics-card__icon--${tone}`;
+  const { Icon } = CATEGORY_META[tone];
+  const iconClass = `platform-analytics-card__icon platform-analytics-card__icon--${tone}`;
 
   return (
     <article className="platform-analytics-card">
       <div className="platform-analytics-card__head">
         <div className={iconClass}>
-          {renderCategoryIcon(iconConfig)}
+          <Icon size={20} strokeWidth={2} aria-hidden />
         </div>
         <div className="platform-analytics-card__copy">
           <h3>{title}</h3>
@@ -80,8 +69,6 @@ export default function PlatformAnalyticsHubPage() {
     totalDomains: null,
     totalTechnologies: null,
     totalCreators: null,
-    totalVentureViews: null,
-    totalProfileViews: null,
   });
 
   useEffect(() => {
@@ -100,8 +87,6 @@ export default function PlatformAnalyticsHubPage() {
           totalDomains: payload.totalDomains ?? null,
           totalTechnologies: payload.totalTechnologies ?? null,
           totalCreators: payload.totalCreators ?? null,
-          totalVentureViews: payload.totalVentureViews ?? null,
-          totalProfileViews: payload.totalProfileViews ?? null,
         });
       })
       .catch(() => {
@@ -111,8 +96,6 @@ export default function PlatformAnalyticsHubPage() {
             totalDomains: null,
             totalTechnologies: null,
             totalCreators: null,
-            totalVentureViews: null,
-            totalProfileViews: null,
           });
         }
       })
@@ -145,7 +128,7 @@ export default function PlatformAnalyticsHubPage() {
       cta: t('platformAnalyticsBrowseVentures'),
       tone: 'ventures',
       stat: isAdmin
-        ? t('platformAnalyticsStatVentureViews', { count: formatStatValue(stats.totalVentureViews) ?? '—' })
+        ? t('platformAnalyticsStatListings', { count: formatStatValue(stats.totalVentures) ?? '—' })
         : null,
     },
     {
@@ -167,17 +150,17 @@ export default function PlatformAnalyticsHubPage() {
       cta: t('platformAnalyticsBrowseCreators'),
       tone: 'creators',
       stat: isAdmin
-        ? t('platformAnalyticsStatProfileViews', { count: formatStatValue(stats.totalProfileViews) ?? '—' })
+        ? t('platformAnalyticsStatCreators', { count: formatStatValue(stats.totalCreators) ?? '—' })
         : null,
     },
   ];
 
   const summaryCards = isAdmin
     ? [
+        { label: t('dashboardTotalVentures'), value: stats.totalVentures },
         { label: t('dashboardActiveDomains'), value: stats.totalDomains },
-        { label: t('platformAnalyticsVentureViews'), value: stats.totalVentureViews },
         { label: t('dashboardTechnologies'), value: stats.totalTechnologies },
-        { label: t('platformAnalyticsCreatorViews'), value: stats.totalProfileViews },
+        { label: t('dashboardCreators'), value: stats.totalCreators },
       ]
     : [];
 

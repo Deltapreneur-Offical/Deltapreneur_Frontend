@@ -298,6 +298,17 @@
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.16), 0 4px 10px rgba(79, 70, 229, 0.08);
 }
 
+.admin-dashboard-tab--analytics.active {
+  color: #4338ca;
+  border-color: rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(224, 231, 255, 0.55) 52%, rgba(255, 255, 255, 0.98) 100%);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.16), 0 4px 10px rgba(99, 102, 241, 0.08);
+}
+
+.admin-dashboard-tab--analytics.active .admin-dashboard-tab-lucide-icon {
+  color: #4338ca;
+}
+
 .admin-dashboard-tab--domains.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--ventures.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--cocreations.active .admin-dashboard-tab-label,
@@ -309,7 +320,8 @@
 .admin-dashboard-tab--venture-auctions.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--software-auctions.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--community-auctions.active .admin-dashboard-tab-label,
-.admin-dashboard-tab--homepage-features.active .admin-dashboard-tab-label {
+.admin-dashboard-tab--homepage-features.active .admin-dashboard-tab-label,
+.admin-dashboard-tab--analytics.active .admin-dashboard-tab-label {
   color: inherit;
 }
 

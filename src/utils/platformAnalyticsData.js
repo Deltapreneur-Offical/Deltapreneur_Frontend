@@ -122,9 +122,14 @@ async function fetchUserCategoryRows(category) {
     const response = await technologyAPI.getMyListings();
     return asArray(response.data).map(normalizeTechnology);
   }
-  const response = await communityAPI.getMy();
-  const profile = response.data?.data ?? response.data ?? null;
-  return profile ? [normalizeCreator(profile)] : [];
+  try {
+    const response = await communityAPI.getMy();
+    const profile = response.data?.data ?? response.data ?? null;
+    return profile ? [normalizeCreator(profile)] : [];
+  } catch (err) {
+    if (err?.response?.status === 404) return [];
+    throw err;
+  }
 }
 
 export async function fetchPlatformAnalyticsRows(category, isAdmin) {

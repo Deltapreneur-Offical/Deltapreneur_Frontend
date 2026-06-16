@@ -20,6 +20,9 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies & Build
+        env:
+          VITE_API_URL: https://backend.cobrother.com
+          VITE_APP_URL: https://demo.cobrother.com
         run: |
           npm install
           npm run build

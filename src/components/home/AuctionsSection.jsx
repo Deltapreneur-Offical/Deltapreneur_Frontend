@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   auctionAPI,
   ventureAPI,
-  ventureAuctionAPI,
   communityAuctionAPI,
   softwareAuctionAPI,
 } from '../../api/services';
@@ -17,7 +16,6 @@ import {
   normalizeDomainAuction,
   normalizeListedVentureAuction,
   normalizeSoftwareAuction,
-  normalizeVentureAuction,
   resolveHomeAuctionPath,
 } from '../../utils/homepageAuctions';
 import {
@@ -40,17 +38,6 @@ function AuctionPreviewCard({ auction, onView }) {
   );
 }
 
-function mergeVentureAuctionRows(activeRows, listedRows) {
-  const merged = new Map();
-  activeRows.forEach((row) => {
-    if (row?.id) merged.set(String(row.id), row);
-  });
-  listedRows.forEach((row) => {
-    if (row?.id && !merged.has(String(row.id))) merged.set(String(row.id), row);
-  });
-  return Array.from(merged.values());
-}
-
 export default function AuctionsSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -68,14 +55,12 @@ export default function AuctionsSection() {
         setLoading(true);
         const [
           domainsRes,
-          venturesRes,
           listedVentures,
           myVenturesRes,
           communityRes,
           softwareRes,
         ] = await Promise.all([
           auctionAPI.getActive().catch(() => ({ data: [] })),
-          ventureAuctionAPI.getActive().catch(() => ({ data: [] })),
           fetchAllListPages((params) => ventureAPI.getAll(params))
             .then((rows) => rows.map(normalizeListedVentureAuction).filter(Boolean))
             .catch(() => []),
@@ -86,13 +71,15 @@ export default function AuctionsSection() {
           softwareAuctionAPI.getActive().catch(() => ({ data: [] })),
         ]);
 
-        const activeVentures = extractActiveList(venturesRes.data)
-          .map(normalizeVentureAuction)
-          .filter(Boolean);
-
         setAuctions({
           domains: extractActiveList(domainsRes.data).map(normalizeDomainAuction).filter(Boolean),
-          ventures: mergeVentureAuctionRows(activeVentures, [...listedVentures, ...myVenturesRes]),
+          ventures: (() => {
+            const merged = new Map();
+            [...listedVentures, ...myVenturesRes].forEach((row) => {
+              if (row?.id) merged.set(String(row.id), row);
+            });
+            return Array.from(merged.values());
+          })(),
           community: extractActiveList(communityRes.data).map(normalizeCommunityAuction).filter(Boolean),
           software: extractActiveList(softwareRes.data).map(normalizeSoftwareAuction).filter(Boolean),
         });

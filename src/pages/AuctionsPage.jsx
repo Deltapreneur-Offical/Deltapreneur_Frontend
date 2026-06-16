@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   auctionAPI,
   ventureAPI,
-  ventureAuctionAPI,
   communityAuctionAPI,
   softwareAuctionAPI,
 } from '../api/services';
@@ -271,7 +270,6 @@ export default function AuctionsPage() {
     setLoading(true);
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-      ventureAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
       fetchAllListPages((params) => ventureAPI.getAll(params))
         .then((rows) => rows
           .map(normalizeListedVentureAuction)
@@ -286,9 +284,8 @@ export default function AuctionsPage() {
       softwareAuctionAPI.getActive()
         .then(({ data }) => extractActiveList(data).map(normalizeSoftwareAuction))
         .catch(() => []),
-    ]).then(([domains, activeVentures, allListedVentures, myListedVentures, community, software]) => {
+    ]).then(([domains, allListedVentures, myListedVentures, community, software]) => {
       const mergedVentures = new Map();
-      activeVentures.forEach((a) => mergedVentures.set(String(a.id), a));
       allListedVentures.forEach((a) => {
         if (!mergedVentures.has(String(a.id))) mergedVentures.set(String(a.id), a);
       });

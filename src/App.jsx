@@ -85,6 +85,7 @@ const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
 const loadVenturesPage = () => import('./pages/VenturesPage');
 const VenturesPage = lazy(loadVenturesPage);
+const VentureListingChoosePage = lazy(() => import('./pages/VentureListingChoosePage'));
 const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const loadDomainsPage = () => import('./pages/DomainsPage');
 const DomainsPage = lazy(loadDomainsPage);
@@ -310,6 +311,15 @@ export default function App() {
               element={
                 <ProfileGuard>
                   <VentureDealPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/ventures/list"
+              element={
+                <ProfileGuard>
+                  <VentureListingChoosePage />
                 </ProfileGuard>
               }
             />

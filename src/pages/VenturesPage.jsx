@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import VentureListingCard from '../components/listings/VentureListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
@@ -22,11 +22,13 @@ import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { asArray } from '../utils/asArray';
 import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
-import VentureListingTypeGuide from '../components/venture/VentureListingTypeGuide';
+import VentureListingQuickActions from '../components/venture/VentureListingQuickActions';
+import { ventureListChooseUrl } from '../constants/ventureListingTypeContent';
 import { isCoVentureListing, isVentureBidListing } from '../utils/ventureListingHelpers';
 import { unwrapApiData } from '../utils/apiResponse';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
+import VenturesSplitColumns from '../components/venture/VenturesSplitColumns';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
@@ -35,6 +37,12 @@ export default function VenturesPage() {
   const navigate  = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') === 'mine' ? 'mine' : 'all';
+  const listingModeParam = searchParams.get('mode');
+  const listingModeFilter = listingModeParam === 'co-venture'
+    ? 'CO_VENTURE'
+    : listingModeParam === 'venture'
+      ? 'VENTURE'
+      : null;
 
   const [allVentures, setAllVentures]       = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -70,19 +78,35 @@ export default function VenturesPage() {
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', allVentures);
 
+  const showSplitColumns = !listingModeFilter;
+
+  const marketplaceRows = useMemo(() => {
+    const source = listingModeFilter
+      ? allVentures.filter((venture) => (
+        listingModeFilter === 'CO_VENTURE'
+          ? isCoVentureListing(venture)
+          : !isCoVentureListing(venture)
+      ))
+      : allVentures;
+
+    return resolveMarketplaceListingRows(source, {
+      tab: filterTab,
+      user,
+      type: 'venture',
+    });
+  }, [allVentures, filterTab, listingModeFilter, user]);
+
   // ── Filter / sort / paginate ───────────────────────────────────────────────
   const {
-    paginated, totalCount,
+    paginated,
+    filtered,
+    totalCount,
     search, category, minPrice, maxPrice, sortBy,
     handleSearch, handleCategory, handleMinPrice, handleMaxPrice, handleSort,
     clearAll, activeFilterCount,
     page, totalPages, setPage,
   } = useFilterSort(
-    resolveMarketplaceListingRows(allVentures, {
-      tab: filterTab,
-      user,
-      type: 'venture',
-    }),
+    marketplaceRows,
     {
       searchFields:  ['brandDetails.brandName', 'brandDetails.description', 'brand_details.brand_name', 'brand_details.description'],
       priceField:    'brandDetails.dealValue',
@@ -92,8 +116,48 @@ export default function VenturesPage() {
     20,
     {
       getLikeCount: (item) => getLike(item.id).count,
-      resetPageWhen: filterTab,
+      resetPageWhen: `${filterTab}:${listingModeFilter ?? 'all'}`,
     },
+  );
+
+  const ventureRows = useMemo(
+    () => filtered.filter((venture) => !isCoVentureListing(venture)),
+    [filtered],
+  );
+
+  const coVentureRows = useMemo(
+    () => filtered.filter(isCoVentureListing),
+    [filtered],
+  );
+
+  const renderVentureCards = (ventures, { compact = false } = {}) => (
+    <div
+      className={`listing-card-glow-grid grid gap-4 md:gap-5 ${
+        compact
+          ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 min-[1400px]:grid-cols-2'
+          : 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+      }`}
+    >
+      {ventures.map((v) => (
+        <ListingCardShell key={v.id}>
+          <VentureListingCard
+            venture={v}
+            isOwner={isListingOwner(v, user, 'venture')}
+            hasApplied={appliedVentureIds.has(v.id)}
+            hasActiveDeal={ventureDealByVentureId.has(v.id)}
+            showVerifyButton={false}
+            compact={compact}
+            likeState={getLike(v.id)}
+            onLike={() => toggleLike(v.id)}
+            onView={() => navigate(`/ventures/${v.id}`)}
+            onApply={() => handleBuyerAction(v)}
+            onVerify={() => setVerifyTarget(v)}
+            onEdit={() => navigate(`/ventures/${v.id}/edit`)}
+            onDelete={() => setDeleteTarget(v.id)}
+          />
+        </ListingCardShell>
+      ))}
+    </div>
   );
 
   useEffect(() => {
@@ -185,10 +249,29 @@ export default function VenturesPage() {
     <AppLayout>
       <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between min-w-0">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">{t('venturesPageSubtitle')}</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">
+            {listingModeFilter === 'CO_VENTURE'
+              ? t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })
+              : listingModeFilter === 'VENTURE'
+                ? t('venture')
+                : t('coVentures')}
+          </h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">
+            {listingModeFilter === 'CO_VENTURE'
+              ? t('coVenturesPageSubtitle', {
+                  defaultValue: 'Browse partnership and co-founder opportunities.',
+                })
+              : listingModeFilter === 'VENTURE'
+                ? t('venturesPageSubtitle')
+                : t('venturesPageSplitSubtitle', {
+                    defaultValue: 'Browse venture sales and co-venture partnerships side by side.',
+                  })}
+          </p>
         </div>
-        {user ? <PayoutSettingsButton className="btn-glow btn-glow-sm shrink-0" /> : null}
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <VentureListingQuickActions />
+          {user ? <PayoutSettingsButton className="btn-glow btn-glow-sm" /> : null}
+        </div>
       </div>
 
       {user ? <PayoutProfileBanner context="venture" className="mb-4" /> : null}
@@ -199,80 +282,66 @@ export default function VenturesPage() {
         onMarketplaceTabChange={handleMarketplaceTabChange}
       />
 
-      <VentureListingTypeGuide />
+      {/* ── Filter bar ── */}
+      <FilterBar
+        search={search}           onSearch={handleSearch}
+        category={category}       onCategory={handleCategory}
+        categoryOptions={VENTURE_INDUSTRY_OPTIONS}
+        minPrice={minPrice}       onMinPrice={handleMinPrice}
+        maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
+        sortBy={sortBy}           onSort={handleSort}
+        onClear={clearAll}        activeFilterCount={activeFilterCount}
+        placeholder={t('venturesPageSearchPlaceholder')}
+        priceSymbol={getSymbol(currency)}
+        theme="light"
+      />
 
-        {/* ── Filter bar ── */}
-        <FilterBar
-          search={search}           onSearch={handleSearch}
-          category={category}       onCategory={handleCategory}
-          categoryOptions={VENTURE_INDUSTRY_OPTIONS}
-          minPrice={minPrice}       onMinPrice={handleMinPrice}
-          maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-          sortBy={sortBy}           onSort={handleSort}
-          onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder={t('venturesPageSearchPlaceholder')}
-          priceSymbol={getSymbol(currency)}
-          theme="light"
-        />
+      {/* ── Result count ── */}
+      {!loading && totalCount > 0 && !showSplitColumns && (
+        <div className="text-sm text-gray-600 mb-4">
+          {t('venturesPageResultsFound', { count: totalCount })}
+        </div>
+      )}
 
-        {/* ── Result count ── */}
-        {!loading && totalCount > 0 && (
-          <div className="text-sm text-gray-600 mb-4">
-            {t('venturesPageResultsFound', { count: totalCount })}
+      {/* ── Content ── */}
+      {loading ? (
+        <PageContentSkeleton variant="cards" rows={8} />
+      ) : totalCount === 0 ? (
+        <div className="text-center py-20">
+          <div className="mb-4 flex justify-center">
+            <img src={VentureLogo} alt={t('ventures')} className="w-16 h-16 opacity-50" />
           </div>
-        )}
-
-        {/* ── Content ── */}
-        {loading ? (
-          <PageContentSkeleton variant="cards" rows={8} />
-        ) : paginated.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="mb-4 flex justify-center">
-              <img src={VentureLogo} alt={t('ventures')} className="w-16 h-16 opacity-50" />
-            </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? t('venturesPageEmptyFilteredTitle') :
-               filterTab === 'mine' ? t('venturesPageEmptyMineTitle') :
-               t('venturesPageEmptyAllTitle')}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {activeFilterCount > 0
-                ? t('venturesPageEmptyFilteredHint')
-                : t('venturesPageEmptyAllHint')}
-            </p>
+          <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+            {activeFilterCount > 0 ? t('venturesPageEmptyFilteredTitle') :
+             filterTab === 'mine' ? t('venturesPageEmptyMineTitle') :
+             t('venturesPageEmptyAllTitle')}
+          </h3>
+          <p className="text-gray-600 mb-6">
             {activeFilterCount > 0
-              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClear')}</button>
-              : <Link to="/ventures/new" className="btn-glow btn-glow-sm">{t('venturesPageListVentureCta')}</Link>
-            }
-          </div>
-        ) : (
-          <>
-            <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-              {paginated.map(v => (
-                <ListingCardShell key={v.id}>
-                <VentureListingCard
-                  venture={v}
-                  isOwner={isListingOwner(v, user, 'venture')}
-                  hasApplied={appliedVentureIds.has(v.id)}
-                  hasActiveDeal={ventureDealByVentureId.has(v.id)}
-                  showVerifyButton={false}
-                  likeState={getLike(v.id)}
-                  onLike={() => toggleLike(v.id)}
-                  onView={() => navigate(`/ventures/${v.id}`)}
-                  onApply={() => handleBuyerAction(v)}
-                  onVerify={() => setVerifyTarget(v)}
-                  onEdit={() => navigate(`/ventures/${v.id}/edit`)}
-                  onDelete={() => setDeleteTarget(v.id)}
-                />
-                </ListingCardShell>
-              ))}
-            </div>
-            <Pagination
-              page={page} totalPages={totalPages}
-              onPage={setPage} totalCount={totalCount} pageSize={20}
-            />
-          </>
-        )}
+              ? t('venturesPageEmptyFilteredHint')
+              : t('venturesPageEmptyAllHint')}
+          </p>
+          {activeFilterCount > 0
+            ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClear')}</button>
+            : <Link to={ventureListChooseUrl('venture')} className="btn-glow btn-glow-sm">{t('venturesPageListVentureCta')}</Link>
+          }
+        </div>
+      ) : showSplitColumns ? (
+        <VenturesSplitColumns
+          ventureRows={ventureRows}
+          coVentureRows={coVentureRows}
+          filterTab={filterTab}
+          renderVentureCards={renderVentureCards}
+        />
+      ) : (
+        <>
+          {renderVentureCards(paginated)}
+          <Pagination
+            page={page} totalPages={totalPages}
+            onPage={setPage} totalCount={totalCount} pageSize={20}
+          />
+        </>
+      )}
 
       {/* ── Modals ── */}
       {applyTarget && isVentureBidListing(applyTarget) && !isCoVentureListing(applyTarget) && (

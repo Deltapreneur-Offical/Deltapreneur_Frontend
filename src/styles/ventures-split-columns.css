@@ -1,0 +1,296 @@
+/* Venture vs Co-Venture split marketplace on /ventures */
+
+.ventures-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+  .ventures-split {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 0;
+  }
+}
+
+.ventures-split__panel {
+  position: relative;
+  min-width: 0;
+  border-radius: 1.25rem;
+  border: 1px solid transparent;
+  padding: 1.15rem 1rem 1.25rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.ventures-split__panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 1.25rem 1.25rem 0 0;
+}
+
+.ventures-split__panel--venture {
+  background: linear-gradient(180deg, #f5f7ff 0%, #ffffff 42%);
+  border-color: #c7d2fe;
+}
+
+.ventures-split__panel--venture::before {
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 55%, #a5b4fc 100%);
+}
+
+.ventures-split__panel--coventure {
+  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 42%);
+  border-color: #99f6e4;
+}
+
+.ventures-split__panel--coventure::before {
+  background: linear-gradient(90deg, #0d9488 0%, #14b8a6 55%, #5eead4 100%);
+}
+
+@media (min-width: 1024px) {
+  .ventures-split__panel {
+    padding: 1.35rem 1.25rem 1.5rem;
+  }
+
+  .ventures-split__panel--venture {
+    border-radius: 1.25rem 0 0 1.25rem;
+    border-right: none;
+    margin-right: -1px;
+  }
+
+  .ventures-split__panel--coventure {
+    border-radius: 0 1.25rem 1.25rem 0;
+    border-left: none;
+    margin-left: -1px;
+  }
+}
+
+.ventures-split__divider {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+.ventures-split__divider-line {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #cbd5e1 20%,
+    #94a3b8 50%,
+    #cbd5e1 80%,
+    transparent 100%
+  );
+}
+
+@media (min-width: 1024px) {
+  .ventures-split__divider {
+    padding: 1.5rem 0;
+    width: 1.25rem;
+  }
+
+  .ventures-split__divider-line {
+    width: 2px;
+    height: 100%;
+    min-height: 12rem;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      #c7d2fe 12%,
+      #94a3b8 50%,
+      #99f6e4 88%,
+      transparent 100%
+    );
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+  }
+}
+
+.ventures-split__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.ventures-split__header--venture {
+  border-bottom-color: rgba(99, 102, 241, 0.2);
+}
+
+.ventures-split__header--coventure {
+  border-bottom-color: rgba(20, 184, 166, 0.22);
+}
+
+.ventures-split__header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ventures-split__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.85rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.ventures-split__icon--venture {
+  color: #4338ca;
+  background: linear-gradient(145deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+}
+
+.ventures-split__icon--coventure {
+  color: #0f766e;
+  background: linear-gradient(145deg, #ecfdf5 0%, #ccfbf1 100%);
+  border: 1px solid #99f6e4;
+}
+
+.ventures-split__header-text {
+  min-width: 0;
+}
+
+.ventures-split__title {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.ventures-split__subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.ventures-split__count {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.ventures-split__count--venture {
+  color: #4338ca;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+}
+
+.ventures-split__count--coventure {
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.24);
+}
+
+.ventures-split__body {
+  min-width: 0;
+}
+
+.ventures-split__body .listing-card-glow-grid {
+  align-items: stretch;
+}
+
+.ventures-split__body .listing-card-glow-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100% !important;
+  min-height: 21.5rem;
+  max-height: none;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__cover {
+  height: 5.5rem !important;
+  min-height: 5.5rem !important;
+  max-height: 5.5rem !important;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__cover-img,
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__cover > div {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__badges {
+  min-height: 2.75rem;
+  align-content: flex-start;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__title-row {
+  min-height: 1.25rem;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__metrics {
+  min-height: 1.125rem;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__footer {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.ventures-split__empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  border-radius: 1rem;
+  border: 1px dashed;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.ventures-split__empty p {
+  margin: 0 0 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.ventures-split__empty--venture {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.ventures-split__empty--coventure {
+  border-color: rgba(20, 184, 166, 0.35);
+}

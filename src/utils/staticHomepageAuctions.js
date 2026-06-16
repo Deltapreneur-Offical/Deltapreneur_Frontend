@@ -21,6 +21,7 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
       domainExtension: '.com',
       verified: true,
       logo: null,
+      pricingDemand: 'FIXED_PRICE',
     },
   },
   {
@@ -34,7 +35,12 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
     endTime: staticEndTime(),
     auctionTitle: 'SaaS Analytics Kit',
     imageUrl: null,
-    software: { name: 'SaaS Analytics Kit', verified: true },
+    software: {
+      name: 'SaaS Analytics Kit',
+      verified: true,
+      category: 'Analytics',
+      description: 'Plug-and-play analytics dashboard for B2B SaaS teams.',
+    },
   },
   {
     category: 'community',
@@ -47,7 +53,11 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
     endTime: staticEndTime(),
     auctionTitle: 'Aisha Mehta',
     imageUrl: null,
-    community: { name: 'Aisha Mehta' },
+    community: {
+      name: 'Aisha Mehta',
+      niche: 'Content & Brand Strategy',
+      bio: 'Creator partnership profile with 120K audience reach.',
+    },
   },
   {
     category: 'venture',
@@ -63,7 +73,13 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
     venture: {
       verified: true,
       gstinVerified: true,
-      brandDetails: { brandName: 'FinEdge Labs' },
+      stage: 'REVENUE_GENERATING',
+      lookingFor: 'Strategic investor for fintech expansion',
+      brandDetails: {
+        brandName: 'FinEdge Labs',
+        industry: 'FINTECH',
+        description: 'Revenue-generating fintech platform for SMB lending.',
+      },
     },
   },
   {
@@ -81,6 +97,7 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
       domainExtension: '.io',
       verified: true,
       logo: null,
+      pricingDemand: 'NEGOTIABLE',
     },
   },
 ];

@@ -41,6 +41,7 @@ import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdapter';
+import { normalizeContactInfo } from '../utils/ventureProfileUtils';
 import { fetchAllListPages } from '../utils/listPagination';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
@@ -83,10 +84,7 @@ function buildDomainFormState(domain, navCurrency) {
     saleType: domain?.saleType ?? 'ONE_TIME',
     minBidPrice: '',
     auctionDuration: 'SEVEN_DAYS',
-    contactInfo: {
-      email: domain?.contactInfo?.email ?? '',
-      phoneNumber: domain?.contactInfo?.phoneNumber ?? '',
-    },
+    contactInfo: normalizeContactInfo(domain?.contactInfo, domain?.contact_info),
     agreement: { terms: false },
   };
 }
@@ -1125,7 +1123,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
 
   const d           = detail || domain;
   const display     = resolveDomainDisplay(d);
-  const c           = d.contactInfo || {};
+  const c           = normalizeContactInfo(d.contactInfo, d.contact_info);
   const s           = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
   const isAuction   = d.saleType === 'AUCTION';
   const isHighValue = isPremiumDomain(d);

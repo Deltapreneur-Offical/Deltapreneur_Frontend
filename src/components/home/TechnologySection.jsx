@@ -6,7 +6,7 @@ import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
-import ListingCardShell from '../listings/ListingCardShell';
+import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
@@ -61,7 +61,7 @@ export default function TechnologySection() {
           <HomePreviewRow>
             {previewSoftwares.map((item) => (
               <HomePreviewRowItem key={item.id}>
-                <ListingCardShell className="home-preview-card-shell">
+                <HomePreviewCardShell>
                   <TechnologyListingCard
                     item={item}
                     browseMode
@@ -69,7 +69,7 @@ export default function TechnologySection() {
                     onLike={() => toggleLike(item.id)}
                     onView={() => handleViewDetails(item.id)}
                   />
-                </ListingCardShell>
+                </HomePreviewCardShell>
               </HomePreviewRowItem>
             ))}
           </HomePreviewRow>

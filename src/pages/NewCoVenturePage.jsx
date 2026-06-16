@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
+import { ventureListChooseUrl } from '../constants/ventureListingTypeContent';
 
-/** Co-venture creation is unified at /ventures/new with listing type picker. */
+/** Co-venture creation starts at the listing type guide, then /ventures/new. */
 export default function NewCoVenturePage() {
-  return <Navigate to="/ventures/new?type=co-venture" replace />;
+  return <Navigate to={ventureListChooseUrl('co-venture')} replace />;
 }

@@ -24,7 +24,7 @@ import {
   STATIC_HOMEPAGE_AUCTIONS,
   resolveStaticHomeAuctionPath,
 } from '../../utils/staticHomepageAuctions';
-import ListingCardShell from '../listings/ListingCardShell';
+import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -34,9 +34,9 @@ import '../../styles/home-preview-cards.css';
 
 function AuctionPreviewCard({ auction, onView }) {
   return (
-    <ListingCardShell className="home-preview-card-shell">
+    <HomePreviewCardShell>
       <HomeAuctionPreviewCard auction={auction} onView={onView} />
-    </ListingCardShell>
+    </HomePreviewCardShell>
   );
 }
 

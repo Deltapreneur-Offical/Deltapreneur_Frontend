@@ -12,6 +12,7 @@ import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 
 import AnalyticsChartTooltip from '../components/analytics/AnalyticsChartTooltip';
+import { ventureListChooseUrl } from '../constants/ventureListingTypeContent';
 
 const COLORS = ['#c8a96e', '#6ec896', '#6e9ec8', '#c86e6e', '#9ec86e', '#c86ec8', '#6ec8c8', '#c8c86e'];
 
@@ -251,7 +252,7 @@ export default function VentureAnalyticsPage() {
 
       <button
         className="btn-glow"
-        onClick={() => navigate('/ventures/new')}
+        onClick={() => navigate(ventureListChooseUrl('venture'))}
       >
         {t('ventureAnalyticsListVenture')}
       </button>

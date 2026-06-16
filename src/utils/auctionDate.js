@@ -141,3 +141,16 @@ export function formatCountdown(endTime) {
   if (h > 0) return { timeLeft: `${h}h ${m}m ${s}s`, isUrgent };
   return { timeLeft: `${m}m ${s}s`, isUrgent };
 }
+
+/** Homepage auction cards — days only, or hours when under one day. */
+export function formatCompactCountdown(endTime) {
+  const end = parseAuctionDate(endTime);
+  if (!end) return { timeLeft: '—', isUrgent: false };
+  const diff = end.getTime() - Date.now();
+  if (diff <= 0) return { timeLeft: 'Ended', isUrgent: false };
+  const days = Math.floor(diff / 86400000);
+  const isUrgent = diff < 86400000;
+  if (days > 0) return { timeLeft: `${days}d`, isUrgent: diff < 86400000 * 2 };
+  const hours = Math.floor(diff / 3600000);
+  return { timeLeft: `${Math.max(1, hours)}h`, isUrgent };
+}

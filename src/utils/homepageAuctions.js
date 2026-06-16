@@ -34,6 +34,7 @@ export function normalizeDomainAuction(raw) {
       domainExtension: domainRaw.domainExtension ?? domainRaw.domain_extension ?? '',
       verified: Boolean(domainRaw.verified ?? domainRaw.is_verified ?? false),
       logo: domainRaw.logo ?? domainRaw.imageUrl ?? null,
+      pricingDemand: domainRaw.pricingDemand ?? domainRaw.pricing_demand ?? null,
     },
   };
 }
@@ -87,6 +88,8 @@ export function normalizeVentureAuction(raw) {
     imageUrl: pickMediaUrl(brand) || brand.ventureImageUrl || brand.logoUrl || null,
     venture: {
       ...venture,
+      stage: venture.stage ?? null,
+      lookingFor: venture.lookingFor ?? venture.looking_for ?? null,
       verified: Boolean(venture.verified),
       gstinVerified: Boolean(venture.gstinVerified ?? venture.gstin_verified),
     },
@@ -107,11 +110,13 @@ export function normalizeListedVentureAuction(ventureRaw) {
     venture: {
       id: ventureRaw.id,
       stage: ventureRaw.stage,
+      lookingFor: ventureRaw.lookingFor ?? ventureRaw.looking_for ?? null,
       verified: Boolean(ventureRaw.verified),
       gstinVerified: Boolean(ventureRaw.gstinVerified ?? ventureRaw.gstin_verified),
       brandDetails: {
         brandName: brand.brandName ?? brand.brand_name ?? '',
         industry: brand.industry ?? null,
+        description: brand.description ?? null,
         ventureImageUrl: pickMediaUrl(brand),
         logoUrl: pickMediaUrl(brand),
       },
@@ -194,6 +199,55 @@ const HOME_AUCTION_CATEGORY_META = {
 export function resolveHomeAuctionCategoryMeta(auction) {
   const category = auction?.category || 'domain';
   return HOME_AUCTION_CATEGORY_META[category] || HOME_AUCTION_CATEGORY_META.domain;
+}
+
+/** Subtitle + detail lines for homepage auction cards. */
+export function resolveHomeAuctionDetails(auction) {
+  if (!auction) return { subtitle: '', detail: '' };
+
+  const category = auction.category || 'domain';
+
+  if (category === 'domain') {
+    const domain = auction.domain || {};
+    const ext = domain.domainExtension || domain.domain_extension || '';
+    const full = domain.fullDomain || domain.full_domain || '';
+    const pricing = domain.pricingDemand ?? domain.pricing_demand;
+    return {
+      subtitle: full || (domain.domainName && ext ? `${domain.domainName}${ext}` : 'Premium domain'),
+      detail: pricing ? String(pricing).replace(/_/g, ' ') : 'Domain auction listing',
+    };
+  }
+
+  if (category === 'venture') {
+    const venture = auction.venture || {};
+    const brand = venture.brandDetails || venture.brand_details || {};
+    const industry = brand.industry ? String(brand.industry).replace(/_/g, ' ') : null;
+    const stage = venture.stage ? String(venture.stage).replace(/_/g, ' ') : null;
+    const subtitleParts = [industry, stage].filter(Boolean);
+    return {
+      subtitle: subtitleParts.join(' · ') || 'Venture equity auction',
+      detail: venture.lookingFor || venture.looking_for || brand.description || '',
+    };
+  }
+
+  if (category === 'technology') {
+    const software = auction.software || {};
+    const categoryLabel = software.category || software.techCategory || software.type;
+    return {
+      subtitle: categoryLabel ? String(categoryLabel).replace(/_/g, ' ') : 'Technology software',
+      detail: software.tagline || software.description || software.useCase || '',
+    };
+  }
+
+  if (category === 'community') {
+    const community = auction.community || {};
+    return {
+      subtitle: community.title || community.niche || community.category || 'Creator profile auction',
+      detail: community.bio || community.headline || community.description || '',
+    };
+  }
+
+  return { subtitle: '', detail: '' };
 }
 
 export function mergeHomepageAuctions({

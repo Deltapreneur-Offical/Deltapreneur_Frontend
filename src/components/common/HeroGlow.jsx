@@ -19,7 +19,7 @@ export default function HeroGlow() {
               Start It Up With{' '}
               <span className="hero-emphasis">CoBrother</span>
               {' '}to{' '}
-              <span className="hero-emphasis">Disrup</span>
+              <span className="hero-emphasis">Disrupt</span>
             </h1>
           </div>
 

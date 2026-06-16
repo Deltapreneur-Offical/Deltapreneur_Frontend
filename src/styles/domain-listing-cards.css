@@ -236,6 +236,13 @@
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: #0f172a;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.venture-listing-card .domain-listing-card__price-value {
+  font-size: 0.8125rem;
+  font-weight: 500;
 }
 
 .domain-listing-card__price-caption {
@@ -1109,4 +1116,176 @@
 .listing-browse-footer__cta {
   width: 100%;
   justify-content: center;
+}
+
+/* Premium Venture & Co-Venture Card Styles */
+.venture-listing-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.venture-listing-card .domain-listing-card__cover {
+  height: 7.5rem !important; /* Taller cover for a bigger, more premium card */
+}
+
+.venture-listing-card .domain-listing-card__price-value {
+  font-size: 1.15rem !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+}
+
+/* Premium Venture Card (Purple/Indigo Theme) */
+.venture-listing-card--venture {
+  border: 1px solid rgba(99, 102, 241, 0.1) !important;
+  box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.04) !important;
+}
+
+.venture-listing-card--venture:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 
+    0 12px 24px -4px rgba(99, 102, 241, 0.12) !important, 
+    0 4px 12px -2px rgba(139, 92, 246, 0.06) !important;
+}
+
+/* Premium Co-Venture Card (Emerald/Teal Theme) */
+.venture-listing-card--coventure {
+  border: 1px solid rgba(16, 185, 129, 0.1) !important;
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.04) !important;
+}
+
+.venture-listing-card--coventure:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  box-shadow: 
+    0 12px 24px -4px rgba(16, 185, 129, 0.12) !important, 
+    0 4px 12px -2px rgba(20, 184, 166, 0.06) !important;
+}
+
+/* Compact Card Overrides for Split Columns */
+.venture-listing-card--compact .domain-listing-card__cover {
+  height: 5.5rem !important; /* Shorter cover for compact split panel view */
+}
+
+.venture-listing-card--compact .domain-listing-card__price-value {
+  font-size: 0.95rem !important;
+}
+
+/* Venture card typography */
+.venture-listing-card {
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+.venture-listing-card__cover-title {
+  position: relative;
+  z-index: 10;
+  font-family: var(--font-display, Georgia, serif);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  font-size: 0.9375rem;
+}
+
+.venture-listing-card__cover-title--compact {
+  font-size: 0.8125rem;
+}
+
+.venture-listing-card__cover-badge {
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.5625rem;
+}
+
+.venture-listing-card__cover-badge--compact {
+  font-size: 0.625rem;
+}
+
+.venture-listing-card__badge {
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.venture-listing-card__badge--compact {
+  font-size: 0.6875rem;
+}
+
+.venture-listing-card__title {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.venture-listing-card__title--compact {
+  font-size: 1rem;
+}
+
+.venture-listing-card__metrics {
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  color: #64748b;
+  min-height: 1.125rem;
+}
+
+.venture-listing-card__metric {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.venture-listing-card__metric--role {
+  color: #0f766e;
+}
+
+.venture-listing-card__price-label {
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.venture-listing-card__price-value--compact {
+  font-size: 0.9375rem !important;
+  font-weight: 500 !important;
+  color: #0f172a !important;
+}
+
+/* Venture price box — vertically centered content, balanced padding */
+.venture-listing-card .domain-listing-card__price-box {
+  align-items: center;
+}
+
+.venture-listing-card .domain-listing-card__price-text {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.15rem;
+  line-height: 1.2;
+}
+
+.venture-listing-card .domain-listing-card__price-box--compact {
+  padding: 0.4rem 0.4rem 0.4rem 0.55rem;
+  min-height: 2.625rem;
+}
+
+.venture-listing-card:not(.venture-listing-card--compact) .domain-listing-card__price-box {
+  padding: 0.45rem 0.45rem 0.45rem 0.65rem;
+  min-height: 2.875rem;
+}
+
+.venture-listing-card .domain-listing-card__price-box--compact .domain-listing-card__price-cta {
+  width: 1.625rem;
+  height: 1.625rem;
 }

@@ -226,6 +226,14 @@ export function buildVentureSubmitPayload(form, {
     brandDetails.ventureImageUrl = imageUrl;
   }
 
+  const resolveStoredInvestment = (raw) => {
+    if (raw === '' || raw == null) return 0;
+    const stored = toStoredInr(raw);
+    if (stored != null) return stored;
+    const num = Number(String(raw).replace(/,/g, '').trim());
+    return Number.isFinite(num) && num >= 0 ? num : 0;
+  };
+
   const payload = {
     listingMode: isCoVenture ? 'CO_VENTURE' : 'VENTURE',
     brandDetails,
@@ -249,7 +257,7 @@ export function buildVentureSubmitPayload(form, {
       ? [{
         title: form.roleOffer?.trim(),
         equityOffer: Number(form.equityOffer),
-        investmentSeeking: Number(form.investmentSeeking),
+        investmentSeeking: resolveStoredInvestment(form.investmentSeeking),
         type: 'CO_FOUNDER',
       }]
       : [],

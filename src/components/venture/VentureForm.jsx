@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import CurrencyPriceInput from '../common/CurrencyPriceInput';
 import FormSelect from '../common/FormSelect';
@@ -159,7 +160,7 @@ export default function VentureForm({
         ?? initialData.roleTitle
         ?? '',
       equityOffer: resolveRoleEquityOffer(initialData.roles?.[0], initialData),
-      investmentSeeking: resolveRoleInvestmentSeeking(initialData.roles?.[0]),
+      investmentSeeking: resolveRoleInvestmentSeeking(initialData.roles?.[0], initialData),
       verificationRequested: Boolean(
         initialData.verificationRequested ?? initialData.verification_requested,
       ),
@@ -332,7 +333,7 @@ export default function VentureForm({
 
     const nextRoleOffer = role.title ?? role.roleOffer ?? role.role_offer ?? '';
     const nextEquityOffer = resolveRoleEquityOffer(role, initialData);
-    const nextInvestmentSeeking = resolveRoleInvestmentSeeking(role);
+    const nextInvestmentSeeking = resolveRoleInvestmentSeeking(role, initialData);
 
     setForm((f) => {
       const unchanged = (
@@ -368,6 +369,12 @@ export default function VentureForm({
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setBrand('ventureImageUrl', '');
   };
 
   const handleSubmit = (e) => {
@@ -605,6 +612,46 @@ export default function VentureForm({
               selectClassName={ventureSelectCls}
             />
           )}
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 mt-2">
+          <label className="text-sm font-medium text-gray-700">Brand Logo / Venture Cover Image</label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            {imagePreview ? (
+              <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center group shadow-sm shrink-0">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                  title="Remove image"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-24 h-24 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-gray-400 shrink-0">
+                <ImageIcon className="w-7 h-7 stroke-[1.5]" />
+                <span className="text-[10px] mt-1 font-medium">No Logo</span>
+              </div>
+            )}
+            
+            <div className="flex-1">
+              <label className="inline-flex items-center justify-center px-4 py-2 border border-purple-200 rounded-lg shadow-sm text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 cursor-pointer transition-colors gap-2">
+                <Upload className="w-4 h-4 text-purple-600" />
+                <span>Upload Image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-gray-500 mt-1.5">
+                Recommended size: Square (e.g. 512x512px) or 16:9 ratio. PNG, JPG, or WEBP up to 5MB.
+              </p>
+            </div>
+          </div>
         </div>
 
         {isPendingApproval && (

@@ -22,6 +22,7 @@ import AppLayout from '../components/layout/AppLayout';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import { resolveUserDisplayName } from '../utils/userDisplayName';
+import { ventureListChooseUrl } from '../constants/ventureListingTypeContent';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
 const DASHBOARD_GREETING_COUNT = 8;
@@ -319,7 +320,7 @@ export default function DashboardPage() {
   const quickActions = [
     {
       key: 'venture',
-      to: '/ventures/new',
+      to: ventureListChooseUrl('venture'),
       label: t('dashboardCreateVentureQuick'),
       tone: 'venture',
     },

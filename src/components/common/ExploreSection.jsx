@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { feedbackAPI } from '../../api/services';
 import DomainsSection from '../home/DomainsSection';
 import VenturesSection from '../home/VenturesSection';
+import CoVenturesSection from '../home/CoVenturesSection';
 import TechnologySection from '../home/TechnologySection';
 import FeedbackSection from '../home/FeedbackSection';
 import CommunitySection from '../home/CommunitySection';
@@ -58,6 +59,8 @@ export default function ExploreSection() {
           VENTURES SECTION (Separate Component)
       ═══════════════════════════════════════════════════════════════════ */}
       <VenturesSection />
+
+      <CoVenturesSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
           TECHNOLOGY SECTION (Separate Component)

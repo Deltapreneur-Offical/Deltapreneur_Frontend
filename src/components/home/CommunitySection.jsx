@@ -7,7 +7,7 @@ import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { asArray } from '../../utils/asArray';
 import { useLikes } from '../../hooks/useLikes';
 import HomeCreatorListingCard from './HomeCreatorListingCard';
-import ListingCardShell from '../listings/ListingCardShell';
+import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
@@ -69,14 +69,14 @@ export default function CommunitySection() {
           <HomePreviewRow>
             {previewCommunities.map((item) => (
               <HomePreviewRowItem key={item.id}>
-                <ListingCardShell className="home-preview-card-shell">
+                <HomePreviewCardShell>
                   <HomeCreatorListingCard
                     profile={item}
                     likeState={getLike(item.id)}
                     onLike={() => toggleLike(item.id)}
                     onView={() => handleViewProfile(item.id)}
                   />
-                </ListingCardShell>
+                </HomePreviewCardShell>
               </HomePreviewRowItem>
             ))}
           </HomePreviewRow>

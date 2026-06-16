@@ -1,3 +1,5 @@
+import { normalizeContactInfo } from './ventureProfileUtils';
+
 export function normalizeDomainRecord(raw) {
   if (!raw || typeof raw !== 'object') return raw;
   const auctionRaw = raw.auction ?? null;
@@ -47,6 +49,7 @@ export function normalizeDomainRecord(raw) {
     auction,
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,
+    contactInfo: normalizeContactInfo(raw.contactInfo, raw.contact_info),
   };
 }
 

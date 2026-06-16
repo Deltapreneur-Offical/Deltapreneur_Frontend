@@ -7,7 +7,7 @@ import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagina
 import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
-import ListingCardShell from '../listings/ListingCardShell';
+import HomePreviewCardShell from './HomePreviewCardShell';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import DomainListingCard from '../listings/DomainListingCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -64,7 +64,7 @@ export default function DomainsSection() {
           <HomePreviewRow>
             {previewDomains.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
-                <ListingCardShell className="home-preview-card-shell">
+                <HomePreviewCardShell>
                   <DomainListingCard
                     domain={domain}
                     browseMode={true}
@@ -72,7 +72,7 @@ export default function DomainsSection() {
                     onLike={() => toggleLike(domain.id)}
                     onView={() => handleViewDetails(domain.id)}
                   />
-                </ListingCardShell>
+                </HomePreviewCardShell>
               </HomePreviewRowItem>
             ))}
           </HomePreviewRow>

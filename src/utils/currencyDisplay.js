@@ -121,6 +121,19 @@ export function formatCurrency(amount, currencyCode, meta = FALLBACK_META) {
   const locale = cfg.locale || 'en-US';
   const fractionDigits = fractionDigitsFor(amt, code);
 
+  if (code === 'INR' && !cfg.prefixWithCode) {
+    try {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits,
+      }).format(amt);
+    } catch {
+      /* fall through to manual symbol */
+    }
+  }
+
   let formatted;
   try {
     formatted = amt.toLocaleString(locale, {
@@ -148,11 +161,19 @@ export function formatInrAsCurrency(inrAmount, currencyCode, meta = FALLBACK_MET
     const converted = convertPrice(inrAmount, code, meta);
     return formatCurrency(converted, code, meta);
   } catch {
-    const sym = buildFallbackMetaFromRates().INR.symbol;
-    return `${sym}${normalizeInrDisplay(inrAmount).toLocaleString('en-IN', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })}`;
+    try {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(normalizeInrDisplay(inrAmount));
+    } catch {
+      return `₹${normalizeInrDisplay(inrAmount).toLocaleString('en-IN', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })}`;
+    }
   }
 }
 

@@ -277,6 +277,109 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   background-repeat: repeat;
 }
 
+/* Interactive electric snake — short segment only, follows cursor */
+.home-features-electric-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.home-features-electric-snake {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 999px;
+  transition: opacity 0.15s ease;
+}
+
+.home-features-electric-grid.is-active .home-features-electric-snake {
+  opacity: 1;
+}
+
+.home-features-electric-snake.is-horizontal {
+  height: 2px;
+}
+
+.home-features-electric-snake.is-vertical {
+  width: 2px;
+}
+
+/* Tail fades out; head end stays bright */
+.home-features-electric-snake.is-horizontal.head-at-high {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(129, 140, 248, 0.15) 18%,
+    rgba(99, 102, 241, 0.65) 62%,
+    rgba(129, 140, 248, 0.95) 92%,
+    rgba(196, 181, 253, 1) 100%
+  );
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+}
+
+.home-features-electric-snake.is-horizontal.head-at-low {
+  background: linear-gradient(
+    270deg,
+    transparent 0%,
+    rgba(129, 140, 248, 0.15) 18%,
+    rgba(99, 102, 241, 0.65) 62%,
+    rgba(129, 140, 248, 0.95) 92%,
+    rgba(196, 181, 253, 1) 100%
+  );
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+}
+
+.home-features-electric-snake.is-vertical.head-at-high {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(129, 140, 248, 0.15) 18%,
+    rgba(99, 102, 241, 0.65) 62%,
+    rgba(129, 140, 248, 0.95) 92%,
+    rgba(196, 181, 253, 1) 100%
+  );
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+}
+
+.home-features-electric-snake.is-vertical.head-at-low {
+  background: linear-gradient(
+    0deg,
+    transparent 0%,
+    rgba(129, 140, 248, 0.15) 18%,
+    rgba(99, 102, 241, 0.65) 62%,
+    rgba(129, 140, 248, 0.95) 92%,
+    rgba(196, 181, 253, 1) 100%
+  );
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+}
+
+.home-features-electric-snake-head {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #eef2ff 0%, #a5b4fc 45%, #6366f1 100%);
+  box-shadow:
+    0 0 10px rgba(99, 102, 241, 0.9),
+    0 0 22px rgba(129, 140, 248, 0.65),
+    0 0 36px rgba(167, 139, 250, 0.35);
+}
+
+.home-features-electric-grid.is-active .home-features-electric-snake-head {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-features-electric-snake,
+  .home-features-electric-snake-head {
+    transition: opacity 0.15s ease;
+  }
+}
+
 .home-features-section-content {
   position: relative;
   z-index: 1;

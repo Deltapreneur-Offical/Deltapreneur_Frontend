@@ -706,11 +706,11 @@ export default function AdminDashboardPage() {
               </button>
               <Link
                 to="/analytics"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className="dashboard-admin-header__btn dashboard-admin-header__btn--primary shadow-sm"
               >
-                <BarChart3 size={14} strokeWidth={2.2} aria-hidden />
+                <BarChart3 size={16} strokeWidth={2} aria-hidden />
                 <span>{t('adminViewAnalytics', { defaultValue: 'View analytics' })}</span>
-                <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
+                <ArrowRight size={16} strokeWidth={2} aria-hidden />
               </Link>
             </div>
           </div>

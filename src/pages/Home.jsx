@@ -15,6 +15,7 @@ import HeroGlow from '../components/common/HeroGlow';
 import ListingCardShell from '../components/listings/ListingCardShell';
 
 import ExploreSection from '../components/common/ExploreSection';
+import HomeFeaturesElectricGrid from '../components/home/HomeFeaturesElectricGrid';
 
 
 import HomeFooter from '../components/common/HomeFooter';
@@ -204,6 +205,7 @@ export default function Home() {
 
       <section className="home-features-section py-12 md:py-20">
         <div className="home-features-section-grid" aria-hidden="true" />
+        <HomeFeaturesElectricGrid />
         <div className="home-features-section-content home-hero-align-inner">
           <header className="home-features-section-header">
             <p className="home-features-section-eyebrow">

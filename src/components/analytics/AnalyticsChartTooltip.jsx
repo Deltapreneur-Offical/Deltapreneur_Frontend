@@ -1,3 +1,5 @@
+import { ANALYTICS_CHART } from '../../constants/analyticsChartTheme';
+
 export default function AnalyticsChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
 
@@ -8,7 +10,7 @@ export default function AnalyticsChartTooltip({ active, payload, label }) {
         <div key={`${entry.name}-${index}`} className="analytics-chart-tooltip__row">
           <span
             className="analytics-chart-tooltip__swatch"
-            style={{ backgroundColor: entry.color || '#6366f1' }}
+            style={{ backgroundColor: entry.color || ANALYTICS_CHART.primary }}
             aria-hidden
           />
           <span>

@@ -1,7 +1,7 @@
 .page-loader {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,7 +26,7 @@
 .page-loader__orb--violet {
   width: 420px;
   height: 420px;
-  background: rgba(124, 58, 237, 0.35);
+  background: rgba(126, 166, 255, 0.2);
   top: -120px;
   right: -80px;
 }
@@ -60,13 +60,11 @@
   gap: 1.35rem;
   padding: 2.25rem 2.5rem;
   border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.04),
-    0 24px 48px -12px rgba(79, 70, 229, 0.14),
-    0 0 0 1px rgba(148, 163, 184, 0.08);
-  backdrop-filter: blur(12px);
+    0 24px 48px -12px rgba(15, 23, 42, 0.08);
 }
 
 .page-loader__logo-wrap {
@@ -76,18 +74,11 @@
   justify-content: center;
 }
 
-.page-loader__logo-glow {
-  position: absolute;
-  inset: -12px -20px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
-  animation: pageLoaderPulse 2.2s ease-in-out infinite;
-}
-
 .page-loader__logo {
-  position: relative;
+  display: block;
   height: 2.5rem;
   width: auto;
+  filter: drop-shadow(3px 3px 10px rgba(180, 180, 255, 0.5));
 }
 
 .page-loader__ring {
@@ -106,15 +97,15 @@
 }
 
 .page-loader__ring::before {
-  border-top-color: #6366f1;
-  border-right-color: rgba(99, 102, 241, 0.35);
+  border-top-color: #7ea6ff;
+  border-right-color: rgba(126, 166, 255, 0.35);
   animation: pageLoaderSpin 0.9s linear infinite;
 }
 
 .page-loader__ring::after {
   inset: 5px;
-  border-bottom-color: #818cf8;
-  border-left-color: rgba(129, 140, 248, 0.25);
+  border-bottom-color: #afc8ff;
+  border-left-color: rgba(175, 200, 255, 0.35);
   animation: pageLoaderSpin 1.4s linear infinite reverse;
 }
 
@@ -138,7 +129,7 @@
   width: 0.28rem;
   height: 0.28rem;
   border-radius: 50%;
-  background: #6366f1;
+  background: #7ea6ff;
   animation: pageLoaderDot 1.2s ease-in-out infinite;
 }
 
@@ -152,11 +143,6 @@
 @keyframes pageLoaderOrbDrift {
   0%, 100% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(-12px, 10px) scale(1.04); }
-}
-
-@keyframes pageLoaderPulse {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.06); }
 }
 
 @keyframes pageLoaderDot {
@@ -177,11 +163,7 @@
   z-index: 1;
   width: 100%;
   min-height: 100vh;
-}
-
-.page-loader--overlay {
-  z-index: 1000;
-  pointer-events: none;
+  background: linear-gradient(165deg, #f8fafc 0%, #eef2ff 42%, #f1f5f9 100%);
 }
 
 .page-loader-route-enter {

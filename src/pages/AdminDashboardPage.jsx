@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useContext, useMemo, useRef, createContext } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import {
@@ -20,7 +20,6 @@ import {
   Inbox,
   Info,
   LayoutDashboard,
-  LineChart,
   Package,
   RefreshCw,
   Search,
@@ -758,17 +757,6 @@ export default function AdminDashboardPage() {
                 </button>
               );
             })}
-            <NavLink
-              to="/analytics"
-              className={({ isActive }) =>
-                `admin-dashboard-tab admin-dashboard-tab--analytics${isActive ? ' active' : ''}`
-              }
-            >
-              <LineChart size={28} strokeWidth={1.85} className="admin-dashboard-tab-lucide-icon" aria-hidden />
-              <span className="admin-dashboard-tab-label">
-                {t('adminTabAnalytics', { defaultValue: 'Analytics' })}
-              </span>
-            </NavLink>
           </div>
         </div>
 

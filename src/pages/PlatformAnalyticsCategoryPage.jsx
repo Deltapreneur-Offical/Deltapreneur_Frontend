@@ -1,9 +1,10 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight, Eye, LayoutList } from 'lucide-react';
+import { ArrowLeft, Eye, LayoutList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { AnalyticsBarCard, AnalyticsPieCard } from '../components/analytics/PlatformAnalyticsCharts';
+import PlatformAnalyticsListingsTable from '../components/analytics/PlatformAnalyticsListingsTable';
 import {
   DomainAnalyticsActivitySection,
   DomainAnalyticsTopDomainsSection,
@@ -18,13 +19,6 @@ import {
 } from '../utils/platformAnalyticsData';
 
 const TABLE_PAGE_SIZE = 10;
-
-function formatCellValue(value, column) {
-  if (column.format) return column.format(value);
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  if (value == null || value === '') return '—';
-  return value;
-}
 
 export default function PlatformAnalyticsCategoryPage() {
   const { category } = useParams();
@@ -81,12 +75,6 @@ export default function PlatformAnalyticsCategoryPage() {
     [rows],
   );
 
-  const totalTablePages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE));
-  const paginatedRows = useMemo(() => {
-    const start = (tablePage - 1) * TABLE_PAGE_SIZE;
-    return rows.slice(start, start + TABLE_PAGE_SIZE);
-  }, [rows, tablePage]);
-
   const chartTitles = {
     distribution:
       category === 'domains'
@@ -110,9 +98,6 @@ export default function PlatformAnalyticsCategoryPage() {
   const scrollToListings = () => {
     tableSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-
-  const tableStart = rows.length ? (tablePage - 1) * TABLE_PAGE_SIZE + 1 : 0;
-  const tableEnd = Math.min(tablePage * TABLE_PAGE_SIZE, rows.length);
 
   return (
     <AppLayout>
@@ -170,84 +155,16 @@ export default function PlatformAnalyticsCategoryPage() {
               <AnalyticsBarCard title={chartTitles.views} data={charts.views} />
             </section>
 
-            <section ref={tableSectionRef} className="platform-analytics-table-section">
-              <div className="platform-analytics-table-section__head">
-                <h2>{t('platformAnalyticsListingsTitle')}</h2>
-                <span>{t('platformAnalyticsListingsCount', { count: rows.length })}</span>
-              </div>
-
-              {rows.length === 0 ? (
-                <p className="platform-analytics-table-section__empty">{t('platformAnalyticsNoListings')}</p>
-              ) : (
-                <>
-                  <div className="platform-analytics-table-wrap">
-                    <table className="platform-analytics-table">
-                      <thead>
-                        <tr>
-                          <th className="platform-analytics-table__serial">{t('platformAnalyticsColSerial')}</th>
-                          {columns.map((column) => (
-                            <th key={column.key}>{column.label}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {paginatedRows.map((row, rowIndex) => (
-                          <tr key={row.id}>
-                            <td className="platform-analytics-table__serial">
-                              {(tablePage - 1) * TABLE_PAGE_SIZE + rowIndex + 1}
-                            </td>
-                            {columns.map((column) => (
-                              <td key={`${row.id}-${column.key}`}>{formatCellValue(row[column.key], column)}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="platform-analytics-table-footer">
-                    <p>
-                      {t('platformAnalyticsTableRange', {
-                        start: tableStart,
-                        end: tableEnd,
-                        total: rows.length,
-                      })}
-                    </p>
-                    <div className="platform-analytics-pagination">
-                      <button
-                        type="button"
-                        className="platform-analytics-pagination__btn"
-                        onClick={() => setTablePage((page) => Math.max(1, page - 1))}
-                        disabled={tablePage <= 1}
-                        aria-label={t('platformAnalyticsPreviousPage')}
-                      >
-                        <ChevronLeft size={16} aria-hidden />
-                      </button>
-                      {Array.from({ length: totalTablePages }, (_, index) => index + 1).map((page) => (
-                        <button
-                          key={page}
-                          type="button"
-                          className={`platform-analytics-pagination__page${page === tablePage ? ' is-active' : ''}`}
-                          onClick={() => setTablePage(page)}
-                          aria-current={page === tablePage ? 'page' : undefined}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                      <button
-                        type="button"
-                        className="platform-analytics-pagination__btn"
-                        onClick={() => setTablePage((page) => Math.min(totalTablePages, page + 1))}
-                        disabled={tablePage >= totalTablePages}
-                        aria-label={t('platformAnalyticsNextPage')}
-                      >
-                        <ChevronRight size={16} aria-hidden />
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </section>
+            <div ref={tableSectionRef}>
+              <PlatformAnalyticsListingsTable
+                rows={rows}
+                columns={columns}
+                category={category}
+                tablePage={tablePage}
+                pageSize={TABLE_PAGE_SIZE}
+                onPageChange={setTablePage}
+              />
+            </div>
           </>
         )}
       </div>

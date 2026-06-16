@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { adminAPI } from '../api/services';
 import CreatorDashboardIcon from '../components/common/CreatorDashboardIcon';
+import InlineStatLoader from '../components/common/InlineStatLoader';
 import AppLayout from '../components/layout/AppLayout';
 
 const CATEGORY_META = {
@@ -40,7 +41,7 @@ function AnalyticsCategoryCard({ title, desc, to, cta, tone, stat, loading }) {
           <p>{desc}</p>
           {stat != null ? (
             <p className="platform-analytics-card__stat">
-              {loading ? '…' : stat}
+              {loading ? <InlineStatLoader size="sm" /> : stat}
             </p>
           ) : null}
         </div>
@@ -183,7 +184,13 @@ export default function PlatformAnalyticsHubPage() {
             {summaryCards.map((card) => (
               <article key={card.label} className="platform-analytics-summary-card">
                 <p>{card.label}</p>
-                <strong>{statsLoading ? '…' : formatStatValue(card.value) ?? '—'}</strong>
+                <strong aria-busy={statsLoading || undefined}>
+                  {statsLoading ? (
+                    <InlineStatLoader />
+                  ) : (
+                    formatStatValue(card.value) ?? '—'
+                  )}
+                </strong>
               </article>
             ))}
           </section>

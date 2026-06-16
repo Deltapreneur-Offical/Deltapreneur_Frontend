@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ExternalLink, Gavel } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EditActionLabel from '../components/common/EditActionLabel';
@@ -418,15 +418,6 @@ export default function VentureDetailPage() {
                 onClick={() => navigate(`/ventures/deals/${activeDealId}`)}
               >
                 {t('ventureDetailContinuePurchase', 'Continue purchase')}
-              </button>
-            ) : venture.saleType === 'AUCTION' && venture.auction?.id && venture.auction.status !== 'DRAFT' ? (
-              <button
-                type="button"
-                className="btn-glow btn-glow-sm w-full sm:w-auto inline-flex items-center justify-center gap-2"
-                onClick={() => navigate(`/venture-auction/${venture.auction.id}`)}
-              >
-                <Gavel size={14} />
-                {t('listingCardPlaceBid', 'Place Bid')}
               </button>
             ) : (
               <button

@@ -4,7 +4,7 @@ function staticEndTime() {
   return new Date(Date.now() + STATIC_END_OFFSET_MS).toISOString();
 }
 
-/** Placeholder auctions when no live data — one row, mixed categories, domain-style card UI. */
+/** Placeholder auctions when no live data — domain, technology, and creator categories. */
 export const STATIC_HOMEPAGE_AUCTIONS = [
   {
     category: 'domain',
@@ -60,29 +60,6 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
     },
   },
   {
-    category: 'venture',
-    id: 'static-home-venture-finedge',
-    isStatic: true,
-    status: 'ACTIVE',
-    minBidPrice: 500000,
-    currentHighestBid: 525000,
-    totalBids: 9,
-    endTime: staticEndTime(),
-    auctionTitle: 'FinEdge Labs',
-    imageUrl: null,
-    venture: {
-      verified: true,
-      gstinVerified: true,
-      stage: 'REVENUE_GENERATING',
-      lookingFor: 'Strategic investor for fintech expansion',
-      brandDetails: {
-        brandName: 'FinEdge Labs',
-        industry: 'FINTECH',
-        description: 'Revenue-generating fintech platform for SMB lending.',
-      },
-    },
-  },
-  {
     category: 'domain',
     id: 'static-home-domain-launchpad',
     isStatic: true,
@@ -105,9 +82,8 @@ export const STATIC_HOMEPAGE_AUCTIONS = [
 export function resolveStaticHomeAuctionPath(auction) {
   const paths = {
     domain: '/auctions',
-    venture: '/ventures',
     technology: '/technology',
-    community: '/creators',
+    community: '/creator',
   };
   return paths[auction?.category] || '/auctions';
 }

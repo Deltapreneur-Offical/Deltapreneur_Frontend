@@ -30,19 +30,6 @@ export function isSoftwareAuctionLister(auction, userId) {
   );
 }
 
-export function isVentureAuctionLister(auction, userId) {
-  if (!auction) return false;
-  const venture = auction.venture || {};
-  return matchUserId(
-    userId,
-    venture.listedBy?.id,
-    venture.listedByUserId,
-    venture.listed_by_user_id,
-    auction.createdBy,
-    auction.created_by,
-  );
-}
-
 export function isDomainAuctionLister(auction, userId) {
   if (!auction) return false;
   const domain = auction.domain || {};

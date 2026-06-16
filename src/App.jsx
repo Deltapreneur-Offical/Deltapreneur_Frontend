@@ -72,7 +72,6 @@ const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const CoBrotherDashboardPage = lazy(() => import('./pages/CoBrotherDashboardPage'));
 const FeeRequestsPage = lazy(() => import('./pages/FeeRequestsPage'));
 const AuctionPage = lazy(() => import('./pages/AuctionPage'));
-const VentureAuctionPage = lazy(() => import('./pages/VentureAuctionPage'));
 const VentureDealPage = lazy(() => import('./pages/VentureDealPage'));
 const NewCoVenturePage = lazy(() => import('./pages/NewCoVenturePage'));
 const CommunityAuctionPage = lazy(() => import('./pages/CommunityAuctionPage'));

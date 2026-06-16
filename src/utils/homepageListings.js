@@ -128,8 +128,3 @@ export function pickHomepagePreviewListings(
     .filter((item) => isHomepageFeaturedListing(item, type))
     .slice(0, limit);
 }
-
-/** @deprecated Use filterFeaturedListings — kept for callers not yet migrated */
-export function filterFeaturedGuestListings(items, type = 'domain') {
-  return filterFeaturedListings(items, type);
-}

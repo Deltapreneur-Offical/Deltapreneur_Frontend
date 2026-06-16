@@ -22,7 +22,6 @@ const PAGE_OWN_BACK = [
   /^\/technology\/dashboard$/,
   /^\/ventures\/dashboard$/,
   /^\/auction\//,
-  /^\/venture-auction\//,
   /^\/creator-auction\//,
   /^\/community-auction\//,
   /^\/technology\/auction\//,
@@ -35,7 +34,6 @@ const PAGE_OWN_BACK = [
 
 const BACK_RULES = [
   { test: (p) => p.startsWith('/ventures'), to: '/ventures', label: 'Ventures' },
-  { test: (p) => p.startsWith('/venture-auction'), to: '/auctions', label: 'Auctions' },
   { test: (p) => p.startsWith('/domains'), to: '/domains', label: 'Domains' },
   { test: (p) => p.startsWith('/auction/'), to: '/auctions', label: 'Auctions' },
   { test: (p) => p.startsWith('/technology/auction') || p.startsWith('/software-auction'), to: '/auctions?section=technology', label: 'Auctions' },

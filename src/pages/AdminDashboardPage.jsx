@@ -443,7 +443,6 @@ export default function AdminDashboardPage() {
       'domain-enquiries':  adminAPI.getDomainEnquiries,
       cocreations:         adminAPI.getTechnologies,
       auctions:            adminAPI.getAllAuctions,
-      'venture-auctions':  adminAPI.getAllVentureAuctions,
       meetings:            meetingAPI.adminGetAll,
       operations:          operationsAdminAPI.list,
       'software-auctions': softwareAuctionAPI.adminGetAll,
@@ -465,11 +464,6 @@ export default function AdminDashboardPage() {
     fetchers[currentTab]()
       .then(({ data }) => {
         let rows = extractAdminList(data);
-        if (currentTab === 'ventures') {
-          rows = rows.filter(
-            (v) => v.saleType !== 'AUCTION' && v.sale_type !== 'AUCTION',
-          );
-        }
         if (currentTab === 'addon-orders') {
           rows = normalizeAddonOrders(rows);
         }
@@ -592,7 +586,6 @@ export default function AdminDashboardPage() {
       'cocreations',
       'requests',
       'auctions',
-      'venture-auctions',
       'meetings',
       'operations',
       'homepage-features',
@@ -857,8 +850,6 @@ export default function AdminDashboardPage() {
               />
             ) : tab === 'auctions' ? (
               <AuctionsAdminTable auctions={data} />
-            ) : tab === 'venture-auctions' ? (
-              <VentureAuctionsAdminTable auctions={data} />
             ) : tab === 'addon-orders' ? (
               <AddonOrdersTable orders={data} />
             ) : tab === 'software-auctions' ? (
@@ -873,6 +864,7 @@ export default function AdminDashboardPage() {
               <div className="admin-homepage-features-grid">
                 <HomepageFeatureSelector type="domain" />
                 <HomepageFeatureSelector type="venture" />
+                <HomepageFeatureSelector type="coventure" />
                 <HomepageFeatureSelector type="software" />
                 <HomepageFeatureSelector type="community" />
               </div>
@@ -983,7 +975,7 @@ function VentureAdminRow({
   const listingMode = venture.listingMode || venture.listing_mode || 'VENTURE';
   const isCoVentureListing = listingMode === 'CO_VENTURE';
   const applications = venture.coVentureApplications || venture.co_venture_applications || [];
-  const pitches = venture.acquisitionApplications || venture.acquisition_applications || [];
+  const pitches = venture.pitches || venture.acquisitionApplications || venture.acquisition_applications || [];
   const pitchCount = venture.pitchCount ?? pitches.length;
   const applicationCount = isCoVentureListing
     ? (venture.coVentureApplicationCount ?? venture.applicationCount ?? applications.length)
@@ -1779,181 +1771,6 @@ function CommunityAuctionAdminRow({ auction, community }) {
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function VentureAuctionsAdminTable({ auctions, onRefresh }) {
-  const { t } = useTranslation();
-  if (!auctions.length) return (
-    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoVentureAuctions')}</h3></div>
-  );
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      {auctions.map((item) => {
-        const auction = item.auction ?? item;
-        const bids    = item.bids ?? [];
-        return (
-            <VentureAuctionAdminRow key={auction.id} auction={auction} bids={bids} onRefresh={onRefresh} />
-        );
-      })}
-    </div>
-  );
-}
-
-function VentureAuctionAdminRow({ auction, bids, onRefresh }) {
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const venture = auction.venture || {};
-  const brand   = venture.brandDetails || {};
-  const isPending = auction.approvalStatus === 'PENDING_APPROVAL' || auction.approvalStatus === 'AWAITING_GSTIN';
-
-  const handleApprove = async (e) => {
-    e.stopPropagation();
-    if (!confirm('Approve this venture auction and go live?')) return;
-    setLoading(true);
-    try {
-      await ventureAuctionAPI.adminApprove(auction.id);
-      onRefresh?.();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Approval failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReject = async (e) => {
-    e.stopPropagation();
-    const reason = prompt('Rejection reason (required):');
-    if (!reason?.trim()) return;
-    setLoading(true);
-    try {
-      await ventureAuctionAPI.adminReject(auction.id, reason.trim());
-      onRefresh?.();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Rejection failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="admin-record-card">
-      <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
-        <div style={{ flex: 1 }}>
-          <div className="admin-record-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {brand.brandName || t('adminVentureFallback', { id: auction.id })}
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#7c3aed',
-                           background: 'rgba(124,58,237,0.08)',
-                           border: '1px solid rgba(124,58,237,0.25)',
-                           padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-              {t('adminEquityAuction')}
-            </span>
-            {venture.verified && (
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#059669',
-                             background: 'rgba(5,150,105,0.08)',
-                             border: '1px solid rgba(5,150,105,0.25)',
-                             padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                ✓ {t('adminGstinVerified')}
-              </span>
-            )}
-          </div>
-          <div className="admin-record-id">
-            {t('adminBidsStatus', { count: auction.totalBids, status: auction.status })}
-            {brand.industry && ` · ${brand.industry.replace(/_/g, ' ')}`}
-          </div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <div className={`admin-price-amount ${auction.currentHighestBid > 0 ? 'admin-price-amount--bid' : 'admin-price-amount--empty'}`}>
-            {auction.currentHighestBid > 0
-              ? `${formatPrice(auction.currentHighestBid)}`
-              : t('adminNoBids')}
-          </div>
-          {auction.currentWinner && (
-            <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>
-              {auction.currentWinner.firstname} {auction.currentWinner.lastname}
-            </div>
-          )}
-        </div>
-        <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
-      </div>
-
-      {expanded && (
-        <div className="admin-record-body">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-                        gap: '1rem', marginBottom: '1rem' }}>
-            <div><div className="admin-field-label">{t('adminVentureOwner')}</div>
-              <div className="admin-field-value">
-                {venture.listedBy?.firstname} {venture.listedBy?.lastname}
-              </div>
-              <div className="admin-field-meta">
-                {venture.listedBy?.email}
-              </div>
-            </div>
-            <div><div className="admin-field-label">{t('adminCurrentWinner')}</div>
-              <div className="admin-field-value">
-                {auction.currentWinner
-                  ? `${auction.currentWinner.firstname} ${auction.currentWinner.lastname}`
-                  : '—'}
-              </div>
-              <div className="admin-field-meta">
-                {auction.currentWinner?.email || ''}
-              </div>
-            </div>
-            <div><div className="admin-field-label">{t('adminAuctionDetails')}</div>
-              <div className="admin-field-value">
-                {t('adminMin', { price: formatPrice(auction.minBidPrice || 0) })}
-              </div>
-              <div className="admin-field-meta">
-                {t('adminDuration', { duration: auction.duration?.replace(/_/g, ' ') || '—' })}
-              </div>
-              <div className="admin-field-meta">
-                {auction.startTime ? t('adminStart', { date: formatAuctionDate(auction.startTime) }) : ''}
-              </div>
-            </div>
-          </div>
-
-          {isPending && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button type="button" disabled={loading} onClick={handleApprove}
-                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">
-                Approve & Go Live
-              </button>
-              <button type="button" disabled={loading} onClick={handleReject}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold disabled:opacity-50">
-                Reject
-              </button>
-            </div>
-          )}
-
-          {bids?.length > 0 && (
-            <div>
-              <div className="admin-field-label">{t('adminAllBids', { count: bids.length })}</div>
-              <div className="admin-bids-panel">
-                {bids.map((bid, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
-                                        padding: '0.4rem 0.5rem', fontSize: '0.8rem',
-                                        borderBottom: '1px solid #e5e7eb' }}>
-                    <span style={{ color: '#111827', fontWeight: 500 }}>{bid.bidderName}</span>
-                    <span style={{ color: bid.isWinningBid ? '#059669' : '#7c3aed',
-                                   fontWeight: 600 }}>
-                      {formatPrice(bid.amount)}
-                      {bid.isWinningBid && ' 🏆'}
-                    </span>
-                    <span className="admin-field-meta" style={{ fontSize: '0.75rem' }}>
-                      {formatAuctionDateTime(bid.bidTime, {
-                        hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
-                      }, '')}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

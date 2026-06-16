@@ -3,11 +3,13 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { isActiveListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
+import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { asArray } from '../../utils/asArray';
 
 const SECTION_KEYS = {
   domain: 'homepageFeatureDomains',
   venture: 'homepageFeatureVentures',
+  coventure: 'homepageFeatureCoVentures',
   software: 'homepageFeatureSoftware',
   community: 'homepageFeatureCreators',
 };
@@ -15,15 +17,32 @@ const SECTION_KEYS = {
 const TYPE_KEYS = {
   domain: 'homepageFeatureTypeDomains',
   venture: 'homepageFeatureTypeVentures',
+  coventure: 'homepageFeatureTypeCoVentures',
   software: 'homepageFeatureTypeSoftware',
   community: 'homepageFeatureTypeCommunities',
 };
+
+const LISTING_TYPE = {
+  domain: 'domain',
+  venture: 'venture',
+  coventure: 'venture',
+  software: 'software',
+  community: 'community',
+};
+
+function matchesVentureFeatureType(item, type) {
+  if (type === 'venture') return !isCoVentureListing(item);
+  if (type === 'coventure') return isCoVentureListing(item);
+  return true;
+}
 
 const PAGE_SIZES = [25, 50, 100];
 
 function getTitle(item, type) {
   if (type === 'domain') return `${item.domainName || ''}${item.domainExtension || ''}`;
-  if (type === 'venture') return item.brandDetails?.brandName || `Venture #${item.id}`;
+  if (type === 'venture' || type === 'coventure') {
+    return item.brandDetails?.brandName || `${type === 'coventure' ? 'Co-Venture' : 'Venture'} #${item.id}`;
+  }
   if (type === 'software') return item.name || `Software #${item.id}`;
   if (type === 'community') return item.name || `Creator #${item.id}`;
   return '';
@@ -55,6 +74,7 @@ function FeaturedSwitch({ active, pending, onToggle, t }) {
 export default function HomepageFeatureSelector({ type }) {
   const { t } = useTranslation();
   const typeLabel = t(TYPE_KEYS[type]);
+  const listingType = LISTING_TYPE[type] ?? type;
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -69,11 +89,12 @@ export default function HomepageFeatureSelector({ type }) {
     try {
       let response;
       if (type === 'domain') response = await adminAPI.getDomains();
-      else if (type === 'venture') response = await adminAPI.getVentures();
+      else if (type === 'venture' || type === 'coventure') response = await adminAPI.getVentures();
       else if (type === 'software') response = await adminAPI.getSoftwares();
       else if (type === 'community') response = await adminAPI.getCommunities();
 
-      setItems(asArray(response.data));
+      const rows = asArray(response.data).filter((item) => matchesVentureFeatureType(item, type));
+      setItems(rows);
     } catch (error) {
       console.error('Failed to fetch items:', error);
       setItems([]);
@@ -91,13 +112,13 @@ export default function HomepageFeatureSelector({ type }) {
   }, [search, statusFilter, sortBy, pageSize, type]);
 
   const featureableItems = useMemo(
-    () => items.filter((item) => isActiveListing(item, type)),
-    [items, type],
+    () => items.filter((item) => isActiveListing(item, listingType)),
+    [items, listingType],
   );
 
   const featuredCount = useMemo(
-    () => featureableItems.filter((item) => isHomepageFeaturedListing(item, type)).length,
-    [featureableItems, type],
+    () => featureableItems.filter((item) => isHomepageFeaturedListing(item, listingType)).length,
+    [featureableItems, listingType],
   );
 
   const filteredSorted = useMemo(() => {
@@ -158,6 +179,7 @@ export default function HomepageFeatureSelector({ type }) {
     const typeMap = {
       domain: 'DOMAIN',
       venture: 'VENTURE',
+      coventure: 'VENTURE',
       software: 'SOFTWARE',
       community: 'COMMUNITY',
     };
@@ -207,7 +229,11 @@ export default function HomepageFeatureSelector({ type }) {
         <div className="admin-feature-card-head-main">
           <h3 className="admin-feature-card-title">{t(SECTION_KEYS[type])}</h3>
           <p className="admin-feature-card-subtitle">
-            {t('homepageFeatureSubtitle')}
+            {type === 'venture'
+              ? t('homepageFeatureVentureSubtitle')
+              : type === 'coventure'
+                ? t('homepageFeatureCoVentureSubtitle')
+                : t('homepageFeatureSubtitle')}
           </p>
         </div>
         <div className="admin-feature-stats">

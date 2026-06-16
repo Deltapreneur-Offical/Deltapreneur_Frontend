@@ -30,8 +30,8 @@ export function normalizeDomainExtension(ext) {
 
 /** Split name + extension for display (handles legacy rows with extension only in domainName). */
 export function resolveDomainDisplay(domain) {
-  let name = toSafeText(domain?.domainName).trim();
-  let rawExt = toSafeText(domain?.domainExtension).trim();
+  let name = toSafeText(domain?.domainName ?? domain?.domain_name).trim();
+  let rawExt = toSafeText(domain?.domainExtension ?? domain?.domain_extension).trim();
 
   if (!rawExt && name.includes('.')) {
     const dot = name.indexOf('.');

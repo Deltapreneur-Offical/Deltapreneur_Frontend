@@ -8,6 +8,7 @@ import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 import verifiedIcon from '../../assets/Verified_Icon.png';
+import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
   'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';

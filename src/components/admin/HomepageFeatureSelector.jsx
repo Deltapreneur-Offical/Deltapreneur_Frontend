@@ -29,16 +29,20 @@ function getTitle(item, type) {
   return '';
 }
 
-function FeaturedSwitch({ active, disabled, onToggle, t }) {
+function sameItemId(a, b) {
+  return String(a ?? '') === String(b ?? '');
+}
+
+function FeaturedSwitch({ active, pending, onToggle, t }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={active}
+      aria-busy={pending}
       aria-label={active ? t('homepageFeatureSwitchRemove') : t('homepageFeatureSwitchAdd')}
-      disabled={disabled}
       onClick={onToggle}
-      className={`admin-feature-switch ${active ? 'is-on' : ''} ${disabled ? 'is-busy' : ''}`}
+      className={`admin-feature-switch ${active ? 'is-on' : ''} ${pending ? 'is-busy' : ''}`}
     >
       <span className="admin-feature-switch-track">
         <span className="admin-feature-switch-thumb" />
@@ -52,13 +56,13 @@ export default function HomepageFeatureSelector({ type }) {
   const { t } = useTranslation();
   const typeLabel = t(TYPE_KEYS[type]);
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name-asc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [togglingId, setTogglingId] = useState(null);
+  const [pendingIds, setPendingIds] = useState(() => new Set());
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -148,22 +152,43 @@ export default function HomepageFeatureSelector({ type }) {
   const rangeEnd = Math.min(safePage * pageSize, filteredSorted.length);
 
   const handleToggle = async (id, currentFeatured) => {
-    if (togglingId != null) return;
-    setTogglingId(id);
+    if (pendingIds.has(String(id))) return;
+
+    const nextFeatured = !currentFeatured;
+    const typeMap = {
+      domain: 'DOMAIN',
+      venture: 'VENTURE',
+      software: 'SOFTWARE',
+      community: 'COMMUNITY',
+    };
+
+    setPendingIds((prev) => new Set(prev).add(String(id)));
+    setItems((prev) =>
+      prev.map((item) => (sameItemId(item.id, id) ? { ...item, featured: nextFeatured } : item)),
+    );
+
     try {
-      const typeMap = {
-        domain: 'DOMAIN',
-        venture: 'VENTURE',
-        software: 'SOFTWARE',
-        community: 'COMMUNITY',
-      };
-      await adminAPI.toggleFeatured(typeMap[type], id, !currentFeatured);
-      await fetchItems();
+      const response = await adminAPI.toggleFeatured(typeMap[type], id, nextFeatured);
+      const confirmedFeatured = response?.data?.featured;
+      if (typeof confirmedFeatured === 'boolean') {
+        setItems((prev) =>
+          prev.map((item) =>
+            sameItemId(item.id, id) ? { ...item, featured: confirmedFeatured } : item,
+          ),
+        );
+      }
     } catch (error) {
       console.error('Failed to toggle homepage feature:', error);
+      setItems((prev) =>
+        prev.map((item) => (sameItemId(item.id, id) ? { ...item, featured: currentFeatured } : item)),
+      );
       alert(t('homepageFeatureToggleFailed'));
     } finally {
-      setTogglingId(null);
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(String(id));
+        return next;
+      });
     }
   };
 
@@ -254,11 +279,11 @@ export default function HomepageFeatureSelector({ type }) {
           <ul className="admin-feature-list" aria-live="polite">
             {paginated.map((item) => {
               const featured = Boolean(item.featured);
-              const busy = togglingId === item.id;
+              const pending = pendingIds.has(String(item.id));
               return (
                 <li
                   key={item.id}
-                  className={`admin-feature-row ${featured ? 'is-featured' : ''} ${busy ? 'is-busy' : ''}`}
+                  className={`admin-feature-row ${featured ? 'is-featured' : ''} ${pending ? 'is-busy' : ''}`}
                 >
                   <div className="admin-feature-row-body">
                     <p className="admin-feature-item-title">{getTitle(item, type)}</p>
@@ -266,7 +291,7 @@ export default function HomepageFeatureSelector({ type }) {
                   </div>
                   <FeaturedSwitch
                     active={featured}
-                    disabled={busy}
+                    pending={pending}
                     onToggle={() => handleToggle(item.id, featured)}
                     t={t}
                   />

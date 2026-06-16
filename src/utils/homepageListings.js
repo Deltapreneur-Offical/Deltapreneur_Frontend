@@ -5,22 +5,22 @@ import { isPublicMarketplaceListing } from './listingVisibility';
 /** Whether a listing is visible on marketplace browse pages and can be homepage-featured. */
 export function isActiveListing(item, type = 'domain') {
   if (!item) return false;
-  if (item.takenDown === true) return false;
-  if (item.deleted === true || item.isDeleted === true) return false;
+  if (item.takenDown === true || item.taken_down === true) return false;
+  if (item.deleted === true || item.isDeleted === true || item.is_deleted === true) return false;
   if (item.active === false) return false;
 
   // Domains, ventures, and software use boolean `status` for marketplace visibility.
   if (item.status === false) return false;
 
   if (type === 'domain') {
-    const domainStatus = (item.domainStatus ?? '').toString().toUpperCase();
+    const domainStatus = (item.domainStatus ?? item.domain_status ?? '').toString().toUpperCase();
     if (domainStatus === 'SOLD' || domainStatus === 'REMOVED' || domainStatus === 'DELETED') {
       return false;
     }
   }
 
   if (type === 'software') {
-    const softwareStatus = (item.softwareStatus ?? '').toString().toUpperCase();
+    const softwareStatus = (item.softwareStatus ?? item.software_status ?? '').toString().toUpperCase();
     if (softwareStatus === 'SOLD' || softwareStatus === 'REMOVED' || softwareStatus === 'DELETED') {
       return false;
     }

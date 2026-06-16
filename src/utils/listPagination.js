@@ -3,14 +3,13 @@ import { asArray } from './asArray';
 /** Default page size for browse pages that load the full catalog in chunks. */
 export const BROWSE_LIST_PAGE_SIZE = 50;
 
-/** Home sections only need a small slice before preview selection. */
+/** Home sections scan listings in chunks until enough featured rows are found. */
 export const HOME_PREVIEW_PAGE_SIZE = 48;
 
-/** Params for homepage sections — only admin-featured rows. */
+/** @deprecated Use fetchHomepageSectionPreview from homepagePreview.js */
 export const HOME_FEATURED_LIST_PARAMS = {
   page: 1,
-  pageSize: 5,
-  featured_only: true,
+  pageSize: HOME_PREVIEW_PAGE_SIZE,
 };
 
 /**
@@ -27,6 +26,14 @@ export async function fetchListPage(requestFn, { page = 1, pageSize = BROWSE_LIS
     page: data?.page ?? page,
     pageSize: data?.page_size ?? data?.pageSize ?? pageSize,
   };
+}
+
+/**
+ * @deprecated Use fetchHomepageSectionPreview from homepagePreview.js
+ */
+export async function fetchHomepageFeaturedPreview(requestFn, type = 'domain', limit = 5) {
+  const { fetchHomepageSectionPreview } = await import('./homepagePreview');
+  return fetchHomepageSectionPreview(requestFn, type, limit);
 }
 
 /**

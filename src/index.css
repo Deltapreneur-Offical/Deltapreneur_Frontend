@@ -306,53 +306,53 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
   width: 2px;
 }
 
-/* Tail fades out; head end stays bright */
+/* Tail fades out softly; head end stays a touch brighter */
 .home-features-electric-snake.is-horizontal.head-at-high {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(129, 140, 248, 0.15) 18%,
-    rgba(99, 102, 241, 0.65) 62%,
-    rgba(129, 140, 248, 0.95) 92%,
-    rgba(196, 181, 253, 1) 100%
+    rgba(224, 231, 255, 0.25) 22%,
+    rgba(199, 210, 254, 0.42) 58%,
+    rgba(224, 231, 255, 0.72) 90%,
+    rgba(238, 242, 255, 0.95) 100%
   );
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 8px rgba(199, 210, 254, 0.28);
 }
 
 .home-features-electric-snake.is-horizontal.head-at-low {
   background: linear-gradient(
     270deg,
     transparent 0%,
-    rgba(129, 140, 248, 0.15) 18%,
-    rgba(99, 102, 241, 0.65) 62%,
-    rgba(129, 140, 248, 0.95) 92%,
-    rgba(196, 181, 253, 1) 100%
+    rgba(224, 231, 255, 0.25) 22%,
+    rgba(199, 210, 254, 0.42) 58%,
+    rgba(224, 231, 255, 0.72) 90%,
+    rgba(238, 242, 255, 0.95) 100%
   );
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 8px rgba(199, 210, 254, 0.28);
 }
 
 .home-features-electric-snake.is-vertical.head-at-high {
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(129, 140, 248, 0.15) 18%,
-    rgba(99, 102, 241, 0.65) 62%,
-    rgba(129, 140, 248, 0.95) 92%,
-    rgba(196, 181, 253, 1) 100%
+    rgba(224, 231, 255, 0.25) 22%,
+    rgba(199, 210, 254, 0.42) 58%,
+    rgba(224, 231, 255, 0.72) 90%,
+    rgba(238, 242, 255, 0.95) 100%
   );
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 8px rgba(199, 210, 254, 0.28);
 }
 
 .home-features-electric-snake.is-vertical.head-at-low {
   background: linear-gradient(
     0deg,
     transparent 0%,
-    rgba(129, 140, 248, 0.15) 18%,
-    rgba(99, 102, 241, 0.65) 62%,
-    rgba(129, 140, 248, 0.95) 92%,
-    rgba(196, 181, 253, 1) 100%
+    rgba(224, 231, 255, 0.25) 22%,
+    rgba(199, 210, 254, 0.42) 58%,
+    rgba(224, 231, 255, 0.72) 90%,
+    rgba(238, 242, 255, 0.95) 100%
   );
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 8px rgba(199, 210, 254, 0.28);
 }
 
 .home-features-electric-snake-head {

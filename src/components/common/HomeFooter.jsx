@@ -233,19 +233,11 @@ export default function HomeFooter() {
             <h3 className={headingClass}>{t('explore')}</h3>
             <nav className="flex flex-col">
 
-              <button
-
-                type="button"
-
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-
-                className={`${linkClass} text-left`}
-
-              >
+              <ScrollLink to="/" className={linkClass}>
 
                 {t('Home')}
 
-              </button>
+              </ScrollLink>
 
             </nav>
 

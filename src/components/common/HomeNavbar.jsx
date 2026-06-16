@@ -164,7 +164,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const authButtons = !authLoading && !user && !hideJoinCta ? (
+  const suppressJoinCta = hideJoinCta || showBack;
+
+  const authButtons = !authLoading && !user && !suppressJoinCta ? (
     <>
       <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
         {t('joinCoBrother')}
@@ -282,13 +284,11 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           </div>
 
           <div className="home-main-nav-end">
-            {showBack && (
-              <div className="home-nav-desktop-cta hidden sm:block">
-                <BackButton to="/" label={t('Home')} variant="pill" />
-              </div>
-            )}
-            {authButtons ? (
+            {(showBack || authButtons) ? (
               <div className="home-nav-desktop-cta home-nav-cta-group">
+                {showBack ? (
+                  <BackButton to="/" label={t('Home')} variant="pill" />
+                ) : null}
                 {authButtons}
               </div>
             ) : null}
@@ -384,12 +384,12 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <span className="home-nav-util-divider" aria-hidden="true">|</span>
                 <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
               </div>
-              {showBack && (
+              {showBack ? (
                 <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
-              )}
+              ) : null}
               {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">
-                  {!hideJoinCta ? (
+                  {!suppressJoinCta ? (
                     <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
                       {t('joinCoBrother')}
                     </JoinCoBrotherGradientButton>

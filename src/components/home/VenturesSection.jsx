@@ -2,9 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
-import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
 import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -24,10 +23,11 @@ export default function VenturesSection() {
     const fetchVentures = async () => {
       try {
         setLoading(true);
-        const { items } = await fetchListPage((params) => ventureAPI.getAll(params), {
-          ...HOME_FEATURED_LIST_PARAMS,
-        });
-        setVentures(items);
+        const rows = await fetchHomepageSectionPreview(
+          (params) => ventureAPI.getAll(params),
+          'venture',
+        );
+        setVentures(rows);
       } catch {
         setVentures([]);
       } finally {
@@ -37,16 +37,10 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
-  const ventureListings = useMemo(
+  const previewVentures = useMemo(
     () => ventures.filter((venture) => !isCoVentureListing(venture)),
     [ventures],
   );
-
-  const previewVentures = useMemo(() => {
-    const featured = pickHomepagePreviewListings(ventureListings, 'venture', HOMEPAGE_PREVIEW_LIMIT);
-    if (featured.length > 0) return featured;
-    return ventureListings.slice(0, HOMEPAGE_PREVIEW_LIMIT);
-  }, [ventureListings]);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewVentures);
 

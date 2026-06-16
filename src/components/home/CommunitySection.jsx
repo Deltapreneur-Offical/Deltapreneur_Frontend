@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { communityAPI } from '../../api/services';
-import { pickHomepagePreviewListings } from '../../utils/homepageListings';
+import { resolveHomepageSectionItems } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { asArray } from '../../utils/asArray';
 import { useLikes } from '../../hooks/useLikes';
@@ -45,7 +45,7 @@ export default function CommunitySection() {
   }, []);
 
   const previewCommunities = useMemo(
-    () => pickHomepagePreviewListings(communities, 'community'),
+    () => resolveHomepageSectionItems(communities, 'community'),
     [communities],
   );
 

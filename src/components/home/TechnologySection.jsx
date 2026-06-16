@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
-import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -16,30 +15,26 @@ import '../../styles/domain-listing-cards.css';
 export default function TechnologySection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [softwares, setSoftwares] = useState([]);
+  const [previewSoftwares, setPreviewSoftwares] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSoftwares = async () => {
       try {
         setLoading(true);
-        const { items } = await fetchListPage((params) => cocreationAPI.getAll(params), {
-          ...HOME_FEATURED_LIST_PARAMS,
-        });
-        setSoftwares(items);
+        const rows = await fetchHomepageSectionPreview(
+          (params) => cocreationAPI.getAll(params),
+          'software',
+        );
+        setPreviewSoftwares(rows);
       } catch {
-        setSoftwares([]);
+        setPreviewSoftwares([]);
       } finally {
         setLoading(false);
       }
     };
     fetchSoftwares();
   }, []);
-
-  const previewSoftwares = useMemo(
-    () => pickHomepagePreviewListings(softwares, 'software', HOMEPAGE_PREVIEW_LIMIT),
-    [softwares],
-  );
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', previewSoftwares);
 

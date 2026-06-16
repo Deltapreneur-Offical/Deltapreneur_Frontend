@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
-import { extractDomainList } from '../../utils/domainApiAdapter';
-import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
-import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -17,7 +15,7 @@ import '../../styles/domain-listing-cards.css';
 export default function DomainsSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [domains, setDomains] = useState([]);
+  const [previewDomains, setPreviewDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasFetchedDomains, setHasFetchedDomains] = useState(false);
 
@@ -25,12 +23,13 @@ export default function DomainsSection() {
     const fetchDomains = async () => {
       try {
         setLoading(true);
-        const { items } = await fetchListPage((params) => domainAPI.getAll(params), {
-          ...HOME_FEATURED_LIST_PARAMS,
-        });
-        setDomains(extractDomainList({ items, data: items }));
+        const rows = await fetchHomepageSectionPreview(
+          (params) => domainAPI.getAll(params),
+          'domain',
+        );
+        setPreviewDomains(rows);
       } catch {
-        setDomains([]);
+        setPreviewDomains([]);
       } finally {
         setLoading(false);
         setHasFetchedDomains(true);
@@ -38,11 +37,6 @@ export default function DomainsSection() {
     };
     fetchDomains();
   }, []);
-
-  const previewDomains = useMemo(
-    () => pickHomepagePreviewListings(domains, 'domain', HOMEPAGE_PREVIEW_LIMIT),
-    [domains],
-  );
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', previewDomains);
 

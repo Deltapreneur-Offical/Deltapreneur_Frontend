@@ -467,6 +467,20 @@
   padding: 0.28rem 0.38rem 0.28rem 0.5rem;
 }
 
+/* View-details arrow — black on white so it stays visible on homepage cards */
+.home-preview-row .domain-listing-card__price-cta,
+.home-auto-scroll-row .domain-listing-card__price-cta {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #111827;
+}
+
+.home-preview-row .domain-listing-card__price-cta svg,
+.home-auto-scroll-row .domain-listing-card__price-cta svg {
+  color: #111827;
+  stroke: currentColor;
+}
+
 
 
 .home-preview-row .venture-listing-card:hover,

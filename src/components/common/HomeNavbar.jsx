@@ -216,6 +216,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => toggleDesktopDropdown('venture')}
               >
                 <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
+                <DropdownLink onClick={() => go('/ventures/new?type=co-venture')}>List Co-Venture</DropdownLink>
                 <DropdownLink onClick={() => go('/ventures/new')}>{t('listVenture')}</DropdownLink>
               </NavDropdown>
 
@@ -258,7 +259,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   {t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance' })}
                 </DropdownLink>
                 <DropdownLink onClick={() => goToOperations('compliance')}>
-                  {t('operationsSectionCompliances', { defaultValue: 'Compliances' })}
+                  {t('operationsSectionCompliances', { defaultValue: 'Compliance' })}
                 </DropdownLink>
               </NavDropdown>
             </div>
@@ -372,7 +373,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   {t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance' })}
                 </button>
                 <button type="button" className="home-mobile-link" onClick={() => goToOperations('compliance')}>
-                  {t('operationsSectionCompliances', { defaultValue: 'Compliances' })}
+                  {t('operationsSectionCompliances', { defaultValue: 'Compliance' })}
                 </button>
               </MobileAccordion>
             </div>

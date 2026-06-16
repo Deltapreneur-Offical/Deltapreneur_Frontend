@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useCurrency from '../../context/CurrencyContext';
-import i18n from '../../i18n';
 import AddonAccordionCard from './AddonAccordionCard';
 import PremiumInfoTooltip from './PremiumInfoTooltip';
 
@@ -45,9 +44,9 @@ const BADGE_TONES = {
   orange: 'bg-[#fff1e3] text-[#b86a14] border-[#f5dcc0]',
 };
 
-export function vaLabel(key) {
+export function vaLabel(key, translate = (k) => k) {
   const service = VA_SERVICES.find((item) => item.key === key);
-  return service ? i18n.t(service.labelKey) : key;
+  return service ? translate(service.labelKey) : key;
 }
 
 export function vaTotal(selected) {

@@ -1,9 +1,13 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Eye, LayoutList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { AnalyticsBarCard, AnalyticsPieCard } from '../components/analytics/PlatformAnalyticsCharts';
+import {
+  DomainAnalyticsActivitySection,
+  DomainAnalyticsTopDomainsSection,
+} from '../components/analytics/DomainAnalyticsSections';
 import { useAuth } from '../context/AuthContext';
 import {
   buildCategoryCharts,
@@ -12,6 +16,8 @@ import {
   getCategoryTitle,
   isAnalyticsCategory,
 } from '../utils/platformAnalyticsData';
+
+const TABLE_PAGE_SIZE = 10;
 
 function formatCellValue(value, column) {
   if (column.format) return column.format(value);
@@ -25,12 +31,14 @@ export default function PlatformAnalyticsCategoryPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const tableSectionRef = useRef(null);
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
   const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [tablePage, setTablePage] = useState(1);
 
   useEffect(() => {
     if (!isAnalyticsCategory(category)) {
@@ -44,7 +52,10 @@ export default function PlatformAnalyticsCategoryPage() {
 
     fetchPlatformAnalyticsRows(category, isAdmin)
       .then((data) => {
-        if (!cancelled) setRows(data);
+        if (!cancelled) {
+          setRows(data);
+          setTablePage(1);
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -64,6 +75,17 @@ export default function PlatformAnalyticsCategoryPage() {
   const charts = useMemo(() => buildCategoryCharts(category, rows), [category, rows]);
   const columns = useMemo(() => getCategoryTableColumns(category, isAdmin, t), [category, isAdmin, t]);
   const title = getCategoryTitle(category, t);
+  const isDomains = category === 'domains';
+  const totalViews = useMemo(
+    () => rows.reduce((sum, row) => sum + Number(row.views || 0), 0),
+    [rows],
+  );
+
+  const totalTablePages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE));
+  const paginatedRows = useMemo(() => {
+    const start = (tablePage - 1) * TABLE_PAGE_SIZE;
+    return rows.slice(start, start + TABLE_PAGE_SIZE);
+  }, [rows, tablePage]);
 
   const chartTitles = {
     distribution:
@@ -84,6 +106,13 @@ export default function PlatformAnalyticsCategoryPage() {
             : t('platformAnalyticsChartCreatorIndustry'),
     views: t('platformAnalyticsChartTopViews'),
   };
+
+  const scrollToListings = () => {
+    tableSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const tableStart = rows.length ? (tablePage - 1) * TABLE_PAGE_SIZE + 1 : 0;
+  const tableEnd = Math.min(tablePage * TABLE_PAGE_SIZE, rows.length);
 
   return (
     <AppLayout>
@@ -108,15 +137,32 @@ export default function PlatformAnalyticsCategoryPage() {
         ) : (
           <>
             <section className="platform-analytics-category__summary">
-              <article className="platform-analytics-summary-card">
-                <p>{t('platformAnalyticsTotalListings')}</p>
-                <strong>{rows.length.toLocaleString()}</strong>
+              <article className="platform-analytics-summary-card platform-analytics-summary-card--enhanced">
+                <div className="platform-analytics-summary-card__content">
+                  <p>{t('platformAnalyticsTotalListings')}</p>
+                  <strong>{rows.length.toLocaleString()}</strong>
+                </div>
+                <span className="platform-analytics-summary-card__icon" aria-hidden>
+                  <LayoutList size={18} strokeWidth={2} />
+                </span>
               </article>
-              <article className="platform-analytics-summary-card">
-                <p>{t('platformAnalyticsTotalViews')}</p>
-                <strong>{rows.reduce((sum, row) => sum + Number(row.views || 0), 0).toLocaleString()}</strong>
+              <article className="platform-analytics-summary-card platform-analytics-summary-card--enhanced">
+                <div className="platform-analytics-summary-card__content">
+                  <p>{t('platformAnalyticsTotalViews')}</p>
+                  <strong>{totalViews.toLocaleString()}</strong>
+                </div>
+                <span className="platform-analytics-summary-card__icon" aria-hidden>
+                  <Eye size={18} strokeWidth={2} />
+                </span>
               </article>
             </section>
+
+            {isDomains ? (
+              <section className="platform-analytics-insights-grid">
+                <DomainAnalyticsActivitySection rows={rows} />
+                <DomainAnalyticsTopDomainsSection rows={rows} onViewReport={scrollToListings} />
+              </section>
+            ) : null}
 
             <section className="platform-analytics-chart-grid">
               <AnalyticsPieCard title={chartTitles.distribution} data={charts.distribution} />
@@ -124,7 +170,7 @@ export default function PlatformAnalyticsCategoryPage() {
               <AnalyticsBarCard title={chartTitles.views} data={charts.views} />
             </section>
 
-            <section className="platform-analytics-table-section">
+            <section ref={tableSectionRef} className="platform-analytics-table-section">
               <div className="platform-analytics-table-section__head">
                 <h2>{t('platformAnalyticsListingsTitle')}</h2>
                 <span>{t('platformAnalyticsListingsCount', { count: rows.length })}</span>
@@ -133,26 +179,73 @@ export default function PlatformAnalyticsCategoryPage() {
               {rows.length === 0 ? (
                 <p className="platform-analytics-table-section__empty">{t('platformAnalyticsNoListings')}</p>
               ) : (
-                <div className="platform-analytics-table-wrap">
-                  <table className="platform-analytics-table">
-                    <thead>
-                      <tr>
-                        {columns.map((column) => (
-                          <th key={column.key}>{column.label}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((row) => (
-                        <tr key={row.id}>
+                <>
+                  <div className="platform-analytics-table-wrap">
+                    <table className="platform-analytics-table">
+                      <thead>
+                        <tr>
+                          <th className="platform-analytics-table__serial">{t('platformAnalyticsColSerial')}</th>
                           {columns.map((column) => (
-                            <td key={`${row.id}-${column.key}`}>{formatCellValue(row[column.key], column)}</td>
+                            <th key={column.key}>{column.label}</th>
                           ))}
                         </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedRows.map((row, rowIndex) => (
+                          <tr key={row.id}>
+                            <td className="platform-analytics-table__serial">
+                              {(tablePage - 1) * TABLE_PAGE_SIZE + rowIndex + 1}
+                            </td>
+                            {columns.map((column) => (
+                              <td key={`${row.id}-${column.key}`}>{formatCellValue(row[column.key], column)}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="platform-analytics-table-footer">
+                    <p>
+                      {t('platformAnalyticsTableRange', {
+                        start: tableStart,
+                        end: tableEnd,
+                        total: rows.length,
+                      })}
+                    </p>
+                    <div className="platform-analytics-pagination">
+                      <button
+                        type="button"
+                        className="platform-analytics-pagination__btn"
+                        onClick={() => setTablePage((page) => Math.max(1, page - 1))}
+                        disabled={tablePage <= 1}
+                        aria-label={t('platformAnalyticsPreviousPage')}
+                      >
+                        <ChevronLeft size={16} aria-hidden />
+                      </button>
+                      {Array.from({ length: totalTablePages }, (_, index) => index + 1).map((page) => (
+                        <button
+                          key={page}
+                          type="button"
+                          className={`platform-analytics-pagination__page${page === tablePage ? ' is-active' : ''}`}
+                          onClick={() => setTablePage(page)}
+                          aria-current={page === tablePage ? 'page' : undefined}
+                        >
+                          {page}
+                        </button>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                      <button
+                        type="button"
+                        className="platform-analytics-pagination__btn"
+                        onClick={() => setTablePage((page) => Math.min(totalTablePages, page + 1))}
+                        disabled={tablePage >= totalTablePages}
+                        aria-label={t('platformAnalyticsNextPage')}
+                      >
+                        <ChevronRight size={16} aria-hidden />
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </section>
           </>

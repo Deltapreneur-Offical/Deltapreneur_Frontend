@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus } from 'lucide-react';
+import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -168,7 +169,7 @@ export default function CoCreationPage() {
   const handleAuctionSubmitted = () => {
     const targetId = auctionTarget?.id;
     setAuctionTarget(null);
-    alert('Auction request submitted! Admin will review it shortly.');
+    alert('Auction request submitted! An admin will review it shortly.');
     if (targetId) {
       softwareAuctionAPI.getBySoftware(targetId)
         .then(({ data }) => {
@@ -195,7 +196,7 @@ export default function CoCreationPage() {
         {(showForm || editTarget) && user ? (
           <>
             <ListingBackLink
-              label="Back to Technology"
+              label={t('listingBackToTechnology')}
               onClick={() => { setShowForm(false); setEditTarget(null); }}
             />
             <SoftwareForm
@@ -229,7 +230,10 @@ export default function CoCreationPage() {
             </div>
             <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
           </div>
-          <div className="flex gap-2 md:gap-3">
+          <div className="flex gap-2 md:gap-3 flex-wrap">
+            {user ? (
+              <PayoutSettingsButton className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" />
+            ) : null}
             <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/technology/dashboard')}>
               <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
@@ -262,7 +266,7 @@ export default function CoCreationPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search software by name, description or tech stack…"
+          placeholder={t('technologyPageSearchPlaceholder')}
           priceSymbol={getSymbol(currency)}
           theme="light"
         />
@@ -285,7 +289,7 @@ export default function CoCreationPage() {
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
               {activeFilterCount > 0 ? 'No software matches your filters' :
                filterTab === 'mine' ? 'You have no listings' :
-               'No Technology listed yet'}
+               'No technology listed yet'}
             </h3>
             <p className="text-gray-600 mb-6">
               {activeFilterCount > 0
@@ -376,9 +380,9 @@ export default function CoCreationPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Remove Software Listing?"
-        message="This will remove your software from the marketplace."
-        confirmLabel="Remove"
+        title={t('technologyPageRemoveTitle')}
+        message={t('technologyPageRemoveMessage')}
+        confirmLabel={t('remove')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -463,7 +467,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
     // Validate GitHub URL
     if (!isValidGithubUrl(form.githubLink)) {
-      setError('Please enter a valid GitHub URL (e.g., https://github.com/username/repo)');
+      setError('Please enter a valid GitHub URL (e.g., https://github.com/username/repo).');
       setLoading(false);
       return;
     }
@@ -507,7 +511,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
       if (status === 401) {
         setError(msg || 'Please sign in again.');
       } else {
-        setError(msg || (isEdit ? 'Failed to update Technology.' : 'Failed to list Technology.'));
+        setError(msg || (isEdit ? 'Failed to update technology listing.' : 'Failed to list technology.'));
       }
     } finally { setLoading(false); }
   };
@@ -533,12 +537,12 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
       <h3 className="font-display text-2xl text-gray-900 font-semibold">
-        {isEdit ? 'Edit Technology' : 'List Technology'}
+        {isEdit ? 'Edit technology listing' : 'List technology'}
       </h3>
       <p className="text-gray-500 text-sm mt-1">
         {isEdit
           ? 'Update your technology listing details.'
-          : 'Add a new technology product to the Technology marketplace.'}
+          : 'Add a new technology product to the marketplace.'}
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
@@ -692,7 +696,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : (isEdit ? 'Save Changes →' : 'List Technology →')}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : (isEdit ? 'Save changes →' : 'List technology →')}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
         </div>
@@ -703,6 +707,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
 function BuySoftwareModal({ item, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
     buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
@@ -772,7 +777,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
               _addons:           [...addons, ...vaAddons],
             });
           } catch {
-            setError('Payment verification failed. Contact support.');
+            setError('Payment verification failed. Please contact support.');
             setLoading(false);
           }
         },
@@ -858,7 +863,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
                 Get a dedicated CoBrother to help you set up, deploy, and get the most out of
                 this software. They'll reach out within 24 hours.{' '}
                 <LearnMoreTooltip>
-                  Your ₹1,000 support request helps us connect, verify, and personally assist your collaboration opportunity through the CoBrother ecosystem
+                  Your ₹1,000 support request helps us connect, verify, and personally assist you with your collaboration opportunity through the CoBrother ecosystem
                 </LearnMoreTooltip>
               </div>
             </div>
@@ -892,7 +897,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           {vaAddons.map((k) => {
             const svc = VA_SERVICES.find((s) => s.key === k);
             return svc ? (
-              <BillingLine key={k} label={vaLabel(k)} value={formatPrice(svc.price)} accent />
+              <BillingLine key={k} label={vaLabel(k, t)} value={formatPrice(svc.price)} accent />
             ) : null;
           })}
           {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
@@ -985,6 +990,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
 function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction, auctionStatus, likeState, onLike }) {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1036,7 +1042,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             </div>
 
             {d.description && (
-              <Section title="Description">
+              <Section title={t('technologyPageDescriptionSection')}>
                 <p className="text-gray-600 leading-relaxed text-[0.9rem]">
                   {d.description}
                 </p>
@@ -1044,7 +1050,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {d.whatItDoes && (
-              <Section title="What It Does">
+              <Section title={t('technologyPageWhatItDoes')}>
                 <p className="text-gray-600 leading-relaxed text-[0.9rem]">
                   {d.whatItDoes}
                 </p>
@@ -1052,7 +1058,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {d.howItHelps && (
-              <Section title="How It Helps">
+              <Section title={t('technologyPageHowItHelps')}>
                 <p className="text-gray-600 leading-relaxed text-[0.9rem]">
                   {d.howItHelps}
                 </p>
@@ -1060,7 +1066,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {d.techStack && (
-              <Section title="Tech Stack">
+              <Section title={t('technologyPageTechStack')}>
                 <div className="flex flex-wrap gap-1.5">
                   {d.techStack.split(',').map(t => (
                     <span key={t} className="text-xs px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200">
@@ -1072,12 +1078,12 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             )}
 
             {(d.videoLink || d.liveDemoLink) && (
-              <Section title="Links">
+              <Section title={t('technologyPageLinksSection')}>
                 <div className="flex gap-3 flex-wrap">
                   {d.videoLink && (
                     <a href={d.videoLink} target="_blank" rel="noreferrer"
                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 no-underline" onClick={e => e.stopPropagation()}>
-                      � Demo Video ↗
+                      ▶ Demo Video ↗
                     </a>
                   )}
                   {d.liveDemoLink && (
@@ -1090,14 +1096,14 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
               </Section>
             )}
 
-            <Section title="GitHub">
+            <Section title={t('technologyPageGithubSection')}>
               <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-gray-500">
-                🔒 GitHub link is shared after purchase is confirmed.
+                {t('technologyPageGithubLocked')}
               </div>
             </Section>
 
             {d.listedBy && (
-              <Section title="Listed By">
+              <Section title={t('technologyPageListedBySection')}>
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600">
                     {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
@@ -1117,7 +1123,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
               )}
               {isOwner && canRequestTechnologyAuction(d, auctionStatus) && onAuction && (
                 <button className="btn-glow btn-glow-sm" onClick={onAuction}>
-                  🔨 Put to Auction
+                  🔨 List for auction
                 </button>
               )}
               {isOwner && isTechnologyAuctionPending(d, auctionStatus) && (
@@ -1140,7 +1146,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                 && d.auctionApprovalStatus !== 'PENDING_APPROVAL' && (
                 REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
                   <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
-                    Verification pending — available to buy after admin approval
+                    Verification pending — available for purchase after admin approval
                   </span>
                 ) : (
                 <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>

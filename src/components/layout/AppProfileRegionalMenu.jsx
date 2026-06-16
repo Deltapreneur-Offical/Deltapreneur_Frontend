@@ -7,7 +7,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { CURRENCY_LABELS } from '../../constants/currencies';
 
 const LANGUAGES = [
-  { code: 'en', name: 'English (IND)' },
+  { code: 'en-IN', name: 'English (IND)' },
   { code: 'hi', name: 'Hindi' },
   { code: 'en-US', name: 'English (US)' },
   { code: 'en-GB', name: 'English (UK)' },
@@ -19,6 +19,7 @@ const LANGUAGES = [
 ];
 
 const LANG_SHORT = {
+  'en-IN': 'EN',
   en: 'EN',
   hi: 'HI',
   'en-US': 'US',
@@ -41,10 +42,19 @@ const CURRENCY_SHORT = {
   CAD: 'C$',
 };
 
+function normalizeLangCode(code) {
+  return code === 'en' ? 'en-IN' : code;
+}
+
 function languageShortCode(i18nLanguage) {
-  if (LANG_SHORT[i18nLanguage]) return LANG_SHORT[i18nLanguage];
-  const base = (i18nLanguage || '').split('-')[0];
+  const normalized = normalizeLangCode(i18nLanguage);
+  if (LANG_SHORT[normalized]) return LANG_SHORT[normalized];
+  const base = (normalized || '').split('-')[0];
   return LANG_SHORT[base] || 'EN';
+}
+
+function isActiveLanguage(current, code) {
+  return normalizeLangCode(current) === normalizeLangCode(code);
 }
 
 function AccordionRow({ id, expanded, onToggle, icon: Icon, label, summary, children }) {
@@ -119,8 +129,8 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
           <CreditCard size={16} strokeWidth={2} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-gray-900">Payout Settings</span>
-          <span className="block text-xs text-gray-500">UPI and bank account details</span>
+          <span className="block text-sm font-semibold text-gray-900">{t('payoutSettingsNavTitle')}</span>
+          <span className="block text-xs text-gray-500">{t('payoutSettingsNavSubtitle')}</span>
         </span>
       </Link>
 
@@ -132,11 +142,11 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
         label={t('language', { defaultValue: 'Language' })}
         summary={languageShortCode(i18n.language)}
       >
-        <div className="max-h-48 space-y-0.5 overflow-y-auto" role="listbox" aria-label="Language">
+        <div className="max-h-48 space-y-0.5 overflow-y-auto" role="listbox" aria-label={t('language')}>
           {LANGUAGES.map((lang) => (
             <OptionButton
               key={lang.code}
-              active={i18n.language === lang.code}
+              active={isActiveLanguage(i18n.language, lang.code)}
               primary={languageShortCode(lang.code)}
               secondary={lang.name}
               onClick={() => changeLanguage(lang.code)}

@@ -356,7 +356,7 @@ export default function CommunityPage() {
         {showForm && myProfile ? (
           <>
             <ListingBackLink
-              label="Back to Creators"
+              label={t('listingBackToCreators')}
               onClick={() => { setShowForm(false); setLinkedInSuccess(''); }}
             />
             <CommunityProfileForm
@@ -524,9 +524,9 @@ export default function CommunityPage() {
 
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="Delete LinkedIn profile?"
-        message="This permanently removes your creator profile, LinkedIn connection, and any active auctions from CoBrother. This cannot be undone."
-        confirmLabel={deleteLoading ? 'Deleting…' : 'Delete permanently'}
+        title={t('communityPageDeleteTitle')}
+        message={t('communityPageDeleteMessage')}
+        confirmLabel={deleteLoading ? t('communityPageDeleting') : t('communityPageDeletePermanently')}
         danger
         onConfirm={handleDeleteProfile}
         onCancel={() => !deleteLoading && setShowDeleteConfirm(false)}

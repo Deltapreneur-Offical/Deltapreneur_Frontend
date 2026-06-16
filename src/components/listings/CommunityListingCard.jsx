@@ -98,7 +98,7 @@ export default function CommunityListingCard({
         </div>
 
         <div className="creator-profile-card__content">
-          <h3 className="creator-profile-card__name">
+          <h3 className="creator-profile-card__name" title={profile.name || undefined}>
             {profile.name || t('listingCardAnonymous')}
           </h3>
 

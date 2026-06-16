@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
 import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from '../../utils/listPagination';
+import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
 import { useLikes } from '../../hooks/useLikes';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import VentureListingCard from '../listings/VentureListingCard';
+import '../../styles/domain-listing-cards.css';
 
 export default function VenturesSection() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export default function VenturesSection() {
       try {
         setLoading(true);
         const { items } = await fetchListPage((params) => ventureAPI.getAll(params), {
-          pageSize: HOME_PREVIEW_PAGE_SIZE,
+          ...HOME_FEATURED_LIST_PARAMS,
         });
         setVentures(items);
       } catch {
@@ -35,10 +36,11 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
-  const previewVentures = useMemo(
-    () => pickHomepagePreviewListings(ventures, 'venture', HOMEPAGE_PREVIEW_LIMIT),
-    [ventures],
-  );
+  const previewVentures = useMemo(() => {
+    const featured = pickHomepagePreviewListings(ventures, 'venture', HOMEPAGE_PREVIEW_LIMIT);
+    if (featured.length > 0) return featured;
+    return ventures.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+  }, [ventures]);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewVentures);
 
@@ -60,7 +62,7 @@ export default function VenturesSection() {
           <HomePreviewRow>
             {previewVentures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
-                <ListingCardShell>
+                <ListingCardShell className="home-preview-card-shell">
                   <VentureListingCard
                     venture={venture}
                     browseMode

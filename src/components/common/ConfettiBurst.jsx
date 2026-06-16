@@ -161,7 +161,7 @@ export default function ConfettiBurst({ active, onDone }) {
             <div className="tech-listing-celebration__icon" aria-hidden>
               🎉
             </div>
-            <h2 className="tech-listing-celebration__title">Technology listed!</h2>
+            <h2 className="tech-listing-celebration__title">Technology listing published!</h2>
             <p className="tech-listing-celebration__subtitle">
               Your listing is live on the marketplace. Admin verification may be required before buyers can purchase.
             </p>

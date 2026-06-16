@@ -1,6 +1,6 @@
 import { hasAuthSession } from './authSession';
 
-/** Browse-page paths; detail opens via ?id= on each list page. */
+/** Browse-page paths; detail opens on a dedicated page for ventures. */
 const LISTING_PATHS = {
   domain: '/domains',
   venture: '/ventures',
@@ -9,6 +9,9 @@ const LISTING_PATHS = {
 };
 
 export function getListingBrowsePath(type, id) {
+  if (id != null && type === 'venture') {
+    return `/ventures/${id}`;
+  }
   const base = LISTING_PATHS[type] ?? '/dashboard';
   return id != null ? `${base}?id=${id}` : base;
 }
@@ -17,7 +20,7 @@ export function isLoggedIn() {
   return hasAuthSession();
 }
 
-/** Logged in → list page with detail modal; otherwise → login with return path. */
+/** Logged in → dedicated detail page (ventures) or list page with ?id=; otherwise → login. */
 export function navigateToListingDetail(navigate, type, id) {
   const path = getListingBrowsePath(type, id);
   if (!isLoggedIn()) {

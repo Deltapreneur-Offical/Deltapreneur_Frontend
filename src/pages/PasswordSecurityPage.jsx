@@ -148,7 +148,7 @@ export default function PasswordSecurityPage() {
       );
       setChangeInfo(
         data?.message ||
-          'Password changed. Please login again because all sessions were revoked.',
+          'Password changed. Please log in again because all sessions were revoked.',
       );
       setChangeForm({ currentPassword: '', newPassword: '', confirm: '' });
       localStorage.removeItem('accessToken');
@@ -174,7 +174,7 @@ export default function PasswordSecurityPage() {
       const { data } = await authAPI.setPassword(setForm.newPassword);
       setSetInfo(
         data?.message ||
-          'Password set. Please login again because all sessions were revoked.',
+          'Password set. Please log in again because all sessions were revoked.',
       );
       setSetForm({ newPassword: '', confirm: '' });
       localStorage.removeItem('accessToken');

@@ -23,6 +23,18 @@ function ownerLabel(owner) {
   return name || owner.email || '—';
 }
 
+function parseAnalyticsDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function startOfDay(date) {
+  const next = new Date(date);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
 function normalizeDomain(row) {
   const name = `${row.domainName ?? row.domain_name ?? ''}${row.domainExtension ?? row.domain_extension ?? ''}`.trim();
   return {
@@ -33,6 +45,9 @@ function normalizeDomain(row) {
     verified: Boolean(row.verified),
     views: Number(row.views ?? row.view_count ?? 0),
     owner: ownerLabel(row.listedBy ?? row.listed_by),
+    createdAt: row.createdAt ?? row.created_at ?? row.verifiedAt ?? row.verified_at ?? null,
+    updatedAt: row.updatedAt ?? row.updated_at ?? null,
+    soldAt: row.soldAt ?? row.sold_at ?? null,
   };
 }
 
@@ -160,6 +175,161 @@ export function topRowsByViews(rows, limit = 8) {
       views: row.views,
     }))
     .filter((item) => item.views > 0);
+}
+
+function formatActivityBucketLabel(date, period) {
+  if (period === 'monthly') {
+    return date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+  }
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+function activityBucketConfig(period) {
+  if (period === 'monthly') {
+    return { count: 6, stepMs: 30 * 86_400_000 };
+  }
+  if (period === 'weekly') {
+    return { count: 12, stepMs: 7 * 86_400_000 };
+  }
+  return { count: 30, stepMs: 86_400_000 };
+}
+
+function resolveActivityDate(row, tab) {
+  if (tab === 'sold') {
+    if (String(row.status ?? '').toUpperCase() !== 'SOLD') return null;
+    return (
+      parseAnalyticsDate(row.soldAt)
+      || parseAnalyticsDate(row.updatedAt)
+      || parseAnalyticsDate(row.createdAt)
+    );
+  }
+
+  if (tab === 'newListings') {
+    return parseAnalyticsDate(row.createdAt) || parseAnalyticsDate(row.updatedAt);
+  }
+
+  return (
+    parseAnalyticsDate(row.updatedAt)
+    || parseAnalyticsDate(row.createdAt)
+  );
+}
+
+function buildActivityBuckets(period, eventDates) {
+  const { count } = activityBucketConfig(period);
+  const today = startOfDay(new Date());
+  const defaultStart = today.getTime() - (count - 1) * activityBucketConfig(period).stepMs;
+
+  let startMs = defaultStart;
+  if (eventDates.length) {
+    startMs = Math.min(startMs, Math.min(...eventDates.map((date) => startOfDay(date).getTime())));
+  }
+
+  return Array.from({ length: count }, (_, index) => {
+    const fraction = count > 1 ? index / (count - 1) : 1;
+    const date = startOfDay(new Date(startMs + fraction * (today.getTime() - startMs)));
+    return {
+      date,
+      name: formatActivityBucketLabel(date, period),
+      value: 0,
+    };
+  });
+}
+
+function assignActivityBucketIndex(buckets, date) {
+  if (!buckets.length) return -1;
+  const value = startOfDay(date).getTime();
+  const start = buckets[0].date.getTime();
+  const end = buckets[buckets.length - 1].date.getTime();
+  if (value < start || value > end + 86_400_000) return -1;
+  if (end === start) return 0;
+  const ratio = (value - start) / (end - start);
+  return Math.min(buckets.length - 1, Math.max(0, Math.round(ratio * (buckets.length - 1))));
+}
+
+export function buildDomainActivitySeries(rows, tab, period) {
+  const eventDates = rows
+    .map((row) => resolveActivityDate(row, tab))
+    .filter(Boolean);
+
+  const buckets = buildActivityBuckets(period, eventDates);
+
+  rows.forEach((row) => {
+    if (tab === 'views') {
+      const activityDate = resolveActivityDate(row, tab);
+      if (!activityDate) return;
+      const index = assignActivityBucketIndex(buckets, activityDate);
+      if (index >= 0) buckets[index].value += Number(row.views || 0);
+      return;
+    }
+
+    if (tab === 'newListings') {
+      const activityDate = resolveActivityDate(row, tab);
+      if (!activityDate) return;
+      const index = assignActivityBucketIndex(buckets, activityDate);
+      if (index >= 0) buckets[index].value += 1;
+      return;
+    }
+
+    const soldDate = resolveActivityDate(row, tab);
+    if (!soldDate) return;
+    const index = assignActivityBucketIndex(buckets, soldDate);
+    if (index >= 0) buckets[index].value += 1;
+  });
+
+  return buckets.map(({ name, value }) => ({ name, value }));
+}
+
+export function computeDomainActivityMetrics(series) {
+  const values = series.map((point) => point.value);
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const avg = values.length ? Math.round(total / values.length) : 0;
+
+  let highest = 0;
+  let lowest = 0;
+  let highestLabel = '—';
+  let lowestLabel = '—';
+  let hasLowest = false;
+
+  series.forEach(({ name, value }) => {
+    if (value > highest) {
+      highest = value;
+      highestLabel = name;
+    }
+    if (value > 0 && (!hasLowest || value < lowest)) {
+      lowest = value;
+      lowestLabel = name;
+      hasLowest = true;
+    }
+  });
+
+  return {
+    avg,
+    highest,
+    lowest: hasLowest ? lowest : 0,
+    total,
+    highestLabel,
+    lowestLabel,
+  };
+}
+
+export function buildTopDomainsRanked(rows, limit = 5) {
+  const sorted = [...rows].sort((a, b) => b.views - a.views).slice(0, limit);
+  const maxViews = sorted[0]?.views || 1;
+  return sorted.map((row, index) => ({
+    rank: index + 1,
+    name: row.name,
+    views: row.views,
+    percent: maxViews > 0 ? Math.round((row.views / maxViews) * 100) : 0,
+  }));
+}
+
+export function pieDataWithPercentages(data) {
+  const total = (data ?? []).reduce((sum, item) => sum + Number(item.value || 0), 0);
+  if (!total) return [];
+  return data.map((item) => ({
+    ...item,
+    percent: Math.round((Number(item.value || 0) / total) * 100),
+  }));
 }
 
 export function buildCategoryCharts(category, rows) {

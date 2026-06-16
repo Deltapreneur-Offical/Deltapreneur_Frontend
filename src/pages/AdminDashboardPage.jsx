@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useContext, useMemo, useRef, createContext } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import {
@@ -20,6 +20,7 @@ import {
   Inbox,
   Info,
   LayoutDashboard,
+  LineChart,
   Package,
   RefreshCw,
   Search,
@@ -31,6 +32,7 @@ import {
 import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
+import { formatInr } from '../utils/money';
 import VentureIcon from '../assets/Coventure_logo.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
@@ -41,6 +43,7 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import VentureDealsAdminTab from './VentureDealsAdminTab';
 import OperationsAdminTab from './OperationsAdminTab';
 import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI } from '../api/services';
@@ -50,6 +53,9 @@ import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
+import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
+import { formatEquityPercent } from '../constants/ventureLabels';
+import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
 
@@ -411,20 +417,12 @@ export default function AdminDashboardPage() {
   const [loading, setLoading]               = useState(false);
   const [forwardModal, setForwardModal]     = useState(null);
   const [takeDownTarget, setTakeDownTarget] = useState(null);
-  const [listingFees, setListingFees] = useState({
-    listingCommissionPercent: '',
-    auctionCreationFeeInr: '',
-    auctionBidFeeInr: '',
-    domainParticipationFeeInr: '',
-    ventureParticipationFeeInr: '',
-    softwareParticipationFeeInr: '',
-    communityParticipationFeeInr: '',
-  });
-  const [pendingVentures, setPendingVentures] = useState([]);
-  const [savingFees, setSavingFees] = useState(false);
+  const [pendingVentureActionId, setPendingVentureActionId] = useState(null);
+  const [pendingVentureActionType, setPendingVentureActionType] = useState(null);
   const [verifyDomain, setVerifyDomain]   = useState(null);
   const [verifyVenture, setVerifyVenture] = useState(null);
   const [listCount, setListCount]         = useState(null);
+  const [pendingVentures, setPendingVentures] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -436,19 +434,6 @@ export default function AdminDashboardPage() {
     lastFetchedAt: pendingLastFetchedAt,
     refresh: refreshPendingCounts,
   } = useAdminPendingCounts({ intervalMs: 90000 });
-
-  const fetchers = {
-    domains:            adminAPI.getDomains,
-    'domain-enquiries': adminAPI.getDomainEnquiries,
-    cocreations:        adminAPI.getTechnologies,
-    auctions:           adminAPI.getAllAuctions,
-    'venture-auctions': adminAPI.getAllVentureAuctions,
-    meetings:           meetingAPI.adminGetAll,
-    operations:         operationsAdminAPI.list,
-    'software-auctions': softwareAuctionAPI.adminGetAll,
-    'community-auctions': communityAuctionAPI.adminGetAll,
-    'addon-orders':     adminAPI.getAddonOrders,
-  };
 
   const loadTab = (currentTab, options = {}) => {
     const { silent = false } = options;
@@ -466,6 +451,12 @@ export default function AdminDashboardPage() {
       'addon-orders':      adminAPI.getAddonOrders,
     };
   
+    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals') {
+      setLoading(false);
+      setData([]);
+      return;
+    }
+
     if (!fetchers[currentTab]) {
       setLoading(false);
       return;
@@ -499,6 +490,60 @@ export default function AdminDashboardPage() {
         if (!silent) setLoading(false);
       });
   };
+
+  const refreshPendingVentures = () =>
+    adminAPI.getPendingVentures()
+      .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
+      .catch(() => setPendingVentures([]));
+
+  const resolveApiErrorMessage = (error, fallback) => {
+    const detail = error?.response?.data?.detail;
+    const detailText = Array.isArray(detail)
+      ? detail.map((d) => d.msg || d).join(', ')
+      : (typeof detail === 'string' ? detail : null);
+    return error?.response?.data?.error || detailText || error?.message || fallback;
+  };
+
+  const handleApproveVenture = async (ventureId) => {
+    if (!ventureId || pendingVentureActionId) return;
+    setPendingVentureActionId(ventureId);
+    setPendingVentureActionType('approve');
+    try {
+      await adminAPI.approveVenture(ventureId);
+      await refreshPendingVentures();
+      if (tab === 'ventures') {
+        loadTab('ventures', { silent: true });
+      }
+    } catch (error) {
+      alert(resolveApiErrorMessage(error, t('adminVentureApproveFailed', { defaultValue: 'Failed to approve venture.' })));
+    } finally {
+      setPendingVentureActionId(null);
+      setPendingVentureActionType(null);
+    }
+  };
+
+  const handleRejectVenture = async (ventureId) => {
+    if (!ventureId || pendingVentureActionId) return;
+    const reason = window.prompt(
+      t('adminVentureRejectReasonPrompt', { defaultValue: 'Rejection reason (optional)' }),
+    );
+    if (reason === null) return;
+
+    setPendingVentureActionId(ventureId);
+    setPendingVentureActionType('reject');
+    try {
+      await adminAPI.rejectVenture(ventureId, reason);
+      await refreshPendingVentures();
+      if (tab === 'ventures') {
+        loadTab('ventures', { silent: true });
+      }
+    } catch (error) {
+      alert(resolveApiErrorMessage(error, t('adminVentureRejectFailed', { defaultValue: 'Failed to reject venture.' })));
+    } finally {
+      setPendingVentureActionId(null);
+      setPendingVentureActionType(null);
+    }
+  };
   
   useEffect(() => {
     adminAPI.getCoBrothers()
@@ -531,20 +576,6 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
-    adminAPI.getListingFeesAndCharges()
-      .then(({ data }) => {
-        const fees = data?.data ?? data;
-        setListingFees({
-          listingCommissionPercent: String(fees?.listingCommissionPercent ?? ''),
-          auctionCreationFeeInr: String(fees?.auctionCreationFeeInr ?? ''),
-          auctionBidFeeInr: String(fees?.auctionBidFeeInr ?? ''),
-          domainParticipationFeeInr: String(fees?.domainParticipationFeeInr ?? ''),
-          ventureParticipationFeeInr: String(fees?.ventureParticipationFeeInr ?? ''),
-          softwareParticipationFeeInr: String(fees?.softwareParticipationFeeInr ?? ''),
-          communityParticipationFeeInr: String(fees?.communityParticipationFeeInr ?? ''),
-        });
-      })
-      .catch(() => {});
     adminAPI.getPendingVentures()
       .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(() => setPendingVentures([]));
@@ -569,6 +600,7 @@ export default function AdminDashboardPage() {
       'community-auctions',
       'addon-orders',
       'domain-transfers',
+      'venture-deals',
     ]);
     if (requestedTab && allowedTabs.has(requestedTab)) {
       setTab(requestedTab);
@@ -636,31 +668,16 @@ export default function AdminDashboardPage() {
     { id: 'cocreations',        label: t('adminTabTechnology'),        icon: TechnologyIcon },
     { id: 'requests',           label: t('adminTabCoBrotherRequests'), icon: RequestIcon    },
     { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
-    { id: 'venture-auctions',   label: t('adminTabVentureAuctions'),   icon: AuctionIcon    },
+    { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
+    { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
     { id: 'domain-transfers',   label: t('adminTabDomainTransfers', { defaultValue: 'Domain transfers' }), icon: DomainsIcon },
   ];
-
-  const handleSaveListingFees = async () => {
-    setSavingFees(true);
-    try {
-      await adminAPI.updateListingFeesAndCharges({
-        listingCommissionPercent: Number(listingFees.listingCommissionPercent),
-        auctionCreationFeeInr: Number(listingFees.auctionCreationFeeInr),
-        auctionBidFeeInr: Number(listingFees.auctionBidFeeInr),
-      });
-      toast.success(t('adminFeesUpdated'));
-    } catch (e) {
-      toast.error(e?.response?.data?.error || t('adminFeesUpdateFailed'));
-    } finally {
-      setSavingFees(false);
-    }
-  };
 
   return (
     <AppLayout>
@@ -748,6 +765,17 @@ export default function AdminDashboardPage() {
                 </button>
               );
             })}
+            <NavLink
+              to="/analytics"
+              className={({ isActive }) =>
+                `admin-dashboard-tab admin-dashboard-tab--analytics${isActive ? ' active' : ''}`
+              }
+            >
+              <LineChart size={28} strokeWidth={1.85} className="admin-dashboard-tab-lucide-icon" aria-hidden />
+              <span className="admin-dashboard-tab-label">
+                {t('adminTabAnalytics', { defaultValue: 'Analytics' })}
+              </span>
+            </NavLink>
           </div>
         </div>
 
@@ -775,52 +803,51 @@ export default function AdminDashboardPage() {
             />
           )}
 
-          {(tab === 'auctions' || tab === 'venture-auctions' || tab === 'software-auctions' || tab === 'community-auctions' || tab === 'ventures') && (
-            <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f9fafb' }}>
-              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Listing Fees &amp; Charges</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px,1fr))', gap: '0.6rem' }}>
-                {[
-                  ['Listing commission (%)', 'listingCommissionPercent'],
-                  ['Auction creation fee (INR)', 'auctionCreationFeeInr'],
-                  ['Auction bid fee (INR)', 'auctionBidFeeInr'],
-                ].map(([label, key]) => (
-                  <div key={key}>
-                    <div className="admin-fee-label">{label}</div>
-                    <input
-                      type="number"
-                      min="0"
-                      value={listingFees[key]}
-                      onChange={(e) => setListingFees((p) => ({ ...p, [key]: e.target.value }))}
-                      style={{ width: '100%', padding: '0.45rem 0.55rem', borderRadius: 8, border: '1px solid #d1d5db' }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="btn-secondary btn-sm" onClick={handleSaveListingFees} disabled={savingFees}>
-                  {savingFees ? t('adminSaving') : t('adminSaveFees')}
-                </button>
-              </div>
-            </div>
+          {tab === 'fees-charges' && (
+            <AdminFeesAndChargesTab />
           )}
+
+          {tab === 'venture-deals' && (
+            <VentureDealsAdminTab />
+          )}
+
           {tab === 'ventures' && pendingVentures.length > 0 && (
             <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #fde68a', borderRadius: 10, background: '#fffbeb' }}>
               <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Pending venture approvals ({pendingVentures.length})</div>
-              {pendingVentures.map((v) => (
-                <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #fde68a' }}>
-                  <span>{v.brandDetails?.brandName || v.brand_details?.brand_name || v.id}</span>
-                  <span style={{ display: 'flex', gap: '0.4rem' }}>
-                    <button type="button" className="btn-secondary btn-sm" onClick={() => adminAPI.approveVenture(v.id).then(() => window.location.reload())}>Approve</button>
-                    <button type="button" className="btn-secondary btn-sm" onClick={() => {
-                      const reason = window.prompt('Rejection reason (optional)') || '';
-                      adminAPI.rejectVenture(v.id, reason).then(() => window.location.reload());
-                    }}>Reject</button>
-                  </span>
-                </div>
-              ))}
+              {pendingVentures.map((v) => {
+                const ventureId = v.id ?? v.ventureId;
+                const isBusy = pendingVentureActionId === ventureId;
+                const isApproving = isBusy && pendingVentureActionType === 'approve';
+                const isRejecting = isBusy && pendingVentureActionType === 'reject';
+
+                return (
+                  <div key={ventureId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #fde68a' }}>
+                    <span>{v.brandDetails?.brandName || v.brand_details?.brand_name || ventureId}</span>
+                    <span style={{ display: 'flex', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        className="btn-secondary btn-sm"
+                        disabled={Boolean(pendingVentureActionId)}
+                        onClick={() => handleApproveVenture(ventureId)}
+                      >
+                        {isApproving ? t('adminApproving', { defaultValue: 'Approving…' }) : t('adminApprove', { defaultValue: 'Approve' })}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary btn-sm"
+                        disabled={Boolean(pendingVentureActionId)}
+                        onClick={() => handleRejectVenture(ventureId)}
+                      >
+                        {isRejecting ? t('adminRejecting', { defaultValue: 'Rejecting…' }) : t('adminReject', { defaultValue: 'Reject' })}
+                      </button>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
-          {tab !== 'overview' && tab !== 'review-queue' && (
+
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'venture-deals' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (
@@ -871,6 +898,7 @@ export default function AdminDashboardPage() {
                       onTakeDown={handleTakeDown}
                       onRestore={handleRestore}
                       onVerifyVenture={setVerifyVenture}
+                      onRefresh={() => loadTab(tab)}
                     />
                   ) : (
                     <AdminRow
@@ -947,14 +975,31 @@ function VentureAdminRow({
   onTakeDown,
   onRestore,
   onVerifyVenture,
+  onRefresh,
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const title = venture.brandDetails?.brandName || t('adminVentureFallback', { id: venture.id });
+  const listingMode = venture.listingMode || venture.listing_mode || 'VENTURE';
+  const isCoVentureListing = listingMode === 'CO_VENTURE';
   const applications = venture.coVentureApplications || venture.co_venture_applications || [];
-  const applicationCount = venture.applicationCount ?? applications.length;
+  const pitches = venture.acquisitionApplications || venture.acquisition_applications || [];
+  const pitchCount = venture.pitchCount ?? pitches.length;
+  const applicationCount = isCoVentureListing
+    ? (venture.coVentureApplicationCount ?? venture.applicationCount ?? applications.length)
+    : pitchCount;
   const isGstinVerified = Boolean(venture.verified || venture.gstinVerified);
   const showGstinVerify = true;
+  const listingVerificationStatus = resolveVentureVerificationStatus(venture);
+  const showListingVerificationSection = ['PENDING', 'APPROVED', 'REJECTED'].includes(
+    listingVerificationStatus,
+  );
+  const listingApproval = venture.listingApprovalStatus || venture.listing_approval_status || 'PENDING_APPROVAL';
+  const profileComplete = venture.companyProfileComplete
+    ?? venture.companyProfile?.isComplete
+    ?? venture.company_profile?.is_complete
+    ?? false;
+  const canApproveListing = listingApproval === 'PENDING_APPROVAL' && profileComplete;
 
   const forwardableApp = applications.find(a => a.status === 'PENDING')
     || applications.find(a => a.status === 'APPROVED')
@@ -993,9 +1038,21 @@ function VentureAdminRow({
               </span>
             )}
             <VerificationBadge verified={isGstinVerified} verifiedLabel={t('adminGstinVerified')} unverifiedLabel={t('adminGstinPending')} />
+            {listingApproval === 'PENDING_APPROVAL' && (
+              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#b45309', background: 'rgba(180,83,9,0.08)', border: '1px solid rgba(180,83,9,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
+                Pending approval
+              </span>
+            )}
+            {listingApproval === 'APPROVED' && (
+              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#059669', background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
+                Live
+              </span>
+            )}
             {applicationCount > 0 && (
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#4f46e5', background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
-                {t('adminCoVentureApps', { count: applicationCount })}
+                {isCoVentureListing
+                  ? t('adminCoVentureApps', { count: applicationCount })
+                  : `${applicationCount} bid${applicationCount !== 1 ? 's' : ''}`}
               </span>
             )}
           </div>
@@ -1022,8 +1079,108 @@ function VentureAdminRow({
             <div>
               <div className="admin-field-label">{t('adminSaleType')}</div>
               <div className="admin-field-value">{venture.saleType || '—'}</div>
+              {venture.dealType && (
+                <div className="admin-field-meta">{venture.dealType.replace(/_/g, ' ')}</div>
+              )}
             </div>
           </div>
+
+          {(venture.brandDetails?.dealValue || venture.equityPercentOffered) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {venture.brandDetails?.dealValue != null && (
+                <div>
+                  <div className="admin-field-label">Asking price</div>
+                  <div className="admin-field-value">{formatInr(venture.brandDetails.dealValue)}</div>
+                </div>
+              )}
+              {venture.equityPercentOffered != null && (
+                <div>
+                  <div className="admin-field-label">
+                    {isCoVentureListing ? 'Equity offer' : 'Ownership liquidation'}
+                  </div>
+                  <div className="admin-field-value">{formatEquityPercent(venture.equityPercentOffered)}%</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(venture.companyProfile?.currentYearRevenueInr != null
+            || venture.companyProfile?.previousYearRevenueInr != null
+            || venture.companyProfile?.twoYearsAgoRevenueInr != null) && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              {venture.companyProfile?.currentYearRevenueInr != null && (
+                <div>
+                  <div className="admin-field-label">Current year revenue</div>
+                  <div className="admin-field-value">{formatInr(venture.companyProfile.currentYearRevenueInr)}</div>
+                </div>
+              )}
+              {venture.companyProfile?.previousYearRevenueInr != null && (
+                <div>
+                  <div className="admin-field-label">Previous year revenue</div>
+                  <div className="admin-field-value">{formatInr(venture.companyProfile.previousYearRevenueInr)}</div>
+                </div>
+              )}
+              {venture.companyProfile?.twoYearsAgoRevenueInr != null && (
+                <div>
+                  <div className="admin-field-label">Revenue from two years ago</div>
+                  <div className="admin-field-value">{formatInr(venture.companyProfile.twoYearsAgoRevenueInr)}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {showListingVerificationSection && (
+            <div className="mb-4 rounded-lg border border-gray-200 p-3">
+              <div className="admin-field-label admin-field-label--spaced">
+                {t('adminVentureListingVerification')}
+              </div>
+              <p className="text-xs text-gray-500 mb-2">{t('adminVentureListingVerificationHint')}</p>
+              <div className="text-sm text-gray-700 space-y-1">
+                <div>{t('adminVentureListingVerificationStatus', { status: listingVerificationStatus })}</div>
+                {venture.verificationVideoUrl && (
+                  <div>
+                    {t('adminVentureListingVerificationVideo')}:{' '}
+                    <a href={venture.verificationVideoUrl} target="_blank" rel="noreferrer" className="admin-link">
+                      {venture.verificationVideoUrl}
+                    </a>
+                  </div>
+                )}
+                {(venture.verificationDocuments || []).map((doc) => (
+                  <div key={doc.id}>
+                    {t('adminVentureListingVerificationDocument')}:{' '}
+                    <a href={doc.fileUrl || doc.file_url} target="_blank" rel="noreferrer" className="admin-link">
+                      {doc.fileName || doc.file_name || 'View'}
+                    </a>
+                  </div>
+                ))}
+              </div>
+              {listingVerificationStatus === 'PENDING' && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm text-[0.8rem]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      adminAPI.approveVentureVerification(venture.id).then(() => onRefresh?.());
+                    }}
+                  >
+                    {t('adminVentureApproveListingVerification')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm text-[0.8rem]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const reason = window.prompt(t('adminVentureListingVerificationRejectPrompt')) || '';
+                      adminAPI.rejectVentureVerification(venture.id, reason).then(() => onRefresh?.());
+                    }}
+                  >
+                    {t('adminVentureRejectListingVerification')}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {venture.brandDetails?.website && (
             <div style={{ fontSize: '0.82rem', marginBottom: '0.75rem' }}>
@@ -1041,6 +1198,36 @@ function VentureAdminRow({
           )}
 
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-2 mb-4">
+            {canApproveListing && (
+              <>
+                <button
+                  type="button"
+                  className="btn-secondary btn-sm w-full sm:w-auto text-[0.8rem]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    adminAPI.approveVenture(venture.id).then(() => onRefresh?.()).catch((err) => {
+                      alert(err?.response?.data?.error || 'Approval failed.');
+                    });
+                  }}
+                >
+                  Approve Listing
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary btn-sm w-full sm:w-auto text-[0.8rem]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const reason = window.prompt('Rejection reason (optional)') || '';
+                    adminAPI.rejectVenture(venture.id, reason).then(() => onRefresh?.());
+                  }}
+                >
+                  Reject Listing
+                </button>
+              </>
+            )}
+            {!profileComplete && listingApproval === 'PENDING_APPROVAL' && (
+              <span className="text-xs text-amber-700 self-center">Company profile incomplete</span>
+            )}
             {showGstinVerify && !venture.takenDown && onVerifyVenture && (
               <button
                 type="button"
@@ -1079,13 +1266,13 @@ function VentureAdminRow({
             )}
           </div>
 
-          {applicationCount > 0 && applications.length === 0 && (
+          {applicationCount > 0 && applications.length === 0 && isCoVentureListing && (
             <p style={{ fontSize: '0.82rem', color: '#b45309', marginBottom: '0.75rem' }}>
               {t('adminAppsNotLoaded', { count: applicationCount })}
             </p>
           )}
 
-          {applications.length > 0 ? (
+          {isCoVentureListing && applications.length > 0 ? (
             <div>
               <div className="admin-field-label admin-field-label--spaced">{t('adminCoVentureApplications')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -1130,8 +1317,41 @@ function VentureAdminRow({
                 ))}
               </div>
             </div>
+          ) : !isCoVentureListing && pitches.length > 0 ? (
+            <div>
+              <div className="admin-field-label admin-field-label--spaced">Buyer bids</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {pitches.map((pitch) => (
+                  <div
+                    key={pitch.id}
+                    style={{ padding: '0.75rem', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8 }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#111827' }}>
+                      {pitch.buyerName || pitch.buyer?.firstname || 'Buyer'}
+                    </div>
+                    <div className="admin-field-meta">
+                      {pitch.buyerEmail || pitch.buyer?.email || '—'}
+                    </div>
+                    <div className="admin-field-meta" style={{ marginTop: '0.25rem' }}>
+                      Offer: {formatInr(pitch.offeredAmount || 0)}
+                      {pitch.requestedEquityPercent != null ? ` · ${formatEquityPercent(pitch.requestedEquityPercent)}% equity requested` : ''}
+                    </div>
+                    <div className="admin-field-meta" style={{ marginTop: '0.2rem', fontSize: '0.72rem' }}>
+                      {t('adminApplicationIdStatus', { id: pitch.id, status: pitch.status })}
+                    </div>
+                    {pitch.investmentProposal && (
+                      <p style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.5rem', marginBottom: 0, fontStyle: 'italic' }}>
+                        {pitch.investmentProposal}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
-            <p className="admin-muted-note" style={{ margin: 0 }}>{t('adminNoCoVentureApps')}</p>
+            <p className="admin-muted-note" style={{ margin: 0 }}>
+              {isCoVentureListing ? t('adminNoCoVentureApps') : 'No buyer bids yet.'}
+            </p>
           )}
         </div>
       )}
@@ -1565,7 +1785,7 @@ function CommunityAuctionAdminRow({ auction, community }) {
   );
 }
 
-function VentureAuctionsAdminTable({ auctions }) {
+function VentureAuctionsAdminTable({ auctions, onRefresh }) {
   const { t } = useTranslation();
   if (!auctions.length) return (
     <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoVentureAuctions')}</h3></div>
@@ -1576,19 +1796,50 @@ function VentureAuctionsAdminTable({ auctions }) {
         const auction = item.auction ?? item;
         const bids    = item.bids ?? [];
         return (
-          <VentureAuctionAdminRow key={auction.id} auction={auction} bids={bids} />
+            <VentureAuctionAdminRow key={auction.id} auction={auction} bids={bids} onRefresh={onRefresh} />
         );
       })}
     </div>
   );
 }
 
-function VentureAuctionAdminRow({ auction, bids }) {
+function VentureAuctionAdminRow({ auction, bids, onRefresh }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
+  const [loading, setLoading] = useState(false);
   const venture = auction.venture || {};
   const brand   = venture.brandDetails || {};
+  const isPending = auction.approvalStatus === 'PENDING_APPROVAL' || auction.approvalStatus === 'AWAITING_GSTIN';
+
+  const handleApprove = async (e) => {
+    e.stopPropagation();
+    if (!confirm('Approve this venture auction and go live?')) return;
+    setLoading(true);
+    try {
+      await ventureAuctionAPI.adminApprove(auction.id);
+      onRefresh?.();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Approval failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (e) => {
+    e.stopPropagation();
+    const reason = prompt('Rejection reason (required):');
+    if (!reason?.trim()) return;
+    setLoading(true);
+    try {
+      await ventureAuctionAPI.adminReject(auction.id, reason.trim());
+      onRefresh?.();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Rejection failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="admin-record-card">
@@ -1665,6 +1916,19 @@ function VentureAuctionAdminRow({ auction, bids }) {
               </div>
             </div>
           </div>
+
+          {isPending && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button type="button" disabled={loading} onClick={handleApprove}
+                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">
+                Approve & Go Live
+              </button>
+              <button type="button" disabled={loading} onClick={handleReject}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold disabled:opacity-50">
+                Reject
+              </button>
+            </div>
+          )}
 
           {bids?.length > 0 && (
             <div>

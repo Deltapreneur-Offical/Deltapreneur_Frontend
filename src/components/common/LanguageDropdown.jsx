@@ -48,7 +48,7 @@ function isActiveLanguage(current, code) {
 }
 
 export default function LanguageDropdown({ variant = 'dark', className = '' }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { changeLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -70,15 +70,15 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
     return (
       <div className={`border-b border-gray-100 px-3 py-3 ${className}`.trim()}>
         <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-          Language
+          {t('language')}
         </p>
-        <div className="space-y-0.5" role="listbox" aria-label="Language">
+        <div className="space-y-0.5" role="listbox" aria-label={t('language')}>
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
               type="button"
-              className={sectionItemCls(i18n.language === lang.code)}
-              aria-selected={i18n.language === lang.code}
+              className={sectionItemCls(isActiveLanguage(i18n.language, lang.code))}
+              aria-selected={isActiveLanguage(i18n.language, lang.code)}
               onClick={() => changeLanguage(lang.code)}
             >
               <span className="font-medium tabular-nums">{languageShortCode(lang.code)}</span>

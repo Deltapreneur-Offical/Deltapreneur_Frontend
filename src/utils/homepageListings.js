@@ -39,7 +39,10 @@ export function isHomepageVerifiedListing(item, type = 'domain') {
   if (!item) return false;
   if (type === 'domain') return Boolean(item.verified);
   if (type === 'software') return Boolean(item.verified);
-  if (type === 'venture') return Boolean(item.verified || item.gstinVerified);
+  if (type === 'venture') {
+    const status = item.listingApprovalStatus ?? item.listing_approval_status;
+    return status === 'APPROVED';
+  }
   if (type === 'community') {
     return isCreatorProfileComplete(item);
   }
@@ -113,7 +116,7 @@ export function filterFeaturedListings(items, type = 'domain') {
   return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
 }
 
-/** Homepage hero rows: featured first, then other active listings (max 5). */
+/** Homepage hero rows: admin-featured listings only (max 5). */
 export const HOMEPAGE_PREVIEW_LIMIT = 5;
 
 export function pickHomepagePreviewListings(
@@ -121,23 +124,9 @@ export function pickHomepagePreviewListings(
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
 ) {
-  const active = filterHomepageListings(items, type).filter((item) =>
-    isHomepageVerifiedListing(item, type),
-  );
-  if (active.length === 0) return [];
-
-  const featured = active.filter((item) => Boolean(item.featured));
-  const rest = active.filter((item) => !item.featured);
-
-  if (type === 'community') {
-    rest.sort((a, b) => {
-      const ta = new Date(a.createdAt ?? a.created_at ?? 0).getTime();
-      const tb = new Date(b.createdAt ?? b.created_at ?? 0).getTime();
-      return tb - ta;
-    });
-  }
-
-  return [...featured, ...rest].slice(0, limit);
+  return asArray(items)
+    .filter((item) => isHomepageFeaturedListing(item, type))
+    .slice(0, limit);
 }
 
 /** @deprecated Use filterFeaturedListings — kept for callers not yet migrated */

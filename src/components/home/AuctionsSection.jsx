@@ -20,12 +20,14 @@ import {
   normalizeVentureAuction,
   resolveHomeAuctionPath,
 } from '../../utils/homepageAuctions';
-import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import {
+  STATIC_HOMEPAGE_AUCTIONS,
+  resolveStaticHomeAuctionPath,
+} from '../../utils/staticHomepageAuctions';
 import ListingCardShell from '../listings/ListingCardShell';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/home-preview-cards.css';
@@ -114,14 +116,16 @@ export default function AuctionsSection() {
     };
   }, []);
 
-  const previewAuctions = useMemo(
-    () => mergeHomepageAuctions(auctions),
-    [auctions],
-  );
-
-  const shouldAutoScroll = previewAuctions.length > HOMEPAGE_PREVIEW_LIMIT;
+  const displayAuctions = useMemo(() => {
+    const live = mergeHomepageAuctions(auctions);
+    return live.length > 0 ? live : STATIC_HOMEPAGE_AUCTIONS;
+  }, [auctions]);
 
   const handleViewAuction = (auction) => {
+    if (auction?.isStatic) {
+      navigate(resolveStaticHomeAuctionPath(auction));
+      return;
+    }
     navigate(resolveHomeAuctionPath(auction));
   };
 
@@ -133,35 +137,19 @@ export default function AuctionsSection() {
     <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('auctions')} to="/auctions" />
-        {previewAuctions.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">{t('noAuctions')}</p>
-        ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow
-            durationSec={50}
-            ariaLabel={t('auctions')}
-            onlyWhenOverflow
-          >
-            {previewAuctions.map((auction) => (
-              <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
-                <AuctionPreviewCard
-                  auction={auction}
-                  onView={() => handleViewAuction(auction)}
-                />
-              </HomeAutoScrollRowItem>
-            ))}
-          </HomeAutoScrollRow>
-        ) : (
-          <HomePreviewRow>
-            {previewAuctions.map((auction) => (
-              <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>
-                <AuctionPreviewCard
-                  auction={auction}
-                  onView={() => handleViewAuction(auction)}
-                />
-              </HomePreviewRowItem>
-            ))}
-          </HomePreviewRow>
-        )}
+        <HomeAutoScrollRow
+          durationSec={50}
+          ariaLabel={t('auctions')}
+        >
+          {displayAuctions.map((auction) => (
+            <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
+              <AuctionPreviewCard
+                auction={auction}
+                onView={() => handleViewAuction(auction)}
+              />
+            </HomeAutoScrollRowItem>
+          ))}
+        </HomeAutoScrollRow>
       </div>
     </section>
   );

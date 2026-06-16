@@ -1,8 +1,9 @@
+import { formatInr, roundInr } from './money';
+
 const MAX_BID_ACTIVE_RATIO = 1.5;
 const MIN_BID_UNIT_INCREMENT = 1;
 
-const defaultInrFormat = (value) =>
-  `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+const defaultInrFormat = (value) => formatInr(value);
 
 export function toBidNumber(value, fallback = 0) {
   const n = Number(value);
@@ -10,7 +11,7 @@ export function toBidNumber(value, fallback = 0) {
 }
 
 export function roundMoney(value) {
-  return Math.round(toBidNumber(value) * 100) / 100;
+  return roundInr(value);
 }
 
 export function activeBidReference(currentHighestBid, minBidPrice) {

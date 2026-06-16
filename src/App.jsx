@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
@@ -9,8 +10,6 @@ import AppErrorBoundary from './components/common/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
-import { CurrencyProvider } from './context/CurrencyContext';
-import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 
@@ -39,9 +38,11 @@ const AI_HIDDEN_PATHS = [
 
 function CoBrotherAIGuard() {
   const { pathname } = useLocation();
+  const { i18n } = useTranslation();
   if (AI_HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
+  const languageKey = i18n.resolvedLanguage || i18n.language;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={null} key={languageKey}>
       <CoBrotherAI />
     </Suspense>
   );
@@ -57,6 +58,7 @@ const loadDashboardPage = () => import('./pages/DashboardPage');
 const DashboardPage = lazy(loadDashboardPage);
 const NewVenturePage = lazy(() => import('./pages/NewVenturePage'));
 const EditVenturePage = lazy(() => import('./pages/EditVenturePage'));
+const VentureDetailPage = lazy(() => import('./pages/VentureDetailPage'));
 const VentureDashboardPage = lazy(() => import('./pages/VentureDashboardPage'));
 const VentureAnalyticsPage = lazy(() => import('./pages/VentureAnalyticsPage'));
 const ProfileAnalyticsPage = lazy(() => import('./pages/ProfileAnalyticsPage'));
@@ -71,6 +73,8 @@ const CoBrotherDashboardPage = lazy(() => import('./pages/CoBrotherDashboardPage
 const FeeRequestsPage = lazy(() => import('./pages/FeeRequestsPage'));
 const AuctionPage = lazy(() => import('./pages/AuctionPage'));
 const VentureAuctionPage = lazy(() => import('./pages/VentureAuctionPage'));
+const VentureDealPage = lazy(() => import('./pages/VentureDealPage'));
+const NewCoVenturePage = lazy(() => import('./pages/NewCoVenturePage'));
 const CommunityAuctionPage = lazy(() => import('./pages/CommunityAuctionPage'));
 const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
 const JoinForm = lazy(() => import('./pages/JoinForm'));
@@ -137,21 +141,30 @@ function RedirectLegacySoftwareAuction() {
   return <Navigate to={`/technology/auction/${auctionId}`} replace />;
 }
 
+/** Remount routed pages when language changes so all UI strings refresh. */
+function LanguageAwareRoutes({ children }) {
+  const { i18n } = useTranslation();
+  const languageKey = i18n.resolvedLanguage || i18n.language;
+  return (
+    <Suspense fallback={<PageLoader />} key={languageKey}>
+      {children}
+    </Suspense>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />
-      <LanguageProvider>
-        <CurrencyProvider>
-          <CookieConsentProvider>
-            <AuthProvider>
-              <RoutePreloader />
-              <SiteGradientBorder />
-              <CookieConsentBanner />
-              <CoBrotherAIGuard />
-              <AppErrorBoundary>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+      <CookieConsentProvider>
+        <AuthProvider>
+          <RoutePreloader />
+          <SiteGradientBorder />
+          <CookieConsentBanner />
+          <CoBrotherAIGuard />
+          <AppErrorBoundary>
+            <LanguageAwareRoutes>
+              <Routes>
 
             {/* Public */}
             <Route path="/" element={<Home />} />
@@ -179,11 +192,7 @@ export default function App() {
 
             <Route
               path="/venture-auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <VentureAuctionPage />
-                </ProfileGuard>
-              }
+              element={<Navigate to="/ventures" replace />}
             />
 
             <Route
@@ -285,6 +294,26 @@ export default function App() {
               }
             />
 
+            <Route path="/co-ventures" element={<Navigate to="/ventures" replace />} />
+
+            <Route
+              path="/co-ventures/new"
+              element={
+                <ProfileGuard>
+                  <NewCoVenturePage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/ventures/deals/:dealId"
+              element={
+                <ProfileGuard>
+                  <VentureDealPage />
+                </ProfileGuard>
+              }
+            />
+
             <Route
               path="/ventures/new"
               element={
@@ -308,6 +337,15 @@ export default function App() {
               element={
                 <ProfileGuard>
                   <VentureDashboardPage />
+                </ProfileGuard>
+              }
+            />
+
+            <Route
+              path="/ventures/:id"
+              element={
+                <ProfileGuard>
+                  <VentureDetailPage />
                 </ProfileGuard>
               }
             />
@@ -509,13 +547,11 @@ export default function App() {
             {/* Fallback — unknown URLs go home, not login */}
             <Route path="*" element={<Navigate to="/" replace />} />
 
-                  </Routes>
-                </Suspense>
-              </AppErrorBoundary>
-            </AuthProvider>
-          </CookieConsentProvider>
-        </CurrencyProvider>
-      </LanguageProvider>
+              </Routes>
+            </LanguageAwareRoutes>
+          </AppErrorBoundary>
+        </AuthProvider>
+      </CookieConsentProvider>
     </BrowserRouter>
   );
 }

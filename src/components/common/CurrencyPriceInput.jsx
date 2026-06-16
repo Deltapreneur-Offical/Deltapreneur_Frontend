@@ -18,8 +18,7 @@ export default function CurrencyPriceInput({
   selectClassName,
   id,
 }) {
-  const { supportedCurrencies, getSymbol } = useCurrency();
-  const symbol = getSymbol(currency);
+  const { supportedCurrencies } = useCurrency();
   const selectCls =
     selectClassName ||
     'shrink-0 w-[7.25rem] px-2.5 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white text-sm outline-none focus:border-purple-500 transition-all cursor-pointer';
@@ -27,7 +26,7 @@ export default function CurrencyPriceInput({
   return (
     <div className="flex flex-col gap-1.5">
       <label className={labelClassName} htmlFor={id}>
-        {label} ({currency}) <span className="text-gray-500 font-normal">{symbol}</span>
+        {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
       <div className="flex gap-2 items-stretch">

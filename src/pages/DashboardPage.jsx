@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowRight,
@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { adminAPI, communityAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
+import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import { resolveUserDisplayName } from '../utils/userDisplayName';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
@@ -45,12 +46,12 @@ const STAT_CARD_ICONS = {
   ventures: { Icon: Briefcase, tone: 'purple' },
   domains: { Icon: Globe, tone: 'green' },
   technologies: { Icon: Code2, tone: 'blue' },
-  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+  creators: { Icon: CreatorDashboardIcon, tone: 'creators' },
 };
 
 const MODULE_ICONS = {
   ventures: { Icon: Briefcase, tone: 'purple' },
-  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+  creators: { Icon: CreatorDashboardIcon, tone: 'creators' },
   domains: { Icon: Globe, tone: 'blue' },
   technology: { Icon: Lightbulb, tone: 'orange' },
   auctions: { Icon: Gavel, tone: 'purple' },
@@ -59,7 +60,7 @@ const MODULE_ICONS = {
 
 const QUICK_ACTION_ICONS = {
   venture: { Icon: Plus, tone: 'purple' },
-  creators: { Image: CreatorDashboardIcon, tone: 'creators' },
+  creators: { Icon: CreatorDashboardIcon, tone: 'creators' },
   domains: { Icon: Globe, tone: 'blue' },
   technology: { Icon: Lightbulb, tone: 'orange' },
 };
@@ -70,18 +71,11 @@ function formatStatValue(value) {
 }
 
 function renderDashboardIcon(iconConfig, size) {
-  if (iconConfig.Image) {
-    const ImageIcon = iconConfig.Image;
-    return <ImageIcon />;
-  }
   const { Icon } = iconConfig;
   return <Icon size={size} strokeWidth={2} aria-hidden />;
 }
 
-function dashboardIconClass(baseClass, tone, iconConfig) {
-  if (iconConfig.Image) {
-    return `${baseClass} ${baseClass}--${tone} ${baseClass}--asset`;
-  }
+function dashboardIconClass(baseClass, tone) {
   return `${baseClass} ${baseClass}--${tone}`;
 }
 
@@ -91,7 +85,7 @@ function DashboardStatCard({ label, value, tone, loading }) {
   return (
     <article className="dashboard-stat-card">
       <div className="dashboard-stat-card__top">
-        <div className={dashboardIconClass('dashboard-stat-card__icon', tone, iconConfig)}>
+        <div className={dashboardIconClass('dashboard-stat-card__icon', tone)}>
           {renderDashboardIcon(iconConfig, 18)}
         </div>
       </div>
@@ -107,7 +101,7 @@ function DashboardModuleCard({ title, desc, cta, to, tone }) {
   return (
     <article className="dashboard-module-card">
       <div className="dashboard-module-card__head">
-        <div className={dashboardIconClass('dashboard-module-card__icon', tone, iconConfig)}>
+        <div className={dashboardIconClass('dashboard-module-card__icon', tone)}>
           {renderDashboardIcon(iconConfig, 20)}
         </div>
         <div className="dashboard-module-card__copy">
@@ -132,7 +126,7 @@ function DashboardQuickAction({ to, label, tone }) {
 
   return (
     <Link to={to} className="dashboard-quick-action">
-      <span className={dashboardIconClass('dashboard-quick-action__icon', tone, iconConfig)}>
+      <span className={dashboardIconClass('dashboard-quick-action__icon', tone)}>
         {renderDashboardIcon(iconConfig, 16)}
       </span>
       <span className="dashboard-quick-action__label">{label}</span>
@@ -372,14 +366,24 @@ export default function DashboardPage() {
               <p>{t('dashboardSubtitle')}</p>
             </div>
             <div className="dashboard-admin-header__actions">
-              <Link to="/analytics" className="dashboard-admin-header__btn dashboard-admin-header__btn--ghost">
+              <NavLink
+                to="/analytics"
+                className={({ isActive }) =>
+                  `dashboard-admin-header__btn dashboard-admin-header__btn--ghost${isActive ? ' is-active' : ''}`
+                }
+              >
                 <LineChart size={16} strokeWidth={2} aria-hidden />
                 {t('dashboardViewAnalytics')}
-              </Link>
-              <Link to="/admin" className="dashboard-admin-header__btn dashboard-admin-header__btn--primary">
+              </NavLink>
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `dashboard-admin-header__btn dashboard-admin-header__btn--primary${isActive ? ' is-active' : ''}`
+                }
+              >
                 <Settings size={16} strokeWidth={2} aria-hidden />
                 {t('dashboardAdminPanel')}
-              </Link>
+              </NavLink>
             </div>
           </section>
         ) : null}
@@ -401,6 +405,8 @@ export default function DashboardPage() {
         {!isAdmin && creatorProfileReady && creatorProfile ? (
           <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
         ) : null}
+
+        {user?.id ? <PayoutProfileBanner context="default" /> : null}
 
         {!isAdmin ? <DashboardWelcomeBanner user={user} t={t} /> : null}
 

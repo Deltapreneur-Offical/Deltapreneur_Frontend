@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
+import { unwrapApiData } from '../utils/apiResponse';
+import { isCoVentureListing } from '../utils/ventureListingHelpers';
 import AppLayout from '../components/layout/AppLayout';
 import VentureForm from '../components/venture/VentureForm';
 
@@ -16,10 +18,18 @@ export default function EditVenturePage() {
 
   useEffect(() => {
     ventureAPI.get(id)
-      .then(({ data }) => setVenture(data))
+      .then(({ data }) => setVenture(unwrapApiData(data) || data))
       .catch(() => navigate('/ventures'))
       .finally(() => setFetching(false));
-  }, [id]);
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (fetching || window.location.hash !== '#company-profile') return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('company-profile')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+    return () => window.clearTimeout(timer);
+  }, [fetching]);
 
   const handleSubmit = async (form, imageFile) => {
     setLoading(true); setError('');
@@ -44,18 +54,26 @@ export default function EditVenturePage() {
     </AppLayout>
   );
 
+  const coVentureMode = isCoVentureListing(venture);
+
   return (
     <AppLayout>
       <div className="max-w-full w-full">
         <div className="mb-8">
-          <h1 className="font-display text-[2rem] font-bold text-gray-900 m-0 mb-2">{t('editVentureTitle')}</h1>
-          <p className="text-gray-600">{t('editVentureSubtitle')}</p>
+          <h1 className="font-display text-[2rem] font-bold text-gray-900 m-0 mb-2">
+            {coVentureMode ? 'Edit Co-Venture Listing' : t('editVentureTitle')}
+          </h1>
+          <p className="text-gray-600">
+            {coVentureMode ? 'Update your partnership listing and co-founder requirements.' : t('editVentureSubtitle')}
+          </p>
         </div>
         <VentureForm
           initialData={venture}
           onSubmit={handleSubmit}
+          onCancel={() => navigate('/ventures/dashboard')}
           loading={loading}
           error={error}
+          coVentureMode={coVentureMode}
           submitLabel={t('editVentureSaveChanges')}
         />
       </div>

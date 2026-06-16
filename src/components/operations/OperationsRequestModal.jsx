@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { operationsRequestAPI } from '../../api/services';
@@ -8,11 +10,17 @@ import {
   isComplianceService,
 } from '../../utils/operationsPricing';
 
+const inputClass =
+  'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm outline-none transition-shadow focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]';
+
+const labelClass = 'text-xs font-semibold text-gray-600';
+
 export default function OperationsRequestModal({ service, onClose, onSuccess }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const isCompliance = isComplianceService(service);
   const priceInfo = formatOperationsPrice(service, { t });
+  const [mounted, setMounted] = useState(false);
 
   const [form, setForm] = useState({
     fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
@@ -25,6 +33,15 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -71,146 +88,177 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
     ? t('operationsBookPriceHint', { defaultValue: 'Single registration / filing service' })
     : t('operationsHirePriceHint', { defaultValue: 'Ongoing monthly engagement' });
 
-  return (
+  const timelinePlaceholder = isCompliance
+    ? t('operationsBookTimelinePlaceholder', { defaultValue: 'e.g. Within 2 weeks' })
+    : t('operationsHireTimelinePlaceholder', { defaultValue: 'e.g. Start next month' });
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+      className="operations-request-modal-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="operations-request-modal-title"
     >
-      <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp">
-        <div className={`absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full blur-3xl pointer-events-none ${isCompliance ? 'bg-emerald-100/30' : 'bg-indigo-100/30'}`} />
+      <div
+        className={`operations-request-modal ${isCompliance ? 'operations-request-modal--booking' : 'operations-request-modal--hire'}`}
+      >
+        <div className={`operations-request-modal-glow ${isCompliance ? 'operations-request-modal-glow--booking' : 'operations-request-modal-glow--hire'}`} />
+
         <button
           type="button"
-          className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors duration-200 hover:text-gray-700"
+          className="operations-request-modal-close"
           onClick={onClose}
+          aria-label={t('close', { defaultValue: 'Close' })}
         >
-          ✕
+          <X size={18} />
         </button>
 
-        <div className="relative z-10 p-8 pb-6">
-          <div className={`inline-block px-2.5 py-1 text-xs font-semibold rounded-md mb-4 ${isCompliance ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'}`}>
+        <div className="operations-request-modal-header">
+          <span className={`operations-request-modal-badge ${isCompliance ? 'operations-request-modal-badge--booking' : 'operations-request-modal-badge--hire'}`}>
             {t(priceInfo.billingKey, { defaultValue: priceInfo.billingDefault })}
+          </span>
+          <h2 id="operations-request-modal-title" className="operations-request-modal-title">
+            {modalTitle}
+          </h2>
+          <div className="operations-request-modal-service">
+            <p className="operations-request-modal-service-name">{service.name}</p>
+            <p className="operations-request-modal-service-price">{priceInfo.label}</p>
+            <p className="operations-request-modal-service-hint">{priceHint}</p>
           </div>
-          <h2 className="font-display text-2xl font-bold text-gray-900 m-0 mb-2">{modalTitle}</h2>
-          <p className="text-gray-900 text-sm font-semibold m-0 mb-1">{service.name}</p>
-          <p className="text-gray-500 text-sm m-0 mb-1">
-            {priceInfo.showPrice ? priceInfo.label : priceInfo.label}
-          </p>
-          <p className="text-gray-400 text-xs m-0">{priceHint}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="relative z-10 px-8 pb-8 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              {t('operationsRequestFullName', { defaultValue: 'Full Name' })} <span className="text-red-500">*</span>
-            </label>
-            <input
-              value={form.fullName}
-              onChange={(e) => setField('fullName', e.target.value)}
-              required
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="operations-request-modal-form">
+          <div className="operations-request-modal-fields">
+            <div className="operations-request-modal-field operations-request-modal-field--full">
+              <label className={labelClass}>
+                {t('operationsRequestFullName', { defaultValue: 'Full Name' })}
+                {' '}
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                value={form.fullName}
+                onChange={(e) => setField('fullName', e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
-                {t('operationsRequestEmail', { defaultValue: 'Email' })} <span className="text-red-500">*</span>
+            <div className="operations-request-modal-field">
+              <label className={labelClass}>
+                {t('operationsRequestEmail', { defaultValue: 'Email' })}
+                {' '}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setField('email', e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
+                className={inputClass}
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
-                {t('operationsRequestPhone', { defaultValue: 'Phone' })} <span className="text-red-500">*</span>
+
+            <div className="operations-request-modal-field">
+              <label className={labelClass}>
+                {t('operationsRequestPhone', { defaultValue: 'Phone' })}
+                {' '}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 value={form.phone}
                 onChange={(e) => setField('phone', e.target.value)}
                 maxLength={10}
                 required
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
+                className={inputClass}
               />
             </div>
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              {t('operationsRequestCompany', { defaultValue: 'Company / Business Name' })}
-            </label>
-            <input
-              value={form.companyName}
-              onChange={(e) => setField('companyName', e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
-            />
-          </div>
-
-          {isCompliance && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
-                {t('operationsRequestCityState', { defaultValue: 'City / State' })}
+            <div className="operations-request-modal-field">
+              <label className={labelClass}>
+                {t('operationsRequestCompany', { defaultValue: 'Company / Business Name' })}
               </label>
               <input
-                value={form.cityState}
-                onChange={(e) => setField('cityState', e.target.value)}
-                placeholder={t('operationsRequestCityStatePlaceholder', { defaultValue: 'e.g. Mumbai, Maharashtra' })}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
+                value={form.companyName}
+                onChange={(e) => setField('companyName', e.target.value)}
+                className={inputClass}
               />
             </div>
-          )}
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              {t('operationsRequestTimeline', { defaultValue: 'Preferred Timeline' })}
-            </label>
-            <input
-              value={form.preferredTimeline}
-              onChange={(e) => setField('preferredTimeline', e.target.value)}
-              placeholder={
-                isCompliance
-                  ? t('operationsBookTimelinePlaceholder', { defaultValue: 'e.g. Within 2 weeks' })
-                  : t('operationsHireTimelinePlaceholder', { defaultValue: 'e.g. Start next month' })
-              }
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
-            />
-          </div>
+            {isCompliance ? (
+              <div className="operations-request-modal-field">
+                <label className={labelClass}>
+                  {t('operationsRequestCityState', { defaultValue: 'City / State' })}
+                </label>
+                <input
+                  value={form.cityState}
+                  onChange={(e) => setField('cityState', e.target.value)}
+                  placeholder={t('operationsRequestCityStatePlaceholder', { defaultValue: 'e.g. Mumbai, Maharashtra' })}
+                  className={inputClass}
+                />
+              </div>
+            ) : (
+              <div className="operations-request-modal-field">
+                <label className={labelClass}>
+                  {t('operationsRequestTimeline', { defaultValue: 'Preferred Timeline' })}
+                </label>
+                <input
+                  value={form.preferredTimeline}
+                  onChange={(e) => setField('preferredTimeline', e.target.value)}
+                  placeholder={timelinePlaceholder}
+                  className={inputClass}
+                />
+              </div>
+            )}
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              {t('operationsRequestMessage', { defaultValue: 'Requirements / Notes' })}
-            </label>
-            <textarea
-              value={form.message}
-              onChange={(e) => setField('message', e.target.value)}
-              rows={4}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none resize-y focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
-            />
+            {isCompliance && (
+              <div className="operations-request-modal-field operations-request-modal-field--full">
+                <label className={labelClass}>
+                  {t('operationsRequestTimeline', { defaultValue: 'Preferred Timeline' })}
+                </label>
+                <input
+                  value={form.preferredTimeline}
+                  onChange={(e) => setField('preferredTimeline', e.target.value)}
+                  placeholder={timelinePlaceholder}
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            <div className="operations-request-modal-field operations-request-modal-field--full">
+              <label className={labelClass}>
+                {t('operationsRequestMessage', { defaultValue: 'Requirements / Notes' })}
+              </label>
+              <textarea
+                value={form.message}
+                onChange={(e) => setField('message', e.target.value)}
+                rows={2}
+                className={`${inputClass} operations-request-modal-textarea`}
+              />
+            </div>
           </div>
 
           {error && (
-            <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-600 text-sm">
-              {error}
-            </div>
+            <div className="operations-request-modal-error">{error}</div>
           )}
 
-          <div className="flex gap-3 mt-2">
-            <button type="submit" disabled={loading} className="btn-glow flex-1 flex items-center justify-center gap-2">
+          <div className="operations-request-modal-actions">
+            <button type="submit" disabled={loading} className="btn-glow operations-request-modal-submit">
               {loading ? (
-                <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+                <span className="operations-request-modal-spinner" aria-hidden />
               ) : (
                 submitLabel
               )}
             </button>
-            <button type="button" onClick={onClose} className="btn-glow">
+            <button type="button" onClick={onClose} className="operations-request-modal-cancel">
               {t('cancel', { defaultValue: 'Cancel' })}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

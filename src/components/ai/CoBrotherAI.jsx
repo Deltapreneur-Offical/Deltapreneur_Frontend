@@ -790,7 +790,7 @@ export default function CoBrotherAI() {
       <motion.button
         type="button"
         onClick={() => setOpen(true)}
-        className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-[90] flex h-14 w-14 items-center justify-center rounded-2xl border shadow-2xl transition sm:h-16 sm:w-16 ${
+        className={`fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[1200] flex h-14 w-14 items-center justify-center rounded-2xl border shadow-2xl transition sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-5 sm:h-16 sm:w-16 ${
           isDark
             ? 'border-[#D4AF37]/35 bg-[#0B0F14] text-[#D4AF37] hover:border-[#D4AF37]/70'
             : 'border-slate-200 bg-white text-[var(--cobrother-brand-green)] hover:border-[var(--cobrother-brand-green)]'

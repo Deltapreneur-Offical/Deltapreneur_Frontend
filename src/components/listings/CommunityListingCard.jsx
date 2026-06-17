@@ -49,6 +49,10 @@ export default function CommunityListingCard({
   if (!isMe && !isCreatorProfileComplete(profile)) return null;
 
   const imageUrl = profile.imageUrl || profile.image_url || null;
+  const coverImageUrl =
+    profile.coverImageUrl
+    || profile.cover_image_url
+    || imageUrl;
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
   const roleLabel = formatLabel(profile.role);
   const industryLabel = formatLabel(profile.industry);
@@ -68,9 +72,9 @@ export default function CommunityListingCard({
       className={`creator-profile-card community-listing-card card-glow-hover${isMe ? ' creator-profile-card--owner' : ''}`}
     >
       <div className="creator-profile-card__banner">
-        {imageUrl ? (
+        {coverImageUrl ? (
           <>
-            <img src={imageUrl} alt="" className="creator-profile-card__banner-image" aria-hidden />
+            <img src={coverImageUrl} alt="" className="creator-profile-card__banner-image" aria-hidden />
             <div className="creator-profile-card__banner-overlay" aria-hidden />
           </>
         ) : (

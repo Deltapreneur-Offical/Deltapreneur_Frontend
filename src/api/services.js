@@ -97,7 +97,7 @@ export const coVentureAPI = {
 
 // ─── Creator (community profiles) ────────────────────────────────────────────
 export const creatorAPI = {
-  getAll:           ()        => api.get('/api/v1/creator/all'),
+  getAll:       (params)  => api.get('/api/v1/creator/all', { params }),
   getMy:            ()        => api.get('/api/v1/creator/my'),
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),

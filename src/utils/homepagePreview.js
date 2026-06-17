@@ -5,7 +5,7 @@ import {
   pickHomepagePreviewListings,
 } from './homepageListings';
 import { filterPublicMarketplaceListings } from './listingVisibility';
-import { fetchAllListPages, fetchListPage, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
+import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
 
 /** Normalize API rows into the shape listing cards expect. */
 export function normalizeHomepageListing(item, type = 'domain') {
@@ -124,8 +124,12 @@ export async function fetchHomepageSectionPreview(
     }
   }
 
-  const rows = await fetchAllListPages(requestFn, { pageSize: HOME_PREVIEW_PAGE_SIZE });
-  return resolveHomepageSectionItems(rows, type, limit, { filterFn });
+  // One page only — never scan the full catalog for a 5-card preview row.
+  const { items } = await fetchListPage(requestFn, {
+    page: 1,
+    pageSize: HOME_PREVIEW_PAGE_SIZE,
+  });
+  return resolveHomepageSectionItems(items, type, limit, { filterFn });
 }
 
 /** Venture / co-venture homepage rows — featured API first, then public catalog fallback. */

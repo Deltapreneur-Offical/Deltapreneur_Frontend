@@ -3,9 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 
-   
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-@import './styles/admin-panel.css';
+
 @import './styles/search-glow.css';
 
 @keyframes skeleton-shimmer {

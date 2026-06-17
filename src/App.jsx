@@ -13,9 +13,8 @@ import { CookieConsentProvider } from './context/CookieConsentContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 
+import CoBrotherAILauncher from './components/ai/CoBrotherAILauncher';
 import Home from './pages/Home';
-import LoginPage from './pages/LoginPage';
-import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
 /** Preserve ?linkedin=… query params when redirecting legacy /community URLs. */
@@ -24,30 +23,8 @@ function LegacyCommunityRedirect() {
   return <Navigate to={{ pathname: '/creator', search }} replace />;
 }
 
-const AI_HIDDEN_PATHS = [
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/reset-password',
-  '/auth/callback',
-  '/complete-profile',
-  '/password-security',
-  '/privacy-policy',
-  '/terms-and-conditions',
-];
-
-function CoBrotherAIGuard() {
-  const { pathname } = useLocation();
-  const { i18n } = useTranslation();
-  if (AI_HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
-  const languageKey = i18n.resolvedLanguage || i18n.language;
-  return (
-    <Suspense fallback={null} key={languageKey}>
-      <CoBrotherAI />
-    </Suspense>
-  );
-}
-
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const OAuthCallbackPage = lazy(() => import('./pages/OAuthCallbackPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
@@ -97,7 +74,6 @@ const OperationsPage = lazy(() => import('./pages/OperationsPage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
 const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSellerPage'));
 const DomainTransferBuyerPage = lazy(() => import('./pages/DomainTransferBuyerPage'));
-const CoBrotherAI = lazy(() => import('./components/ai/CoBrotherAI'));
 
 function preloadPostLoginRoutes() {
   void loadDashboardPage();
@@ -115,7 +91,10 @@ function RoutePreloader() {
     if (loading) return;
     if (!user || !hasAccessToken) return;
     preloadedRef.current = true;
-    preloadPostLoginRoutes();
+    const timer = window.setTimeout(() => {
+      preloadPostLoginRoutes();
+    }, 8000);
+    return () => window.clearTimeout(timer);
   }, [loading, user, hasAccessToken]);
 
   return null;
@@ -161,7 +140,7 @@ export default function App() {
           <RoutePreloader />
           <SiteGradientBorder />
           <CookieConsentBanner />
-          <CoBrotherAIGuard />
+          <CoBrotherAILauncher />
           <AppErrorBoundary>
             <LanguageAwareRoutes>
               <Routes>

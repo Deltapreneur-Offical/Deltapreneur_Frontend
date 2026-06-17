@@ -116,12 +116,6 @@ export function useLikes(type, items) {
   useEffect(() => {
     if (!entityIdsKey) return undefined;
 
-    const refreshIfVisible = () => {
-      if (document.visibilityState === 'visible') {
-        fetchLikeMap();
-      }
-    };
-
     const onExternalUpdate = (event) => {
       const detail = event?.detail;
       if (!detail || detail.type !== type || detail.entityId == null) return;
@@ -135,16 +129,12 @@ export function useLikes(type, items) {
       }));
     };
 
-    window.addEventListener('focus', refreshIfVisible);
-    document.addEventListener('visibilitychange', refreshIfVisible);
     window.addEventListener('likes:updated', onExternalUpdate);
 
     return () => {
-      window.removeEventListener('focus', refreshIfVisible);
-      document.removeEventListener('visibilitychange', refreshIfVisible);
       window.removeEventListener('likes:updated', onExternalUpdate);
     };
-  }, [type, entityIdsKey, fetchLikeMap]);
+  }, [type, entityIdsKey]);
 
   const toggle = useCallback(
     async (entityId) => {

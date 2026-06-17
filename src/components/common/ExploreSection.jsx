@@ -1,83 +1,52 @@
-import { useState } from 'react';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { feedbackAPI } from '../../api/services';
+import LazyWhenVisible from './LazyWhenVisible';
 import DomainsSection from '../home/DomainsSection';
 import VenturesSection from '../home/VenturesSection';
 import CoVenturesSection from '../home/CoVenturesSection';
 import TechnologySection from '../home/TechnologySection';
-import FeedbackSection from '../home/FeedbackSection';
 import CommunitySection from '../home/CommunitySection';
 import AuctionsSection from '../home/AuctionsSection';
+import FeedbackSection from '../home/FeedbackSection';
+import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
+
+function LazySection({ title, to, children }) {
+  return (
+    <LazyWhenVisible fallback={<HomeSectionCardSkeleton title={title} to={to} />}>
+      {children}
+    </LazyWhenVisible>
+  );
+}
 
 export default function ExploreSection() {
   const { t } = useTranslation();
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-
-  const handleFeedbackTypeClick = (type) => {
-    setFeedbackType(type);
-  };
-
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackMessage.trim()) {
-      alert(t('feedbackPlaceholder'));
-      return;
-    }
-    try {
-      setFeedbackSubmitting(true);
-      const response = await feedbackAPI.submit({
-        feedbackType,
-        message: feedbackMessage,
-        pageUrl: window.location.href,
-      });
-      
-      if (response.data && response.data.status === 'success') {
-        setFeedbackSubmitted(true);
-      } else {
-        alert('Failed to send feedback. Please try again.');
-      }
-    } catch (error) {
-      console.error('Feedback error:', error);
-      alert('Something went wrong. Please try again later.');
-    } finally {
-      setFeedbackSubmitting(false);
-    }
-  };
-
 
   return (
     <>
-      {/* ═══════════════════════════════════════════════════════════════════
-          DOMAINS SECTION (Separate Component)
-      ═══════════════════════════════════════════════════════════════════ */}
       <DomainsSection />
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          VENTURES SECTION (Separate Component)
-      ═══════════════════════════════════════════════════════════════════ */}
       <VenturesSection />
 
-      <CoVenturesSection />
+      <LazySection
+        title={t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+        to="/ventures?mode=co-venture"
+      >
+        <CoVenturesSection />
+      </LazySection>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          TECHNOLOGY SECTION (Separate Component)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <TechnologySection />
+      <LazySection title={t('technologySoftware')} to="/technology">
+        <TechnologySection />
+      </LazySection>
 
-      <CommunitySection />
+      <LazySection title={t('disruptors')} to="/community">
+        <CommunitySection />
+      </LazySection>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          AUCTIONS SECTION (Separate Component)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <AuctionsSection />
+      <LazySection title={t('auctions')} to="/auctions">
+        <AuctionsSection />
+      </LazySection>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          FEEDBACK WIDGET (Separate Component)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <FeedbackSection />
+      <LazyWhenVisible>
+        <FeedbackSection />
+      </LazyWhenVisible>
     </>
   );
 }

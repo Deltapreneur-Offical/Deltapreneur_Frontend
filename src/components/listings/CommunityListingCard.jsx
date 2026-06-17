@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { isCreatorProfileComplete } from '../../utils/creatorProfile';
-// import CreatorFollowButton from '../creators/CreatorFollowButton';
+// Follow button disabled until creator follow UX is finalized.
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
@@ -129,18 +129,7 @@ export default function CommunityListingCard({
           <CreatorExpectedRateCard profile={profile} />
         </div>
 
-        {/* Follow button — commented out for now; uncomment when ready to re-enable
-        {!isMe && onFollow ? (
-          <div className="creator-profile-card__follow-row">
-            <CreatorFollowButton
-              following={followState?.following}
-              count={followState?.count ?? profile.followerCount ?? profile.follower_count ?? 0}
-              loading={followLoading}
-              onToggle={onFollow}
-            />
-          </div>
-        ) : null}
-        */}
+        {/* Follow button disabled until creator follow UX is finalized */}
 
         <div
           className="creator-profile-card__footer"

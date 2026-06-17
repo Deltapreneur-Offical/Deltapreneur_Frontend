@@ -68,16 +68,6 @@ export default function AuctionsSection() {
     };
 
     fetchAuctions();
-
-    const refresh = () => {
-      if (document.visibilityState === 'visible') fetchAuctions();
-    };
-    window.addEventListener('focus', fetchAuctions);
-    document.addEventListener('visibilitychange', refresh);
-    return () => {
-      window.removeEventListener('focus', fetchAuctions);
-      document.removeEventListener('visibilitychange', refresh);
-    };
   }, []);
 
   const displayAuctions = useMemo(() => {

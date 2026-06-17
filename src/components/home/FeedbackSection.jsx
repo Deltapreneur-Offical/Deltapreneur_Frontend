@@ -11,12 +11,13 @@ export default function FeedbackSection() {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const botProtectionActive = feedbackType !== null || feedbackMessage.trim().length > 0;
   const {
     requiresTurnstile,
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection();
+  } = useBotProtection({ active: botProtectionActive });
 
   const handleFeedbackTypeClick = (type) => {
     setFeedbackType(type);

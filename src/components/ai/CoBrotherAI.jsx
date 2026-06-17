@@ -425,11 +425,11 @@ function LoadingBubble({ isDark }) {
   );
 }
 
-export default function CoBrotherAI() {
+export default function CoBrotherAI({ initialOpen = false }) {
   const { hasAccessToken } = useAuth();
   const location = useLocation();
   const pageContext = useMemo(() => buildPageContext(location.pathname), [location.pathname]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const [fullscreen, setFullscreen] = useState(false);
   const [mode, setMode] = useState('domains');
   const [input, setInput] = useState('');

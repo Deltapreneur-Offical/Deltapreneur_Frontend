@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useContext, useMemo, useRef, createCo
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
+import '../styles/admin-panel.css';
 import {
   Activity,
   ArrowRight,

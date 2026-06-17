@@ -1,9 +1,12 @@
-name: Automated Deploy to Lightsail
+name: Deploy Frontend to EC2
 
 on:
   push:
     branches:
       - main
+
+env:
+  DEPLOY_ROOT: ${{ vars.FRONTEND_DEPLOY_PATH || '/home/ubuntu/projects/CoBrother_Frontend' }}
 
 jobs:
   build-and-deploy:
@@ -29,36 +32,20 @@ jobs:
           test -f dist/index.html
           grep -q 'padding-left:0' dist/assets/index-*.css
 
-      - name: Prepare production dist directory
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            set -euo pipefail
-            FRONTEND_ROOT="/home/ubuntu/projects/CoBrother_Frontend"
-            DIST_DIR="${FRONTEND_ROOT}/dist"
+      - name: Create deployment archive
+        run: tar -czf frontend-dist.tar.gz -C dist .
 
-            rm -rf "${DIST_DIR}"
-            mkdir -p "${DIST_DIR}"
-
-            # Older deploys copied build output to the repo root; remove stale files.
-            rm -f "${FRONTEND_ROOT}/index.html" "${FRONTEND_ROOT}/robots.txt"
-            rm -rf "${FRONTEND_ROOT}/assets"
-
-      - name: Sync production build to Lightsail
+      - name: Upload deployment archive
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "dist/*"
-          target: "/home/ubuntu/projects/CoBrother_Frontend/dist/"
+          source: frontend-dist.tar.gz
+          target: ${{ env.DEPLOY_ROOT }}/
 
-      - name: Verify deployed CSS bundle
+      - name: Extract build and verify
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
@@ -67,9 +54,16 @@ jobs:
           port: 22
           script: |
             set -euo pipefail
-            DIST_DIR="/home/ubuntu/projects/CoBrother_Frontend/dist"
-            CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' "${DIST_DIR}/index.html" | head -1 | tr -d '"')")"
-            CSS_PATH="${DIST_DIR}/assets/${CSS_FILE}"
+            ROOT="${{ env.DEPLOY_ROOT }}"
+            mkdir -p "${ROOT}"
+            cd "${ROOT}"
+
+            tar -xzf frontend-dist.tar.gz
+            rm -f frontend-dist.tar.gz
+
+            test -f index.html
+            CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' index.html | head -1 | tr -d '"')")"
+            CSS_PATH="${ROOT}/assets/${CSS_FILE}"
 
             test -f "${CSS_PATH}"
             grep -q 'home-auction-preview-card__metric-value{display:block;padding-left:0' "${CSS_PATH}"

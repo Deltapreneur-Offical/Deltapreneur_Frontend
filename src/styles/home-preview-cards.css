@@ -842,8 +842,9 @@
 .home-auction-preview-card__metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
+  gap: 0.35rem;
   min-height: 3.25rem;
+  container-type: inline-size;
 }
 
 .home-auction-preview-card__metric {
@@ -852,7 +853,7 @@
   align-items: stretch;
   gap: 0.15rem;
   min-width: 0;
-  padding: 0.45rem 0.5rem;
+  padding: 0.35rem 0.3rem;
   border-radius: 0.625rem;
   background: #f8fafc;
   border: 1px solid #eef2f7;
@@ -872,15 +873,15 @@
 }
 
 .home-auction-preview-card__metric-label {
-  font-size: 0.5rem;
+  font-size: 0.4375rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   color: #94a3b8;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.15;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -888,15 +889,16 @@
 .home-auction-preview-card__metric-value {
   display: block;
   padding-left: 0;
-  font-size: 0.6875rem;
+  font-size: clamp(0.5625rem, 3.2cqi, 0.6875rem);
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
   color: #0f172a;
-  white-space: nowrap;
+  white-space: normal;
   overflow: visible;
   text-overflow: clip;
   font-variant-numeric: tabular-nums;
   max-width: 100%;
+  word-break: break-word;
 }
 
 .home-auction-preview-card__metric-value--time {

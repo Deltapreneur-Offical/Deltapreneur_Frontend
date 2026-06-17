@@ -110,7 +110,10 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
                 {t('auctionsPageStartingBid', { defaultValue: 'Starting bid' })}
               </span>
             </div>
-            <span className="home-auction-preview-card__metric-value currency-display">
+            <span
+              className="home-auction-preview-card__metric-value currency-display"
+              title={formatPrice(startingBid)}
+            >
               {formatPrice(startingBid)}
             </span>
           </div>

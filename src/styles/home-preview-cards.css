@@ -887,14 +887,14 @@
 
 .home-auction-preview-card__metric-value {
   display: block;
-  padding-left: calc(12px + 0.35rem);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.2;
+  padding-left: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.25;
   color: #0f172a;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   font-variant-numeric: tabular-nums;
   max-width: 100%;
 }

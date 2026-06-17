@@ -15,6 +15,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import CreatorDashboardIcon from '../components/common/CreatorDashboardIcon';
+import InlineStatLoader from '../components/common/InlineStatLoader';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { adminAPI, communityAPI } from '../api/services';
@@ -91,7 +92,9 @@ function DashboardStatCard({ label, value, tone, loading }) {
         </div>
       </div>
       <p className="dashboard-stat-card__label">{label}</p>
-      <p className="dashboard-stat-card__value">{loading ? '…' : formatStatValue(value)}</p>
+      <p className="dashboard-stat-card__value" aria-busy={loading || undefined}>
+        {loading ? <InlineStatLoader /> : formatStatValue(value)}
+      </p>
     </article>
   );
 }

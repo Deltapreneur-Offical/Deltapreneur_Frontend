@@ -26,6 +26,8 @@ export default function DomainsSection() {
         const rows = await fetchHomepageSectionPreview(
           (params) => domainAPI.getAll(params),
           'domain',
+          undefined,
+          { featuredQuery: {} },
         );
         setPreviewDomains(rows);
       } catch {

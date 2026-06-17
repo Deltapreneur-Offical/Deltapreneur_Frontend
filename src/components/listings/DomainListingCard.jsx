@@ -34,6 +34,8 @@ function DomainListingCover({
           src={logo}
           alt={logoAlt}
           className="domain-listing-card__cover-img"
+          loading="lazy"
+          decoding="async"
           onError={onCoverError}
         />
       ) : (

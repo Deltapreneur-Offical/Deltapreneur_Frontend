@@ -30,6 +30,7 @@ import {
   auctionSummaryFromAuction,
   buildAuctionsMapFromProfiles,
   normalizeCreatorAuctionSummary,
+  resolveCreatorAuctionId,
 } from '../utils/creatorAuctionSummary';
 import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpectedRate, buildCreatorExpectedRate, CREATOR_RATE_PERIODS } from '../utils/creatorExpectedRate';
 
@@ -76,6 +77,42 @@ function apiErrorMessage(err, fallback) {
   return fallback;
 }
 
+/** URLSearchParams.get() already decodes; avoid double decodeURIComponent (throws on % in text). */
+function readQueryParamValue(value) {
+  if (!value) return '';
+  try {
+    return decodeURIComponent(value.replace(/\+/g, ' '));
+  } catch {
+    return value;
+  }
+}
+
+const LINKEDIN_OAUTH_SESSION_KEY = 'cobrother.linkedin.oauth';
+
+function clearLinkedInOAuthSession() {
+  try {
+    sessionStorage.removeItem(LINKEDIN_OAUTH_SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function markLinkedInOAuthHandled(key) {
+  try {
+    sessionStorage.setItem(LINKEDIN_OAUTH_SESSION_KEY, key);
+  } catch {
+    /* ignore */
+  }
+}
+
+function wasLinkedInOAuthHandled(key) {
+  try {
+    return sessionStorage.getItem(LINKEDIN_OAUTH_SESSION_KEY) === key;
+  } catch {
+    return false;
+  }
+}
+
 export default function CommunityPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -92,6 +129,7 @@ export default function CommunityPage() {
   const [detailProfile, setDetailProfile]   = useState(null);
 
   const [linkedInLoading, setLinkedInLoading] = useState(false);
+  const [linkedInRedirecting, setLinkedInRedirecting] = useState(false);
   const [linkedInError, setLinkedInError]     = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -133,18 +171,23 @@ export default function CommunityPage() {
   };
 
   const reloadProfiles = async ({ preferProfile } = {}) => {
-    const requests = [communityAPI.getAll()];
-    if (user?.id) {
-      requests.push(communityAPI.getMy().catch(() => null));
-    }
+    try {
+      const requests = [communityAPI.getAll()];
+      if (user?.id) {
+        requests.push(communityAPI.getMy().catch(() => null));
+      }
 
-    const [allRes, myRes] = await Promise.all(requests);
-    const list = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.data ?? []);
-    const myFromApi = myRes
-      ? (myRes.data?.data ?? myRes.data ?? null)
-      : null;
-    applyProfilesList(list, { preferProfile: preferProfile || myFromApi });
-    return list;
+      const [allRes, myRes] = await Promise.all(requests);
+      const list = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.data ?? []);
+      const myFromApi = myRes
+        ? (myRes.data?.data ?? myRes.data ?? null)
+        : null;
+      applyProfilesList(list, { preferProfile: preferProfile || myFromApi });
+      return list;
+    } catch (err) {
+      setLinkedInError(apiErrorMessage(err, 'Could not load creator profiles. Please refresh the page.'));
+      throw err;
+    }
   };
 
   // Filter profiles based on search
@@ -152,6 +195,7 @@ export default function CommunityPage() {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
+      p.name?.toLowerCase().includes(query) ||
       p.user?.firstname?.toLowerCase().includes(query) ||
       p.user?.lastname?.toLowerCase().includes(query) ||
       p.headline?.toLowerCase().includes(query) ||
@@ -205,13 +249,24 @@ export default function CommunityPage() {
 
   // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
-    const status    = searchParams.get('linkedin');
+    const status = searchParams.get('linkedin');
     const profileId = searchParams.get('profileId');
-    const errMsg    = searchParams.get('linkedin_error');
+    const errMsg = searchParams.get('linkedin_error');
 
-    if (status || errMsg) setSearchParams({}, { replace: true });
+    if (!status && !errMsg) return;
 
-    if (errMsg) { setLinkedInError(decodeURIComponent(errMsg)); return; }
+    const oauthKey = `${status || 'error'}-${profileId || errMsg || ''}`;
+    if (wasLinkedInOAuthHandled(oauthKey)) {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    markLinkedInOAuthHandled(oauthKey);
+    setSearchParams({}, { replace: true });
+
+    if (errMsg) {
+      setLinkedInError(readQueryParamValue(errMsg));
+      return;
+    }
 
     if (status === 'success' && profileId) {
       setLinkedInLoading(true);
@@ -225,7 +280,7 @@ export default function CommunityPage() {
           setLinkedInSuccess(
             hasUrl
               ? 'LinkedIn connected! Your profile link was imported — complete the details below.'
-              : 'LinkedIn connected! Reconnect LinkedIn to import your profile URL, then complete the details below.',
+              : 'LinkedIn connected! Reconnect LinkedIn to import your profile URL.',
           );
           try {
             await reloadProfiles({ preferProfile: profile });
@@ -238,7 +293,7 @@ export default function CommunityPage() {
         .catch(() => setLinkedInError('LinkedIn connected but failed to load profile. Please refresh.'))
         .finally(() => setLinkedInLoading(false));
     }
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   // ── Load all profiles + my auction ───────────────────────────────────────
   useEffect(() => {
@@ -265,15 +320,17 @@ export default function CommunityPage() {
 
   const handleConnectLinkedIn = async () => {
     setLinkedInError('');
-    setLinkedInLoading(true);
+    setLinkedInSuccess('');
+    clearLinkedInOAuthSession();
+    setLinkedInRedirecting(true);
     try {
       const { data } = await communityAPI.linkedInAuthUrl();
       const parsed = typeof data === 'string' ? JSON.parse(data) : data;
       const url    = parsed?.url ?? parsed?.authUrl ?? parsed;
       if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
-      window.location.href = url;
+      window.location.assign(url);
     } catch {
-      setLinkedInLoading(false);
+      setLinkedInRedirecting(false);
       setLinkedInError('Could not get LinkedIn auth URL. Please try again.');
     }
   };
@@ -313,6 +370,8 @@ export default function CommunityPage() {
       setShowForm(false);
       setShowDeleteConfirm(false);
       setLinkedInSuccess('');
+      clearLinkedInOAuthSession();
+      setSearchParams({}, { replace: true });
       closeListingDetail();
     } catch (err) {
       setLinkedInError(apiErrorMessage(err, 'Failed to delete profile. Please try again.'));
@@ -340,12 +399,13 @@ export default function CommunityPage() {
     return null;
   };
   const auctionBadge = auctionStatusLabel();
+  const linkedInBusy = linkedInLoading || linkedInRedirecting;
 
   if (linkedInLoading) return (
     <AppLayout>
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
         <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-        <p className="text-gray-400 text-sm">Connecting your LinkedIn profile…</p>
+        <p className="text-gray-400 text-sm">Finishing LinkedIn import…</p>
       </div>
     </AppLayout>
   );
@@ -353,6 +413,14 @@ export default function CommunityPage() {
   return (
     <AppLayout>
       <div>
+        {linkedInError && (
+          <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
+        )}
+        {linkedInSuccess && (
+          <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-600 mb-6 flex items-center gap-2">
+            <LinkedInIcon size={16} /> {linkedInSuccess}
+          </div>
+        )}
         {showForm && myProfile ? (
           <>
             <ListingBackLink
@@ -364,6 +432,8 @@ export default function CommunityPage() {
               onSaved={handleProfileSaved}
               onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
               onDelete={() => setShowDeleteConfirm(true)}
+              onReconnectLinkedIn={handleConnectLinkedIn}
+              linkedInReconnecting={linkedInBusy}
             />
           </>
         ) : (
@@ -387,7 +457,10 @@ export default function CommunityPage() {
                       'bg-red-50 text-red-600 border-red-300'
                     }`}>{auctionBadge.text}</span>
                     <button className="btn-glow btn-glow-sm"
-                      onClick={() => navigate(`/creator-auction/${myAuction.id}`)}>
+                      onClick={() => {
+                        const targetId = resolveCreatorAuctionId(myAuction);
+                        if (targetId) navigate(`/creator-auction/${targetId}`);
+                      }}>
                       View Auction →
                     </button>
                   </div>
@@ -396,7 +469,8 @@ export default function CommunityPage() {
                     className="btn-glow btn-glow-sm"
                     onClick={() => {
                       if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
-                        navigate(`/creator-auction/${myAuction.id}`);
+                        const targetId = resolveCreatorAuctionId(myAuction);
+                        if (targetId) navigate(`/creator-auction/${targetId}`);
                         return;
                       }
                       if (!readCreatorExpectedRate(myProfile)) {
@@ -428,8 +502,8 @@ export default function CommunityPage() {
             ) : (
               <button
                 className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
-                onClick={handleConnectLinkedIn} disabled={linkedInLoading}>
-                {linkedInLoading
+                onClick={handleConnectLinkedIn} disabled={linkedInBusy}>
+                {linkedInBusy
                   ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
                   : <><LinkedInIcon /> Connect with LinkedIn</>}
               </button>
@@ -457,15 +531,6 @@ export default function CommunityPage() {
             onEdit={() => setShowForm(true)}
           />
         ) : null}
-
-        {linkedInError && (
-          <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
-        )}
-        {linkedInSuccess && (
-          <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-600 mb-6 flex items-center gap-2">
-            <LinkedInIcon size={16} /> {linkedInSuccess}
-          </div>
-        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -518,7 +583,9 @@ export default function CommunityPage() {
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
           onDelete={() => setShowDeleteConfirm(true)}
-          onViewAuction={(auctionId) => navigate(`/creator-auction/${auctionId}`)}
+          onViewAuction={(auctionId) => {
+            if (auctionId) navigate(`/creator-auction/${auctionId}`);
+          }}
         />
       )}
 
@@ -829,7 +896,10 @@ function CommunityDetailModal({
                 <button
                   type="button"
                   className={`${MODAL_OUTLINE_BTN} flex-shrink-0 whitespace-nowrap`}
-                  onClick={() => { onClose(); onViewAuction(auction.id); }}
+                  onClick={() => {
+                    onClose();
+                    onViewAuction(resolveCreatorAuctionId(auction));
+                  }}
                 >
                   Bid / Meet →
                 </button>
@@ -922,7 +992,14 @@ function CommunityDetailModal({
 }
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
-function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
+function CommunityProfileForm({
+  initial,
+  onSaved,
+  onCancel,
+  onDelete,
+  onReconnectLinkedIn,
+  linkedInReconnecting = false,
+}) {
   const { t } = useTranslation();
   const buildForm = (profile) => {
     const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
@@ -961,6 +1038,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
   );
 
   const linkedInImported = hasLinkedInAccount(initial);
+  const needsLinkedInReconnect = linkedInImported && !linkedInUrl;
 
   const handleChange = e => {
     if (e.target.name === 'linkedInProfileUrl') return;
@@ -1019,9 +1097,27 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
                     <span aria-hidden>↗</span>
                   </a>
                 ) : linkedInImported ? (
-                  <p className="text-xs text-amber-700 mt-1 m-0">
-                    LinkedIn URL was not imported — reconnect LinkedIn to refresh your profile link.
-                  </p>
+                  <div className="mt-1 flex flex-col items-start gap-2">
+                    <p className="text-xs text-amber-700 m-0">
+                      {t(
+                        'communityPageLinkedInUrlMissing',
+                        'LinkedIn URL was not imported — reconnect LinkedIn to refresh your profile link.',
+                      )}
+                    </p>
+                    {onReconnectLinkedIn ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#0077B5] text-white hover:bg-[#006399] disabled:opacity-60"
+                        onClick={onReconnectLinkedIn}
+                        disabled={linkedInReconnecting}
+                      >
+                        <LinkedInIcon size={14} />
+                        {linkedInReconnecting
+                          ? t('communityPageConnecting', 'Connecting…')
+                          : t('communityPageReconnectLinkedIn', 'Reconnect LinkedIn')}
+                      </button>
+                    ) : null}
+                  </div>
                 ) : null}
                 <p className="text-xs text-blue-600 mt-1.5 m-0">
                   ✓ {linkedInUrl
@@ -1104,7 +1200,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
           </div>
         </div>
         {linkedInImported && (
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
               LinkedIn URL
               <span className="text-gray-400 font-normal text-xs ml-1">(imported from LinkedIn)</span>
@@ -1114,11 +1210,31 @@ function CommunityProfileForm({ initial, onSaved, onCancel, onDelete }) {
               type="url"
               value={linkedInUrl}
               readOnly
-              placeholder={linkedInUrl ? '' : 'Reconnect LinkedIn to import your profile URL'}
+              placeholder={
+                linkedInUrl
+                  ? ''
+                  : t(
+                      'communityPageLinkedInUrlPlaceholder',
+                      'Reconnect LinkedIn to import your profile URL',
+                    )
+              }
               aria-readonly="true"
               tabIndex={-1}
               className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-600 bg-gray-50 outline-none cursor-not-allowed focus:border-gray-300 transition-all"
             />
+            {needsLinkedInReconnect && onReconnectLinkedIn ? (
+              <button
+                type="button"
+                className="self-start inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-[#0077B5] text-white hover:bg-[#006399] disabled:opacity-60"
+                onClick={onReconnectLinkedIn}
+                disabled={linkedInReconnecting}
+              >
+                <LinkedInIcon size={16} />
+                {linkedInReconnecting
+                  ? t('communityPageConnecting', 'Connecting…')
+                  : t('communityPageReconnectLinkedIn', 'Reconnect LinkedIn')}
+              </button>
+            ) : null}
           </div>
         )}
         <div className="flex flex-col gap-1.5">

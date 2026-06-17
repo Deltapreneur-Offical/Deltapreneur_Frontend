@@ -9,6 +9,24 @@ export function mapAuctionStatusToDisplay(status) {
   return 'DRAFT';
 }
 
+export function resolveCreatorAuctionId(auctionOrSummary) {
+  if (!auctionOrSummary || typeof auctionOrSummary !== 'object') return null;
+
+  const communityId = auctionOrSummary.communityId
+    ?? auctionOrSummary.community_id
+    ?? auctionOrSummary.creatorId
+    ?? auctionOrSummary.creator_id;
+
+  const candidate = auctionOrSummary.auctionId
+    ?? auctionOrSummary.auction_id
+    ?? auctionOrSummary.id
+    ?? null;
+
+  if (!candidate) return null;
+  if (communityId && String(candidate) === String(communityId)) return null;
+  return String(candidate);
+}
+
 export function normalizeCreatorAuctionSummary(raw) {
   if (!raw || typeof raw !== 'object') return null;
 
@@ -21,8 +39,15 @@ export function normalizeCreatorAuctionSummary(raw) {
   const displayStatus = raw.displayStatus
     ?? mapAuctionStatusToDisplay(raw.status);
 
+  const auctionId = resolveCreatorAuctionId({
+    ...raw,
+    communityId,
+    community_id: communityId,
+  });
+
   return {
-    auctionId: raw.auctionId ?? raw.auction_id ?? raw.id ?? null,
+    auctionId,
+    id: auctionId,
     communityId: String(communityId),
     startingBid: Number(
       raw.startingBid ?? raw.minBidPrice ?? raw.min_bid_price ?? 0,

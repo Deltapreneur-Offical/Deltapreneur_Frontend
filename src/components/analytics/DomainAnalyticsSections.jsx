@@ -13,6 +13,7 @@ import {
 import { ArrowRight, ChevronDown } from 'lucide-react';
 
 import AnalyticsChartTooltip from './AnalyticsChartTooltip';
+import { ANALYTICS_CHART } from '../../constants/analyticsChartTheme';
 import {
   buildDomainActivitySeries,
   buildTopDomainsRanked,
@@ -108,21 +109,21 @@ export function DomainAnalyticsActivitySection({ rows }) {
             <ComposedChart data={series} margin={{ top: 12, right: 12, left: -8, bottom: 0 }}>
               <defs>
                 <linearGradient id="domainActivityFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.28} />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor={ANALYTICS_CHART.line} stopOpacity={0.18} />
+                  <stop offset="100%" stopColor={ANALYTICS_CHART.line} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ANALYTICS_CHART.grid} vertical={false} />
               <XAxis
                 dataKey="name"
-                tick={{ fill: '#9ca3af', fontSize: 11 }}
+                tick={{ fill: ANALYTICS_CHART.axis, fontSize: 11 }}
                 tickLine={false}
-                axisLine={{ stroke: '#e5e7eb' }}
+                axisLine={{ stroke: ANALYTICS_CHART.border }}
                 interval="preserveStartEnd"
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: '#9ca3af', fontSize: 11 }}
+                tick={{ fill: ANALYTICS_CHART.axis, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
                 width={36}
@@ -139,10 +140,10 @@ export function DomainAnalyticsActivitySection({ rows }) {
                 type="monotone"
                 dataKey="value"
                 name={t(ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ?? 'platformAnalyticsActivityViews')}
-                stroke="#6366f1"
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: '#6366f1', stroke: '#ffffff', strokeWidth: 2 }}
-                activeDot={{ r: 5, fill: '#6366f1', stroke: '#ffffff', strokeWidth: 2 }}
+                stroke={ANALYTICS_CHART.line}
+                strokeWidth={2}
+                dot={{ r: 2.5, fill: ANALYTICS_CHART.line, stroke: '#ffffff', strokeWidth: 2 }}
+                activeDot={{ r: 4.5, fill: ANALYTICS_CHART.line, stroke: '#ffffff', strokeWidth: 2 }}
               />
             </ComposedChart>
           </ResponsiveContainer>

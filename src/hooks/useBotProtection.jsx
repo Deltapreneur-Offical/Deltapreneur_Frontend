@@ -13,7 +13,7 @@ function resolveSiteKey() {
   return '';
 }
 
-export function useBotProtection() {
+export function useBotProtection({ active = true } = {}) {
   const envSiteKey = resolveSiteKey();
   const [siteKey, setSiteKey] = useState(envSiteKey);
   const [enabled, setEnabled] = useState(Boolean(envSiteKey));
@@ -22,6 +22,8 @@ export function useBotProtection() {
   const turnstileRef = useRef(null);
 
   useEffect(() => {
+    if (!active) return undefined;
+
     if (envSiteKey) {
       prefetchTurnstileScript().catch(() => {});
       return undefined;
@@ -53,7 +55,7 @@ export function useBotProtection() {
     return () => {
       cancelled = true;
     };
-  }, [envSiteKey]);
+  }, [envSiteKey, active]);
 
   const handleTurnstileExpire = useCallback(() => {
     setTurnstileToken('');

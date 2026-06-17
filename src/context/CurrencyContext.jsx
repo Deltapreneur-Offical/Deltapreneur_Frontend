@@ -47,7 +47,7 @@ export function CurrencyProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    void refreshRates(true);
+    void refreshRates(false);
   }, [refreshRates]);
 
   const setCurrency = useCallback((code) => {

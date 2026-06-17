@@ -47,6 +47,10 @@ export default defineConfig(({ mode }) => {
               }
               if (id.includes('react-router')) return 'vendor-router';
               if (id.includes('i18next')) return 'vendor-i18n';
+              if (id.includes('framer-motion')) return 'vendor-motion';
+              if (id.includes('recharts')) return 'vendor-charts';
+              if (id.includes('@stomp') || id.includes('sockjs-client')) return 'vendor-websocket';
+              if (id.includes('axios')) return 'vendor-http';
               return 'vendor';
             }
             if (id.includes('/src/components/analytics/')) return 'shared-analytics';
@@ -62,6 +66,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '127.0.0.1',
       port: 5173,
+      headers: {
+        'Permissions-Policy': 'unload=*',
+      },
       // Local API (matches VITE_API_URL / run_dev). Production builds do not use this proxy.
       proxy: {
         '/api': {

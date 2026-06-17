@@ -22,7 +22,10 @@ export default function CommunitySection() {
     const fetchCommunities = async () => {
       try {
         setLoading(true);
-        const response = await communityAPI.getAll();
+        const response = await communityAPI.getAll({
+          featured_only: true,
+          page_size: 20,
+        });
         setCommunities(asArray(response.data));
       } catch {
         setCommunities([]);
@@ -32,16 +35,6 @@ export default function CommunitySection() {
     };
 
     fetchCommunities();
-
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') fetchCommunities();
-    };
-    window.addEventListener('focus', fetchCommunities);
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      window.removeEventListener('focus', fetchCommunities);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
   }, []);
 
   const previewCommunities = useMemo(

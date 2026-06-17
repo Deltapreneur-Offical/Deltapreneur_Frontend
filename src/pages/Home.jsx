@@ -159,13 +159,13 @@ export default function Home() {
   const features = [
     {
       icon: <Headset className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeVirtualAssistanceTitle', { defaultValue: 'Virtual Assistant' }),
-      onClick: () => goToOperations('assistance'),
+      title: t('homeVirtualAssistancesTitle', { defaultValue: 'Virtual Assistants' }),
+      onClick: () => goToOperations('assistances'),
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeComplianceTitle', { defaultValue: 'Compliance' }),
-      onClick: () => goToOperations('compliance'),
+      title: t('homeCompliancesTitle', { defaultValue: 'Compliances' }),
+      onClick: () => goToOperations('compliances'),
     },
   ];
 

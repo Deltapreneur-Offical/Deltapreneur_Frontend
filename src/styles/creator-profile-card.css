@@ -6,7 +6,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 1rem;
   border: 1px solid #e5e7eb;
   background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
@@ -74,7 +74,7 @@
   text-align: center;
   padding: 0 0.85rem 0.75rem;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
 }
 

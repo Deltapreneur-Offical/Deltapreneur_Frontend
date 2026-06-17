@@ -47,6 +47,12 @@ const normalizeAuction = (a) => {
   return normalized;
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isCreatorAuctionId(value) {
+  return Boolean(value && UUID_RE.test(String(value)));
+}
+
 export function useCommunityAuction(auctionId) {
   const [auction, setAuction] = useState(null);
   const [bids, setBids] = useState([]);
@@ -60,23 +66,36 @@ export function useCommunityAuction(auctionId) {
   const handleUpdateRef = useRef(null);
 
   const fetchAuctionDetail = useCallback(async () => {
-    if (!auctionId) return;
-    const { data } = await communityAuctionAPI.get(auctionId);
-    const normalizedAuction = normalizeAuction({
-      ...data?.auction,
-      community: data?.auction?.community ?? data?.community ?? null,
-    });
-    const normalizedBids = Array.isArray(data?.bids) ? data.bids.map(normalizeBid) : [];
-    const limits = resolveAuctionBidLimits({
-      minNextBid: data?.minNextBid ?? data?.min_next_bid,
-      maxBidPrice: data?.maxBidPrice ?? data?.max_bid_price,
-      currentHighestBid: normalizedAuction?.currentHighestBid,
-      minBidPrice: normalizedAuction?.minBidPrice,
-    });
-    setAuction(normalizedAuction ? { ...normalizedAuction, ...limits } : normalizedAuction);
-    setBids(normalizedBids);
-    setMinNextBid(limits.minNextBid);
-    setMaxBidPrice(limits.maxBidPrice);
+    if (!auctionId || !isCreatorAuctionId(auctionId)) {
+      setAuction(null);
+      setBids([]);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data } = await communityAuctionAPI.get(auctionId);
+      const normalizedAuction = normalizeAuction({
+        ...data?.auction,
+        community: data?.auction?.community ?? data?.community ?? null,
+      });
+      const normalizedBids = Array.isArray(data?.bids) ? data.bids.map(normalizeBid) : [];
+      const limits = resolveAuctionBidLimits({
+        minNextBid: data?.minNextBid ?? data?.min_next_bid,
+        maxBidPrice: data?.maxBidPrice ?? data?.max_bid_price,
+        currentHighestBid: normalizedAuction?.currentHighestBid,
+        minBidPrice: normalizedAuction?.minBidPrice,
+      });
+      setAuction(normalizedAuction ? { ...normalizedAuction, ...limits } : normalizedAuction);
+      setBids(normalizedBids);
+      setMinNextBid(limits.minNextBid);
+      setMaxBidPrice(limits.maxBidPrice);
+    } catch (error) {
+      console.error('Failed to load creator auction:', error);
+      setAuction(null);
+      setBids([]);
+    } finally {
+      setLoading(false);
+    }
   }, [auctionId]);
 
   const handleUpdate = useCallback((msg) => {

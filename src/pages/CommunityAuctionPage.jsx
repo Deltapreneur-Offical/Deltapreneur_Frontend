@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { useCommunityAuction } from '../hooks/useCommunityAuction';
+import { useCommunityAuction, isCreatorAuctionId } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -101,12 +101,13 @@ export default function CommunityAuctionPage() {
   const awaitingWinnerPayment = isEnded && isWinner && !auction?.winnerPaymentPaid;
 
   useEffect(() => {
-    if (!auction?.id || !user || !isActive) {
+    const auctionKey = auction?.id;
+    if (!auctionKey || !isCreatorAuctionId(auctionKey) || !user || !isActive) {
       setParticipation({ loading: false, paid: false, fee: 0, isOwner: false });
       return;
     }
     setParticipation((p) => ({ ...p, loading: true }));
-    communityAuctionAPI.participationStatus(auction.id)
+    communityAuctionAPI.participationStatus(auctionKey)
       .then(({ data }) => {
         const body = data?.data ?? data;
         setParticipation({

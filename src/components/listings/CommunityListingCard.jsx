@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { isCreatorProfileComplete } from '../../utils/creatorProfile';
-// import CreatorFollowButton from '../creators/CreatorFollowButton';
+// Follow button disabled until creator follow UX is finalized.
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
@@ -49,6 +49,10 @@ export default function CommunityListingCard({
   if (!isMe && !isCreatorProfileComplete(profile)) return null;
 
   const imageUrl = profile.imageUrl || profile.image_url || null;
+  const coverImageUrl =
+    profile.coverImageUrl
+    || profile.cover_image_url
+    || imageUrl;
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
   const roleLabel = formatLabel(profile.role);
   const industryLabel = formatLabel(profile.industry);
@@ -68,9 +72,9 @@ export default function CommunityListingCard({
       className={`creator-profile-card community-listing-card card-glow-hover${isMe ? ' creator-profile-card--owner' : ''}`}
     >
       <div className="creator-profile-card__banner">
-        {imageUrl ? (
+        {coverImageUrl ? (
           <>
-            <img src={imageUrl} alt="" className="creator-profile-card__banner-image" aria-hidden />
+            <img src={coverImageUrl} alt="" className="creator-profile-card__banner-image" aria-hidden />
             <div className="creator-profile-card__banner-overlay" aria-hidden />
           </>
         ) : (
@@ -125,18 +129,7 @@ export default function CommunityListingCard({
           <CreatorExpectedRateCard profile={profile} />
         </div>
 
-        {/* Follow button — commented out for now; uncomment when ready to re-enable
-        {!isMe && onFollow ? (
-          <div className="creator-profile-card__follow-row">
-            <CreatorFollowButton
-              following={followState?.following}
-              count={followState?.count ?? profile.followerCount ?? profile.follower_count ?? 0}
-              loading={followLoading}
-              onToggle={onFollow}
-            />
-          </div>
-        ) : null}
-        */}
+        {/* Follow button disabled until creator follow UX is finalized */}
 
         <div
           className="creator-profile-card__footer"

@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Dependencies & Build
         env:
-          VITE_API_URL: https://backend.cobrother.com
+          VITE_API_URL: https://demo.cobrother.com/api
           VITE_APP_URL: https://demo.cobrother.com
         run: |
           npm install

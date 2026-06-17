@@ -23,6 +23,7 @@ import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
+import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/home-preview-cards.css';
 
@@ -67,16 +68,6 @@ export default function AuctionsSection() {
     };
 
     fetchAuctions();
-
-    const refresh = () => {
-      if (document.visibilityState === 'visible') fetchAuctions();
-    };
-    window.addEventListener('focus', fetchAuctions);
-    document.addEventListener('visibilitychange', refresh);
-    return () => {
-      window.removeEventListener('focus', fetchAuctions);
-      document.removeEventListener('visibilitychange', refresh);
-    };
   }, []);
 
   const displayAuctions = useMemo(() => {
@@ -92,6 +83,8 @@ export default function AuctionsSection() {
     navigate(resolveHomeAuctionPath(auction));
   };
 
+  const shouldAutoScroll = displayAuctions.length > 5;
+
   if (loading) {
     return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" />;
   }
@@ -100,19 +93,29 @@ export default function AuctionsSection() {
     <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('auctions')} to="/auctions" />
-        <HomeAutoScrollRow
-          durationSec={50}
-          ariaLabel={t('auctions')}
-        >
-          {displayAuctions.map((auction) => (
-            <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
-              <AuctionPreviewCard
-                auction={auction}
-                onView={() => handleViewAuction(auction)}
-              />
-            </HomeAutoScrollRowItem>
-          ))}
-        </HomeAutoScrollRow>
+        {shouldAutoScroll ? (
+          <HomeAutoScrollRow durationSec={50} ariaLabel={t('auctions')}>
+            {displayAuctions.map((auction) => (
+              <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
+                <AuctionPreviewCard
+                  auction={auction}
+                  onView={() => handleViewAuction(auction)}
+                />
+              </HomeAutoScrollRowItem>
+            ))}
+          </HomeAutoScrollRow>
+        ) : (
+          <HomePreviewRow>
+            {displayAuctions.map((auction) => (
+              <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>
+                <AuctionPreviewCard
+                  auction={auction}
+                  onView={() => handleViewAuction(auction)}
+                />
+              </HomePreviewRowItem>
+            ))}
+          </HomePreviewRow>
+        )}
       </div>
     </section>
   );

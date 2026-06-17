@@ -30,6 +30,7 @@ import {
   auctionSummaryFromAuction,
   buildAuctionsMapFromProfiles,
   normalizeCreatorAuctionSummary,
+  resolveCreatorAuctionId,
 } from '../utils/creatorAuctionSummary';
 import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpectedRate, buildCreatorExpectedRate, CREATOR_RATE_PERIODS } from '../utils/creatorExpectedRate';
 
@@ -456,7 +457,10 @@ export default function CommunityPage() {
                       'bg-red-50 text-red-600 border-red-300'
                     }`}>{auctionBadge.text}</span>
                     <button className="btn-glow btn-glow-sm"
-                      onClick={() => navigate(`/creator-auction/${myAuction.id}`)}>
+                      onClick={() => {
+                        const targetId = resolveCreatorAuctionId(myAuction);
+                        if (targetId) navigate(`/creator-auction/${targetId}`);
+                      }}>
                       View Auction →
                     </button>
                   </div>
@@ -465,7 +469,8 @@ export default function CommunityPage() {
                     className="btn-glow btn-glow-sm"
                     onClick={() => {
                       if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
-                        navigate(`/creator-auction/${myAuction.id}`);
+                        const targetId = resolveCreatorAuctionId(myAuction);
+                        if (targetId) navigate(`/creator-auction/${targetId}`);
                         return;
                       }
                       if (!readCreatorExpectedRate(myProfile)) {
@@ -578,7 +583,9 @@ export default function CommunityPage() {
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
           onDelete={() => setShowDeleteConfirm(true)}
-          onViewAuction={(auctionId) => navigate(`/creator-auction/${auctionId}`)}
+          onViewAuction={(auctionId) => {
+            if (auctionId) navigate(`/creator-auction/${auctionId}`);
+          }}
         />
       )}
 
@@ -889,7 +896,10 @@ function CommunityDetailModal({
                 <button
                   type="button"
                   className={`${MODAL_OUTLINE_BTN} flex-shrink-0 whitespace-nowrap`}
-                  onClick={() => { onClose(); onViewAuction(auction.id); }}
+                  onClick={() => {
+                    onClose();
+                    onViewAuction(resolveCreatorAuctionId(auction));
+                  }}
                 >
                   Bid / Meet →
                 </button>

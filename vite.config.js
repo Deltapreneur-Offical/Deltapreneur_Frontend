@@ -62,6 +62,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '127.0.0.1',
       port: 5173,
+      headers: {
+        'Permissions-Policy': 'unload=*',
+      },
       // Local API (matches VITE_API_URL / run_dev). Production builds do not use this proxy.
       proxy: {
         '/api': {

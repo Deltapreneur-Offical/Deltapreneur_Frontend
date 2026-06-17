@@ -1,16 +1,22 @@
 /**
  * API / backend origin resolution.
  *
- * **Production defaults** (switch to local before local dev):
- *   Backend: https://backend.cobrother.com
- *   App:     https://cobrother.com (runtime uses window.location.origin when unset)
+ * **Production defaults** (unified Nginx on demo.cobrother.com):
+ *   API:  https://demo.cobrother.com/api  (requests → /api/v1/... on same host)
+ *   App:  https://demo.cobrother.com
  *
- * **Override** — set in `.env` or deploy build:
- *   VITE_API_URL=https://backend.cobrother.com
- *   VITE_APP_URL=https://cobrother.com
+ * **Override** — set in `.env.production` or deploy build:
+ *   VITE_API_URL=https://demo.cobrother.com/api
+ *   VITE_APP_URL=https://demo.cobrother.com
  */
-export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
-export const PRODUCTION_APP_URL = 'https://cobrother.com';
+export const PRODUCTION_API_ORIGIN = 'https://demo.cobrother.com';
+export const PRODUCTION_APP_URL = 'https://demo.cobrother.com';
+
+/** Strip a trailing /api from env URLs; axios paths already include /api/v1/... */
+function siteOriginFromApiEnv(url) {
+  if (!url || typeof url !== 'string') return url;
+  return url.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+}
 
 /**
  * Local Uvicorn is HTTP-only. `https://127.0.0.1:8000` causes ERR_SSL_PROTOCOL_ERROR.
@@ -57,7 +63,7 @@ function isFrontendOrigin(url) {
  */
 export function resolveBackendOrigin() {
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
-    return remoteApiBase.replace(/\/$/, '');
+    return siteOriginFromApiEnv(remoteApiBase) || remoteApiBase.replace(/\/$/, '');
   }
   if (import.meta.env.DEV && isLocalBackend) {
     return 'http://127.0.0.1:8000';
@@ -76,10 +82,7 @@ function resolveApiBaseUrl() {
     return '';
   }
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
-    return remoteApiBase.replace(/\/$/, '');
-  }
-  if (!import.meta.env.DEV) {
-    return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
+    return siteOriginFromApiEnv(remoteApiBase) || remoteApiBase.replace(/\/$/, '');
   }
   return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
 }

@@ -1,11 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
-import { pickHomepagePreviewListings, HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { fetchHomepageVenturePreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { fetchListPage, HOME_FEATURED_LIST_PARAMS } from '../../utils/listPagination';
-import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -24,10 +22,11 @@ export default function CoVenturesSection() {
     const fetchCoVentures = async () => {
       try {
         setLoading(true);
-        const { items } = await fetchListPage((params) => ventureAPI.getAll(params), {
-          ...HOME_FEATURED_LIST_PARAMS,
-        });
-        setVentures(items.filter(isCoVentureListing));
+        const rows = await fetchHomepageVenturePreview(
+          (params) => ventureAPI.getAll(params),
+          'CO_VENTURE',
+        );
+        setVentures(rows);
       } catch {
         setVentures([]);
       } finally {
@@ -37,13 +36,7 @@ export default function CoVenturesSection() {
     fetchCoVentures();
   }, []);
 
-  const previewCoVentures = useMemo(() => {
-    const featured = pickHomepagePreviewListings(ventures, 'venture', HOMEPAGE_PREVIEW_LIMIT);
-    if (featured.length > 0) return featured;
-    return ventures.slice(0, HOMEPAGE_PREVIEW_LIMIT);
-  }, [ventures]);
-
-  const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewCoVentures);
+  const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -65,13 +58,13 @@ export default function CoVenturesSection() {
           title={t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
           to="/ventures?mode=co-venture"
         />
-        {previewCoVentures.length === 0 ? (
+        {ventures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">
             {t('noCoVenturesAvailable', { defaultValue: 'No co-ventures available yet.' })}
           </p>
         ) : (
           <HomePreviewRow>
-            {previewCoVentures.map((venture) => (
+            {ventures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 <HomePreviewCardShell>
                   <VentureListingCard

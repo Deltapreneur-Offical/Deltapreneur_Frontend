@@ -91,8 +91,6 @@ const FEE_SECTIONS = [
         hint: 'Deducted from the seller\'s asking price (not added to buyer price).',
       },
     ],
-    inactiveNote:
-      'Venture auctions are not actively used. Venture auction participation fee is deprecated and hidden.',
   },
   {
     id: 'auction-shared',
@@ -236,7 +234,7 @@ export default function AdminFeesAndChargesTab() {
 
       <div className="px-5 sm:px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-gray-500 m-0">
-          {ALL_KEYS.length} active fee settings · venture auction participation is not editable (deprecated)
+          {ALL_KEYS.length} active fee settings
         </p>
         <button type="button" className="btn-glow btn-glow-sm" onClick={handleSave} disabled={saving}>
           {saving ? t('adminSaving', 'Saving…') : t('adminSaveFees', 'Save fees')}

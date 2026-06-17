@@ -74,11 +74,9 @@
 }
 
 .admin-page[data-admin-section='auctions'] .admin-field-label,
-.admin-page[data-admin-section='venture-auctions'] .admin-field-label,
 .admin-page[data-admin-section='software-auctions'] .admin-field-label,
 .admin-page[data-admin-section='community-auctions'] .admin-field-label,
 .admin-page[data-admin-section='auctions'] .admin-field-label--inline,
-.admin-page[data-admin-section='venture-auctions'] .admin-field-label--inline,
 .admin-page[data-admin-section='software-auctions'] .admin-field-label--inline,
 .admin-page[data-admin-section='community-auctions'] .admin-field-label--inline {
   color: #b45309;
@@ -116,7 +114,6 @@
 }
 
 .admin-page[data-admin-section='auctions'] .admin-record-card,
-.admin-page[data-admin-section='venture-auctions'] .admin-record-card,
 .admin-page[data-admin-section='software-auctions'] .admin-record-card,
 .admin-page[data-admin-section='community-auctions'] .admin-record-card {
   border-left: 4px solid #f59e0b;
@@ -220,7 +217,6 @@
 }
 
 .admin-page[data-admin-section='auctions'] .btn-secondary,
-.admin-page[data-admin-section='venture-auctions'] .btn-secondary,
 .admin-page[data-admin-section='community-auctions'] .btn-secondary {
   color: #b45309;
   border-color: #fcd34d;
@@ -228,7 +224,6 @@
 }
 
 .admin-page[data-admin-section='auctions'] .btn-secondary:hover,
-.admin-page[data-admin-section='venture-auctions'] .btn-secondary:hover,
 .admin-page[data-admin-section='community-auctions'] .btn-secondary:hover {
   color: #92400e;
   background: #fef3c7;
@@ -282,7 +277,6 @@
 }
 
 .admin-dashboard-tab--auctions.active,
-.admin-dashboard-tab--venture-auctions.active,
 .admin-dashboard-tab--software-auctions.active,
 .admin-dashboard-tab--community-auctions.active {
   color: #b45309;
@@ -317,7 +311,6 @@
 .admin-dashboard-tab--meetings.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--addon-orders.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--auctions.active .admin-dashboard-tab-label,
-.admin-dashboard-tab--venture-auctions.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--software-auctions.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--community-auctions.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--homepage-features.active .admin-dashboard-tab-label,
@@ -428,7 +421,6 @@
 }
 
 .admin-page[data-admin-section='auctions'] .admin-price-amount--bid,
-.admin-page[data-admin-section='venture-auctions'] .admin-price-amount--bid,
 .admin-page[data-admin-section='software-auctions'] .admin-price-amount--bid,
 .admin-page[data-admin-section='community-auctions'] .admin-price-amount--bid {
   color: #b45309;

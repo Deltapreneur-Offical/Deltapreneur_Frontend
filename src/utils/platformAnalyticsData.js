@@ -16,11 +16,29 @@ export function isAnalyticsCategory(value) {
   return ANALYTICS_CATEGORIES.includes(value);
 }
 
-function ownerLabel(owner) {
-  if (!owner) return '—';
+function ownerDetails(owner) {
+  if (!owner) return { name: '—', email: null };
   const name = [owner.firstname, owner.lastname].filter(Boolean).join(' ').trim();
-  if (name && owner.email) return `${name} (${owner.email})`;
-  return name || owner.email || '—';
+  const email = owner.email || null;
+  if (name && email) return { name, email };
+  if (name) return { name, email: null };
+  if (email) return { name: email, email: null };
+  return { name: '—', email: null };
+}
+
+function ownerLabel(owner) {
+  const { name, email } = ownerDetails(owner);
+  if (name !== '—' && email) return `${name} (${email})`;
+  return name;
+}
+
+function withOwnerFields(ownerSource) {
+  const details = ownerDetails(ownerSource);
+  return {
+    owner: ownerLabel(ownerSource),
+    ownerName: details.name,
+    ownerEmail: details.email,
+  };
 }
 
 function parseAnalyticsDate(value) {
@@ -44,7 +62,7 @@ function normalizeDomain(row) {
     saleType: row.saleType ?? row.sale_type ?? '—',
     verified: Boolean(row.verified),
     views: Number(row.views ?? row.view_count ?? 0),
-    owner: ownerLabel(row.listedBy ?? row.listed_by),
+    ...withOwnerFields(row.listedBy ?? row.listed_by),
     createdAt: row.createdAt ?? row.created_at ?? row.verifiedAt ?? row.verified_at ?? null,
     updatedAt: row.updatedAt ?? row.updated_at ?? null,
     soldAt: row.soldAt ?? row.sold_at ?? null,
@@ -61,7 +79,7 @@ function normalizeVenture(row) {
     verified: Boolean(row.verified),
     views: Number(row.views ?? row.view_count ?? 0),
     applications: Number(row.applicationCount ?? row.application_count ?? 0),
-    owner: ownerLabel(row.listedBy ?? row.listed_by),
+    ...withOwnerFields(row.listedBy ?? row.listed_by),
   };
 }
 
@@ -72,7 +90,7 @@ function normalizeTechnology(row) {
     category: formatTechnologyCategoryLabel(row.category),
     verified: Boolean(row.verified),
     views: Number(row.views ?? row.view_count ?? 0),
-    owner: ownerLabel(row.listedBy ?? row.listed_by),
+    ...withOwnerFields(row.listedBy ?? row.listed_by),
   };
 }
 
@@ -87,7 +105,7 @@ function normalizeCreator(row) {
     verified: completion.isComplete,
     profileComplete: completion.isComplete,
     views: Number(row.views ?? row.view_count ?? 0),
-    owner: ownerLabel(row.listedBy ?? row.appUser ?? row.user),
+    ...withOwnerFields(row.listedBy ?? row.appUser ?? row.user),
   };
 }
 

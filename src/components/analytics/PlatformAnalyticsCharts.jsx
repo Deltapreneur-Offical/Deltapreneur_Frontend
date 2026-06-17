@@ -12,9 +12,12 @@ import {
 } from 'recharts';
 
 import AnalyticsChartTooltip from './AnalyticsChartTooltip';
+import {
+  ANALYTICS_CHART,
+  BAR_CHART_COLORS,
+  getPieChartColor,
+} from '../../constants/analyticsChartTheme';
 import { pieDataWithPercentages } from '../../utils/platformAnalyticsData';
-
-const COLORS = ['#6366f1', '#16a34a', '#2563eb', '#ea580c', '#7c3aed', '#0891b2', '#db2777', '#ca8a04'];
 
 function safeNumber(value) {
   const num = Number(value);
@@ -46,12 +49,17 @@ export function AnalyticsPieCard({ title, data }) {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={54}
-                  outerRadius={86}
-                  paddingAngle={2}
+                  innerRadius={62}
+                  outerRadius={84}
+                  paddingAngle={1}
+                  stroke="#ffffff"
+                  strokeWidth={2}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`${entry.name}-${index}`}
+                      fill={getPieChartColor(index, chartData.length)}
+                    />
                   ))}
                 </Pie>
                 <Tooltip content={<AnalyticsChartTooltip />} />
@@ -63,10 +71,11 @@ export function AnalyticsPieCard({ title, data }) {
               <li key={`${entry.name}-${index}`}>
                 <span
                   className="platform-analytics-pie-legend__swatch"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  style={{ backgroundColor: getPieChartColor(index, chartData.length) }}
                   aria-hidden
                 />
                 <span className="platform-analytics-pie-legend__label">{entry.name}</span>
+                <span className="platform-analytics-pie-legend__leader" aria-hidden />
                 <span className="platform-analytics-pie-legend__value">
                   {entry.value} ({entry.percent}%)
                 </span>
@@ -95,27 +104,34 @@ export function AnalyticsBarCard({ title, data, dataKey = 'views' }) {
       <h3>{title}</h3>
       <div className="platform-analytics-chart-card__body">
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" vertical={false} />
+          <BarChart data={chartData} margin={{ top: 12, right: 12, left: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={ANALYTICS_CHART.grid} vertical={false} />
             <XAxis
               dataKey="name"
-              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              tick={{ fill: ANALYTICS_CHART.axisBar, fontSize: 11 }}
               interval={0}
               angle={-18}
               textAnchor="end"
               height={64}
-              axisLine={{ stroke: '#e5e7eb' }}
+              axisLine={{ stroke: ANALYTICS_CHART.border }}
               tickLine={false}
             />
             <YAxis
               allowDecimals={false}
-              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              tick={{ fill: ANALYTICS_CHART.axisBar, fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              width={32}
+              width={36}
             />
             <Tooltip content={<AnalyticsChartTooltip />} />
-            <Bar dataKey={dataKey} fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={48} />
+            <Bar dataKey={dataKey} radius={[8, 8, 0, 0]} maxBarSize={44}>
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`${entry.name}-${index}`}
+                  fill={BAR_CHART_COLORS[index % BAR_CHART_COLORS.length]}
+                />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

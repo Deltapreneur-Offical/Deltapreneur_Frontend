@@ -25,6 +25,8 @@ export default function TechnologySection() {
         const rows = await fetchHomepageSectionPreview(
           (params) => cocreationAPI.getAll(params),
           'software',
+          undefined,
+          { featuredQuery: {} },
         );
         setPreviewSoftwares(rows);
       } catch {

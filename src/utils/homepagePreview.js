@@ -5,7 +5,7 @@ import {
   pickHomepagePreviewListings,
 } from './homepageListings';
 import { filterPublicMarketplaceListings } from './listingVisibility';
-import { fetchAllListPages, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
+import { fetchAllListPages, fetchListPage, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
 
 /** Normalize API rows into the shape listing cards expect. */
 export function normalizeHomepageListing(item, type = 'domain') {
@@ -36,6 +36,7 @@ export function normalizeHomepageListing(item, type = 'domain') {
     const brand = item.brandDetails ?? item.brand_details ?? {};
     return {
       ...item,
+      listingMode: item.listingMode ?? item.listing_mode ?? 'VENTURE',
       brandDetails: {
         ...brand,
         brandName: brand.brandName ?? brand.brand_name ?? item.name ?? '',
@@ -81,15 +82,20 @@ export function resolveHomepageSectionItems(
   items,
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
+  { filterFn } = {},
 ) {
   const normalized = asArray(items)
     .map((item) => normalizeHomepageListing(item, type))
     .filter(Boolean);
 
-  const featured = pickHomepagePreviewListings(normalized, type, limit);
+  const scoped = typeof filterFn === 'function'
+    ? normalized.filter(filterFn)
+    : normalized;
+
+  const featured = pickHomepagePreviewListings(scoped, type, limit);
   if (featured.length > 0) return featured;
 
-  return filterPublicMarketplaceListings(normalized, type).slice(0, limit);
+  return filterPublicMarketplaceListings(scoped, type).slice(0, limit);
 }
 
 /** Fetch + normalize + pick homepage cards for paginated marketplace APIs. */
@@ -97,7 +103,43 @@ export async function fetchHomepageSectionPreview(
   requestFn,
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
+  options = {},
 ) {
+  const { filterFn, featuredQuery } = options;
+
+  if (featuredQuery) {
+    try {
+      const { items } = await fetchListPage(requestFn, {
+        page: 1,
+        pageSize: limit,
+        featured_only: true,
+        ...featuredQuery,
+      });
+      const featuredRows = resolveHomepageSectionItems(items, type, limit, { filterFn });
+      if (featuredRows.length > 0) {
+        return featuredRows;
+      }
+    } catch {
+      // Fall through to the public catalog fetch.
+    }
+  }
+
   const rows = await fetchAllListPages(requestFn, { pageSize: HOME_PREVIEW_PAGE_SIZE });
-  return resolveHomepageSectionItems(rows, type, limit);
+  return resolveHomepageSectionItems(rows, type, limit, { filterFn });
+}
+
+/** Venture / co-venture homepage rows — featured API first, then public catalog fallback. */
+export async function fetchHomepageVenturePreview(
+  requestFn,
+  listingMode,
+  limit = HOMEPAGE_PREVIEW_LIMIT,
+) {
+  const filterFn = listingMode === 'CO_VENTURE'
+    ? (venture) => (venture.listingMode ?? venture.listing_mode) === 'CO_VENTURE'
+    : (venture) => (venture.listingMode ?? venture.listing_mode ?? 'VENTURE') !== 'CO_VENTURE';
+
+  return fetchHomepageSectionPreview(requestFn, 'venture', limit, {
+    filterFn,
+    featuredQuery: { mode: listingMode },
+  });
 }

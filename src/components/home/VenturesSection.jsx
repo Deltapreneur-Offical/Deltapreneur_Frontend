@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
-import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
+import { fetchHomepageVenturePreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
-import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -23,9 +22,9 @@ export default function VenturesSection() {
     const fetchVentures = async () => {
       try {
         setLoading(true);
-        const rows = await fetchHomepageSectionPreview(
+        const rows = await fetchHomepageVenturePreview(
           (params) => ventureAPI.getAll(params),
-          'venture',
+          'VENTURE',
         );
         setVentures(rows);
       } catch {
@@ -37,12 +36,7 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
-  const previewVentures = useMemo(
-    () => ventures.filter((venture) => !isCoVentureListing(venture)),
-    [ventures],
-  );
-
-  const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', previewVentures);
+  const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -56,11 +50,11 @@ export default function VenturesSection() {
     <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('coVentures')} to="/ventures?mode=venture" />
-        {previewVentures.length === 0 ? (
+        {ventures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noVentures')}</p>
         ) : (
           <HomePreviewRow>
-            {previewVentures.map((venture) => (
+            {ventures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 <HomePreviewCardShell>
                   <VentureListingCard

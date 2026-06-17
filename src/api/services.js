@@ -52,6 +52,8 @@ export const ventureAPI = {
     });
   },
   upsertCompanyProfile: (id, data) => api.put(`/api/v1/venture/${id}/company-profile`, data),
+  verifyGstin: (ventureId, gstin) => api.post(`/api/v1/venture/${ventureId}/verify/gstin`, { gstin }),
+  adminVerifyGstin: (ventureId, gstin) => api.post(`/api/v1/venture/admin/${ventureId}/verify-gstin`, { gstin }),
 };
 
 // Submits venture bids (ownership liquidation listings).
@@ -93,39 +95,6 @@ export const coVentureAPI = {
   selectPartner:          (id)              => api.post(`/api/v1/coventure/${id}/select-partner`),
 };
 
-// ─── Venture Auction ─────────────────────────────────────────────────────────
-export const ventureAuctionAPI = {
-  create:        (ventureId, data)    => api.post(`/api/v1/venture-auction/venture/${ventureId}`, data),
-  verifyGstin:   (ventureId, gstin)   => api.post(`/api/v1/venture-auction/venture/${ventureId}/verify/gstin`, { gstin }),
-  adminVerifyGstin: (ventureId, gstin) => api.post(`/api/v1/venture-auction/admin/venture/${ventureId}/verify-gstin`, { gstin }),
-  get:           (auctionId)          => api.get(`/api/v1/venture-auction/${auctionId}`),
-  getByVenture:  (ventureId)          => api.get(`/api/v1/venture-auction/venture/${ventureId}`),
-  placeBid:      (auctionId, payload)  => api.post(`/api/v1/venture-auction/${auctionId}/bid`, payload),
-  reAuction:     (auctionId, data)    => api.post(`/api/v1/venture-auction/${auctionId}/re-auction`, data),
-  close:         (auctionId)          => api.post(`/api/v1/venture-auction/${auctionId}/close`),
-  getActive:     ()                   => api.get('/api/v1/venture-auction/active'),
-  participationStatus: (auctionId)    => api.get(`/api/v1/venture-auction/${auctionId}/participation/status`),
-  participationCreateOrder: (auctionId) => api.post(`/api/v1/venture-auction/${auctionId}/participation/create-order`),
-  participationVerify: (auctionId, data) => api.post(`/api/v1/venture-auction/${auctionId}/participation/verify`, data),
-  adminGetAll:   ()                   => api.get('/api/v1/venture-auction/admin/all'),
-  adminApprove:  (auctionId)          => api.post(`/api/v1/venture-auction/admin/${auctionId}/approve`),
-  adminReject:   (auctionId, reason)  => api.post(`/api/v1/venture-auction/admin/${auctionId}/reject`, { reason }),
-  sellerAcceptWinner: (auctionId)     => api.post(`/api/v1/venture-auction/${auctionId}/seller/accept-winner`),
-  sellerRejectWinner: (auctionId)     => api.post(`/api/v1/venture-auction/${auctionId}/seller/reject-winner`),
-};
-
-// ─── Venture Acquisitions ────────────────────────────────────────────────────
-export const ventureAcquisitionAPI = {
-  apply:         (ventureId, data)    => api.post(`/api/v1/venture-acquisitions/venture/${ventureId}/apply`, data),
-  getMy:         ()                   => api.get('/api/v1/venture-acquisitions/my'),
-  getReceived:   ()                   => api.get('/api/v1/venture-acquisitions/received'),
-  getOne:        (id)                 => api.get(`/api/v1/venture-acquisitions/${id}`),
-  sellerAccept:  (id)                 => api.post(`/api/v1/venture-acquisitions/${id}/seller/accept`),
-  sellerReject:  (id)                 => api.post(`/api/v1/venture-acquisitions/${id}/seller/reject`),
-  cancel:        (id)                 => api.post(`/api/v1/venture-acquisitions/${id}/cancel`),
-  adminGetAll:   ()                   => api.get('/api/v1/venture-acquisitions/admin/all'),
-  adminComplete: (id)                 => api.post(`/api/v1/venture-acquisitions/admin/${id}/complete`),
-};
 // ─── Creator (community profiles) ────────────────────────────────────────────
 export const creatorAPI = {
   getAll:           ()        => api.get('/api/v1/creator/all'),
@@ -134,7 +103,6 @@ export const creatorAPI = {
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
   linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth'),
-  linkedInCallback: (code)    => api.get(`/api/v1/community/linkedin/callback?code=${code}`),
 };
 
 export const creatorFollowAPI = {
@@ -283,23 +251,17 @@ export const operationsAPI = {
 
 export const adminAPI = {
   getDashboard:         ()              => api.get('/api/v1/admin/dashboard'),
-  
-  getCoVentures:        ()              => api.get('/api/v1/admin/coventures'),
   getVentures:          ()              => api.get('/api/v1/admin/ventures'),
   getDomains:           ()              => api.get('/api/v1/admin/domains'),
   getSoftwares:         ()              => api.get('/api/v1/admin/softwares'),
   getCommunities:       ()              => api.get('/api/v1/admin/communities'),
   getCreators:          ()              => api.get('/api/v1/admin/communities'),
   getTechnologies:      ()              => api.get('/api/v1/admin/technologies'),
-  /** @deprecated Use getTechnologies */
-  getCoCreations:       ()              => api.get('/api/v1/admin/technologies'),
   getCoBrotherRequests: ()              => api.get('/api/v1/admin/cobrother-requests'),
   getCoBrothers:        ()              => api.get('/api/v1/admin/cobrothers'),
   forward:              (data)          => api.post('/api/v1/admin/forward', data),
-  listOfficialSoftware: (data)          => api.post('/api/v1/admin/technology', data),
   getAllAuctions: () => api.get('/api/v1/auction/admin/all'),
   getAddonOrders: () => api.get('/api/v1/addon/admin/all'),
-  getAllVentureAuctions: () => api.get('/api/v1/venture-auction/admin/all'),
   takeDown:  (type, id, reason) => api.post(`/api/v1/admin/takedown`, { type, entityId: id, reason }),
   restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
@@ -328,14 +290,6 @@ export const adminAPI = {
   getListingFeesAndCharges:  ()         => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
   updateListingFeesAndCharges: (data)   => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
 
-};
-
-export const auctionFeesAPI = {
-  getListingFeesAndCharges: () => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
-  updateListingFeesAndCharges: (data) => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
-  creationCreateOrder: (data) => api.post('/api/v1/auction-fees/creation/create-order', data),
-  creationVerify: (data) => api.post('/api/v1/auction-fees/creation/verify', data),
-  bidCreateOrder: (auctionId, data) => api.post(`/api/v1/auction-fees/${auctionId}/bid/create-order`, data),
 };
 
 export const coBrotherAPI = {
@@ -380,9 +334,6 @@ export const feedbackAPI = {
 // ─── Creator Auction ─────────────────────────────────────────────────────────
 export const creatorAuctionAPI = {
   create:              (communityId, data) => api.post(`/api/v1/creator-auction?communityId=${communityId}`, data),
-  createListingOrder:  (auctionId, data = {}) =>
-    api.post(`/api/v1/creator-auction/${auctionId}/listing-fee/create-order`, data),
-  verifyListingFee:    (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/listing-fee/verify`, data),
   get:                 (auctionId)         => api.get(`/api/v1/creator-auction/${auctionId}`),
   getByCommunity:      (communityId)       => api.get(`/api/v1/creator-auction/community/${communityId}`),
   getActive:           ()                  => api.get('/api/v1/creator-auction/active'),
@@ -435,12 +386,4 @@ export const meetingAPI = {
 
 export const joinUsAPI = {
   submit: (data) => api.post('/api/v1/becobrother', data),
-};
-
-// ─── Public APIs (no auth required) ──────────────────────────────────────────
-export const publicAPI = {
-  getDomains:   () => api.get('/public/api/v1/domains'),
-  getVentures:  () => api.get('/public/api/v1/ventures'),
-  getSoftwares: () => api.get('/public/api/v1/softwares'),
-  getCommunities: () => api.get('/public/api/v1/communities'),
 };

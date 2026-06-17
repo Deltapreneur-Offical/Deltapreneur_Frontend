@@ -118,7 +118,7 @@ CoBrother_Frontend/
 
 - **Home** — hero search with AI brand names, new domain checks, premium listings, and auctions
 - **Domains** — browse, buy, enquire, verify, and auction domain listings
-- **Ventures** — startup listings, applications, and venture auctions
+- **Ventures** — startup listings, pitches, and deal flow
 - **Technology / Co-creation** — software listings and technology auctions
 - **Creator community** — community listings and creator auctions
 - **Auth** — email/password, Google OAuth, profile completion

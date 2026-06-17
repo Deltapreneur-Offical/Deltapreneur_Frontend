@@ -72,58 +72,6 @@ export function normalizeCommunityAuction(raw) {
   };
 }
 
-export function normalizeVentureAuction(raw) {
-  if (!raw || typeof raw !== 'object') return null;
-  const venture = raw.venture || {};
-  const brand = venture.brandDetails || {};
-  return {
-    category: 'venture',
-    id: raw.id ?? raw.auctionId ?? raw.auction_id ?? null,
-    status: String(raw.status || 'ACTIVE').toUpperCase(),
-    minBidPrice: toNum(raw.minBidPrice ?? raw.min_bid_price, 0),
-    currentHighestBid: toNum(raw.currentHighestBid ?? raw.current_highest_bid, 0),
-    totalBids: toNum(raw.totalBids ?? raw.total_bids, 0),
-    endTime: resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null,
-    auctionTitle: brand.brandName ?? brand.brand_name ?? null,
-    imageUrl: pickMediaUrl(brand) || brand.ventureImageUrl || brand.logoUrl || null,
-    venture: {
-      ...venture,
-      stage: venture.stage ?? null,
-      lookingFor: venture.lookingFor ?? venture.looking_for ?? null,
-      verified: Boolean(venture.verified),
-      gstinVerified: Boolean(venture.gstinVerified ?? venture.gstin_verified),
-    },
-  };
-}
-
-export function normalizeListedVentureAuction(ventureRaw) {
-  if (!ventureRaw || typeof ventureRaw !== 'object') return null;
-  if (ventureRaw.status === false || ventureRaw.takenDown === true || ventureRaw.taken_down === true) {
-    return null;
-  }
-  const auction = ventureRaw.auction;
-  if (!auction || typeof auction !== 'object' || !auction.id) return null;
-
-  const brand = ventureRaw.brandDetails || {};
-  return normalizeVentureAuction({
-    ...auction,
-    venture: {
-      id: ventureRaw.id,
-      stage: ventureRaw.stage,
-      lookingFor: ventureRaw.lookingFor ?? ventureRaw.looking_for ?? null,
-      verified: Boolean(ventureRaw.verified),
-      gstinVerified: Boolean(ventureRaw.gstinVerified ?? ventureRaw.gstin_verified),
-      brandDetails: {
-        brandName: brand.brandName ?? brand.brand_name ?? '',
-        industry: brand.industry ?? null,
-        description: brand.description ?? null,
-        ventureImageUrl: pickMediaUrl(brand),
-        logoUrl: pickMediaUrl(brand),
-      },
-    },
-  });
-}
-
 export function isLiveHomepageAuction(auction) {
   if (!auction?.id) return false;
   const status = String(auction.status || '').toUpperCase();
@@ -138,7 +86,6 @@ export function resolveHomeAuctionTitle(auction) {
   return auction.auctionTitle
     || auction.community?.name
     || auction.software?.name
-    || auction.venture?.brandDetails?.brandName
     || 'Auction';
 }
 
@@ -156,9 +103,6 @@ export function resolveHomeAuctionVerified(auction) {
     return Boolean(auction.domain?.verified ?? auction.verified);
   }
   if (auction.category === 'technology') return Boolean(auction.software?.verified);
-  if (auction.category === 'venture') {
-    return Boolean(auction.venture?.verified || auction.venture?.gstinVerified);
-  }
   return true;
 }
 
@@ -171,7 +115,6 @@ export function resolveHomeAuctionBidAmount(auction) {
 export function resolveHomeAuctionPath(auction) {
   if (!auction?.id) return '/auctions';
   if (auction.category === 'domain') return `/auction/${auction.id}`;
-  if (auction.category === 'venture') return `/venture-auction/${auction.id}`;
   if (auction.category === 'technology') return `/technology/auction/${auction.id}`;
   if (auction.category === 'community') return `/creator-auction/${auction.id}`;
   return '/auctions';
@@ -181,10 +124,6 @@ const HOME_AUCTION_CATEGORY_META = {
   domain: {
     labelKey: 'homeAuctionCategoryDomain',
     badgeClass: 'home-auction-preview-card__category-badge--domain',
-  },
-  venture: {
-    labelKey: 'homeAuctionCategoryVenture',
-    badgeClass: 'home-auction-preview-card__category-badge--venture',
   },
   technology: {
     labelKey: 'homeAuctionCategoryTechnology',
@@ -218,18 +157,6 @@ export function resolveHomeAuctionDetails(auction) {
     };
   }
 
-  if (category === 'venture') {
-    const venture = auction.venture || {};
-    const brand = venture.brandDetails || venture.brand_details || {};
-    const industry = brand.industry ? String(brand.industry).replace(/_/g, ' ') : null;
-    const stage = venture.stage ? String(venture.stage).replace(/_/g, ' ') : null;
-    const subtitleParts = [industry, stage].filter(Boolean);
-    return {
-      subtitle: subtitleParts.join(' · ') || 'Venture equity auction',
-      detail: venture.lookingFor || venture.looking_for || brand.description || '',
-    };
-  }
-
   if (category === 'technology') {
     const software = auction.software || {};
     const categoryLabel = software.category || software.techCategory || software.type;
@@ -252,7 +179,6 @@ export function resolveHomeAuctionDetails(auction) {
 
 export function mergeHomepageAuctions({
   domains = [],
-  ventures = [],
   community = [],
   software = [],
 }) {
@@ -269,9 +195,6 @@ export function mergeHomepageAuctions({
 
   extractActiveList(domains).map((row) => (
     row?.category === 'domain' ? row : normalizeDomainAuction(row)
-  )).filter(Boolean).forEach(add);
-  extractActiveList(ventures).map((row) => (
-    row?.category === 'venture' ? row : normalizeVentureAuction(row)
   )).filter(Boolean).forEach(add);
   extractActiveList(community).map((row) => (
     row?.category === 'community' ? row : normalizeCommunityAuction(row)

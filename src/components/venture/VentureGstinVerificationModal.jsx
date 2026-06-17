@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ventureAuctionAPI } from '../../api/services';
+import { ventureAPI } from '../../api/services';
 import './venture-gstin-verification-modal.css';
 
 const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
@@ -113,8 +113,8 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
     setLoading(true);
     try {
       const verifyCall = adminMode
-        ? ventureAuctionAPI.adminVerifyGstin
-        : ventureAuctionAPI.verifyGstin;
+        ? ventureAPI.adminVerifyGstin
+        : ventureAPI.verifyGstin;
       const { data } = await verifyCall(venture.id, trimmed);
       if (data.verified) {
         setResult({ legalName: data.legalName });

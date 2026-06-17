@@ -129,10 +129,6 @@ export default function VentureListingCard({
 
   const brandName = b.brandName || t('listingCardUnnamedVenture', 'Unnamed venture');
 
-  const isAuction = venture.saleType === 'AUCTION';
-
-  const auction = venture.auction;
-
   const isCoVenture = isCoVentureListing(venture);
 
   const isFullAcquisition = isFullAcquisitionListing(venture);
@@ -143,7 +139,7 @@ export default function VentureListingCard({
 
   const isGstinVerified = isVentureGstinVerified(venture);
 
-  const canInteract = !isOwner && isListingApproved && !isAuction && !hasApplied && !hasActiveDeal;
+  const canInteract = !isOwner && isListingApproved && !hasApplied && !hasActiveDeal;
 
   const ctaLabel = isCoVenture
 
@@ -165,15 +161,9 @@ export default function VentureListingCard({
 
 
 
-  const priceAmount = isAuction
-
-    ? Number(auction?.currentHighestBid || auction?.minBidPrice || 0)
-
-    : (isCoVenture && coVentureInvestment != null
-
-      ? coVentureInvestment
-
-      : Number(sellerAsk.price ?? 0));
+  const priceAmount = isCoVenture && coVentureInvestment != null
+    ? coVentureInvestment
+    : Number(sellerAsk.price ?? 0);
 
 
 
@@ -375,7 +365,7 @@ export default function VentureListingCard({
 
           <div className="flex min-w-0 flex-1 gap-2">
 
-            {showVerifyButton && !isGstinVerified && (!isAuction || auction?.status === 'DRAFT') && (
+            {showVerifyButton && !isGstinVerified && (
 
               <button
 
@@ -451,140 +441,55 @@ export default function VentureListingCard({
 
 
 
-    if (isAuction && auction?.id && auction.status !== 'DRAFT') {
-
+    if (canInteract) {
       return (
-
         <VentureCardArrowCta
-
-          label={t('listingCardPlaceBid', 'Place Bid')}
-
+          label={ctaLabel}
           onClick={(e) => {
-
             stop(e);
-
-            navigate(`/venture-auction/${auction.id}`);
-
+            onApply?.();
           }}
-
           isCoVenture={isCoVenture}
-
         />
-
       );
-
     }
 
-
-
-    if (!isAuction) {
-
-      if (canInteract) {
-
-        return (
-
-          <VentureCardArrowCta
-
-            label={ctaLabel}
-
-            onClick={(e) => {
-
-              stop(e);
-
-              onApply?.();
-
-            }}
-
-            isCoVenture={isCoVenture}
-
-          />
-
-        );
-
-      }
-
-      if (hasActiveDeal) {
-
-        return (
-
-          <VentureCardArrowCta
-
-            label={t('listingCardContinue', 'Continue')}
-
-            onClick={(e) => {
-
-              stop(e);
-
-              onApply?.();
-
-            }}
-
-            isCoVenture={isCoVenture}
-
-          />
-
-        );
-
-      }
-
-      if (hasApplied) {
-
-        return (
-
-          <button
-
-            type="button"
-
-            disabled
-
-            className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
-
-            title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already pitched')}
-
-          >
-
-            {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched')}
-
-          </button>
-
-        );
-
-      }
-
+    if (hasActiveDeal) {
       return (
-
-        <button
-
-          type="button"
-
-          disabled
-
-          className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
-
-          title={!isListingApproved ? t('listingCardPendingApproval', 'Listing pending admin approval') : undefined}
-
-        >
-
-          {!isListingApproved ? t('listingCardPendingApproval', 'Pending Approval') : t('listingCardUnavailable', 'Unavailable')}
-
-        </button>
-
+        <VentureCardArrowCta
+          label={t('listingCardContinue', 'Continue')}
+          onClick={(e) => {
+            stop(e);
+            onApply?.();
+          }}
+          isCoVenture={isCoVenture}
+        />
       );
-
     }
 
-
+    if (hasApplied) {
+      return (
+        <button
+          type="button"
+          disabled
+          className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
+          title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already pitched')}
+        >
+          {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched')}
+        </button>
+      );
+    }
 
     return (
-
-      <button type="button" disabled className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}>
-
-        {t('listingCardUnavailable', 'Unavailable')}
-
+      <button
+        type="button"
+        disabled
+        className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
+        title={!isListingApproved ? t('listingCardPendingApproval', 'Listing pending admin approval') : undefined}
+      >
+        {!isListingApproved ? t('listingCardPendingApproval', 'Pending Approval') : t('listingCardUnavailable', 'Unavailable')}
       </button>
-
     );
-
   };
 
 
@@ -902,7 +807,7 @@ export default function VentureListingCard({
                 isCoVenture 
                   ? 'domain-listing-card__price-box--coventure' 
                   : 'domain-listing-card__price-box--venture'
-              } ${compact ? 'domain-listing-card__price-box--compact' : ''} ${isAuction ? 'domain-listing-card__price-box--auction' : ''}`}
+              } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
 
               style={{
 

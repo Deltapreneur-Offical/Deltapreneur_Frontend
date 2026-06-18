@@ -25,6 +25,7 @@ import {
   hasLinkedInAccount,
   isCreatorProfileComplete,
 } from '../utils/creatorProfile';
+import { isListingOwner } from '../utils/listingVisibility';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import { useCreatorAuctionProfileSync } from '../hooks/useCreatorAuctionProfileSync';
 import {
@@ -52,16 +53,6 @@ const DURATIONS = [
   { value: 'FIFTEEN_DAYS', label: '15 Days'  },
   { value: 'THIRTY_DAYS',  label: '30 Days'  },
 ];
-
-function profileMatchesUser(profile, currentUser) {
-  if (!profile || !currentUser?.id) return false;
-  const uid = String(currentUser.id);
-  return (
-    String(profile.appUser?.id) === uid
-    || String(profile.appUserId) === uid
-    || String(profile.user?.id) === uid
-  );
-}
 
 function apiErrorMessage(err, fallback) {
   const status = err?.response?.status;
@@ -165,35 +156,42 @@ export default function CommunityPage() {
       ...buildAuctionsMapFromProfiles(list),
       ...prev,
     }));
-    const mine = preferProfile || list.find(p => profileMatchesUser(p, user));
+    const mine = preferProfile
+      || (user ? list.find((p) => isListingOwner(p, user, 'community')) : null);
     if (mine) {
       setMyProfile(mine);
+      setProfileNotice('');
       const summary = normalizeCreatorAuctionSummary(mine.auctionSummary);
       if (summary) {
         setMyAuction(summary);
         return;
       }
-      communityAuctionAPI.getByCommunity(mine.id)
-        .then(({ data: ad }) => {
-          const auction = ad?.auction ?? ad;
-          setMyAuction(auction);
-          const normalized = auctionSummaryFromAuction(auction);
-          if (normalized) {
-            setAuctionsByCommunity((prev) => ({
-              ...prev,
-              [mine.id]: normalized,
-            }));
-          }
-        })
-        .catch(() => setMyAuction(null));
+      if (mine.auctionSummary != null) {
+        communityAuctionAPI.getByCommunity(mine.id)
+          .then(({ data: ad }) => {
+            const auction = ad?.auction ?? ad;
+            setMyAuction(auction);
+            const normalized = auctionSummaryFromAuction(auction);
+            if (normalized) {
+              setAuctionsByCommunity((prev) => ({
+                ...prev,
+                [mine.id]: normalized,
+              }));
+            }
+          })
+          .catch(() => setMyAuction(null));
+        return;
+      }
+      setMyAuction(null);
     }
   };
 
   const reloadProfiles = async ({ preferProfile } = {}) => {
     try {
       setProfileNotice('');
+      let myLoadNotice = '';
       const requests = [communityAPI.getAll()];
-      if (user?.id) {
+      if (user?.id || user?.userId) {
         requests.push(
           communityAPI.getMy().catch((err) => {
             const detail = err?.response?.data?.detail
@@ -204,7 +202,7 @@ export default function CommunityPage() {
               && typeof detail === 'string'
               && detail.toLowerCase().includes('linkedin')
             ) {
-              setProfileNotice(detail);
+              myLoadNotice = detail;
             }
             return null;
           }),
@@ -216,7 +214,17 @@ export default function CommunityPage() {
       const myFromApi = myRes
         ? (myRes.data?.data ?? myRes.data ?? null)
         : null;
-      applyProfilesList(list, { preferProfile: preferProfile || myFromApi });
+      const ownedInList = user
+        ? list.find((p) => isListingOwner(p, user, 'community'))
+        : null;
+
+      if (!myFromApi && !ownedInList && !preferProfile && myLoadNotice) {
+        setProfileNotice(myLoadNotice);
+      } else {
+        setProfileNotice('');
+      }
+
+      applyProfilesList(list, { preferProfile: preferProfile || myFromApi || ownedInList });
       return list;
     } catch (err) {
       setLinkedInError(apiErrorMessage(err, 'Could not load creator profiles. Please refresh the page.'));
@@ -239,14 +247,21 @@ export default function CommunityPage() {
     );
   });
 
+  const ownedProfileInList = useMemo(
+    () => profiles.find((p) => isListingOwner(p, user, 'community')) ?? null,
+    [profiles, user],
+  );
+
+  const effectiveMyProfile = myProfile ?? ownedProfileInList;
+
   const profilesForDisplay = useMemo(() => {
     const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileComplete(profile));
-    if (!myProfile) return publicProfiles;
-    if (publicProfiles.some((p) => String(p.id) === String(myProfile.id))) {
+    if (!effectiveMyProfile) return publicProfiles;
+    if (publicProfiles.some((p) => String(p.id) === String(effectiveMyProfile.id))) {
       return publicProfiles;
     }
-    return [myProfile, ...publicProfiles];
-  }, [filteredProfiles, myProfile]);
+    return [effectiveMyProfile, ...publicProfiles];
+  }, [filteredProfiles, effectiveMyProfile]);
 
   const profileCommunityIds = useMemo(
     () => profilesForDisplay.map((profile) => profile.id),
@@ -261,10 +276,10 @@ export default function CommunityPage() {
         ...summary,
       },
     }));
-    if (myProfile && String(myProfile.id) === String(communityId)) {
+    if (effectiveMyProfile && String(effectiveMyProfile.id) === String(communityId)) {
       setMyAuction((prev) => ({ ...prev, ...summary }));
     }
-  }, [myProfile?.id]);
+  }, [effectiveMyProfile?.id]);
 
   useCreatorAuctionProfileSync({
     communityIds: profileCommunityIds,
@@ -275,11 +290,11 @@ export default function CommunityPage() {
   });
 
   const myProfileCompletion = useMemo(
-    () => (myProfile ? evaluateCreatorProfileCompletion(myProfile) : null),
-    [myProfile],
+    () => (effectiveMyProfile ? evaluateCreatorProfileCompletion(effectiveMyProfile) : null),
+    [effectiveMyProfile],
   );
 
-  const showEmptyCreators = !loading && profilesForDisplay.length === 0 && !myProfile;
+  const showEmptyCreators = !loading && profilesForDisplay.length === 0 && !effectiveMyProfile;
 
   // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
@@ -337,10 +352,19 @@ export default function CommunityPage() {
 
   // ── Load all profiles + my auction ───────────────────────────────────────
   useEffect(() => {
+    if (authLoading) return;
     reloadProfiles()
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, authLoading]);
+
+  // Owner already has a profile — stale LinkedIn conflict banner is misleading.
+  useEffect(() => {
+    if (!effectiveMyProfile) return;
+    setLinkedInError((prev) => (
+      prev && prev.toLowerCase().includes('already connected') ? '' : prev
+    ));
+  }, [effectiveMyProfile?.id]);
 
   const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: profiles,
@@ -389,22 +413,22 @@ export default function CommunityPage() {
   const handleAuctionCreated = (auction) => {
     const summary = auctionSummaryFromAuction(auction);
     setMyAuction(summary || auction);
-    if (summary && myProfile?.id) {
+    if (summary && effectiveMyProfile?.id) {
       setAuctionsByCommunity((prev) => ({
         ...prev,
-        [String(myProfile.id)]: summary,
+        [String(effectiveMyProfile.id)]: summary,
       }));
     }
     setShowAuctionModal(false);
   };
 
   const handleDeleteProfile = async () => {
-    if (!myProfile?.id) return;
+    if (!effectiveMyProfile?.id) return;
     setDeleteLoading(true);
     setLinkedInError('');
     try {
-      await communityAPI.delete(myProfile.id);
-      setProfiles(prev => prev.filter(p => p.id !== myProfile.id));
+      await communityAPI.delete(effectiveMyProfile.id);
+      setProfiles(prev => prev.filter(p => p.id !== effectiveMyProfile.id));
       setMyProfile(null);
       setMyAuction(null);
       setShowForm(false);
@@ -456,7 +480,7 @@ export default function CommunityPage() {
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
-        {profileNotice && !linkedInError && (
+        {profileNotice && !effectiveMyProfile && !linkedInError && (
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 mb-6">{profileNotice}</div>
         )}
         {linkedInSuccess && (
@@ -464,14 +488,14 @@ export default function CommunityPage() {
             <LinkedInIcon size={16} /> {linkedInSuccess}
           </div>
         )}
-        {showForm && myProfile ? (
+        {showForm && effectiveMyProfile ? (
           <>
             <ListingBackLink
               label={t('listingBackToCreators')}
               onClick={() => { setShowForm(false); setLinkedInSuccess(''); }}
             />
             <CommunityProfileForm
-              initial={myProfile}
+              initial={effectiveMyProfile}
               onSaved={handleProfileSaved}
               onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
               onDelete={() => setShowDeleteConfirm(true)}
@@ -486,7 +510,7 @@ export default function CommunityPage() {
             <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
-            {myProfile ? (
+            {effectiveMyProfile ? (
               <div className="flex gap-3 flex-wrap items-center">
                 {/* Auction status / button */}
                 {auctionBadge ? (
@@ -514,7 +538,7 @@ export default function CommunityPage() {
                         if (targetId) navigate(`/creator-auction/${targetId}`);
                         return;
                       }
-                      if (!readCreatorExpectedRate(myProfile)) {
+                      if (!readCreatorExpectedRate(effectiveMyProfile)) {
                         setAccessNotice('Add your Expected Rate in Edit Profile before putting your profile to auction.');
                         setShowForm(true);
                         return;
@@ -571,9 +595,9 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        {myProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
+        {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
           <CreatorProfileCompletionBanner
-            profile={myProfile}
+            profile={effectiveMyProfile}
             onEdit={() => setShowForm(true)}
           />
         ) : null}
@@ -606,7 +630,7 @@ export default function CommunityPage() {
               <ListingCardShell key={p.id} className="community-listing-card-shell">
               <CommunityListingCard
                 profile={p}
-                isMe={profileMatchesUser(p, user)}
+                isMe={isListingOwner(p, user, 'community')}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
                 followState={getFollow(p.id)}
@@ -626,7 +650,7 @@ export default function CommunityPage() {
         <CommunityDetailModal
           profile={detailProfile}
           auction={auctionsByCommunity[detailProfile.id] ?? detailProfile.auctionSummary ?? null}
-          isMe={profileMatchesUser(detailProfile, user)}
+          isMe={isListingOwner(detailProfile, user, 'community')}
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
           onDelete={() => setShowDeleteConfirm(true)}
@@ -646,11 +670,11 @@ export default function CommunityPage() {
         onCancel={() => !deleteLoading && setShowDeleteConfirm(false)}
       />
 
-      {showAuctionModal && myProfile && (
+      {showAuctionModal && effectiveMyProfile && (
         <CreateAuctionModal
-          communityId={myProfile.id}
-          profileName={myProfile.name}
-          profileExpectedRate={readCreatorExpectedRate(myProfile)}
+          communityId={effectiveMyProfile.id}
+          profileName={effectiveMyProfile.name}
+          profileExpectedRate={readCreatorExpectedRate(effectiveMyProfile)}
           onClose={() => setShowAuctionModal(false)}
           onSuccess={handleAuctionCreated}
         />

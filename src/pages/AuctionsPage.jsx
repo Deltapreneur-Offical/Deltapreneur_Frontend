@@ -319,7 +319,7 @@ export default function AuctionsPage() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search auctions..."
+                placeholder="Search auctions"
                 className="auctions-page-search-input"
                 aria-label="Search auctions"
               />

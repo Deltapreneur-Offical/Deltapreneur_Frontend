@@ -45,6 +45,7 @@ jobs:
           npm ci
           npm run build
           test -f dist/index.html
+          grep -q 'padding-left:0' dist/assets/index-*.css
 
       - name: Create deployment archive
         run: tar -czf frontend-dist.tar.gz -C dist .
@@ -67,16 +68,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            set -e
+            set -euo pipefail
+            DEST=/opt/cobrother/frontend/dist
 
-            sudo mkdir -p /opt/cobrother/frontend/dist
-
-            sudo tar -xzf /tmp/frontend-dist.tar.gz \
-              -C /opt/cobrother/frontend/dist
-
+            sudo mkdir -p "${DEST}"
+            sudo rm -rf "${DEST:?}"/*
+            sudo tar -xzf /tmp/frontend-dist.tar.gz -C "${DEST}"
             sudo rm -f /tmp/frontend-dist.tar.gz
+            sudo chown -R ubuntu:ubuntu /opt/cobrother/frontend
 
-            test -f /opt/cobrother/frontend/dist/index.html
+            test -f "${DEST}/index.html"
+            CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' "${DEST}/index.html" | head -1 | tr -d '"')")"
+            test -f "${DEST}/assets/${CSS_FILE}"
+            grep -q 'home-auction-preview-card__metric-value{display:block;padding-left:0' "${DEST}/assets/${CSS_FILE}"
 
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3

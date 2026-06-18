@@ -14,10 +14,6 @@ import {
   normalizeSoftwareAuction,
   resolveHomeAuctionPath,
 } from '../../utils/homepageAuctions';
-import {
-  STATIC_HOMEPAGE_AUCTIONS,
-  resolveStaticHomeAuctionPath,
-} from '../../utils/staticHomepageAuctions';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -70,16 +66,12 @@ export default function AuctionsSection() {
     fetchAuctions();
   }, []);
 
-  const displayAuctions = useMemo(() => {
-    const live = mergeHomepageAuctions(auctions);
-    return live.length > 0 ? live : STATIC_HOMEPAGE_AUCTIONS;
-  }, [auctions]);
+  const displayAuctions = useMemo(
+    () => mergeHomepageAuctions(auctions),
+    [auctions],
+  );
 
   const handleViewAuction = (auction) => {
-    if (auction?.isStatic) {
-      navigate(resolveStaticHomeAuctionPath(auction));
-      return;
-    }
     navigate(resolveHomeAuctionPath(auction));
   };
 
@@ -93,7 +85,9 @@ export default function AuctionsSection() {
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('auctions')} to="/auctions" />
-        {shouldAutoScroll ? (
+        {displayAuctions.length === 0 ? (
+          <p className="text-center text-gray-500 py-4">{t('noAuctions')}</p>
+        ) : shouldAutoScroll ? (
           <HomeAutoScrollRow durationSec={50} ariaLabel={t('auctions')}>
             {displayAuctions.map((auction) => (
               <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>

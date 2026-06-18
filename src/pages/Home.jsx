@@ -69,11 +69,8 @@ export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') =>
 
 
 
-  return `https://www.secureserver.net/products/domain-registration/find?plid=600394&domainToCheck=${finalDomain}`;
-
+  return `/storefront?domain=${encodeURIComponent(finalDomain)}`;
 };
-
-
 
 export default function Home() {
 

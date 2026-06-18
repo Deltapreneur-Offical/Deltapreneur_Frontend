@@ -134,7 +134,7 @@ export function AuthProvider({ children }) {
         err?.response?.data || err?.message || err,
       );
     } finally {
-      localStorage.clear();
+      clearAuthTokens();
       setHasAccessToken(false);
       setUser(null);
     }

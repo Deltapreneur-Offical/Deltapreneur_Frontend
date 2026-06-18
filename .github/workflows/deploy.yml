@@ -41,6 +41,8 @@ jobs:
         env:
           VITE_API_URL: https://demo.cobrother.com/api
           VITE_APP_URL: https://demo.cobrother.com
+          VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
+          VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
         run: |
           npm ci
           npm run build

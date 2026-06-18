@@ -26,6 +26,22 @@ import {
 
 const COBROTHER_EMAIL = 'contact@cobrother.com';
 
+const ESCROW_STATUS_LABELS = {
+  HELD: 'Funds held in escrow',
+  RELEASED: 'Released to seller',
+  REFUNDED: 'Refunded',
+};
+
+function formatEscrowStatusLabel(escrowStatus, dealStatus) {
+  if (
+    escrowStatus === 'HELD'
+    && ['PENDING_ADMIN_APPROVAL', 'PENDING_PAYMENT'].includes(dealStatus)
+  ) {
+    return 'Awaiting payment';
+  }
+  return ESCROW_STATUS_LABELS[escrowStatus] || escrowStatus;
+}
+
 const DEAL_STATUS_LABELS = {
   PENDING_ADMIN_APPROVAL: 'Awaiting admin approval',
   PENDING_PAYMENT: 'Pending payment',
@@ -260,7 +276,7 @@ export default function VentureDealPage() {
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">{headerSubtitle}</p>
                   {!isPartnership && deal.escrowStatus && (
                     <p className="mt-1 text-sm text-gray-500">
-                      Escrow: <span className="font-medium text-gray-700">{deal.escrowStatus}</span>
+                      Escrow: <span className="font-medium text-gray-700">{formatEscrowStatusLabel(deal.escrowStatus, deal.dealStatus)}</span>
                     </p>
                   )}
                 </div>

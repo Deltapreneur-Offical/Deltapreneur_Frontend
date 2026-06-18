@@ -166,7 +166,7 @@ function StatCard({ label, value, icon, color }) {
                   borderRadius: 12, transition: 'all 0.35s ease', cursor: 'default' }}
          className="card-glow-hover">
       <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{icon}</div>
-      <div style={{ fontSize: '1.4rem', fontWeight: 700, color, fontFamily: 'Cormorant Garamond, serif' }}>{value}</div>
+      <div style={{ fontSize: '1.4rem', fontWeight: 700, color, fontFamily: 'Inter, system-ui, sans-serif' }}>{value}</div>
       <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.2rem' }}>{label}</div>
     </div>
   );

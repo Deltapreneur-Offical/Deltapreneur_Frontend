@@ -90,7 +90,7 @@ export default function AuctionsSection() {
   }
 
   return (
-    <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
+    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader title={t('auctions')} to="/auctions" />
         {shouldAutoScroll ? (

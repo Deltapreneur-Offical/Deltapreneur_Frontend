@@ -446,7 +446,7 @@ export default function CommunityPage() {
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('communityTitle')}</h1>
+            <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
             <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">

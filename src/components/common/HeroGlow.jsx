@@ -83,7 +83,7 @@ export default function HeroGlow() {
           grid-row: 1;
           margin: 0;
           line-height: 1.2;
-          font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', var(--font-body), system-ui, sans-serif;
+          font-family: var(--font-body), system-ui, sans-serif;
           font-size: clamp(0.72rem, 1.25vw, 0.9rem);
           font-weight: 400;
           letter-spacing: 0.08em;
@@ -99,7 +99,7 @@ export default function HeroGlow() {
           width: 100%;
           margin: 0;
           line-height: 1.25;
-          font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', var(--font-body), system-ui, sans-serif;
+          font-family: var(--font-body), system-ui, sans-serif;
           font-size: clamp(1.02rem, 3.2vw, 1.22rem);
           font-weight: 400;
           letter-spacing: 0;

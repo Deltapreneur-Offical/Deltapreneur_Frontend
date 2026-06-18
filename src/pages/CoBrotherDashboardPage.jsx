@@ -223,7 +223,7 @@ function StatCard({ label, value, icon, color = '#e0e0f0' }) {
          className="card-glow-hover">
       <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{icon}</div>
       <div style={{ fontSize: '1.4rem', fontWeight: 700, color,
-                    fontFamily: 'Cormorant Garamond, serif' }}>{value}</div>
+                    fontFamily: 'Inter, system-ui, sans-serif' }}>{value}</div>
       <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.2rem' }}>{label}</div>
     </div>
   );

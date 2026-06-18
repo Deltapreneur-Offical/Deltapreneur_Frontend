@@ -227,7 +227,7 @@ export default function SoftwareAuctionPage() {
                            objectFit: 'cover', border: '1px solid #e5e7eb' }} />
               )}
               <div>
-                <h1 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h1 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontSize: '1.75rem', fontWeight: 700,
                              color: '#111827', margin: 0 }}>
                   {sw.name}
@@ -295,7 +295,7 @@ export default function SoftwareAuctionPage() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af',
                             textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('auctionDetailMinBid')}</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif',
+              <div style={{ fontFamily: 'Inter, system-ui, sans-serif',
                             fontSize: '1.3rem', fontWeight: 700, color: '#111827' }}>
                 {formatPrice(auction.minBidPrice)}
               </div>
@@ -304,7 +304,7 @@ export default function SoftwareAuctionPage() {
                           borderRight: '1px solid #e5e7eb' }}>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af',
                             textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('auctionsPageHighestBid')}</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif',
+              <div style={{ fontFamily: 'Inter, system-ui, sans-serif',
                             fontSize: '1.3rem', fontWeight: 700,
                             color: auction.currentHighestBid > 0 ? '#6ec896' : '#9ca3af' }}>
                 {auction.currentHighestBid > 0
@@ -320,7 +320,7 @@ export default function SoftwareAuctionPage() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: '#9ca3af',
                             textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('auctionsPageTotalBids')}</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif',
+              <div style={{ fontFamily: 'Inter, system-ui, sans-serif',
                             fontSize: '1.3rem', fontWeight: 700, color: '#111827' }}>
                 {auction.totalBids}
               </div>
@@ -336,7 +336,7 @@ export default function SoftwareAuctionPage() {
             {/* Software description */}
             <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                           borderRadius: 12, padding: '1.25rem' }}>
-              <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+              <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                            fontSize: '1.1rem', fontWeight: 700, color: '#111827',
                            margin: '0 0 0.75rem' }}>{t('auctionDetailAboutSoftware')}</h3>
               {sw.description && (
@@ -361,7 +361,7 @@ export default function SoftwareAuctionPage() {
             {/* Auction terms */}
             <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                           borderRadius: 12, padding: '1.25rem' }}>
-              <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+              <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                            fontSize: '1.1rem', fontWeight: 700, color: '#111827',
                            margin: '0 0 1rem' }}>{t('auctionDetailWhatsIncluded')}</h3>
 
@@ -396,7 +396,7 @@ export default function SoftwareAuctionPage() {
             {auction.auctionRationale && (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.25rem' }}>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontSize: '1.1rem', fontWeight: 700, color: '#111827',
                              margin: '0 0 0.75rem' }}>{t('auctionDetailWhyAuction')}</h3>
                 <p style={{ fontSize: '0.88rem', color: '#374151', lineHeight: 1.6, margin: 0 }}>
@@ -409,7 +409,7 @@ export default function SoftwareAuctionPage() {
             {(sw.liveDemoLink || sw.githubLink || sw.videoLink) && (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.25rem' }}>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontSize: '1.1rem', fontWeight: 700, color: '#111827',
                              margin: '0 0 0.75rem' }}>{t('auctionDetailLinks')}</h3>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -438,7 +438,7 @@ export default function SoftwareAuctionPage() {
             {/* Bid history */}
             <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                           borderRadius: 12, padding: '1.25rem' }}>
-              <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+              <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                            fontSize: '1.1rem', fontWeight: 700, color: '#111827',
                            margin: '0 0 0.75rem' }}>
                 <TrendingUp size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
@@ -486,7 +486,7 @@ export default function SoftwareAuctionPage() {
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem', textAlign: 'center' }}>
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⏳</div>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontWeight: 700, color: '#111827', margin: '0 0 0.5rem' }}>
                   {t('auctionDetailAwaitingApproval')}
                 </h3>
@@ -498,7 +498,7 @@ export default function SoftwareAuctionPage() {
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem', textAlign: 'center' }}>
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🏆</div>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontWeight: 700, color: '#111827', margin: '0 0 0.5rem' }}>
                   {t('auctionDetailEndedTitle')}
                 </h3>
@@ -507,7 +507,7 @@ export default function SoftwareAuctionPage() {
                     {t('auctionDetailWonBy', { name: auction.currentWinnerName })}
                   </p>
                 )}
-                <p style={{ fontFamily: 'Cormorant Garamond, serif',
+                <p style={{ fontFamily: 'Inter, system-ui, sans-serif',
                             fontSize: '1.5rem', fontWeight: 700, color: '#6ec896', margin: 0 }}>
                   {formatPrice(auction.currentHighestBid)}
                 </p>
@@ -515,7 +515,7 @@ export default function SoftwareAuctionPage() {
             ) : auction.status === 'UNSOLD' && isOwner ? (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem' }}>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontWeight: 700, color: '#111827', margin: '0 0 1rem' }}>
                   {t('auctionDetailNoBidsReauctionTitle')}
                 </h3>
@@ -530,7 +530,7 @@ export default function SoftwareAuctionPage() {
             ) : isActive && !isOwner && user ? (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem' }}>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif',
+                <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
                              fontSize: '1.15rem', fontWeight: 700, color: '#111827',
                              margin: '0 0 0.25rem' }}>
                   <Gavel size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />

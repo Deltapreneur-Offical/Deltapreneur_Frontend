@@ -6,16 +6,16 @@ export default function HomeSectionHeader({ title, to }) {
   const { t } = useTranslation();
 
   return (
-    <div className="home-section-header">
-      <div className="home-section-header__title-wrap">
+    <header className="home-section-header">
+      <div className="home-section-header__top">
         <h2 className="home-section-header__title">{title}</h2>
+        {to ? (
+          <Link to={to} className="home-section-header__view-all">
+            <span>{t('viewAll')}</span>
+            <ArrowRight className="home-section-header__view-all-icon" aria-hidden="true" />
+          </Link>
+        ) : null}
       </div>
-      {to ? (
-        <Link to={to} className="home-section-header__view-all">
-          <span>{t('viewAll')}</span>
-          <ArrowRight className="home-section-header__view-all-icon" aria-hidden="true" />
-        </Link>
-      ) : null}
-    </div>
+    </header>
   );
 }

@@ -116,7 +116,7 @@ function formatMoney(amount, currencyCode = 'INR') {
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: #fff;
       color: #111827;
       font-size: 13px;

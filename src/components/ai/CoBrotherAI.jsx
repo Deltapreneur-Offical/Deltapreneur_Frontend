@@ -831,7 +831,7 @@ export default function CoBrotherAI({ initialOpen = false }) {
                       className={`truncate text-[24px] font-bold leading-7 tracking-[-0.02em] ${
                         isDark ? 'text-white' : 'text-slate-950'
                       }`}
-                      style={{ fontFamily: '"Plus Jakarta Sans", Inter, system-ui, sans-serif' }}
+                      style={{ fontFamily: 'var(--font-body), Inter, system-ui, sans-serif' }}
                     >
                       Bro
                     </h2>

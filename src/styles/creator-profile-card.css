@@ -132,7 +132,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.65rem;
   font-weight: 700;
   line-height: 1;
@@ -142,7 +142,7 @@
 
 .creator-profile-card__name {
   margin: 0;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.2;

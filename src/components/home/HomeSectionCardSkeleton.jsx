@@ -7,7 +7,7 @@ const SKELETON_COUNT = 5;
 
 export default function HomeSectionCardSkeleton({ title, to }) {
   return (
-    <section className="bg-white py-4 md:py-6">
+    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full">
         <HomeSectionHeader title={title} to={to} />
         <HomePreviewRow>

@@ -313,7 +313,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.85rem;
   font-weight: 800;
   color: #0f172a;
@@ -321,7 +321,7 @@
 
 .domain-listing-card__name {
   margin: 0;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.15;
@@ -396,7 +396,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.35rem;
   font-weight: 800;
   color: #0f172a;
@@ -411,7 +411,7 @@
 
 .listing-card-header__title {
   margin: 0;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.2;
@@ -1185,14 +1185,14 @@
 
 /* Venture card typography */
 .venture-listing-card {
-  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
 }
 
 .venture-listing-card__cover-title {
   position: relative;
   z-index: 10;
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-weight: 700;
   color: #fff;
   letter-spacing: 0.01em;
@@ -1205,7 +1205,7 @@
 }
 
 .venture-listing-card__cover-badge {
-  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   font-weight: 600;
   letter-spacing: 0.08em;
   color: rgba(255, 255, 255, 0.88);
@@ -1221,7 +1221,7 @@
 }
 
 .venture-listing-card__badge {
-  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -1233,7 +1233,7 @@
 }
 
 .venture-listing-card__title {
-  font-family: var(--font-display, Georgia, serif);
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.0625rem;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -1246,7 +1246,7 @@
 }
 
 .venture-listing-card__metrics {
-  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   color: #64748b;
   min-height: 1.125rem;
 }
@@ -1262,7 +1262,7 @@
 }
 
 .venture-listing-card__price-label {
-  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.05em;

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store } from 'lucide-react';
+import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
@@ -24,6 +24,7 @@ import { PendingVerificationDot } from '../domains/DomainVerificationPendingBann
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
+  { icon: Headset, labelKey: 'operations', to: '/operations', isImage: false },
   { icon: DomainsIcon, labelKey: 'domains', to: '/domains', isImage: true, iconImgClass: 'app-sidebar-icon-img--domain' },
   { icon: Store, labelKey: 'storefront', to: '/storefront', isImage: false },
   { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },

@@ -442,11 +442,11 @@ export default function VentureForm({
         <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
           <h3 className={sectionHeadingCls}>Listing Type</h3>
           <p className="text-sm text-gray-500 mb-2">
-            Choose whether you are listing for sale or seeking a co-founder / partner to build together.
+          Choose whether you are listing your venture for sale or seeking a co-founder/partner to build with.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
-              { value: 'VENTURE', label: 'Venture', desc: 'List for acquisition or equity sale. Buyers submit offers.', accent: 'blue' },
+              { value: 'VENTURE', label: 'Venture', desc:'List your venture for acquisition or equity sale. Buyers can submit offers.', accent: 'blue' },
               { value: 'CO_VENTURE', label: 'Co-Venture', desc: 'Find a co-founder or partner. Partners apply to join.', accent: 'teal' },
             ].map((opt) => {
               const selected = listingType === opt.value;

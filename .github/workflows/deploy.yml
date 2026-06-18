@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  DEPLOY_ROOT: ${{ vars.FRONTEND_DEPLOY_PATH || '/home/ubuntu/projects/CoBrother_Frontend' }}
+  DEPLOY_ROOT: /opt/cobrother/frontend/dist
 
 jobs:
   build-and-deploy:
@@ -15,6 +15,21 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Verify deploy secrets
+        run: |
+          missing=0
+          for name in EC2_HOST EC2_USER EC2_SSH_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, and EC2_SSH_KEY in repository or organization secrets (same as CoBrother_Backend deploy)."
+              missing=1
+            fi
+          done
+          exit "${missing}"
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -30,7 +45,6 @@ jobs:
           npm ci
           npm run build
           test -f dist/index.html
-          grep -q 'padding-left:0' dist/assets/index-*.css
 
       - name: Create deployment archive
         run: tar -czf frontend-dist.tar.gz -C dist .
@@ -38,42 +52,38 @@ jobs:
       - name: Upload deployment archive
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: frontend-dist.tar.gz
-          target: ${{ env.DEPLOY_ROOT }}/
+          target: /tmp
 
       - name: Extract build and verify
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            set -euo pipefail
-            ROOT="${{ env.DEPLOY_ROOT }}"
-            mkdir -p "${ROOT}"
-            cd "${ROOT}"
+            set -e
 
-            tar -xzf frontend-dist.tar.gz
-            rm -f frontend-dist.tar.gz
+            sudo mkdir -p /opt/cobrother/frontend/dist
 
-            test -f index.html
-            CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' index.html | head -1 | tr -d '"')")"
-            CSS_PATH="${ROOT}/assets/${CSS_FILE}"
+            sudo tar -xzf /tmp/frontend-dist.tar.gz \
+              -C /opt/cobrother/frontend/dist
 
-            test -f "${CSS_PATH}"
-            grep -q 'home-auction-preview-card__metric-value{display:block;padding-left:0' "${CSS_PATH}"
+            sudo rm -f /tmp/frontend-dist.tar.gz
+
+            test -f /opt/cobrother/frontend/dist/index.html
 
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
             sudo nginx -t

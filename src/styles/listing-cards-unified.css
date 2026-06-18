@@ -35,10 +35,14 @@
 
 .listing-card-glow-shell > .creator-profile-card.community-listing-card {
   width: 100%;
-  height: var(--listing-card-height);
-  min-height: var(--listing-card-height);
-  max-height: var(--listing-card-height);
-  overflow: hidden;
+  height: auto;
+  min-height: min-content;
+  max-height: none;
+  overflow: visible;
+}
+
+.listing-card-glow-grid .community-listing-card-shell {
+  height: auto;
 }
 
 .listing-card-glow-shell > .creator-profile-card:not(.community-listing-card) {

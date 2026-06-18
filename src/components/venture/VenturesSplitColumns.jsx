@@ -105,8 +105,8 @@ export default function VenturesSplitColumns({
           {coVentureRows.length === 0 ? (
             <SplitEmptyState
               variant="coventure"
-              message={t('noCoVenturesAvailable', { defaultValue: 'No co-ventures available yet.' })}
-              actionLabel={filterTab === 'mine' ? t('venturesPageCoVenture', { defaultValue: 'Co-Venture →' }) : null}
+              message={t('noCoVenturesAvailable', { defaultValue: 'No co-ventures are available yet.' })}
+              actionLabel={filterTab === 'mine' ? t('venturesPageCoVenture', { defaultValue: 'Co-Ventures →' }) : null}
               actionTo={filterTab === 'mine' ? ventureListChooseUrl('co-venture') : null}
             />
           ) : (

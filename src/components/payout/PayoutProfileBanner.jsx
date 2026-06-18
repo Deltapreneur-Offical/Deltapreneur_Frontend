@@ -4,7 +4,7 @@ import usePayoutProfile from '../../hooks/usePayoutProfile';
 
 const CONTEXT_COPY = {
   default: {
-    incomplete: 'Add your UPI or bank details so CoBrother can send you payouts when a sale completes.',
+    incomplete: 'Add your UPI or bank details so CoBrother can send payouts when a sale is completed.',
     complete: 'Your payout details are saved and ready for seller payouts.',
   },
   domain: {
@@ -12,7 +12,7 @@ const CONTEXT_COPY = {
     complete: 'Payout details saved — you are ready to receive domain sale earnings.',
   },
   venture: {
-    incomplete: 'Add payout details to receive venture deal earnings when escrow is released.',
+    incomplete: 'Add payout details to receive earnings once escrow is released.',
     complete: 'Payout details saved — you are ready to receive venture deal earnings.',
   },
   coventure: {
@@ -76,7 +76,7 @@ export default function PayoutProfileBanner({
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
         >
           <CreditCard className="h-4 w-4" />
-          Set up payouts
+          Set Up Payouts
         </Link>
       </div>
     </section>

@@ -1228,9 +1228,17 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
 
             {(c.email || c.phoneNumber) && (
               <Section title={t('domainsPageContactSection')}>
-                <div className="grid grid-cols-2 gap-3">
-                  {c.email       && <DetailItem label={t('emailLabel')} value={c.email} />}
-                  {c.phoneNumber && <DetailItem label={t('domainsPagePhoneLabel')} value={c.phoneNumber} />}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {c.email && (
+                    <DetailItem
+                      label={t('emailLabel')}
+                      value={c.email}
+                      className="sm:col-span-2"
+                    />
+                  )}
+                  {c.phoneNumber && (
+                    <DetailItem label={t('domainsPagePhoneLabel')} value={c.phoneNumber} />
+                  )}
                 </div>
               </Section>
             )}
@@ -1391,11 +1399,13 @@ function Section({ title, children }) {
   );
 }
 
-function DetailItem({ label, value }) {
+function DetailItem({ label, value, className = '' }) {
   return (
-    <div className="border border-gray-200 bg-white rounded-[10px] p-2.5">
+    <div className={`border border-gray-200 bg-white rounded-[10px] p-2.5 min-w-0${className ? ` ${className}` : ''}`}>
       <div className="text-[0.72rem] text-gray-500 font-bold uppercase tracking-wider mb-1">{label}</div>
-      <div className="text-[0.95rem] text-gray-900 font-semibold">{value}</div>
+      <div className="text-[0.95rem] text-gray-900 font-semibold break-words [overflow-wrap:anywhere] leading-snug">
+        {value}
+      </div>
     </div>
   );
 }

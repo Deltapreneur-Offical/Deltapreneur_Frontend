@@ -55,8 +55,8 @@ const AUCTION_STATUS_COLORS = {
 };
 
 const SECTION_META = {
-  venture: { label: 'Venture', icon: '💼', desc: 'Acquisition & equity sale listings' },
-  coventure: { label: 'Co-Venture', icon: '🤝', desc: 'Partnership & co-founder listings' },
+  venture: { label: 'Venture', icon: '💼', desc: 'Acquisition and equity sale listings' },
+  coventure: { label: 'Co-Venture', icon: '🤝', desc: 'Partnership and co-founder listings' },
 };
 
 const VENTURE_TABS = [

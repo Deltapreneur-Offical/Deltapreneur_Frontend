@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, CircleHelp } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -63,7 +64,24 @@ function profileMatchesUser(profile, currentUser) {
 }
 
 function apiErrorMessage(err, fallback) {
+  const status = err?.response?.status;
   const data = err?.response?.data;
+
+  if (!err?.response) {
+    const msg = String(err?.message || '').toLowerCase();
+    if (msg.includes('network') || msg.includes('failed to fetch') || msg.includes('timeout')) {
+      return 'Cannot reach the server. Start the backend with .\\run_local.ps1 or .\\run_dev.ps1 (and keep the RDS tunnel open).';
+    }
+  }
+
+  if (status === 503) {
+    return data?.message || data?.error || 'Database unavailable locally. Run .\\run_rds_tunnel.ps1, then restart .\\run_dev.ps1.';
+  }
+
+  if (status === 500) {
+    return data?.message || data?.error || 'Server error. If developing locally, ensure the RDS tunnel is running on port 5433.';
+  }
+
   if (!data) return err?.message || fallback;
   if (data.error) return data.error;
   if (data.detail && typeof data.detail === 'string') return data.detail;
@@ -132,6 +150,7 @@ export default function CommunityPage() {
   const [linkedInRedirecting, setLinkedInRedirecting] = useState(false);
   const [linkedInError, setLinkedInError]     = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
+  const [profileNotice, setProfileNotice]     = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading]         = useState(false);
 
@@ -172,9 +191,24 @@ export default function CommunityPage() {
 
   const reloadProfiles = async ({ preferProfile } = {}) => {
     try {
+      setProfileNotice('');
       const requests = [communityAPI.getAll()];
       if (user?.id) {
-        requests.push(communityAPI.getMy().catch(() => null));
+        requests.push(
+          communityAPI.getMy().catch((err) => {
+            const detail = err?.response?.data?.detail
+              || err?.response?.data?.message
+              || err?.response?.data?.error;
+            if (
+              err?.response?.status === 404
+              && typeof detail === 'string'
+              && detail.toLowerCase().includes('linkedin')
+            ) {
+              setProfileNotice(detail);
+            }
+            return null;
+          }),
+        );
       }
 
       const [allRes, myRes] = await Promise.all(requests);
@@ -279,8 +313,14 @@ export default function CommunityPage() {
           const hasUrl = Boolean(getLinkedInProfileUrl(profile));
           setLinkedInSuccess(
             hasUrl
-              ? 'LinkedIn connected! Your profile link was imported — complete the details below.'
-              : 'LinkedIn connected! Reconnect LinkedIn to import your profile URL.',
+              ? t(
+                  'communityPageLinkedInImported',
+                  'LinkedIn connected! Your profile link was imported — complete the details below.',
+                )
+              : t(
+                  'communityPageLinkedInImportedNoUrl',
+                  'LinkedIn connected! We imported your name and photo. Paste your public LinkedIn profile URL below and save.',
+                ),
           );
           try {
             await reloadProfiles({ preferProfile: profile });
@@ -416,6 +456,9 @@ export default function CommunityPage() {
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
+        {profileNotice && !linkedInError && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 mb-6">{profileNotice}</div>
+        )}
         {linkedInSuccess && (
           <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-600 mb-6 flex items-center gap-2">
             <LinkedInIcon size={16} /> {linkedInSuccess}
@@ -432,8 +475,6 @@ export default function CommunityPage() {
               onSaved={handleProfileSaved}
               onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
               onDelete={() => setShowDeleteConfirm(true)}
-              onReconnectLinkedIn={handleConnectLinkedIn}
-              linkedInReconnecting={linkedInBusy}
             />
           </>
         ) : (
@@ -441,7 +482,7 @@ export default function CommunityPage() {
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('communityTitle')}</h1>
+            <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
             <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
@@ -500,13 +541,18 @@ export default function CommunityPage() {
                 </button>
               </div>
             ) : (
-              <button
-                className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
-                onClick={handleConnectLinkedIn} disabled={linkedInBusy}>
-                {linkedInBusy
-                  ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
-                  : <><LinkedInIcon /> Connect with LinkedIn</>}
-              </button>
+              <div className="inline-flex items-center gap-2">
+                <LinkedInConnectInfoTooltip />
+                <button
+                  className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
+                  onClick={handleConnectLinkedIn}
+                  disabled={linkedInBusy}
+                >
+                  {linkedInBusy
+                    ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
+                    : <><LinkedInIcon /> Connect with LinkedIn</>}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -541,22 +587,23 @@ export default function CommunityPage() {
             <div className="mb-4 flex justify-center">
               <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
             </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+            <h3
+              className={
+                searchQuery
+                  ? 'font-display text-2xl font-bold text-gray-900 mb-2'
+                  : 'font-display text-sm font-medium text-gray-400 mb-2'
+              }
+            >
               {searchQuery ? t('noCreatorsFound') : t('noCreatorsYet')}
             </h3>
-            <p className="text-gray-600 mb-6">
-              {searchQuery ? 'Try adjusting your search terms.' : 'Connect your LinkedIn to join.'}
-            </p>
-            {!searchQuery && !myProfile && (
-              <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
-                <LinkedInIcon size={16} /> Connect LinkedIn
-              </button>
-            )}
+            {searchQuery ? (
+              <p className="text-gray-600">Try adjusting your search terms.</p>
+            ) : null}
           </div>
         ) : profilesForDisplay.length > 0 ? (
-          <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch gap-3 md:gap-4">
+          <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-3 md:gap-4">
             {profilesForDisplay.map(p => (
-              <ListingCardShell key={p.id}>
+              <ListingCardShell key={p.id} className="community-listing-card-shell">
               <CommunityListingCard
                 profile={p}
                 isMe={profileMatchesUser(p, user)}
@@ -997,8 +1044,6 @@ function CommunityProfileForm({
   onSaved,
   onCancel,
   onDelete,
-  onReconnectLinkedIn,
-  linkedInReconnecting = false,
 }) {
   const { t } = useTranslation();
   const buildForm = (profile) => {
@@ -1038,10 +1083,9 @@ function CommunityProfileForm({
   );
 
   const linkedInImported = hasLinkedInAccount(initial);
-  const needsLinkedInReconnect = linkedInImported && !linkedInUrl;
+  const linkedInUrlMissing = linkedInImported && !linkedInUrl;
 
   const handleChange = e => {
-    if (e.target.name === 'linkedInProfileUrl') return;
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -1066,6 +1110,10 @@ function CommunityProfileForm({
         whyImHere: form.whyImHere,
         expectedRate,
       };
+      const linkedInProfileUrl = (form.linkedInProfileUrl || '').trim();
+      if (linkedInImported && linkedInProfileUrl) {
+        payload.linkedInProfileUrl = linkedInProfileUrl;
+      }
       const { data } = await communityAPI.update(initial.id, payload);
       onSaved(data?.data ?? data);
     } catch (err) {
@@ -1097,27 +1145,12 @@ function CommunityProfileForm({
                     <span aria-hidden>↗</span>
                   </a>
                 ) : linkedInImported ? (
-                  <div className="mt-1 flex flex-col items-start gap-2">
-                    <p className="text-xs text-amber-700 m-0">
-                      {t(
-                        'communityPageLinkedInUrlMissing',
-                        'LinkedIn URL was not imported — reconnect LinkedIn to refresh your profile link.',
-                      )}
-                    </p>
-                    {onReconnectLinkedIn ? (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#0077B5] text-white hover:bg-[#006399] disabled:opacity-60"
-                        onClick={onReconnectLinkedIn}
-                        disabled={linkedInReconnecting}
-                      >
-                        <LinkedInIcon size={14} />
-                        {linkedInReconnecting
-                          ? t('communityPageConnecting', 'Connecting…')
-                          : t('communityPageReconnectLinkedIn', 'Reconnect LinkedIn')}
-                      </button>
-                    ) : null}
-                  </div>
+                  <p className="text-xs text-amber-800 m-0 mt-1 leading-relaxed">
+                    {t(
+                      'communityPageLinkedInUrlMissingHelp',
+                      'We couldn\'t fetch your profile link automatically. Paste your public LinkedIn URL in the field below and save.',
+                    )}
+                  </p>
                 ) : null}
                 <p className="text-xs text-blue-600 mt-1.5 m-0">
                   ✓ {linkedInUrl
@@ -1203,37 +1236,34 @@ function CommunityProfileForm({
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
               LinkedIn URL
-              <span className="text-gray-400 font-normal text-xs ml-1">(imported from LinkedIn)</span>
+              <span className="text-gray-400 font-normal text-xs ml-1">
+                {linkedInUrlMissing
+                  ? '(paste your profile link)'
+                  : '(imported from LinkedIn — you can edit)'}
+              </span>
             </label>
             <input
               name="linkedInProfileUrl"
               type="url"
-              value={linkedInUrl}
-              readOnly
-              placeholder={
-                linkedInUrl
-                  ? ''
-                  : t(
-                      'communityPageLinkedInUrlPlaceholder',
-                      'Reconnect LinkedIn to import your profile URL',
-                    )
+              value={form.linkedInProfileUrl}
+              onChange={handleChange}
+              placeholder={t(
+                'communityPageLinkedInUrlPlaceholder',
+                'https://www.linkedin.com/in/your-name',
+              )}
+              className={
+                linkedInUrlMissing
+                  ? 'px-3 py-2 border border-amber-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all'
+                  : 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all'
               }
-              aria-readonly="true"
-              tabIndex={-1}
-              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-600 bg-gray-50 outline-none cursor-not-allowed focus:border-gray-300 transition-all"
             />
-            {needsLinkedInReconnect && onReconnectLinkedIn ? (
-              <button
-                type="button"
-                className="self-start inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-[#0077B5] text-white hover:bg-[#006399] disabled:opacity-60"
-                onClick={onReconnectLinkedIn}
-                disabled={linkedInReconnecting}
-              >
-                <LinkedInIcon size={16} />
-                {linkedInReconnecting
-                  ? t('communityPageConnecting', 'Connecting…')
-                  : t('communityPageReconnectLinkedIn', 'Reconnect LinkedIn')}
-              </button>
+            {linkedInUrlMissing ? (
+              <p className="text-xs text-slate-500 m-0">
+                {t(
+                  'communityPageLinkedInUrlManualHint',
+                  'Paste the link from your browser when you open your LinkedIn profile (must include linkedin.com/in/…).',
+                )}
+              </p>
             ) : null}
           </div>
         )}
@@ -1250,6 +1280,88 @@ function CommunityProfileForm({
         </div>
       </form>
     </div>
+  );
+}
+
+function LinkedInConnectInfoTooltip() {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [style, setStyle] = useState(null);
+  const triggerRef = useRef(null);
+  const tooltipRef = useRef(null);
+
+  const message = t(
+    'communityPageLinkedInConnectHint',
+    'We import your name, photo, and LinkedIn profile link automatically. On LinkedIn\'s permission screen, choose Allow for all requested access. If your link doesn\'t appear, paste your public profile URL in the form (e.g. linkedin.com/in/your-name).',
+  );
+
+  const updatePosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const maxWidth = Math.min(320, window.innerWidth - 24);
+    let left = rect.right - maxWidth;
+    left = Math.max(12, Math.min(left, window.innerWidth - maxWidth - 12));
+
+    setStyle({
+      position: 'fixed',
+      top: rect.bottom + 8,
+      left,
+      maxWidth,
+      width: maxWidth,
+      zIndex: 10050,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [open, updatePosition]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (e) => {
+      const target = e.target;
+      if (triggerRef.current?.contains(target) || tooltipRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  const tooltip = open && style && createPortal(
+    <div
+      ref={tooltipRef}
+      role="tooltip"
+      style={style}
+      className="px-3.5 py-3 text-xs leading-relaxed text-slate-600 bg-white border border-slate-200 rounded-xl shadow-lg break-words whitespace-normal"
+    >
+      {message}
+    </div>,
+    document.body,
+  );
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-[#0077b5] hover:text-[#0077b5] hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5]/30"
+        aria-label={t('communityPageLinkedInConnectHelpAria', 'How LinkedIn connect works')}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <CircleHelp size={16} aria-hidden />
+      </button>
+      {tooltip}
+    </>
   );
 }
 

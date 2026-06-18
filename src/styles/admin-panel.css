@@ -414,7 +414,7 @@
 }
 
 .admin-page .admin-price-amount {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
   color: #111827;

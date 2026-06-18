@@ -64,7 +64,24 @@ function profileMatchesUser(profile, currentUser) {
 }
 
 function apiErrorMessage(err, fallback) {
+  const status = err?.response?.status;
   const data = err?.response?.data;
+
+  if (!err?.response) {
+    const msg = String(err?.message || '').toLowerCase();
+    if (msg.includes('network') || msg.includes('failed to fetch') || msg.includes('timeout')) {
+      return 'Cannot reach the server. Start the backend with .\\run_local.ps1 or .\\run_dev.ps1 (and keep the RDS tunnel open).';
+    }
+  }
+
+  if (status === 503) {
+    return data?.message || data?.error || 'Database unavailable locally. Run .\\run_rds_tunnel.ps1, then restart .\\run_dev.ps1.';
+  }
+
+  if (status === 500) {
+    return data?.message || data?.error || 'Server error. If developing locally, ensure the RDS tunnel is running on port 5433.';
+  }
+
   if (!data) return err?.message || fallback;
   if (data.error) return data.error;
   if (data.detail && typeof data.detail === 'string') return data.detail;
@@ -133,6 +150,7 @@ export default function CommunityPage() {
   const [linkedInRedirecting, setLinkedInRedirecting] = useState(false);
   const [linkedInError, setLinkedInError]     = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
+  const [profileNotice, setProfileNotice]     = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading]         = useState(false);
 
@@ -173,9 +191,24 @@ export default function CommunityPage() {
 
   const reloadProfiles = async ({ preferProfile } = {}) => {
     try {
+      setProfileNotice('');
       const requests = [communityAPI.getAll()];
       if (user?.id) {
-        requests.push(communityAPI.getMy().catch(() => null));
+        requests.push(
+          communityAPI.getMy().catch((err) => {
+            const detail = err?.response?.data?.detail
+              || err?.response?.data?.message
+              || err?.response?.data?.error;
+            if (
+              err?.response?.status === 404
+              && typeof detail === 'string'
+              && detail.toLowerCase().includes('linkedin')
+            ) {
+              setProfileNotice(detail);
+            }
+            return null;
+          }),
+        );
       }
 
       const [allRes, myRes] = await Promise.all(requests);
@@ -422,6 +455,9 @@ export default function CommunityPage() {
       <div>
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
+        )}
+        {profileNotice && !linkedInError && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 mb-6">{profileNotice}</div>
         )}
         {linkedInSuccess && (
           <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-600 mb-6 flex items-center gap-2">

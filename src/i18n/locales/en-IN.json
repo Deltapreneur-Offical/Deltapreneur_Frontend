@@ -1425,6 +1425,8 @@
   "ventureFormMinBidRequired": "Please enter a minimum bid price for the auction.",
   "ventureFormDurationRequired": "Please select an auction duration.",
   "profileCompletionSubtitle": "Just a few details to get you started on CoBrother.",
+  "profileCompletionEmail": "Email ID",
+  "profileCompletionEmailHint": "Read-only — collected during sign-up.",
   "profileCompletionFirstName": "First Name",
   "profileCompletionLastName": "Last Name",
   "profileCompletionPhone": "Phone Number",

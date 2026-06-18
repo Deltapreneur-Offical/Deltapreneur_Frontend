@@ -96,18 +96,26 @@ export default function LoginPage() {
         'databaseUnavailable',
         'The database is temporarily unavailable. Please try again shortly.',
       ),
+      oauth_network_error: t(
+        'oauthNetworkError',
+        'Could not reach Google to complete sign-in. Check your internet connection and try again.',
+      ),
     };
 
     if (oauthErrorMessages[err]) {
       setError(oauthErrorMessages[err]);
+      navigate('/login', { replace: true, state: location.state });
     } else if (err?.startsWith('google_') || err?.startsWith('oauth_')) {
       setError(t('googleSignInFailed'));
+      navigate('/login', { replace: true, state: location.state });
     } else if (err === 'verification_failed') {
       setError(t('verificationLinkInvalid'));
+      navigate('/login', { replace: true, state: location.state });
     } else if (err === 'account_unavailable') {
       setError(t('accountUnavailable'));
+      navigate('/login', { replace: true, state: location.state });
     }
-  }, [searchParams, t]);
+  }, [searchParams, t, navigate, location.state]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 

@@ -16,6 +16,8 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const signUpEmail = user?.email || user?.emailAddress || '';
+
   useEffect(() => {
     if (user) {
       setForm({
@@ -124,6 +126,24 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               required
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              {t('profileCompletionEmail', 'Email ID')}
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={signUpEmail}
+              readOnly
+              tabIndex={-1}
+              aria-readonly="true"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-[10px] text-gray-600 text-sm cursor-not-allowed outline-none"
+            />
+            <p className="text-xs text-gray-400 m-0">
+              {t('profileCompletionEmailHint', 'Read-only — collected during sign-up.')}
+            </p>
           </div>
 
           <div className="flex flex-col gap-1.5">

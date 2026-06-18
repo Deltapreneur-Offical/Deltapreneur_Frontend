@@ -12,6 +12,12 @@
 export const PRODUCTION_API_ORIGIN = 'https://demo.cobrother.com';
 export const PRODUCTION_APP_URL = 'https://demo.cobrother.com';
 
+/** True when the SPA is served from demo.cobrother.com (unified Nginx). */
+function isDemoHost() {
+  if (typeof window === 'undefined') return false;
+  return String(window.location.hostname || '').toLowerCase() === 'demo.cobrother.com';
+}
+
 /** Strip a trailing /api from env URLs; axios paths already include /api/v1/... */
 function siteOriginFromApiEnv(url) {
   if (!url || typeof url !== 'string') return url;
@@ -42,11 +48,15 @@ function normalizeLocalApiBase(url) {
 const remoteApiBaseRaw =
   import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
 const remoteApiBase = normalizeLocalApiBase(remoteApiBaseRaw);
+const devProxyTarget = (import.meta.env.VITE_DEV_PROXY_TARGET || '').trim();
 
 /** True when .env points at local Uvicorn on :8000 */
 const isLocalBackend =
   !remoteApiBase ||
   /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
+
+/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. demo.cobrother.com). */
+const usesViteRemoteProxy = import.meta.env.DEV && Boolean(devProxyTarget) && isLocalBackend;
 
 function isFrontendOrigin(url) {
   if (!url || typeof window === 'undefined') return false;
@@ -62,10 +72,17 @@ function isFrontendOrigin(url) {
  * Never the Vercel SPA origin — oauth_state cookies must be set on the same host as the callback.
  */
 export function resolveBackendOrigin() {
+  // When served from demo.cobrother.com we must always hit the same host.
+  // This prevents accidental builds that point VITE_API_URL at backend.cobrother.com
+  // (which can be on a different stack / DB during migrations).
+  if (isDemoHost()) return PRODUCTION_API_ORIGIN;
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
     return siteOriginFromApiEnv(remoteApiBase) || remoteApiBase.replace(/\/$/, '');
   }
   if (import.meta.env.DEV && isLocalBackend) {
+    if (usesViteRemoteProxy && typeof window !== 'undefined') {
+      return window.location.origin;
+    }
     return 'http://127.0.0.1:8000';
   }
   return PRODUCTION_API_ORIGIN;
@@ -78,6 +95,7 @@ export function resolveBackendOrigin() {
  * - Override with VITE_API_URL when needed
  */
 function resolveApiBaseUrl() {
+  if (isDemoHost()) return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
   if (import.meta.env.DEV && isLocalBackend) {
     return '';
   }
@@ -127,7 +145,11 @@ export function resolveWebSocketOrigin() {
 
 if (import.meta.env.DEV && typeof console !== 'undefined') {
   const apiTarget = API_BASE_URL || API_ORIGIN;
-  const mode = API_BASE_URL ? 'direct' : 'vite-proxy';
+  const mode = usesViteRemoteProxy
+    ? `vite-proxy→${devProxyTarget}`
+    : API_BASE_URL
+      ? 'direct'
+      : 'vite-proxy';
   console.info(`[frontend] API target URL: ${apiTarget} (${mode})`);
 }
 

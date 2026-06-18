@@ -45,7 +45,7 @@ export default function CoVenturesSection() {
   if (loading) {
     return (
       <HomeSectionCardSkeleton
-        title={t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+        title={t('coVentureSectionTitle', { defaultValue: 'Co-Ventures' })}
         to="/ventures?mode=co-venture"
       />
     );
@@ -55,12 +55,12 @@ export default function CoVenturesSection() {
     <section className="bg-white pt-0 pb-4 md:pt-0 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
-          title={t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+          title={t('coVentureSectionTitle', { defaultValue: 'Co-Ventures' })}
           to="/ventures?mode=co-venture"
         />
         {ventures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">
-            {t('noCoVenturesAvailable', { defaultValue: 'No co-ventures available yet.' })}
+            {t('noCoVenturesAvailable', { defaultValue: 'No co-ventures are available yet.' })}
           </p>
         ) : (
           <HomePreviewRow>

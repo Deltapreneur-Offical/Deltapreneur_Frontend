@@ -79,7 +79,7 @@ const FEE_SECTIONS = [
     id: 'ventures',
     icon: '🚀',
     title: 'Ventures',
-    description: 'Acquisition & equity sale listings. Co-venture (partnership) listings have no platform fees at selection.',
+    description: 'Acquisition and equity sale listings. Co-venture (partnership) listings have no platform fees at selection.',
     appliesTo: [
       'Venture listing form — commission deducted from seller asking price (VentureForm)',
       'Venture deal checkout — same rate applied on deal completion',

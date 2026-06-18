@@ -103,7 +103,7 @@ function SupportLabel({ className = 'home-nav-support-label' }) {
 
   return (
     <span className={className}>
-      <span className="home-nav-support-prefix">{t('navSupport24x7')}</span>
+      <span className="home-nav-support-prefix">{t('navSupport24/7')}</span>
       <span className="home-nav-support-emphasis">{t('navSupportLabel')}</span>
     </span>
   );

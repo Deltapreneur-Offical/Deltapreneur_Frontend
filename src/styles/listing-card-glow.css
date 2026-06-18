@@ -99,7 +99,7 @@
 
 .technology-listing-card.card-glow-hover:not(.technology-listing-card--browse):not(.domain-listing-card),
 .venture-listing-card.card-glow-hover,
-.community-listing-card.card-glow-hover {
+.community-listing-card.card-glow-hover:not(.creator-profile-card) {
   border: none !important;
   border-radius: 1rem;
   overflow: hidden;

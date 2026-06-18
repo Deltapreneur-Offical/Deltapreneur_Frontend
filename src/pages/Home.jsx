@@ -164,7 +164,7 @@ export default function Home() {
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeCompliancesTitle', { defaultValue: 'Compliances' }),
+      title: t('homeComplianceTitle', { defaultValue: 'Compliance' }),
       onClick: () => goToOperations('compliances'),
     },
   ];
@@ -217,7 +217,7 @@ export default function Home() {
             <p className="home-features-section-subtitle">
               {t('homeServicesSubtitle', {
                 defaultValue:
-                  'Choose the right service to streamline operations and stay compliant.',
+                  'Choose the right services to streamline your operations and stay compliant.',
               })}
             </p>
           </header>

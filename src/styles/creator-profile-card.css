@@ -4,7 +4,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
   min-height: 0;
   overflow: visible;
   border-radius: 1rem;
@@ -68,7 +68,7 @@
 
 .creator-profile-card__body {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -76,16 +76,18 @@
   min-height: 0;
   overflow: visible;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
 .creator-profile-card__content {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
   width: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .creator-profile-card__footer {
@@ -94,7 +96,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   width: 100%;
-  margin-top: auto;
+  margin-top: 0.55rem;
   padding-top: 0.45rem;
   padding-bottom: 0;
   flex-shrink: 0;
@@ -113,7 +115,7 @@
   margin-top: -2rem;
   margin-bottom: 0.45rem;
   position: relative;
-  z-index: 1;
+  z-index: 3;
   flex-shrink: 0;
 }
 
@@ -133,6 +135,7 @@
   font-family: var(--font-display, Georgia, serif);
   font-size: 1.65rem;
   font-weight: 700;
+  line-height: 1;
   color: #4338ca;
   background: #eef2ff;
 }
@@ -347,7 +350,7 @@
 
 .home-preview-row .creator-profile-card,
 .listing-card-glow-grid .creator-profile-card {
-  height: 100%;
+  height: auto;
   min-height: 0;
 }
 

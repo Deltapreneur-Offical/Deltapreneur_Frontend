@@ -13,7 +13,7 @@ import { CookieConsentProvider } from './context/CookieConsentContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 
-import CoBrotherAILauncher from './components/ai/CoBrotherAILauncher';
+import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
 import Home from './pages/Home';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
@@ -140,7 +140,7 @@ export default function App() {
           <RoutePreloader />
           <SiteGradientBorder />
           <CookieConsentBanner />
-          <CoBrotherAILauncher />
+          <WhatsAppFloatingButton />
           <AppErrorBoundary>
             <LanguageAwareRoutes>
               <Routes>

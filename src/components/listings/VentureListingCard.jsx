@@ -503,6 +503,7 @@ export default function VentureListingCard({
 
 
   const showPriceBox = showPriceText || handleViewDetails;
+  const isHomePreview = compact && browseMode;
 
 
 
@@ -809,26 +810,16 @@ export default function VentureListingCard({
                   : 'domain-listing-card__price-box--venture'
               } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
 
-              style={{
-
+              style={isHomePreview ? undefined : {
                 borderRadius: compact ? '0.75rem' : '1rem',
-
                 background: 'linear-gradient(#ffffff, #ffffff) padding-box, ' + (
-
-                  isCoVenture 
-
-                    ? 'linear-gradient(90deg, #34d399 0%, #10b981 50%, #059669 100%) border-box' 
-
+                  isCoVenture
+                    ? 'linear-gradient(90deg, #34d399 0%, #10b981 50%, #059669 100%) border-box'
                     : 'linear-gradient(90deg, #a78bfa 0%, #818cf8 50%, #4f46e5 100%) border-box'
-
                 ),
-
                 boxShadow: isCoVenture
-
                   ? '-8px 0 16px -8px rgba(16, 185, 129, 0.22), 8px 0 16px -8px rgba(5, 150, 105, 0.18), 0 0 10px -4px rgba(16, 185, 129, 0.18)'
-
-                  : '-8px 0 16px -8px rgba(129, 140, 248, 0.22), 8px 0 16px -8px rgba(79, 70, 229, 0.18), 0 0 10px -4px rgba(139, 92, 246, 0.18)'
-
+                  : '-8px 0 16px -8px rgba(129, 140, 248, 0.22), 8px 0 16px -8px rgba(79, 70, 229, 0.18), 0 0 10px -4px rgba(139, 92, 246, 0.18)',
               }}
 
             >

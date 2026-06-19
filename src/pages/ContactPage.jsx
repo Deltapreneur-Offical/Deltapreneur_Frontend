@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import {
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_PHONE_TEL,
@@ -56,19 +57,13 @@ export default function ContactPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <BackToHomeButton />
           <img
             src={coBrotherLogo}
             alt="CoBrother"
             className="h-10 cursor-pointer"
             onClick={() => navigate('/')}
           />
-          <button
-            type="button"
-            className="btn-glow btn-glow-sm"
-            onClick={() => navigate('/')}
-          >
-            {t('backToHomeLabel')}
-          </button>
         </div>
       </nav>
 

@@ -1,0 +1,16 @@
+import { useTranslation } from 'react-i18next';
+import BackButton from './BackButton';
+
+/** Consistent "Back to Home" control for marketing / public pages. */
+export default function BackToHomeButton({ className = '' }) {
+  const { t } = useTranslation();
+
+  return (
+    <BackButton
+      to="/"
+      label={t('backToHomeLabel')}
+      variant="home"
+      className={className}
+    />
+  );
+}

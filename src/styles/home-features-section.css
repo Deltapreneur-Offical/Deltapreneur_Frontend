@@ -54,6 +54,21 @@
   padding: 2px;
   overflow: hidden;
   isolation: isolate;
+  border-radius: 1rem;
+  transition: box-shadow 0.28s ease;
+}
+
+.home-feature-card-border:hover {
+  box-shadow:
+    0 4px 8px rgba(15, 23, 42, 0.05),
+    0 14px 28px rgba(15, 23, 42, 0.1);
+}
+
+.home-feature-card-border:hover .home-feature-card,
+.home-feature-card-border .home-feature-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #e5e7eb !important;
 }
 
 .home-feature-card-border .home-feature-card {

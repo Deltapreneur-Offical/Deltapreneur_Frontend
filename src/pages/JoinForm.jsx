@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import Confetti from '../components/common/Confetti';
 import {
   Network, Sparkles, Package, Store, ShieldCheck,
   Smartphone, MessageCircle, Laptop, MapPin, Workflow,
   Bell, MonitorCheck, Rocket, BadgeIndianRupee,
-  ChevronDown, Timer, BadgePercent, Check, AlertCircle, ArrowLeft,
+  ChevronDown, Timer, BadgePercent, Check, AlertCircle,
   Loader2
 } from 'lucide-react';
 
@@ -157,10 +158,7 @@ const JoinForm = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
-            <ArrowLeft size={18} />
-            <span className="font-semibold">{t('joinFormBackHome')}</span>
-          </button>
+          <BackToHomeButton />
           <div className="flex items-center gap-2 text-purple-600 font-bold text-lg">
             <Network size={20} />
             <span>{t('joinFormElite')}</span>

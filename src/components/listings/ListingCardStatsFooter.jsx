@@ -26,15 +26,8 @@ export default function ListingCardStatsFooter({
       role="presentation"
     >
       <div
-        className={`listing-card-stats-footer__group${likesFirst ? ' listing-card-stats-footer__group--likes-first' : ''}`}
+        className={`listing-card-stats-footer__group${likesFirst ? ' listing-card-stats-footer__group--split' : ''}`}
       >
-        {likesFirst && onLike ? (
-          <LikeButton
-            liked={likeState?.liked}
-            count={likeState?.count}
-            onToggle={onLike}
-          />
-        ) : null}
         <span
           className="listing-card-stats-footer__views"
           title={t('creatorProfileViews', 'Profile views')}
@@ -47,7 +40,7 @@ export default function ListingCardStatsFooter({
           />
           <span>{Number(viewCount) || 0}</span>
         </span>
-        {!likesFirst && onLike ? (
+        {onLike ? (
           <LikeButton
             liked={likeState?.liked}
             count={likeState?.count}

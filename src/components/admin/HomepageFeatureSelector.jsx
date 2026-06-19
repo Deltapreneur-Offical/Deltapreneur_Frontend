@@ -5,6 +5,7 @@ import { adminAPI } from '../../api/services';
 import { isActiveListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
 import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { asArray } from '../../utils/asArray';
+import { mergeAdminHomepageAuctionItems } from '../../utils/homepageAuctions';
 
 const SECTION_KEYS = {
   domain: 'homepageFeatureDomains',
@@ -12,6 +13,7 @@ const SECTION_KEYS = {
   coventure: 'homepageFeatureCoVentures',
   software: 'homepageFeatureSoftware',
   community: 'homepageFeatureCreators',
+  auction: 'homepageFeatureAuctions',
 };
 
 const TYPE_KEYS = {
@@ -20,6 +22,7 @@ const TYPE_KEYS = {
   coventure: 'homepageFeatureTypeCoVentures',
   software: 'homepageFeatureTypeSoftware',
   community: 'homepageFeatureTypeCommunities',
+  auction: 'homepageFeatureTypeAuctions',
 };
 
 const LISTING_TYPE = {
@@ -28,6 +31,7 @@ const LISTING_TYPE = {
   coventure: 'venture',
   software: 'software',
   community: 'community',
+  auction: 'auction',
 };
 
 function matchesVentureFeatureType(item, type) {
@@ -38,7 +42,14 @@ function matchesVentureFeatureType(item, type) {
 
 const PAGE_SIZES = [25, 50, 100];
 
+const AUCTION_FEATURE_TYPE = {
+  domain: 'DOMAIN_AUCTION',
+  community: 'COMMUNITY_AUCTION',
+  technology: 'SOFTWARE_AUCTION',
+};
+
 function getTitle(item, type) {
+  if (type === 'auction') return item.title || 'Auction';
   if (type === 'domain') return `${item.domainName || ''}${item.domainExtension || ''}`;
   if (type === 'venture' || type === 'coventure') {
     return item.brandDetails?.brandName || `${type === 'coventure' ? 'Co-Venture' : 'Venture'} #${item.id}`;
@@ -92,6 +103,20 @@ export default function HomepageFeatureSelector({ type }) {
       else if (type === 'venture' || type === 'coventure') response = await adminAPI.getVentures();
       else if (type === 'software') response = await adminAPI.getSoftwares();
       else if (type === 'community') response = await adminAPI.getCommunities();
+      else if (type === 'auction') {
+        const [domainsRes, communityRes, softwareRes] = await Promise.all([
+          adminAPI.getAllAuctions().catch(() => ({ data: [] })),
+          adminAPI.getAllCommunityAuctions().catch(() => ({ data: [] })),
+          adminAPI.getAllSoftwareAuctions().catch(() => ({ data: [] })),
+        ]);
+        const rows = mergeAdminHomepageAuctionItems(
+          asArray(domainsRes.data),
+          asArray(communityRes.data),
+          asArray(softwareRes.data),
+        );
+        setItems(rows);
+        return;
+      }
 
       const rows = asArray(response.data).filter((item) => matchesVentureFeatureType(item, type));
       setItems(rows);
@@ -111,15 +136,15 @@ export default function HomepageFeatureSelector({ type }) {
     setPage(1);
   }, [search, statusFilter, sortBy, pageSize, type]);
 
-  const featureableItems = useMemo(
-    () => items.filter((item) => isActiveListing(item, listingType)),
-    [items, listingType],
-  );
+  const featureableItems = useMemo(() => {
+    if (type === 'auction') return items;
+    return items.filter((item) => isActiveListing(item, listingType));
+  }, [items, listingType, type]);
 
-  const featuredCount = useMemo(
-    () => featureableItems.filter((item) => isHomepageFeaturedListing(item, listingType)).length,
-    [featureableItems, listingType],
-  );
+  const featuredCount = useMemo(() => {
+    if (type === 'auction') return featureableItems.filter((item) => Boolean(item.featured)).length;
+    return featureableItems.filter((item) => isHomepageFeaturedListing(item, listingType)).length;
+  }, [featureableItems, listingType, type]);
 
   const filteredSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -184,13 +209,19 @@ export default function HomepageFeatureSelector({ type }) {
       community: 'COMMUNITY',
     };
 
+    const target = items.find((row) => sameItemId(row.id, id));
+    const toggleId = type === 'auction' ? target?.auctionId ?? id : id;
+    const toggleType = type === 'auction'
+      ? AUCTION_FEATURE_TYPE[target?.category] || 'DOMAIN_AUCTION'
+      : typeMap[type];
+
     setPendingIds((prev) => new Set(prev).add(String(id)));
     setItems((prev) =>
       prev.map((item) => (sameItemId(item.id, id) ? { ...item, featured: nextFeatured } : item)),
     );
 
     try {
-      const response = await adminAPI.toggleFeatured(typeMap[type], id, nextFeatured);
+      const response = await adminAPI.toggleFeatured(toggleType, toggleId, nextFeatured);
       const confirmedFeatured = response?.data?.featured;
       if (typeof confirmedFeatured === 'boolean') {
         setItems((prev) =>
@@ -233,7 +264,9 @@ export default function HomepageFeatureSelector({ type }) {
               ? t('homepageFeatureVentureSubtitle')
               : type === 'coventure'
                 ? t('homepageFeatureCoVentureSubtitle')
-                : t('homepageFeatureSubtitle')}
+                : type === 'auction'
+                  ? t('homepageFeatureAuctionSubtitle')
+                  : t('homepageFeatureSubtitle')}
           </p>
         </div>
         <div className="admin-feature-stats">
@@ -313,7 +346,11 @@ export default function HomepageFeatureSelector({ type }) {
                 >
                   <div className="admin-feature-row-body">
                     <p className="admin-feature-item-title">{getTitle(item, type)}</p>
-                    <p className="admin-feature-item-meta">{t('homepageFeatureId', { id: item.id })}</p>
+                    <p className="admin-feature-item-meta">
+                      {type === 'auction'
+                        ? t('homepageFeatureAuctionMeta', { category: item.category, id: item.auctionId })
+                        : t('homepageFeatureId', { id: item.id })}
+                    </p>
                   </div>
                   <FeaturedSwitch
                     active={featured}

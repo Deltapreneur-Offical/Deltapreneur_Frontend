@@ -8,7 +8,7 @@ import {
 } from '../../api/services';
 import {
   extractActiveList,
-  mergeHomepageAuctions,
+  pickHomepagePreviewAuctions,
   normalizeCommunityAuction,
   normalizeDomainAuction,
   normalizeSoftwareAuction,
@@ -25,7 +25,7 @@ import '../../styles/home-preview-cards.css';
 
 function AuctionPreviewCard({ auction, onView }) {
   return (
-    <HomePreviewCardShell>
+    <HomePreviewCardShell accent="auction">
       <HomeAuctionPreviewCard auction={auction} onView={onView} />
     </HomePreviewCardShell>
   );
@@ -67,7 +67,7 @@ export default function AuctionsSection() {
   }, []);
 
   const displayAuctions = useMemo(
-    () => mergeHomepageAuctions(auctions),
+    () => pickHomepagePreviewAuctions(auctions),
     [auctions],
   );
 

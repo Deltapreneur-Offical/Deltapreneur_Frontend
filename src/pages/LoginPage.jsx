@@ -94,7 +94,7 @@ export default function LoginPage() {
       ),
       database_unavailable: t(
         'databaseUnavailable',
-        'The database is temporarily unavailable. Please try again shortly.',
+        'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.',
       ),
       oauth_network_error: t(
         'oauthNetworkError',
@@ -119,6 +119,25 @@ export default function LoginPage() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const databaseUnavailableMessage = t(
+    'databaseUnavailable',
+    'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.',
+  );
+
+  const isDatabaseUnavailableError = (err) => {
+    const status = err?.response?.status;
+    const message = String(
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      '',
+    ).toLowerCase();
+    return (
+      status === 503
+      || message.includes('database')
+      || message.includes('rds tunnel')
+    );
+  };
+
   const handleLoginSuccess = async (data) => {
     const payload = data?.data ?? data;
     const accessToken = payload?.accessToken || payload?.token;
@@ -128,6 +147,10 @@ export default function LoginPage() {
 
     login({ accessToken, refreshToken }, null);
     const fetchedUser = await refreshUser();
+    if (!fetchedUser) {
+      setError(t('loginProfileLoadFailed', 'Signed in but could not load your profile. Please refresh and try again.'));
+      return;
+    }
     const destination = resolveAfterAuthNavigation(
       localStorage.getItem('redirectAfterLogin') || from,
       fetchedUser,
@@ -158,6 +181,10 @@ export default function LoginPage() {
       await handleLoginSuccess(data);
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       if (body?.emailVerified === false) {
         setError(body?.error || body?.message || t('verifyEmailBeforeLogin', 'Please verify your email before logging in.'));
@@ -193,6 +220,10 @@ export default function LoginPage() {
       resetProtection();
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       setError(
         body?.error ||
@@ -225,6 +256,10 @@ export default function LoginPage() {
       await handleLoginSuccess(data);
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       setError(
         body?.error ||
@@ -261,6 +296,10 @@ export default function LoginPage() {
       resetProtection();
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       setError(body?.error || body?.message || 'Unable to resend verification link.');
     } finally {

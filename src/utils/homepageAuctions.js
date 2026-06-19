@@ -22,6 +22,7 @@ export function normalizeDomainAuction(raw) {
     category: 'domain',
     id: raw.id ?? raw.auctionId ?? raw.auction_id ?? null,
     status: String(raw.status || 'ACTIVE').toUpperCase(),
+    featured: Boolean(raw.featured ?? false),
     minBidPrice: toNum(raw.minBidPrice ?? raw.min_bid_price, 0),
     currentHighestBid: toNum(raw.currentHighestBid ?? raw.current_highest_bid, 0),
     totalBids: toNum(raw.totalBids ?? raw.total_bids, 0),
@@ -211,7 +212,64 @@ export function mergeHomepageAuctions({
 }
 
 export function pickHomepagePreviewAuctions(auctions, limit = HOMEPAGE_PREVIEW_LIMIT) {
-  return mergeHomepageAuctions(auctions).slice(0, limit);
+  const merged = mergeHomepageAuctions(auctions);
+  const featured = merged.filter((item) => Boolean(item.featured));
+  if (featured.length > 0) {
+    return featured.slice(0, limit);
+  }
+  return merged.slice(0, limit);
+}
+
+/** Normalize admin auction rows into homepage-feature selector items. */
+export function adminAuctionRowToFeatureItem(row, category) {
+  const auctionRaw = row?.auction ?? row;
+  if (!auctionRaw?.id) return null;
+
+  let normalized;
+  if (category === 'domain') {
+    normalized = normalizeDomainAuction({
+      ...auctionRaw,
+      domain: row?.domain ?? auctionRaw.domain,
+    });
+  } else if (category === 'community') {
+    normalized = normalizeCommunityAuction({
+      ...auctionRaw,
+      community: row?.community ?? auctionRaw.community,
+    });
+  } else {
+    normalized = normalizeSoftwareAuction({
+      ...auctionRaw,
+      software: row?.software ?? auctionRaw.software,
+    });
+  }
+
+  if (!normalized || !isLiveHomepageAuction(normalized)) return null;
+
+  return {
+    id: `${category}:${normalized.id}`,
+    auctionId: normalized.id,
+    category,
+    status: normalized.status,
+    featured: Boolean(auctionRaw.featured ?? normalized.featured),
+    title: resolveHomeAuctionTitle(normalized),
+  };
+}
+
+export function mergeAdminHomepageAuctionItems(domainRows = [], communityRows = [], softwareRows = []) {
+  const items = [];
+  extractActiveList(domainRows).forEach((row) => {
+    const item = adminAuctionRowToFeatureItem(row, 'domain');
+    if (item) items.push(item);
+  });
+  extractActiveList(communityRows).forEach((row) => {
+    const item = adminAuctionRowToFeatureItem(row, 'community');
+    if (item) items.push(item);
+  });
+  extractActiveList(softwareRows).forEach((row) => {
+    const item = adminAuctionRowToFeatureItem(row, 'technology');
+    if (item) items.push(item);
+  });
+  return items.sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export { extractActiveList };

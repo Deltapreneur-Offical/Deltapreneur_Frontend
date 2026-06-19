@@ -62,7 +62,7 @@ export default function CommunitySection() {
           <HomePreviewRow>
             {previewCommunities.map((item) => (
               <HomePreviewRowItem key={item.id}>
-                <HomePreviewCardShell>
+                <HomePreviewCardShell accent="community">
                   <HomeCreatorListingCard
                     profile={item}
                     likeState={getLike(item.id)}

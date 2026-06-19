@@ -856,6 +856,7 @@ export default function AdminDashboardPage() {
                 <HomepageFeatureSelector type="coventure" />
                 <HomepageFeatureSelector type="software" />
                 <HomepageFeatureSelector type="community" />
+                <HomepageFeatureSelector type="auction" />
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />

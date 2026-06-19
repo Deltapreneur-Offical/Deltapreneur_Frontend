@@ -32,6 +32,7 @@ import AddonSections from '../components/addon/AddonSections';
 import { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/AddonSelector';
 import { vaLabel, vaTotal, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
 import { isPremiumDomain } from '../utils/domainPricing';
+import { readApiError } from '../utils/apiError';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import FormSelect from '../components/common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
@@ -54,16 +55,6 @@ const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
   PENDING:   { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
   SOLD:      { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
-};
-
-const readApiError = (err, fallback) => {
-  const payload = err?.response?.data;
-  if (typeof payload === 'string') return payload;
-  if (payload?.error) return payload.error;
-  if (payload?.message) return payload.message;
-  if (typeof payload?.detail === 'string') return payload.detail;
-  if (Array.isArray(payload?.detail)) return payload.detail.map(x => x?.msg || String(x)).join(', ');
-  return fallback;
 };
 
 const formatInr = (value) =>
@@ -467,6 +458,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const { user } = useAuth();
   const { currency: navCurrency, convertToInr, ratesLoading } = useCurrency();
   const [commissionPercent, setCommissionPercent] = useState(15);
+  const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
   const isEdit = Boolean(editDomain?.id);
   const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency));
   const [loading, setLoading] = useState(false);
@@ -490,7 +482,10 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   useEffect(() => {
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
       fetchListingFeesAndCharges()
-        .then((fees) => setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15)))
+        .then((fees) => {
+          setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15));
+          setAuctionCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118));
+        })
         .catch(() => {});
     });
   }, []);
@@ -547,20 +542,28 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           saleType: form.saleType,
           agreement: form.agreement,
         };
-        const { data: domain } = await domainAPI.create(createPayload);
-        saved = domain?.data ?? domain;
-        if (form.saleType === 'AUCTION' && saved?.id) {
+
+        if (form.saleType === 'AUCTION') {
+          const minBidInr =
+            form.currency === 'INR'
+              ? parseFloat(form.minBidPrice)
+              : convertToInr(parseFloat(form.minBidPrice), form.currency);
+
+          const { payAuctionCreationFee } = await import('../utils/auctionFees');
+          const creationFeeOrderId = await payAuctionCreationFee({
+            auctionType: 'DOMAIN',
+            user,
+            description: t('domainsPageAuctionFeeDescription', {
+              defaultValue: 'Domain auction listing fee',
+            }),
+          });
+
+          let createdId = null;
           try {
-            const minBidInr =
-              form.currency === 'INR'
-                ? parseFloat(form.minBidPrice)
-                : convertToInr(parseFloat(form.minBidPrice), form.currency);
-            const { payAuctionCreationFee } = await import('../utils/auctionFees');
-            const creationFeeOrderId = await payAuctionCreationFee({
-              auctionType: 'DOMAIN',
-              user,
-              referenceId: saved.id,
-            });
+            const { data: domain } = await domainAPI.create(createPayload);
+            saved = domain?.data ?? domain;
+            createdId = saved?.id ?? null;
+
             await auctionAPI.create(saved.id, {
               domain_id: saved.id,
               minBidPrice: minBidInr,
@@ -568,13 +571,18 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               creationFeeOrderId,
             });
           } catch (auctionErr) {
-            const msg = readApiError(
-              auctionErr,
-              t('domainsPageWarningAuctionFailed'),
-            );
-            setWarning(msg);
-            saved = { ...saved, _warning: msg };
+            if (createdId) {
+              try {
+                await domainAPI.delete(createdId);
+              } catch {
+                // Best-effort rollback if auction setup fails after listing create.
+              }
+            }
+            throw auctionErr;
           }
+        } else {
+          const { data: domain } = await domainAPI.create(createPayload);
+          saved = domain?.data ?? domain;
         }
       }
       let uploadWarning = '';
@@ -779,6 +787,11 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
             </div>
             <div className="p-3.5 bg-amber-100 border border-amber-400 rounded-lg text-[0.82rem] text-amber-900 leading-relaxed">
               {t('domainsPageAuctionDraftNotice')}
+              {' '}
+              {t('domainsPageAuctionFeeNotice', {
+                defaultValue: 'Auction listing fee: {{fee}} (charged when you submit).',
+                fee: formatInr(auctionCreationFeeInr),
+              })}
             </div>
           </>
         )}

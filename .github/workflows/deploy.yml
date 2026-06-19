@@ -19,9 +19,9 @@ jobs:
       - name: Verify deploy secrets
         run: |
           missing=0
-          for name in EC2_HOST EC2_USER EC2_SSH_KEY; do
+          for name in EC2_HOST EC2_USER EC2_SSH_KEY TURNSTILE_SITE_KEY; do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, and EC2_SSH_KEY in repository or organization secrets (same as CoBrother_Backend deploy)."
+              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, EC2_SSH_KEY, and TURNSTILE_SITE_KEY in repository or organization secrets."
               missing=1
             fi
           done
@@ -30,6 +30,7 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -43,6 +44,7 @@ jobs:
           VITE_APP_URL: https://demo.cobrother.com
           VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
+          VITE_TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
         run: |
           npm ci
           npm run build

@@ -49,6 +49,7 @@ import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
+import { readApiError } from '../utils/apiError';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
@@ -473,12 +474,7 @@ export default function AdminDashboardPage() {
       .catch((e) => {
         setData([]);
         setListCount(0);
-        const detail = e.response?.data?.detail;
-        const detailText = Array.isArray(detail)
-          ? detail.map((d) => d.msg || d).join(', ')
-          : (typeof detail === 'string' ? detail : null);
-        const msg = e.response?.data?.error || detailText || e.message || t('adminLoadFailed', { tab: currentTab });
-        toast.error(msg);
+        toast.error(readApiError(e, t('adminLoadFailed', { tab: currentTab })));
       })
       .finally(() => {
         if (!silent) setLoading(false);
@@ -490,13 +486,7 @@ export default function AdminDashboardPage() {
       .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(() => setPendingVentures([]));
 
-  const resolveApiErrorMessage = (error, fallback) => {
-    const detail = error?.response?.data?.detail;
-    const detailText = Array.isArray(detail)
-      ? detail.map((d) => d.msg || d).join(', ')
-      : (typeof detail === 'string' ? detail : null);
-    return error?.response?.data?.error || detailText || error?.message || fallback;
-  };
+  const resolveApiErrorMessage = (error, fallback) => readApiError(error, fallback);
 
   const handleApproveVenture = async (ventureId) => {
     if (!ventureId || pendingVentureActionId) return;

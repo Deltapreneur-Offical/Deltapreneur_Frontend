@@ -14,6 +14,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { domainTransferAdminAPI } from '../api/domainTransferAPI';
+import { readApiError } from '../utils/apiError';
 import ConfirmationModal, { buttonVariantMap } from '../components/common/ConfirmationModal';
 
 const CLOSED_TRANSFER_STATUSES = new Set(['REFUNDED', 'SELLER_PAID', 'PAYOUT_RELEASED', 'COMPLETED', 'CANCELLED']);
@@ -63,13 +64,7 @@ function getAdminAccountNumber(payoutProfile = {}) {
 }
 
 function getApiErrorMessage(error) {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    error?.response?.data?.detail ||
-    error?.message ||
-    'Action failed.'
-  );
+  return readApiError(error, 'Action failed.');
 }
 
 function formatStatus(value) {

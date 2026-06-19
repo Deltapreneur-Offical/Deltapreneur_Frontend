@@ -36,6 +36,7 @@ import { useLocation } from 'react-router-dom';
 import { cobrotherAIAPI, streamCoBrotherAI } from '../../api/ai';
 import broAILogo from '../../assets/Cobrother_Profile.png';
 import { useAuth } from '../../context/AuthContext';
+import { readApiError } from '../../utils/apiError';
 
 const MODES = [
   { id: 'domains', label: 'Domains', icon: Globe2 },
@@ -642,7 +643,13 @@ export default function CoBrotherAI({ initialOpen = false }) {
             }
 
             if (event === 'error') {
-              throw new Error(data?.message || 'Bro hit a response error.');
+              throw new Error(
+                readApiError(
+                  { response: { data, status: 503 } },
+                  'Bro is unavailable right now. Please try again in a moment.',
+                  { context: 'ai' },
+                ),
+              );
             }
 
             if (event === 'done') {
@@ -673,14 +680,17 @@ export default function CoBrotherAI({ initialOpen = false }) {
       });
     } catch (error) {
       if (controller.signal.aborted) return;
+      const safeMessage = readApiError(
+        error,
+        'Bro is unavailable right now. Please try again in a moment.',
+        { context: 'ai' },
+      );
       setMessages((current) =>
         current.map((message) =>
           message.id === assistantId
             ? {
                 ...message,
-                content:
-                  error?.message ||
-                  'Bro is unavailable right now. Please try again in a moment.',
+                content: safeMessage,
               }
             : message,
         ),

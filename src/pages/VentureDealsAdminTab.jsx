@@ -9,6 +9,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ventureDealAPI } from '../api/services';
+import { readApiError } from '../utils/apiError';
 import ConfirmationModal, { buttonVariantMap } from '../components/common/ConfirmationModal';
 
 const CLOSED_DEAL_STATUSES = new Set(['COMPLETED', 'CANCELLED', 'REFUNDED']);
@@ -40,13 +41,7 @@ const statusToneMap = {
 };
 
 function getApiErrorMessage(error) {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    error?.response?.data?.detail ||
-    error?.message ||
-    'Action failed.'
-  );
+  return readApiError(error, 'Action failed.');
 }
 
 function formatStatus(value, context = 'deal') {

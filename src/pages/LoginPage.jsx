@@ -12,6 +12,7 @@ import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';
 import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import GoogleIcon from '../components/auth/GoogleIcon';
+import { readApiError } from '../utils/apiError';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -86,11 +87,11 @@ export default function LoginPage() {
       ),
       google_oauth_not_configured: t(
         'googleOAuthNotConfigured',
-        'Google sign-in is not configured for this environment.',
+        'Google sign-in is temporarily unavailable. Please try again later.',
       ),
       google_oauth_secret_missing: t(
         'googleOAuthSecretMissing',
-        'Google sign-in is missing the backend client secret.',
+        'Google sign-in is temporarily unavailable. Please try again later.',
       ),
       database_unavailable: t(
         'databaseUnavailable',
@@ -156,10 +157,7 @@ export default function LoginPage() {
         setInfo(t('verifyEmailResendHint', 'Use “Resend verification” below, or sign in with OTP to verify instantly.'));
       } else {
         setError(
-          body?.error ||
-          body?.message ||
-          err.message ||
-          t('invalidEmailOrPassword'),
+          readApiError(err, t('invalidEmailOrPassword')),
         );
       }
     } finally {

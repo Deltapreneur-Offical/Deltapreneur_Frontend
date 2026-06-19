@@ -34,6 +34,7 @@ import {
   resolveCreatorAuctionId,
 } from '../utils/creatorAuctionSummary';
 import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpectedRate, buildCreatorExpectedRate, CREATOR_RATE_PERIODS } from '../utils/creatorExpectedRate';
+import { readApiError } from '../utils/apiError';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -64,35 +65,7 @@ function profileMatchesUser(profile, currentUser) {
 }
 
 function apiErrorMessage(err, fallback) {
-  const status = err?.response?.status;
-  const data = err?.response?.data;
-
-  if (!err?.response) {
-    const msg = String(err?.message || '').toLowerCase();
-    if (msg.includes('network') || msg.includes('failed to fetch') || msg.includes('timeout')) {
-      return 'Cannot reach the server. Start the backend with .\\run_local.ps1 or .\\run_dev.ps1 (and keep the RDS tunnel open).';
-    }
-  }
-
-  if (status === 503) {
-    return data?.message || data?.error || 'Database unavailable locally. Run .\\run_rds_tunnel.ps1, then restart .\\run_dev.ps1.';
-  }
-
-  if (status === 500) {
-    return data?.message || data?.error || 'Server error. If developing locally, ensure the RDS tunnel is running on port 5433.';
-  }
-
-  if (!data) return err?.message || fallback;
-  if (data.error) return data.error;
-  if (data.detail && typeof data.detail === 'string') return data.detail;
-  if (data.message) {
-    if (Array.isArray(data.data) && data.data.length) {
-      const fields = data.data.map(e => e.message || e.field).filter(Boolean).join('; ');
-      return fields ? `${data.message}: ${fields}` : data.message;
-    }
-    return data.message;
-  }
-  return fallback;
+  return readApiError(err, fallback);
 }
 
 /** URLSearchParams.get() already decodes; avoid double decodeURIComponent (throws on % in text). */

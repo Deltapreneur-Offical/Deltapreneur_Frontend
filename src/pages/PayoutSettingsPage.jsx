@@ -11,6 +11,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { payoutProfileAPI } from '../api/domainTransferAPI';
+import { readApiError } from '../utils/apiError';
 
 const INDIAN_BANKS = [
   'Airtel Payments Bank',
@@ -160,13 +161,7 @@ function unwrapProfile(data) {
 }
 
 function getApiErrorMessage(error) {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    error?.response?.data?.detail ||
-    error?.message ||
-    'Unable to save payout settings.'
-  );
+  return readApiError(error, 'Unable to save payout settings.');
 }
 
 function formatDateTime(value) {

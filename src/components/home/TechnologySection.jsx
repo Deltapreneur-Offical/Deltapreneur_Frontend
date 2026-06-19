@@ -58,7 +58,7 @@ export default function TechnologySection() {
           <HomePreviewRow>
             {previewSoftwares.map((item) => (
               <HomePreviewRowItem key={item.id}>
-                <HomePreviewCardShell>
+                <HomePreviewCardShell accent="technology">
                   <TechnologyListingCard
                     item={item}
                     browseMode

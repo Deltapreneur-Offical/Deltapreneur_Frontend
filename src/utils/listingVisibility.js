@@ -19,6 +19,7 @@ export function getListingOwnerId(item, type = 'domain') {
     return (
       item.appUser?.id
       ?? item.appUserId
+      ?? item.app_user_id
       ?? item.user?.id
       ?? item.userId
       ?? null
@@ -47,9 +48,11 @@ export function getListingOwnerId(item, type = 'domain') {
 
 /** Whether the logged-in user created this listing. */
 export function isListingOwner(item, user, type = 'domain') {
-  if (!item || user?.id == null) return false;
+  if (!item || user == null) return false;
+  const userId = user.id ?? user.userId;
+  if (userId == null) return false;
   const ownerId = getListingOwnerId(item, type);
-  return matchUserId(user.id, ownerId);
+  return matchUserId(userId, ownerId);
 }
 
 /** Whether a creator profile is public (homepage, browse, detail for non-owners). */

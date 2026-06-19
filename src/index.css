@@ -34,6 +34,12 @@
   --cobrother-brand-green-dark: #50BF78;
   --cobrother-brand-green-soft: #edf9f1;
   --cobrother-hover-color: var(--cobrother-brand-green);
+  /* WhatsApp brand + glow (nav, footer, floating button) */
+  --whatsapp-color: #25d366;
+  --whatsapp-color-bright: #1faa59;
+  --whatsapp-color-hover: #1a9a50;
+  --whatsapp-pulse-color: rgba(37, 211, 102, 0.48);
+  --whatsapp-glow-color: rgba(37, 211, 102, 0.55);
   --radius:    10px;
   --radius-lg: 18px;
   --shadow:    0 4px 40px rgba(0,0,0,0.5);
@@ -6888,12 +6894,12 @@ body.home-page-body {
 }
 
 .home-nav-whatsapp-btn {
-  color: var(--cobrother-brand-green);
+  color: var(--whatsapp-color);
 }
 
 .home-nav-whatsapp-btn:hover,
 .home-nav-whatsapp-btn:focus-visible {
-  color: var(--cobrother-brand-green);
+  color: var(--whatsapp-color);
   background: transparent;
   outline: none;
 }
@@ -6942,7 +6948,7 @@ body.home-page-body {
   }
 
   .home-top-nav-actions .home-nav-whatsapp-btn {
-    color: #25d366;
+    color: var(--whatsapp-color);
   }
 
   .home-top-nav-actions .home-nav-call-btn svg {
@@ -8061,8 +8067,8 @@ body.home-menu-open {
 }
 
 .home-footer-social-link--whatsapp:hover {
-  border-color: #25d366;
-  color: #25d366;
+  border-color: var(--whatsapp-color);
+  color: var(--whatsapp-color);
 }
 
 .home-footer-social-link--facebook:hover {
@@ -11145,5 +11151,138 @@ body.home-menu-open {
 
   .operations-role-modal-field--full {
     grid-column: auto;
+  }
+}
+
+/* Floating WhatsApp support button (bottom-right) */
+@keyframes whatsapp-call-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+    box-shadow: 0 0 0 0 var(--whatsapp-glow-color);
+  }
+
+  65% {
+    opacity: 0.2;
+    box-shadow: 0 0 14px 4px rgba(37, 211, 102, 0.3);
+  }
+
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+    box-shadow: 0 0 24px 10px rgba(37, 211, 102, 0);
+  }
+}
+
+@keyframes whatsapp-glow-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.4);
+    opacity: 0.85;
+  }
+}
+
+.whatsapp-floating-btn {
+  position: fixed;
+  z-index: 1200;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: var(--whatsapp-color-bright);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: none;
+  overflow: visible;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .whatsapp-floating-btn {
+    right: 1.25rem;
+    bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+    width: 4rem;
+    height: 4rem;
+  }
+}
+
+.whatsapp-floating-btn__glow {
+  position: absolute;
+  inset: -0.4rem;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle,
+    rgba(37, 211, 102, 0.55) 0%,
+    rgba(37, 211, 102, 0.28) 45%,
+    rgba(37, 211, 102, 0) 72%
+  );
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+  animation: whatsapp-glow-breathe 2.4s ease-in-out infinite;
+}
+
+.whatsapp-floating-btn__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--whatsapp-pulse-color);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: whatsapp-call-pulse 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.whatsapp-floating-btn__pulse--2 {
+  animation-delay: 1.2s;
+}
+
+.whatsapp-floating-btn:hover,
+.whatsapp-floating-btn:focus-visible {
+  color: #fff;
+  background: var(--whatsapp-color-hover);
+  transform: scale(1.05);
+  outline: none;
+  box-shadow: none;
+}
+
+.whatsapp-floating-btn:active {
+  transform: scale(0.97);
+}
+
+.whatsapp-floating-btn__icon {
+  position: relative;
+  z-index: 1;
+  width: 2rem;
+  height: 2rem;
+  color: #f5fffa;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+@media (min-width: 640px) {
+  .whatsapp-floating-btn__icon {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whatsapp-floating-btn__pulse,
+  .whatsapp-floating-btn__glow {
+    animation: none;
+    opacity: 0;
+  }
+
+  .whatsapp-floating-btn__glow {
+    opacity: 0.45;
   }
 }

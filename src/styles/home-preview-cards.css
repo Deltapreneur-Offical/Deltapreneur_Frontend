@@ -179,91 +179,112 @@
   flex: 1 1 auto !important;
 }
 
-/* Thin gradient border — homepage listing previews (matches Virtual Assistant, 1px ring) */
+/* Clean 2px border per section — visible, no shadow */
 .home-preview-card-border {
+  --home-card-border: #38bdf8;
+  --home-card-border-hover: #0ea5e9;
   position: relative;
-  padding: 1px;
-  overflow: hidden;
+  padding: 0;
+  overflow: visible;
   isolation: isolate;
   border-radius: 1.5rem;
+  border: 2px solid var(--home-card-border) !important;
+  background: #ffffff;
+  box-shadow: none;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease;
+}
+
+.home-preview-card-border:hover {
+  border-color: var(--home-card-border-hover) !important;
+  box-shadow: none;
+}
+
+/* Domains — sky blue (hero search bar) */
+.home-preview-card-border--domain {
+  --home-card-border: #38bdf8;
+  --home-card-border-hover: #0ea5e9;
+}
+
+/* Ventures — teal */
+.home-preview-card-border--venture {
+  --home-card-border: #2dd4bf;
+  --home-card-border-hover: #14b8a6;
+}
+
+/* Co-Ventures — brand green */
+.home-preview-card-border--coventure {
+  --home-card-border: #50bf78;
+  --home-card-border-hover: #22c55e;
+}
+
+/* Technology — violet */
+.home-preview-card-border--technology {
+  --home-card-border: #a78bfa;
+  --home-card-border-hover: #8b5cf6;
+}
+
+/* Creators / community — rose */
+.home-preview-card-border--community {
+  --home-card-border: #f472b6;
+  --home-card-border-hover: #ec4899;
+}
+
+/* Auctions — amber */
+.home-preview-card-border--auction {
+  --home-card-border: #fbbf24;
+  --home-card-border-hover: #f59e0b;
 }
 
 .home-preview-card-border__inner {
   position: relative;
   z-index: 1;
-  height: 100%;
-  border-radius: calc(1.5rem - 1px);
+  height: auto;
+  min-height: min-content;
+  border-radius: calc(1.5rem - 2px);
   overflow: hidden;
+  background: #ffffff;
+}
+
+/* Domain / tech / creator previews — avoid h-full collapse inside auto-height rows */
+.home-preview-row .home-preview-card-border:not(:has(.venture-listing-card)),
+.home-auto-scroll-row .home-preview-card-border:not(:has(.venture-listing-card)) {
+  height: auto !important;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-preview-row .home-preview-card-border:not(:has(.venture-listing-card)) .home-preview-card-border__inner,
+.home-auto-scroll-row .home-preview-card-border:not(:has(.venture-listing-card)) .home-preview-card-border__inner {
+  height: auto !important;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .home-preview-card-border__inner > .home-preview-browse-card,
 .home-preview-card-border__inner > article.home-preview-browse-card,
+.home-preview-card-border__inner > .venture-listing-card,
+.home-preview-card-border__inner > article.venture-listing-card,
+.home-preview-card-border__inner > .technology-listing-card,
+.home-preview-card-border__inner > article.technology-listing-card,
 .home-preview-card-border__inner > .home-creator-listing-card,
 .home-preview-card-border__inner > article.home-creator-listing-card,
 .home-preview-card-border__inner > .home-auction-preview-card,
 .home-preview-card-border__inner > article.home-auction-preview-card {
   border: none !important;
-  border-radius: calc(1.5rem - 1px);
+  border-radius: calc(1.5rem - 2px);
 }
 
-.home-preview-card-beam-spinner {
-  position: absolute;
-  z-index: 0;
-  left: 50%;
-  top: 50%;
-  width: 250%;
-  aspect-ratio: 1;
-  pointer-events: none;
-  transform: translate(-50%, -50%) rotate(0deg);
-  opacity: 0;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 74%,
-    rgba(0, 195, 255, 0.35) 82%,
-    #00c3ff 88%,
-    #9333ea 94%,
-    rgba(147, 51, 234, 0.3) 99%,
-    transparent 100%
-  );
-  animation: home-preview-beam-spin 22s linear infinite;
-}
-
-.home-preview-row__item:nth-child(2n) .home-preview-card-beam-spinner,
-.home-auto-scroll-row__item:nth-child(2n) .home-preview-card-beam-spinner {
-  animation-delay: -11s;
-}
-
-@keyframes home-preview-beam-spin {
-  0%,
-  42%,
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  2% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  38% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-
-  40% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-preview-card-beam-spinner {
-    animation: none !important;
-    opacity: 0.55;
-    transform: translate(-50%, -50%) rotate(210deg);
-  }
+/* Venture / co-venture rows — keep gradient border visible on full-height cards */
+.home-preview-row__card:has(.venture-listing-card) .home-preview-card-border,
+.home-auto-scroll-row__item:has(.venture-listing-card) .home-preview-card-border {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
 }
 
 /* Proper INR glyph — avoid serif/display fonts on currency */
@@ -467,18 +488,41 @@
   padding: 0.28rem 0.38rem 0.28rem 0.5rem;
 }
 
-/* View-details arrow — black on white so it stays visible on homepage cards */
+/* View-details arrow — matches hero search submit (brand-search-submit) */
 .home-preview-row .domain-listing-card__price-cta,
-.home-auto-scroll-row .domain-listing-card__price-cta {
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  color: #111827;
+.home-auto-scroll-row .domain-listing-card__price-cta,
+.home-preview-row .listing-card-stats-footer__cta,
+.home-auto-scroll-row .listing-card-stats-footer__cta {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
 .home-preview-row .domain-listing-card__price-cta svg,
-.home-auto-scroll-row .domain-listing-card__price-cta svg {
-  color: #111827;
+.home-auto-scroll-row .domain-listing-card__price-cta svg,
+.home-preview-row .listing-card-stats-footer__cta svg,
+.home-auto-scroll-row .listing-card-stats-footer__cta svg {
+  color: #ffffff !important;
   stroke: currentColor;
+}
+
+.home-preview-row .domain-listing-card__price-cta:hover,
+.home-auto-scroll-row .domain-listing-card__price-cta:hover,
+.home-preview-row .listing-card-stats-footer__cta:hover,
+.home-auto-scroll-row .listing-card-stats-footer__cta:hover {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+.home-preview-row .domain-listing-card__price-cta:hover svg,
+.home-auto-scroll-row .domain-listing-card__price-cta:hover svg,
+.home-preview-row .listing-card-stats-footer__cta:hover svg,
+.home-auto-scroll-row .listing-card-stats-footer__cta:hover svg {
+  color: #ffffff !important;
 }
 
 
@@ -696,22 +740,7 @@
   }
 }
 
-/* Auction cards — disable animated beam border (causes gradient bleed/glitches) */
-.home-preview-card-shell:has(.home-auction-preview-card) .home-preview-card-beam-spinner {
-  display: none !important;
-}
-
-.home-preview-card-shell:has(.home-auction-preview-card) .home-preview-card-border {
-  background: #e8edf4;
-  padding: 1px;
-  overflow: hidden;
-}
-
-.home-preview-card-shell:has(.home-auction-preview-card) .home-preview-card-border__inner {
-  background: #ffffff;
-  overflow: hidden;
-}
-
+/* Auction cards — same static border as other homepage previews */
 /* Homepage auction preview cards */
 .home-auction-preview-card {
   font-family: var(--font-body, 'Inter', system-ui, sans-serif);
@@ -1132,7 +1161,7 @@
 .home-preview-row .home-auction-preview-card,
 .home-preview-card-border__inner .home-auction-preview-card {
   border: none !important;
-  border-radius: calc(1.5rem - 1px);
+  border-radius: calc(1.5rem - 2px);
   background: #ffffff;
   box-shadow: none !important;
   flex: 0 0 auto;

@@ -56,7 +56,7 @@ export default function VenturesSection() {
           <HomePreviewRow>
             {ventures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
-                <HomePreviewCardShell>
+                <HomePreviewCardShell accent="venture">
                   <VentureListingCard
                     venture={venture}
                     browseMode

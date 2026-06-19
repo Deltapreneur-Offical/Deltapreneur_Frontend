@@ -4,6 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import HomeFooter from '../components/common/HomeFooter';
+import {
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_TEL,
+  WHATSAPP_URL,
+} from '../config/contactLinks';
 
 export default function ContactPage() {
   const { t } = useTranslation();
@@ -22,16 +27,16 @@ export default function ContactPage() {
       {
         icon: Phone,
         title: t('callUs'),
-        details: '+91 98765 43210',
-        link: 'tel:+919876543210',
+        details: SUPPORT_PHONE_DISPLAY,
+        link: SUPPORT_PHONE_TEL,
         color: 'text-indigo-600',
         bgColor: 'bg-indigo-50',
       },
       {
         icon: MessageCircle,
         title: t('whatsapp'),
-        details: '+91 98765 43210',
-        link: 'https://wa.me/919876543210',
+        details: SUPPORT_PHONE_DISPLAY,
+        link: WHATSAPP_URL,
         color: 'text-green-600',
         bgColor: 'bg-green-50',
       },

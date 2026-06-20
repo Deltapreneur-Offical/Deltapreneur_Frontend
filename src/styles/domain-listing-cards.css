@@ -179,11 +179,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1.5px solid #cbd5e1;
-  background: #ffffff;
-  color: #111827;
+  border: 1px solid #000000;
+  background: #000000;
+  color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
   transition:
     background-color 0.22s ease,
     border-color 0.22s ease,
@@ -193,25 +193,27 @@
 }
 
 .domain-listing-card__price-cta svg {
-  color: #111827;
+  color: #ffffff;
   stroke: currentColor;
 }
 
-.domain-listing-card__price-cta:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #000000;
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+.domain-listing-card__price-cta:hover,
+.domain-listing-card__price-cta:focus-visible {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
 }
 
-.domain-listing-card__price-cta:hover svg {
-  color: #000000;
+.domain-listing-card__price-cta:hover svg,
+.domain-listing-card__price-cta:focus-visible svg {
+  color: #ffffff;
 }
 
 .domain-listing-card__price-cta:active {
-  transform: translateY(0) scale(1);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
 .domain-listing-card__stats.listing-card-stats-footer {
@@ -1146,18 +1148,20 @@
   color: #1e293b !important;
 }
 
-/* Premium Venture Card (Purple/Indigo Theme) */
+/* Premium Venture Card */
 .venture-listing-card--venture {
-  border: 1px solid rgba(99, 102, 241, 0.1) !important;
-  box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.04) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 14px rgba(15, 23, 42, 0.05) !important;
 }
 
 .venture-listing-card--venture:hover {
   transform: translateY(-4px) !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
-  box-shadow: 
-    0 12px 24px -4px rgba(99, 102, 241, 0.12) !important, 
-    0 4px 12px -2px rgba(139, 92, 246, 0.06) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.08),
+    0 2px 8px rgba(15, 23, 42, 0.04) !important;
 }
 
 .home-preview-card-border .venture-listing-card--venture:hover,
@@ -1169,18 +1173,20 @@
   box-shadow: none !important;
 }
 
-/* Premium Co-Venture Card (Emerald/Teal Theme) */
+/* Premium Co-Venture Card */
 .venture-listing-card--coventure {
-  border: 1px solid rgba(16, 185, 129, 0.1) !important;
-  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.04) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 14px rgba(15, 23, 42, 0.05) !important;
 }
 
 .venture-listing-card--coventure:hover {
   transform: translateY(-4px) !important;
-  border-color: rgba(16, 185, 129, 0.25) !important;
-  box-shadow: 
-    0 12px 24px -4px rgba(16, 185, 129, 0.12) !important, 
-    0 4px 12px -2px rgba(20, 184, 166, 0.06) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.08),
+    0 2px 8px rgba(15, 23, 42, 0.04) !important;
 }
 
 .home-preview-card-border .venture-listing-card--coventure:hover {
@@ -1316,4 +1322,31 @@
 .venture-listing-card .domain-listing-card__price-box--compact .domain-listing-card__price-cta {
   width: 1.625rem;
   height: 1.625rem;
+}
+
+/* Venture pitch CTA — clean white SaaS pill (no arrow) */
+.venture-listing-card__pitch-cta {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.venture-listing-card__pitch-cta:hover,
+.venture-listing-card__pitch-cta:focus-visible {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.venture-listing-card__pitch-cta--disabled,
+.venture-listing-card__pitch-cta:disabled {
+  cursor: not-allowed;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  transform: none !important;
 }

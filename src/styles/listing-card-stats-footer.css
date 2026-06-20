@@ -64,11 +64,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1.5px solid #cbd5e1;
-  background: #ffffff;
-  color: #111827;
+  border: 1px solid #000000;
+  background: #000000;
+  color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
   transition:
     background-color 0.22s ease,
     border-color 0.22s ease,
@@ -78,25 +78,27 @@
 }
 
 .listing-card-stats-footer__cta svg {
-  color: #111827;
+  color: #ffffff;
   stroke: currentColor;
 }
 
-.listing-card-stats-footer__cta:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #000000;
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+.listing-card-stats-footer__cta:hover,
+.listing-card-stats-footer__cta:focus-visible {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
 }
 
-.listing-card-stats-footer__cta:hover svg {
-  color: #000000;
+.listing-card-stats-footer__cta:hover svg,
+.listing-card-stats-footer__cta:focus-visible svg {
+  color: #ffffff;
 }
 
 .listing-card-stats-footer__cta:active {
-  transform: translateY(0) scale(1);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
 .domain-listing-card .listing-card-stats-footer {

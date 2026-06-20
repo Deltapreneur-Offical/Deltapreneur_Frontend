@@ -408,8 +408,8 @@
 
 .home-preview-card-border__inner .venture-listing-card--venture,
 .home-preview-card-border__inner .venture-listing-card--coventure {
-  border: none !important;
-  box-shadow: none !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
 }
 
 /* Venture / co-venture rows — content-sized cards inside colored border */
@@ -800,12 +800,16 @@
 }
 
 .home-preview-card-border__inner .domain-listing-card,
-.home-preview-card-border__inner .venture-listing-card,
 .home-preview-card-border__inner .technology-listing-card,
 .home-preview-card-border__inner .community-listing-card,
 .home-preview-card-border__inner .home-creator-listing-card,
 .home-preview-card-border__inner .home-auction-preview-card {
   border: none !important;
+}
+
+.home-preview-card-border__inner .venture-listing-card {
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
 }
 
 .home-preview-row .listing-card-glow-shell > .creator-profile-card,

@@ -175,6 +175,7 @@ export function useCommunityAuction(auctionId) {
     const client = new Client({
       webSocketFactory: () => new SockJS(`${resolveRealtimeOrigin()}/ws`),
       reconnectDelay: 3000,
+      connectionTimeout: 10000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
       onConnect: () => {
@@ -198,17 +199,41 @@ export function useCommunityAuction(auctionId) {
         setConnected(false);
         setWsState('reconnecting');
       },
+      onWebSocketClose: () => {
+        setConnected(false);
+        setWsState((prev) => (prev === 'live' ? 'reconnecting' : prev));
+      },
+      onWebSocketError: () => {
+        setConnected(false);
+        setWsState('reconnecting');
+      },
     });
 
     client.activate();
     clientRef.current = client;
 
+    const connectTimeout = window.setTimeout(() => {
+      setWsState((prev) => (prev === 'connecting' ? 'reconnecting' : prev));
+    }, 12000);
+
     return () => {
+      window.clearTimeout(connectTimeout);
       client.deactivate();
       setConnected(false);
       setWsState('connecting');
     };
   }, [auctionId]);
+
+  useEffect(() => {
+    const isLiveAuction = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+    if (!auctionId || wsState === 'live' || !isLiveAuction) return undefined;
+
+    const pollId = window.setInterval(() => {
+      fetchAuctionDetail().catch(() => {});
+    }, 15000);
+
+    return () => window.clearInterval(pollId);
+  }, [auctionId, wsState, auction?.status, fetchAuctionDetail]);
 
   const placeBid = useCallback(async (payload) => {
     const body = typeof payload === 'object' && payload !== null ? payload : { amount: payload };

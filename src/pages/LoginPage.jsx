@@ -130,9 +130,13 @@ export default function LoginPage() {
     if (!import.meta.env.DEV) return undefined;
 
     let cancelled = false;
-    checkBackendDatabaseReady().then((ready) => {
+    checkBackendDatabaseReady({ retries: 12, delayMs: 2000 }).then((ready) => {
       if (!ready && !cancelled) {
-        setError(databaseUnavailableMessage);
+        setInfo(databaseUnavailableMessage);
+      } else if (ready && !cancelled) {
+        setInfo((current) => (
+          current === databaseUnavailableMessage ? '' : current
+        ));
       }
     });
 

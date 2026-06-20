@@ -837,11 +837,11 @@ function MeetingsSection({
       {isActive && !isOwner && !participationLoading && !participationPaid && (
         <div className="px-5 py-4 bg-amber-50 border-b border-amber-200">
           <div className="text-sm text-amber-800 mb-2">
-            Participation fee required to request a meeting:{' '}
+            Meeting request fee required to request a meeting:{' '}
             <strong>₹{Number(participationFee || 0).toLocaleString('en-IN')}</strong>
           </div>
           <button className="btn-glow btn-glow-sm w-full sm:w-auto" onClick={onPayParticipation} disabled={payingParticipation}>
-            {payingParticipation ? 'Processing…' : 'Pay Participation Fee →'}
+            {payingParticipation ? 'Processing…' : 'Pay Meeting Request Fee →'}
           </button>
           {participationError && <div className="text-xs text-red-600 mt-2">{participationError}</div>}
         </div>

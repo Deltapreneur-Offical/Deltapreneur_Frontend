@@ -51,11 +51,12 @@ export default function AuctionsSection() {
           softwareAuctionAPI.getActive().catch(() => ({ data: [] })),
         ]);
 
-        setAuctions({
+        const normalized = {
           domains: extractActiveList(domainsRes.data).map(normalizeDomainAuction).filter(Boolean),
           community: extractActiveList(communityRes.data).map(normalizeCommunityAuction).filter(Boolean),
           software: extractActiveList(softwareRes.data).map(normalizeSoftwareAuction).filter(Boolean),
-        });
+        };
+        setAuctions(normalized);
       } catch {
         setAuctions({ domains: [], community: [], software: [] });
       } finally {

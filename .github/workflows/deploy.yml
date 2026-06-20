@@ -40,8 +40,8 @@ jobs:
 
       - name: Install Dependencies & Build
         env:
-          VITE_API_URL: https://demo.cobrother.com/api
-          VITE_APP_URL: https://demo.cobrother.com
+          VITE_API_URL: https://backend.cobrother.com
+          VITE_APP_URL: https://cobrother.com
           VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
@@ -84,7 +84,7 @@ jobs:
             test -f "${DEST}/index.html"
             CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' "${DEST}/index.html" | head -1 | tr -d '"')")"
             test -f "${DEST}/assets/${CSS_FILE}"
-            grep -q 'home-auction-preview-card__metric-value{display:block;padding-left:0' "${DEST}/assets/${CSS_FILE}"
+            grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
 
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3

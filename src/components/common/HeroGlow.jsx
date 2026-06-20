@@ -1,8 +1,54 @@
 import { useTranslation } from 'react-i18next';
+import { motion, useReducedMotion } from 'framer-motion';
 import DomainSearchBar from './DomainSearchBar';
+import {
+  heroDotEnter,
+  heroEnterContainer,
+  heroHeadlineEnter,
+  heroTaglineEnter,
+} from '../home/motion/homeMotion';
 
 export default function HeroGlow() {
   const { t } = useTranslation();
+  const reduceMotion = useReducedMotion();
+
+  const textStack = reduceMotion ? (
+    <div className="hero-text-stack relative z-20 w-full min-w-0">
+      <span className="hero-tagline-dot" aria-hidden="true" />
+      <p className="hero-tagline m-0 font-sans">{t('heroEyebrow')}</p>
+      <h1 className="hero-headline m-0 font-sans font-normal text-black">
+        Start It Up With{' '}
+        <span className="hero-emphasis">CoBrother</span>
+        {' '}To{' '}
+        <span className="hero-emphasis">Disrupt</span>
+      </h1>
+    </div>
+  ) : (
+    <motion.div
+      className="hero-text-stack relative z-20 w-full min-w-0"
+      variants={heroEnterContainer}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.span
+        className="hero-tagline-dot"
+        aria-hidden="true"
+        variants={heroDotEnter}
+      />
+      <motion.p className="hero-tagline m-0 font-sans" variants={heroTaglineEnter}>
+        {t('heroEyebrow')}
+      </motion.p>
+      <motion.h1
+        className="hero-headline m-0 font-sans font-normal text-black"
+        variants={heroHeadlineEnter}
+      >
+        Start It Up With{' '}
+        <span className="hero-emphasis">CoBrother</span>
+        {' '}To{' '}
+        <span className="hero-emphasis">Disrupt</span>
+      </motion.h1>
+    </motion.div>
+  );
 
   return (
     <section className="hero-glow-section relative overflow-x-clip overflow-y-visible border-b-0 bg-transparent pb-2 pl-4 pr-4 pt-5 sm:pl-6 sm:pr-5 sm:pt-6 md:pl-10 md:pt-7 lg:pl-20 lg:pr-8 lg:pt-7">
@@ -10,19 +56,7 @@ export default function HeroGlow() {
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex w-full max-w-[920px] flex-col items-start text-left">
-          <div className="hero-text-stack relative z-20 w-full min-w-0">
-            <span className="hero-tagline-dot" aria-hidden="true" />
-            <p className="hero-tagline m-0 font-sans">
-              {t('heroEyebrow')}
-            </p>
-            <h1 className="hero-headline m-0 font-sans font-normal text-black">
-              Start It Up With{' '}
-              <span className="hero-emphasis">CoBrother</span>
-              {' '}To{' '}
-              <span className="hero-emphasis">Disrupt</span>
-            </h1>
-          </div>
-
+          {textStack}
           <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />
         </div>
       </div>

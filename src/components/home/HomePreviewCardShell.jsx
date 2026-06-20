@@ -1,19 +1,32 @@
+import { motion, useReducedMotion } from 'framer-motion';
 import ListingCardShell from '../listings/ListingCardShell';
+import { homeCardHover, homeCardTap } from './motion/homeMotion';
 
 /**
  * Homepage listing preview wrapper — slight hero-glow border (no shadow).
  * @param {'domain'|'venture'|'coventure'|'technology'|'community'|'auction'} accent
  */
 export default function HomePreviewCardShell({ children, className = '', accent = 'domain' }) {
+  const reduceMotion = useReducedMotion();
   const accentClass = accent ? ` home-preview-card-border--${accent}` : '';
+  const BorderTag = reduceMotion ? 'div' : motion.div;
+  const borderMotionProps = reduceMotion
+    ? {}
+    : {
+        whileHover: homeCardHover,
+        whileTap: homeCardTap,
+      };
 
   return (
     <ListingCardShell className={`home-preview-card-shell${className ? ` ${className}` : ''}`}>
-      <div className={`home-preview-card-border w-full${accentClass}`}>
+      <BorderTag
+        className={`home-preview-card-border w-full${accentClass}`}
+        {...borderMotionProps}
+      >
         <div className="home-preview-card-border__inner w-full">
           {children}
         </div>
-      </div>
+      </BorderTag>
     </ListingCardShell>
   );
 }

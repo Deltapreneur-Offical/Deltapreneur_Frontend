@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import BackButton from './BackButton';
+import BackToHomeButton from './BackToHomeButton';
 import BrandNavLogo from './BrandNavLogo';
 import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
@@ -264,7 +264,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             {(showBack || authButtons) ? (
               <div className="home-nav-desktop-cta home-nav-cta-group">
                 {showBack ? (
-                  <BackButton to="/" label={t('Home')} variant="pill" />
+                  <BackToHomeButton />
                 ) : null}
                 {authButtons}
               </div>
@@ -349,7 +349,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
               </div>
               {showBack ? (
-                <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
+                <BackToHomeButton className="w-full justify-center mb-3" />
               ) : null}
               {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">

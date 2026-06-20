@@ -21,7 +21,7 @@
 .domain-listing-grid,
 .home-features-card-grid {
   overflow: visible;
-  padding: 12px 4px;
+  padding: 12px 4px 16px;
   align-items: stretch;
 }
 
@@ -67,6 +67,15 @@
   );
 }
 
+.listing-card-glow-shell.community-listing-card-shell {
+  padding: 0;
+}
+
+.listing-card-glow-shell.community-listing-card-shell::before {
+  content: none;
+  display: none;
+}
+
 .home-feature-card-shell::before {
   border-radius: 22px;
 }
@@ -76,6 +85,10 @@
 .domain-listing-card-shell:hover::before,
 .home-feature-card-shell:hover::before {
   opacity: 1;
+}
+
+.listing-card-glow-shell.community-listing-card-shell:hover::before {
+  opacity: 0;
 }
 
 .listing-card-glow.card-glow-hover,
@@ -115,6 +128,10 @@
 
 .creator-profile-card.community-listing-card.card-glow-hover {
   overflow: visible;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 4px 14px rgba(15, 23, 42, 0.06);
 }
 
 .domain-listing-card.card-glow-hover,
@@ -131,7 +148,7 @@
 .home-feature-card.card-glow-hover:hover,
 .domain-listing-card.card-glow-hover:hover,
 .venture-listing-card.card-glow-hover:hover,
-.community-listing-card.card-glow-hover:hover {
+.community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-3px) translateZ(0);
   border-color: rgba(15, 23, 42, 0.18) !important;
   background: var(--listing-card-gradient-hover) !important;
@@ -143,4 +160,17 @@
 .community-listing-card .listing-browse-footer {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
+}
+
+/* Homepage preview cards — outer shell owns hover; inner listing cards stay still */
+.home-preview-card-border .venture-listing-card.card-glow-hover:hover,
+.home-preview-card-border .technology-listing-card.card-glow-hover:hover,
+.home-preview-card-border .domain-listing-card.card-glow-hover:hover,
+.home-preview-card-border .home-creator-listing-card.card-glow-hover:hover,
+.home-preview-card-border .home-auction-preview-card.card-glow-hover:hover,
+.home-preview-card-border .home-preview-browse-card.card-glow-hover:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: #ffffff !important;
 }

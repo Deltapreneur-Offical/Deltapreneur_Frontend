@@ -83,7 +83,8 @@ export function AuthProvider({ children }) {
         || serverMessage.includes('rds tunnel')
       );
       if (databaseUnavailable) {
-        throw err;
+        setUser(null);
+        return null;
       }
       // 401 = token invalid/expired — clear auth keys only (avoid wiping unrelated keys
       // and racing OAuth callback which may have just written new tokens).

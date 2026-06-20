@@ -9,7 +9,8 @@
   gap: 1rem;
   overflow-x: auto;
   overflow-y: visible;
-  padding-bottom: 1rem;
+  padding-top: 10px;
+  padding-bottom: 1.25rem;
   margin-inline: -0.25rem;
   padding-inline: 0.25rem;
   scroll-snap-type: x mandatory;
@@ -31,6 +32,7 @@
   flex-direction: column;
   overflow: visible;
   box-sizing: border-box;
+  padding: 4px 4px 8px;
 }
 
 .home-preview-row__card {
@@ -53,6 +55,7 @@
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow-x: visible;
+    overflow-y: visible;
     margin-inline: 0;
     padding-inline: 0;
     scroll-snap-type: none;
@@ -88,7 +91,7 @@
 
 
 
-.home-preview-row__card > div {
+.home-preview-row__card > div:not(.home-preview-card-shell) {
 
   flex: 1 1 auto;
 
@@ -108,7 +111,27 @@
 
 
 
-.home-preview-row .listing-card-glow-shell {
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell {
+
+  padding: 0;
+
+  flex: 1 1 auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  min-width: 0;
+
+  overflow: visible;
+
+  min-height: min-content !important;
+
+  height: auto !important;
+
+}
+
+.home-preview-row .listing-card-glow-shell:not(.home-preview-card-shell) {
 
   padding: 0;
 
@@ -167,9 +190,10 @@
 /* Domain + technology homepage browse cards — content height, no collapse */
 .home-preview-row .home-preview-card-shell:not(:has(.venture-listing-card)),
 .home-auto-scroll-row .home-preview-card-shell:not(:has(.venture-listing-card)) {
+  width: 100%;
   height: auto !important;
-  min-height: 0 !important;
-  flex: 0 0 auto !important;
+  min-height: min-content !important;
+  flex: 1 1 auto !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--compact),
@@ -177,7 +201,7 @@
 .home-preview-row .home-preview-card-shell:has(.home-auction-preview-card--home-preview),
 .home-auto-scroll-row .home-preview-card-shell:has(.home-auction-preview-card--home-preview) {
   height: auto !important;
-  min-height: 0 !important;
+  min-height: min-content !important;
   flex: 1 1 auto !important;
 }
 
@@ -185,65 +209,158 @@
 .home-preview-card-border {
   --home-card-border: #38bdf8;
   --home-card-border-hover: #0ea5e9;
+  --home-card-shadow-accent: rgba(56, 189, 248, 0.24);
+  --home-card-inner-radius: calc(1.5rem - 2px);
   position: relative;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
   border-radius: 1.5rem;
   border: 2px solid var(--home-card-border) !important;
-  background: #ffffff;
-  box-shadow: none;
+  background: var(--home-card-border);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.06);
   box-sizing: border-box;
-  transition: border-color 0.25s ease;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  transition:
+    border-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.28s ease;
 }
 
 .home-preview-card-border:hover {
   border-color: var(--home-card-border-hover) !important;
-  box-shadow: none;
+  background: var(--home-card-border-hover);
+  box-shadow:
+    0 4px 8px rgba(15, 23, 42, 0.05),
+    0 16px 32px rgba(15, 23, 42, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-preview-card-border {
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    will-change: auto;
+  }
+
+  .home-preview-card-border:hover {
+    transform: none;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 4px 12px rgba(15, 23, 42, 0.06);
+  }
 }
 
 /* Domains — sky blue (hero search bar) */
 .home-preview-card-border--domain {
   --home-card-border: #38bdf8;
   --home-card-border-hover: #0ea5e9;
+  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
 }
 
 /* Ventures — teal */
 .home-preview-card-border--venture {
   --home-card-border: #2dd4bf;
   --home-card-border-hover: #14b8a6;
+  --home-card-shadow-accent: rgba(45, 212, 191, 0.28);
 }
 
 /* Co-Ventures — brand green */
 .home-preview-card-border--coventure {
   --home-card-border: #50bf78;
   --home-card-border-hover: #22c55e;
+  --home-card-shadow-accent: rgba(80, 191, 120, 0.28);
 }
 
 /* Technology — violet */
 .home-preview-card-border--technology {
   --home-card-border: #a78bfa;
   --home-card-border-hover: #8b5cf6;
+  --home-card-shadow-accent: rgba(167, 139, 250, 0.3);
 }
 
-/* Creators / community — rose */
+/* Creators / community — soft indigo (not rose/red) */
 .home-preview-card-border--community {
-  --home-card-border: #f472b6;
-  --home-card-border-hover: #ec4899;
+  --home-card-border: #a5b4fc;
+  --home-card-border-hover: #818cf8;
+  --home-card-shadow-accent: rgba(165, 180, 252, 0.32);
 }
 
 /* Auctions — amber */
 .home-preview-card-border--auction {
   --home-card-border: #fbbf24;
   --home-card-border-hover: #f59e0b;
+  --home-card-shadow-accent: rgba(251, 191, 36, 0.32);
+}
+
+/* Price box border matches outer card accent */
+.home-preview-card-border .domain-listing-card__price-box,
+.home-preview-card-border .home-auction-preview-card__price-box {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(
+      90deg,
+      var(--home-card-border) 0%,
+      var(--home-card-border-hover) 50%,
+      var(--home-card-border) 100%
+    ) border-box !important;
+  box-shadow: none !important;
+}
+
+.home-preview-card-border:hover .domain-listing-card__price-box,
+.home-preview-card-border:hover .home-auction-preview-card__price-box {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(
+      90deg,
+      var(--home-card-border-hover) 0%,
+      var(--home-card-border) 50%,
+      var(--home-card-border-hover) 100%
+    ) border-box !important;
+}
+
+.home-preview-card-border .domain-listing-card__price-box--compact {
+  border-radius: 0.75rem;
+}
+
+/* Flush inner content to outer border — no corner gap */
+.home-preview-row .listing-card-glow-shell.home-preview-card-shell,
+.home-auto-scroll-row .listing-card-glow-shell.home-preview-card-shell {
+  padding: 0;
+  overflow: visible;
+  border-radius: 0;
+  min-height: min-content !important;
+  height: auto !important;
+  flex: 1 1 auto !important;
+}
+
+.home-preview-card-border .domain-listing-card__cover,
+.home-preview-card-border .domain-listing-card__cover-img,
+.home-preview-card-border .domain-listing-card__cover-fallback {
+  border-radius: 0 !important;
+  transform: none !important;
+}
+
+.home-preview-card-border:hover .domain-listing-card__cover,
+.home-preview-card-border:hover .domain-listing-card__cover-img {
+  transform: none !important;
 }
 
 .home-preview-card-border__inner {
   position: relative;
   z-index: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
   height: auto;
   min-height: min-content;
-  border-radius: calc(1.5rem - 2px);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--home-card-inner-radius);
   overflow: hidden;
   background: #ffffff;
 }
@@ -251,16 +368,20 @@
 /* Domain / tech / creator previews — avoid h-full collapse inside auto-height rows */
 .home-preview-row .home-preview-card-border:not(:has(.venture-listing-card)),
 .home-auto-scroll-row .home-preview-card-border:not(:has(.venture-listing-card)) {
+  width: 100%;
   height: auto !important;
-  flex: 0 0 auto;
+  min-height: min-content;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
 
 .home-preview-row .home-preview-card-border:not(:has(.venture-listing-card)) .home-preview-card-border__inner,
 .home-auto-scroll-row .home-preview-card-border:not(:has(.venture-listing-card)) .home-preview-card-border__inner {
+  width: 100%;
   height: auto !important;
-  flex: 0 0 auto;
+  min-height: min-content;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
@@ -276,17 +397,30 @@
 .home-preview-card-border__inner > .home-auction-preview-card,
 .home-preview-card-border__inner > article.home-auction-preview-card {
   border: none !important;
-  border-radius: calc(1.5rem - 2px);
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  width: 100%;
+  flex: 0 0 auto !important;
+  min-width: 0;
+  min-height: min-content;
+  height: auto !important;
 }
 
-/* Venture / co-venture rows — keep gradient border visible on full-height cards */
+.home-preview-card-border__inner .venture-listing-card--venture,
+.home-preview-card-border__inner .venture-listing-card--coventure {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Venture / co-venture rows — content-sized cards inside colored border */
 .home-preview-row__card:has(.venture-listing-card) .home-preview-card-border,
 .home-auto-scroll-row__item:has(.venture-listing-card) .home-preview-card-border {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  height: 100%;
-  min-height: 0;
+  width: 100%;
+  height: auto !important;
+  min-height: min-content;
 }
 
 /* Proper INR glyph — avoid serif/display fonts on currency */
@@ -314,21 +448,26 @@
   min-height: min-content;
   height: auto !important;
   max-height: none;
-  border-radius: 1.5rem;
+  border-radius: 0 !important;
   overflow: hidden;
 }
 
-.home-preview-row__card:has(.home-preview-card-shell):not(:has(.venture-listing-card)),
-.home-preview-row__card:has(.home-preview-card-shell):not(:has(.venture-listing-card)) > div {
-  min-height: 0;
+.home-preview-row__card:has(.home-preview-card-shell):not(:has(.venture-listing-card)) {
+  width: 100%;
+  min-height: min-content;
   height: auto;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+}
+
+.home-preview-row__card:has(.home-preview-card-shell):not(:has(.venture-listing-card)) > .listing-card-glow-shell {
+  min-height: min-content !important;
+  height: auto !important;
 }
 
 .home-preview-row__card:has(.home-preview-card-shell):has(.venture-listing-card),
 .home-preview-row__card:has(.home-preview-card-shell):has(.venture-listing-card) > div {
-  min-height: 0;
-  height: 100%;
+  min-height: min-content;
+  height: auto !important;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -336,7 +475,8 @@
 
 .home-preview-row__card:has(.venture-listing-card) .home-preview-card-border,
 .home-preview-row__card:has(.venture-listing-card) .home-preview-card-border__inner {
-  height: 100%;
+  height: auto !important;
+  min-height: min-content;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -346,7 +486,7 @@
   align-items: stretch;
 }
 
-.home-preview-row .venture-listing-card,
+.home-preview-row .venture-listing-card:not(.venture-listing-card--compact),
 
 .home-preview-row .technology-listing-card:not(.technology-listing-card--browse),
 
@@ -370,14 +510,34 @@
 
 }
 
-/* Homepage venture/co-venture previews — fit content, no fixed 355px floor */
+/* Homepage venture/co-venture previews — fit content */
 .home-preview-row .venture-listing-card--compact {
-  min-height: 0;
-  height: 100%;
+  min-height: min-content;
+  height: auto !important;
+  flex: 0 0 auto !important;
+  overflow: visible;
+}
+
+.home-preview-row .venture-listing-card--compact .domain-listing-card__body {
+  flex: 1 1 auto;
+  min-height: min-content;
+  overflow: visible;
+}
+
+.home-preview-row .venture-listing-card--compact .venture-listing-card__badges {
+  row-gap: 0.25rem;
+}
+
+.home-preview-row .venture-listing-card--home-preview .venture-listing-card__badge {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-preview-row__card:has(.venture-listing-card--compact) > div,
 .home-preview-row__card:has(.venture-listing-card--compact) .listing-card-glow-shell,
+<<<<<<< HEAD
 .home-preview-row__card:has(.venture-listing-card--compact) .home-preview-card-shell,
 .home-preview-row__card:has(.home-auction-preview-card--home-preview) > div,
 .home-preview-row__card:has(.home-auction-preview-card--home-preview) .listing-card-glow-shell,
@@ -387,6 +547,11 @@
 
 .home-preview-row__card:has(.venture-listing-card--compact) .listing-card-glow-shell:not(.home-preview-card-shell) > * {
   min-height: 0;
+=======
+.home-preview-row__card:has(.venture-listing-card--compact) .home-preview-card-shell {
+  min-height: min-content !important;
+  height: auto !important;
+>>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
 }
 
 .home-preview-row__card:has(.home-preview-card-shell):has(.home-auction-preview-card--home-preview),
@@ -612,22 +777,18 @@
 }
 
 .home-preview-row .home-preview-browse-card,
-.home-auto-scroll-row .home-preview-browse-card {
-
+.home-auto-scroll-row .home-preview-browse-card,
+.home-preview-row .home-creator-listing-card,
+.home-auto-scroll-row .home-creator-listing-card {
   min-height: min-content;
-
   height: auto;
-
   max-height: none;
-
-  flex: 0 0 auto;
-
+  flex: 1 1 auto;
   display: flex;
-
   flex-direction: column;
-
   overflow: hidden;
-
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Technology/venture/community: listing-card-glow sets border:none — restore a single border */
@@ -653,9 +814,59 @@
   overflow: visible;
 }
 
+.home-preview-row .card-glow-hover,
+.home-auto-scroll-row .card-glow-hover {
+  transform: none !important;
+}
+
 .home-preview-row .card-glow-hover:hover,
 .home-auto-scroll-row .card-glow-hover:hover {
-  transform: translateY(-2px) translateZ(0);
+  transform: none !important;
+}
+
+/* Homepage — only the outer border wrapper lifts; inner listing cards stay fixed */
+.home-preview-card-border__inner .venture-listing-card,
+.home-preview-card-border__inner .technology-listing-card,
+.home-preview-card-border__inner .domain-listing-card,
+.home-preview-card-border__inner .home-creator-listing-card,
+.home-preview-card-border__inner .home-auction-preview-card,
+.home-preview-card-border__inner .home-preview-browse-card,
+.home-auto-scroll-row .home-preview-card-border__inner .venture-listing-card,
+.home-auto-scroll-row .home-preview-card-border__inner .technology-listing-card,
+.home-auto-scroll-row .home-preview-card-border__inner .domain-listing-card,
+.home-auto-scroll-row .home-preview-card-border__inner .home-creator-listing-card,
+.home-auto-scroll-row .home-preview-card-border__inner .home-auction-preview-card,
+.home-auto-scroll-row .home-preview-card-border__inner .home-preview-browse-card {
+  transition: none !important;
+}
+
+.home-preview-card-border:hover .domain-listing-card,
+.home-preview-card-border:hover .venture-listing-card,
+.home-preview-card-border:hover .technology-listing-card,
+.home-preview-card-border:hover .community-listing-card,
+.home-preview-card-border:hover .home-creator-listing-card,
+.home-preview-card-border:hover .home-auction-preview-card,
+.home-preview-card-border:hover .community-profile-card,
+.home-preview-card-border:hover .creator-profile-card,
+.home-preview-card-border__inner .venture-listing-card:hover,
+.home-preview-card-border__inner .venture-listing-card--venture:hover,
+.home-preview-card-border__inner .venture-listing-card--coventure:hover,
+.home-preview-card-border__inner .technology-listing-card:hover,
+.home-preview-card-border__inner .domain-listing-card:hover,
+.home-preview-card-border__inner .home-creator-listing-card:hover,
+.home-preview-card-border__inner .home-auction-preview-card:hover,
+.home-preview-card-border__inner .home-preview-browse-card:hover,
+.home-preview-row .home-preview-card-border__inner .card-glow-hover:hover,
+.home-auto-scroll-row .home-preview-card-border__inner .card-glow-hover:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background-color: #fff !important;
+}
+
+.home-preview-card-border:hover .domain-listing-card__cover-img,
+.home-preview-card-border__inner .domain-listing-card__cover-img {
+  transform: none !important;
 }
 
 .home-preview-row .home-preview-browse-card .listing-card-stats-footer,
@@ -713,28 +924,6 @@
 .home-preview-row .listing-card-stats-footer__cta:hover svg,
 .home-auto-scroll-row .listing-card-stats-footer__cta:hover svg {
   color: #ffffff !important;
-}
-
-
-
-.home-preview-row .venture-listing-card:hover,
-
-.home-preview-row .technology-listing-card:hover,
-
-.home-preview-row .community-listing-card:hover,
-
-.home-preview-row .community-profile-card:hover,
-
-.home-preview-row .creator-profile-card:hover,
-
-.home-preview-row .domain-listing-card:hover,
-.home-preview-row .home-creator-listing-card:hover,
-.home-auto-scroll-row .domain-listing-card:hover {
-
-  transform: translate3d(0, -3px, 0);
-
-  background-color: #fff;
-
 }
 
 /* Homepage creator cards — match domain browse proportions */
@@ -1251,9 +1440,62 @@
   line-height: 1.1;
   color: #0f172a;
   font-variant-numeric: tabular-nums;
+<<<<<<< HEAD
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
+=======
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.home-auction-preview-card__metric-value--time {
+  color: #d97706;
+}
+
+.home-auction-preview-card__price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.6rem;
+  min-height: 2.85rem;
+  margin: 0;
+  border-radius: 0.875rem;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.home-preview-row .home-preview-browse-card .home-auction-preview-card__price-box,
+.home-auto-scroll-row .home-preview-browse-card .home-auction-preview-card__price-box,
+.home-preview-card-border__inner .home-auction-preview-card__price-box {
+  display: flex;
+}
+
+.home-auction-preview-card__price-box .home-auction-preview-card__bid-box--current {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.home-auction-preview-card__bid-label {
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  line-height: 1.25;
+>>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
   white-space: nowrap;
 }
 
@@ -1468,6 +1710,8 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  overflow: visible;
+  padding: 4px 4px 8px;
 }
 
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border,
@@ -1510,7 +1754,7 @@
 .home-preview-row .home-auction-preview-card--home-preview,
 .home-preview-card-border__inner .home-auction-preview-card--home-preview {
   border: none !important;
-  border-radius: calc(1.5rem - 2px);
+  border-radius: 0 !important;
   background: #ffffff;
   box-shadow: none !important;
   width: 100%;
@@ -1519,10 +1763,122 @@
     transform 0.35s ease;
 }
 
+<<<<<<< HEAD
 .home-auto-scroll-row .home-auction-preview-card--home-preview:hover,
 .home-preview-row .home-auction-preview-card--home-preview:hover,
 .home-preview-card-border__inner .home-auction-preview-card--home-preview:hover {
   transform: translateY(-2px) translateZ(0);
+=======
+.home-auto-scroll-row .home-auction-preview-card:hover,
+.home-preview-row .home-auction-preview-card:hover,
+.home-preview-card-border__inner .home-auction-preview-card:hover {
+  transform: none;
+>>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
   background: #ffffff !important;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08) !important;
+  box-shadow: none !important;
+}
+
+/* ─── Homepage preview skeleton — neutral shell, no section accent until loaded ─── */
+.home-preview-card-skeleton-border {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1.5rem;
+  border: 2px solid #eef2f7 !important;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.home-preview-card-skeleton-shell::before {
+  display: none !important;
+}
+
+.home-preview-card-skeleton {
+  pointer-events: none;
+  user-select: none;
+}
+
+.home-preview-card-skeleton__cover {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  height: 6.25rem;
+  overflow: hidden;
+  background: #eceff3;
+}
+
+.home-preview-card-skeleton__cover--auction {
+  height: 5.75rem;
+}
+
+.home-preview-card-skeleton--compact .home-preview-card-skeleton__cover {
+  height: 5.5rem;
+}
+
+.home-preview-card-skeleton__body {
+  flex: 0 1 auto;
+}
+
+.home-preview-card-skeleton__price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.85rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.6rem;
+  border-radius: 0.875rem;
+  border: 2px solid rgba(226, 232, 240, 0.95);
+  background: #ffffff;
+}
+
+.home-preview-card-skeleton__price-box--auction {
+  min-height: 2.85rem;
+}
+
+.home-preview-card-skeleton__stats {
+  padding-top: 0.2rem;
+  margin-top: 0;
+}
+
+.home-preview-card-skeleton__stats .listing-card-stats-footer__group--split {
+  width: 100%;
+}
+
+.home-preview-card-skeleton__badge {
+  z-index: 2;
+}
+
+.home-preview-card-skeleton--auction .home-auction-preview-card__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 3.25rem;
+  padding: 0.35rem 0.3rem;
+  border-radius: 0.625rem;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+}
+
+.home-preview-row .home-preview-card-shell:has(.home-preview-card-skeleton),
+.home-auto-scroll-row .home-preview-card-shell:has(.home-preview-card-skeleton) {
+  min-height: min-content !important;
+  height: auto !important;
+}
+
+.home-preview-card-skeleton-border,
+.home-preview-card-skeleton-border .home-preview-card-border__inner {
+  height: auto !important;
+  min-height: min-content;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-preview-card-skeleton .animate-shimmer {
+    animation: none;
+  }
 }

@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useInView } from '../utils/simpleMotion';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight, Rocket, Palette, Users, Cpu, Globe,
   CheckCircle, Zap, Target, Shield, TrendingUp,
@@ -10,28 +10,32 @@ import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BrandWordmark from '../components/common/BrandWordmark';
+import { pageViewport, HOME_EASE, pageRevealFade, pageRevealLeft, pageRevealRight, pageRevealUp } from '../components/motion/motionPresets';
 
 /* ─────────────────────────────────────────────────────────────
    Scroll-reveal wrapper
 ───────────────────────────────────────────────────────────── */
 function Reveal({ children, delay = 0, direction = 'up', className = '' }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const reduceMotion = useReducedMotion();
 
   const variants = {
-    up:    { hidden: { opacity: 0, y: 28 },  visible: { opacity: 1, y: 0 } },
-    left:  { hidden: { opacity: 0, x: -28 }, visible: { opacity: 1, x: 0 } },
-    right: { hidden: { opacity: 0, x: 28 },  visible: { opacity: 1, x: 0 } },
-    fade:  { hidden: { opacity: 0 },          visible: { opacity: 1 } },
+    up: pageRevealUp,
+    left: pageRevealLeft,
+    right: pageRevealRight,
+    fade: pageRevealFade,
   };
+
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <motion.div
-      ref={ref}
       initial="hidden"
-      animate={inView ? 'visible' : 'hidden'}
-      variants={variants[direction]}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay }}
+      whileInView="visible"
+      viewport={pageViewport}
+      variants={variants[direction] || pageRevealUp}
+      transition={{ duration: 0.52, ease: HOME_EASE, delay }}
       className={className}
     >
       {children}

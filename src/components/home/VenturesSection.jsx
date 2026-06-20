@@ -43,7 +43,13 @@ export default function VenturesSection() {
   };
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('coVentures')} to="/ventures?mode=venture" />;
+    return (
+      <HomeSectionCardSkeleton
+        title={t('coVentures')}
+        to="/ventures?mode=venture"
+        compact
+      />
+    );
   }
 
   return (

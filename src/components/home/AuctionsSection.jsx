@@ -79,7 +79,7 @@ export default function AuctionsSection() {
   const shouldAutoScroll = displayAuctions.length > 5;
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" />;
+    return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" variant="auction" />;
   }
 
   return (

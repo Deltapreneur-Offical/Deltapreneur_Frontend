@@ -2,8 +2,18 @@ import { useMemo } from 'react';
 import { Mail, Phone, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, useReducedMotion } from 'framer-motion';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
+import {
+  PageHero,
+  PageHeroItem,
+  PageReveal,
+  PageStagger,
+  PageStaggerItem,
+} from '../components/motion/PageMotion';
+import { HOME_EASE_OUT } from '../components/motion/motionPresets';
 import {
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_PHONE_TEL,
@@ -13,6 +23,7 @@ import {
 export default function ContactPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
 
   const contactInfo = useMemo(
     () => [
@@ -52,48 +63,56 @@ export default function ContactPage() {
     [t],
   );
 
+  const CtaButtonTag = reduceMotion ? 'button' : motion.button;
+  const ctaButtonProps = reduceMotion
+    ? {}
+    : {
+        whileHover: { y: -2, scale: 1.02, transition: { duration: 0.22, ease: HOME_EASE_OUT } },
+        whileTap: { scale: 0.98 },
+      };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <BackToHomeButton />
           <img
             src={coBrotherLogo}
             alt="CoBrother"
             className="h-10 cursor-pointer"
             onClick={() => navigate('/')}
           />
-          <button
-            type="button"
-            className="btn-glow btn-glow-sm"
-            onClick={() => navigate('/')}
-          >
-            {t('backToHomeLabel')}
-          </button>
         </div>
       </nav>
 
       <section className="py-16 px-4 max-md:py-12">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 rounded-full text-sm font-semibold text-purple-700 mb-6">
-            <Send size={16} />
-            {t('contactHeroBadge')}
-          </div>
-          <h1 className="font-display text-5xl md:text-6xl font-bold text-gray-900 mb-6 max-md:text-4xl">
-            {t('contactHeroTitle')}
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto max-md:text-lg">
-            {t('contactHeroSubtitle')}
-          </p>
-        </div>
+        <PageHero className="max-w-4xl mx-auto text-center">
+          <PageHeroItem>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 rounded-full text-sm font-semibold text-purple-700 mb-6">
+              <Send size={16} />
+              {t('contactHeroBadge')}
+            </div>
+          </PageHeroItem>
+          <PageHeroItem>
+            <h1 className="font-display text-5xl md:text-6xl font-bold text-gray-900 mb-6 max-md:text-4xl">
+              {t('contactHeroTitle')}
+            </h1>
+          </PageHeroItem>
+          <PageHeroItem>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto max-md:text-lg">
+              {t('contactHeroSubtitle')}
+            </p>
+          </PageHeroItem>
+        </PageHero>
       </section>
 
       <section className="py-12 px-4 max-md:py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-md:gap-4">
+          <PageStagger className="grid grid-cols-1 md:grid-cols-3 gap-6 max-md:gap-4">
             {contactInfo.map((item, index) => {
               const Icon = item.icon;
               const content = (
-                <div className="p-8 bg-white border border-gray-200 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-gray-400 flex flex-col items-center text-center h-full max-md:p-6">
+                <div className="p-8 bg-white border border-gray-200 rounded-2xl shadow-sm transition-shadow duration-300 hover:shadow-xl hover:border-gray-400 flex flex-col items-center text-center h-full max-md:p-6">
                   <div className={`w-16 h-16 ${item.bgColor} rounded-full flex items-center justify-center mb-5 max-md:w-14 max-md:h-14 max-md:mb-4`}>
                     <Icon className={item.color} size={28} strokeWidth={2} />
                   </div>
@@ -102,26 +121,29 @@ export default function ContactPage() {
                 </div>
               );
 
-              return item.link ? (
-                <a
-                  key={index}
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  {content}
-                </a>
-              ) : (
-                <div key={index}>{content}</div>
+              return (
+                <PageStaggerItem key={index} hover>
+                  {item.link ? (
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block h-full"
+                    >
+                      {content}
+                    </a>
+                  ) : (
+                    content
+                  )}
+                </PageStaggerItem>
               );
             })}
-          </div>
+          </PageStagger>
         </div>
       </section>
 
       <section className="py-12 px-4 max-md:py-8">
-        <div className="max-w-4xl mx-auto">
+        <PageReveal className="max-w-4xl mx-auto">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 max-md:p-6">
             <div className="flex items-center gap-3 mb-6 max-md:mb-4">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center max-md:w-10 max-md:h-10">
@@ -138,11 +160,11 @@ export default function ContactPage() {
               ))}
             </div>
           </div>
-        </div>
+        </PageReveal>
       </section>
 
       <section className="py-16 px-4 max-md:py-12">
-        <div className="max-w-4xl mx-auto text-center">
+        <PageReveal className="max-w-4xl mx-auto text-center" delay={0.06}>
           <div className="contact-page-cta bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-12 shadow-2xl max-md:p-8">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4 max-md:text-2xl">
               {t('readyToGetStarted')}
@@ -151,16 +173,17 @@ export default function ContactPage() {
               {t('ctaJoinDescription')}
             </p>
             <div className="flex gap-4 justify-center max-md:flex-col">
-              <button
+              <CtaButtonTag
                 type="button"
                 className="btn-glow btn-glow-lg contact-page-cta__signin"
                 onClick={() => navigate('/login', { state: { showLoginForm: true } })}
+                {...ctaButtonProps}
               >
                 {t('signIn')}
-              </button>
+              </CtaButtonTag>
             </div>
           </div>
-        </div>
+        </PageReveal>
       </section>
 
       <HomeFooter />

@@ -47,6 +47,7 @@ export default function CoVenturesSection() {
       <HomeSectionCardSkeleton
         title={t('coVentureSectionTitle', { defaultValue: 'Co-Ventures' })}
         to="/ventures?mode=co-venture"
+        compact
       />
     );
   }

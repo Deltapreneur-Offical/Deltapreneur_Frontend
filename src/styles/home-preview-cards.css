@@ -223,6 +223,7 @@
     0 4px 12px rgba(15, 23, 42, 0.06);
   box-sizing: border-box;
   transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   transition:
     border-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
@@ -512,6 +513,24 @@
   min-height: min-content;
   height: auto !important;
   flex: 0 0 auto !important;
+  overflow: visible;
+}
+
+.home-preview-row .venture-listing-card--compact .domain-listing-card__body {
+  flex: 1 1 auto;
+  min-height: min-content;
+  overflow: visible;
+}
+
+.home-preview-row .venture-listing-card--compact .venture-listing-card__badges {
+  row-gap: 0.25rem;
+}
+
+.home-preview-row .venture-listing-card--home-preview .venture-listing-card__badge {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-preview-row__card:has(.venture-listing-card--compact) > div,
@@ -1338,4 +1357,109 @@
   transform: none;
   background: #ffffff !important;
   box-shadow: none !important;
+}
+
+/* ─── Homepage preview skeleton — neutral shell, no section accent until loaded ─── */
+.home-preview-card-skeleton-border {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1.5rem;
+  border: 2px solid #eef2f7 !important;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.home-preview-card-skeleton-shell::before {
+  display: none !important;
+}
+
+.home-preview-card-skeleton {
+  pointer-events: none;
+  user-select: none;
+}
+
+.home-preview-card-skeleton__cover {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  height: 6.25rem;
+  overflow: hidden;
+  background: #eceff3;
+}
+
+.home-preview-card-skeleton__cover--auction {
+  height: 5.75rem;
+}
+
+.home-preview-card-skeleton--compact .home-preview-card-skeleton__cover {
+  height: 5.5rem;
+}
+
+.home-preview-card-skeleton__body {
+  flex: 0 1 auto;
+}
+
+.home-preview-card-skeleton__price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.85rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.6rem;
+  border-radius: 0.875rem;
+  border: 2px solid rgba(226, 232, 240, 0.95);
+  background: #ffffff;
+}
+
+.home-preview-card-skeleton__price-box--auction {
+  min-height: 2.85rem;
+}
+
+.home-preview-card-skeleton__stats {
+  padding-top: 0.2rem;
+  margin-top: 0;
+}
+
+.home-preview-card-skeleton__stats .listing-card-stats-footer__group--split {
+  width: 100%;
+}
+
+.home-preview-card-skeleton__badge {
+  z-index: 2;
+}
+
+.home-preview-card-skeleton--auction .home-auction-preview-card__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 3.25rem;
+  padding: 0.35rem 0.3rem;
+  border-radius: 0.625rem;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+}
+
+.home-preview-row .home-preview-card-shell:has(.home-preview-card-skeleton),
+.home-auto-scroll-row .home-preview-card-shell:has(.home-preview-card-skeleton) {
+  min-height: min-content !important;
+  height: auto !important;
+}
+
+.home-preview-card-skeleton-border,
+.home-preview-card-skeleton-border .home-preview-card-border__inner {
+  height: auto !important;
+  min-height: min-content;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-preview-card-skeleton .animate-shimmer {
+    animation: none;
+  }
 }

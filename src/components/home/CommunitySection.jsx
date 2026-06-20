@@ -49,7 +49,7 @@ export default function CommunitySection() {
   };
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('disruptors')} to="/community" />;
+    return <HomeSectionCardSkeleton title={t('disruptors')} to="/community" compact />;
   }
 
   return (

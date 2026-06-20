@@ -494,11 +494,9 @@ export default function VentureListingCard({
 
 
 
-  const cardLayoutClass = browseMode && compact
-    ? 'h-full min-h-0'
-    : browseMode
-      ? 'h-auto min-h-0'
-      : 'h-full min-h-0';
+  const cardLayoutClass = browseMode
+    ? 'h-auto min-h-0'
+    : 'h-full min-h-0';
 
 
 
@@ -830,7 +828,9 @@ export default function VentureListingCard({
 
                   <span className="venture-listing-card__price-label uppercase leading-none">
 
-                    {sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price')}
+                    {isHomePreview
+                      ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
+                      : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
 
                   </span>
 

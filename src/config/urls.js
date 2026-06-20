@@ -1,22 +1,16 @@
 /**
  * API / backend origin resolution.
  *
- * **Production defaults** (unified Nginx on demo.cobrother.com):
- *   API:  https://demo.cobrother.com/api  (requests → /api/v1/... on same host)
- *   App:  https://demo.cobrother.com
+ * **Production (split architecture):**
+ *   App:  https://cobrother.com
+ *   API:  https://backend.cobrother.com  (axios paths include /api/v1/...)
  *
  * **Override** — set in `.env.production` or deploy build:
- *   VITE_API_URL=https://demo.cobrother.com/api
- *   VITE_APP_URL=https://demo.cobrother.com
+ *   VITE_API_URL=https://backend.cobrother.com
+ *   VITE_APP_URL=https://cobrother.com
  */
-export const PRODUCTION_API_ORIGIN = 'https://demo.cobrother.com';
-export const PRODUCTION_APP_URL = 'https://demo.cobrother.com';
-
-/** True when the SPA is served from demo.cobrother.com (unified Nginx). */
-function isDemoHost() {
-  if (typeof window === 'undefined') return false;
-  return String(window.location.hostname || '').toLowerCase() === 'demo.cobrother.com';
-}
+export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
+export const PRODUCTION_APP_URL = 'https://cobrother.com';
 
 /** Strip a trailing /api from env URLs; axios paths already include /api/v1/... */
 function siteOriginFromApiEnv(url) {
@@ -55,7 +49,7 @@ const isLocalBackend =
   !remoteApiBase ||
   /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
-/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. demo.cobrother.com). */
+/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. backend.cobrother.com). */
 const usesViteRemoteProxy = import.meta.env.DEV && Boolean(devProxyTarget) && isLocalBackend;
 
 function isFrontendOrigin(url) {
@@ -69,13 +63,9 @@ function isFrontendOrigin(url) {
 
 /**
  * Real backend host for OAuth, WebSockets, and Google redirect URI parity.
- * Never the Vercel SPA origin — oauth_state cookies must be set on the same host as the callback.
+ * Never the SPA origin — oauth_state cookies must be set on the backend host.
  */
 export function resolveBackendOrigin() {
-  // When served from demo.cobrother.com we must always hit the same host.
-  // This prevents accidental builds that point VITE_API_URL at backend.cobrother.com
-  // (which can be on a different stack / DB during migrations).
-  if (isDemoHost()) return PRODUCTION_API_ORIGIN;
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
     return siteOriginFromApiEnv(remoteApiBase) || remoteApiBase.replace(/\/$/, '');
   }
@@ -91,11 +81,10 @@ export function resolveBackendOrigin() {
 /**
  * Axios baseURL.
  * - Dev + local backend: '' (Vite proxies /api → :8000)
- * - Prod: direct calls to Render (avoids Vercel POST redirects that strip Authorization)
+ * - Prod: direct calls to backend.cobrother.com
  * - Override with VITE_API_URL when needed
  */
 function resolveApiBaseUrl() {
-  if (isDemoHost()) return PRODUCTION_API_ORIGIN.replace(/\/$/, '');
   if (import.meta.env.DEV && isLocalBackend) {
     return '';
   }

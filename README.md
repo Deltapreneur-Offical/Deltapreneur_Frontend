@@ -53,8 +53,8 @@ Copy `.env.example` to `.env.local` (or `.env`). All frontend env vars use the `
 
 | Variable | Local | Production |
 |----------|-------|------------|
-| `VITE_API_URL` | `http://127.0.0.1:8000` | `https://cobrother-backend.onrender.com` (optional on Vercel) |
-| `VITE_APP_URL` | `http://127.0.0.1:5173` | `https://co-brother-frontend.vercel.app` |
+| `VITE_API_URL` | `http://127.0.0.1:8000` | `https://backend.cobrother.com` |
+| `VITE_APP_URL` | `http://127.0.0.1:5173` | `https://cobrother.com` |
 | `VITE_DEV_PROXY_TARGET` | `http://127.0.0.1:8000` | — (dev only) |
 
 **Important**

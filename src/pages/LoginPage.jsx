@@ -5,6 +5,7 @@ import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { resolveAfterAuthNavigation } from '../utils/authSession';
 import { startGoogleOAuth } from '../utils/googleOAuth';
+import { checkBackendDatabaseReady, DATABASE_UNAVAILABLE_HINT } from '../utils/backendReady';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 import AuthShell from '../components/auth/AuthShell';
@@ -95,7 +96,7 @@ export default function LoginPage() {
       ),
       database_unavailable: t(
         'databaseUnavailable',
-        'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.',
+        DATABASE_UNAVAILABLE_HINT,
       ),
       oauth_network_error: t(
         'oauthNetworkError',
@@ -122,8 +123,23 @@ export default function LoginPage() {
 
   const databaseUnavailableMessage = t(
     'databaseUnavailable',
-    'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.',
+    DATABASE_UNAVAILABLE_HINT,
   );
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return undefined;
+
+    let cancelled = false;
+    checkBackendDatabaseReady().then((ready) => {
+      if (!ready && !cancelled) {
+        setError(databaseUnavailableMessage);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [databaseUnavailableMessage]);
 
   const isDatabaseUnavailableError = (err) => {
     const status = err?.response?.status;
@@ -269,7 +285,14 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
+    if (import.meta.env.DEV) {
+      const ready = await checkBackendDatabaseReady();
+      if (!ready) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
+    }
     startGoogleOAuth(localStorage.getItem('redirectAfterLogin') || from);
   };
 

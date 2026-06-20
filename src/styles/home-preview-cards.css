@@ -548,6 +548,11 @@
   min-height: 0;
 }
 
+.home-preview-row__card:has(.venture-listing-card--compact) .home-preview-card-shell {
+  min-height: min-content !important;
+  height: auto !important;
+}
+
 .home-preview-row__card:has(.home-preview-card-shell):has(.home-auction-preview-card--home-preview),
 .home-preview-row__card:has(.home-preview-card-shell):has(.home-auction-preview-card--home-preview) > div {
   min-height: 0;

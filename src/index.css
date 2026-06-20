@@ -10,6 +10,16 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+@keyframes registrar-domain-loader-indeterminate {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+
+.registrar-domain-loader-bar {
+  width: 35%;
+  animation: registrar-domain-loader-indeterminate 1.25s ease-in-out infinite;
+}
 /* ─── Variables ─────────────────────────────────────── */
 :root {
   --bg:        #0a0a0f;

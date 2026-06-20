@@ -6,8 +6,45 @@
  * No external dependencies required.
  */
 
+import coBrotherLogo from '../assets/Cobrother_logo.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
+
+function invoiceLogoUrl() {
+  if (typeof coBrotherLogo === 'string' && coBrotherLogo.startsWith('http')) {
+    return coBrotherLogo;
+  }
+  return new URL(coBrotherLogo, window.location.origin).href;
+}
+
+function printInvoiceWindow(win) {
+  const imgs = win.document.images;
+  const triggerPrint = () => {
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 200);
+  };
+
+  if (!imgs.length) {
+    setTimeout(triggerPrint, 600);
+    return;
+  }
+
+  let pending = imgs.length;
+  const onImageReady = () => {
+    pending -= 1;
+    if (pending <= 0) triggerPrint();
+  };
+
+  Array.from(imgs).forEach((img) => {
+    if (img.complete) onImageReady();
+    else {
+      img.addEventListener('load', onImageReady, { once: true });
+      img.addEventListener('error', onImageReady, { once: true });
+    }
+  });
+}
 
 function formatINR(amount) {
   return formatInr(amount);
@@ -56,7 +93,7 @@ function formatMoney(amount, currencyCode = 'INR') {
     if (type === 'domain_registration') {
       productName = item.domain || `${item.domainName || ''}${item.domainExtension || ''}`;
       productDesc = 'New domain registration (CoBrother storefront)';
-      baseAmount = Number(item.priceInr ?? item.price ?? 0);
+      baseAmount = Number(item.subtotalInr ?? item.priceInr ?? item.price ?? 0);
       paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
     } else if (type === 'domain') {
       productName = `${item.domainName}${item.domainExtension}`;
@@ -80,12 +117,23 @@ function formatMoney(amount, currencyCode = 'INR') {
         : formatINR(amt);
 
     const subtotal = baseAmount + extraLines.reduce((s, l) => s + l.amount, 0);
-    // GST placeholder — 18% shown as 0 until GSTIN is set
-    const gst      = 0;
-    const total    = subtotal + gst;
+    const gst =
+      type === 'domain_registration'
+        ? Number(item.gstInr ?? 0)
+        : 0;
+    const total =
+      type === 'domain_registration'
+        ? Number(item.priceInr ?? item.price ?? subtotal + gst)
+        : subtotal + gst;
     const displayTotal =
       item.amountCharged != null ? formatMoney(item.amountCharged, chargeCurrency) : formatLine(total);
-  
+
+    const sellerGstin =
+      type === 'domain_registration' && item.cobrotherGstin
+        ? item.cobrotherGstin
+        : '[Your GSTIN]';
+    const logoUrl = invoiceLogoUrl();
+
     const typeLabel =
       type === 'domain_registration'
         ? '◇ Domain Registration'
@@ -141,12 +189,18 @@ function formatMoney(amount, currencyCode = 'INR') {
       align-items: flex-start;
       margin-bottom: 48px;
     }
-    .brand-name {
-      font-family: 'DM Serif Display', serif;
-      font-size: 32px;
-      letter-spacing: -0.5px;
-      color: #111827;
-      line-height: 1;
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .brand-logo {
+      height: 44px;
+      width: auto;
+      max-width: 240px;
+      object-fit: contain;
+      display: block;
     }
     .brand-tagline {
       font-size: 11px;
@@ -328,12 +382,14 @@ function formatMoney(amount, currencyCode = 'INR') {
       font-size: 11px;
       color: #9ca3af;
     }
-    .footer-brand {
-      font-family: 'DM Serif Display', serif;
-      font-size: 16px;
-      color: #d1d5db;
+    .footer-logo {
+      height: 22px;
+      width: auto;
+      max-width: 140px;
+      object-fit: contain;
       display: block;
       margin-top: 4px;
+      opacity: 0.55;
     }
   
     /* ── Watermark stripe ── */
@@ -356,9 +412,8 @@ function formatMoney(amount, currencyCode = 'INR') {
   
     <!-- Header -->
     <div class="header">
-      <div>
-        <div class="brand-name">CoBrother</div>
-        <div class="brand-tagline">Co-build · Co-grow · Co-succeed</div>
+      <div class="brand-block">
+        <img class="brand-logo" src="${logoUrl}" alt="CoBrother" />
       </div>
       <div class="invoice-meta">
         <div class="invoice-title">Tax Invoice</div>
@@ -378,7 +433,7 @@ function formatMoney(amount, currencyCode = 'INR') {
           [Address Line 1]<br/>
           [City, State – PIN]<br/>
           India<br/>
-          GSTIN: [Your GSTIN]<br/>
+          GSTIN: ${sellerGstin}<br/>
           contact@cobrother.com
         </p>
       </div>
@@ -425,7 +480,7 @@ function formatMoney(amount, currencyCode = 'INR') {
         <span>${formatINR(subtotal)}</span>
       </div>
       <div class="totals-row">
-        <span>GST (18%) <span class="gst-note">*</span></span>
+        <span>GST (18%)${gst === 0 ? ' <span class="gst-note">*</span>' : ''}</span>
         <span>${gst === 0 ? '—' : formatINR(gst)}</span>
       </div>
       <div class="totals-row bold">
@@ -444,12 +499,12 @@ function formatMoney(amount, currencyCode = 'INR') {
     <!-- Footer -->
     <div class="footer">
       <div class="footer-left">
-        * GST details will appear once GSTIN configuration is complete.<br/>
+        ${gst === 0 ? '* GST details will appear once GSTIN configuration is complete.<br/>' : ''}
         This is a computer-generated invoice and does not require a signature.<br/>
         For queries, write to contact@cobrother.com
       </div>
       <div class="footer-right">
-        <span class="footer-brand">CoBrother</span>
+        <img class="footer-logo" src="${logoUrl}" alt="CoBrother" />
         www.cobrother.com
       </div>
     </div>
@@ -467,12 +522,5 @@ function formatMoney(amount, currencyCode = 'INR') {
     win.document.write(html);
     win.document.close();
   
-    // Give fonts time to load, then print
-    win.onload = () => {
-      setTimeout(() => {
-        win.focus();
-        win.print();
-        // win.close(); // uncomment if you want auto-close after print dialog
-      }, 600);
-    };
+    win.onload = () => printInvoiceWindow(win);
   }

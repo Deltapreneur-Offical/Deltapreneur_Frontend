@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
 import DomainManagementCard from '../components/domain/DomainManagementCard';
+import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
 import {
   readApiError,
   registrationStatusBadgeClass,
@@ -137,6 +138,17 @@ export default function DomainRegistrationOrderPage() {
   const badgeClass = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
   const statusText = registrationStatusLabel(order.status, order.lifecycleStatus, t);
   const steps = Array.isArray(order.nextSteps) ? order.nextSteps : [];
+  const orderPricing =
+    order.subtotalInr != null
+      ? {
+          subtotal: Number(order.subtotalInr),
+          gst: Number(order.gstInr ?? 0),
+          total: Number(order.priceInr ?? 0),
+          gstRate: order.gstRate ?? null,
+          gstEnabled: Boolean(order.gstEnabled),
+          years: 1,
+        }
+      : null;
 
   return (
     <AppLayout>
@@ -197,8 +209,21 @@ export default function DomainRegistrationOrderPage() {
           </section>
         )}
 
+        <section className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-900">
+            {t('storefrontPriceBreakdownTitle', { defaultValue: 'Payment summary' })}
+          </h2>
+          {orderPricing ? (
+            <DomainRegistrationPriceBreakdown pricing={orderPricing} />
+          ) : (
+            <Detail
+              label={t('storefrontColPrice', { defaultValue: 'Price' })}
+              value={`₹${Number(order.priceInr || 0).toLocaleString('en-IN')}`}
+            />
+          )}
+        </section>
+
         <section className="bg-white border border-gray-200 rounded-xl p-5 grid sm:grid-cols-2 gap-4 text-sm">
-          <Detail label={t('storefrontColPrice', { defaultValue: 'Price' })} value={`₹${Number(order.priceInr || 0).toLocaleString('en-IN')}`} />
           <Detail
             label={t('regOrderCreated', { defaultValue: 'Ordered' })}
             value={order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN') : '—'}

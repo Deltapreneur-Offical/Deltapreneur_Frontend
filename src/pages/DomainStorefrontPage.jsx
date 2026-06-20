@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
+import { resolveRegistrationPricing } from '../utils/domainRegistrationPricing';
+import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
 const DEFAULT_TLD = 'com';
@@ -182,13 +184,12 @@ export default function DomainStorefrontPage() {
   const checkoutUnavailable =
     config?.productionReadiness && !config.productionReadiness.ready;
 
-  const displayPrice = useMemo(() => {
-    if (!checkResult?.price) return null;
-    const unit = Number(checkResult.unitPrice || checkResult.price);
-    const years = Math.max(period, checkResult.minPeriodYears || 1);
-    if (checkResult.unitPrice) return unit * years;
-    return Number(checkResult.price);
-  }, [checkResult, period]);
+  const pricing = useMemo(() => {
+    if (!canRegister || !checkResult?.unitPrice) return null;
+    return resolveRegistrationPricing(checkResult, period, config?.gst);
+  }, [canRegister, checkResult, period, config?.gst]);
+
+  const displayTotal = pricing?.total ?? null;
 
   const updateContact = (field, value) => {
     setContact((prev) => ({ ...prev, [field]: value }));
@@ -359,13 +360,16 @@ export default function DomainStorefrontPage() {
                 )}
               </div>
 
-              {checkResult.status === 'available' && displayPrice != null && (
-                <p className="text-2xl font-extrabold text-gray-900 mb-1">
-                  {formatPrice(displayPrice)}
-                  <span className="text-sm font-normal text-gray-500 ml-1">
-                    / {period} {period === 1 ? t('storefrontYear') : t('storefrontYears')}
-                  </span>
-                </p>
+              {checkResult.status === 'available' && displayTotal != null && (
+                <div className="mb-3">
+                  <p className="text-2xl font-extrabold text-gray-900 mb-2">
+                    {formatPrice(displayTotal)}
+                    <span className="text-sm font-normal text-gray-500 ml-1">
+                      / {period} {period === 1 ? t('storefrontYear') : t('storefrontYears')}
+                    </span>
+                  </p>
+                  <DomainRegistrationPriceBreakdown pricing={pricing} />
+                </div>
               )}
 
               {isMarketplace && (
@@ -416,6 +420,10 @@ export default function DomainStorefrontPage() {
                 </select>
               </label>
             </div>
+
+            {pricing && (
+              <DomainRegistrationPriceBreakdown pricing={pricing} className="mt-2" />
+            )}
 
             {payError && (
               <div className="text-sm text-red-600 flex items-start gap-2">

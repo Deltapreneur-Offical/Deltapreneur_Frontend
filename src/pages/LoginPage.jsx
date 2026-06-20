@@ -12,6 +12,7 @@ import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';
 import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import GoogleIcon from '../components/auth/GoogleIcon';
+import { readApiError } from '../utils/apiError';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -86,15 +87,15 @@ export default function LoginPage() {
       ),
       google_oauth_not_configured: t(
         'googleOAuthNotConfigured',
-        'Google sign-in is not configured for this environment.',
+        'Google sign-in is temporarily unavailable. Please try again later.',
       ),
       google_oauth_secret_missing: t(
         'googleOAuthSecretMissing',
-        'Google sign-in is missing the backend client secret.',
+        'Google sign-in is temporarily unavailable. Please try again later.',
       ),
       database_unavailable: t(
         'databaseUnavailable',
-        'The database is temporarily unavailable. Please try again shortly.',
+        'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.',
       ),
       oauth_network_error: t(
         'oauthNetworkError',
@@ -119,6 +120,25 @@ export default function LoginPage() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const databaseUnavailableMessage = t(
+    'databaseUnavailable',
+    'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.',
+  );
+
+  const isDatabaseUnavailableError = (err) => {
+    const status = err?.response?.status;
+    const message = String(
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      '',
+    ).toLowerCase();
+    return (
+      status === 503
+      || message.includes('database')
+      || message.includes('rds tunnel')
+    );
+  };
+
   const handleLoginSuccess = async (data) => {
     const payload = data?.data ?? data;
     const accessToken = payload?.accessToken || payload?.token;
@@ -128,6 +148,10 @@ export default function LoginPage() {
 
     login({ accessToken, refreshToken }, null);
     const fetchedUser = await refreshUser();
+    if (!fetchedUser) {
+      setError(t('loginProfileLoadFailed', 'Signed in but could not load your profile. Please refresh and try again.'));
+      return;
+    }
     const destination = resolveAfterAuthNavigation(
       localStorage.getItem('redirectAfterLogin') || from,
       fetchedUser,
@@ -158,16 +182,17 @@ export default function LoginPage() {
       await handleLoginSuccess(data);
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       if (body?.emailVerified === false) {
         setError(body?.error || body?.message || t('verifyEmailBeforeLogin', 'Please verify your email before logging in.'));
         setInfo(t('verifyEmailResendHint', 'Use “Resend verification” below, or sign in with OTP to verify instantly.'));
       } else {
         setError(
-          body?.error ||
-          body?.message ||
-          err.message ||
-          t('invalidEmailOrPassword'),
+          readApiError(err, t('invalidEmailOrPassword')),
         );
       }
     } finally {
@@ -193,6 +218,10 @@ export default function LoginPage() {
       resetProtection();
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       setError(
         body?.error ||
@@ -225,6 +254,10 @@ export default function LoginPage() {
       await handleLoginSuccess(data);
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       setError(
         body?.error ||
@@ -261,6 +294,10 @@ export default function LoginPage() {
       resetProtection();
     } catch (err) {
       resetProtection();
+      if (isDatabaseUnavailableError(err)) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
       const body = err.response?.data;
       setError(body?.error || body?.message || 'Unable to resend verification link.');
     } finally {

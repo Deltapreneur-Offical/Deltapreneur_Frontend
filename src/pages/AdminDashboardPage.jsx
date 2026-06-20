@@ -49,6 +49,7 @@ import DomainVerificationModal from './DomainVerificationModal';
 import { softwareAuctionAPI } from '../api/services';
 import { asArray, extractAdminList } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
+import { readApiError } from '../utils/apiError';
 import { normalizeAddonOrders } from '../utils/normalizeAddonOrders';
 import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
@@ -417,12 +418,9 @@ export default function AdminDashboardPage() {
   const [loading, setLoading]               = useState(false);
   const [forwardModal, setForwardModal]     = useState(null);
   const [takeDownTarget, setTakeDownTarget] = useState(null);
-  const [pendingVentureActionId, setPendingVentureActionId] = useState(null);
-  const [pendingVentureActionType, setPendingVentureActionType] = useState(null);
   const [verifyDomain, setVerifyDomain]   = useState(null);
   const [verifyVenture, setVerifyVenture] = useState(null);
   const [listCount, setListCount]         = useState(null);
-  const [pendingVentures, setPendingVentures] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -473,72 +471,13 @@ export default function AdminDashboardPage() {
       .catch((e) => {
         setData([]);
         setListCount(0);
-        const detail = e.response?.data?.detail;
-        const detailText = Array.isArray(detail)
-          ? detail.map((d) => d.msg || d).join(', ')
-          : (typeof detail === 'string' ? detail : null);
-        const msg = e.response?.data?.error || detailText || e.message || t('adminLoadFailed', { tab: currentTab });
-        toast.error(msg);
+        toast.error(readApiError(e, t('adminLoadFailed', { tab: currentTab })));
       })
       .finally(() => {
         if (!silent) setLoading(false);
       });
   };
 
-  const refreshPendingVentures = () =>
-    adminAPI.getPendingVentures()
-      .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
-      .catch(() => setPendingVentures([]));
-
-  const resolveApiErrorMessage = (error, fallback) => {
-    const detail = error?.response?.data?.detail;
-    const detailText = Array.isArray(detail)
-      ? detail.map((d) => d.msg || d).join(', ')
-      : (typeof detail === 'string' ? detail : null);
-    return error?.response?.data?.error || detailText || error?.message || fallback;
-  };
-
-  const handleApproveVenture = async (ventureId) => {
-    if (!ventureId || pendingVentureActionId) return;
-    setPendingVentureActionId(ventureId);
-    setPendingVentureActionType('approve');
-    try {
-      await adminAPI.approveVenture(ventureId);
-      await refreshPendingVentures();
-      if (tab === 'ventures') {
-        loadTab('ventures', { silent: true });
-      }
-    } catch (error) {
-      alert(resolveApiErrorMessage(error, t('adminVentureApproveFailed', { defaultValue: 'Failed to approve venture.' })));
-    } finally {
-      setPendingVentureActionId(null);
-      setPendingVentureActionType(null);
-    }
-  };
-
-  const handleRejectVenture = async (ventureId) => {
-    if (!ventureId || pendingVentureActionId) return;
-    const reason = window.prompt(
-      t('adminVentureRejectReasonPrompt', { defaultValue: 'Rejection reason (optional)' }),
-    );
-    if (reason === null) return;
-
-    setPendingVentureActionId(ventureId);
-    setPendingVentureActionType('reject');
-    try {
-      await adminAPI.rejectVenture(ventureId, reason);
-      await refreshPendingVentures();
-      if (tab === 'ventures') {
-        loadTab('ventures', { silent: true });
-      }
-    } catch (error) {
-      alert(resolveApiErrorMessage(error, t('adminVentureRejectFailed', { defaultValue: 'Failed to reject venture.' })));
-    } finally {
-      setPendingVentureActionId(null);
-      setPendingVentureActionType(null);
-    }
-  };
-  
   useEffect(() => {
     adminAPI.getCoBrothers()
       .then(({ data }) => setCoBrothers(asArray(data)))
@@ -567,12 +506,6 @@ export default function AdminDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    adminAPI.getPendingVentures()
-      .then(({ data }) => setPendingVentures(Array.isArray(data) ? data : (data?.data ?? [])))
-      .catch(() => setPendingVentures([]));
   }, []);
 
   useEffect(() => {
@@ -793,42 +726,6 @@ export default function AdminDashboardPage() {
             <VentureDealsAdminTab />
           )}
 
-          {tab === 'ventures' && pendingVentures.length > 0 && (
-            <div style={{ marginBottom: '1rem', padding: '0.9rem', border: '1px solid #fde68a', borderRadius: 10, background: '#fffbeb' }}>
-              <div style={{ fontWeight: 700, marginBottom: '0.6rem' }}>Pending venture approvals ({pendingVentures.length})</div>
-              {pendingVentures.map((v) => {
-                const ventureId = v.id ?? v.ventureId;
-                const isBusy = pendingVentureActionId === ventureId;
-                const isApproving = isBusy && pendingVentureActionType === 'approve';
-                const isRejecting = isBusy && pendingVentureActionType === 'reject';
-
-                return (
-                  <div key={ventureId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #fde68a' }}>
-                    <span>{v.brandDetails?.brandName || v.brand_details?.brand_name || ventureId}</span>
-                    <span style={{ display: 'flex', gap: '0.4rem' }}>
-                      <button
-                        type="button"
-                        className="btn-secondary btn-sm"
-                        disabled={Boolean(pendingVentureActionId)}
-                        onClick={() => handleApproveVenture(ventureId)}
-                      >
-                        {isApproving ? t('adminApproving', { defaultValue: 'Approving…' }) : t('adminApprove', { defaultValue: 'Approve' })}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-secondary btn-sm"
-                        disabled={Boolean(pendingVentureActionId)}
-                        onClick={() => handleRejectVenture(ventureId)}
-                      >
-                        {isRejecting ? t('adminRejecting', { defaultValue: 'Rejecting…' }) : t('adminReject', { defaultValue: 'Reject' })}
-                      </button>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
           {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'venture-deals' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
@@ -856,6 +753,7 @@ export default function AdminDashboardPage() {
                 <HomepageFeatureSelector type="coventure" />
                 <HomepageFeatureSelector type="software" />
                 <HomepageFeatureSelector type="community" />
+                <HomepageFeatureSelector type="auction" />
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />
@@ -879,7 +777,10 @@ export default function AdminDashboardPage() {
                       onTakeDown={handleTakeDown}
                       onRestore={handleRestore}
                       onVerifyVenture={setVerifyVenture}
-                      onRefresh={() => loadTab(tab)}
+                      onRefresh={() => {
+                        loadTab(tab, { silent: true });
+                        refreshPendingCounts();
+                      }}
                     />
                   ) : (
                     <AdminRow
@@ -891,7 +792,10 @@ export default function AdminDashboardPage() {
                       onRestore={handleRestore}
                       onVerifyDomain={setVerifyDomain}
                       onVerifyVenture={setVerifyVenture}
-                      onRefresh={() => loadTab(tab)}
+                      onRefresh={() => {
+                        loadTab(tab, { silent: true });
+                        refreshPendingCounts();
+                      }}
                     />
                   )
                 ))}

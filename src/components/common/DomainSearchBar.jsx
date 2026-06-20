@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
@@ -9,6 +10,14 @@ import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../
 import useAIDomains from '../../hooks/useAIDomains';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
+import {
+  heroSearchStackEnter,
+  heroSubmitHover,
+  heroSubmitTap,
+  heroTabIdleHover,
+  heroTabSpring,
+  HOME_EASE_OUT,
+} from '../home/motion/homeMotion';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const SEARCH_MODE_IDS = ['ai', 'new', 'premium', 'auction'];
@@ -43,6 +52,130 @@ function BrandSearchIcon() {
       aria-hidden="true"
     />
   );
+}
+
+function BrandSearchSubmitButton({ label }) {
+  const reduceMotion = useReducedMotion();
+  const ButtonTag = reduceMotion ? 'button' : motion.button;
+  const motionProps = reduceMotion
+    ? {}
+    : {
+        whileHover: heroSubmitHover,
+        whileTap: heroSubmitTap,
+      };
+
+  return (
+    <ButtonTag
+      type="submit"
+      aria-label={label}
+      className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-2"
+      {...motionProps}
+    >
+      {reduceMotion ? (
+        <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
+      ) : (
+        <motion.span
+          className="grid place-items-center"
+          whileHover={{ x: 2 }}
+          transition={{ duration: 0.2, ease: HOME_EASE_OUT }}
+        >
+          <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
+        </motion.span>
+      )}
+    </ButtonTag>
+  );
+}
+
+function HeroSearchStack({ animateHero, className = '', children }) {
+  const reduceMotion = useReducedMotion();
+
+  if (!animateHero || reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      animate="visible"
+      variants={heroSearchStackEnter}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function BrandSearchTabs({
+  searchMode,
+  onTabChange,
+  mobile = false,
+  layoutId = 'brand-search-active-pill',
+}) {
+  const { t } = useTranslation();
+  const reduceMotion = useReducedMotion();
+  const useMotionPill = !reduceMotion;
+
+  const tabButtons = SEARCH_MODE_IDS.map((tabId) => {
+    const isActive = searchMode === tabId;
+    const buttonClassName = mobile
+      ? `relative min-h-11 flex-1 basis-[calc(50%-0.25rem)] sm:min-h-12 sm:basis-[calc(50%-0.375rem)] rounded-full px-2.5 py-2 text-center text-[11.5px] sm:text-sm font-medium leading-snug md:min-h-9 md:flex-none md:basis-auto md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
+          isActive
+            ? useMotionPill
+              ? 'brand-search-tab-active brand-search-tab--motion'
+              : 'brand-search-tab-active'
+            : 'brand-search-tab-idle'
+        }`
+      : `relative min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none ${
+          isActive
+            ? useMotionPill
+              ? 'brand-search-tab-active brand-search-tab--motion'
+              : 'brand-search-tab-active'
+            : 'brand-search-tab-idle'
+        }`;
+
+    const TabButtonTag = reduceMotion || isActive ? 'button' : motion.button;
+    const idleMotionProps = !reduceMotion && !isActive
+      ? { whileHover: heroTabIdleHover, whileTap: { scale: 0.98 } }
+      : {};
+
+    return (
+      <TabButtonTag
+        key={tabId}
+        type="button"
+        onClick={() => onTabChange(tabId)}
+        className={buttonClassName}
+        {...idleMotionProps}
+      >
+        {useMotionPill && isActive ? (
+          <motion.span
+            layoutId={layoutId}
+            className="absolute inset-0 rounded-full bg-black shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
+            transition={heroTabSpring}
+            aria-hidden="true"
+          />
+        ) : null}
+        <span className={`relative z-10 ${isActive ? 'text-white' : ''}`}>
+          {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
+        </span>
+      </TabButtonTag>
+    );
+  });
+
+  const tabsMarkup = (
+    <LayoutGroup id={layoutId}>
+      <div
+        className={
+          mobile
+            ? 'brand-search-tabs brand-search-tabs-mobile flex w-full flex-wrap items-stretch justify-center gap-2 sm:gap-2.5 md:inline-flex md:w-auto md:flex-nowrap md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1'
+            : 'brand-search-tabs inline-flex items-center gap-1 rounded-full border bg-white/95 p-1'
+        }
+      >
+        {tabButtons}
+      </div>
+    </LayoutGroup>
+  );
+
+  return tabsMarkup;
 }
 
 function normalizeSearchText(value) {
@@ -108,6 +241,8 @@ function formatRegistrarPrice(amount, currency) {
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
+  const animateHero = embedded && !reduceMotion;
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -487,6 +622,40 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
+  const desktopSearchForm = (
+    <form
+      onSubmit={handleSearch}
+      className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full"
+    >
+      <BrandSearchIcon />
+      <input
+        type="text"
+        className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
+        placeholder={placeholder}
+        value={safeQuery}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <BrandSearchSubmitButton label={t('search')} />
+    </form>
+  );
+
+  const mobileSearchForm = (
+    <form
+      onSubmit={handleSearch}
+      className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
+    >
+      <BrandSearchIcon />
+      <input
+        type="text"
+        className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
+        placeholder={placeholder}
+        value={safeQuery}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <BrandSearchSubmitButton label={t('search')} />
+    </form>
+  );
+
   return (
     <div
       className={`relative z-20 w-full ${embedded ? 'py-0' : 'py-3 pl-4 pr-4 sm:py-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8'} ${className}`.trim()}
@@ -494,86 +663,38 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
         {/* Desktop: compact search and mode tabs */}
-        <div className="hidden lg:flex lg:flex-row lg:items-end lg:justify-start">
-          <div className="w-full max-w-[760px] flex-[1_1_700px]">
-            <form onSubmit={handleSearch}
-              className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full">
-              <BrandSearchIcon />
-              <input
-                type="text"
-                className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
-                placeholder={placeholder}
-                value={safeQuery}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <button
-                type="submit"
-                aria-label={t('search')}
-                className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2"
-              >
-                <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
-              </button>
-            </form>
+        <div className="hidden lg:flex lg:flex-row lg:items-start lg:justify-start">
+          <HeroSearchStack
+            animateHero={animateHero}
+            className="w-full max-w-[760px] flex-[1_1_700px]"
+          >
+            {desktopSearchForm}
 
             <div className="mt-3 flex justify-center">
-              <div className="brand-search-tabs inline-flex items-center gap-1 rounded-full border bg-white/95 p-1">
-                {SEARCH_MODE_IDS.map((tabId) => (
-                  <button
-                    key={tabId}
-                    type="button"
-                    onClick={() => handleTabChange(tabId)}
-                    className={`min-h-9 whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm font-semibold leading-none ${
-                      searchMode === tabId
-                        ? 'brand-search-tab-active'
-                        : 'brand-search-tab-idle'
-                    }`}
-                  >
-                    {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
-                  </button>
-                ))}
-              </div>
+              <BrandSearchTabs
+                searchMode={searchMode}
+                onTabChange={handleTabChange}
+                layoutId="brand-search-active-pill-desktop"
+              />
             </div>
-          </div>
+          </HeroSearchStack>
         </div>
 
-        {/* Mobile / tablet */}
-        <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
-          <form onSubmit={handleSearch}
-            className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
-            <BrandSearchIcon />
-            <input
-              type="text"
-              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
-              placeholder={placeholder}
-              value={safeQuery}
-              onChange={e => setQuery(e.target.value)}
+        {/* Mobile / tablet — search + tabs share one entrance so spacing never collapses */}
+        <HeroSearchStack animateHero={animateHero} className="lg:hidden">
+          <div className="flex flex-col items-stretch gap-3 sm:gap-4">
+            {mobileSearchForm}
+          </div>
+
+          <div className="mt-3 flex justify-center pb-2 overflow-visible">
+            <BrandSearchTabs
+              searchMode={searchMode}
+              onTabChange={handleTabChange}
+              mobile
+              layoutId="brand-search-active-pill-mobile"
             />
-            <button type="submit"
-              aria-label={t('search')}
-              className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2">
-              <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
-            </button>
-          </form>
-        </div>
-
-        <div className="mt-3 flex justify-center pb-2 lg:hidden overflow-visible">
-          <div className="brand-search-tabs brand-search-tabs-mobile flex w-full flex-wrap items-stretch justify-center gap-2 sm:gap-2.5 md:inline-flex md:w-auto md:flex-nowrap md:items-center md:gap-1 md:rounded-full md:border md:bg-white/95 md:p-1">
-            {SEARCH_MODE_IDS.map((tabId) => (
-              <button
-                key={tabId}
-                type="button"
-                onClick={() => handleTabChange(tabId)}
-                className={`min-h-11 flex-1 basis-[calc(50%-0.25rem)] sm:min-h-12 sm:basis-[calc(50%-0.375rem)] rounded-full px-2.5 py-2 text-center text-[11.5px] sm:text-sm font-medium leading-snug md:min-h-9 md:flex-none md:basis-auto md:w-auto md:whitespace-nowrap md:px-4 md:font-semibold md:leading-none ${
-                  searchMode === tabId
-                    ? 'brand-search-tab-active'
-                    : 'brand-search-tab-idle'
-                }`}
-              >
-                {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
-              </button>
-            ))}
           </div>
-        </div>
+        </HeroSearchStack>
 
         {/* Results */}
         <div className="mt-4">
@@ -811,6 +932,19 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             color 0.42s cubic-bezier(0.22, 1, 0.36, 1),
             border-color 0.48s cubic-bezier(0.22, 1, 0.36, 1),
             box-shadow 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .brand-search-tab-active.brand-search-tab--motion {
+          background: transparent;
+          border-color: transparent;
+          box-shadow: none;
+        }
+
+        .brand-search-tab-active.brand-search-tab--motion:hover,
+        .brand-search-tab-active.brand-search-tab--motion:focus-visible {
+          background: transparent;
+          border-color: transparent;
+          box-shadow: none;
         }
 
         .brand-search-tab-active:hover,

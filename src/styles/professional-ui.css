@@ -70,12 +70,16 @@
   display: none;
 }
 
-.card-glow-hover:hover {
+.card-glow-hover:hover:not(.creator-profile-card) {
   border-color: rgba(20, 184, 166, 0.32);
   box-shadow:
     0 0 28px rgba(20, 184, 166, 0.16),
     0 0 36px rgba(59, 130, 246, 0.14),
     0 14px 32px rgba(15, 23, 42, 0.1);
+}
+
+.creator-profile-card.card-glow-hover:hover {
+  transform: none;
 }
 
 /* Apply to all card variations */

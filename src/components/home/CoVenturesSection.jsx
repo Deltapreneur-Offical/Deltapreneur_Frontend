@@ -47,6 +47,7 @@ export default function CoVenturesSection() {
       <HomeSectionCardSkeleton
         title={t('coVentureSectionTitle', { defaultValue: 'Co-Ventures' })}
         to="/ventures?mode=co-venture"
+        compact
       />
     );
   }
@@ -66,7 +67,7 @@ export default function CoVenturesSection() {
           <HomePreviewRow>
             {ventures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
-                <HomePreviewCardShell>
+                <HomePreviewCardShell accent="coventure">
                   <VentureListingCard
                     venture={venture}
                     browseMode

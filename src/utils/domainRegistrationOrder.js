@@ -1,16 +1,6 @@
 /** Helpers for domain registration storefront orders (new-domain purchases). */
 
-export function readApiError(err, fallback) {
-  const payload = err?.response?.data;
-  if (typeof payload === 'string') return payload;
-  if (payload?.message) return payload.message;
-  if (payload?.error) return payload.error;
-  if (typeof payload?.detail === 'string') return payload.detail;
-  if (Array.isArray(payload?.detail)) {
-    return payload.detail.map((x) => x?.msg || String(x)).join(', ');
-  }
-  return fallback;
-}
+export { readApiError } from './apiError';
 
 export function registrationStatusBadgeClass(status, lifecycleStatus) {
   const life = (lifecycleStatus || '').toLowerCase();

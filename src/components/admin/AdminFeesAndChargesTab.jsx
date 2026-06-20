@@ -26,54 +26,80 @@ const FEE_SECTIONS = [
     ],
   },
   {
-    id: 'domains',
-    icon: '🌐',
-    title: 'Domains',
-    description: 'Domain-specific auction fee. Domain buy-now listings use the marketplace commission above.',
+    id: 'auction-shared',
+    icon: '🔨',
+    title: 'Auction fees (platform-wide)',
+    description:
+      'Shared across domain, software, and creator auctions. Sellers pay the creation fee once when publishing; bidders pay the bid fee on every bid.',
     appliesTo: [
-      'Domain auction page — pay before joining an active auction (AuctionPage)',
+      'Creation fee — Domain (DomainsPage, AuctionPage), Software (SoftwareAuctionRequestModal), Creator (CommunityPage)',
+      'Bid fee — charged on each bid: Domain (AuctionPage), Software (SoftwareAuctionPage), Creator (CommunityAuctionPage)',
     ],
     fields: [
       {
-        key: 'domainParticipationFeeInr',
-        label: 'Auction participation fee (INR)',
+        key: 'auctionCreationFeeInr',
+        label: 'Auction creation fee (INR)',
+        hint: 'One-time fee paid by the seller when publishing an auction.',
+      },
+      {
+        key: 'auctionBidFeeInr',
+        label: 'Auction bid fee (INR)',
+        hint: 'Paid by the bidder each time they place a bid.',
       },
     ],
-    sharedAuctionFees: true,
+  },
+  {
+    id: 'domains',
+    icon: '🌐',
+    title: 'Domains',
+    description:
+      'Domain buy-now listings use the marketplace commission above. Domain auctions use the platform-wide creation and bid fees — there is no separate domain bidder entry fee.',
+    appliesTo: [
+      'Seller lists auction — creation fee (DomainsPage, AuctionPage)',
+      'Bidder places each bid — bid fee (AuctionPage)',
+    ],
+    readOnlyRefs: [
+      { key: 'auctionCreationFeeInr', label: 'Creation fee (INR)' },
+      { key: 'auctionBidFeeInr', label: 'Bid fee per bid (INR)' },
+    ],
   },
   {
     id: 'technology',
     icon: '⚙️',
     title: 'Technology (Co-Creation)',
-    description: 'Software / technology product line. Fixed-price listings use marketplace commission; auctions use fees below.',
+    description:
+      'Fixed-price listings use marketplace commission. Software auctions use the platform-wide creation and bid fees — there is no separate software bidder entry fee.',
     appliesTo: [
-      'Software auction page — pay before joining (SoftwareAuctionPage)',
-      'Software auction request — creation fee when requesting an auction (SoftwareAuctionRequestModal)',
+      'Seller requests auction — creation fee (SoftwareAuctionRequestModal)',
+      'Bidder places each bid — bid fee (SoftwareAuctionPage)',
     ],
-    fields: [
-      {
-        key: 'softwareParticipationFeeInr',
-        label: 'Auction participation fee (INR)',
-      },
+    readOnlyRefs: [
+      { key: 'auctionCreationFeeInr', label: 'Creation fee (INR)' },
+      { key: 'auctionBidFeeInr', label: 'Bid fee per bid (INR)' },
     ],
-    sharedAuctionFees: true,
   },
   {
     id: 'creator',
     icon: '✨',
     title: 'Creator (Community)',
-    description: 'Creator profile auctions where companies bid to collaborate.',
+    description:
+      'Creator profile auctions use platform-wide creation and bid fees for listing and bidding. The fee below is separate — it applies only when a company requests a meeting on a creator auction page.',
     appliesTo: [
-      'Community page — creation fee when starting a creator auction (CommunityPage)',
-      'Creator auction page — participation + per-bid fees (CommunityAuctionPage)',
+      'Seller starts auction — creation fee (CommunityPage)',
+      'Bidder places each bid — bid fee (CommunityAuctionPage)',
+      'Bidder requests a meeting — meeting request fee (CommunityAuctionPage)',
     ],
     fields: [
       {
         key: 'communityParticipationFeeInr',
-        label: 'Auction participation fee (INR)',
+        label: 'Meeting request fee (INR)',
+        hint: 'One-time fee to request a meeting on a creator auction. Not charged for placing bids.',
       },
     ],
-    sharedAuctionFees: true,
+    readOnlyRefs: [
+      { key: 'auctionCreationFeeInr', label: 'Creation fee (INR)' },
+      { key: 'auctionBidFeeInr', label: 'Bid fee per bid (INR)' },
+    ],
   },
   {
     id: 'ventures',
@@ -92,35 +118,18 @@ const FEE_SECTIONS = [
       },
     ],
   },
-  {
-    id: 'auction-shared',
-    icon: '🔨',
-    title: 'Auction fees (platform-wide)',
-    description:
-      'Single values shared across all active auction types. Changing these affects domain, software, and creator auctions.',
-    appliesTo: [
-      'Creation fee — Domain auctions (DomainsPage, AuctionPage), Software auctions (SoftwareAuctionRequestModal), Creator auctions (CommunityPage, CommunityAuctionPage)',
-      'Bid fee — charged on each bid: Domain (AuctionPage), Software (SoftwareAuctionPage), Creator (CommunityAuctionPage)',
-    ],
-    fields: [
-      {
-        key: 'auctionCreationFeeInr',
-        label: 'Auction creation fee (INR)',
-        hint: 'One-time fee to publish an auction.',
-      },
-      {
-        key: 'auctionBidFeeInr',
-        label: 'Auction bid fee (INR)',
-        hint: 'Paid each time a user places a bid.',
-      },
-    ],
-  },
 ];
 
-const ALL_KEYS = FEE_SECTIONS.flatMap((s) => s.fields.map((f) => f.key));
+const EDITABLE_KEYS = FEE_SECTIONS.flatMap((s) => (s.fields ?? []).map((f) => f.key));
 
 function normalizeFees(src = {}) {
-  return Object.fromEntries(ALL_KEYS.map((key) => [key, src[key] ?? '']));
+  return Object.fromEntries(EDITABLE_KEYS.map((key) => [key, src[key] ?? '']));
+}
+
+function formatInr(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return `₹${n.toLocaleString('en-IN')}`;
 }
 
 export default function AdminFeesAndChargesTab() {
@@ -148,7 +157,7 @@ export default function AdminFeesAndChargesTab() {
     setSaving(true);
     try {
       const payload = Object.fromEntries(
-        ALL_KEYS.map((key) => [key, Number(fees[key])]),
+        EDITABLE_KEYS.map((key) => [key, Number(fees[key])]),
       );
       const { data } = await adminAPI.updateListingFeesAndCharges(payload);
       const saved = data?.data ?? data ?? {};
@@ -170,71 +179,87 @@ export default function AdminFeesAndChargesTab() {
       <div className="px-5 sm:px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white">
         <h3 className="font-display text-xl font-bold text-gray-900 m-0 mb-1">Fees &amp; Charges</h3>
         <p className="text-sm text-gray-600 m-0 max-w-3xl">
-          Configure fees by product line. Values marked platform-wide apply to every auction type that uses them.
+          Configure fees by product line. Auction creation and bid fees are set once and apply to every auction type.
         </p>
       </div>
 
       <div className="p-5 sm:p-6 flex flex-col gap-6">
-        {FEE_SECTIONS.map((section) => (
-          <section
-            key={section.id}
-            className="rounded-xl border border-gray-200 overflow-hidden"
-          >
-            <div className="px-4 py-3 sm:px-5 bg-gray-50/80 border-b border-gray-100">
-              <div className="flex items-start gap-3">
-                <span className="text-xl shrink-0 mt-0.5" aria-hidden>{section.icon}</span>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-semibold text-gray-900 m-0">{section.title}</h4>
-                  <p className="text-xs text-gray-600 mt-1 m-0 leading-relaxed">{section.description}</p>
-                  {section.appliesTo?.length > 0 && (
-                    <ul className="mt-2 mb-0 pl-4 text-[0.7rem] text-gray-500 space-y-0.5 list-disc">
-                      {section.appliesTo.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                  )}
-                  {section.sharedAuctionFees && (
-                    <p className="text-[0.7rem] text-indigo-600 mt-2 mb-0">
-                      Also uses platform-wide auction creation &amp; bid fees (see Auction fees section).
-                    </p>
-                  )}
-                  {section.inactiveNote && (
-                    <p className="text-[0.7rem] text-amber-700 mt-2 mb-0">{section.inactiveNote}</p>
-                  )}
+        {FEE_SECTIONS.map((section) => {
+          const editableFields = section.fields ?? [];
+          const readOnlyRefs = section.readOnlyRefs ?? [];
+
+          return (
+            <section
+              key={section.id}
+              className="rounded-xl border border-gray-200 overflow-hidden"
+            >
+              <div className="px-4 py-3 sm:px-5 bg-gray-50/80 border-b border-gray-100">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl shrink-0 mt-0.5" aria-hidden>{section.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-semibold text-gray-900 m-0">{section.title}</h4>
+                    <p className="text-xs text-gray-600 mt-1 m-0 leading-relaxed">{section.description}</p>
+                    {section.appliesTo?.length > 0 && (
+                      <ul className="mt-2 mb-0 pl-4 text-[0.7rem] text-gray-500 space-y-0.5 list-disc">
+                        {section.appliesTo.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {section.inactiveNote && (
+                      <p className="text-[0.7rem] text-amber-700 mt-2 mb-0">{section.inactiveNote}</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="p-4 sm:p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {section.fields.map(({ key, label, hint }) => (
-                  <div key={key} className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-                    <label htmlFor={`fee-${key}`} className="block text-xs font-semibold text-gray-800 mb-1">
-                      {label}
-                    </label>
-                    {hint ? (
-                      <p className="text-[0.65rem] text-gray-400 mb-2 m-0 leading-snug">{hint}</p>
-                    ) : null}
-                    <input
-                      id={`fee-${key}`}
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={fees[key] ?? ''}
-                      onChange={(e) => setFees((p) => ({ ...p, [key]: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-gray-50/50 focus:bg-white focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none"
-                    />
+              {(editableFields.length > 0 || readOnlyRefs.length > 0) && (
+                <div className="p-4 sm:p-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {editableFields.map(({ key, label, hint }) => (
+                      <div key={key} className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+                        <label htmlFor={`fee-${key}`} className="block text-xs font-semibold text-gray-800 mb-1">
+                          {label}
+                        </label>
+                        {hint ? (
+                          <p className="text-[0.65rem] text-gray-400 mb-2 m-0 leading-snug">{hint}</p>
+                        ) : null}
+                        <input
+                          id={`fee-${key}`}
+                          type="number"
+                          min="0"
+                          step="any"
+                          value={fees[key] ?? ''}
+                          onChange={(e) => setFees((p) => ({ ...p, [key]: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-gray-50/50 focus:bg-white focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none"
+                        />
+                      </div>
+                    ))}
+                    {readOnlyRefs.map(({ key, label }) => (
+                      <div
+                        key={`ref-${key}`}
+                        className="rounded-lg border border-dashed border-gray-200 bg-gray-50/80 p-3"
+                      >
+                        <p className="text-xs font-semibold text-gray-700 m-0 mb-1">{label}</p>
+                        <p className="text-[0.65rem] text-gray-400 m-0 mb-2 leading-snug">
+                          Set in Auction fees (platform-wide) above.
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900 m-0 tabular-nums">
+                          {formatInr(fees[key])}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
       </div>
 
       <div className="px-5 sm:px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-gray-500 m-0">
-          {ALL_KEYS.length} active fee settings
+          {EDITABLE_KEYS.length} active fee settings
         </p>
         <button type="button" className="btn-glow btn-glow-sm" onClick={handleSave} disabled={saving}>
           {saving ? t('adminSaving', 'Saving…') : t('adminSaveFees', 'Save fees')}

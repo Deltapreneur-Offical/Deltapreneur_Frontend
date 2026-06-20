@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import Confetti from '../components/common/Confetti';
+import {
+  PageHero,
+  PageHeroItem,
+  PageReveal,
+  PageStagger,
+  PageStaggerItem,
+} from '../components/motion/PageMotion';
+import { HOME_EASE, pageCardHover } from '../components/motion/motionPresets';
 import {
   Network, Sparkles, Package, Store, ShieldCheck,
   Smartphone, MessageCircle, Laptop, MapPin, Workflow,
   Bell, MonitorCheck, Rocket, BadgeIndianRupee,
-  ChevronDown, Timer, BadgePercent, Check, AlertCircle, ArrowLeft,
+  ChevronDown, Timer, BadgePercent, Check, AlertCircle,
   Loader2
 } from 'lucide-react';
 
@@ -157,10 +167,7 @@ const JoinForm = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
-            <ArrowLeft size={18} />
-            <span className="font-semibold">{t('joinFormBackHome')}</span>
-          </button>
+          <BackToHomeButton />
           <div className="flex items-center gap-2 text-purple-600 font-bold text-lg">
             <Network size={20} />
             <span>{t('joinFormElite')}</span>
@@ -170,34 +177,46 @@ const JoinForm = () => {
 
       {/* Hero Section */}
       <section className="py-10 sm:py-14 md:py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-green-100 border border-green-300 rounded-full text-xs sm:text-sm font-semibold text-green-700 mb-5 sm:mb-6">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            {t('joinFormBadge')}
-          </div>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
-            {t('joinFormHeroTitle')}
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed">
-            {t('joinFormHeroDesc')}
-          </p>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-[560px] sm:max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12">
-            <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
-              <p className="text-2xl sm:text-4xl font-bold font-display text-purple-600 leading-none tabular-nums mb-1.5 sm:mb-2">100%</p>
-              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatEarnings')}</p>
+        <PageHero className="max-w-4xl mx-auto text-center">
+          <PageHeroItem>
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-green-100 border border-green-300 rounded-full text-xs sm:text-sm font-semibold text-green-700 mb-5 sm:mb-6">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              {t('joinFormBadge')}
             </div>
-            <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
-              <p className="text-2xl sm:text-4xl font-bold font-display text-indigo-600 leading-none tabular-nums mb-1.5 sm:mb-2">48h</p>
-              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatOnboarding')}</p>
-            </div>
-            <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
-              <p className="text-2xl sm:text-4xl font-bold font-display text-green-600 leading-none tabular-nums mb-1.5 sm:mb-2">{'\u20B90'}</p>
-              <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatJoiningFee')}</p>
-            </div>
-          </div>
-        </div>
+          </PageHeroItem>
+          <PageHeroItem>
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+              {t('joinFormHeroTitle')}
+            </h1>
+          </PageHeroItem>
+          <PageHeroItem>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed">
+              {t('joinFormHeroDesc')}
+            </p>
+          </PageHeroItem>
+          <PageHeroItem>
+            <PageStagger mount className="grid grid-cols-3 gap-3 sm:gap-6 max-w-[560px] sm:max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12">
+              <PageStaggerItem hover>
+                <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
+                  <p className="text-2xl sm:text-4xl font-bold font-display text-purple-600 leading-none tabular-nums mb-1.5 sm:mb-2">100%</p>
+                  <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatEarnings')}</p>
+                </div>
+              </PageStaggerItem>
+              <PageStaggerItem hover>
+                <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
+                  <p className="text-2xl sm:text-4xl font-bold font-display text-indigo-600 leading-none tabular-nums mb-1.5 sm:mb-2">48h</p>
+                  <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatOnboarding')}</p>
+                </div>
+              </PageStaggerItem>
+              <PageStaggerItem hover>
+                <div className="p-3.5 sm:p-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center text-center min-h-[96px] sm:min-h-[120px]">
+                  <p className="text-2xl sm:text-4xl font-bold font-display text-green-600 leading-none tabular-nums mb-1.5 sm:mb-2">{'\u20B90'}</p>
+                  <p className="text-[11px] sm:text-sm text-gray-600 font-semibold leading-tight">{t('joinFormStatJoiningFee')}</p>
+                </div>
+              </PageStaggerItem>
+            </PageStagger>
+          </PageHeroItem>
+        </PageHero>
       </section>
 
       {/* Main Content */}
@@ -207,7 +226,8 @@ const JoinForm = () => {
             {/* Left Column - Info */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Workflow */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
+              <PageReveal>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <Workflow size={20} className="text-purple-600" />
                   {t('joinFormWorkflowTitle')}
@@ -225,10 +245,12 @@ const JoinForm = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+                </div>
+              </PageReveal>
 
               {/* Details Cards */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
+              <PageReveal delay={0.06}>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <Sparkles size={20} className="text-purple-600" />
                   {t('joinFormDetailsTitle')}
@@ -255,10 +277,12 @@ const JoinForm = () => {
                     items={[t('joinFormNeed1'), t('joinFormNeed2'), t('joinFormNeed3')]}
                   />
                 </div>
-              </div>
+                </div>
+              </PageReveal>
 
               {/* FAQ */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
+              <PageReveal delay={0.1}>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <MessageCircle size={20} className="text-purple-600" />
                   {t('joinFormFaqTitle')}
@@ -268,11 +292,12 @@ const JoinForm = () => {
                     <AccordionItem key={idx} q={t(faq.qKey)} a={t(faq.aKey)} />
                   ))}
                 </div>
-              </div>
+                </div>
+              </PageReveal>
             </div>
 
             {/* Right Column - Form */}
-            <div className="lg:col-span-1 lg:sticky lg:top-24 self-start">
+            <PageReveal direction="right" className="lg:col-span-1 lg:sticky lg:top-24 self-start">
               <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <div className="mb-6">
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{t('joinFormClaimTitle')}</h3>
@@ -427,14 +452,21 @@ const JoinForm = () => {
                 </form>
               </div>
 
-              {/* Trust Badges */}
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                <TrustBadge icon={Timer} text={t('joinFormTrustZeroWait')} />
-                <TrustBadge icon={BadgePercent} text={t('joinFormTrust100Cut')} />
-                <TrustBadge icon={ShieldCheck} text={t('joinFormTrustNoFee')} />
-                <TrustBadge icon={Rocket} text={t('joinFormTrustInstant')} />
-              </div>
-            </div>
+              <PageStagger className="grid grid-cols-2 gap-3 mt-6">
+                <PageStaggerItem>
+                  <TrustBadge icon={Timer} text={t('joinFormTrustZeroWait')} />
+                </PageStaggerItem>
+                <PageStaggerItem>
+                  <TrustBadge icon={BadgePercent} text={t('joinFormTrust100Cut')} />
+                </PageStaggerItem>
+                <PageStaggerItem>
+                  <TrustBadge icon={ShieldCheck} text={t('joinFormTrustNoFee')} />
+                </PageStaggerItem>
+                <PageStaggerItem>
+                  <TrustBadge icon={Rocket} text={t('joinFormTrustInstant')} />
+                </PageStaggerItem>
+              </PageStagger>
+            </PageReveal>
           </div>
         </div>
       </section>
@@ -443,8 +475,16 @@ const JoinForm = () => {
   );
 };
 
-const DetailCard = ({ icon: Icon, title, items }) => (
-  <div className="card-glow-hover p-5 bg-white rounded-xl border border-gray-200 transition-colors">
+const DetailCard = ({ icon: Icon, title, items }) => {
+  const reduceMotion = useReducedMotion();
+  const CardTag = reduceMotion ? 'div' : motion.div;
+  const motionProps = reduceMotion ? {} : { whileHover: pageCardHover };
+
+  return (
+    <CardTag
+      className="card-glow-hover p-5 bg-white rounded-xl border border-gray-200 transition-colors"
+      {...motionProps}
+    >
     <div className="flex items-center gap-3 mb-4">
       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
         <Icon size={18} className="text-purple-600" />
@@ -459,22 +499,41 @@ const DetailCard = ({ icon: Icon, title, items }) => (
         </li>
       ))}
     </ul>
-  </div>
-);
+    </CardTag>
+  );
+};
 
 const AccordionItem = ({ q, a }) => {
   const [open, setOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
+
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <button type="button" onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors">
         <span className="font-semibold text-gray-900">{q}</span>
-        <ChevronDown size={16} className={`text-gray-600 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`text-gray-600 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="px-4 pb-4 pt-0">
-          <p className="text-sm text-gray-600">{a}</p>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open ? (
+          reduceMotion ? (
+            <div className="px-4 pb-4 pt-0">
+              <p className="text-sm text-gray-600">{a}</p>
+            </div>
+          ) : (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.28, ease: HOME_EASE }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 pt-0">
+                <p className="text-sm text-gray-600">{a}</p>
+              </div>
+            </motion.div>
+          )
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 };

@@ -43,7 +43,13 @@ export default function VenturesSection() {
   };
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('coVentures')} to="/ventures?mode=venture" />;
+    return (
+      <HomeSectionCardSkeleton
+        title={t('coVentures')}
+        to="/ventures?mode=venture"
+        compact
+      />
+    );
   }
 
   return (
@@ -56,7 +62,7 @@ export default function VenturesSection() {
           <HomePreviewRow>
             {ventures.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
-                <HomePreviewCardShell>
+                <HomePreviewCardShell accent="venture">
                   <VentureListingCard
                     venture={venture}
                     browseMode

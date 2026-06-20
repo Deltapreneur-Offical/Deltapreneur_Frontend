@@ -6,6 +6,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { homeRowReveal, homeViewport } from './motion/homeMotion';
 
 /**
  * Horizontally auto-scrolling row. Duplicates children for a seamless infinite loop.
@@ -19,6 +21,7 @@ export default function HomeAutoScrollRow({
   ariaLabel,
   onlyWhenOverflow = false,
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const [reduceMotion, setReduceMotion] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(!onlyWhenOverflow);
   const viewportRef = useRef(null);
@@ -90,15 +93,25 @@ export default function HomeAutoScrollRow({
     .filter(Boolean)
     .join('');
 
+  const RootTag = prefersReducedMotion ? 'div' : motion.div;
+  const rootMotionProps = prefersReducedMotion
+    ? {}
+    : {
+        initial: 'hidden',
+        whileInView: 'visible',
+        viewport: homeViewport,
+        variants: homeRowReveal,
+      };
+
   return (
-    <div className={rootClassName} style={style} aria-label={ariaLabel}>
+    <RootTag className={rootClassName} style={style} aria-label={ariaLabel} {...rootMotionProps}>
       <div className="home-auto-scroll-row__viewport" ref={viewportRef}>
         <div className={trackClassName} ref={trackRef}>
           {renderTrack()}
           {shouldAnimate ? renderTrack('dup') : null}
         </div>
       </div>
-    </div>
+    </RootTag>
   );
 }
 

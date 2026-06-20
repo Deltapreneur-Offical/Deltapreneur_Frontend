@@ -9,7 +9,6 @@ import './styles/creator-profile-card.css'
 import './styles/home-preview-cards.css'
 import './styles/home-features-section.css'
 import './styles/listing-card-stats-footer.css'
-import './styles/domain-ticker.css'
 import './i18n/index';
 import App from './App.jsx'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import { domainTransferAPI } from '../api/domainTransferAPI';
+import { readApiError } from '../utils/apiError';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 
 const sellerLabels = {
@@ -38,13 +39,6 @@ const eventLabels = {
   PAYOUT_RELEASED: 'Payout Released',
   REFUNDED: 'Refunded',
 };
-
-function readApiError(error, fallback = 'Action failed.') {
-  return error?.response?.data?.message
-    || error?.response?.data?.error
-    || error?.response?.data?.detail
-    || fallback;
-}
 
 function formatDateTime(value) {
   if (!value) return '';

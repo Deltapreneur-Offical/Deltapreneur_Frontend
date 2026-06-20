@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { aiDomainsAPI } from '../api/services';
+import { readApiError } from '../utils/apiError';
 
 const LOADING_STAGES = {
   start: 'Understanding your idea...',
@@ -22,12 +23,10 @@ function getGuestSession() {
 }
 
 function extractError(error) {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error?.message ||
-    (typeof error?.response?.data?.error === 'string' ? error.response.data.error : '') ||
-    error?.message ||
-    'Could not generate AI domains right now.'
+  return readApiError(
+    error,
+    'Could not generate AI domains right now. Please try again in a moment.',
+    { context: 'ai' },
   );
 }
 

@@ -9,6 +9,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ventureDealAPI } from '../api/services';
+import { readApiError } from '../utils/apiError';
 import ConfirmationModal, { buttonVariantMap } from '../components/common/ConfirmationModal';
 
 const CLOSED_DEAL_STATUSES = new Set(['COMPLETED', 'CANCELLED', 'REFUNDED']);
@@ -16,15 +17,19 @@ const CLOSED_DEAL_STATUSES = new Set(['COMPLETED', 'CANCELLED', 'REFUNDED']);
 const dealStatusLabels = {
   PENDING_ADMIN_APPROVAL: 'Awaiting Admin Approval',
   PENDING_PAYMENT: 'Pending Payment',
-  PAYMENT_HELD: 'Payment Held',
+  PAYMENT_HELD: 'Payment Held in Escrow',
   IN_PROGRESS: 'In Progress',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
   REFUNDED: 'Refunded',
-  HELD: 'Held',
-  RELEASED: 'Released',
   VENTURE_SALE: 'Venture Sale',
   CO_VENTURE: 'Co-Venture',
+};
+
+const escrowStatusLabels = {
+  HELD: 'Funds Held',
+  RELEASED: 'Released to Seller',
+  REFUNDED: 'Refunded',
 };
 
 const statusToneMap = {
@@ -36,17 +41,24 @@ const statusToneMap = {
 };
 
 function getApiErrorMessage(error) {
-  return (
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    error?.response?.data?.detail ||
-    error?.message ||
-    'Action failed.'
-  );
+  return readApiError(error, 'Action failed.');
 }
 
-function formatStatus(value) {
+function formatStatus(value, context = 'deal') {
+  if (context === 'escrow') {
+    return escrowStatusLabels[value] || (value ? String(value).replaceAll('_', ' ') : 'Not available');
+  }
   return dealStatusLabels[value] || (value ? String(value).replaceAll('_', ' ') : 'Not available');
+}
+
+function formatEscrowStatus(escrowStatus, dealStatus) {
+  if (
+    escrowStatus === 'HELD'
+    && ['PENDING_ADMIN_APPROVAL', 'PENDING_PAYMENT'].includes(dealStatus)
+  ) {
+    return 'Awaiting Payment';
+  }
+  return formatStatus(escrowStatus, 'escrow');
 }
 
 function statusTone(value) {
@@ -89,11 +101,14 @@ function getAdminAccountNumber(payoutProfile = {}) {
   return String(payoutProfile.account_number || payoutProfile.accountNumber || '').trim();
 }
 
-function StatusChip({ value }) {
+function StatusChip({ value, context = 'deal', dealStatus = null }) {
   const tone = statusTone(value);
+  const label = context === 'escrow'
+    ? formatEscrowStatus(value, dealStatus)
+    : formatStatus(value, context);
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${statusToneMap[tone]}`}>
-      {formatStatus(value)}
+      {label}
     </span>
   );
 }
@@ -366,7 +381,7 @@ export default function VentureDealsAdminTab() {
                         <StatusChip value={row.dealKind} />
                       </td>
                       <td className="p-3"><StatusChip value={row.dealStatus} /></td>
-                      <td className="p-3"><StatusChip value={row.escrowStatus} /></td>
+                      <td className="p-3"><StatusChip value={row.escrowStatus} context="escrow" dealStatus={row.dealStatus} /></td>
                       <td className="p-3 text-right">
                         <button
                           type="button"
@@ -402,7 +417,7 @@ export default function VentureDealsAdminTab() {
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                   <p className="text-xs font-semibold uppercase text-gray-500">Escrow</p>
-                  <div className="mt-2"><StatusChip value={selected.escrowStatus} /></div>
+                  <div className="mt-2"><StatusChip value={selected.escrowStatus} context="escrow" dealStatus={selected.dealStatus} /></div>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                   <p className="text-xs font-semibold uppercase text-gray-500">Buyer Paid</p>

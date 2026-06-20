@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL, API_ORIGIN } from '../config/urls';
 import { isPublicBrowsePath } from '../utils/authSession';
+import { sanitizeAxiosError } from '../utils/apiError';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -145,7 +146,7 @@ api.interceptors.response.use(
         }
       }
     }
-    return Promise.reject(error);
+    return Promise.reject(sanitizeAxiosError(error));
   }
 );
 

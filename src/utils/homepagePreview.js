@@ -82,10 +82,15 @@ export function resolveHomepageSectionItems(
   items,
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
-  { filterFn } = {},
+  { filterFn, treatAllAsFeatured = false } = {},
 ) {
   const normalized = asArray(items)
-    .map((item) => normalizeHomepageListing(item, type))
+    .map((item) => {
+      const row = normalizeHomepageListing(item, type);
+      if (!row) return null;
+      if (treatAllAsFeatured) return { ...row, featured: true };
+      return row;
+    })
     .filter(Boolean);
 
   const scoped = typeof filterFn === 'function'
@@ -96,6 +101,52 @@ export function resolveHomepageSectionItems(
   if (featured.length > 0) return featured;
 
   return filterPublicMarketplaceListings(scoped, type).slice(0, limit);
+}
+
+async function fetchPublicCatalogPreview(
+  requestFn,
+  type,
+  limit,
+  { filterFn } = {},
+) {
+  const maxPages = 8;
+  const merged = [];
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const { items, total } = await fetchListPage(requestFn, {
+      page,
+      pageSize: HOME_PREVIEW_PAGE_SIZE,
+    });
+    if (!items.length) break;
+
+    merged.push(
+      ...asArray(items)
+        .map((item) => normalizeHomepageListing(item, type))
+        .filter(Boolean),
+    );
+
+    let candidates = filterPublicMarketplaceListings(merged, type);
+    if (typeof filterFn === 'function') {
+      candidates = candidates.filter(filterFn);
+    }
+    if (candidates.length >= limit) {
+      return candidates.slice(0, limit);
+    }
+
+    const reportedTotal = Number(total);
+    if (
+      items.length < HOME_PREVIEW_PAGE_SIZE
+      || (Number.isFinite(reportedTotal) && merged.length >= reportedTotal)
+    ) {
+      break;
+    }
+  }
+
+  let candidates = filterPublicMarketplaceListings(merged, type);
+  if (typeof filterFn === 'function') {
+    candidates = candidates.filter(filterFn);
+  }
+  return candidates.slice(0, limit);
 }
 
 /** Fetch + normalize + pick homepage cards for paginated marketplace APIs. */
@@ -115,7 +166,10 @@ export async function fetchHomepageSectionPreview(
         featured_only: true,
         ...featuredQuery,
       });
-      const featuredRows = resolveHomepageSectionItems(items, type, limit, { filterFn });
+      const featuredRows = resolveHomepageSectionItems(items, type, limit, {
+        filterFn,
+        treatAllAsFeatured: true,
+      });
       if (featuredRows.length > 0) {
         return featuredRows;
       }
@@ -124,12 +178,7 @@ export async function fetchHomepageSectionPreview(
     }
   }
 
-  // One page only — never scan the full catalog for a 5-card preview row.
-  const { items } = await fetchListPage(requestFn, {
-    page: 1,
-    pageSize: HOME_PREVIEW_PAGE_SIZE,
-  });
-  return resolveHomepageSectionItems(items, type, limit, { filterFn });
+  return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
 }
 
 /** Venture / co-venture homepage rows — featured API first, then public catalog fallback. */

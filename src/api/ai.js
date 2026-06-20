@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/urls';
 import api from './axios';
+import { readApiError } from '../utils/apiError';
 
 function authHeaders() {
   if (typeof window === 'undefined') return {};
@@ -36,7 +37,9 @@ export async function streamCoBrotherAI(payload, { signal, onEvent }) {
     let message = 'Bro is unavailable right now.';
     try {
       const body = await response.json();
-      message = body?.message || body?.error || message;
+      message = readApiError({ response: { data: body, status: response.status } }, message, {
+        context: 'ai',
+      });
     } catch {
       // Keep default message when the error body is not JSON.
     }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { readApiError } from '../utils/apiError';
 import AppLayout from '../components/layout/AppLayout';
 import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
@@ -19,19 +20,7 @@ export default function NewVenturePage() {
   const [createdListingMode, setCreatedListingMode] = useState('VENTURE');
   const defaultListingType = searchParams.get('type') === 'co-venture' ? 'CO_VENTURE' : 'VENTURE';
 
-  const readApiError = (err) => {
-    const body = err?.response?.data;
-    const firstValidation = Array.isArray(body?.data) ? body.data[0] : null;
-    if (firstValidation?.field && firstValidation?.message) {
-      return `${firstValidation.field}: ${firstValidation.message}`;
-    }
-    return (
-      body?.error ||
-      body?.detail ||
-      body?.message ||
-      t('newVentureCreateFailed')
-    );
-  };
+  const readVentureApiError = (err) => readApiError(err, t('newVentureCreateFailed'));
 
   const clearAuthAndGoLogin = () => {
     localStorage.removeItem('accessToken');
@@ -75,7 +64,7 @@ export default function NewVenturePage() {
             clearAuthAndGoLogin();
             return;
           }
-          setError(readApiError(err));
+          setError(readVentureApiError(err));
       } finally { setLoading(false); }
   };
 

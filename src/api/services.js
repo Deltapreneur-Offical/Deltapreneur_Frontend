@@ -263,6 +263,7 @@ export const adminAPI = {
   getCoBrothers:        ()              => api.get('/api/v1/admin/cobrothers'),
   forward:              (data)          => api.post('/api/v1/admin/forward', data),
   getAllAuctions: () => api.get('/api/v1/auction/admin/all'),
+  getAllCommunityAuctions: () => api.get('/api/v1/creator-auction/admin/all'),
   getAddonOrders: () => api.get('/api/v1/addon/admin/all'),
   takeDown:  (type, id, reason) => api.post(`/api/v1/admin/takedown`, { type, entityId: id, reason }),
   restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),

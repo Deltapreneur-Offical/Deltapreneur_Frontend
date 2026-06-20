@@ -86,6 +86,9 @@ export default function OAuthCallbackPage() {
             replace: true,
             state: destination.state,
           });
+          if (typeof window !== 'undefined' && window.history?.replaceState) {
+            window.history.replaceState({}, document.title, destination.pathname);
+          }
         }, 0);
       })
       .catch((err) => {

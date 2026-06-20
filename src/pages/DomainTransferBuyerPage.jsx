@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, KeyRound, Loader2, Mail, ShieldCheck } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import { domainTransferAPI } from '../api/domainTransferAPI';
+import { readApiError } from '../utils/apiError';
 
 const BUYER_HIDDEN_EVENTS = new Set([
   'PAYOUT_PENDING',
@@ -45,13 +46,6 @@ const timelineLabels = {
   DISPUTE_RESOLVED: 'Transfer Review Resolved',
   WHOIS_CHECK: 'WHOIS Check Completed',
 };
-
-function readApiError(error, fallback = 'Action failed.') {
-  return error?.response?.data?.message
-    || error?.response?.data?.error
-    || error?.response?.data?.detail
-    || fallback;
-}
 
 function formatDateTime(value) {
   if (!value) return '';

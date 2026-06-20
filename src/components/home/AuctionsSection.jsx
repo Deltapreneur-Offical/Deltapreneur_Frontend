@@ -8,7 +8,7 @@ import {
 } from '../../api/services';
 import {
   extractActiveList,
-  mergeHomepageAuctions,
+  pickHomepagePreviewAuctions,
   normalizeCommunityAuction,
   normalizeDomainAuction,
   normalizeSoftwareAuction,
@@ -25,7 +25,7 @@ import '../../styles/home-preview-cards.css';
 
 function AuctionPreviewCard({ auction, onView }) {
   return (
-    <HomePreviewCardShell>
+    <HomePreviewCardShell accent="auction">
       <HomeAuctionPreviewCard auction={auction} onView={onView} />
     </HomePreviewCardShell>
   );
@@ -51,11 +51,12 @@ export default function AuctionsSection() {
           softwareAuctionAPI.getActive().catch(() => ({ data: [] })),
         ]);
 
-        setAuctions({
+        const normalized = {
           domains: extractActiveList(domainsRes.data).map(normalizeDomainAuction).filter(Boolean),
           community: extractActiveList(communityRes.data).map(normalizeCommunityAuction).filter(Boolean),
           software: extractActiveList(softwareRes.data).map(normalizeSoftwareAuction).filter(Boolean),
-        });
+        };
+        setAuctions(normalized);
       } catch {
         setAuctions({ domains: [], community: [], software: [] });
       } finally {
@@ -67,7 +68,7 @@ export default function AuctionsSection() {
   }, []);
 
   const displayAuctions = useMemo(
-    () => mergeHomepageAuctions(auctions),
+    () => pickHomepagePreviewAuctions(auctions),
     [auctions],
   );
 
@@ -78,7 +79,7 @@ export default function AuctionsSection() {
   const shouldAutoScroll = displayAuctions.length > 5;
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" />;
+    return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" variant="auction" />;
   }
 
   return (

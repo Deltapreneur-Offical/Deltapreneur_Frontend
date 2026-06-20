@@ -10,21 +10,10 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import { resolveRegistrationPricing } from '../utils/domainRegistrationPricing';
 import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
+import { readApiError } from '../utils/apiError';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 
 const DEFAULT_TLD = 'com';
-
-function readApiError(err, fallback) {
-  const payload = err?.response?.data;
-  if (typeof payload === 'string') return payload;
-  if (payload?.message) return payload.message;
-  if (payload?.error) return payload.error;
-  if (typeof payload?.detail === 'string') return payload.detail;
-  if (Array.isArray(payload?.detail)) {
-    return payload.detail.map((x) => x?.msg || String(x)).join(', ');
-  }
-  return fallback;
-}
 
 function parseDomainInput(raw, fallbackTld) {
   const q = raw.trim().toLowerCase();

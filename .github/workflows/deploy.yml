@@ -19,9 +19,9 @@ jobs:
       - name: Verify deploy secrets
         run: |
           missing=0
-          for name in EC2_HOST EC2_USER EC2_SSH_KEY; do
+          for name in EC2_HOST EC2_USER EC2_SSH_KEY TURNSTILE_SITE_KEY; do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, and EC2_SSH_KEY in repository or organization secrets (same as CoBrother_Backend deploy)."
+              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, EC2_SSH_KEY, and TURNSTILE_SITE_KEY in repository or organization secrets."
               missing=1
             fi
           done
@@ -30,6 +30,7 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -39,8 +40,14 @@ jobs:
 
       - name: Install Dependencies & Build
         env:
-          VITE_API_URL: https://demo.cobrother.com/api
-          VITE_APP_URL: https://demo.cobrother.com
+          VITE_API_URL: https://backend.cobrother.com
+          VITE_APP_URL: https://cobrother.com
+<<<<<<< HEAD
+          VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
+          VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
+          VITE_TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
+=======
+>>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
         run: |
           npm ci
           npm run build
@@ -80,7 +87,7 @@ jobs:
             test -f "${DEST}/index.html"
             CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' "${DEST}/index.html" | head -1 | tr -d '"')")"
             test -f "${DEST}/assets/${CSS_FILE}"
-            grep -q 'home-auction-preview-card__metric-value{display:block;padding-left:0' "${DEST}/assets/${CSS_FILE}"
+            grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
 
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3

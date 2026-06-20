@@ -42,12 +42,9 @@ jobs:
         env:
           VITE_API_URL: https://backend.cobrother.com
           VITE_APP_URL: https://cobrother.com
-<<<<<<< HEAD
           VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-=======
->>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
         run: |
           npm ci
           npm run build

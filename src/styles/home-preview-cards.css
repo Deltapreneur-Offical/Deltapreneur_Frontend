@@ -537,7 +537,6 @@
 
 .home-preview-row__card:has(.venture-listing-card--compact) > div,
 .home-preview-row__card:has(.venture-listing-card--compact) .listing-card-glow-shell,
-<<<<<<< HEAD
 .home-preview-row__card:has(.venture-listing-card--compact) .home-preview-card-shell,
 .home-preview-row__card:has(.home-auction-preview-card--home-preview) > div,
 .home-preview-row__card:has(.home-auction-preview-card--home-preview) .listing-card-glow-shell,
@@ -547,11 +546,6 @@
 
 .home-preview-row__card:has(.venture-listing-card--compact) .listing-card-glow-shell:not(.home-preview-card-shell) > * {
   min-height: 0;
-=======
-.home-preview-row__card:has(.venture-listing-card--compact) .home-preview-card-shell {
-  min-height: min-content !important;
-  height: auto !important;
->>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
 }
 
 .home-preview-row__card:has(.home-preview-card-shell):has(.home-auction-preview-card--home-preview),
@@ -1440,62 +1434,9 @@
   line-height: 1.1;
   color: #0f172a;
   font-variant-numeric: tabular-nums;
-<<<<<<< HEAD
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
-=======
-  max-width: 100%;
-  word-break: break-word;
-}
-
-.home-auction-preview-card__metric-value--time {
-  color: #d97706;
-}
-
-.home-auction-preview-card__price-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.5rem 0.5rem 0.6rem;
-  min-height: 2.85rem;
-  margin: 0;
-  border-radius: 0.875rem;
-  position: relative;
-  z-index: 2;
-  flex-shrink: 0;
-}
-
-.home-preview-row .home-preview-browse-card .home-auction-preview-card__price-box,
-.home-auto-scroll-row .home-preview-browse-card .home-auction-preview-card__price-box,
-.home-preview-card-border__inner .home-auction-preview-card__price-box {
-  display: flex;
-}
-
-.home-auction-preview-card__price-box .home-auction-preview-card__bid-box--current {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.15rem;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-}
-
-.home-auction-preview-card__bid-label {
-  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #64748b;
-  line-height: 1.25;
->>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
   white-space: nowrap;
 }
 
@@ -1763,17 +1704,10 @@
     transform 0.35s ease;
 }
 
-<<<<<<< HEAD
 .home-auto-scroll-row .home-auction-preview-card--home-preview:hover,
 .home-preview-row .home-auction-preview-card--home-preview:hover,
 .home-preview-card-border__inner .home-auction-preview-card--home-preview:hover {
   transform: translateY(-2px) translateZ(0);
-=======
-.home-auto-scroll-row .home-auction-preview-card:hover,
-.home-preview-row .home-auction-preview-card:hover,
-.home-preview-card-border__inner .home-auction-preview-card:hover {
-  transform: none;
->>>>>>> 6f0d6c1f4bd220bd0ac9ff150fbe38d8b08f87ad
   background: #ffffff !important;
   box-shadow: none !important;
 }

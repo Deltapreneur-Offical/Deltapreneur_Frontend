@@ -138,6 +138,7 @@
   "searchPlaceholderAuction": "Explore domain name auctions",
   "searchAiEmptyHint": "Enter a business idea to generate AI-powered domain names.",
   "searchCheckingDomains": "Checking domains…",
+  "searchCheckingDomainsHint": "Querying live availability across popular extensions",
   "searchLoadingListedDomains": "Loading listed domains...",
   "searchNoListedDomains": "No listed domains found.",
   "searchLoadingAuctions": "Loading live auctions…",

@@ -10,6 +10,7 @@ import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../
 import useAIDomains from '../../hooks/useAIDomains';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
+import RegistrarDomainLoader from './RegistrarDomainLoader';
 import {
   heroSearchStackEnter,
   heroSubmitHover,
@@ -556,7 +557,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       marketplace: ['bg-indigo-100 text-indigo-700', '🏪 ON OUR MARKETPLACE'],
       available:   ['bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)]','✓ AVAILABLE'],
       taken:       ['bg-red-100 text-red-500',        'TAKEN'],
-      error:       ['bg-gray-100 text-gray-400',      'UNAVAILABLE'],
+      error:       ['bg-amber-100 text-amber-700',    'CHECK FAILED'],
     };
     const [cls, label] = map[status] ?? map.taken;
     return (
@@ -616,7 +617,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
     return (
       <button disabled className={`bg-gray-100 text-gray-400 cursor-not-allowed ${base}`}>
-        {result.status === 'error' ? 'Unavailable' : 'Taken'}
+        {result.status === 'error' ? 'Could not check' : 'Taken'}
       </button>
     );
   };
@@ -722,8 +723,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </p>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && loading && results.every(r => r.status === 'loading') && (
-            <p className="text-center text-gray-400 text-sm mb-6">{t('searchCheckingDomains')}</p>
+          {hasSearchQuery && searchMode === 'new' && loading && completedNewResults.length === 0 && (
+            <RegistrarDomainLoader />
           )}
 
           {/* New Domains */}

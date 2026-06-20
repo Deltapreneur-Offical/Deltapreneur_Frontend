@@ -79,6 +79,14 @@ export default defineConfig(({ mode }) => {
           target: backendTarget,
           changeOrigin: true,
         },
+        '/ready': {
+          target: backendTarget,
+          changeOrigin: true,
+        },
+        '/health': {
+          target: backendTarget,
+          changeOrigin: true,
+        },
         '/ws': {
           target: backendTarget,
           changeOrigin: true,

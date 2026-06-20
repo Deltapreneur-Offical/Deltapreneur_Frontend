@@ -133,6 +133,7 @@
   "searchPlaceholderAuction": "探索域名拍卖",
   "searchAiEmptyHint": "输入商业想法，生成 AI 驱动的域名。",
   "searchCheckingDomains": "正在查询域名…",
+  "searchCheckingDomainsHint": "正在查询常用后缀的实时可用性",
   "searchLoadingListedDomains": "正在加载挂牌域名…",
   "searchNoListedDomains": "未找到挂牌域名。",
   "searchLoadingAuctions": "正在加载实时拍卖…",

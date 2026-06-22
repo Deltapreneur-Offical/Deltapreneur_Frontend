@@ -19,12 +19,15 @@ jobs:
       - name: Verify deploy secrets
         run: |
           missing=0
-          for name in EC2_HOST EC2_USER EC2_SSH_KEY TURNSTILE_SITE_KEY; do
+          for name in EC2_HOST EC2_USER EC2_SSH_KEY; do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, EC2_SSH_KEY, and TURNSTILE_SITE_KEY in repository or organization secrets."
+              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, and EC2_SSH_KEY in repository or organization secrets."
               missing=1
             fi
           done
+          if [ -z "${TURNSTILE_SITE_KEY:-}" ]; then
+            echo "::warning::TURNSTILE_SITE_KEY not set — build will fetch Turnstile site key from backend at runtime (/api/v1/public/bot-protection)."
+          fi
           exit "${missing}"
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}

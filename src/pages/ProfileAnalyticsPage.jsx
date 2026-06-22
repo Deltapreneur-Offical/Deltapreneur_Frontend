@@ -72,7 +72,7 @@ export default function ProfileAnalyticsPage() {
       <div className="max-w-[1100px]">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-4xl font-bold text-gold m-0">{t('profileAnalyticsTitle')}</h1>
+            <h1 className="font-display text-4xl font-bold text-black m-0">{t('profileAnalyticsTitle')}</h1>
             <p className="text-gray-600 mt-1">{t('profileAnalyticsSubtitle')}</p>
           </div>
           <button className="btn-glow btn-glow-sm" onClick={() => navigate('/creator')}>{t('profileAnalyticsBack')}</button>

@@ -1568,6 +1568,8 @@
   "listingCardApply": "Apply",
   "listingCardApplied": "Applied",
   "listingCardAppliedTitle": "You already applied",
+  "listingCardPitched": "Submitted",
+  "listingCardAlreadyPitched": "You already submitted",
   "listingCardGstPending": "GST Pending",
   "listingCardGstRequiredTitle": "GST verification required",
   "listingCardShareVenture": "Check out this venture: {{name}} - Listed on CoBrother!",

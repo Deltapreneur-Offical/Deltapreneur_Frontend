@@ -427,7 +427,7 @@ export default function SoftwareAuctionPage() {
                   )}
                   {sw.videoLink && (
                     <a href={sw.videoLink} target="_blank" rel="noopener noreferrer"
-                      className="btn-secondary btn-sm" style={{ fontSize: '0.8rem' }}>
+                      className="btn-secondary btn-sm" style={{ fontSize: '0.8rem', color: '#111827', borderColor: '#d1d5db' }}>
                       {t('auctionDetailDemoVideo')}
                     </a>
                   )}

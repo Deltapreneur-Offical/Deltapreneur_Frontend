@@ -433,7 +433,7 @@ export default function VentureDetailPage() {
                 disabled={!canSubmit || hasApplied}
               >
                 {hasApplied
-                  ? (isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched'))
+                  ? (isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Submitted'))
                   : (isCoVenture ? t('ventureDetailApplyPartner', 'Apply as Partner') : `${ctaLabel} →`)}
               </button>
             )}

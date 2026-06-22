@@ -12,7 +12,7 @@ export async function checkBackendDatabaseReady(options = {}) {
 
   for (let attempt = 0; attempt < retries; attempt += 1) {
     try {
-      const response = await fetch('/api/v1/domain/all?page=1&page_size=1', {
+      const response = await fetch('/ready', {
         credentials: 'include',
         cache: 'no-store',
       });
@@ -34,4 +34,4 @@ export async function checkBackendDatabaseReady(options = {}) {
 }
 
 export const DATABASE_UNAVAILABLE_HINT =
-  'Local database is offline. From the project root run .\\start_both.ps1 (starts the RDS tunnel and dev servers). Cards and sign-in use production data automatically if the tunnel cannot connect.';
+  'Database is not reachable. For local dev, ensure PostgreSQL is running and DATABASE_URL in CoBrother_Backend/.env is correct, then restart the backend (run_dev.ps1). For production data, run .\\run_rds_tunnel.ps1 and point DATABASE_URL at 127.0.0.1:5433.';

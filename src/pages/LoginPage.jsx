@@ -354,7 +354,7 @@ export default function LoginPage() {
       />
 
       <AuthAlert variant="error">{error}</AuthAlert>
-      <AuthAlert variant="info">{info}</AuthAlert>
+      <AuthAlert variant="info">{info && info !== error ? info : ''}</AuthAlert>
 
       {authMethod === 'google' && (
         <div className="flex flex-col gap-3">

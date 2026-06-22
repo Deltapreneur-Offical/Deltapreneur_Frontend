@@ -463,9 +463,9 @@ export default function VentureListingCard({
           type="button"
           disabled
           className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
-          title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already pitched')}
+          title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already submitted')}
         >
-          {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched')}
+          {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Submitted')}
         </button>
       );
     }

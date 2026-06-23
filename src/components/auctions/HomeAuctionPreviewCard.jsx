@@ -137,7 +137,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden p-2 ${COVER_GRADIENT[category] || COVER_GRADIENT.domain}`}
             aria-hidden
           >
-            <span className="relative z-10 venture-listing-card__cover-title venture-listing-card__cover-title--compact truncate max-w-full px-2">
+            <span className="relative z-10 venture-listing-card__cover-title venture-listing-card__cover-title--compact max-w-full px-2 whitespace-normal break-words leading-tight text-center">
               {title}
             </span>
             <span className="relative z-10 mt-1 venture-listing-card__cover-badge venture-listing-card__cover-badge--compact uppercase">
@@ -170,8 +170,12 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         <div className="home-auction-preview-card__content flex flex-col gap-2.5">
           <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
             <h3
-              className="venture-listing-card__title venture-listing-card__title--compact truncate"
+              className="venture-listing-card__title venture-listing-card__title--compact whitespace-normal break-words leading-snug"
               title={title}
+              style={{
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
             >
               {title}
             </h3>

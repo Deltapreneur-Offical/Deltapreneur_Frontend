@@ -25,6 +25,7 @@ import {
 } from '../utils/auctionDate';
 import { getLinkedInProfileUrl } from '../utils/creatorProfile';
 import { payAuctionCreationFee } from '../utils/auctionFees';
+import { hasPlacedCommunityAuctionBid } from '../utils/communityAuctionMeetings';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -427,7 +428,7 @@ export default function CommunityAuctionPage() {
                 ) : (
                   bids.map((bid, i) => (
                     <BidRow key={i} bid={bid} isLatest={i === 0}
-                            isWinner={bid.isWinningBid || bid.winningBid} />
+                            isWinner={(isEnded || isCompleted || isClosed) && (bid.isWinningBid || bid.winningBid)} />
                   ))
                 )}
               </div>
@@ -512,11 +513,12 @@ export default function CommunityAuctionPage() {
             )}
 
             {/* ── Meetings Section ── */}
-            <MeetingsSection
-              auction={auction}
-              meetings={meetings}
-              meetingsLoading={meetingsLoading}
-              meetingActionLoading={meetingActionLoading}
+          <MeetingsSection
+            auction={auction}
+            bids={bids}
+            meetings={meetings}
+            meetingsLoading={meetingsLoading}
+            meetingActionLoading={meetingActionLoading}
               isOwner={isOwner}
               isActive={isActive}
               user={user}
@@ -805,13 +807,14 @@ function ProfileInfoCard({ community, auction }) {
 
 // ─── Meetings Section ─────────────────────────────────────────────────────────
 function MeetingsSection({
-  auction, meetings, meetingsLoading, meetingActionLoading,
+  auction, bids, meetings, meetingsLoading, meetingActionLoading,
   isOwner, isActive, user,
   participationPaid, participationLoading, participationFee,
   payingParticipation, participationError, onPayParticipation,
   onAction, onMeetingRequested, showMeetingForm, setShowMeetingForm,
 }) {
   const userId = user?.id != null ? String(user.id) : null;
+  const hasPlacedBid = hasPlacedCommunityAuctionBid(bids, userId);
   const pendingMeetings   = meetings.filter(m => m.status === 'PENDING');
   const confirmedMeetings = meetings.filter(m => m.status === 'CONFIRMED');
   const pastMeetings      = meetings.filter(m => m.status === 'CANCELLED' || m.status === 'COMPLETED');
@@ -831,7 +834,7 @@ function MeetingsSection({
             {meetings.length} meeting{meetings.length !== 1 ? 's' : ''}
           </div>
         </div>
-        {isActive && !isOwner && !myPendingRequest && participationPaid && (
+        {isActive && !isOwner && !myPendingRequest && participationPaid && hasPlacedBid && (
           <button
             className="btn-glow btn-glow-sm"
             onClick={() => setShowMeetingForm(v => !v)}>
@@ -840,7 +843,18 @@ function MeetingsSection({
         )}
       </div>
 
-      {isActive && !isOwner && !participationLoading && !participationPaid && (
+      {isActive && !isOwner && !hasPlacedBid && (
+        <div className="px-5 py-4 bg-sky-50 border-b border-sky-200">
+          <div className="text-sm text-sky-800 font-semibold">
+            Place at least one bid first to unlock meeting requests.
+          </div>
+          <div className="text-xs text-sky-700 mt-0.5">
+            After your first bid, you can pay the meeting request fee and schedule a meeting.
+          </div>
+        </div>
+      )}
+
+      {isActive && !isOwner && hasPlacedBid && !participationLoading && !participationPaid && (
         <div className="px-5 py-4 bg-amber-50 border-b border-amber-200">
           <div className="text-sm text-amber-800 mb-2">
             Meeting request fee required to request a meeting:{' '}
@@ -854,7 +868,7 @@ function MeetingsSection({
       )}
 
       {/* Request meeting form */}
-      {showMeetingForm && isActive && !isOwner && participationPaid && (
+      {showMeetingForm && isActive && !isOwner && hasPlacedBid && participationPaid && (
         <MeetingRequestForm
           auctionId={auction.id}
           auctionEndTime={resolveAuctionEndTime(auction) ?? auction.endTime}
@@ -886,7 +900,9 @@ function MeetingsSection({
           {isOwner
             ? 'No meeting requests yet. When others request meetings, they will appear here.'
             : isActive
-              ? 'No meetings scheduled. Request one using the button above!'
+              ? hasPlacedBid
+                ? 'No meetings scheduled. Request one using the button above!'
+                : 'No meetings scheduled yet. Place a bid first to unlock meeting requests.'
               : 'No meetings were scheduled for this auction.'}
         </div>
       ) : (
@@ -982,7 +998,6 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time *</label>
             <MeetingDateTimePicker
               value={form.scheduledAt}
               minDateTime={minDateTime}

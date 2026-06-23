@@ -618,6 +618,38 @@
 
 .home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__cover,
 .home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__cover {
+  height: 7.5rem;
+}
+
+.home-preview-row .home-auction-preview-card--home-preview .venture-listing-card__cover-title,
+.home-auto-scroll-row .home-auction-preview-card--home-preview .venture-listing-card__cover-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  display: block;
+  max-width: 100%;
+}
+
+.home-preview-row .home-auction-preview-card--home-preview .venture-listing-card__title-row,
+.home-auto-scroll-row .home-auction-preview-card--home-preview .venture-listing-card__title-row {
+  align-items: flex-start;
+}
+
+.home-preview-row .home-auction-preview-card--home-preview .venture-listing-card__title,
+.home-auto-scroll-row .home-auction-preview-card--home-preview .venture-listing-card__title {
+  white-space: normal !important;
+  overflow: hidden;
+  text-overflow: clip;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__cover,
+.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__cover {
   height: 5.5rem !important;
 }
 

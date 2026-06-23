@@ -571,7 +571,7 @@ export default function VentureListingCard({
 
             {/* Brand Name Text */}
 
-            <span className={`relative z-10 venture-listing-card__cover-title truncate max-w-full px-2 ${
+            <span className={`relative z-10 venture-listing-card__cover-title max-w-full px-2 whitespace-normal break-words leading-tight text-center ${
               compact ? 'venture-listing-card__cover-title--compact' : ''
             }`}>
 
@@ -677,11 +677,23 @@ export default function VentureListingCard({
 
           {/* Brand Name & Status Dot */}
 
-          <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
+          <div className="venture-listing-card__title-row flex items-start justify-between gap-2">
 
-            <h3 className={`venture-listing-card__title truncate ${
+            <h3
+              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words leading-snug ${
               compact ? 'venture-listing-card__title--compact' : ''
-            }`} title={brandName}>
+              }`}
+              title={brandName}
+              style={{
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 2,
+                overflow: 'hidden',
+                textOverflow: 'clip',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
+            >
 
               {brandName}
 

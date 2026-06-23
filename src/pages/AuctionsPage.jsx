@@ -505,7 +505,7 @@ function DomainAuctionCard({ auction, onClick }) {
           {extMeta?.label || (domainTitle?.includes('.') ? domainTitle.slice(domainTitle.lastIndexOf('.')) : '.?')}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-gray-900 m-0 truncate">
+          <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">
             {domainTitle || 'Unnamed domain'}
           </h3>
           <span className="text-xs text-purple-600 font-semibold">
@@ -641,7 +641,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-gray-900 m-0 truncate">{title}</h3>
+          <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">{title}</h3>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs text-indigo-600 font-semibold inline-flex items-center gap-1">
               <AuctionCategoryIcon src={TechnologyIcon} className="w-3.5 h-3.5 object-contain" />
@@ -733,7 +733,7 @@ function CommunityAuctionCard({ auction, onClick }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-gray-900 m-0 truncate">
+          <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">
             {auction.auctionTitle || community.name || '—'}
           </h3>
           <div className="flex items-center gap-1.5 flex-wrap">

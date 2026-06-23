@@ -35,6 +35,14 @@ function daysInMonth(year, month) {
   return new Date(Number(year), Number(month), 0).getDate();
 }
 
+function buildLocalDateTime(dateStr, timeStr = '00:00') {
+  if (!dateStr) return null;
+  const [year, month, day] = String(dateStr).split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const [hour, minute] = String(timeStr).split(':').map(Number);
+  return new Date(year, month - 1, day, hour || 0, minute || 0, 0, 0);
+}
+
 /**
  * Date + time picker with an explicit confirm step (fixes native picker UX on mobile/desktop).
  */
@@ -76,9 +84,8 @@ export default function MeetingDateTimePicker({
   const yearOptions = useMemo(() => {
     const nowYear = new Date().getFullYear();
     const startYear = minDate ? Number(minDate.slice(0, 4)) : nowYear;
-    const endYear = maxDate && !rangeInvalid
-      ? Number(maxDate.slice(0, 4))
-      : startYear + 5;
+    const maxYear = maxDate && !rangeInvalid ? Number(maxDate.slice(0, 4)) : startYear;
+    const endYear = Math.max(startYear + 5, maxYear);
     const years = [];
     for (let year = startYear; year <= endYear; year += 1) {
       years.push(year);
@@ -90,15 +97,10 @@ export default function MeetingDateTimePicker({
     const months = [];
     for (let month = 1; month <= 12; month += 1) {
       const monthStr = String(month).padStart(2, '0');
-      const candidate = selectedYear
-        ? `${selectedYear}-${monthStr}-01`
-        : null;
-      if (candidate && minDate && candidate.slice(0, 7) < minDate.slice(0, 7)) continue;
-      if (candidate && maxDate && !rangeInvalid && candidate.slice(0, 7) > maxDate.slice(0, 7)) continue;
       months.push(monthStr);
     }
     return months;
-  }, [selectedYear, minDate, maxDate, rangeInvalid]);
+  }, []);
 
   const dayOptions = useMemo(() => {
     if (!selectedYear || !selectedMonth) return [];
@@ -106,13 +108,10 @@ export default function MeetingDateTimePicker({
     const days = [];
     for (let day = 1; day <= totalDays; day += 1) {
       const dayStr = String(day).padStart(2, '0');
-      const candidate = `${selectedYear}-${selectedMonth}-${dayStr}`;
-      if (minDate && candidate < minDate) continue;
-      if (maxDate && !rangeInvalid && candidate > maxDate) continue;
       days.push(dayStr);
     }
     return days;
-  }, [selectedYear, selectedMonth, minDate, maxDate, rangeInvalid]);
+  }, [selectedYear, selectedMonth]);
 
   const updateDatePart = (year, month, day) => {
     if (!year || !month || !day) {
@@ -126,12 +125,6 @@ export default function MeetingDateTimePicker({
     const nextMonth = monthOptions.includes(selectedMonth) ? selectedMonth : monthOptions[0] || '';
     const nextDays = year && nextMonth
       ? Array.from({ length: daysInMonth(year, nextMonth) }, (_, i) => String(i + 1).padStart(2, '0'))
-        .filter((day) => {
-          const candidate = `${year}-${nextMonth}-${day}`;
-          if (minDate && candidate < minDate) return false;
-          if (maxDate && !rangeInvalid && candidate > maxDate) return false;
-          return true;
-        })
       : [];
     const nextDay = nextDays.includes(selectedDay) ? selectedDay : nextDays[0] || '';
     updateDatePart(year, nextMonth, nextDay);
@@ -141,12 +134,6 @@ export default function MeetingDateTimePicker({
   const handleMonthChange = (month) => {
     const nextDays = selectedYear && month
       ? Array.from({ length: daysInMonth(selectedYear, month) }, (_, i) => String(i + 1).padStart(2, '0'))
-        .filter((day) => {
-          const candidate = `${selectedYear}-${month}-${day}`;
-          if (minDate && candidate < minDate) return false;
-          if (maxDate && !rangeInvalid && candidate > maxDate) return false;
-          return true;
-        })
       : [];
     const nextDay = nextDays.includes(selectedDay) ? selectedDay : nextDays[0] || '';
     updateDatePart(selectedYear, month, nextDay);
@@ -161,10 +148,9 @@ export default function MeetingDateTimePicker({
       return;
     }
 
-    const combined = `${datePart}T${timePart}`;
-    const selected = new Date(combined);
+    const selected = buildLocalDateTime(datePart, timePart);
 
-    if (Number.isNaN(selected.getTime())) {
+    if (!selected || Number.isNaN(selected.getTime())) {
       const msg = 'Invalid date or time.';
       setDraftError(msg);
       onValidationError?.(msg);
@@ -187,7 +173,7 @@ export default function MeetingDateTimePicker({
 
     setDraftError('');
     onValidationError?.('');
-    onChange(combined);
+    onChange(`${datePart}T${timePart}`);
   };
 
   const clearSelection = () => {

@@ -6,6 +6,7 @@ import { Shield, FileText, Mail, Clock, ChevronRight } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import BrandWordmark from '../components/common/BrandWordmark';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 
@@ -42,7 +43,7 @@ export default function PrivacyPolicyPage() {
       <TopNavbar homeMobileMenu />
       <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} />
 
-      <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-3">
+      <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
         <div className="pointer-events-none absolute inset-0">
           <motion.div
             className="absolute -top-24 left-1/4 h-72 sm:h-80 md:h-96 w-72 sm:w-80 md:w-96 rounded-full bg-indigo-300/30 blur-3xl"
@@ -65,7 +66,7 @@ export default function PrivacyPolicyPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-14"
+            className="mx-auto max-w-3xl text-center mb-4 sm:mb-6"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50 px-4 py-2 mb-5 shadow-sm">
               <Shield className="h-4 w-4 text-indigo-600" />
@@ -91,7 +92,7 @@ export default function PrivacyPolicyPage() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-4 lg:mt-6">
             <div className="hidden lg:block lg:col-span-4">
               <div className="sticky top-8 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-lg shadow-slate-200/50">
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">{t('privacyPageOnThisPage')}</h2>

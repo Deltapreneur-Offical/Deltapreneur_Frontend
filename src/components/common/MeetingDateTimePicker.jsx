@@ -24,6 +24,25 @@ function formatDisplay(isoLocal) {
   });
 }
 
+function splitDateParts(dateStr) {
+  if (!dateStr) return { year: '', month: '', day: '' };
+  const [year, month, day] = dateStr.split('-');
+  return { year: year || '', month: month || '', day: day || '' };
+}
+
+function daysInMonth(year, month) {
+  if (!year || !month) return 31;
+  return new Date(Number(year), Number(month), 0).getDate();
+}
+
+function buildLocalDateTime(dateStr, timeStr = '00:00') {
+  if (!dateStr) return null;
+  const [year, month, day] = String(dateStr).split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const [hour, minute] = String(timeStr).split(':').map(Number);
+  return new Date(year, month - 1, day, hour || 0, minute || 0, 0, 0);
+}
+
 /**
  * Date + time picker with an explicit confirm step (fixes native picker UX on mobile/desktop).
  */
@@ -41,6 +60,8 @@ export default function MeetingDateTimePicker({
 
   const minDate = minDateTime ? minDateTime.slice(0, 10) : '';
   const maxDate = maxDateTime ? maxDateTime.slice(0, 10) : '';
+
+  const { year: selectedYear, month: selectedMonth, day: selectedDay } = splitDateParts(datePart);
 
   useEffect(() => {
     if (!value) {
@@ -60,6 +81,65 @@ export default function MeetingDateTimePicker({
     return new Date(maxDateTime) < new Date(minDateTime);
   }, [minDateTime, maxDateTime]);
 
+  const yearOptions = useMemo(() => {
+    const nowYear = new Date().getFullYear();
+    const startYear = minDate ? Number(minDate.slice(0, 4)) : nowYear;
+    const maxYear = maxDate && !rangeInvalid ? Number(maxDate.slice(0, 4)) : startYear;
+    const endYear = Math.max(startYear + 5, maxYear);
+    const years = [];
+    for (let year = startYear; year <= endYear; year += 1) {
+      years.push(year);
+    }
+    return years;
+  }, [minDate, maxDate, rangeInvalid]);
+
+  const monthOptions = useMemo(() => {
+    const months = [];
+    for (let month = 1; month <= 12; month += 1) {
+      const monthStr = String(month).padStart(2, '0');
+      months.push(monthStr);
+    }
+    return months;
+  }, []);
+
+  const dayOptions = useMemo(() => {
+    if (!selectedYear || !selectedMonth) return [];
+    const totalDays = daysInMonth(selectedYear, selectedMonth);
+    const days = [];
+    for (let day = 1; day <= totalDays; day += 1) {
+      const dayStr = String(day).padStart(2, '0');
+      days.push(dayStr);
+    }
+    return days;
+  }, [selectedYear, selectedMonth]);
+
+  const updateDatePart = (year, month, day) => {
+    if (!year || !month || !day) {
+      setDatePart('');
+      return;
+    }
+    setDatePart(`${year}-${month}-${day}`);
+  };
+
+  const handleYearChange = (year) => {
+    const nextMonth = monthOptions.includes(selectedMonth) ? selectedMonth : monthOptions[0] || '';
+    const nextDays = year && nextMonth
+      ? Array.from({ length: daysInMonth(year, nextMonth) }, (_, i) => String(i + 1).padStart(2, '0'))
+      : [];
+    const nextDay = nextDays.includes(selectedDay) ? selectedDay : nextDays[0] || '';
+    updateDatePart(year, nextMonth, nextDay);
+    setDraftError('');
+  };
+
+  const handleMonthChange = (month) => {
+    const nextDays = selectedYear && month
+      ? Array.from({ length: daysInMonth(selectedYear, month) }, (_, i) => String(i + 1).padStart(2, '0'))
+      : [];
+    const nextDay = nextDays.includes(selectedDay) ? selectedDay : nextDays[0] || '';
+    updateDatePart(selectedYear, month, nextDay);
+    setDraftError('');
+  };
+
   const validateAndConfirm = () => {
     if (!datePart || !timePart) {
       const msg = 'Please select both date and time, then click Confirm.';
@@ -68,10 +148,9 @@ export default function MeetingDateTimePicker({
       return;
     }
 
-    const combined = `${datePart}T${timePart}`;
-    const selected = new Date(combined);
+    const selected = buildLocalDateTime(datePart, timePart);
 
-    if (Number.isNaN(selected.getTime())) {
+    if (!selected || Number.isNaN(selected.getTime())) {
       const msg = 'Invalid date or time.';
       setDraftError(msg);
       onValidationError?.(msg);
@@ -94,7 +173,7 @@ export default function MeetingDateTimePicker({
 
     setDraftError('');
     onValidationError?.('');
-    onChange(combined);
+    onChange(`${datePart}T${timePart}`);
   };
 
   const clearSelection = () => {
@@ -105,6 +184,8 @@ export default function MeetingDateTimePicker({
     onChange('');
   };
 
+  const selectClassName = 'px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400';
+
   return (
     <div className="flex flex-col gap-2">
       {rangeInvalid && (
@@ -114,22 +195,53 @@ export default function MeetingDateTimePicker({
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 sm:col-span-2">
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Date *</label>
-          <input
-            type="date"
-            value={datePart}
-            min={minDate}
-            max={maxDate || undefined}
-            disabled={disabled}
-            onChange={(e) => {
-              setDatePart(e.target.value);
-              setDraftError('');
-            }}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400"
-          />
+          <div className="grid grid-cols-3 gap-2">
+            <select
+              value={selectedYear}
+              disabled={disabled}
+              onChange={(e) => handleYearChange(e.target.value)}
+              className={selectClassName}
+              aria-label="Year"
+            >
+              <option value="">Year</option>
+              {yearOptions.map((year) => (
+                <option key={year} value={String(year)}>{year}</option>
+              ))}
+            </select>
+            <select
+              value={selectedMonth}
+              disabled={disabled || !selectedYear}
+              onChange={(e) => handleMonthChange(e.target.value)}
+              className={selectClassName}
+              aria-label="Month"
+            >
+              <option value="">Month</option>
+              {monthOptions.map((month) => (
+                <option key={month} value={month}>
+                  {new Date(2000, Number(month) - 1, 1).toLocaleString('en-IN', { month: 'short' })}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedDay}
+              disabled={disabled || !selectedYear || !selectedMonth}
+              onChange={(e) => {
+                updateDatePart(selectedYear, selectedMonth, e.target.value);
+                setDraftError('');
+              }}
+              className={selectClassName}
+              aria-label="Day"
+            >
+              <option value="">Day</option>
+              {dayOptions.map((day) => (
+                <option key={day} value={day}>{Number(day)}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 sm:col-span-2">
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Time *</label>
           <div className="relative meeting-time-field">
             {!timePart && (

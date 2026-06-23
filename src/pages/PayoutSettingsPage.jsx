@@ -661,9 +661,9 @@ export default function PayoutSettingsPage() {
       <div className="mx-auto max-w-4xl">
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-400 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:border-black hover:bg-black hover:text-white"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4 transition-colors text-current" />
           Back
         </Link>
 

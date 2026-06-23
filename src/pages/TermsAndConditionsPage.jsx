@@ -6,6 +6,7 @@ import { FileCheck, FileText, Mail, Clock, ChevronRight, AlertCircle } from 'luc
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import BrandWordmark from '../components/common/BrandWordmark';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 
@@ -74,7 +75,7 @@ export default function TermsAndConditionsPage() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-4 lg:mt-6">
             <div className="hidden lg:block lg:col-span-4">
               <div className="sticky top-8 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-lg shadow-slate-200/50">
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">{t('termsPageOnThisPage')}</h2>

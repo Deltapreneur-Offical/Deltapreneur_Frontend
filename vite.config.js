@@ -27,6 +27,15 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
 
+    test: {
+      environment: 'jsdom',
+      globals: true,
+      setupFiles: ['./src/test/setup.js'],
+      clearMocks: true,
+      restoreMocks: true,
+      css: true,
+    },
+
     define: {
       global: 'window',
     },

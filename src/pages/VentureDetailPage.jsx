@@ -226,48 +226,52 @@ export default function VentureDetailPage() {
         </Link>
 
         <div className="rounded-[24px] border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="relative bg-slate-100 min-h-[180px] sm:min-h-[220px] flex items-end">
-            {b.ventureImageUrl ? (
-              <img
-                src={b.ventureImageUrl}
-                alt={brandName}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center px-6">
-                <span className="text-2xl sm:text-3xl font-semibold text-slate-400 text-center break-words">
-                  {brandName}
-                </span>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-            {isGstinVerified ? (
-              <img
-                src={verifiedIcon}
-                alt=""
-                className="absolute top-4 right-4 w-14 h-14 object-contain drop-shadow-md"
-                aria-hidden
-              />
-            ) : null}
-            <div className="relative z-10 w-full p-5 sm:p-8">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="flex flex-col gap-5 border-b border-gray-100 p-5 sm:p-6 lg:flex-row lg:items-center lg:gap-6">
+            <div className="relative mx-auto aspect-square w-28 overflow-hidden rounded-[22px] border border-gray-200 bg-slate-100 shadow-sm sm:w-32 lg:mx-0 lg:w-36">
+              {b.ventureImageUrl ? (
+                <img
+                  src={b.ventureImageUrl}
+                  alt={brandName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center px-3 text-center">
+                  <span className="text-lg font-semibold text-slate-400 break-words leading-tight">
+                    {brandName}
+                  </span>
+                </div>
+              )}
+              {isGstinVerified ? (
+                <img
+                  src={verifiedIcon}
+                  alt=""
+                  className="absolute right-2 top-2 h-10 w-10 object-contain drop-shadow-md"
+                  aria-hidden
+                />
+              ) : null}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
                 <VentureListingTypeBadge venture={venture} />
                 {b.industry && (
-                  <span className="px-2.5 py-0.5 bg-white/90 text-gray-700 text-xs font-semibold rounded-full">
+                  <span className="px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
                     {b.industry.replace(/_/g, ' ')}
                   </span>
                 )}
                 {equityPctLabel && isCoVenture && (
-                  <span className="px-2.5 py-0.5 bg-purple-600/90 text-white text-xs font-semibold rounded-full">
+                  <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-semibold rounded-full">
                     {equityPctLabel} {t('ventureDetailEquityOffered', 'equity offered')}
                   </span>
                 )}
               </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-semibold text-white m-0 break-words">
+
+              <h1 className="mt-2 font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-950 m-0 break-words">
                 {brandName}
               </h1>
+
               {b.description && (
-                <p className="mt-3 text-sm sm:text-base text-white/90 max-w-3xl leading-relaxed m-0">
+                <p className="mt-3 max-w-3xl text-sm sm:text-base leading-relaxed text-gray-600 m-0">
                   {b.description}
                 </p>
               )}
@@ -433,7 +437,7 @@ export default function VentureDetailPage() {
                 disabled={!canSubmit || hasApplied}
               >
                 {hasApplied
-                  ? (isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched'))
+                  ? (isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Submitted'))
                   : (isCoVenture ? t('ventureDetailApplyPartner', 'Apply as Partner') : `${ctaLabel} →`)}
               </button>
             )}

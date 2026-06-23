@@ -49,26 +49,26 @@ import { computeCommissionBreakdown, fetchListingFeesAndCharges } from '../utils
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
-  const { user, loading: authLoading }  = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
 
-  const [allSoftware, setAllSoftware]       = useState([]);
-  const [loading, setLoading]               = useState(true);
-  const [showForm, setShowForm]             = useState(false);
-  const [buyTarget, setBuyTarget]           = useState(null);
-  const [successItem, setSuccessItem]       = useState(null);
-  const [detailTarget, setDetailTarget]     = useState(null);
-  const [deleteTarget, setDeleteTarget]     = useState(null);
-  const [editTarget, setEditTarget]         = useState(null);
-  const [filterTab, setFilterTab]           = useState('all');
-  const [showConfetti, setShowConfetti]     = useState(false);
-  const [accessNotice, setAccessNotice]     = useState('');
+  const [allSoftware, setAllSoftware] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [buyTarget, setBuyTarget] = useState(null);
+  const [successItem, setSuccessItem] = useState(null);
+  const [detailTarget, setDetailTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [filterTab, setFilterTab] = useState('all');
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [accessNotice, setAccessNotice] = useState('');
 
-  const [auctionTarget, setAuctionTarget]     = useState(null);  // software to auction
+  const [auctionTarget, setAuctionTarget] = useState(null);  // software to auction
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
- 
+
 
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', allSoftware);
@@ -86,10 +86,10 @@ export default function CoCreationPage() {
       type: 'technology',
     }),
     {
-      searchFields:  ['name', 'description', 'techStack'],
-      priceField:    'price',
+      searchFields: ['name', 'description', 'techStack'],
+      priceField: 'price',
       categoryField: 'category',
-      dateField:     'createdAt',
+      dateField: 'createdAt',
     },
     20,
     {
@@ -152,7 +152,7 @@ export default function CoCreationPage() {
         .then(({ data }) => {
           setAuctionStatuses(prev => ({ ...prev, [s.id]: data?.auction ?? data?.data?.auction ?? null }));
         })
-        .catch(() => {});
+        .catch(() => { });
     });
   }, [allSoftware, user]);
 
@@ -175,13 +175,13 @@ export default function CoCreationPage() {
         .then(({ data }) => {
           setAuctionStatuses(prev => ({ ...prev, [targetId]: data?.auction ?? data?.data?.auction ?? null }));
         })
-        .catch(() => {});
+        .catch(() => { });
       const refreshListings = filterTab === 'mine'
         ? technologyAPI.getMyListings().then(({ data }) => asArray(data))
         : fetchAllListPages((params) => technologyAPI.getAll(params));
       refreshListings
         .then((rows) => setAllSoftware(rows))
-        .catch(() => {});
+        .catch(() => { });
     }
   };
 
@@ -222,114 +222,114 @@ export default function CoCreationPage() {
           </>
         ) : (
           <>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              {/* <img src={''} alt="Technology" className="w-10 h-10 object-contain" /> */}
-              <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('technology')}</h1>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  {/* <img src={''} alt="Technology" className="w-10 h-10 object-contain" /> */}
+                  <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('technology')}</h1>
+                </div>
+                <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
+              </div>
+              <div className="flex gap-2 md:gap-3 flex-wrap">
+                {user ? (
+                  <PayoutSettingsButton className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" />
+                ) : null}
+                <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/technology/dashboard')}>
+                  <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
+                </button>
+                {user && (
+                  <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setEditTarget(null); setShowForm(true); }}>
+                    <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
+                  </button>
+                )}
+              </div>
             </div>
-            <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
-          </div>
-          <div className="flex gap-2 md:gap-3 flex-wrap">
-            {user ? (
-              <PayoutSettingsButton className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" />
-            ) : null}
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/technology/dashboard')}>
-              <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
-            </button>
-            {user && (
-              <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setEditTarget(null); setShowForm(true); }}>
-                <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
-              </button>
-            )}
-          </div>
-        </div>
 
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allTechnology')}</button>
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
-        </div>
-
-        {accessNotice && (
-          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            {accessNotice}
-          </div>
-        )}
-
-        <FilterBar
-          search={search}           onSearch={handleSearch}
-          category={category}       onCategory={handleCategory}
-          categoryOptions={TECHNOLOGY_CATEGORY_OPTIONS}
-          minPrice={minPrice}       onMinPrice={handleMinPrice}
-          maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-          sortBy={sortBy}           onSort={handleSort}
-          onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder={t('technologyPageSearchPlaceholder')}
-          priceSymbol={getSymbol(currency)}
-          theme="light"
-        />
-
-        {!loading && totalCount > 0 && (
-          <div className="text-sm text-gray-600 mb-4">
-            {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
-          </div>
-        )}
-
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : paginated.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="flex justify-center mb-6">
-              <img src={TechnologyIcon} alt="No software" className="w-20 h-20 object-contain opacity-30" />
+            <div className="flex gap-2 mb-6">
+              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allTechnology')}</button>
+              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
             </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? 'No software matches your filters' :
-               filterTab === 'mine' ? 'You have no listings' :
-               'No technology listed yet'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {activeFilterCount > 0
-                ? 'Try adjusting your search or filters.'
-                : 'Check back soon for new software listings.'}
-            </p>
-            {activeFilterCount > 0 && (
-              <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
-            )}
-          </div>
-        ) : (
-          <>
-  <div className="listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {paginated.map(s => (
-        <ListingCardShell key={s.id}>
-        <TechnologyListingCard
-          item={s}
-          isOwner={filterTab === 'mine' || isTechnologyListingOwner(s, user)}
-          likeState={getLike(s.id)}
-          onLike={() => toggleLike(s.id)}
-          onView={() => openDetailIfAllowed(s)}
-          onBuy={() => setBuyTarget(s)}
-          onEdit={user ? () => { setEditTarget(s); setShowForm(false); setDetailTarget(null); } : undefined}
-          onDelete={() => setDeleteTarget(s.id)}
-          onAuction={() => setAuctionTarget(s)}
-          auctionStatus={auctionStatuses[s.id]}
-        />
-        </ListingCardShell>
-      ))}
-  </div>
 
-  <Pagination
-    page={page}
-    totalPages={totalPages}
-    onPage={setPage}
-    totalCount={totalCount}
-    pageSize={20}
-  />
-</>
-        )}
+            {accessNotice && (
+              <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                {accessNotice}
+              </div>
+            )}
+
+            <FilterBar
+              search={search} onSearch={handleSearch}
+              category={category} onCategory={handleCategory}
+              categoryOptions={TECHNOLOGY_CATEGORY_OPTIONS}
+              minPrice={minPrice} onMinPrice={handleMinPrice}
+              maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
+              sortBy={sortBy} onSort={handleSort}
+              onClear={clearAll} activeFilterCount={activeFilterCount}
+              placeholder={t('technologyPageSearchPlaceholder')}
+              priceSymbol={getSymbol(currency)}
+              theme="light"
+            />
+
+            {!loading && totalCount > 0 && (
+              <div className="text-sm text-gray-600 mb-4">
+                {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
+              </div>
+            )}
+
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+                {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : paginated.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="flex justify-center mb-6">
+                  <img src={TechnologyIcon} alt="No software" className="w-20 h-20 object-contain opacity-30" />
+                </div>
+                <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+                  {activeFilterCount > 0 ? 'No software matches your filters' :
+                    filterTab === 'mine' ? 'You have no listings' :
+                      'No technology listed yet'}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {activeFilterCount > 0
+                    ? 'Try adjusting your search or filters.'
+                    : 'Check back soon for new software listings.'}
+                </p>
+                {activeFilterCount > 0 && (
+                  <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {paginated.map(s => (
+                    <ListingCardShell key={s.id}>
+                      <TechnologyListingCard
+                        item={s}
+                        isOwner={filterTab === 'mine' || isTechnologyListingOwner(s, user)}
+                        likeState={getLike(s.id)}
+                        onLike={() => toggleLike(s.id)}
+                        onView={() => openDetailIfAllowed(s)}
+                        onBuy={() => setBuyTarget(s)}
+                        onEdit={user ? () => { setEditTarget(s); setShowForm(false); setDetailTarget(null); } : undefined}
+                        onDelete={() => setDeleteTarget(s.id)}
+                        onAuction={() => setAuctionTarget(s)}
+                        auctionStatus={auctionStatuses[s.id]}
+                      />
+                    </ListingCardShell>
+                  ))}
+                </div>
+
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPage={setPage}
+                  totalCount={totalCount}
+                  pageSize={20}
+                />
+              </>
+            )}
           </>
         )}
       </div>
@@ -417,13 +417,13 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   const isEdit = Boolean(initial?.id);
   const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency));
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
   const [commissionPercent, setCommissionPercent] = useState(15);
 
-  const [imageFile, setImageFile]       = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [imageError, setImageError]     = useState('');
-  const fileInputRef                    = useRef(null);
+  const [imageError, setImageError] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (initial?.id) {
@@ -438,7 +438,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   useEffect(() => {
     fetchListingFeesAndCharges()
       .then((fees) => setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15)))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -649,9 +649,8 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           </label>
           <div
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-              imagePreview ? 'border-indigo-300 bg-indigo-50/50' : 'border-gray-200 bg-gray-50 hover:border-indigo-300'
-            }`}
+            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${imagePreview ? 'border-indigo-300 bg-indigo-50/50' : 'border-gray-200 bg-gray-50 hover:border-indigo-300'
+              }`}
           >
             {imagePreview ? (
               <img src={imagePreview} alt="Preview" className="max-h-[120px] max-w-full rounded-lg object-contain mx-auto" />
@@ -711,20 +710,20 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
   const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
     buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
-    buyerEmail:    user?.email || '',
-    buyerPhone:    user?.phoneNumber || '',
+    buyerEmail: user?.email || '',
+    buyerPhone: user?.phoneNumber || '',
   });
   const [coBrotherOptIn, setCoBrotherOptIn] = useState(false);
-  const [loading, setLoading]               = useState(false);
-  const [error, setError]                   = useState('');
-  const [addons, setAddons]                 = useState([]);
-  const [vaAddons, setVaAddons]             = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [addons, setAddons] = useState([]);
+  const [vaAddons, setVaAddons] = useState([]);
 
-  const basePrice    = item.price;
+  const basePrice = item.price;
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
-  const addonExtra     = addonTotal(addons);
-  const vaExtra        = vaTotal(vaAddons);
-  const totalPrice   = basePrice + coBrotherFee + addonExtra + vaExtra;
+  const addonExtra = addonTotal(addons);
+  const vaExtra = vaTotal(vaAddons);
+  const totalPrice = basePrice + coBrotherFee + addonExtra + vaExtra;
 
   const handlePhoneChange = (e) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -763,18 +762,18 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           try {
             const { data: verifyData } = await technologyAPI.verifyPayment(item.id, {
               razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId:   response.razorpay_order_id,
+              razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
             onSuccess({
               ...item,
-              softwareStatus:   'SOLD',
-              paymentStatus:    'COMPLETED',
+              softwareStatus: 'SOLD',
+              paymentStatus: 'COMPLETED',
               completionStatus: 'PENDING',
-              githubLink:       verifyData.githubLink,
+              githubLink: verifyData.githubLink,
               coBrotherOptIn,
               coBrotherHelpPaid: coBrotherOptIn,
-              _addons:           [...addons, ...vaAddons],
+              _addons: [...addons, ...vaAddons],
             });
           } catch {
             setError('Payment verification failed. Please contact support.');
@@ -869,7 +868,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             </div>
           </div>
         </div>
-        
+
         <AddonSections
           businessSelected={addons}
           onBusinessChange={setAddons}
@@ -883,7 +882,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             Billing Breakdown
           </div>
           <BillingLine label={item.name}
-                       value={formatPrice(basePrice)} />
+            value={formatPrice(basePrice)} />
           {coBrotherOptIn && (
             <BillingLine label="◆ CoBrother Helper" value={formatPrice(1000)} accent />
           )}
@@ -961,7 +960,7 @@ function PurchaseSuccessModal({ item, onClose }) {
               🔓 GitHub Repository
             </div>
             <a href={item.githubLink} target="_blank" rel="noreferrer"
-               className="text-green-600 font-semibold break-all text-sm no-underline hover:underline">
+              className="text-green-600 font-semibold break-all text-sm no-underline hover:underline">
               {item.githubLink}
             </a>
           </div>
@@ -992,9 +991,9 @@ function PurchaseSuccessModal({ item, onClose }) {
 function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction, auctionStatus, likeState, onLike }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const [detail, setDetail]   = useState(null);
+  const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
-  const hasFetched            = useRef(false);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     if (hasFetched.current) return;
@@ -1082,13 +1081,13 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                 <div className="flex gap-3 flex-wrap">
                   {d.videoLink && (
                     <a href={d.videoLink} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
                       ▶ Demo Video ↗
                     </a>
                   )}
                   {d.liveDemoLink && (
                     <a href={d.liveDemoLink} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
                       🌐 Live Demo ↗
                     </a>
                   )}
@@ -1133,25 +1132,25 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
               )}
               {isOwner && (auctionStatus?.approvalStatus === 'APPROVED' || d.auctionApprovalStatus === 'APPROVED')
                 && technologyAuctionId(d, auctionStatus) && (
-                <button
-                  className="btn-glow btn-glow-sm"
-                  onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
-                >
-                  View Auction →
-                </button>
-              )}
+                  <button
+                    className="btn-glow btn-glow-sm"
+                    onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
+                  >
+                    View Auction →
+                  </button>
+                )}
               {!isOwner
                 && d.softwareStatus === 'AVAILABLE'
                 && d.purchaseType !== 'AUCTION'
                 && d.auctionApprovalStatus !== 'PENDING_APPROVAL' && (
-                REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
-                  <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
-                    Verification pending — available for purchase after admin approval
-                  </span>
-                ) : (
-                <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
-                )
-              )}
+                  REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
+                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+                      Verification pending — available for purchase after admin approval
+                    </span>
+                  ) : (
+                    <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
+                  )
+                )}
               {!isOwner && isTechnologyAuctionLive(d, auctionStatus) && (
                 <button
                   className="btn-glow btn-glow-sm"
@@ -1161,7 +1160,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                 </button>
               )}
               <LikeButton liked={likeState?.liked} count={likeState?.count}
-                          onToggle={onLike} size="md" />
+                onToggle={onLike} size="md" />
               <button className="btn-glow btn-glow-sm" onClick={onClose}>Close</button>
             </div>
           </>

@@ -137,7 +137,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden p-2 ${COVER_GRADIENT[category] || COVER_GRADIENT.domain}`}
             aria-hidden
           >
-            <span className="relative z-10 venture-listing-card__cover-title venture-listing-card__cover-title--compact truncate max-w-full px-2">
+            <span className="relative z-10 venture-listing-card__cover-title venture-listing-card__cover-title--compact max-w-full px-2 whitespace-normal break-words leading-tight text-center">
               {title}
             </span>
             <span className="relative z-10 mt-1 venture-listing-card__cover-badge venture-listing-card__cover-badge--compact uppercase">
@@ -172,6 +172,10 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             <h3
               className="venture-listing-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.5rem] leading-tight"
               title={title}
+              style={{
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
             >
               {title}
             </h3>
@@ -183,17 +187,15 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
           </div>
 
           <div
-            className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1.5${
-              badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
-            }`}
+            className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1.5${badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
+              }`}
             aria-hidden={badges.length === 0 ? true : undefined}
           >
             {badges.map((badge) => (
               <span
                 key={badge.label}
-                className={`venture-listing-card__badge venture-listing-card__badge--compact px-2 py-0.5 rounded-full ${
-                  badgeToneClass[badge.tone] || badgeToneClass.primary
-                }`}
+                className={`venture-listing-card__badge venture-listing-card__badge--compact px-2 py-0.5 rounded-full ${badgeToneClass[badge.tone] || badgeToneClass.primary
+                  }`}
               >
                 {badge.label}
               </span>

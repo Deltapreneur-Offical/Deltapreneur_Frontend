@@ -11205,8 +11205,8 @@ body.home-menu-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 2.8rem;
+  height: 2.8rem;
   border-radius: 9999px;
   background: var(--whatsapp-color-bright);
   color: #fff;
@@ -11220,14 +11220,14 @@ body.home-menu-open {
   .whatsapp-floating-btn {
     right: 1.25rem;
     bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
-    width: 4rem;
-    height: 4rem;
+    width: 3.1rem;
+    height: 3.1rem;
   }
 }
 
 .whatsapp-floating-btn__glow {
   position: absolute;
-  inset: -0.4rem;
+  inset: -0.25rem;
   border-radius: inherit;
   background: radial-gradient(
     circle,
@@ -11235,7 +11235,7 @@ body.home-menu-open {
     rgba(37, 211, 102, 0.28) 45%,
     rgba(37, 211, 102, 0) 72%
   );
-  filter: blur(10px);
+  filter: blur(7px);
   pointer-events: none;
   z-index: 0;
   animation: whatsapp-glow-breathe 2.4s ease-in-out infinite;
@@ -11272,16 +11272,16 @@ body.home-menu-open {
 .whatsapp-floating-btn__icon {
   position: relative;
   z-index: 1;
-  width: 2rem;
-  height: 2rem;
+  width: 1.55rem;
+  height: 1.55rem;
   color: #f5fffa;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
 
 @media (min-width: 640px) {
   .whatsapp-floating-btn__icon {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 1.7rem;
+    height: 1.7rem;
   }
 }
 

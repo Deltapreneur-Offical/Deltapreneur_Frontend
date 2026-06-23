@@ -154,16 +154,14 @@
   font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.1rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.35;
   color: #0f172a;
   width: 100%;
   min-height: 1.3rem;
-  max-height: 1.3rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: block;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .creator-profile-card__badge-slot {
@@ -364,6 +362,15 @@
   min-height: 0;
 }
 
+.home-creator-listing-card .domain-listing-card__domain {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
 .home-preview-row .creator-profile-card__name {
   font-size: 1rem;
 }
@@ -512,7 +519,6 @@
   .creator-profile-card__name {
     font-size: 1rem;
     min-height: 1.2rem;
-    max-height: 1.2rem;
   }
 
   .creator-profile-card__avatar {

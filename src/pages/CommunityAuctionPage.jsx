@@ -338,12 +338,18 @@ export default function CommunityAuctionPage() {
                 {community.name && `Profile: ${community.name}`}
                 {auction.workType && ` · ${auction.workType.replace(/_/g, ' ')}`}
               </p>
+              {(isActive || auction?.status === 'EXTENDED') && (
               <div className="flex items-center gap-2 mt-1">
-                <span className={`w-2 h-2 rounded-full ${wsState === 'live' ? 'bg-green-600' : wsState === 'connecting' ? 'bg-amber-500' : 'bg-red-600'}`} />
-                <span className={`text-xs ${wsState === 'live' ? 'text-green-600' : wsState === 'connecting' ? 'text-amber-600' : 'text-red-600'}`}>
-                  {wsState === 'live' ? t('auctionDetailLive') : wsState === 'connecting' ? t('auctionDetailConnecting') : t('auctionDetailLivePaused')}
+                <span className={`w-2 h-2 rounded-full ${wsState === 'live' ? 'bg-green-600' : wsState === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-amber-500'}`} />
+                <span className={`text-xs ${wsState === 'live' ? 'text-green-600' : 'text-amber-600'}`}>
+                  {wsState === 'live'
+                    ? t('auctionDetailLiveUpdates', 'Live bid updates')
+                    : wsState === 'connecting'
+                      ? t('auctionDetailConnectingUpdates', 'Connecting live updates…')
+                      : t('auctionDetailReconnecting', 'Reconnecting live updates…')}
                 </span>
               </div>
+              )}
             </div>
 
             {/* Countdown */}

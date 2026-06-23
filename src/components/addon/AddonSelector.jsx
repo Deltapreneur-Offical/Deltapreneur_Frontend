@@ -73,7 +73,7 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
           )}
         </div>
 
-        <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+        <div className="divide-y divide-gray-100">
           {ADDON_SERVICES.map((service) => {
             const checked = selected.includes(service.key);
             return (

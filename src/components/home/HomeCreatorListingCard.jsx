@@ -124,7 +124,7 @@ export default function HomeCreatorListingCard({
           </p>
         </div>
 
-        <p className="text-[0.78rem] text-slate-500 truncate leading-snug m-0">
+        <p className="text-[0.78rem] text-slate-500 leading-snug m-0 break-words">
           {subtitle}
         </p>
 

@@ -43,26 +43,18 @@ import '../../styles/domain-listing-cards.css';
 
 
 const PRIMARY_BTN =
+  'domain-listing-card__cta-btn venture-listing-card__pitch-cta w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-200';
 
-  'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
-
-
-
-function VentureCardArrowCta({ label, onClick, disabled = false, className = '', isCoVenture = false }) {
-  const themeClass = isCoVenture
-    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-100 focus-visible:ring-emerald-200'
-    : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md shadow-indigo-100 focus-visible:ring-indigo-200';
-
+function VentureCardArrowCta({ label, onClick, disabled = false, className = '' }) {
   return (
     <button
       type="button"
       disabled={disabled}
-      className={`${PRIMARY_BTN} inline-flex items-center justify-center text-white ${themeClass}${disabled ? ' cursor-not-allowed bg-slate-100 text-slate-400 hover:bg-slate-100 shadow-none' : ''}${className ? ` ${className}` : ''}`}
+      className={`${PRIMARY_BTN} inline-flex items-center justify-center${disabled ? ' venture-listing-card__pitch-cta--disabled' : ''}${className ? ` ${className}` : ''}`}
       aria-label={label}
       onClick={onClick}
     >
-      <span className="mr-2 font-semibold text-xs tracking-wide uppercase">{label}</span>
-      <ArrowRight size={14} strokeWidth={2.5} aria-hidden />
+      {label}
     </button>
   );
 }
@@ -449,7 +441,6 @@ export default function VentureListingCard({
             stop(e);
             onApply?.();
           }}
-          isCoVenture={isCoVenture}
         />
       );
     }
@@ -462,7 +453,6 @@ export default function VentureListingCard({
             stop(e);
             onApply?.();
           }}
-          isCoVenture={isCoVenture}
         />
       );
     }
@@ -473,9 +463,9 @@ export default function VentureListingCard({
           type="button"
           disabled
           className={`${PRIMARY_BTN} cursor-not-allowed bg-slate-100 text-slate-400`}
-          title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already pitched')}
+          title={isCoVenture ? t('listingCardAlreadyApplied', 'You already applied') : t('listingCardAlreadyPitched', 'You already submitted')}
         >
-          {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Pitched')}
+          {isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Submitted')}
         </button>
       );
     }
@@ -856,14 +846,6 @@ export default function VentureListingCard({
 
                   className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${
                     compact ? 'w-6 h-6' : ''
-                  } ${
-
-                    isCoVenture 
-
-                      ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200' 
-
-                      : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'
-
                   }`}
 
                   aria-label={t('listingCardViewDetails', 'View details')}

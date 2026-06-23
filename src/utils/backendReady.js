@@ -1,22 +1,37 @@
 /**
  * Probe backend DB readiness in dev (via Vite proxy to /ready).
- * Returns true when the database is reachable; false on 503 or network failure.
+ * Retries so a slow tunnel/backend startup does not flash a false error.
  */
-export async function checkBackendDatabaseReady() {
+export async function checkBackendDatabaseReady(options = {}) {
   if (!import.meta.env.DEV) {
     return true;
   }
 
-  try {
-    const response = await fetch('/ready', {
-      credentials: 'include',
-      cache: 'no-store',
-    });
-    return response.ok;
-  } catch {
-    return false;
+  const retries = Number(options.retries ?? 10);
+  const delayMs = Number(options.delayMs ?? 1500);
+
+  for (let attempt = 0; attempt < retries; attempt += 1) {
+    try {
+      const response = await fetch('/ready', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        return true;
+      }
+    } catch {
+      // retry
+    }
+
+    if (attempt < retries - 1) {
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, delayMs);
+      });
+    }
   }
+
+  return false;
 }
 
 export const DATABASE_UNAVAILABLE_HINT =
-  'Database connection failed. For local development: open CoBrother_Backend, run .\\run_rds_tunnel.ps1 (keep that window open), then run .\\run_dev.ps1 — or use .\\run_local.ps1 to start both automatically.';
+  'Database is not reachable. For local dev, ensure PostgreSQL is running and DATABASE_URL in CoBrother_Backend/.env is correct, then restart the backend (run_dev.ps1). For production data, run .\\run_rds_tunnel.ps1 and point DATABASE_URL at 127.0.0.1:5433.';

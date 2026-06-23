@@ -1082,13 +1082,13 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                 <div className="flex gap-3 flex-wrap">
                   {d.videoLink && (
                     <a href={d.videoLink} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 no-underline" onClick={e => e.stopPropagation()}>
+                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-gray-900 font-semibold text-xs rounded-lg border border-gray-300 cursor-pointer transition-colors hover:bg-gray-50 hover:border-gray-400 no-underline" onClick={e => e.stopPropagation()}>
                       ▶ Demo Video ↗
                     </a>
                   )}
                   {d.liveDemoLink && (
                     <a href={d.liveDemoLink} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 no-underline" onClick={e => e.stopPropagation()}>
+                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-gray-900 font-semibold text-xs rounded-lg border border-gray-300 cursor-pointer transition-colors hover:bg-gray-50 hover:border-gray-400 no-underline" onClick={e => e.stopPropagation()}>
                       🌐 Live Demo ↗
                     </a>
                   )}

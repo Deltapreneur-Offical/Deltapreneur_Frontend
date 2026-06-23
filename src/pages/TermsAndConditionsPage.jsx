@@ -6,6 +6,7 @@ import { FileCheck, FileText, Mail, Clock, ChevronRight, AlertCircle } from 'luc
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function TermsAndConditionsPage() {
@@ -38,7 +39,7 @@ export default function TermsAndConditionsPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <TopNavbar homeMobileMenu />
-      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} showBack />
+      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} />
 
       <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
         <div className="pointer-events-none absolute inset-0">
@@ -47,8 +48,11 @@ export default function TermsAndConditionsPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-transparent to-slate-50/80" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-14 py-4">
+        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8 pt-2">
+          <div className="flex justify-end">
+            <BackToHomeButton />
+          </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-3xl text-center mb-4 sm:mb-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50 px-4 py-2 mb-5 shadow-sm">
               <FileCheck className="h-4 w-4 text-indigo-600" />
               <span className="text-sm font-semibold text-indigo-800">{t('termsPageBadge')}</span>
@@ -70,7 +74,7 @@ export default function TermsAndConditionsPage() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-4 lg:mt-6">
             <div className="hidden lg:block lg:col-span-4">
               <div className="sticky top-8 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-lg shadow-slate-200/50">
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">{t('termsPageOnThisPage')}</h2>

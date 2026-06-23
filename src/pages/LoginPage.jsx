@@ -130,9 +130,13 @@ export default function LoginPage() {
     if (!import.meta.env.DEV) return undefined;
 
     let cancelled = false;
-    checkBackendDatabaseReady().then((ready) => {
+    checkBackendDatabaseReady({ retries: 12, delayMs: 2000 }).then((ready) => {
       if (!ready && !cancelled) {
-        setError(databaseUnavailableMessage);
+        setInfo(databaseUnavailableMessage);
+      } else if (ready && !cancelled) {
+        setInfo((current) => (
+          current === databaseUnavailableMessage ? '' : current
+        ));
       }
     });
 
@@ -350,7 +354,7 @@ export default function LoginPage() {
       />
 
       <AuthAlert variant="error">{error}</AuthAlert>
-      <AuthAlert variant="info">{info}</AuthAlert>
+      <AuthAlert variant="info">{info && info !== error ? info : ''}</AuthAlert>
 
       {authMethod === 'google' && (
         <div className="flex flex-col gap-3">

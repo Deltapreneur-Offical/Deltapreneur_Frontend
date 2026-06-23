@@ -11,7 +11,8 @@ import CommunityProfileIcon from '../assets/Community-profileicon.png';
 
 import AnalyticsChartTooltip from '../components/analytics/AnalyticsChartTooltip';
 
-const COLORS = ['#c8a96e', '#6e9ec8', '#6ec896', '#c86e6e', '#9b6ec8', '#c8b06e'];
+const COLORS = ['#111827', '#2563eb', '#059669', '#dc2626', '#7c3aed', '#0f766e'];
+const formatStatNumber = (value) => new Intl.NumberFormat('en-IN').format(Number(value ?? 0));
 
 function normalizeAnalyticsPayload(payload) {
   const source = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
@@ -24,10 +25,10 @@ function normalizeAnalyticsPayload(payload) {
   };
 }
 
-const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
+const StatCard = ({ label, value, sub, color = '#111827' }) => (
   <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl">
     <div className="text-xs text-gray-600 font-semibold uppercase tracking-wider">{label}</div>
-    <div className="text-3xl font-bold font-mono mt-1.5" style={{ color }}>{value}</div>
+    <div className="text-3xl font-bold mt-1.5 tracking-normal" style={{ color }}>{formatStatNumber(value)}</div>
     {sub && <div className="text-sm text-gray-500 mt-0.5">{sub}</div>}
   </div>
 );
@@ -72,7 +73,7 @@ export default function ProfileAnalyticsPage() {
       <div className="max-w-[1100px]">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-4xl font-bold text-gold m-0">{t('profileAnalyticsTitle')}</h1>
+            <h1 className="font-display text-4xl font-bold text-gray-900 m-0">{t('profileAnalyticsTitle')}</h1>
             <p className="text-gray-600 mt-1">{t('profileAnalyticsSubtitle')}</p>
           </div>
           <button className="btn-glow btn-glow-sm" onClick={() => navigate('/creator')}>{t('profileAnalyticsBack')}</button>
@@ -85,8 +86,8 @@ export default function ProfileAnalyticsPage() {
         ) : !analytics ? null : (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <StatCard label={t('profileAnalyticsTotalViews')} value={analytics.totalViews/2} sub={t('profileAnalyticsAllTime')} />
-              <StatCard label={t('profileAnalyticsViewsWeek')} value={analytics.viewsThisWeek/2} sub={t('profileAnalyticsLast7Days')} color="#6ec896" />
+              <StatCard label={t('profileAnalyticsTotalViews')} value={analytics.totalViews} sub={t('profileAnalyticsAllTime')} />
+              <StatCard label={t('profileAnalyticsViewsWeek')} value={analytics.viewsThisWeek} sub={t('profileAnalyticsLast7Days')} color="#059669" />
             </div>
 
             <ChartCard title={<><img src={CommunityProfileIcon} alt="" className="inline-block w-4 h-4 mr-2 object-contain" />{t('profileAnalyticsViews30Days')}</>}>
@@ -96,7 +97,7 @@ export default function ProfileAnalyticsPage() {
                   <XAxis dataKey="date" tick={{ fill: '#666', fontSize: 11 }} interval={4} />
                   <YAxis tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="Views" stroke="#c8a96e" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="Views" stroke="#111827" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>

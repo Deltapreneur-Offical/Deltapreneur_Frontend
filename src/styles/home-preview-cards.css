@@ -1577,16 +1577,16 @@
   overflow: hidden;
   mask-image: linear-gradient(
     to right,
-    transparent 0,
-    #000 1.25rem,
-    #000 calc(100% - 1.25rem),
+    transparent 0%,
+    #000 4%,
+    #000 96%,
     transparent 100%
   );
   -webkit-mask-image: linear-gradient(
     to right,
-    transparent 0,
-    #000 1.25rem,
-    #000 calc(100% - 1.25rem),
+    transparent 0%,
+    #000 4%,
+    #000 96%,
     transparent 100%
   );
 }
@@ -1597,14 +1597,28 @@
   gap: 1rem;
   width: max-content;
   will-change: transform;
+  padding-block: 0.5rem;
+  margin-block: -0.5rem;
 }
 
 .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
   animation: home-auto-scroll-row-marquee var(--home-auto-scroll-duration, 45s) linear infinite;
 }
 
-.home-auto-scroll-row:hover .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
-  animation-play-state: paused;
+/* JS-driven pause — applied on hover/touch via React state */
+.home-auto-scroll-row__track--paused {
+  animation-play-state: paused !important;
+}
+
+/* When user is interacting (touch/wheel) the viewport becomes scrollable */
+.home-auto-scroll-row__viewport--scrollable {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: auto;
+}
+.home-auto-scroll-row__viewport--scrollable::-webkit-scrollbar {
+  display: none;
 }
 
 .home-auto-scroll-row__track--static {
@@ -1690,7 +1704,8 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    /* 3 identical copies in track — move exactly one set width = 33.333% */
+    transform: translateX(-33.333%);
   }
 }
 

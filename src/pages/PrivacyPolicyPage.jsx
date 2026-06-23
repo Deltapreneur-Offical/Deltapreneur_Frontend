@@ -7,6 +7,7 @@ import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BrandWordmark from '../components/common/BrandWordmark';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 
 export default function PrivacyPolicyPage() {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <TopNavbar homeMobileMenu />
-      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} showBack />
+      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} />
 
       <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-3">
         <div className="pointer-events-none absolute inset-0">
@@ -57,6 +58,9 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="pt-4 sm:pt-6 mb-4 sm:mb-6">
+            <BackToHomeButton />
+          </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

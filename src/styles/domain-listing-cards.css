@@ -175,6 +175,9 @@
   flex-shrink: 0;
   width: 1.85rem;
   height: 1.85rem;
+  min-width: 1.85rem;
+  min-height: 1.85rem;
+  aspect-ratio: 1 / 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1322,6 +1325,8 @@
 .venture-listing-card .domain-listing-card__price-box--compact .domain-listing-card__price-cta {
   width: 1.625rem;
   height: 1.625rem;
+  min-width: 1.625rem;
+  min-height: 1.625rem;
 }
 
 /* Venture pitch CTA — clean white SaaS pill (no arrow) */

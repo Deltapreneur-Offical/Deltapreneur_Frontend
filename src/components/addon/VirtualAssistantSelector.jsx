@@ -86,7 +86,7 @@ function AssistantPlanCard({ service, checked, onToggle, formatPrice, t }) {
 
   return (
     <label
-      className={`group block cursor-pointer rounded-[10px] border p-3 transition-all duration-200 ease-out ${
+      className={`group block min-w-0 cursor-pointer rounded-[10px] border p-3 transition-all duration-200 ease-out ${
         checked
           ? 'border-[#8b83e8] bg-[#f8f7ff] shadow-[0_2px_10px_rgba(99,102,241,0.1)]'
           : 'border-gray-200/90 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(15,23,42,0.05)]'
@@ -147,7 +147,7 @@ export default function VirtualAssistantSelector({ selected = [], onChange, clas
   const total = vaTotal(selected);
 
   return (
-    <div className={className}>
+    <div className={`min-w-0 overflow-x-hidden ${className}`}>
       <AddonAccordionCard
         theme="amber"
         icon={<StarIcon />}
@@ -163,8 +163,8 @@ export default function VirtualAssistantSelector({ selected = [], onChange, clas
         open={open}
         onToggle={() => setOpen((value) => !value)}
       >
-        <div className="border-t border-[#ecd9b8] bg-[#fafbfc] p-2.5">
-          <div className="rounded-xl border border-gray-200/80 bg-[#f7f8fa] p-2 space-y-2">
+        <div className="border-t border-[#ecd9b8] bg-[#fafbfc] p-2.5 overflow-x-hidden">
+          <div className="rounded-xl border border-gray-200/80 bg-[#f7f8fa] p-2 space-y-2 overflow-x-hidden">
             {VA_SERVICES.map((service) => (
               <AssistantPlanCard
                 key={service.key}

@@ -799,7 +799,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
@@ -1082,13 +1082,13 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                 <div className="flex gap-3 flex-wrap">
                   {d.videoLink && (
                     <a href={d.videoLink} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 no-underline" onClick={e => e.stopPropagation()}>
+                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
                       ▶ Demo Video ↗
                     </a>
                   )}
                   {d.liveDemoLink && (
                     <a href={d.liveDemoLink} target="_blank" rel="noreferrer"
-                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 no-underline" onClick={e => e.stopPropagation()}>
+                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
                       🌐 Live Demo ↗
                     </a>
                   )}

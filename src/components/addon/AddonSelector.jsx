@@ -49,7 +49,7 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
   const total = addonTotal(selected);
 
   return (
-    <div className={className}>
+    <div className={`min-w-0 overflow-x-hidden ${className}`}>
       <AddonAccordionCard
         theme="purple"
         icon={<BusinessIcon />}
@@ -73,13 +73,13 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
           )}
         </div>
 
-        <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+        <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto overflow-x-hidden">
           {ADDON_SERVICES.map((service) => {
             const checked = selected.includes(service.key);
             return (
               <label
                 key={service.key}
-                className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${
+                className={`flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${
                   checked ? 'bg-[#f8f6ff]' : 'bg-white hover:bg-gray-50/80'
                 }`}
               >

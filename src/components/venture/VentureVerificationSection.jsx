@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { Upload, FileText, X, CheckCircle } from 'lucide-react';
 import FormCheckbox from '../common/FormCheckbox';
 
 const inputCls =
@@ -18,6 +20,14 @@ export default function VentureVerificationSection({
   uploadError = '',
   pendingUploadHint = 'Pending files will upload when you publish the listing.',
 }) {
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) onUploadDocument?.(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-gray-500 m-0">
@@ -52,48 +62,68 @@ export default function VentureVerificationSection({
         />
       </label>
 
+      {/* Supporting Documents — custom styled upload, no native dark file input */}
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-gray-700">Supporting Documents</span>
+
+        {/* Hidden native input */}
         <input
+          ref={fileInputRef}
           type="file"
           accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,application/pdf,image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) onUploadDocument?.(file);
-            e.target.value = '';
-          }}
-          className="text-sm"
+          onChange={handleFileChange}
+          className="hidden"
         />
-        <span className="text-xs text-gray-500">
+
+        {/* Clean custom trigger button */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="inline-flex items-center gap-2.5 self-start px-4 py-2.5 rounded-[10px] border border-dashed border-gray-300 bg-gray-50 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Upload size={15} strokeWidth={2} className="shrink-0" />
+          {uploading ? 'Uploading…' : 'Choose file'}
+        </button>
+
+        <span className="text-xs text-gray-400">
           Accepted: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP
         </span>
-        {uploading && <span className="text-xs text-gray-500">Uploading…</span>}
-        {uploadError && <span className="text-xs text-red-600">{uploadError}</span>}
+
+        {uploadError && (
+          <span className="text-xs text-red-600">{uploadError}</span>
+        )}
+
+        {/* File list */}
         {(documents.length > 0 || pendingDocuments.length > 0) && (
-          <ul className="text-sm text-gray-700 m-0 pl-0 list-none flex flex-col gap-2">
+          <ul className="m-0 pl-0 list-none flex flex-col gap-1.5 mt-1">
             {documents.map((doc) => (
-              <li key={doc.id} className="flex items-center gap-2">
-                <span>{doc.fileName || doc.file_name || 'Document'}</span>
+              <li key={doc.id} className="flex items-center gap-2 px-3 py-2 rounded-[10px] border border-gray-200 bg-white text-sm text-gray-700">
+                <CheckCircle size={14} className="text-green-500 shrink-0" />
+                <span className="truncate">{doc.fileName || doc.file_name || 'Document'}</span>
               </li>
             ))}
             {pendingDocuments.map((doc) => (
-              <li key={doc.localId} className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                <span>{doc.fileName || doc.file?.name || 'Document'}</span>
+              <li key={doc.localId} className="flex items-center justify-between gap-2 px-3 py-2 rounded-[10px] border border-indigo-100 bg-indigo-50/50 text-sm text-gray-700">
+                <span className="flex items-center gap-2 min-w-0">
+                  <FileText size={14} className="text-indigo-400 shrink-0" />
+                  <span className="truncate">{doc.fileName || doc.file?.name || 'Document'}</span>
+                </span>
                 <button
                   type="button"
-                  className="text-xs text-red-600 hover:text-red-800"
+                  className="shrink-0 p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   onClick={() => onRemovePendingDocument?.(doc.localId)}
+                  title="Remove"
                 >
-                  Remove
+                  <X size={13} strokeWidth={2.5} />
                 </button>
               </li>
             ))}
           </ul>
         )}
+
         {pendingDocuments.length > 0 && (
-          <span className="text-xs text-gray-500">
-            {pendingUploadHint}
-          </span>
+          <span className="text-xs text-gray-400 mt-0.5">{pendingUploadHint}</span>
         )}
       </div>
     </div>

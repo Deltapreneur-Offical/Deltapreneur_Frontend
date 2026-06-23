@@ -116,8 +116,8 @@ export function filterFeaturedListings(items, type = 'domain') {
   return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
 }
 
-/** Homepage hero rows: admin-featured listings only (max 5). */
-export const HOMEPAGE_PREVIEW_LIMIT = 5;
+/** Homepage hero rows: admin-featured listings only. */
+export const HOMEPAGE_PREVIEW_LIMIT = 6;
 
 export function pickHomepagePreviewListings(
   items,

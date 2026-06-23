@@ -170,7 +170,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         <div className="home-auction-preview-card__content flex flex-col gap-2.5">
           <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
             <h3
-              className="venture-listing-card__title venture-listing-card__title--compact truncate"
+              className="venture-listing-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.5rem] leading-tight"
               title={title}
             >
               {title}
@@ -265,7 +265,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
             <button
               type="button"
-              className="domain-listing-card__price-cta flex items-center justify-center transition-all w-6 h-6"
+              className="domain-listing-card__price-cta flex items-center justify-center transition-all w-6 h-6 shrink-0 aspect-square rounded-full"
               aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
               onClick={handleView}
             >

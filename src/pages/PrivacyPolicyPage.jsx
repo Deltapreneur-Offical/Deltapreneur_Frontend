@@ -8,7 +8,6 @@ import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import BrandWordmark from '../components/common/BrandWordmark';
-import BackToHomeButton from '../components/common/BackToHomeButton';
 
 export default function PrivacyPolicyPage() {
   const { t } = useTranslation();

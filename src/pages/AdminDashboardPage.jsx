@@ -2129,6 +2129,9 @@ function AddonOrderRow({ order, statusColor }) {
   const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const services = order.selectedServices ? order.selectedServices.split(',') : [];
+  const serviceLabels = Array.isArray(order.selectedServiceLabels)
+    ? order.selectedServiceLabels
+    : services.map((key) => key.replace(/_/g, ' '));
 
   return (
     <div className="admin-record-card">
@@ -2204,12 +2207,12 @@ function AddonOrderRow({ order, statusColor }) {
             <div>
               <div className="admin-field-label">{t('adminServicesSelected')}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
-                {services.map(key => (
-                  <span key={key} style={{ fontSize: '0.75rem', fontWeight: 600,
+                {serviceLabels.map((label, index) => (
+                  <span key={`${label}-${index}`} style={{ fontSize: '0.75rem', fontWeight: 600,
                                            background: '#eef2ff', color: '#4338ca',
                                            border: '1px solid #c7d2fe',
                                            padding: '0.2rem 0.6rem', borderRadius: 6 }}>
-                    {key.replace(/_/g, ' ')}
+                    {label}
                   </span>
                 ))}
               </div>

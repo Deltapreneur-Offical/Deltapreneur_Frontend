@@ -23,7 +23,6 @@ import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import { softwareAuctionAPI } from '../api/services';
 import AddonSections from '../components/addon/AddonSections';
 import { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
-import { vaLabel, vaTotal, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
@@ -46,11 +45,13 @@ import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows } from '../utils/listingVisibility';
 import { asArray } from '../utils/asArray';
 import { computeCommissionBreakdown, fetchListingFeesAndCharges } from '../utils/auctionFees';
+import { useVirtualAssistantCatalog, vaLabel } from '../hooks/useVirtualAssistantCatalog';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading }  = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
+  const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate  = useNavigate();
   const location = useLocation();
 
@@ -338,6 +339,8 @@ export default function CoCreationPage() {
         <BuySoftwareModal
           item={buyTarget}
           user={user}
+          vaServices={vaServices}
+          vaLoading={vaLoading}
           onClose={() => setBuyTarget(null)}
           onSuccess={item => {
             setSuccessItem(item);
@@ -706,7 +709,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 }
 
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
-function BuySoftwareModal({ item, user, onClose, onSuccess }) {
+function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaLoading = false }) {
   const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
@@ -723,8 +726,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
   const basePrice    = item.price;
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
   const addonExtra     = addonTotal(addons);
-  const vaExtra        = vaTotal(vaAddons);
-  const totalPrice   = basePrice + coBrotherFee + addonExtra + vaExtra;
+  const totalPrice   = basePrice + coBrotherFee + addonExtra;
 
   const handlePhoneChange = (e) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -875,6 +877,8 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           onBusinessChange={setAddons}
           vaSelected={vaAddons}
           onVaChange={setVaAddons}
+          vaServices={vaServices}
+          vaLoading={vaLoading}
         />
 
         {/* ── Billing breakdown ── */}
@@ -895,13 +899,20 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             ) : null;
           })}
           {vaAddons.map((k) => {
-            const svc = VA_SERVICES.find((s) => s.key === k);
-            return svc ? (
-              <BillingLine key={k} label={vaLabel(k, t)} value={formatPrice(svc.price)} accent />
+            return vaServices.some((s) => String(s.id) === String(k)) ? (
+              <div key={k} className="flex justify-between items-center py-1 text-[0.84rem]">
+                <span className="truncate mr-2 text-[#7c6fe0]">{vaLabel(k, vaServices)}</span>
+                <span className="text-xs font-semibold text-amber-700">admin follow-up</span>
+              </div>
             ) : null;
           })}
           {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
             <div className="text-xs text-amber-600 py-1">+ contact-based services (no charge now)</div>
+          )}
+          {vaAddons.length > 0 && (
+            <div className="text-xs text-amber-600 py-1">
+              Virtual assistant selection will be shared with the admin team for hiring follow-up.
+            </div>
           )}
           <div className="h-px bg-gray-200 my-2.5" />
           <div className="flex justify-between items-center">

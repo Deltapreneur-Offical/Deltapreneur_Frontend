@@ -49,7 +49,7 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
   const total = addonTotal(selected);
 
   return (
-    <div className={className}>
+    <div className={`min-w-0 overflow-x-hidden ${className}`}>
       <AddonAccordionCard
         theme="purple"
         icon={<BusinessIcon />}
@@ -73,19 +73,17 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
           )}
         </div>
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto overflow-x-hidden">
           {ADDON_SERVICES.map((service) => {
             const checked = selected.includes(service.key);
             return (
               <label
                 key={service.key}
-                className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${
-                  checked ? 'bg-[#f8f6ff]' : 'bg-white hover:bg-gray-50/80'
-                }`}
+                className={`flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${checked ? 'bg-[#f8f6ff]' : 'bg-white hover:bg-gray-50/80'
+                  }`}
               >
-                <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                  checked ? 'bg-[#6b5fc7] border-[#6b5fc7]' : 'border-gray-300'
-                }`}>
+                <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${checked ? 'bg-[#6b5fc7] border-[#6b5fc7]' : 'border-gray-300'
+                  }`}>
                   {checked && (
                     <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
                       <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

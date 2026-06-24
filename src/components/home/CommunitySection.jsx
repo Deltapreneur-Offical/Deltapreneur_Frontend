@@ -10,7 +10,7 @@ import HomeCreatorListingCard from './HomeCreatorListingCard';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
@@ -59,9 +59,9 @@ export default function CommunitySection() {
         {previewCommunities.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noDisruptors')}</p>
         ) : (
-          <HomePreviewRow>
+          <HomeAutoScrollRow>
             {previewCommunities.map((item) => (
-              <HomePreviewRowItem key={item.id}>
+              <HomeAutoScrollRowItem key={item.id}>
                 <HomePreviewCardShell accent="community">
                   <HomeCreatorListingCard
                     profile={item}
@@ -70,9 +70,9 @@ export default function CommunitySection() {
                     onView={() => handleViewProfile(item.id)}
                   />
                 </HomePreviewCardShell>
-              </HomePreviewRowItem>
+              </HomeAutoScrollRowItem>
             ))}
-          </HomePreviewRow>
+          </HomeAutoScrollRow>
         )}
       </div>
     </section>

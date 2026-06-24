@@ -57,8 +57,8 @@ export default function PrivacyPolicyPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-transparent to-slate-50/80" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8 pt-2">
-          <div className="flex justify-end">
+        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="pt-4 sm:pt-6 mb-4 sm:mb-6">
             <BackToHomeButton />
           </div>
           <motion.div

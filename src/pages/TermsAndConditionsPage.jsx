@@ -48,11 +48,11 @@ export default function TermsAndConditionsPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-transparent to-slate-50/80" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8 pt-2">
-          <div className="flex justify-end">
+        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="pt-4 sm:pt-6 mb-4 sm:mb-6">
             <BackToHomeButton />
           </div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-3xl text-center mb-4 sm:mb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-14 py-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50 px-4 py-2 mb-5 shadow-sm">
               <FileCheck className="h-4 w-4 text-indigo-600" />
               <span className="text-sm font-semibold text-indigo-800">{t('termsPageBadge')}</span>

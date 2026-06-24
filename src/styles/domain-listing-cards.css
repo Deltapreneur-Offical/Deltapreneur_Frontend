@@ -62,8 +62,13 @@
   letter-spacing: 0.01em;
   color: #8b95a5;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .domain-listing-card__verified-icon {
@@ -98,7 +103,7 @@
 
 .domain-listing-card__domain-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
   min-width: 0;
@@ -175,6 +180,9 @@
   flex-shrink: 0;
   width: 1.85rem;
   height: 1.85rem;
+  min-width: 1.85rem;
+  min-height: 1.85rem;
+  aspect-ratio: 1 / 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -346,9 +354,16 @@
   line-height: 1.3;
   color: #334155;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   max-width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .domain-listing-card__availability {
@@ -1322,6 +1337,8 @@
 .venture-listing-card .domain-listing-card__price-box--compact .domain-listing-card__price-cta {
   width: 1.625rem;
   height: 1.625rem;
+  min-width: 1.625rem;
+  min-height: 1.625rem;
 }
 
 /* Venture pitch CTA — clean white SaaS pill (no arrow) */

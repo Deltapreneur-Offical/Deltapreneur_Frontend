@@ -136,10 +136,22 @@ export default function AppLayout({ children }) {
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [showInitial, setShowInitial] = useState(false);
   const bellRef = useRef(null);
   const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
   const notifFetchRef = useRef(0);
+
+  useEffect(() => {
+    const userKey = user?.id ?? user?.userId;
+    if (!userKey) {
+      setShowInitial(false);
+      return undefined;
+    }
+    const startFlip = setTimeout(() => setShowInitial(true), 1000);
+    const interval = setInterval(() => setShowInitial((prev) => !prev), 3000);
+    return () => { clearTimeout(startFlip); clearInterval(interval); };
+  }, [user?.id, user?.userId]);
 
   const updateNotifPanelPosition = useCallback(() => {
     const anchor = bellRef.current;
@@ -680,12 +692,26 @@ export default function AppLayout({ children }) {
                   setBellOpen(false);
                   setProfileMenuOpen((open) => !open);
                 }}
-                className="app-profile-avatar-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-0 p-0 aspect-square bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold leading-none text-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
+                className="app-profile-avatar-btn relative block h-10 w-10 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 aspect-square shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-indigo-500 hover:bg-white hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
                 aria-label="Account and regional settings"
                 aria-expanded={profileMenuOpen}
                 aria-haspopup="menu"
               >
-                {displayName.charAt(0)}
+                <div className="home-profile-flip-scene w-full h-full" aria-hidden="true">
+                  <div className={`home-profile-flip-inner${showInitial ? ' is-flipped' : ''} w-full h-full`}>
+                    <div className="home-profile-flip-face home-profile-flip-face--front flex items-center justify-center w-full h-full bg-white rounded-full overflow-hidden">
+                      <img
+                        src={CreatorIcon}
+                        alt=""
+                        className="w-[90%] h-[90%] object-contain"
+                        draggable={false}
+                      />
+                    </div>
+                    <div className="home-profile-flip-face home-profile-flip-face--back flex items-center justify-center w-full h-full rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-lg">
+                      <span className="home-profile-flip-initial">{displayName.charAt(0)}</span>
+                    </div>
+                  </div>
+                </div>
               </button>
               {profileMenuOpen && (
                 <div

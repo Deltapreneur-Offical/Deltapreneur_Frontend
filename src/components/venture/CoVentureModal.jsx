@@ -33,6 +33,7 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
     contributionPlan: '', motivation: '', previousVentures: '',
     linkedinUrl: '', portfolioUrl: '', videoIntroductionUrl: '',
   });
+  const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState('');
@@ -61,12 +62,31 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
       .finally(() => setChecking(false));
   }, [venture?.id]);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    if (validationErrors[e.target.name]) {
+      setValidationErrors((prev) => ({ ...prev, [e.target.name]: false }));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    const errors = {};
+    if (!form.fullName.trim()) errors.fullName = true;
+    if (!form.phone.trim() || !form.phone.match(/^[0-9]{10}$/)) errors.phone = true;
+    if (!form.location.trim()) errors.location = true;
+    if (!form.description.trim()) errors.description = true;
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setError('Please fill in all mandatory fields correctly.');
+      setLoading(false);
+      return;
+    }
+
     try {
       await coVentureAPI.apply(venture.id, form);
       setSuccess(true);
@@ -149,24 +169,24 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
             </div>
 
             <div className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 sm:px-8 py-5">
-              <form id="co-venture-apply-form" onSubmit={handleSubmit} className="flex flex-col gap-4 pb-2">
+              <form id="co-venture-apply-form" onSubmit={handleSubmit} className="flex flex-col gap-4 pb-2" noValidate>
                 <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-4 py-3 text-sm text-indigo-900">
                   Tell the founder who you are and how you will contribute. Required fields are marked with *.
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-bold text-gray-900">{t('coVentureFullName')} <span className="text-red-400">*</span></label>
-                  <input name="fullName" value={form.fullName} onChange={handleChange} placeholder={t('coVentureNamePlaceholder')} required className={fieldCls} />
+                  <input name="fullName" value={form.fullName} onChange={handleChange} placeholder={t('coVentureNamePlaceholder')} required className={`${fieldCls} ${validationErrors.fullName ? '!border-red-500 focus:!border-red-500 focus:!shadow-[0_0_0_3px_rgba(239,68,68,0.12)]' : ''}`} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-bold text-gray-900">{t('coVenturePhone')} <span className="text-red-400">*</span></label>
-                    <input name="phone" value={form.phone} onChange={handleChange} placeholder={t('coVenturePhonePlaceholder')} maxLength={10} pattern="[0-9]{10}" title={t('coVenturePhoneTitle')} required className={fieldCls} />
+                    <input name="phone" value={form.phone} onChange={handleChange} placeholder={t('coVenturePhonePlaceholder')} maxLength={10} pattern="[0-9]{10}" title={t('coVenturePhoneTitle')} required className={`${fieldCls} ${validationErrors.phone ? '!border-red-500 focus:!border-red-500 focus:!shadow-[0_0_0_3px_rgba(239,68,68,0.12)]' : ''}`} />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-bold text-gray-900">{t('coVentureLocation')}</label>
-                    <input name="location" value={form.location} onChange={handleChange} placeholder={t('coVentureLocationPlaceholder')} className={fieldCls} />
+                    <label className="text-sm font-bold text-gray-900">{t('coVentureLocation')} <span className="text-red-400">*</span></label>
+                    <input name="location" value={form.location} onChange={handleChange} placeholder={t('coVentureLocationPlaceholder')} required className={`${fieldCls} ${validationErrors.location ? '!border-red-500 focus:!border-red-500 focus:!shadow-[0_0_0_3px_rgba(239,68,68,0.12)]' : ''}`} />
                   </div>
                 </div>
 
@@ -177,7 +197,7 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-bold text-gray-900">Contribution Statement <span className="text-red-400">*</span></label>
-                  <textarea name="description" value={form.description} onChange={handleChange} placeholder="Describe how you will contribute to this partnership…" rows={4} required className={`${fieldCls} resize-y min-h-[96px]`} />
+                  <textarea name="description" value={form.description} onChange={handleChange} placeholder="Describe how you will contribute to this partnership…" rows={4} required className={`${fieldCls} resize-y min-h-[96px] ${validationErrors.description ? '!border-red-500 focus:!border-red-500 focus:!shadow-[0_0_0_3px_rgba(239,68,68,0.12)]' : ''}`} />
                 </div>
 
                 <div className="border-t border-gray-100 pt-4">

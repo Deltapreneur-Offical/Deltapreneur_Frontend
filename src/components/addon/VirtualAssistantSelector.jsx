@@ -152,9 +152,8 @@ export default function VirtualAssistantSelector({
         open={open}
         onToggle={() => setOpen((value) => !value)}
       >
-<<<<<<< HEAD
-        <div className="border-t border-[#ecd9b8] bg-[#fafbfc] p-2.5">
-          <div className="rounded-xl border border-gray-200/80 bg-[#f7f8fa] p-2 space-y-2">
+        <div className="border-t border-[#ecd9b8] bg-[#fafbfc] p-2.5 overflow-x-hidden">
+          <div className="rounded-xl border border-gray-200/80 bg-[#f7f8fa] p-2 space-y-2 overflow-x-hidden">
             {loading ? (
               <div className="rounded-[10px] border border-dashed border-gray-300 bg-white px-3 py-4 text-sm text-gray-500">
                 {t('loading', { defaultValue: 'Loading…' })}
@@ -175,20 +174,6 @@ export default function VirtualAssistantSelector({
                 />
               ))
             )}
-=======
-        <div className="border-t border-[#ecd9b8] bg-[#fafbfc] p-2.5 overflow-x-hidden">
-          <div className="rounded-xl border border-gray-200/80 bg-[#f7f8fa] p-2 space-y-2 overflow-x-hidden">
-            {VA_SERVICES.map((service) => (
-              <AssistantPlanCard
-                key={service.key}
-                service={service}
-                checked={selected.includes(service.key)}
-                onToggle={() => toggle(service.key)}
-                formatPrice={formatPrice}
-                t={t}
-              />
-            ))}
->>>>>>> 50e5fb29d5b1a6f34c30179d397c801de4f6f2e1
           </div>
 
           {selected.length > 0 && (

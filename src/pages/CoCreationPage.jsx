@@ -725,8 +725,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaL
   const basePrice = item.price;
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
   const addonExtra = addonTotal(addons);
-  const vaExtra = vaTotal(vaAddons);
-  const totalPrice = basePrice + coBrotherFee + addonExtra + vaExtra;
+  const totalPrice = basePrice + coBrotherFee + addonExtra;
 
   const handlePhoneChange = (e) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10);

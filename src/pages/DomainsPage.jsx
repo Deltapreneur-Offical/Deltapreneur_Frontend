@@ -776,12 +776,11 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                 <label className={labelCls}>{t('domainsPageAuctionDurationLabel')} <span className="text-red-500">*</span></label>
                 <FormSelect className={inputCls} value={form.auctionDuration}
                   onChange={e => setForm(f => ({ ...f, auctionDuration: e.target.value }))}>
-                  <option value="ONE_HOUR">{t('domainsPageDurationOneHour')}</option>
-                  <option value="SIX_HOURS">{t('domainsPageDurationSixHours')}</option>
-                  <option value="TWELVE_HOURS">{t('domainsPageDurationTwelveHours')}</option>
                   <option value="ONE_DAY">{t('domainsPageDurationOneDay')}</option>
-                  <option value="THREE_DAYS">{t('domainsPageDurationThreeDays')}</option>
                   <option value="SEVEN_DAYS">{t('domainsPageDurationSevenDays')}</option>
+                  <option value="THIRTY_DAYS">{t('domainsPageDurationThirtyDays')}</option>
+                  <option value="SIXTY_DAYS">{t('domainsPageDurationSixtyDays')}</option>
+                  <option value="NINETY_DAYS">{t('domainsPageDurationNinetyDays')}</option>
                 </FormSelect>
               </div>
             </div>

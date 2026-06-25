@@ -2,14 +2,11 @@ import { useEffect, useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { venturePitchAPI } from '../../api/services';
 import { resolveSellerAskSummary, formatVentureAskingPrice } from '../../utils/ventureListingHelpers';
-import { resolveOwnershipLiquidationPercent, formatOwnershipLiquidationPercent } from '../../utils/ventureListingHelpers';
-import { formatEquityOfferedPct } from '../../constants/ventureLabels';
 
 export default function VentureBidModal({ venture, onClose, onSubmitted }) {
   const { formatPrice } = useCurrency();
   const brand = venture?.brandDetails || venture?.brand_details || {};
   const sellerAsk = resolveSellerAskSummary(venture);
-  const maxEquity = resolveOwnershipLiquidationPercent(venture) ?? 100;
 
   const [equityPercent, setEquityPercent] = useState('');
   const [bidAmount, setBidAmount] = useState('');
@@ -41,10 +38,6 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
     }
     if (!equity || equity <= 0 || equity > 100) {
       setError('Equity requested must be between 0.01 and 100.');
-      return;
-    }
-    if (equity > maxEquity) {
-      setError(`Equity requested cannot exceed ownership liquidation (${formatEquityOfferedPct(maxEquity)}).`);
       return;
     }
     if (!message.trim()) {
@@ -133,7 +126,7 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
               <input
                 type="number"
                 min="0.01"
-                max={maxEquity}
+                max="100"
                 step="0.01"
                 value={equityPercent}
                 onChange={(e) => setEquityPercent(e.target.value)}
@@ -141,7 +134,7 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
                 required
               />
               <span className="text-xs text-gray-500">
-                Maximum available: {formatOwnershipLiquidationPercent(venture) || `${maxEquity}%`}
+                Enter a value between 0.01 and 100.
               </span>
             </label>
 

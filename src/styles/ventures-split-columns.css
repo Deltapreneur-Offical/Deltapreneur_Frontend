@@ -142,6 +142,10 @@
   background: rgba(20, 184, 166, 0.22);
 }
 
+.ventures-split__header--coventure::after {
+  bottom: -0.25rem;
+}
+
 @media (min-width: 1024px) {
   .ventures-split__header {
     margin: 0 0 1.15rem;

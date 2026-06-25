@@ -27,12 +27,10 @@ const DURATION_HOURS = {
 
 const DURATION_DAYS = {
   ONE_DAY: 1,
-  THREE_DAYS: 3,
-  FIVE_DAYS: 5,
   SEVEN_DAYS: 7,
-  FOURTEEN_DAYS: 14,
-  FIFTEEN_DAYS: 15,
   THIRTY_DAYS: 30,
+  SIXTY_DAYS: 60,
+  NINETY_DAYS: 90,
 };
 
 /** Infer end time when API omits endTime but start + duration exist. */

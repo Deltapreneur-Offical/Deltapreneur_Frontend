@@ -864,6 +864,7 @@ function VentureAdminRow({
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const [submissionsOpen, setSubmissionsOpen] = useState(false);
   const title = venture.brandDetails?.brandName || t('adminVentureFallback', { id: venture.id });
   const listingMode = venture.listingMode || venture.listing_mode || 'VENTURE';
   const isCoVentureListing = listingMode === 'CO_VENTURE';
@@ -885,6 +886,9 @@ function VentureAdminRow({
     ?? venture.company_profile?.is_complete
     ?? false;
   const canApproveListing = listingApproval === 'PENDING_APPROVAL' && profileComplete;
+  const submissionRows = isCoVentureListing ? applications : pitches;
+  const submissionTitle = isCoVentureListing ? t('adminCoVentureApplications') : 'Buyer bids';
+  const submissionEmpty = isCoVentureListing ? t('adminNoCoVentureApps') : 'No buyer bids yet.';
 
   const forwardableApp = applications.find(a => a.status === 'PENDING')
     || applications.find(a => a.status === 'APPROVED')
@@ -1017,14 +1021,16 @@ function VentureAdminRow({
           {showListingVerificationSection && (
             <div className="mb-4 rounded-lg border border-gray-200 p-3">
               <div className="admin-field-label admin-field-label--spaced">
-                {t('adminVentureListingVerification')}
+                {t('adminVentureVerificationReview', 'Document/video verification')}
               </div>
-              <p className="text-xs text-gray-500 mb-2">{t('adminVentureListingVerificationHint')}</p>
+              <p className="text-xs text-gray-500 mb-2">
+                {t('adminVentureVerificationReviewHint', 'Review seller proof separately from marketplace listing approval.')}
+              </p>
               <div className="text-sm text-gray-700 space-y-1">
-                <div>{t('adminVentureListingVerificationStatus', { status: listingVerificationStatus })}</div>
+                <div>{t('adminVentureVerificationStatus', 'Verification status')}: {listingVerificationStatus}</div>
                 {venture.verificationVideoUrl && (
                   <div>
-                    {t('adminVentureListingVerificationVideo')}:{' '}
+                    {t('adminVentureVerificationVideo', 'Verification video')}:{' '}
                     <a href={venture.verificationVideoUrl} target="_blank" rel="noreferrer" className="admin-link">
                       {venture.verificationVideoUrl}
                     </a>
@@ -1032,7 +1038,7 @@ function VentureAdminRow({
                 )}
                 {(venture.verificationDocuments || []).map((doc) => (
                   <div key={doc.id}>
-                    {t('adminVentureListingVerificationDocument')}:{' '}
+                    {t('adminVentureVerificationDocument', 'Verification document')}:{' '}
                     <a href={doc.fileUrl || doc.file_url} target="_blank" rel="noreferrer" className="admin-link">
                       {doc.fileName || doc.file_name || 'View'}
                     </a>
@@ -1049,18 +1055,18 @@ function VentureAdminRow({
                       adminAPI.approveVentureVerification(venture.id).then(() => onRefresh?.());
                     }}
                   >
-                    {t('adminVentureApproveListingVerification')}
+                    {t('adminVentureApproveVerification', 'Approve verification')}
                   </button>
                   <button
                     type="button"
                     className="btn-secondary btn-sm text-[0.8rem]"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const reason = window.prompt(t('adminVentureListingVerificationRejectPrompt')) || '';
+                      const reason = window.prompt(t('adminVentureVerificationRejectPrompt', 'Rejection reason (optional)')) || '';
                       adminAPI.rejectVentureVerification(venture.id, reason).then(() => onRefresh?.());
                     }}
                   >
-                    {t('adminVentureRejectListingVerification')}
+                    {t('adminVentureRejectVerification', 'Reject verification')}
                   </button>
                 </div>
               )}
@@ -1157,7 +1163,31 @@ function VentureAdminRow({
             </p>
           )}
 
-          {isCoVentureListing && applications.length > 0 ? (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="admin-field-label admin-field-label--spaced">{submissionTitle}</div>
+                <p className="admin-muted-note" style={{ margin: 0 }}>
+                  {submissionRows.length > 0
+                    ? `${submissionRows.length} record${submissionRows.length !== 1 ? 's' : ''}`
+                    : submissionEmpty}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary btn-sm w-full sm:w-auto text-[0.8rem]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSubmissionsOpen(true);
+                }}
+                disabled={submissionRows.length === 0}
+              >
+                View {submissionTitle.toLowerCase()}
+              </button>
+            </div>
+          </div>
+
+          {false ? (
             <div>
               <div className="admin-field-label admin-field-label--spaced">{t('adminCoVentureApplications')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -1202,7 +1232,7 @@ function VentureAdminRow({
                 ))}
               </div>
             </div>
-          ) : !isCoVentureListing && pitches.length > 0 ? (
+          ) : false ? (
             <div>
               <div className="admin-field-label admin-field-label--spaced">Buyer bids</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -1233,11 +1263,94 @@ function VentureAdminRow({
                 ))}
               </div>
             </div>
-          ) : (
-            <p className="admin-muted-note" style={{ margin: 0 }}>
-              {isCoVentureListing ? t('adminNoCoVentureApps') : 'No buyer bids yet.'}
-            </p>
-          )}
+          ) : null}
+        </div>
+      )}
+
+      {submissionsOpen && (
+        <div
+          className="fixed inset-0 z-[1050] bg-black/30"
+          onClick={() => setSubmissionsOpen(false)}
+          role="presentation"
+        >
+          <aside
+            className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={submissionTitle}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-4">
+              <div className="min-w-0">
+                <h3 className="m-0 text-base font-semibold text-gray-900">{submissionTitle}</h3>
+                <p className="mt-1 text-xs text-gray-500 break-words">{title}</p>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                onClick={() => setSubmissionsOpen(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {submissionRows.length === 0 ? (
+                <p className="admin-muted-note" style={{ margin: 0 }}>{submissionEmpty}</p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {isCoVentureListing ? applications.map((app) => (
+                    <div key={app.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm text-gray-900">
+                            {app.fullName || (app.applicant ? `${app.applicant.firstname || ''} ${app.applicant.lastname || ''}`.trim() : t('adminApplicant'))}
+                          </div>
+                          <div className="admin-field-meta break-all">
+                            {app.applicant?.email || 'N/A'}{app.phone ? ` - ${app.phone}` : ''}
+                          </div>
+                          <div className="admin-field-meta mt-1 text-[0.72rem]">
+                            {t('adminApplicationIdStatus', { id: app.id, status: app.status })}
+                          </div>
+                        </div>
+                        {!venture.takenDown && (
+                          <button
+                            type="button"
+                            className="btn-secondary btn-sm text-[0.75rem]"
+                            onClick={() => onForward(app.id, 'COVENTURE')}
+                          >
+                            {t('adminForwardToCoBrother')}
+                          </button>
+                        )}
+                      </div>
+                      {app.description && (
+                        <p className="mt-2 mb-0 text-xs italic text-gray-500">{app.description}</p>
+                      )}
+                    </div>
+                  )) : pitches.map((pitch) => (
+                    <div key={pitch.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                      <div className="font-semibold text-sm text-gray-900">
+                        {pitch.buyerName || pitch.buyer?.firstname || 'Buyer'}
+                      </div>
+                      <div className="admin-field-meta break-all">
+                        {pitch.buyerEmail || pitch.buyer?.email || 'N/A'}
+                      </div>
+                      <div className="admin-field-meta mt-1">
+                        Offer: {formatInr(pitch.offeredAmount || 0)}
+                        {pitch.requestedEquityPercent != null ? ` - ${formatEquityPercent(pitch.requestedEquityPercent)}% equity requested` : ''}
+                      </div>
+                      <div className="admin-field-meta mt-1 text-[0.72rem]">
+                        {t('adminApplicationIdStatus', { id: pitch.id, status: pitch.status })}
+                      </div>
+                      {pitch.investmentProposal && (
+                        <p className="mt-2 mb-0 text-xs italic text-gray-500">{pitch.investmentProposal}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </aside>
         </div>
       )}
     </div>

@@ -96,24 +96,32 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
         )}
 
         {showExisting ? (
-          <div className="mb-4 rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <h3 className="text-sm font-semibold text-gray-900 m-0">Existing Bids</h3>
-              <button type="button" className="text-xs text-indigo-600" onClick={() => setShowExisting(false)}>
+          <div className="mb-4 rounded-xl border border-gray-100 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5">
+            <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-50">
+              <h3 className="text-sm font-bold text-gray-900 m-0">Existing Bids</h3>
+              <button type="button" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full" onClick={() => setShowExisting(false)}>
                 Back to bid form
               </button>
             </div>
             {loadingBids ? (
-              <p className="text-sm text-gray-500">Loading bids…</p>
+              <div className="flex items-center justify-center py-6 text-sm text-gray-400">
+                Loading bids…
+              </div>
             ) : existingBids.length === 0 ? (
-              <p className="text-sm text-gray-500">No bids yet.</p>
+              <div className="flex items-center justify-center py-6 text-sm text-gray-400 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
+                No bids yet. Be the first to bid!
+              </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 {existingBids.map((bid, index) => (
-                  <div key={`${bid.createdAt}-${index}`} className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm">
-                    <div><strong>Equity:</strong> {bid.equityPercent ?? bid.requestedEquityPercent}%</div>
-                    <div><strong>Bid amount:</strong> {formatPrice(bid.bidAmount ?? bid.offeredAmount ?? 0)}</div>
-                    <div className="text-xs text-gray-500">{bid.createdAt ? new Date(bid.createdAt).toLocaleString() : ''}</div>
+                  <div key={`${bid.createdAt}-${index}`} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/30 p-3.5 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all duration-200">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[15px] font-bold text-gray-900 tracking-tight">{formatPrice(bid.bidAmount ?? bid.offeredAmount ?? 0)}</span>
+                      <span className="text-xs font-medium text-gray-500">For {bid.equityPercent ?? bid.requestedEquityPercent}% Equity</span>
+                    </div>
+                    <div className="text-[11px] font-medium text-gray-400 bg-white px-2.5 py-1 rounded-md border border-gray-100 shadow-sm">
+                      {bid.createdAt ? new Date(bid.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}
+                    </div>
                   </div>
                 ))}
               </div>

@@ -17,8 +17,9 @@ export default function NewVenturePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
-  const [createdListingMode, setCreatedListingMode] = useState('VENTURE');
   const defaultListingType = searchParams.get('type') === 'co-venture' ? 'CO_VENTURE' : 'VENTURE';
+  const [createdListingMode, setCreatedListingMode] = useState(defaultListingType);
+  const [currentListingType, setCurrentListingType] = useState(defaultListingType);
 
   const readVentureApiError = (err) => readApiError(err, t('newVentureCreateFailed'));
 
@@ -89,7 +90,9 @@ export default function NewVenturePage() {
       <div className="max-w-full w-full">
         <ListingBackLink to="/ventures" label={t('listingBackToVentures')} />
         <div className="mb-8">
-          <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">{t('newVentureTitle')}</h1>
+          <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">
+            {currentListingType === 'CO_VENTURE' ? 'List a New Co-Venture' : 'List a New Venture'}
+          </h1>
           <p className="text-gray-600">{t('newVentureSubtitle')}</p>
         </div>
         <VentureForm
@@ -99,6 +102,7 @@ export default function NewVenturePage() {
           submitLabel={t('newVenturePublish')}
           showListingTypePicker
           defaultListingType={defaultListingType}
+          onListingTypeChange={setCurrentListingType}
         />
       </div>
     </AppLayout>

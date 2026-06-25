@@ -30,7 +30,7 @@ import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
 import AddonSections from '../components/addon/AddonSections';
 import { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/AddonSelector';
-import { vaLabel, vaTotal, VA_SERVICES } from '../components/addon/VirtualAssistantSelector';
+import { useVirtualAssistantCatalog, vaLabel, vaTotal } from '../hooks/useVirtualAssistantCatalog';
 import { isPremiumDomain } from '../utils/domainPricing';
 import { readApiError } from '../utils/apiError';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
@@ -84,6 +84,7 @@ export default function DomainsPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading }  = useAuth();
   const { currency, getSymbol } = useCurrency();
+  const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate  = useNavigate();
   const location  = useLocation();
 
@@ -378,6 +379,8 @@ export default function DomainsPage() {
       {buyTarget && (
         <BuyDomainModal
           domain={buyTarget}
+          vaServices={vaServices}
+          vaLoading={vaLoading}
           onClose={() => setBuyTarget(null)}
           onSuccess={d => {
             const normalized = normalizeDomainRecord(d);
@@ -889,7 +892,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
 }
 
 // ─── Buy Domain Modal ─────────────────────────────────────────────────────────
-function BuyDomainModal({ domain, onClose, onSuccess }) {
+function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -905,9 +908,8 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
   });
 
   const addonExtra  = addonTotal(addons);
-  const vaExtra     = vaTotal(vaAddons);
   const domainPrice = Number(domain.askingPrice);
-  const totalPrice  = domainPrice + addonExtra + vaExtra;
+  const totalPrice  = domainPrice + addonExtra;
 
   const handlePhoneChange = (e) => {
     setBuyer(b => ({ ...b, buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }));
@@ -1037,6 +1039,8 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           onBusinessChange={setAddons}
           vaSelected={vaAddons}
           onVaChange={setVaAddons}
+          vaServices={vaServices}
+          vaLoading={vaLoading}
         />
 
         {/* ── Billing breakdown ── */}
@@ -1056,16 +1060,21 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
             ) : null;
           })}
           {vaAddons.map((k) => {
-            const svc = VA_SERVICES.find((s) => s.key === k);
-            return svc ? (
+            const service = vaServices.find((s) => String(s.id) === String(k));
+            return service ? (
               <div key={k} className="flex justify-between text-[#7c6fe0] mb-1">
-                <span className="truncate mr-2">{vaLabel(k, t)}</span>
-                <span>{formatPrice(svc.price)}</span>
+                <span className="truncate mr-2">{vaLabel(k, vaServices)}</span>
+                <span className="text-xs font-semibold text-amber-700">admin follow-up</span>
               </div>
             ) : null;
           })}
           {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
             <div className="text-xs text-amber-600 mb-1">{t('domainsPageContactServicesNote')}</div>
+          )}
+          {vaAddons.length > 0 && (
+            <div className="text-xs text-amber-600 mb-1">
+              Virtual assistant selection will be shared with the admin team for hiring follow-up.
+            </div>
           )}
           <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2 mt-1">
             <span>{t('domainsPageTotalLabel')}</span>

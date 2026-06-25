@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase, Users } from 'lucide-react';
+import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase } from 'lucide-react';
 
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -67,6 +67,14 @@ function resolveVentureStatusDotClass(venture) {
 
   return 'listing-availability-badge__dot--available';
 
+}
+
+function formatInterestCountLabel(count, isCoVenture) {
+  const safeCount = Number(count) || 0;
+  const noun = isCoVenture
+    ? (safeCount === 1 ? 'Applicant' : 'Applicants')
+    : (safeCount === 1 ? 'Pitch' : 'Pitches');
+  return `${safeCount} ${noun}`;
 }
 
 
@@ -629,11 +637,11 @@ export default function VentureListingCard({
 
           {/* Industry & Deal Type Badges */}
 
-          <div className="venture-listing-card__badges flex flex-wrap gap-1">
+          <div className="venture-listing-card__badges flex flex-wrap gap-0.5">
 
             {b.industry && (
 
-              <span className={`venture-listing-card__badge px-2 py-0.5 rounded-full ${
+              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${
                 compact ? 'venture-listing-card__badge--compact' : ''
               } ${
 
@@ -653,7 +661,7 @@ export default function VentureListingCard({
 
             {sellerAsk.dealTypeLabel && (
 
-              <span className={`venture-listing-card__badge px-2 py-0.5 rounded-full ${
+              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${
                 compact ? 'venture-listing-card__badge--compact' : ''
               } ${
 
@@ -743,9 +751,8 @@ export default function VentureListingCard({
                 </span>
               )}
 
-              <div className="venture-listing-card__metric flex items-center gap-1 shrink-0">
-                <Users size={11} className={interestCount > 0 ? (isCoVenture ? 'text-emerald-500' : 'text-indigo-500') : 'text-slate-400'} />
-                <span className="truncate">{interestCount > 0 ? `${interestCount} ${isCoVenture ? 'Applicants' : 'Pitches'}` : `No ${isCoVenture ? 'applicants' : 'pitches'}`}</span>
+              <div className="venture-listing-card__metric shrink-0">
+                <span className="truncate">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
               </div>
             </div>
           ) : (
@@ -781,12 +788,8 @@ export default function VentureListingCard({
                     : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800')
                   : 'bg-slate-50 border-slate-100 text-slate-500'
               }`}>
-                <Users size={12} className={interestCount > 0 ? (isCoVenture ? 'text-emerald-500' : 'text-indigo-500') : 'text-slate-400'} />
                 <span className="text-[11px] font-medium truncate">
-                  {interestCount > 0 
-                    ? `${interestCount} ${isCoVenture ? 'Applicants' : 'Pitches'}`
-                    : `No ${isCoVenture ? 'applicants' : 'pitches'}`
-                  }
+                  {formatInterestCountLabel(interestCount, isCoVenture)}
                 </span>
               </div>
             </div>

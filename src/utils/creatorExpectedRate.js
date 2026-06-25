@@ -76,7 +76,8 @@ export function formatCreatorExpectedRate(profile, formatPrice) {
   if (!suffix) return formattedAmount;
 
   if (suffix.startsWith('/')) {
-    return `${formattedAmount}${suffix}`;
+    const label = suffix.slice(1).replace(/^(\w)/, (letter) => letter.toUpperCase());
+    return `${formattedAmount}/${label}`;
   }
 
   return `${formattedAmount} ${suffix}`;

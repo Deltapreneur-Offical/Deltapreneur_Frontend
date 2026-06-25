@@ -91,12 +91,18 @@ export default function VentureForm({
   coVentureMode = false,
   showListingTypePicker = false,
   defaultListingType = 'VENTURE',
+  onListingTypeChange,
 }) {
   const { t } = useTranslation();
   const { currency: navCurrency, convertToInr, convertFromInr, formatPrice } = useCurrency();
   const [listingType, setListingType] = useState(
     coVentureMode ? 'CO_VENTURE' : defaultListingType,
   );
+
+  useEffect(() => {
+    onListingTypeChange?.(listingType);
+  }, [listingType, onListingTypeChange]);
+
   const isCoVenture = showListingTypePicker && !initialData
     ? listingType === 'CO_VENTURE'
     : (
@@ -184,7 +190,7 @@ export default function VentureForm({
   });
 
   const [syncPublicContact, setSyncPublicContact] = useState(() => {
-    if (!initialData) return true;
+    if (!initialData) return false;
     const contactInfo = normalizeContactInfo(
       initialData.contactInfo,
       initialData.contact_info,

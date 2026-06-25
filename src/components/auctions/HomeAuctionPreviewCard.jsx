@@ -3,6 +3,7 @@ import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCompactCountdown } from '../../utils/auctionDate';
+import { resolveAuctionListerName } from '../../utils/auctionLister';
 import {
   resolveHomeAuctionBadges,
   resolveHomeAuctionCategoryMeta,
@@ -110,6 +111,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const categoryClass = CATEGORY_CLASS[category] || CATEGORY_CLASS.domain;
   const coverImage = image && !imgFailed ? image : null;
   const badges = resolveHomeAuctionBadges(auction);
+  const listerName = resolveAuctionListerName(auction);
   const descriptionFromData = resolveHomeAuctionDescription(auction);
   const badgeToneClass = BADGE_TONE_CLASS[category] || BADGE_TONE_CLASS.domain;
   const isFeatured = Boolean(auction?.featured);
@@ -170,7 +172,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         <div className="home-auction-preview-card__content flex flex-col gap-2.5">
           <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
             <h3
-              className="venture-listing-card__title venture-listing-card__title--compact whitespace-normal break-words leading-snug"
+              className="venture-listing-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
               title={title}
               style={{
                 overflowWrap: 'anywhere',
@@ -186,18 +188,23 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             />
           </div>
 
+          {listerName ? (
+            <p className="home-auction-preview-card__creator" title={listerName}>
+              {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
+              <span className="home-auction-preview-card__creator-name">{listerName}</span>
+            </p>
+          ) : null}
+
           <div
-            className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1.5${
-              badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
-            }`}
+            className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1${badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
+              }`}
             aria-hidden={badges.length === 0 ? true : undefined}
           >
             {badges.map((badge) => (
               <span
                 key={badge.label}
-                className={`venture-listing-card__badge venture-listing-card__badge--compact px-2 py-0.5 rounded-full ${
-                  badgeToneClass[badge.tone] || badgeToneClass.primary
-                }`}
+                className={`venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0 rounded-full ${badgeToneClass[badge.tone] || badgeToneClass.primary
+                  }`}
               >
                 {badge.label}
               </span>
@@ -216,10 +223,10 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
           <div className="home-auction-preview-card__metrics">
             <div className="home-auction-preview-card__metric home-auction-preview-card__metric--bid">
               <span className="home-auction-preview-card__metric-icon-wrap" aria-hidden>
-                <Tag size={12} className="home-auction-preview-card__metric-icon" />
+                <Tag size={10} className="home-auction-preview-card__metric-icon" />
               </span>
               <span className="home-auction-preview-card__metric-label">
-                {t('auctionsPageStartingBid', { defaultValue: 'Starting bid' })}
+                {t('auctionsPageStartingBid', { defaultValue: 'Starting Bid' })}
               </span>
               <span
                 className="home-auction-preview-card__metric-value currency-display"
@@ -230,19 +237,19 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
             <div className="home-auction-preview-card__metric home-auction-preview-card__metric--bids">
               <span className="home-auction-preview-card__metric-icon-wrap" aria-hidden>
-                <Gavel size={12} className="home-auction-preview-card__metric-icon" />
+                <Gavel size={10} className="home-auction-preview-card__metric-icon" />
               </span>
               <span className="home-auction-preview-card__metric-label">
-                {t('auctionsPageTotalBids')}
+                {t('auctionsPageTotalBids', { defaultValue: 'Total Bids' })}
               </span>
               <span className="home-auction-preview-card__metric-value">{totalBids}</span>
             </div>
             <div className="home-auction-preview-card__metric home-auction-preview-card__metric--time">
               <span className="home-auction-preview-card__metric-icon-wrap" aria-hidden>
-                <Clock size={12} className="home-auction-preview-card__metric-icon" />
+                <Clock size={10} className="home-auction-preview-card__metric-icon" />
               </span>
               <span className="home-auction-preview-card__metric-label">
-                {t('auctionsPageEndsIn')}
+                {t('auctionsPageEndsIn', { defaultValue: 'Ends In' })}
               </span>
               <span className="home-auction-preview-card__metric-value home-auction-preview-card__metric-value--time">
                 {timeLeft}
@@ -260,7 +267,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             }}
           >
             <div className="domain-listing-card__price-text min-w-0 flex flex-col">
-              <span className="venture-listing-card__price-label uppercase leading-none">
+              <span className="venture-listing-card__price-label leading-none">
                 {bidLabel}
               </span>
               <span className="domain-listing-card__price-value venture-listing-card__price-value--compact currency-display truncate">
@@ -269,7 +276,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
             <button
               type="button"
-              className="domain-listing-card__price-cta flex items-center justify-center transition-all w-6 h-6"
+              className="domain-listing-card__price-cta flex items-center justify-center transition-all w-6 h-6 shrink-0 aspect-square rounded-full"
               aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
               onClick={handleView}
             >

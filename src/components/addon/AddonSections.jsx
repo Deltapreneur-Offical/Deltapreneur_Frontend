@@ -9,6 +9,8 @@ export default function AddonSections({
   onBusinessChange,
   vaSelected = [],
   onVaChange,
+  vaServices = null,
+  vaLoading = false,
   className = 'mt-4',
 }) {
   return (
@@ -21,6 +23,8 @@ export default function AddonSections({
       <VirtualAssistantSelector
         selected={vaSelected}
         onChange={onVaChange}
+        services={vaServices}
+        loading={vaLoading}
         className="mt-0 min-w-0"
       />
     </div>

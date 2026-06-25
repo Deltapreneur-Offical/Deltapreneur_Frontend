@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import { useCurrency } from '../../context/CurrencyContext';
 import { isCreatorProfileComplete } from '../../utils/creatorProfile';
 import { formatCreatorExpectedRate } from '../../utils/creatorExpectedRate';
+import { navigateToListingDetail } from '../../utils/listingNavigation';
 import ListingCardStatsFooter from '../listings/ListingCardStatsFooter';
 import '../../styles/domain-listing-cards.css';
 
@@ -42,14 +45,41 @@ function CreatorCover({ imageUrl, name, verified, onError }) {
   );
 }
 
-function CreatorPriceBox({ amount }) {
+function CreatorPriceBox({ amount, onView, viewDetailsLabel, profileId }) {
+  const navigate = useNavigate();
+
   if (!amount) return null;
+
+  const stop = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  const handleClick = (e) => {
+    stop(e);
+    if (typeof onView === 'function') {
+      onView();
+      return;
+    }
+    if (profileId) {
+      navigateToListingDetail(navigate, 'community', profileId);
+    }
+  };
 
   return (
     <div className="domain-listing-card__price-box domain-listing-card__price-box--auction">
       <div className="domain-listing-card__price-text min-w-0">
         <span className="domain-listing-card__price-value truncate">{amount}</span>
       </div>
+
+      <button
+        type="button"
+        className="domain-listing-card__price-cta"
+        aria-label={viewDetailsLabel}
+        onClick={handleClick}
+      >
+        <ArrowRight size={16} strokeWidth={2.25} aria-hidden />
+      </button>
     </div>
   );
 }
@@ -77,6 +107,8 @@ export default function HomeCreatorListingCard({
   const displayRate = formatCreatorExpectedRate(profile, formatPrice);
   const showPrice = Boolean(displayRate);
   const viewCount = Number(profile.views ?? profile.view_count ?? 0);
+  const profileId = profile.id ?? profile.communityId ?? profile.creatorId ?? profile.community_id ?? profile.creator_id;
+  const viewDetailsLabel = t('listingCardViewDetails', { defaultValue: 'View details' });
 
   useEffect(() => {
     setImgFailed(false);
@@ -126,6 +158,9 @@ export default function HomeCreatorListingCard({
         {showPrice ? (
           <CreatorPriceBox
             amount={displayRate}
+            onView={handleView}
+            profileId={profileId}
+            viewDetailsLabel={viewDetailsLabel}
           />
         ) : null}
 
@@ -134,6 +169,7 @@ export default function HomeCreatorListingCard({
           likeState={likeState}
           onLike={onLike}
           onView={handleView}
+          showCta={false}
           layout="creator-centered"
           className="domain-listing-card__stats mt-auto"
         />

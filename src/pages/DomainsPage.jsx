@@ -674,6 +674,14 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                 </button>
               ))}
             </div>
+            <input
+              className={inputCls}
+              value={form.domainExtension}
+              onChange={e => setForm(f => ({ ...f, domainExtension: e.target.value.replace(/\s/g, '').toLowerCase() }))}
+              placeholder={t('domainsPageExtensionPlaceholder')}
+              maxLength={32}
+              aria-label={t('domainsPageExtensionLabel')}
+            />
           </div>
         </div>
         {form.domainName && extPreview && (

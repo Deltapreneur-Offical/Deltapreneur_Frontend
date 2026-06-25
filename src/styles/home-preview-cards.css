@@ -951,6 +951,11 @@
   display: none;
 }
 
+.home-preview-row .home-creator-listing-card .listing-card-stats-footer__cta,
+.home-auto-scroll-row .home-creator-listing-card .listing-card-stats-footer__cta {
+  display: inline-flex;
+}
+
 .home-preview-row .home-preview-browse-card .domain-listing-card__price-value,
 .home-auto-scroll-row .home-preview-browse-card .domain-listing-card__price-value {
   font-size: 0.8125rem;

@@ -829,7 +829,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
 
 // ─── Community Detail Modal (with auction link) ───────────────────────────────
 const MODAL_OUTLINE_BTN =
-  'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-900 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors';
+  'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-600 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors hover:text-black';
 
 function CommunityDetailModal({
   profile,

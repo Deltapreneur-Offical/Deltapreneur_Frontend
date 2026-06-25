@@ -39,10 +39,12 @@ function normalizeLocalApiBase(url) {
   return t;
 }
 
-const remoteApiBaseRaw =
-  import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
-const remoteApiBase = normalizeLocalApiBase(remoteApiBaseRaw);
 const devProxyTarget = (import.meta.env.VITE_DEV_PROXY_TARGET || '').trim();
+const remoteApiBaseRaw =
+  import.meta.env.DEV && devProxyTarget
+    ? devProxyTarget
+    : import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+const remoteApiBase = normalizeLocalApiBase(remoteApiBaseRaw);
 
 /** True when .env points at local Uvicorn on :8000 */
 const isLocalBackend =

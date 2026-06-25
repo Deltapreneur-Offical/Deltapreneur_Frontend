@@ -100,7 +100,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const currentBid = Number(auction?.currentHighestBid) || 0;
   const totalBids = Number(auction?.totalBids) || 0;
   const hasCurrentBid = currentBid > 0;
-  const bidLabel = t('homeAuctionCurrentBid', { defaultValue: 'Current bid' });
+  const bidLabel = t('homeAuctionCurrentBid', { defaultValue: 'Current Bid' });
   const bidDisplay = totalBids > 0
     ? formatPrice(hasCurrentBid ? currentBid : startingBid)
     : t('homeAuctionNoBidYet', { defaultValue: 'NIL' });

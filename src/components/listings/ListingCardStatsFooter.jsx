@@ -8,6 +8,7 @@ export default function ListingCardStatsFooter({
   likeState,
   onLike,
   onView,
+  showCta = true,
   className = '',
   likesFirst = false,
   layout = 'default',
@@ -42,7 +43,7 @@ export default function ListingCardStatsFooter({
             <span>{Number(viewCount) || 0}</span>
           </span>
 
-          {onView ? (
+          {onView && showCta ? (
             <button
               type="button"
               className="listing-card-stats-footer__cta"
@@ -91,7 +92,7 @@ export default function ListingCardStatsFooter({
             ) : null}
           </div>
 
-          {onView ? (
+          {onView && showCta ? (
             <button
               type="button"
               className="listing-card-stats-footer__cta"

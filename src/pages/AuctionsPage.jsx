@@ -12,10 +12,11 @@ import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
 import CreatorIcon from '../assets/Cobrother_Profile.png';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
+import { resolveAuctionListerName } from '../utils/auctionLister';
 import { useTranslation } from 'react-i18next';
 import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/domainDisplay';
 import { pickMediaUrl } from '../utils/mediaUrl';
-import PageContentSkeleton from '../components/common/PageContentSkeleton';
+import { normalizeCommunityAuction } from '../utils/homepageAuctions';
 import '../styles/auctions-page.css';
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
@@ -61,6 +62,7 @@ const normalizeAuction = (raw) => {
     endTime: resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null,
     duration: raw.duration ?? null,
     domainDisplayName: raw.domainDisplayName ?? raw.domain_display_name ?? null,
+    listedBy: raw.listedBy ?? raw.listed_by ?? domainRaw.listedBy ?? domainRaw.listed_by ?? null,
     domain: {
       ...domainRaw,
       fullDomain: domainRaw.fullDomain ?? domainRaw.full_domain ?? '',
@@ -216,7 +218,9 @@ export default function AuctionsPage() {
     setLoading(true);
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-      communityAuctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
+      communityAuctionAPI.getActive()
+        .then(({ data }) => extractActiveList(data).map(normalizeCommunityAuction).filter(Boolean))
+        .catch(() => []),
       softwareAuctionAPI.getActive()
         .then(({ data }) => extractActiveList(data).map(normalizeSoftwareAuction))
         .catch(() => []),
@@ -508,9 +512,12 @@ function DomainAuctionCard({ auction, onClick }) {
           <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">
             {domainTitle || 'Unnamed domain'}
           </h3>
-          <span className="text-xs text-purple-600 font-semibold">
-            🔨 Auction
-          </span>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-purple-600 font-semibold">
+            <span>🔨 Auction</span>
+            {resolveAuctionListerName(auction) && (
+              <span className="text-gray-500 font-medium">Listed by {resolveAuctionListerName(auction)}</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -525,7 +532,7 @@ function DomainAuctionCard({ auction, onClick }) {
 
         <div className="grid grid-cols-2 gap-3 my-3">
           <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+            <div className="text-xs text-gray-600 font-medium mb-1">
               {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
             </div>
             <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
@@ -533,7 +540,7 @@ function DomainAuctionCard({ auction, onClick }) {
             </div>
           </div>
           <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+            <div className="text-xs text-gray-600 font-medium mb-1">
               Total Bids
             </div>
             <div className="font-display text-xl font-bold text-gray-900">
@@ -547,8 +554,8 @@ function DomainAuctionCard({ auction, onClick }) {
 
       <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
-            Ends in
+          <div className="text-xs text-gray-600 font-medium">
+            Ends In
           </div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
@@ -642,24 +649,29 @@ function SoftwareAuctionCard({ auction, onClick }) {
         )}
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">{title}</h3>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-indigo-600 font-semibold inline-flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-[0.72rem] text-indigo-600 font-semibold inline-flex items-center gap-1">
               <AuctionCategoryIcon src={TechnologyIcon} className="w-3.5 h-3.5 object-contain" />
               Technology Auction
             </span>
             {category && (
-              <span className="text-xs text-gray-500">
+              <span className="text-[0.72rem] text-gray-500">
                 · {String(category).replace(/_/g, ' ')}
               </span>
             )}
           </div>
+          {resolveAuctionListerName(auction) && (
+            <div className="text-[0.72rem] text-gray-500 mt-1 truncate">
+              Listed by {resolveAuctionListerName(auction)}
+            </div>
+          )}
         </div>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
         <div className="grid grid-cols-2 gap-3 my-3">
           <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+            <div className="text-xs text-gray-600 font-medium mb-1">
               {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
             </div>
             <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
@@ -667,7 +679,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
             </div>
           </div>
           <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+            <div className="text-xs text-gray-600 font-medium mb-1">Total Bids</div>
             <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
           </div>
         </div>
@@ -677,7 +689,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
 
       <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
+          <div className="text-xs text-gray-600 font-medium">Ends In</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
           </div>
@@ -736,15 +748,20 @@ function CommunityAuctionCard({ auction, onClick }) {
           <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">
             {auction.auctionTitle || community.name || '—'}
           </h3>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-teal-600 font-semibold inline-flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-[0.72rem] text-teal-600 font-semibold inline-flex items-center gap-1">
               <AuctionCategoryIcon src={CreatorIcon} className="w-3.5 h-3.5 object-contain" />
               Profile Auction
             </span>
             {auction.workType && (
-              <span className="text-xs text-gray-500">· {auction.workType.replace(/_/g, ' ')}</span>
+              <span className="text-[0.72rem] text-gray-500">· {auction.workType.replace(/_/g, ' ')}</span>
             )}
           </div>
+          {resolveAuctionListerName(auction) && (
+            <div className="text-[0.72rem] text-gray-500 mt-1 truncate">
+              Listed by {resolveAuctionListerName(auction)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -754,12 +771,12 @@ function CommunityAuctionCard({ auction, onClick }) {
           {skills.length > 0 ? (
             <>
               {skills.map((s, i) => (
-                <span key={i} className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 border border-gray-200 text-gray-600">
+                <span key={i} className="px-2 py-0.5 text-[0.68rem] font-semibold rounded-full bg-gray-100 border border-gray-200 text-gray-600">
                   {s}
                 </span>
               ))}
               {auction.auctionSkills?.split(',').length > 3 && (
-                <span className="text-xs text-gray-400 self-center">
+                <span className="text-[0.68rem] text-gray-400 self-center">
                   +{auction.auctionSkills.split(',').length - 3} more
                 </span>
               )}
@@ -771,7 +788,7 @@ function CommunityAuctionCard({ auction, onClick }) {
         <div>
           <div className="grid grid-cols-2 gap-3 my-3">
             <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
+              <div className="text-xs text-gray-600 font-medium mb-1">
                 {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
               </div>
               <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
@@ -779,7 +796,7 @@ function CommunityAuctionCard({ auction, onClick }) {
               </div>
             </div>
             <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+              <div className="text-xs text-gray-600 font-medium mb-1">Total Bids</div>
               <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
             </div>
           </div>
@@ -790,7 +807,7 @@ function CommunityAuctionCard({ auction, onClick }) {
 
       <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
         <div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
+          <div className="text-xs text-gray-600 font-medium">Ends In</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
           </div>

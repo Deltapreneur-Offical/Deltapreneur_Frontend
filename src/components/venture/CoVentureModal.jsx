@@ -28,7 +28,7 @@ const fieldCls =
 export default function CoVentureModal({ venture, onClose, onApplied }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
-    fullName: '', phone: '', location: '', gstNo: '', description: '',
+    fullName: '', phone: '', location: '', description: '',
     experienceSummary: '', relevantExperience: '', skills: '',
     contributionPlan: '', motivation: '', previousVentures: '',
     linkedinUrl: '', portfolioUrl: '', videoIntroductionUrl: '',
@@ -188,11 +188,6 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
                     <label className="text-sm font-bold text-gray-900">{t('coVentureLocation')} <span className="text-red-400">*</span></label>
                     <input name="location" value={form.location} onChange={handleChange} placeholder={t('coVentureLocationPlaceholder')} required className={`${fieldCls} ${validationErrors.location ? '!border-red-500 focus:!border-red-500 focus:!shadow-[0_0_0_3px_rgba(239,68,68,0.12)]' : ''}`} />
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-gray-900">{t('coVentureGstOptional')}</label>
-                  <input name="gstNo" value={form.gstNo} onChange={handleChange} placeholder={t('coVentureGstPlaceholder')} maxLength={15} className={fieldCls} />
                 </div>
 
                 <div className="flex flex-col gap-1.5">

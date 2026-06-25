@@ -48,3 +48,29 @@ export function resolveAuctionLister(localLister, participationStatus) {
   if (localLister) return true;
   return Boolean(participationStatus?.isOwner);
 }
+
+/** Display name for the member who listed an auction. */
+export function resolveAuctionListerName(auction) {
+  if (!auction || typeof auction !== 'object') return null;
+
+  const listedBy = auction.listedBy
+    ?? auction.domain?.listedBy
+    ?? auction.software?.listedBy
+    ?? auction.community?.listedBy
+    ?? auction.community?.appUser
+    ?? auction.creator;
+
+  if (listedBy && typeof listedBy === 'object') {
+    const fullName = [listedBy.firstname, listedBy.lastname].filter(Boolean).join(' ').trim();
+    const name = fullName || listedBy.name || listedBy.fullName || listedBy.username || listedBy.email;
+    if (name) return name;
+  }
+
+  const community = auction.community;
+  if (community && typeof community === 'object') {
+    const profileName = community.name || community.displayName;
+    if (profileName) return profileName;
+  }
+
+  return null;
+}

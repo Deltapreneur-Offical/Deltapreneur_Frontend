@@ -28,6 +28,7 @@ export function normalizeDomainAuction(raw) {
     totalBids: toNum(raw.totalBids ?? raw.total_bids, 0),
     endTime: resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null,
     domainDisplayName: raw.domainDisplayName ?? raw.domain_display_name ?? null,
+    listedBy: raw.listedBy ?? raw.listed_by ?? domainRaw.listedBy ?? domainRaw.listed_by ?? null,
     domain: {
       ...domainRaw,
       fullDomain: domainRaw.fullDomain ?? domainRaw.full_domain ?? '',
@@ -36,6 +37,7 @@ export function normalizeDomainAuction(raw) {
       verified: Boolean(domainRaw.verified ?? domainRaw.is_verified ?? false),
       logo: pickMediaUrl(domainRaw),
       pricingDemand: domainRaw.pricingDemand ?? domainRaw.pricing_demand ?? null,
+      listedBy: domainRaw.listedBy ?? domainRaw.listed_by ?? null,
     },
   };
 }
@@ -147,7 +149,10 @@ export function normalizeCommunityAuction(raw) {
     workType: raw.workType ?? raw.work_type ?? null,
     auctionSkills: raw.auctionSkills ?? raw.auction_skills ?? null,
     imageUrl: pickMediaUrl(community) || community.profileImageUrl || community.profilePicture || null,
-    community,
+    community: {
+      ...community,
+      listedBy: community.listedBy ?? community.listed_by ?? raw.listedBy ?? raw.listed_by ?? community.appUser ?? null,
+    },
   };
 }
 

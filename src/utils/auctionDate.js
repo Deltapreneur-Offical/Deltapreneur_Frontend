@@ -127,30 +127,35 @@ export function formatExpectedRate(value, formatInr, fallback = '—') {
   return str;
 }
 
+/** Compact card countdown — e.g. 5D 8H, 18H, 45M. */
+function buildCompactTimeLeft(diff) {
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) {
+    const parts = [`${days}D`];
+    if (hours > 0) parts.push(`${hours}H`);
+    return parts.join(' ');
+  }
+  if (hours > 0) return `${hours}H`;
+  return `${Math.max(1, minutes)}M`;
+}
+
 export function formatCountdown(endTime) {
   const end = parseAuctionDate(endTime);
   if (!end) return { timeLeft: 'Awaiting schedule', isUrgent: false };
   const diff = end.getTime() - Date.now();
   if (diff <= 0) return { timeLeft: 'Ended', isUrgent: false };
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
   const isUrgent = diff < 300000;
-  if (d > 0) return { timeLeft: `${d}d ${h}h ${m}m`, isUrgent };
-  if (h > 0) return { timeLeft: `${h}h ${m}m ${s}s`, isUrgent };
-  return { timeLeft: `${m}m ${s}s`, isUrgent };
+  return { timeLeft: buildCompactTimeLeft(diff), isUrgent };
 }
 
-/** Homepage auction cards — days only, or hours when under one day. */
+/** Homepage auction cards — same compact format as listing cards. */
 export function formatCompactCountdown(endTime) {
   const end = parseAuctionDate(endTime);
   if (!end) return { timeLeft: '—', isUrgent: false };
   const diff = end.getTime() - Date.now();
   if (diff <= 0) return { timeLeft: 'Ended', isUrgent: false };
-  const days = Math.floor(diff / 86400000);
   const isUrgent = diff < 86400000;
-  if (days > 0) return { timeLeft: `${days}d`, isUrgent: diff < 86400000 * 2 };
-  const hours = Math.floor(diff / 3600000);
-  return { timeLeft: `${Math.max(1, hours)}h`, isUrgent };
+  return { timeLeft: buildCompactTimeLeft(diff), isUrgent: diff < 86400000 * 2 || isUrgent };
 }

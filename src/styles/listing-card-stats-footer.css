@@ -32,6 +32,26 @@
   overflow: hidden;
 }
 
+.listing-card-stats-footer--creator {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.listing-card-stats-footer--creator .listing-card-stats-footer__views {
+  justify-self: start;
+}
+
+.listing-card-stats-footer--creator .listing-like-btn {
+  justify-self: end;
+}
+
+.listing-card-stats-footer--creator .listing-card-stats-footer__cta {
+  justify-self: center;
+}
+
 .listing-card-stats-footer__views {
   display: inline-flex;
   align-items: center;

@@ -1043,7 +1043,7 @@
 }
 
 .home-preview-row .home-creator-listing-card .domain-listing-card__stats .listing-card-stats-footer__cta {
-  display: none;
+  display: inline-flex !important;
 }
 
 

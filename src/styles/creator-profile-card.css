@@ -102,7 +102,7 @@
 .creator-profile-card__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.5rem;
   width: 100%;
   margin-top: 0.55rem;
@@ -383,6 +383,28 @@
 .home-preview-row .creator-profile-card__cta {
   width: 2.25rem;
   height: 2.25rem;
+}
+
+/* When ListingCardStatsFooter injects the creator-centered layout, prefer grid */
+.creator-profile-card__footer.listing-card-stats-footer--creator {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.creator-profile-card__footer.listing-card-stats-footer--creator .creator-profile-card__views,
+.creator-profile-card__footer.listing-card-stats-footer--creator .listing-card-stats-footer__views {
+  justify-self: start;
+}
+
+.creator-profile-card__footer.listing-card-stats-footer--creator .listing-like-btn {
+  justify-self: end;
+}
+
+.creator-profile-card__footer.listing-card-stats-footer--creator .listing-card-stats-footer__cta {
+  justify-self: center;
 }
 
 /* Creator page grid — card lifts as one piece (border + shadow stay aligned) */

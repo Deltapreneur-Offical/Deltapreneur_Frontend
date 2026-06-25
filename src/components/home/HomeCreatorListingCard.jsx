@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -43,7 +42,7 @@ function CreatorCover({ imageUrl, name, verified, onError }) {
   );
 }
 
-function CreatorPriceBox({ amount, onView, viewLabel }) {
+function CreatorPriceBox({ amount }) {
   if (!amount) return null;
 
   return (
@@ -51,16 +50,6 @@ function CreatorPriceBox({ amount, onView, viewLabel }) {
       <div className="domain-listing-card__price-text min-w-0">
         <span className="domain-listing-card__price-value truncate">{amount}</span>
       </div>
-      {onView ? (
-        <button
-          type="button"
-          className="domain-listing-card__price-cta"
-          aria-label={viewLabel}
-          onClick={onView}
-        >
-          <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
-        </button>
-      ) : null}
     </div>
   );
 }
@@ -137,8 +126,6 @@ export default function HomeCreatorListingCard({
         {showPrice ? (
           <CreatorPriceBox
             amount={displayRate}
-            onView={handleView}
-            viewLabel={t('listingCardViewDetails', 'View details')}
           />
         ) : null}
 
@@ -146,6 +133,8 @@ export default function HomeCreatorListingCard({
           viewCount={viewCount}
           likeState={likeState}
           onLike={onLike}
+          onView={handleView}
+          layout="creator-centered"
           className="domain-listing-card__stats mt-auto"
         />
       </div>

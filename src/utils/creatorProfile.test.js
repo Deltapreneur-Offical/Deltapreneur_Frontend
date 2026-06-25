@@ -10,6 +10,8 @@ describe('creatorProfile', () => {
   it('normalizes LinkedIn profile URLs', () => {
     expect(getLinkedInProfileUrl({ linked_in_profile_url: 'https://linkedin.com/in/jane' })).toBe('https://linkedin.com/in/jane');
     expect(getLinkedInProfileUrl({ linkedInProfileUrl: 'https://linkedin.com/oauth/foo' })).toBe('');
+    expect(getLinkedInProfileUrl({ linkedInUrl: 'https://linkedin.com/in/john' })).toBe('https://linkedin.com/in/john');
+    expect(getLinkedInProfileUrl({ linked_in_url: 'https://linkedin.com/in/jill' })).toBe('https://linkedin.com/in/jill');
   });
 
   it('detects LinkedIn account fields', () => {

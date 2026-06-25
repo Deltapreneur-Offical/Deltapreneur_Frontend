@@ -127,7 +127,7 @@ export default function CommunityListingCard({
             {metaLine || '\u00A0'}
           </p>
 
-          <CreatorExpectedRateCard profile={profile} onView={onView} />
+          <CreatorExpectedRateCard profile={profile} />
         </div>
 
         {/* Follow button disabled until creator follow UX is finalized */}

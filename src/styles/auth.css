@@ -75,29 +75,33 @@
 .auth-page__back {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   justify-self: start;
-  padding: 0.4rem 0.55rem;
-  margin: -0.4rem 0 -0.4rem -0.55rem;
+  padding: 0;
+  width: 2.5rem;
+  height: 2.5rem;
   border: none;
-  background: transparent;
-  color: #64748b;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899);
+  color: white;
   cursor: pointer;
-  border-radius: 0.5rem;
-  transition: color 0.2s, background-color 0.2s;
+  border-radius: 50%;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .auth-page__back:hover {
-  color: #0f172a;
-  background: #f1f5f9;
+  color: white;
+  background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899);
+  opacity: 0.85;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .auth-page__back-icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   flex-shrink: 0;
+  filter: brightness(0) invert(1);
 }
 
 .auth-page__logo {

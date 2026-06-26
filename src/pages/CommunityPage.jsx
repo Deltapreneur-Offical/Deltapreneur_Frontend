@@ -886,7 +886,7 @@ function CommunityDetailModal({
         <button
           type="button"
           className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700 leading-none"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           aria-label="Close"
         >
           ✕
@@ -940,7 +940,8 @@ function CommunityDetailModal({
                 <button
                   type="button"
                   className={`${MODAL_OUTLINE_BTN} flex-shrink-0 whitespace-nowrap`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onClose();
                     onViewAuction(resolveCreatorAuctionId(auction));
                   }}
@@ -1000,15 +1001,15 @@ function CommunityDetailModal({
               <div className="flex items-center gap-3">
                 {isMe ? (
                   <>
-                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={onEdit}>
+                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
                       <EditActionLabel iconSize={15}>Edit Profile</EditActionLabel>
                     </button>
-                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={onDelete}>
+                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onDelete(); }}>
                       Delete Profile
                     </button>
                   </>
                 ) : null}
-                <button type="button" className={MODAL_OUTLINE_BTN} onClick={onClose}>
+                <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onClose(); }}>
                   Close
                 </button>
               </div>

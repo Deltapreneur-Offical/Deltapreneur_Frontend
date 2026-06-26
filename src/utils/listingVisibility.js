@@ -66,6 +66,9 @@ export function isListingVerified(item, type = 'domain') {
   if (!item) return false;
   const listingType = normalizeListingType(type);
 
+  if (listingType === 'domain') {
+    return true;
+  }
   if (listingType === 'venture') {
     const status = item.listingApprovalStatus ?? item.listing_approval_status;
     return status === 'APPROVED';

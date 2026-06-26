@@ -30,7 +30,7 @@ export default function DomainVerificationPendingBanner({
           <PendingVerificationDot />
           <p className="m-0 text-sm font-semibold text-amber-900">
             {t('domainsVerifyPendingTitle', {
-              defaultValue: 'Verification required',
+              defaultValue: 'Listed successfully',
             })}
           </p>
         </div>
@@ -39,11 +39,11 @@ export default function DomainVerificationPendingBanner({
             ? t('domainsVerifyPendingBodyPlural', {
                 count,
                 defaultValue:
-                  'You have {{count}} domains listed that are not visible in the public marketplace yet. Verify ownership to publish them.',
+                  'You have {{count}} domains live in the marketplace. Complete verification to earn the Verified badge and improve trust, discoverability, and buyer interest.',
               })
             : t('domainsVerifyPendingBody', {
                 defaultValue:
-                  'Your domain is listed but not visible in the public marketplace yet. Verify ownership to publish it.',
+                  'Your domain has been listed successfully and is now live in the marketplace. Complete the domain verification process to earn the Verified badge and boost trust, visibility, and buyer confidence.',
               })}
         </p>
         <ol className="m-0 mt-2 list-decimal space-y-0.5 pl-4 text-[0.7rem] leading-relaxed text-amber-800/80 sm:text-xs">
@@ -54,12 +54,12 @@ export default function DomainVerificationPendingBanner({
           </li>
           <li>
             {t('domainsVerifyStepVerify', {
-              defaultValue: 'Select Verify and choose DNS TXT, HTML meta/file, or WHOIS email',
+              defaultValue: 'Select Verify and complete DNS TXT, HTML meta/file, or WHOIS email verification to unlock the Verified badge',
             })}
           </li>
           <li>
             {t('domainsVerifyStepPublish', {
-              defaultValue: 'After verification, your listing appears in the public pool for buyers',
+              defaultValue: 'Verified domains stand out more in the marketplace and can attract stronger buyer attention',
             })}
           </li>
         </ol>

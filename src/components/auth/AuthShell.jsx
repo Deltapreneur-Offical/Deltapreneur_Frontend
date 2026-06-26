@@ -41,7 +41,6 @@ export default function AuthShell({
               aria-label="Go back"
             >
               <BackIcon />
-              <span>Back</span>
             </button>
           ) : (
             <span aria-hidden />

@@ -144,6 +144,7 @@ export default function DomainsDashboardPage() {
         {pendingVerificationCount > 0 ? (
           <DomainVerificationPendingBanner
             count={pendingVerificationCount}
+            showAction={false}
             onVerifyClick={() => {
               setTab('listings');
               if (firstPendingListing) setVerifyTarget(firstPendingListing);

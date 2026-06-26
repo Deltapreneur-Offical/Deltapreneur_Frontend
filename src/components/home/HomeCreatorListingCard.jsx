@@ -57,10 +57,6 @@ function CreatorPriceBox({ amount, onView, viewDetailsLabel, profileId }) {
 
   const handleClick = (e) => {
     stop(e);
-    if (typeof onView === 'function') {
-      onView();
-      return;
-    }
     if (profileId) {
       navigateToListingDetail(navigate, 'community', profileId);
     }

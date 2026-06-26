@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/domainDisplay';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { normalizeCommunityAuction } from '../utils/homepageAuctions';
+import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import '../styles/auctions-page.css';
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {

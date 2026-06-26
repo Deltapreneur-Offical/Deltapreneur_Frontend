@@ -8,6 +8,7 @@ import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 import verifiedIcon from '../../assets/Verified_Icon.png';
+import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
@@ -326,7 +327,7 @@ export default function DomainListingCard({
       <div className="domain-listing-card__body">
         <div className="domain-listing-card__domain-row">
           <p className="domain-listing-card__domain" title={display.fullDomain}>
-            {display.fullDomain}
+            <OverflowMarqueeText text={display.fullDomain} />
           </p>
           <span
             className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveStatusDotClass(statusKey)}`}

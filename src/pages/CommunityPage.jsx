@@ -849,6 +849,12 @@ function CommunityDetailModal({
   const skills = p.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
   const linkedInUrl = getLinkedInProfileUrl(p);
   const whyHere = (p.whyImHere ?? p.why_im_here ?? '').trim();
+  const introductionVideoLink = p.introductionVideoLink || p.introduction_video_link || '';
+  const resumeDriveLink = p.resumeDriveLink || p.resume_drive_link || '';
+  const portfolioWebsiteLink = p.portfolioWebsiteLink || p.portfolio_website_link || '';
+  const preferredWorkType = p.preferredWorkType || p.preferred_work_type || '';
+  const industryExpertise = p.industryExpertise || p.industry_expertise || '';
+  const languagesKnown = p.languagesKnown || p.languages_known || '';
 
   useEffect(() => {
     communityAPI.getOne(profile.id)
@@ -997,6 +1003,60 @@ function CommunityDetailModal({
               </p>
             </div>
 
+            {preferredWorkType && (
+              <div className="mb-2">
+                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Preferred Work Type</div>
+                <p className="text-gray-900 leading-relaxed text-sm m-0">
+                  {preferredWorkType.replace(/_/g, ' ')}
+                </p>
+              </div>
+            )}
+
+            {industryExpertise && (
+              <div className="mb-2">
+                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Industry Expertise</div>
+                <p className="text-gray-900 leading-relaxed text-sm m-0">
+                  {industryExpertise}
+                </p>
+              </div>
+            )}
+
+            {languagesKnown && (
+              <div className="mb-2">
+                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Languages Known</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {languagesKnown.split(',').map((lang, idx) => (
+                    <span key={idx} className="px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs text-gray-700">
+                      {lang.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {introductionVideoLink || resumeDriveLink || portfolioWebsiteLink ? (
+              <div className="mb-2">
+                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Links & Resources</div>
+                <div className="space-y-2">
+                  {introductionVideoLink && (
+                    <a href={introductionVideoLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
+                      🎥 Introduction Video
+                    </a>
+                  )}
+                  {resumeDriveLink && (
+                    <a href={resumeDriveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
+                      📄 Resume
+                    </a>
+                  )}
+                  {portfolioWebsiteLink && (
+                    <a href={portfolioWebsiteLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
+                      🌐 Portfolio
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
             <div className="flex items-center gap-3 mt-8 flex-wrap">
               <div className="flex items-center gap-3">
                 {isMe ? (
@@ -1021,10 +1081,21 @@ function CommunityDetailModal({
                   rel="noreferrer"
                   className={`${MODAL_OUTLINE_BTN} ml-auto border-[#0077b5] text-[#0077b5] hover:bg-[#eff7ff]`}
                 >
-                  <LinkedInIcon size={15} />
+                  <LinkedInIcon size={15} className="text-[#0077b5]" />
                   Connect
                 </a>
-              ) : null}
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  title="LinkedIn profile not available"
+                  className={`${MODAL_OUTLINE_BTN} ml-auto border-[#bfdbfe] text-[#60a5fa] opacity-70 cursor-not-allowed`}
+                >
+                  <LinkedInIcon size={15} className="text-[#0077b5]" />
+                  Connect
+                </button>
+              )}
             </div>
           </>
         )}
@@ -1052,6 +1123,12 @@ function CommunityProfileForm({
       expectedRateAmount: amount,
       expectedRatePeriod: period,
       linkedInProfileUrl: getLinkedInProfileUrl(profile),
+      introductionVideoLink: profile?.introductionVideoLink || profile?.introduction_video_link || '',
+      resumeDriveLink: profile?.resumeDriveLink || profile?.resume_drive_link || '',
+      portfolioWebsiteLink: profile?.portfolioWebsiteLink || profile?.portfolio_website_link || '',
+      preferredWorkType: profile?.preferredWorkType || profile?.preferred_work_type || '',
+      industryExpertise: profile?.industryExpertise || profile?.industry_expertise || '',
+      languagesKnown: profile?.languagesKnown || profile?.languages_known || '',
     };
   };
   const [form, setForm] = useState(() => buildForm(initial));
@@ -1104,6 +1181,12 @@ function CommunityProfileForm({
         location: form.location,
         whyImHere: form.whyImHere,
         expectedRate,
+        introductionVideoLink: form.introductionVideoLink,
+        resumeDriveLink: form.resumeDriveLink,
+        portfolioWebsiteLink: form.portfolioWebsiteLink,
+        preferredWorkType: form.preferredWorkType,
+        industryExpertise: form.industryExpertise,
+        languagesKnown: form.languagesKnown,
       };
       const linkedInProfileUrl = (form.linkedInProfileUrl || '').trim();
       if (linkedInImported && linkedInProfileUrl) {
@@ -1266,6 +1349,37 @@ function CommunityProfileForm({
           <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-red-500">*</span></label>
           <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
         </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700"> Introduction Video Link (Google Drive / YouTube / Loom)</label>
+          <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF)</label>
+          <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Portfolio Website Link</label>
+          <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Preferred Work Type</label>
+          <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <option value="">Select work type</option>
+            <option value="FREELANCE">Freelance</option>
+            <option value="FULL_TIME">Full-Time</option>
+            <option value="CONTRACT">Contract</option>
+            <option value="CO_FOUNDER">Co-Founder</option>
+            <option value="OPEN_TO_ALL">Open to All</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Industry Expertise</label>
+          <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Languages Known</label>
+          <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+        </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">
           <button type="submit" className="btn-glow" disabled={loading}>
@@ -1360,9 +1474,9 @@ function LinkedInConnectInfoTooltip() {
   );
 }
 
-function LinkedInIcon({ size = 18 }) {
+function LinkedInIcon({ size = 18, className = '' }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
     </svg>
   );

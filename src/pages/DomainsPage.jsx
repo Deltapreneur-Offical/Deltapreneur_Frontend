@@ -44,7 +44,6 @@ import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdapter';
 import { normalizeContactInfo } from '../utils/ventureProfileUtils';
 import { fetchAllListPages } from '../utils/listPagination';
-import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
 import DomainVerificationPendingBanner, { PendingVerificationDot } from '../components/domains/DomainVerificationPendingBanner';
 import { isDomainPendingVerification } from '../utils/domainVerification';
@@ -1293,23 +1292,12 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
               )}
               {!isOwner && (
                 isAuction ? (
-                  REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
-                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
-                      {t('domainsPageVerificationPending')}
-                    </span>
-                  ) : (
                   <button
                     onClick={onViewAuction}
                     className="btn-glow btn-glow-sm">
                     🔨 {auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')} →
                   </button>
-                  )
                 ) : d.domainStatus === 'AVAILABLE' ? (
-                  REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
-                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
-                      {t('domainsPageVerificationPending')}
-                    </span>
-                  ) : (
                   isHighValue ? (
                     <button
                       onClick={onEnquire}
@@ -1319,8 +1307,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                   ) : (
                     <button className="btn-glow btn-glow-sm" onClick={onBuy}>{t('domainsPageBuyNow')} →</button>
                   )
-                )
-              ) : null
+                ) : null
               )}
               <LikeButton liked={likeState?.liked} count={likeState?.count}
                           onToggle={onLike} size="md" />

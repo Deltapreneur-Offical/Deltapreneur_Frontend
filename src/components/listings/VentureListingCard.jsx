@@ -20,7 +20,6 @@ import {
 
   isCoVentureListing,
 
-  isFullAcquisitionListing,
 
   isVentureGstinVerified,
 
@@ -73,7 +72,7 @@ function formatInterestCountLabel(count, isCoVenture) {
   const safeCount = Number(count) || 0;
   const noun = isCoVenture
     ? (safeCount === 1 ? 'Applicant' : 'Applicants')
-    : (safeCount === 1 ? 'Pitch' : 'Pitches');
+    : (safeCount === 1 ? 'Offer' : 'Offers');
   return `${safeCount} ${noun}`;
 }
 
@@ -131,7 +130,6 @@ export default function VentureListingCard({
 
   const isCoVenture = isCoVentureListing(venture);
 
-  const isFullAcquisition = isFullAcquisitionListing(venture);
 
   const approvalStatus = resolveVentureApprovalStatus(venture);
 
@@ -145,7 +143,7 @@ export default function VentureListingCard({
 
     ? t('listingCardApply', 'Apply')
 
-    : (isFullAcquisition ? t('listingCardOffer', 'Offer') : t('listingCardPitch', 'Pitch'));
+    : t('listingCardOffer', 'Offer');
 
   const sellerAsk = resolveSellerAskSummary(venture);
 

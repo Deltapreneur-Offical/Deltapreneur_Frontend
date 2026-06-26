@@ -33,7 +33,7 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
     const amount = Number(bidAmount);
     const equity = Number(equityPercent);
     if (!amount || amount <= 0) {
-      setError('Enter a valid bid amount.');
+      setError('Enter a valid offer amount.');
       return;
     }
     if (!equity || equity <= 0 || equity > 100) {
@@ -58,7 +58,7 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
       setError(
         err.response?.data?.error
         || err.response?.data?.message
-        || 'Could not submit bid.',
+        || 'Could not submit offer.',
       );
     } finally {
       setSubmitting(false);
@@ -73,7 +73,7 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
       <div className="w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[92vh] overflow-y-auto">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h2 className="font-display text-xl font-bold text-gray-900 m-0">Submit Bid</h2>
+            <h2 className="font-display text-xl font-bold text-gray-900 m-0">Submit Offer</h2>
             <p className="text-sm text-gray-600 mt-1">
               {brand.brandName || brand.brand_name || 'Venture'}
             </p>
@@ -98,18 +98,18 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
         {showExisting ? (
           <div className="mb-4 rounded-xl border border-gray-100 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5">
             <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-50">
-              <h3 className="text-sm font-bold text-gray-900 m-0">Existing Bids</h3>
+              <h3 className="text-sm font-bold text-gray-900 m-0">Existing Offers</h3>
               <button type="button" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full" onClick={() => setShowExisting(false)}>
-                Back to bid form
+                Back to offer form
               </button>
             </div>
             {loadingBids ? (
               <div className="flex items-center justify-center py-6 text-sm text-gray-400">
-                Loading bids…
+                Loading offers…
               </div>
             ) : existingBids.length === 0 ? (
               <div className="flex items-center justify-center py-6 text-sm text-gray-400 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
-                No bids yet. Be the first to bid!
+                No offers yet. Be the first to offer!
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -147,7 +147,7 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
             </label>
 
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-gray-700">Bid Amount</span>
+              <span className="font-medium text-gray-700">Offer Amount</span>
               <input
                 type="number"
                 min="1"
@@ -182,13 +182,12 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            <div className="flex flex-wrap gap-2 justify-end pt-2">
-              <button type="button" className="btn-glow btn-glow-sm" onClick={() => setShowExisting(true)}>
-                View Existing Bids
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button type="button" className="btn-glow px-6 py-3 text-base min-w-[200px]" onClick={() => setShowExisting(true)}>
+                View Existing Offers
               </button>
-              <button type="button" className="btn-glow btn-glow-sm" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn-glow btn-glow-sm bg-gray-900 text-white border-gray-900" disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit Bid'}
+              <button type="submit" className="btn-glow bg-gray-900 text-white border-gray-900 px-6 py-3 text-base min-w-[200px]" disabled={submitting}>
+                {submitting ? 'Submitting…' : 'Submit Offer'}
               </button>
             </div>
           </form>

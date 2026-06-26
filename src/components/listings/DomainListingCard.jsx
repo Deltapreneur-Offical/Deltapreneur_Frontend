@@ -107,7 +107,7 @@ export default function DomainListingCard({
   const domainLogo = domain.logo && !imgFailed ? domain.logo : null;
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
-  const needsVerification = !domain.verified;
+  const needsVerification = false;
   const purchaseBlocked = needsVerification && !isOwner;
 
   const priceAmount = isAuction

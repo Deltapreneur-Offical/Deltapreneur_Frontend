@@ -8,10 +8,13 @@ export default function ListingCardStatsFooter({
   likeState,
   onLike,
   onView,
+  showCta = true,
   className = '',
   likesFirst = false,
+  layout = 'default',
 }) {
   const { t } = useTranslation();
+  const isCreatorCentered = layout === 'creator-centered';
 
   const stop = (e) => {
     e.stopPropagation();
@@ -20,48 +23,90 @@ export default function ListingCardStatsFooter({
 
   return (
     <div
-      className={`listing-card-stats-footer ${className}`.trim()}
+      className={`listing-card-stats-footer ${isCreatorCentered ? 'listing-card-stats-footer--creator' : ''} ${className}`.trim()}
       onClick={stop}
       onMouseDown={stop}
       role="presentation"
     >
-      <div
-        className={`listing-card-stats-footer__group${likesFirst ? ' listing-card-stats-footer__group--split' : ''}`}
-      >
-        <span
-          className="listing-card-stats-footer__views"
-          title={t('creatorProfileViews', 'Profile views')}
-        >
-          <img
-            src={cobrotherViewMark}
-            alt=""
-            aria-hidden
-            className="listing-card-stats-footer__mark"
-          />
-          <span>{Number(viewCount) || 0}</span>
-        </span>
-        {onLike ? (
-          <LikeButton
-            liked={likeState?.liked}
-            count={likeState?.count}
-            onToggle={onLike}
-          />
-        ) : null}
-      </div>
+      {isCreatorCentered ? (
+        <>
+          <span
+            className="listing-card-stats-footer__views"
+            title={t('creatorProfileViews', 'Profile views')}
+          >
+            <img
+              src={cobrotherViewMark}
+              alt=""
+              aria-hidden
+              className="listing-card-stats-footer__mark"
+            />
+            <span>{Number(viewCount) || 0}</span>
+          </span>
 
-      {onView ? (
-        <button
-          type="button"
-          className="listing-card-stats-footer__cta"
-          aria-label={t('listingCardViewDetails', 'View details')}
-          onClick={(e) => {
-            stop(e);
-            onView();
-          }}
-        >
-          <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
-        </button>
-      ) : null}
+          {onView && showCta ? (
+            <button
+              type="button"
+              className="listing-card-stats-footer__cta"
+              aria-label={t('listingCardViewDetails', 'View details')}
+              onClick={(e) => {
+                stop(e);
+                onView();
+              }}
+            >
+              <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
+            </button>
+          ) : null}
+
+          {onLike ? (
+            <LikeButton
+              liked={likeState?.liked}
+              count={likeState?.count}
+              onToggle={onLike}
+              size="sm"
+            />
+          ) : null}
+        </>
+      ) : (
+        <>
+          <div
+            className={`listing-card-stats-footer__group${likesFirst ? ' listing-card-stats-footer__group--split' : ''}`}
+          >
+            <span
+              className="listing-card-stats-footer__views"
+              title={t('creatorProfileViews', 'Profile views')}
+            >
+              <img
+                src={cobrotherViewMark}
+                alt=""
+                aria-hidden
+                className="listing-card-stats-footer__mark"
+              />
+              <span>{Number(viewCount) || 0}</span>
+            </span>
+            {onLike ? (
+              <LikeButton
+                liked={likeState?.liked}
+                count={likeState?.count}
+                onToggle={onLike}
+              />
+            ) : null}
+          </div>
+
+          {onView && showCta ? (
+            <button
+              type="button"
+              className="listing-card-stats-footer__cta"
+              aria-label={t('listingCardViewDetails', 'View details')}
+              onClick={(e) => {
+                stop(e);
+                onView();
+              }}
+            >
+              <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
+            </button>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

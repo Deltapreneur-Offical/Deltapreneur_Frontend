@@ -84,6 +84,7 @@ export default function CommunityAuctionPage() {
   const [closeError, setCloseError] = useState('');
 
   const community = auction?.community || {};
+  const linkedInUrl = getLinkedInProfileUrl(community);
   const isOwner = resolveAuctionLister(
     isCommunityAuctionLister(auction, user?.id),
     participation,
@@ -710,6 +711,7 @@ export default function CommunityAuctionPage() {
 
 // ─── Profile Info Card ────────────────────────────────────────────────────────
 function ProfileInfoCard({ community, auction }) {
+  const linkedInUrl = getLinkedInProfileUrl(community);
   const skills = auction.auctionSkills
     ? auction.auctionSkills.split(',').map(s => s.trim()).filter(Boolean)
     : [];
@@ -740,12 +742,18 @@ function ProfileInfoCard({ community, auction }) {
           {community.industry && (
             <div className="text-sm text-gray-500 mb-1">🏢 {community.industry.replace(/_/g, ' ')}</div>
           )}
-          {getLinkedInProfileUrl(community) && (
-            <a href={getLinkedInProfileUrl(community)} target="_blank" rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline">
-              View LinkedIn profile ↗
-            </a>
-          )}
+          {linkedInUrl ? (
+            <div className="flex items-center justify-end w-full">
+              <a
+                href={linkedInUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-[#0077b5] no-underline hover:text-[#005885] font-medium whitespace-nowrap"
+              >
+                View LinkedIn profile ↗
+              </a>
+            </div>
+          ) : null}
         </div>
       </div>
 

@@ -829,7 +829,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
 
 // ─── Community Detail Modal (with auction link) ───────────────────────────────
 const MODAL_OUTLINE_BTN =
-  'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-900 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors';
+  'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-600 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors hover:text-black';
 
 function CommunityDetailModal({
   profile,
@@ -886,7 +886,7 @@ function CommunityDetailModal({
         <button
           type="button"
           className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700 leading-none"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           aria-label="Close"
         >
           ✕
@@ -940,7 +940,8 @@ function CommunityDetailModal({
                 <button
                   type="button"
                   className={`${MODAL_OUTLINE_BTN} flex-shrink-0 whitespace-nowrap`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onClose();
                     onViewAuction(resolveCreatorAuctionId(auction));
                   }}
@@ -989,23 +990,6 @@ function CommunityDetailModal({
               )}
             </div>
 
-            <div className="mb-5">
-              <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">LinkedIn</div>
-              {linkedInUrl ? (
-                <a
-                  href={linkedInUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-[#0077b5] no-underline hover:text-[#005885] font-medium"
-                >
-                  <LinkedInIcon size={15} />
-                  View Profile ↗
-                </a>
-              ) : (
-                <span className="text-sm text-gray-500">NA</span>
-              )}
-            </div>
-
             <div className="mb-2">
               <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Why I&apos;m Here</div>
               <p className="text-gray-900 leading-relaxed text-sm m-0">
@@ -1013,20 +997,34 @@ function CommunityDetailModal({
               </p>
             </div>
 
-            <div className="flex gap-3 mt-8 flex-wrap">
-              {isMe ? (
-                <>
-                  <button type="button" className={MODAL_OUTLINE_BTN} onClick={onEdit}>
-                    <EditActionLabel iconSize={15}>Edit Profile</EditActionLabel>
-                  </button>
-                  <button type="button" className={MODAL_OUTLINE_BTN} onClick={onDelete}>
-                    Delete Profile
-                  </button>
-                </>
+            <div className="flex items-center gap-3 mt-8 flex-wrap">
+              <div className="flex items-center gap-3">
+                {isMe ? (
+                  <>
+                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+                      <EditActionLabel iconSize={15}>Edit Profile</EditActionLabel>
+                    </button>
+                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+                      Delete Profile
+                    </button>
+                  </>
+                ) : null}
+                <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onClose(); }}>
+                  Close
+                </button>
+              </div>
+
+              {linkedInUrl ? (
+                <a
+                  href={linkedInUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${MODAL_OUTLINE_BTN} ml-auto border-[#0077b5] text-[#0077b5] hover:bg-[#eff7ff]`}
+                >
+                  <LinkedInIcon size={15} />
+                  Connect
+                </a>
               ) : null}
-              <button type="button" className={MODAL_OUTLINE_BTN} onClick={onClose}>
-                Close
-              </button>
             </div>
           </>
         )}

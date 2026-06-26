@@ -3,6 +3,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { isActiveListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
+import { isListingVerified } from '../../utils/listingVisibility';
 import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { asArray } from '../../utils/asArray';
 import { mergeAdminHomepageAuctionItems } from '../../utils/homepageAuctions';
@@ -90,6 +91,7 @@ export default function HomepageFeatureSelector({ type }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [verificationFilter, setVerificationFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name-asc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -134,7 +136,7 @@ export default function HomepageFeatureSelector({ type }) {
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter, sortBy, pageSize, type]);
+  }, [search, statusFilter, verificationFilter, sortBy, pageSize, type]);
 
   const featureableItems = useMemo(() => {
     if (type === 'auction') return items;
@@ -153,6 +155,11 @@ export default function HomepageFeatureSelector({ type }) {
       const featured = Boolean(item.featured);
       if (statusFilter === 'featured' && !featured) return false;
       if (statusFilter === 'unfeatured' && featured) return false;
+      if (type === 'domain') {
+        const verified = isListingVerified(item, listingType);
+        if (verificationFilter === 'verified' && !verified) return false;
+        if (verificationFilter === 'unverified' && verified) return false;
+      }
 
       if (!q) return true;
       const title = getTitle(item, type).toLowerCase();
@@ -180,7 +187,7 @@ export default function HomepageFeatureSelector({ type }) {
     });
 
     return list;
-  }, [featureableItems, search, statusFilter, sortBy, type]);
+  }, [featureableItems, listingType, search, statusFilter, verificationFilter, sortBy, type]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -303,6 +310,19 @@ export default function HomepageFeatureSelector({ type }) {
           <option value="featured">{t('homepageFeatureFilterFeatured')}</option>
           <option value="unfeatured">{t('homepageFeatureFilterUnfeatured')}</option>
         </select>
+
+        {type === 'domain' ? (
+          <select
+            value={verificationFilter}
+            onChange={(e) => setVerificationFilter(e.target.value)}
+            className="admin-feature-select"
+            aria-label="Filter by verification status"
+          >
+            <option value="all">{t('adminAll', { defaultValue: 'All' })}</option>
+            <option value="verified">{t('adminVerified')}</option>
+            <option value="unverified">{t('adminNotVerified')}</option>
+          </select>
+        ) : null}
 
         <select
           value={sortBy}

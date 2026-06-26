@@ -4,6 +4,7 @@ import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { isCreatorProfileComplete } from '../../utils/creatorProfile';
 // Follow button disabled until creator follow UX is finalized.
 import LikeButton from '../common/LikeButton';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 
@@ -131,46 +132,14 @@ export default function CommunityListingCard({
 
         {/* Follow button disabled until creator follow UX is finalized */}
 
-        <div
+        <ListingCardStatsFooter
+          viewCount={viewCount}
+          likeState={likeState}
+          onLike={onLike}
+          onView={onView}
+          layout="creator-centered"
           className="creator-profile-card__footer"
-          onClick={stop}
-          onMouseDown={stop}
-          role="presentation"
-        >
-          <div className="creator-profile-card__stat-group">
-            <span
-              className="creator-profile-card__views"
-              title={t('creatorProfileViews', 'Profile views')}
-            >
-              <img
-                src={cobrotherViewMark}
-                alt=""
-                aria-hidden
-                className="creator-profile-card__brand-mark"
-              />
-              <span>{viewCount}</span>
-            </span>
-            {onLike ? (
-              <LikeButton
-                liked={likeState?.liked}
-                count={likeState?.count}
-                onToggle={onLike}
-              />
-            ) : null}
-          </div>
-
-          <button
-            type="button"
-            className="creator-profile-card__cta"
-            aria-label={t('listingCardViewDetails', 'View details')}
-            onClick={(e) => {
-              stop(e);
-              onView?.();
-            }}
-          >
-            <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
-          </button>
-        </div>
+        />
       </div>
     </article>
   );

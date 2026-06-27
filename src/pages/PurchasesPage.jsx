@@ -361,12 +361,31 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   const confirmed = purchase.completionStatus === 'CONFIRMED';
   const HELP_FEE_INR = 1000;
 
+  const planLabel = purchase.selectedPlan ? {
+    'ONE_MONTH': '1 Month Subscription',
+    'THREE_MONTHS': '3 Months Subscription',
+    'SIX_MONTHS': '6 Months Subscription',
+    'TWELVE_MONTHS': '12 Months Subscription',
+    'ONE_TIME': 'Lifetime Access',
+  }[purchase.selectedPlan] || purchase.selectedPlan : null;
+
+  const isSubscription = purchase.selectedPlan && purchase.selectedPlan !== 'ONE_TIME';
+
+  const formattedExpiry = purchase.expiryDate 
+    ? new Date(purchase.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
+
   return (
     <div className={`p-5 bg-white rounded-xl shadow-sm ${helpPaid ? 'border border-green-300' : 'border border-gray-200'}`}>
       <div className="flex justify-between flex-wrap gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center flex-wrap gap-2 mb-2">
             <span className="text-xs font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded">⟁ {t('purchasesBadgeSoftware')}</span>
+            {planLabel && (
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded border ${isSubscription ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+                {planLabel}
+              </span>
+            )}
             {confirmed && <span className="text-xs font-bold text-green-600">✓ {t('completed')}</span>}
             {helpPaid && <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-200 px-2 py-0.5 rounded">◆ {t('purchasesCoBrotherActive')}</span>}
           </div>
@@ -383,6 +402,11 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
           <div className="text-xl font-semibold tabular-nums text-gray-900">
             {formatPrice(sw.price || 0)}
           </div>
+          {formattedExpiry && (
+            <div className="text-[0.7rem] text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded border border-indigo-200 uppercase tracking-wider">
+              Valid till: {formattedExpiry}
+            </div>
+          )}
           {helpPaid && <div className="text-xs text-gray-600">+ {formatPrice(HELP_FEE_INR)} CoBrother</div>}
           <div className="text-xs text-gray-600">✓ {t('purchasesPaymentConfirmed')}</div>
           <InvoiceDownloadButton onClick={onDownloadInvoice} />

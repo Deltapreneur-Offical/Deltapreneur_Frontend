@@ -409,11 +409,73 @@ const PRICING_PLAN_DEFS = [
   { key: '12_MONTHS', label: '12 Months Subscription' },
 ];
 
+export function getEnabledPlans(pricingPlans) {
+  if (!Array.isArray(pricingPlans)) return [];
+  
+  const keyToLabel = {
+    'ONE_TIME': 'One-Time Purchase',
+    'ONE_MONTH': '1 Month Subscription',
+    'THREE_MONTHS': '3 Months Subscription',
+    'SIX_MONTHS': '6 Months Subscription',
+    'TWELVE_MONTHS': '12 Months Subscription',
+    '1_MONTH': '1 Month Subscription',
+    '3_MONTHS': '3 Months Subscription',
+    '6_MONTHS': '6 Months Subscription',
+    '12_MONTHS': '12 Months Subscription',
+  };
+
+  const keyMapping = {
+    'ONE_TIME': 'ONE_TIME',
+    'ONE_MONTH': 'ONE_MONTH',
+    'THREE_MONTHS': 'THREE_MONTHS',
+    'SIX_MONTHS': 'SIX_MONTHS',
+    'TWELVE_MONTHS': 'TWELVE_MONTHS',
+    '1_MONTH': 'ONE_MONTH',
+    '3_MONTHS': 'THREE_MONTHS',
+    '6_MONTHS': 'SIX_MONTHS',
+    '12_MONTHS': 'TWELVE_MONTHS',
+  };
+
+  return pricingPlans
+    .map(p => {
+      const rawDuration = p.planDuration || p.plan_duration || p.key;
+      const key = keyMapping[rawDuration] || rawDuration;
+      const enabled = p.isActive !== undefined ? p.isActive : (p.is_active !== undefined ? p.is_active : p.enabled);
+      const label = p.label || keyToLabel[key] || key;
+      return {
+        key,
+        label,
+        price: p.price,
+        enabled: Boolean(enabled),
+      };
+    })
+    .filter(p => p.enabled && p.price != null && p.price !== '');
+}
+
 function normalizePricingPlans(savedPlans) {
-  // Normalize saved pricingPlans (from API) back into the local state shape
   const savedMap = {};
   if (Array.isArray(savedPlans)) {
-    savedPlans.forEach((p) => { savedMap[p.key] = p; });
+    savedPlans.forEach((p) => {
+      const rawDuration = p.planDuration || p.plan_duration || p.key;
+      const keyMapping = {
+        'ONE_TIME': 'ONE_TIME',
+        'ONE_MONTH': '1_MONTH',
+        'THREE_MONTHS': '3_MONTHS',
+        'SIX_MONTHS': '6_MONTHS',
+        'TWELVE_MONTHS': '12_MONTHS',
+        '1_MONTH': '1_MONTH',
+        '3_MONTHS': '3_MONTHS',
+        '6_MONTHS': '6_MONTHS',
+        '12_MONTHS': '12_MONTHS',
+      };
+      const mappedKey = keyMapping[rawDuration] || rawDuration;
+      if (mappedKey) {
+        savedMap[mappedKey] = {
+          enabled: p.isActive !== undefined ? p.isActive : (p.is_active !== undefined ? p.is_active : p.enabled),
+          price: p.price,
+        };
+      }
+    });
   }
   return PRICING_PLAN_DEFS.map((def) => ({
     key: def.key,
@@ -961,7 +1023,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
     buyerPhone: user?.phoneNumber || '',
   });
 
-  const enabledPlans = item.pricingPlans?.filter(p => p.enabled) || [];
+  const enabledPlans = getEnabledPlans(item.pricingPlans);
   const hasPlans = enabledPlans.length > 0;
   const [currentPlanKey, setCurrentPlanKey] = useState(
     selectedPlan?.key || (hasPlans ? enabledPlans[0].key : null)
@@ -1005,6 +1067,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
         coBrotherOptIn,
         services: [...addons, ...vaAddons],
         pricingPlan: currentPlanKey,
+        selectedPlan: currentPlanKey,
         ...buildOrderCurrencyPayload(currency),
       });
 
@@ -1029,6 +1092,8 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
               coBrotherOptIn,
               coBrotherHelpPaid: coBrotherOptIn,
               _addons: [...addons, ...vaAddons],
+              selectedPlan: currentPlanKey,
+              pricingPlan: currentPlanKey,
             });
           } catch {
             setError('Payment verification failed. Please contact support.');
@@ -1104,20 +1169,41 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
             {hasPlans && enabledPlans.length > 1 && (
               <div className="flex flex-col gap-4">
                 <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Pricing Plan</div>
-                <div className="flex flex-col gap-3">
-                  {enabledPlans.map(plan => (
-                    <label key={plan.key} className={`flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${currentPlanKey === plan.key ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${currentPlanKey === plan.key ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
-                          {currentPlanKey === plan.key && <div className="w-2 h-2 rounded-full bg-white" />}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {enabledPlans.map(plan => {
+                    const isSelected = currentPlanKey === plan.key;
+                    return (
+                      <div
+                        key={plan.key}
+                        onClick={() => setCurrentPlanKey(plan.key)}
+                        className={`relative flex flex-col p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${
+                          isSelected
+                            ? 'border-indigo-600 bg-gradient-to-b from-indigo-50/50 to-white shadow-[0_8px_20px_-4px_rgba(79,70,229,0.15)] scale-[1.02]'
+                            : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md'
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 text-white text-[0.65rem] font-black uppercase tracking-widest rounded-full shadow-sm">
+                            Selected
+                          </div>
+                        )}
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={`text-sm font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
+                            {plan.label}
+                          </span>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2 ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
+                            {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          </div>
                         </div>
-                        <span className={`text-[0.95rem] font-bold ${currentPlanKey === plan.key ? 'text-indigo-900' : 'text-gray-800'}`}>{plan.label}</span>
+                        <div className={`text-2xl font-black mb-1 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                          {formatPrice(plan.price)}
+                        </div>
+                        <div className="text-xs text-gray-500 font-medium">
+                          {plan.key === 'ONE_TIME' ? 'Pay once, own forever' : 'Billed securely today'}
+                        </div>
                       </div>
-                      <div className={`text-[1.05rem] font-black ${currentPlanKey === plan.key ? 'text-indigo-700' : 'text-gray-900'}`}>
-                        {formatPrice(plan.price)}
-                      </div>
-                    </label>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -1248,7 +1334,18 @@ function BillingLine({ label, value, accent }) {
 
 // ─── Purchase Success Modal ───────────────────────────────────────────────────
 function PurchaseSuccessModal({ item, onClose }) {
-  const isSubscription = item.pricingPlan && item.pricingPlan !== 'ONE_TIME';
+  const planKey = item.selectedPlan || item.pricingPlan || 'ONE_TIME';
+  const isSubscription = planKey !== 'ONE_TIME';
+  const planLabel = {
+    'ONE_MONTH': '1 Month Subscription',
+    'THREE_MONTHS': '3 Months Subscription',
+    'SIX_MONTHS': '6 Months Subscription',
+    'TWELVE_MONTHS': '12 Months Subscription',
+    '1_MONTH': '1 Month Subscription',
+    '3_MONTHS': '3 Months Subscription',
+    '6_MONTHS': '6 Months Subscription',
+    '12_MONTHS': '12 Months Subscription',
+  }[planKey] || 'Lifetime Access';
   
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -1265,10 +1362,16 @@ function PurchaseSuccessModal({ item, onClose }) {
         </p>
 
         <div className="w-full bg-gray-50 border border-gray-200 rounded-[12px] p-5 text-left text-sm mb-6 shadow-sm">
-          <div className="flex flex-col gap-2.5">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-2.5">
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+              <span className="text-gray-500 font-medium">Plan Details</span>
+              <span className="text-indigo-700 font-bold bg-indigo-100 px-2.5 py-1 rounded uppercase text-[0.7rem] tracking-wider">
+                {planLabel}
+              </span>
+            </div>
+            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <span className="text-gray-500 font-medium">Access Status</span>
-              <span className="text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded uppercase text-xs tracking-wider">
+              <span className="text-green-700 font-bold bg-green-100 px-2.5 py-1 rounded uppercase text-[0.7rem] tracking-wider">
                 {isSubscription ? 'Active Subscription' : 'Lifetime Access'}
               </span>
             </div>
@@ -1313,7 +1416,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
 
   const d = detail || item;
   
-  const enabledPlans = d.pricingPlans?.filter(p => p.enabled) || [];
+  const enabledPlans = getEnabledPlans(d.pricingPlans);
   const hasPlans = enabledPlans.length > 0;
   const [selectedPlanKey, setSelectedPlanKey] = useState(hasPlans ? enabledPlans[0].key : '');
 
@@ -1372,37 +1475,50 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
               {hasPlans ? (
                 <div className="w-full flex flex-col gap-4">
                   <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Select Pricing Plan</div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {enabledPlans.map(plan => {
                       const isSub = plan.key !== 'ONE_TIME';
                       const isSelected = selectedPlanKey === plan.key;
                       return (
-                        <label key={plan.key} className={`flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-md transform scale-[1.02]' : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'}`}>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
-                                {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
-                              </div>
-                              <span className={`text-[0.95rem] font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-800'}`}>{plan.label}</span>
+                        <div
+                          key={plan.key}
+                          onClick={() => setSelectedPlanKey(plan.key)}
+                          className={`relative flex flex-col p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${
+                            isSelected
+                              ? 'border-indigo-600 bg-gradient-to-b from-indigo-50/50 to-white shadow-[0_8px_20px_-4px_rgba(79,70,229,0.15)] scale-[1.02]'
+                              : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 text-white text-[0.65rem] font-black uppercase tracking-widest rounded-full shadow-sm">
+                              Selected
+                            </div>
+                          )}
+                          <div className="flex justify-between items-start mb-2">
+                            <span className={`text-sm font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
+                              {plan.label}
+                            </span>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2 ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
+                              {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                             </div>
                           </div>
-                          <div className={`text-xl font-black mb-3 ml-8 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                          <div className={`text-2xl font-black mb-3 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
                             {formatPrice(plan.price)}
                           </div>
-                          <div className="ml-8 flex flex-col gap-1.5 mt-auto">
+                          <div className="flex flex-col gap-1.5 mt-auto">
                             {!isSub ? (
                               <>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
+                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ Lifetime Access</div>
+                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ No Renewal Fees</div>
                               </>
                             ) : (
                               <>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Access until expiry</div>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Product Updates included</div>
+                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ Access until expiry</div>
+                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ Product Updates</div>
                               </>
                             )}
                           </div>
-                        </label>
+                        </div>
                       );
                     })}
                   </div>

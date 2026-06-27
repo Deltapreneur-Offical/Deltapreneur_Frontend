@@ -1,0 +1,39 @@
+.cb-overflow-marquee {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cb-overflow-marquee__plain {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cb-overflow-marquee__track {
+  display: inline-flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 2.75rem;
+  animation: cb-overflow-marquee-slide var(--cb-marquee-duration, 12s) linear infinite;
+}
+
+.cb-overflow-marquee:hover .cb-overflow-marquee__track {
+  animation-play-state: paused;
+}
+
+.cb-overflow-marquee__item {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+@keyframes cb-overflow-marquee-slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50% - 1.375rem));
+  }
+}

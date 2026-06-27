@@ -15,6 +15,7 @@ import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 
 import verifiedIcon from '../../assets/Verified_Icon.png';
+import OverflowMarqueeText from '../common/OverflowMarqueeText';
 
 import {
 
@@ -701,7 +702,7 @@ export default function VentureListingCard({
               }}
             >
 
-              {brandName}
+              <OverflowMarqueeText text={brandName} />
 
             </h3>
 

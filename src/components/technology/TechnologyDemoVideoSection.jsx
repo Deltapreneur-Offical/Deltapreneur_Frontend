@@ -60,7 +60,7 @@ export default function TechnologyDemoVideoSection({ value, onChange, inputClass
           className={inputClassName}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="https://www.youtube.com/watch?v=... or https://www.loom.com/share/..."
+          placeholder="https://www.drive.com/?=  or https://www.loom.com/share/..."
           required
         />
       </div>

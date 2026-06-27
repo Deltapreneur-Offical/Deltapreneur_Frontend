@@ -18,6 +18,7 @@ import { normalizeDomainExtension, resolveAuctionDomainTitle } from '../utils/do
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { normalizeCommunityAuction } from '../utils/homepageAuctions';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
+import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import '../styles/auctions-page.css';
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
@@ -207,6 +208,7 @@ export default function AuctionsPage() {
   const [filter, setFilter]     = useState('all'); // all | ending_soon | no_bids
   const [sortBy, setSortBy]     = useState('default');
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewAuction, setPreviewAuction] = useState(null);
 
   useEffect(() => {
     const fromUrl = searchParams.get('section');
@@ -465,7 +467,7 @@ export default function AuctionsPage() {
                     <CommunityAuctionCard
                       key={auction.id}
                       auction={auction}
-                      onClick={() => navigate(`/creator-auction/${auction.id}`)}
+                      onClick={() => setPreviewAuction(auction)}
                     />
                   ))}
                 </div>
@@ -474,6 +476,18 @@ export default function AuctionsPage() {
           </>
         )}
       </div>
+
+      {previewAuction && (
+        <CreatorPreviewModal
+          auction={previewAuction}
+          open={!!previewAuction}
+          onClose={() => setPreviewAuction(null)}
+          onPlaceBid={() => {
+            setPreviewAuction(null);
+            navigate(`/creator-auction/${previewAuction.id}`);
+          }}
+        />
+      )}
     </AppLayout>
   );
 }

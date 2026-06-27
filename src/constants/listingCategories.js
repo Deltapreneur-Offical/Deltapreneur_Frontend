@@ -23,6 +23,38 @@ export const TECHNOLOGY_CATEGORIES = [
 /** @deprecated Use TECHNOLOGY_CATEGORIES */
 export const COCREATION_CATEGORIES = TECHNOLOGY_CATEGORIES;
 
+export const HARDWARE_CATEGORIES = [
+  'IOT_DEVICE',
+  'CONSUMER_ELECTRONICS',
+  'INDUSTRIAL_EQUIPMENT',
+  'MEDICAL_DEVICE',
+  'NETWORKING_EQUIPMENT',
+  'ROBOTICS',
+  'EMBEDDED_SYSTEM',
+  'AUTOMATION',
+  'SECURITY_DEVICE',
+  'SMART_HOME',
+  'COMPONENTS',
+  'MANUFACTURING_EQUIPMENT',
+  'OTHER',
+];
+
+export const HARDWARE_CATEGORY_OPTIONS = toCategoryOptions(HARDWARE_CATEGORIES, {
+  IOT_DEVICE: 'IoT Device',
+  CONSUMER_ELECTRONICS: 'Consumer Electronics',
+  INDUSTRIAL_EQUIPMENT: 'Industrial Equipment',
+  MEDICAL_DEVICE: 'Medical Device',
+  NETWORKING_EQUIPMENT: 'Networking Equipment',
+  ROBOTICS: 'Robotics',
+  EMBEDDED_SYSTEM: 'Embedded System',
+  AUTOMATION: 'Automation',
+  SECURITY_DEVICE: 'Security Device',
+  SMART_HOME: 'Smart Home',
+  COMPONENTS: 'Components',
+  MANUFACTURING_EQUIPMENT: 'Manufacturing Equipment',
+  OTHER: 'Other',
+});
+
 export const COMMUNITY_INDUSTRIES = [
   'TECH',
   'FINANCE',
@@ -80,3 +112,5 @@ export function formatTechnologyCategoryLabel(raw) {
 
 /** @deprecated Use TECHNOLOGY_CATEGORY_OPTIONS */
 export const COCREATION_CATEGORY_OPTIONS = TECHNOLOGY_CATEGORY_OPTIONS;
+
+

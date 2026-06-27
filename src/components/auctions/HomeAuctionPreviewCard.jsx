@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -13,6 +13,8 @@ import {
   resolveHomeAuctionVerified,
 } from '../../utils/homepageAuctions';
 import verifiedIcon from '../../assets/Verified_Icon.png';
+import CreatorPreviewModal from './CreatorPreviewModal';
+import OverflowMarqueeText from '../common/OverflowMarqueeText';
 
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
@@ -116,15 +118,32 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const badgeToneClass = BADGE_TONE_CLASS[category] || BADGE_TONE_CLASS.domain;
   const isFeatured = Boolean(auction?.featured);
   const categoryLabel = t(categoryMeta.labelKey);
+  const [showPreview, setShowPreview] = useState(false);
+  const cardRef = useRef(null);
 
   const handleView = (e) => {
     e?.stopPropagation?.();
     onView?.();
   };
 
+  const openPreview = (event) => {
+    cardRef.current = event?.currentTarget || cardRef.current;
+    setShowPreview(true);
+  };
+
   return (
     <article
+      ref={cardRef}
       className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white`}
+      onClick={openPreview}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openPreview();
+        }
+      }}
     >
       <div className="domain-listing-card__cover">
         {coverImage ? (
@@ -168,6 +187,16 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         ) : null}
       </div>
 
+      <CreatorPreviewModal
+        auction={auction}
+        open={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          cardRef.current?.focus?.();
+        }}
+        onPlaceBid={handleView}
+      />
+
       <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-2.5 p-3">
         <div className="home-auction-preview-card__content flex flex-col gap-2.5">
           <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
@@ -179,7 +208,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
                 wordBreak: 'break-word',
               }}
             >
-              {title}
+              <OverflowMarqueeText text={title} />
             </h3>
             <span
               className="domain-listing-card__status-dot listing-availability-badge__dot listing-availability-badge__dot--available shrink-0"
@@ -191,7 +220,9 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
           {listerName ? (
             <p className="home-auction-preview-card__creator" title={listerName}>
               {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
-              <span className="home-auction-preview-card__creator-name">{listerName}</span>
+              <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom">
+                <OverflowMarqueeText text={listerName} />
+              </span>
             </p>
           ) : null}
 

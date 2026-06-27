@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,8 @@ import { isCreatorProfileComplete } from '../../utils/creatorProfile';
 import { formatCreatorExpectedRate } from '../../utils/creatorExpectedRate';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import ListingCardStatsFooter from '../listings/ListingCardStatsFooter';
+import CreatorPreviewModal from '../auctions/CreatorPreviewModal';
+import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import '../../styles/domain-listing-cards.css';
 
 function formatLabel(value) {
@@ -89,6 +91,8 @@ export default function HomeCreatorListingCard({
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [imgFailed, setImgFailed] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const cardRef = useRef(null);
 
   if (!profile) return null;
   if (!isCreatorProfileComplete(profile)) return null;
@@ -119,14 +123,32 @@ export default function HomeCreatorListingCard({
     }
     : undefined;
 
+  const auctionLike = {
+    community: profile,
+    featured: Boolean(profile?.featured),
+    minBidPrice: 0,
+    currentHighestBid: 0,
+    endTime: null,
+  };
+
   return (
     <article
+      ref={cardRef}
       className="domain-listing-card domain-listing-card--browse home-preview-browse-card home-creator-listing-card card-glow-hover relative flex w-full flex-col overflow-hidden rounded-3xl bg-white cursor-pointer"
-      onClick={onView}
+      onClick={() => setShowPreview(true)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') onView?.(); }}
+      onKeyDown={(e) => { if (e.key === 'Enter') setShowPreview(true); }}
     >
+      <CreatorPreviewModal
+        auction={auctionLike}
+        open={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          cardRef.current?.focus?.();
+        }}
+        onPlaceBid={onView}
+      />
       <CreatorCover
         imageUrl={displayImage}
         name={name}
@@ -137,7 +159,7 @@ export default function HomeCreatorListingCard({
       <div className="domain-listing-card__body">
         <div className="domain-listing-card__domain-row">
           <p className="domain-listing-card__domain" title={name}>
-            {name}
+            <OverflowMarqueeText text={name} />
           </p>
         </div>
 

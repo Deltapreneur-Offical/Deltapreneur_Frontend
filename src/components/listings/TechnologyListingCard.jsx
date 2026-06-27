@@ -15,6 +15,7 @@ import {
   technologyAuctionId,
 } from '../../utils/technologyAuctionUi';
 import verifiedIcon from '../../assets/Verified_Icon.png';
+import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import '../../styles/domain-listing-cards.css';
 
 function resolveSoftwareStatusDotClass(status) {
@@ -431,7 +432,7 @@ export default function TechnologyListingCard({
       <div className="domain-listing-card__body">
         <div className="domain-listing-card__domain-row">
           <p className="domain-listing-card__domain" title={techName}>
-            {techName}
+            <OverflowMarqueeText text={techName} />
           </p>
           <span
             className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveSoftwareStatusDotClass(statusKey)}`}

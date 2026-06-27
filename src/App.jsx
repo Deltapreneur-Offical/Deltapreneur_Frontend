@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-
+import greenFavicon from './assets/favicon.png';
+import purpleFavicon from './assets/Cobrother_Profile_Purplegradiant.png';
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
@@ -132,6 +133,21 @@ function LanguageAwareRoutes({ children }) {
 }
 
 export default function App() {
+useEffect(() => {
+    const lightModeMatcher = window.matchMedia('(prefers-color-scheme: light)');
+    
+    const handleThemeChange = (e) => {
+      const faviconTag = document.getElementById('dynamic-favicon');
+      if (faviconTag) {
+        faviconTag.href = e.matches ? purpleFavicon : greenFavicon;
+      }
+    };
+
+    handleThemeChange(lightModeMatcher);
+    lightModeMatcher.addEventListener('change', handleThemeChange);
+    return () => lightModeMatcher.removeEventListener('change', handleThemeChange);
+  }, []);
+
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />

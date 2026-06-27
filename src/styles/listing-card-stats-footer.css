@@ -46,6 +46,7 @@
 
 .listing-card-stats-footer--creator .listing-like-btn {
   justify-self: end;
+   margin-left: auto;
 }
 
 .listing-card-stats-footer--creator .listing-card-stats-footer__cta {

@@ -258,87 +258,15 @@ const PLAN_LABELS = {
 function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAuction, onViewAuction }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const [expanded, setExpanded] = useState(false);
   const sales = item.purchaseCount || 0;
   const verified = Boolean(item.verified);
-  const enabledPlans = item.pricingPlans?.filter(p => p.enabled) || [];
-  const hasSubscriptions = enabledPlans.some(p => p.key !== 'ONE_TIME');
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-[10px] overflow-hidden">
-      <div
-        className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-gray-900 text-[0.95rem]">{item.name}</span>
-            <VerificationStatusBadge item={item} type="technology" />
-            {item.technologyType === 'HARDWARE' ? (
-              <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-1.5 py-0.5 rounded">
-                HARDWARE
-              </span>
-            ) : (
-              <span className="text-[0.68rem] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                SOFTWARE
-              </span>
-            )}
-            {hasSubscriptions && (
-              <span className="text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">
-                SUBSCRIPTIONS AVAILABLE
-              </span>
-            )}
-            {item.official && (
-              <span className="text-[0.68rem] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
-                ✦ Official
-              </span>
-            )}
-          </div>
-          <div className="text-[0.78rem] text-gray-400 mt-0.5">
-            {item.category?.replace(/_/g, ' ')} · {item.pricingDemand}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-5 flex-shrink-0">
-          <div className="text-right">
-            <div className="font-display text-[1.1rem] font-bold text-indigo-600">
-              {enabledPlans.length > 0 ? formatPrice(enabledPlans[0].price) : formatPrice(item.price)}
-              {enabledPlans.length > 1 && <span className="text-xs text-gray-400 font-normal"> +</span>}
-            </div>
-            <div className="text-[0.72rem] text-gray-400">{enabledPlans.length > 0 ? enabledPlans[0].label : 'per sale'}</div>
-          </div>
-          <div className="text-center">
-            <div className="font-display text-[1.3rem] font-bold text-green-600">
-              {sales}
-            </div>
-            <div className="text-[0.68rem] text-gray-400">
-              {sales === 1 ? 'sale' : 'sales'}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="font-display text-[1.1rem] font-bold text-green-600">
-              {formatPrice(item.price * sales)}
-            </div>
-            <div className="text-[0.72rem] text-gray-400">revenue</div>
-          </div>
-          <span className="text-gray-400 text-sm">{expanded ? '▲' : '▼'}</span>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="border-t border-gray-100 px-5 py-3.5 flex flex-col gap-3">
-          {enabledPlans.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-1">
-              {enabledPlans.map(p => (
-                <span key={p.key} className="text-xs px-2.5 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
-                  <span className="font-semibold">{p.label}:</span> {formatPrice(p.price)}
   
   return (
     <div className="bg-white border border-gray-200 rounded-[12px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-200 hover:shadow-md transition-all">
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-gray-900 text-[1.05rem] mb-1.5 flex items-center gap-2 flex-wrap">
           <span className="truncate">{item.name}</span>
-          <VerificationStatusBadge status={item.verificationStatus} type="badge" />
+          <VerificationStatusBadge item={item} type="badge" />
           {item.technologyType === 'HARDWARE' ? (
             <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md uppercase tracking-wider">
               HARDWARE
@@ -356,23 +284,18 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
 
       <div className="flex flex-col items-start sm:items-end gap-2 flex-shrink-0">
         <div className="flex gap-2 flex-wrap justify-end">
-          <button type="button" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg hover:bg-gray-100 hover:text-gray-900 font-semibold transition-colors" onClick={onEdit}>
-            ✏️ Edit
+          <button type="button" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg hover:bg-gray-100 hover:text-gray-900 font-semibold transition-colors" onClick={onAnalytics}>
+            📊 Analytics
           </button>
           
           <button
             type="button"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs rounded-lg hover:bg-blue-100 hover:border-blue-300 font-semibold transition-colors"
-            onClick={() => {
-              const el = document.getElementById('verification-modal-root');
-              if (el && el._openVerificationModal) {
-                el._openVerificationModal(item.id, 'SOFTWARE');
-              }
-            }}
+            onClick={onShowVerification}
           >
-            {item.verificationStatus === 'NOT_STARTED' || item.verificationStatus === 'FAILED' 
-              ? 'Start Verification' 
-              : 'View Verification Progress'}
+            {verified
+              ? t('techVerifyTrackerTitleDone', 'Verification complete — view steps')
+              : t('techVerifyTrackerTitle', 'View verification progress')}
           </button>
 
           {canRequestTechnologyAuction(item, auctionStatus) && (
@@ -399,7 +322,7 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
             </button>
           )}
         </div>
-        <div className="text-[0.8rem] text-gray-500 font-medium">
+        <div className="text-[0.8rem] text-gray-500 font-medium mt-1">
           👁 {item.views || 0} views <span className="mx-1.5 text-gray-300">•</span> ✦ {sales} paid
           {sales > 0 && <span className="ml-1.5 font-bold text-green-600">({formatPrice(item.price * sales)})</span>}
         </div>
@@ -407,6 +330,7 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
     </div>
   );
 }
+
 
 // ─── Purchase Row (buyer view) ────────────────────────────────────────────────
 function PurchaseRow({ purchase, onConfirm, confirming }) {

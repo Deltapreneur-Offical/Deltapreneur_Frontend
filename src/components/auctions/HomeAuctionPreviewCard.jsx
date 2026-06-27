@@ -188,6 +188,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       </div>
 
       <CreatorPreviewModal
+        profile={auction?.community}
         auction={auction}
         open={showPreview}
         onClose={() => {

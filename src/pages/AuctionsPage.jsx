@@ -479,6 +479,7 @@ export default function AuctionsPage() {
 
       {previewAuction && (
         <CreatorPreviewModal
+          profile={previewAuction?.community}
           auction={previewAuction}
           open={!!previewAuction}
           onClose={() => setPreviewAuction(null)}

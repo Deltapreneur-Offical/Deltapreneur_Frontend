@@ -14,6 +14,7 @@ import { useLikes } from '../hooks/useLikes';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import CommunityListingCard from '../components/listings/CommunityListingCard';
+import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
@@ -620,16 +621,10 @@ export default function CommunityPage() {
       </div>
 
       {detailProfile && (
-        <CommunityDetailModal
+        <CreatorPreviewModal
           profile={detailProfile}
-          auction={auctionsByCommunity[detailProfile.id] ?? detailProfile.auctionSummary ?? null}
-          isMe={isListingOwner(detailProfile, user, 'community')}
+          open={!!detailProfile}
           onClose={closeListingDetail}
-          onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
-          onDelete={() => setShowDeleteConfirm(true)}
-          onViewAuction={(auctionId) => {
-            if (auctionId) navigate(`/creator-auction/${auctionId}`);
-          }}
         />
       )}
 
@@ -827,282 +822,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
   );
 }
 
-// ─── Community Detail Modal (with auction link) ───────────────────────────────
-const MODAL_OUTLINE_BTN =
-  'inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-gray-900 bg-white text-gray-600 text-[0.82rem] font-medium hover:bg-gray-50 transition-colors hover:text-black';
 
-function CommunityDetailModal({
-  profile,
-  auction: auctionFromParent,
-  isMe,
-  onClose,
-  onEdit,
-  onDelete,
-  onViewAuction,
-}) {
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  const [detail, setDetail]     = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [auction, setAuction]   = useState(auctionFromParent ?? null);
-  const p = detail || profile;
-  const skills = p.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
-  const linkedInUrl = getLinkedInProfileUrl(p);
-  const whyHere = (p.whyImHere ?? p.why_im_here ?? '').trim();
-  const introductionVideoLink = p.introductionVideoLink || p.introduction_video_link || '';
-  const resumeDriveLink = p.resumeDriveLink || p.resume_drive_link || '';
-  const portfolioWebsiteLink = p.portfolioWebsiteLink || p.portfolio_website_link || '';
-  const preferredWorkType = p.preferredWorkType || p.preferred_work_type || '';
-  const industryExpertise = p.industryExpertise || p.industry_expertise || '';
-  const languagesKnown = p.languagesKnown || p.languages_known || '';
-
-  useEffect(() => {
-    communityAPI.getOne(profile.id)
-      .then(({ data }) => setDetail(data?.data ?? data))
-      .catch(() => setDetail(profile))
-      .finally(() => setLoading(false));
-
-    if (auctionFromParent) {
-      setAuction(auctionFromParent);
-      return;
-    }
-    communityAuctionAPI.getByCommunity(profile.id)
-      .then(({ data }) => {
-        const payload = data?.auction ?? data;
-        setAuction(auctionSummaryFromAuction(payload) || payload);
-      })
-      .catch(() => {});
-  }, [profile.id, profile, auctionFromParent]);
-
-  useEffect(() => {
-    if (auctionFromParent) setAuction(auctionFromParent);
-  }, [auctionFromParent]);
-
-  const auctionStatus = auction?.status ?? auction?.displayStatus;
-  const isAuctionLive = auction && (
-    auctionStatus === 'ACTIVE'
-    || auctionStatus === 'EXTENDED'
-    || auction?.displayStatus === 'LIVE'
-  );
-
-  return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
-        <button
-          type="button"
-          className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700 leading-none"
-          onClick={(e) => { e.stopPropagation(); onClose(); }}
-          aria-label="Close"
-        >
-          ✕
-        </button>
-
-        {loading ? (
-          <div className="flex justify-center p-12">
-            <div className="w-7 h-7 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
-          </div>
-        ) : (
-          <>
-            <div className="flex items-start gap-4 mb-6 pr-8">
-              {p.imageUrl ? (
-                <img
-                  src={p.imageUrl}
-                  alt={p.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-2xl font-bold text-indigo-600 flex-shrink-0">
-                  {p.name?.[0]?.toUpperCase() || '?'}
-                </div>
-              )}
-              <div className="min-w-0 pt-1">
-                <h2 className="font-display text-[1.65rem] font-semibold text-gray-900 leading-tight m-0">
-                  {p.name || 'Anonymous'}
-                </h2>
-                {p.role ? (
-                  <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[0.65rem] font-bold uppercase tracking-wider">
-                    {p.role.replace(/_/g, ' ')}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            {isAuctionLive && (
-              <div className="mb-6 p-4 bg-[#fdf8ee] border border-[#e8d4a8] rounded-xl flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="text-[0.65rem] font-bold text-[#a16207] uppercase tracking-wider mb-1">
-                    🔨 Profile Auction Live
-                  </div>
-                  <div className="text-[0.95rem] text-[#78350f] font-bold leading-snug">
-                    {auction.auctionTitle}
-                  </div>
-                  <div className="text-[0.78rem] text-[#92400e] mt-1">
-                    {(auction.currentBid ?? auction.currentHighestBid) > 0
-                      ? `Highest bid: ${formatPrice(auction.currentBid ?? auction.currentHighestBid)}`
-                      : `Starting at ${formatPrice(auction.startingBid ?? auction.minBidPrice)}`}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className={`${MODAL_OUTLINE_BTN} flex-shrink-0 whitespace-nowrap`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClose();
-                    onViewAuction(resolveCreatorAuctionId(auction));
-                  }}
-                >
-                  Bid / Meet →
-                </button>
-              </div>
-            )}
-
-            <div className="flex gap-2 flex-wrap mb-6">
-              {p.industry ? (
-                <span className="px-2.5 py-1 rounded-md text-[0.68rem] font-bold uppercase tracking-wide bg-orange-50 text-orange-700 border border-orange-100">
-                  {p.industry.replace(/_/g, ' ')}
-                </span>
-              ) : null}
-              {p.location ? (
-                <span className="px-2.5 py-1 rounded-md text-[0.68rem] font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                  📍 {p.location}
-                </span>
-              ) : null}
-            </div>
-
-            {readCreatorExpectedRate(p) ? (
-              <div className="mb-5">
-                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  {t('creatorExpectedRateLabel', 'Expected Rate')}
-                </div>
-                <p className="text-gray-900 font-semibold text-base m-0">
-                  {formatCreatorExpectedRate(p, formatPrice)}
-                </p>
-              </div>
-            ) : null}
-
-            <div className="mb-5">
-              <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</div>
-              {skills.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {skills.map(s => (
-                    <span key={s} className="px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs text-gray-700 lowercase">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <span className="text-sm text-gray-500">NA</span>
-              )}
-            </div>
-
-            <div className="mb-2">
-              <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Why I&apos;m Here</div>
-              <p className="text-gray-900 leading-relaxed text-sm m-0">
-                {whyHere || 'NA'}
-              </p>
-            </div>
-
-            {preferredWorkType && (
-              <div className="mb-2">
-                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Preferred Work Type</div>
-                <p className="text-gray-900 leading-relaxed text-sm m-0">
-                  {preferredWorkType.replace(/_/g, ' ')}
-                </p>
-              </div>
-            )}
-
-            {industryExpertise && (
-              <div className="mb-2">
-                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Industry Expertise</div>
-                <p className="text-gray-900 leading-relaxed text-sm m-0">
-                  {industryExpertise}
-                </p>
-              </div>
-            )}
-
-            {languagesKnown && (
-              <div className="mb-2">
-                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Languages Known</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {languagesKnown.split(',').map((lang, idx) => (
-                    <span key={idx} className="px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs text-gray-700">
-                      {lang.trim()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {introductionVideoLink || resumeDriveLink || portfolioWebsiteLink ? (
-              <div className="mb-2">
-                <div className="text-[0.68rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Links & Resources</div>
-                <div className="space-y-2">
-                  {introductionVideoLink && (
-                    <a href={introductionVideoLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
-                      🎥 Introduction Video
-                    </a>
-                  )}
-                  {resumeDriveLink && (
-                    <a href={resumeDriveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
-                      📄 Resume
-                    </a>
-                  )}
-                  {portfolioWebsiteLink && (
-                    <a href={portfolioWebsiteLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
-                      🌐 Portfolio
-                    </a>
-                  )}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="flex items-center gap-3 mt-8 flex-wrap">
-              <div className="flex items-center gap-3">
-                {isMe ? (
-                  <>
-                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-                      <EditActionLabel iconSize={15}>Edit Profile</EditActionLabel>
-                    </button>
-                    <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onDelete(); }}>
-                      Delete Profile
-                    </button>
-                  </>
-                ) : null}
-                <button type="button" className={MODAL_OUTLINE_BTN} onClick={(e) => { e.stopPropagation(); onClose(); }}>
-                  Close
-                </button>
-              </div>
-
-              {linkedInUrl ? (
-                <a
-                  href={linkedInUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${MODAL_OUTLINE_BTN} ml-auto border-[#0077b5] text-[#0077b5] hover:bg-[#eff7ff]`}
-                >
-                  <LinkedInIcon size={15} className="text-[#0077b5]" />
-                  Connect
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  title="LinkedIn profile not available"
-                  className={`${MODAL_OUTLINE_BTN} ml-auto border-[#bfdbfe] text-[#60a5fa] opacity-70 cursor-not-allowed`}
-                >
-                  <LinkedInIcon size={15} className="text-[#0077b5]" />
-                  Connect
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({
@@ -1115,6 +835,7 @@ function CommunityProfileForm({
   const buildForm = (profile) => {
     const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
     return {
+      about: profile?.about || '',
       role: profile?.role || '',
       skills: profile?.skills || '',
       industry: profile?.industry || '',
@@ -1175,6 +896,7 @@ function CommunityProfileForm({
     setLoading(true); setError('');
     try {
       const payload = {
+        about: form.about,
         role: form.role,
         skills: form.skills,
         industry: form.industry,
@@ -1259,7 +981,25 @@ function CommunityProfileForm({
         <CreatorProfileCompletionBanner profile={initial} />
       ) : null}
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
-        <div className="grid grid-cols-2 gap-4">
+
+  {/* About - full width */}
+  <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-medium text-gray-700">
+      About <span className="text-red-500">*</span>
+    </label>
+    <textarea
+      name="about"
+      value={form.about}
+      onChange={handleChange}
+      placeholder="Tell others about yourself..."
+      rows={3}
+      required
+      className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
+    />
+  </div>
+
+  {/* Role + Industry */}
+  <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500">*</span></label>
             <select name="role" value={form.role} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">

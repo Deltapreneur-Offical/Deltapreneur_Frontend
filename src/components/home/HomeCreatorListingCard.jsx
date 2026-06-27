@@ -122,14 +122,7 @@ export default function HomeCreatorListingCard({
       onView();
     }
     : undefined;
-
-  const auctionLike = {
-    community: profile,
-    featured: Boolean(profile?.featured),
-    minBidPrice: 0,
-    currentHighestBid: 0,
-    endTime: null,
-  };
+  console.log("HOME PAGE PROFILE", profile);
 
   return (
     <article
@@ -141,13 +134,12 @@ export default function HomeCreatorListingCard({
       onKeyDown={(e) => { if (e.key === 'Enter') setShowPreview(true); }}
     >
       <CreatorPreviewModal
-        auction={auctionLike}
+        profile={profile}
         open={showPreview}
         onClose={() => {
           setShowPreview(false);
           cardRef.current?.focus?.();
         }}
-        onPlaceBid={onView}
       />
       <CreatorCover
         imageUrl={displayImage}

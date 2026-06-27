@@ -403,7 +403,7 @@
   "domainsPageFormListSubtitle": "Fill in the details to list your domain for sale.",
   "domainsPageDomainNameLabel": "Domain name",
   "domainsPageExtensionLabel": "Extension",
-  "domainsPageDomainNamePlaceholder": "e.g. mybrand",
+  "domainsPageDomainNamePlaceholder": "mybrand",
   "domainsPageExtensionPlaceholder": ".com",
   "domainsPagePreview": "Preview:",
   "domainsPageSaleTypeLabel": "Sale Type",

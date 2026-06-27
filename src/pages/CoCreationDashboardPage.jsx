@@ -332,55 +332,78 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
               {enabledPlans.map(p => (
                 <span key={p.key} className="text-xs px-2.5 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
                   <span className="font-semibold">{p.label}:</span> {formatPrice(p.price)}
-                </span>
-              ))}
-            </div>
+  
+  return (
+    <div className="bg-white border border-gray-200 rounded-[12px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-200 hover:shadow-md transition-all">
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-gray-900 text-[1.05rem] mb-1.5 flex items-center gap-2 flex-wrap">
+          <span className="truncate">{item.name}</span>
+          <VerificationStatusBadge status={item.verificationStatus} type="badge" />
+          {item.technologyType === 'HARDWARE' ? (
+            <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md uppercase tracking-wider">
+              HARDWARE
+            </span>
+          ) : (
+            <span className="text-[0.68rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md uppercase tracking-wider">
+              SOFTWARE
+            </span>
           )}
-          <div className="flex gap-3 flex-wrap items-center">
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50" onClick={onAnalytics}>
-              📊 Analytics
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 transition-colors hover:bg-indigo-100"
-              onClick={onShowVerification}
-            >
-            {verified
-              ? t('techVerifyTrackerTitleDone', 'Verification complete — view steps')
-              : t('techVerifyTrackerTitle', 'View verification progress')}
+        </div>
+        <div className="text-[0.8rem] text-gray-500 font-medium">
+          {item.category?.replace(/_/g, ' ')}
+        </div>
+      </div>
+
+      <div className="flex flex-col items-start sm:items-end gap-2 flex-shrink-0">
+        <div className="flex gap-2 flex-wrap justify-end">
+          <button type="button" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg hover:bg-gray-100 hover:text-gray-900 font-semibold transition-colors" onClick={onEdit}>
+            ✏️ Edit
           </button>
+          
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs rounded-lg hover:bg-blue-100 hover:border-blue-300 font-semibold transition-colors"
+            onClick={() => {
+              const el = document.getElementById('verification-modal-root');
+              if (el && el._openVerificationModal) {
+                el._openVerificationModal(item.id, 'SOFTWARE');
+              }
+            }}
+          >
+            {item.verificationStatus === 'NOT_STARTED' || item.verificationStatus === 'FAILED' 
+              ? 'Start Verification' 
+              : 'View Verification Progress'}
+          </button>
+
           {canRequestTechnologyAuction(item, auctionStatus) && (
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
-              style={{ background: 'rgba(200,169,110,0.12)', color: '#c8a96e', border: '1px solid rgba(200,169,110,0.35)' }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg hover:bg-amber-100 font-semibold transition-colors"
               onClick={onAuction}
             >
               🔨 List for auction
             </button>
           )}
           {isTechnologyAuctionPending(item, auctionStatus) && (
-            <span className="text-xs font-semibold text-amber-700 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg">
+            <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg">
               ⏳ Auction Pending
             </span>
           )}
           {technologyAuctionId(item, auctionStatus) && (
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
-              style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896', border: '1px solid rgba(110,200,150,0.35)' }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 text-xs rounded-lg hover:bg-green-100 font-semibold transition-colors"
               onClick={() => onViewAuction(technologyAuctionId(item, auctionStatus))}
             >
               {isTechnologyAuctionLive(item, auctionStatus) ? '🟢 View Live Auction' : 'View Auction'}
             </button>
           )}
-          </div>
-          <span className="text-[0.78rem] text-gray-400">
-            👁 {item.views || 0} views · ✦ {sales} paid
-            {sales > 0 && ` · Revenue: ${formatPrice(item.price * sales)}`}
-          </span>
         </div>
-      )}
+        <div className="text-[0.8rem] text-gray-500 font-medium">
+          👁 {item.views || 0} views <span className="mx-1.5 text-gray-300">•</span> ✦ {sales} paid
+          {sales > 0 && <span className="ml-1.5 font-bold text-green-600">({formatPrice(item.price * sales)})</span>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -388,6 +411,7 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
 // ─── Purchase Row (buyer view) ────────────────────────────────────────────────
 function PurchaseRow({ purchase, onConfirm, confirming }) {
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const sw           = purchase.software || {};
   const isConfirmed  = purchase.completionStatus === 'CONFIRMED';
@@ -397,111 +421,148 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
   const planLabel    = PLAN_LABELS[purchase.pricingPlan] || 'One-Time Purchase';
 
   const purchaseDate = new Date(purchase.soldAt || purchase.created_at || Date.now());
+  let expiryDate = purchase.expiryDate || purchase.expiry_date ? new Date(purchase.expiryDate || purchase.expiry_date) : null;
   let expiryLabel = null;
+  let isExpired = false;
+  let isExpiringSoon = false;
+
   if (purchase.pricingPlan && purchase.pricingPlan !== 'ONE_TIME') {
-    const months = parseInt(purchase.pricingPlan.split('_')[0], 10);
-    if (!isNaN(months)) {
-      const expiry = new Date(purchaseDate);
-      expiry.setMonth(expiry.getMonth() + months);
-      expiryLabel = `Expires: ${expiry.toLocaleDateString()}`;
+    if (!expiryDate) {
+      const months = parseInt(purchase.pricingPlan.split('_')[0], 10);
+      if (!isNaN(months)) {
+        expiryDate = new Date(purchaseDate);
+        expiryDate.setMonth(expiryDate.getMonth() + months);
+      }
+    }
+    if (expiryDate) {
+      expiryLabel = `Expires: ${expiryDate.toLocaleDateString()}`;
+      const now = new Date();
+      isExpired = expiryDate < now;
+      isExpiringSoon = !isExpired && (expiryDate.getTime() - now.getTime()) < 7 * 24 * 60 * 60 * 1000;
     }
   }
 
+  const handleRenew = (e) => {
+    e.stopPropagation();
+    navigate(`/technology?item=${sw.id}`);
+  };
+
   return (
-    <div className={`bg-white border rounded-[10px] overflow-hidden ${isConfirmed ? 'border-green-200' : isPending ? 'border-purple-200' : 'border-gray-200'}`}>
-      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+    <div className={`bg-white border rounded-[12px] overflow-hidden transition-all ${isConfirmed ? 'border-green-200 shadow-sm' : isPending ? 'border-purple-200 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
            onClick={() => setExpanded(v => !v)}>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-gray-900 text-[0.95rem] flex items-center gap-2 flex-wrap">
-            {sw.name || '—'}
+          <div className="font-semibold text-gray-900 text-[1rem] flex items-center gap-2 flex-wrap mb-1">
+            <span className="truncate">{sw.name || '—'}</span>
             {sw.technologyType === 'HARDWARE' ? (
-              <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-1.5 py-0.5 rounded">
+              <span className="text-[0.65rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md tracking-wider">
                 HARDWARE
               </span>
             ) : (
-              <span className="text-[0.68rem] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+              <span className="text-[0.65rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md tracking-wider">
                 SOFTWARE
               </span>
             )}
-            <span className="text-[0.68rem] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+            <span className="text-[0.65rem] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md tracking-wider">
               {planLabel}
             </span>
             {isConfirmed && (
-              <span className="text-[0.68rem] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">
+              <span className="text-[0.65rem] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md tracking-wider">
                 ✓ Confirmed
               </span>
             )}
             {isPending && (
-              <span className="text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">
+              <span className="text-[0.65rem] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md tracking-wider">
                 ⏳ Awaiting Confirmation
               </span>
             )}
+            {isExpired && (
+              <span className="text-[0.65rem] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md tracking-wider animate-pulse">
+                EXPIRED
+              </span>
+            )}
+            {isExpiringSoon && (
+              <span className="text-[0.65rem] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
+                EXPIRING SOON
+              </span>
+            )}
             {helpPaid && (
-              <span className="text-[0.68rem] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">
-                ◆ CoBrother Active
+              <span className="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md tracking-wider">
+                ◆ CoBrother
               </span>
             )}
           </div>
-          <div className="text-[0.78rem] text-gray-400 mt-0.5">
-            {sw.category?.replace(/_/g, ' ')} · Purchased{' '}
+          <div className="text-[0.8rem] text-gray-500 font-medium">
+            {sw.category?.replace(/_/g, ' ')} <span className="mx-1.5 text-gray-300">•</span> Purchased{' '}
             {formatAuctionDate(purchaseDate.toISOString(), {
               day: 'numeric', month: 'short', year: 'numeric',
             }, '')}
-            {expiryLabel && ` · ${expiryLabel}`}
+            {expiryLabel && <><span className="mx-1.5 text-gray-300">•</span> <span className={isExpired ? 'text-red-600 font-semibold' : isExpiringSoon ? 'text-amber-600 font-semibold' : 'text-gray-500'}>{expiryLabel}</span></>}
           </div>
         </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="flex items-center gap-5 flex-shrink-0">
           <div className="text-right">
-            <div className="font-display text-[1.1rem] font-bold text-purple-600">
+            <div className="font-display text-[1.2rem] font-bold text-purple-700">
               {formatPrice(sw.price || 0)}
             </div>
             {purchase.coBrotherOptIn && !helpPaid && (
-              <div className="text-[0.68rem] text-gray-400">+ {formatPrice(1000)} pending</div>
+              <div className="text-[0.7rem] text-gray-400 font-medium">+ {formatPrice(1000)} pending</div>
             )}
             {helpPaid && (
-              <div className="text-[0.68rem] text-gray-400">+ {formatPrice(1000)} CoBrother</div>
+              <div className="text-[0.7rem] text-emerald-600 font-medium">+ {formatPrice(1000)} CoBrother</div>
             )}
           </div>
-          <span className="text-gray-400 text-sm">{expanded ? '▲' : '▼'}</span>
+          <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>
         </div>
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 px-5 py-4">
+        <div className="border-t border-gray-100 bg-gray-50/30 px-5 py-4">
 
           {/* Purchased Resources */}
           {purchase.paymentStatus === 'COMPLETED' && (
-            <div className="mb-4">
-              <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Purchased Resources</div>
+            <div className="mb-5">
+              <div className="text-[0.75rem] font-bold text-gray-700 uppercase tracking-wider mb-3">Purchased Resources</div>
               
-              {sw.githubLink && (
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-2 flex items-center justify-between">
-                  <span className="text-[0.82rem] text-gray-500">🔗 GitHub Repository</span>
-                  <a href={sw.githubLink} target="_blank" rel="noreferrer"
-                     className="text-sm text-green-600 font-semibold no-underline hover:underline">
-                    Open →
-                  </a>
-                </div>
-              )}
-              
-              {sw.demoUrl && (
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-2 flex items-center justify-between">
-                  <span className="text-[0.82rem] text-gray-500">🌐 Demo URL</span>
-                  <a href={sw.demoUrl} target="_blank" rel="noreferrer"
-                     className="text-sm text-indigo-600 font-semibold no-underline hover:underline">
-                    Open →
-                  </a>
-                </div>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {sw.githubLink && (
+                  <div className="px-4 py-3.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between shadow-sm hover:border-green-300 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">🔓</span>
+                      <span className="text-[0.85rem] font-semibold text-gray-800">GitHub Repository</span>
+                    </div>
+                    <a href={sw.githubLink} target="_blank" rel="noreferrer"
+                       className="text-sm text-green-600 font-bold no-underline hover:underline bg-green-50 px-3 py-1 rounded-lg">
+                      Open →
+                    </a>
+                  </div>
+                )}
+                
+                {sw.demoUrl && (
+                  <div className="px-4 py-3.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between shadow-sm hover:border-indigo-300 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-indigo-500 text-lg">🌐</span>
+                      <span className="text-[0.85rem] font-semibold text-gray-800">Demo URL</span>
+                    </div>
+                    <a href={sw.demoUrl} target="_blank" rel="noreferrer"
+                       className="text-sm text-indigo-600 font-bold no-underline hover:underline bg-indigo-50 px-3 py-1 rounded-lg">
+                      Open →
+                    </a>
+                  </div>
+                )}
+              </div>
               
               {sw.supportingDocuments && sw.supportingDocuments.length > 0 && (
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-2">
-                  <span className="text-[0.82rem] text-gray-500 block mb-1">📄 Supporting Documents</span>
-                  <div className="flex flex-col gap-1 mt-2">
+                <div className="mt-3 px-4 py-3.5 bg-white border border-gray-200 rounded-xl shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-gray-500 text-lg">📄</span>
+                    <span className="text-[0.85rem] font-semibold text-gray-800">Supporting Documents</span>
+                  </div>
+                  <div className="flex flex-col gap-2 pl-7">
                     {sw.supportingDocuments.map((doc, idx) => (
-                      <a key={idx} href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 font-semibold hover:underline">
-                        {doc.name || `Document ${idx + 1}`} ↗
+                      <a key={idx} href={doc.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 font-medium hover:underline inline-flex items-center gap-1.5">
+                        {doc.name || `Document ${idx + 1}`} <span className="text-xs">↗</span>
                       </a>
                     ))}
                   </div>
@@ -511,26 +572,38 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
           )}
 
           {/* CoBrother status */}
-          {helpPaid ? (
-            <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-lg mb-3.5 text-[0.82rem] text-green-700">
-              ◆ CoBrother assigned — check your email for introduction details.
+          {helpPaid && (
+            <div className="px-4 py-3.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-5 text-[0.85rem] text-emerald-800 font-medium shadow-sm flex items-start gap-2">
+              <span className="text-emerald-500 text-lg leading-none mt-0.5">◆</span>
+              <span>CoBrother assigned — check your email for introduction details.</span>
             </div>
-          ) : null}
+          )}
 
           {/* Action buttons */}
-          <div className="flex gap-3 flex-wrap">
-            {isPending && (
-              <button
-                className="btn-glow btn-glow-sm"
-                onClick={onConfirm}
-                disabled={confirming}>
-                {confirming ? <span className="w-3.5 h-3.5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : '✓ Mark as Complete'}
+          <div className="flex items-center justify-between flex-wrap gap-3 pt-2">
+            <div className="flex items-center gap-3">
+              {isPending && (
+                <button
+                  className="btn-glow px-4 py-2"
+                  onClick={onConfirm}
+                  disabled={confirming}>
+                  {confirming ? <span className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" /> : '✓ Verify & Mark Complete'}
+                </button>
+              )}
+              {isConfirmed && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.8rem] text-green-700 font-bold">
+                  ✓ Purchase verified
+                </div>
+              )}
+            </div>
+            
+            {(isExpired || isExpiringSoon) && (
+              <button 
+                onClick={handleRenew}
+                className={`inline-flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition-all ${isExpired ? 'bg-red-600 hover:bg-red-700 text-white shadow-md' : 'bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300'}`}
+              >
+                🔄 Renew Subscription
               </button>
-            )}
-            {isConfirmed && (
-              <span className="text-[0.78rem] text-green-600 font-semibold self-center">
-                ✓ Purchase confirmed
-              </span>
             )}
           </div>
         </div>
@@ -538,6 +611,7 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
     </div>
   );
 }
+
 
 function StatCard({ label, value, icon, color = '#111827' }) {
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Plus } from 'lucide-react';
+import { LayoutDashboard, Plus, CircleUser, ShoppingCart } from 'lucide-react';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -1053,161 +1053,183 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+      <div className="relative w-full max-w-[900px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-6 md:p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
-        <div className="mb-6">
-          <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">Software Purchase</div>
-          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{item.name}</h2>
-          <p className="text-sm text-gray-500">{item.category?.replace(/_/g, ' ')} · {item.pricingDemand}</p>
+        <div className="mb-8 border-b border-gray-100 pb-5">
+          <div className="inline-flex items-center px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-md text-[0.7rem] font-bold text-indigo-700 uppercase tracking-widest mb-3">Complete Your Purchase</div>
+          <h2 className="font-display text-[2rem] leading-tight font-bold text-gray-900 mb-1">{item.name}</h2>
+          <p className="text-sm text-gray-500 font-medium">{item.category?.replace(/_/g, ' ')}</p>
         </div>
 
-        {/* Plan Selection */}
-        {hasPlans && enabledPlans.length > 1 && (
-          <div className="mb-5 flex flex-col gap-2">
-            <label className="text-xs text-gray-500 font-medium">Selected Pricing Plan</label>
-            <div className="flex flex-col gap-2">
-              {enabledPlans.map(plan => (
-                <label key={plan.key} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${currentPlanKey === plan.key ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-300'}`}>
-                  <div className="flex items-center gap-2">
-                    <input type="radio" name="checkoutPricingPlan" value={plan.key} checked={currentPlanKey === plan.key} onChange={() => setCurrentPlanKey(plan.key)} className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
-                    <span className={`text-sm font-medium ${currentPlanKey === plan.key ? 'text-indigo-900' : 'text-gray-700'}`}>{plan.label}</span>
-                  </div>
-                  <div className={`text-sm font-bold ${currentPlanKey === plan.key ? 'text-indigo-700' : 'text-gray-900'}`}>
-                    {formatPrice(plan.price)}
-                  </div>
-                </label>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
+          {/* Left Column: Form and Selection */}
+          <div className="flex flex-col gap-6">
+            
+            {/* Buyer details */}
+            <div className="flex flex-col gap-4">
+              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Buyer Information</div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-gray-500 font-semibold">Full Name</label>
+                <input className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm" value={form.buyerFullName}
+                  onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
+                  placeholder="Your full name" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-gray-500 font-semibold">Email</label>
+                  <input className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm" type="email" value={form.buyerEmail}
+                    onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
+                    placeholder="your@email.com" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-gray-500 font-semibold">
+                    Phone <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm"
+                    value={form.buyerPhone}
+                    onChange={handlePhoneChange}
+                    placeholder="10-digit number"
+                    maxLength={10}
+                    inputMode="numeric"
+                    required
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Buyer details */}
-        <div className="flex flex-col gap-3 mb-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-gray-500 font-medium">Full Name</label>
-            <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" value={form.buyerFullName}
-              onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
-              placeholder="Your full name" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-gray-500 font-medium">Email</label>
-              <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" type="email" value={form.buyerEmail}
-                onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
-                placeholder="your@email.com" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-gray-500 font-medium">
-                Phone <span className="text-red-500">*</span>
-              </label>
-              <input
-                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
-                value={form.buyerPhone}
-                onChange={handlePhoneChange}
-                placeholder="10-digit number"
-                maxLength={10}
-                inputMode="numeric"
-                required
+            {/* Plan Selection */}
+            {hasPlans && enabledPlans.length > 1 && (
+              <div className="flex flex-col gap-4">
+                <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Pricing Plan</div>
+                <div className="flex flex-col gap-3">
+                  {enabledPlans.map(plan => (
+                    <label key={plan.key} className={`flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${currentPlanKey === plan.key ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${currentPlanKey === plan.key ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
+                          {currentPlanKey === plan.key && <div className="w-2 h-2 rounded-full bg-white" />}
+                        </div>
+                        <span className={`text-[0.95rem] font-bold ${currentPlanKey === plan.key ? 'text-indigo-900' : 'text-gray-800'}`}>{plan.label}</span>
+                      </div>
+                      <div className={`text-[1.05rem] font-black ${currentPlanKey === plan.key ? 'text-indigo-700' : 'text-gray-900'}`}>
+                        {formatPrice(plan.price)}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-4">
+              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Optional Services</div>
+              {/* ── CoBrother opt-in card ── */}
+              <div
+                onClick={() => setCoBrotherOptIn(v => !v)}
+                className={`flex flex-col gap-3 p-4 cursor-pointer rounded-xl border-2 transition-all shadow-sm ${coBrotherOptIn ? 'bg-purple-50/50 border-purple-400 shadow-md' : 'bg-white border-gray-200 hover:border-purple-300'}`}
+              >
+                <div className="flex items-start gap-3.5">
+                  <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'}`}>
+                    {coBrotherOptIn && (
+                      <span className="text-white text-[0.65rem] font-bold">✓</span>
+                    )}
+                  </div>
+                  <div>
+                    <div className={`font-semibold text-[0.95rem] mb-1 flex items-center gap-2 ${coBrotherOptIn ? 'text-purple-900' : 'text-gray-800'}`}>
+                      <span>◆ Co-Creator Assistance</span>
+                      <span className={`font-display text-[0.9rem] font-bold ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-500'}`}>
+                        +{formatPrice(1000)}
+                      </span>
+                    </div>
+                    <div className="text-gray-500 text-[0.8rem] leading-relaxed pr-2">
+                      Get a dedicated CoBrother to help you set up, deploy, and get the most out of
+                      this software. They'll reach out within 24 hours.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <AddonSections
+                businessSelected={addons}
+                onBusinessChange={setAddons}
+                vaSelected={vaAddons}
+                onVaChange={setVaAddons}
+                vaServices={vaServices}
+                vaLoading={vaLoading}
               />
             </div>
-          </div>
-        </div>
 
-        {/* ── CoBrother opt-in card ── */}
-        <div
-          onClick={() => setCoBrotherOptIn(v => !v)}
-          className={`flex flex-col gap-3 p-4 mb-5 cursor-pointer rounded-[10px] border transition-all ${coBrotherOptIn ? 'bg-purple-50 border-purple-300' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}
-        >
-          <div className="flex items-start gap-3.5">
-            <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300'}`}>
-              {coBrotherOptIn && (
-                <span className="text-white text-[0.65rem] font-bold">✓</span>
-              )}
-            </div>
-            <div>
-              <div className={`font-semibold text-[0.9rem] mb-1 ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-700'}`}>
-                ◆ Add CoBrother Helper{' '}
-                <span className={`font-display text-[1rem] font-bold ${coBrotherOptIn ? 'text-purple-600' : 'text-indigo-600'}`}>
-                  +{formatPrice(1000)}
+          </div>
+
+          {/* Right Column: Sticky Summary */}
+          <div className="sticky top-0">
+            <div className="bg-gray-50 border border-gray-200 rounded-[14px] p-5 shadow-sm">
+              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider mb-4">
+                Order Summary
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
+                  value={formatPrice(basePrice)} />
+                {coBrotherOptIn && (
+                  <BillingLine label="◆ Co-Creator Assistance" value={formatPrice(1000)} accent />
+                )}
+                {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
+                  const svc = ADDON_SERVICES.find(s => s.key === k);
+                  return svc ? (
+                    <BillingLine key={k} label={svc.label}
+                      value={formatPrice(svc.price)} accent />
+                  ) : null;
+                })}
+                {vaAddons.map((k) => {
+                  return vaServices.some((s) => String(s.id) === String(k)) ? (
+                    <div key={k} className="flex justify-between items-center py-1.5 text-[0.85rem]">
+                      <span className="truncate mr-2 text-[#7c6fe0]">{vaLabel(k, vaServices)}</span>
+                      <span className="text-xs font-semibold text-amber-700">admin follow-up</span>
+                    </div>
+                  ) : null;
+                })}
+                
+                {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
+                  <div className="text-xs text-amber-600 py-1.5 font-medium">+ contact-based services (no charge now)</div>
+                )}
+                {vaAddons.length > 0 && (
+                  <div className="text-xs text-amber-600 py-1.5 font-medium">
+                    Virtual assistant selection will be shared with the admin team for hiring follow-up.
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-gray-200 my-4" />
+              
+              <div className="flex justify-between items-center mb-5">
+                <span className="font-semibold text-gray-900 text-[1rem]">Total</span>
+                <span className="font-display text-[1.75rem] font-black text-green-600">
+                  {formatPrice(totalPrice)}
                 </span>
               </div>
-              <div className="text-gray-500 text-[0.78rem] leading-relaxed">
-                Get a dedicated CoBrother to help you set up, deploy, and get the most out of
-                this software. They'll reach out within 24 hours.{' '}
-                <LearnMoreTooltip>
-                  Your ₹1,000 support request helps us connect, verify, and personally assist you with your collaboration opportunity through the CoBrother ecosystem
-                </LearnMoreTooltip>
+
+              {error && <div className="text-sm text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-100">{error}</div>}
+
+              <div className="flex flex-col gap-3">
+                <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={handlePay} disabled={loading}>
+                  {loading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" /> :
+                    `Pay Securely →`}
+                </button>
+                <button className="w-full py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors" onClick={onClose}>Cancel</button>
+              </div>
+
+              <div className="mt-4 flex items-center justify-center gap-1.5 text-[0.7rem] text-gray-400 font-medium uppercase tracking-wider">
+                🔒 Secure payment via Razorpay
               </div>
             </div>
-          </div>
-        </div>
-
-        <AddonSections
-          businessSelected={addons}
-          onBusinessChange={setAddons}
-          vaSelected={vaAddons}
-          onVaChange={setVaAddons}
-          vaServices={vaServices}
-          vaLoading={vaLoading}
-        />
-
-        {/* ── Billing breakdown ── */}
-        <div className="bg-gray-50 border border-gray-200 rounded-[10px] p-4 mb-5">
-          <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            Billing Breakdown
-          </div>
-          <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
-            value={formatPrice(basePrice)} />
-          {coBrotherOptIn && (
-            <BillingLine label="◆ CoBrother Helper" value={formatPrice(1000)} accent />
-          )}
-          {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
-            const svc = ADDON_SERVICES.find(s => s.key === k);
-            return svc ? (
-              <BillingLine key={k} label={svc.label}
-                value={formatPrice(svc.price)} accent />
-            ) : null;
-          })}
-          {vaAddons.map((k) => {
-            return vaServices.some((s) => String(s.id) === String(k)) ? (
-              <div key={k} className="flex justify-between items-center py-1 text-[0.84rem]">
-                <span className="truncate mr-2 text-[#7c6fe0]">{vaLabel(k, vaServices)}</span>
-                <span className="text-xs font-semibold text-amber-700">admin follow-up</span>
-              </div>
-            ) : null;
-          })}
-          {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
-            <div className="text-xs text-amber-600 py-1">+ contact-based services (no charge now)</div>
-          )}
-          {vaAddons.length > 0 && (
-            <div className="text-xs text-amber-600 py-1">
-              Virtual assistant selection will be shared with the admin team for hiring follow-up.
+            
+            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-[14px] text-xs text-amber-800 font-medium shadow-sm leading-relaxed">
+              🔒 GitHub/Resources link will be shared after purchase verification.
+              {coBrotherOptIn && ' Your CoBrother will reach out within 24 hours.'}
             </div>
-          )}
-          <div className="h-px bg-gray-200 my-2.5" />
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-gray-700 text-[0.9rem]">Total</span>
-            <span className="font-display text-[1.5rem] font-bold text-green-600">
-              {formatPrice(totalPrice)}
-            </span>
           </div>
-        </div>
-
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg mb-5 text-sm text-amber-700">
-          🔒 GitHub link will be shared after you confirm everything works.
-          {coBrotherOptIn && ' Your CoBrother will reach out within 24 hours.'}
-        </div>
-
-        {error && <div className="text-sm text-red-500 mb-4">{error}</div>}
-
-        <div className="flex gap-3">
-          <button className="btn-glow flex-1" onClick={handlePay} disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-              `Pay ${formatPrice(totalPrice)} →`}
-          </button>
-          <button className="btn-glow" onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>
@@ -1226,45 +1248,46 @@ function BillingLine({ label, value, accent }) {
 
 // ─── Purchase Success Modal ───────────────────────────────────────────────────
 function PurchaseSuccessModal({ item, onClose }) {
+  const isSubscription = item.pricingPlan && item.pricingPlan !== 'ONE_TIME';
+  
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[440px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
-        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-        <div className="text-5xl mb-4">🎉</div>
-        <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-2">
-          Purchase Successful!
-        </h2>
-        <p className="text-gray-500 mb-6">
-          You've purchased <strong className="text-gray-900">{item.name}</strong>
+      <div className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 text-center flex flex-col items-center">
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-green-100/30 blur-3xl pointer-events-none" />
+        
+        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mb-5 shadow-inner">
+          🎉
+        </div>
+        
+        <h2 className="font-display text-[1.75rem] font-bold text-gray-900 mb-2">Purchase Successful!</h2>
+        <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          You have successfully purchased <span className="font-semibold text-gray-800">{item.name}</span>.
         </p>
 
-        {item.githubLink && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-xl mb-5 text-left">
-            <div className="text-xs text-gray-500 mb-2">
-              🔓 GitHub Repository
+        <div className="w-full bg-gray-50 border border-gray-200 rounded-[12px] p-5 text-left text-sm mb-6 shadow-sm">
+          <div className="flex flex-col gap-2.5">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-2.5">
+              <span className="text-gray-500 font-medium">Access Status</span>
+              <span className="text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded uppercase text-xs tracking-wider">
+                {isSubscription ? 'Active Subscription' : 'Lifetime Access'}
+              </span>
             </div>
-            <a href={item.githubLink} target="_blank" rel="noreferrer"
-              className="text-green-600 font-semibold break-all text-sm no-underline hover:underline">
-              {item.githubLink}
-            </a>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 font-medium">Order ID</span>
+              <span className="text-gray-900 font-semibold">{item.id?.substring(0, 8).toUpperCase() || '—'}</span>
+            </div>
           </div>
-        )}
+        </div>
 
-        {item.coBrotherOptIn && (
-          <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-xl mb-5 text-left text-sm text-purple-700">
-            ◆ CoBrother Helper activated — expect an introduction within 24 hours.
-          </div>
-        )}
-
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-6 text-sm text-amber-700 text-left">
-          <p className="mb-2">✉️ A confirmation email has been sent to you.</p>
-          <p className="m-0">
-            🔒 Once you verify everything works, mark it as complete from your dashboard.
+        <div className="w-full text-left text-sm text-gray-600 bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-8">
+          <p className="mb-2 font-medium text-blue-900 flex items-center gap-1.5">✉️ A confirmation email has been sent.</p>
+          <p className="m-0 leading-relaxed text-blue-800/80">
+            🔒 Once you verify everything works, mark it as complete from your Purchases dashboard to unlock the repository and resources.
           </p>
         </div>
 
-        <button className="btn-glow w-full" onClick={onClose}>
-          Go to Dashboard →
+        <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={onClose}>
+          Go to My Purchases →
         </button>
       </div>
     </div>
@@ -1312,50 +1335,102 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
           </div>
         ) : (
           <>
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide">{d.category?.replace(/_/g, ' ')}</div>
+            <div className="mb-8 border-b border-gray-100 pb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="inline-flex items-center px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-[0.7rem] font-bold text-gray-700 uppercase tracking-widest">{d.category?.replace(/_/g, ' ')}</div>
                 {d.technologyType === 'HARDWARE' ? (
-                  <div className="inline-flex items-center px-2.5 py-0.5 bg-gray-800 border border-gray-900 rounded-full text-[0.72rem] font-semibold text-white uppercase tracking-wide">HARDWARE</div>
+                  <div className="inline-flex items-center px-2.5 py-1 bg-gray-900 border border-gray-800 rounded-md text-[0.7rem] font-bold text-white uppercase tracking-widest">HARDWARE</div>
                 ) : (
-                  <div className="inline-flex items-center px-2.5 py-0.5 bg-blue-50 border border-blue-200 rounded-full text-[0.72rem] font-semibold text-blue-600 uppercase tracking-wide">SOFTWARE</div>
+                  <div className="inline-flex items-center px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-md text-[0.7rem] font-bold text-indigo-700 uppercase tracking-widest">SOFTWARE</div>
                 )}
                 {d.official && (
-                  <span className="text-[0.72rem] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  <span className="text-[0.7rem] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
                     ✦ Official
                   </span>
                 )}
               </div>
-              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{d.name}</h2>
-              <p className="text-sm text-gray-500">{d.pricingDemand}</p>
+              <h2 className="font-display text-[2.25rem] leading-tight font-bold text-gray-900 mb-2">{d.name}</h2>
+              <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                {d.creatorName && (
+                  <div className="flex items-center gap-1.5">
+                    <CircleUser className="w-4 h-4" />
+                    <span>{d.creatorName}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>{d.purchaseCount || 0} sales</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-gray-400">•</span>
+                  <span>{d.views || 0} views</span>
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-3 mb-6 flex-wrap">
+            <div className="mb-8">
               {hasPlans ? (
-                <div className="w-full flex flex-col gap-2 bg-gray-50 border border-gray-200 rounded-lg p-3">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select Pricing Plan</div>
-                  <div className="flex flex-col gap-2">
-                    {enabledPlans.map(plan => (
-                      <label key={plan.key} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${selectedPlanKey === plan.key ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-300'}`}>
-                        <div className="flex items-center gap-2">
-                          <input type="radio" name="pricingPlan" value={plan.key} checked={selectedPlanKey === plan.key} onChange={() => setSelectedPlanKey(plan.key)} className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
-                          <span className={`text-sm font-medium ${selectedPlanKey === plan.key ? 'text-indigo-900' : 'text-gray-700'}`}>{plan.label}</span>
-                        </div>
-                        <div className={`text-sm font-bold ${selectedPlanKey === plan.key ? 'text-indigo-700' : 'text-gray-900'}`}>
-                          {formatPrice(plan.price)}
-                        </div>
-                      </label>
-                    ))}
+                <div className="w-full flex flex-col gap-4">
+                  <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Select Pricing Plan</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {enabledPlans.map(plan => {
+                      const isSub = plan.key !== 'ONE_TIME';
+                      const isSelected = selectedPlanKey === plan.key;
+                      return (
+                        <label key={plan.key} className={`flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-md transform scale-[1.02]' : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'}`}>
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
+                                {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                              </div>
+                              <span className={`text-[0.95rem] font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-800'}`}>{plan.label}</span>
+                            </div>
+                          </div>
+                          <div className={`text-xl font-black mb-3 ml-8 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                            {formatPrice(plan.price)}
+                          </div>
+                          <div className="ml-8 flex flex-col gap-1.5 mt-auto">
+                            {!isSub ? (
+                              <>
+                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
+                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Access until expiry</div>
+                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Product Updates included</div>
+                              </>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
                   </div>
+                  {/* Subscription Info Card */}
+                  {selectedPlanKey !== 'ONE_TIME' && (
+                    <div className="mt-2 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3">
+                      <div className="text-blue-500 mt-0.5">ℹ️</div>
+                      <div className="flex flex-col gap-1">
+                        <div className="text-[0.85rem] font-bold text-blue-900">Subscription Information</div>
+                        <div className="text-[0.8rem] text-blue-800/80 leading-relaxed">
+                          Your subscription becomes active immediately upon payment. You will have full access and receive product updates until the selected term expires. You can renew anytime before expiry.
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                  💰 {formatPrice(d.price)}
+                <div className="flex flex-col gap-2 bg-gray-50 border border-gray-200 rounded-xl p-5">
+                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">One-Time Purchase</div>
+                  <div className="text-2xl font-black text-gray-900 mb-2">
+                    {formatPrice(d.price)}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
+                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
+                  </div>
                 </div>
               )}
-              <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
-                👁 {d.views || 0} views
-              </div>
             </div>
 
             {d.description && (

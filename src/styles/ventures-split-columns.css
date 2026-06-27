@@ -287,16 +287,24 @@
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__badges {
-  min-height: 2.75rem;
+  height: 3rem;
+  min-height: 3rem;
+  max-height: 3rem;
   align-content: flex-start;
+  overflow: hidden;
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__title-row {
-  min-height: 1.25rem;
+  height: 1.5rem;
+  min-height: 1.5rem;
+  max-height: 1.5rem;
+  overflow: hidden;
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__metrics {
-  min-height: 1.125rem;
+  height: 1.25rem;
+  min-height: 1.25rem;
+  max-height: 1.25rem;
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__footer {

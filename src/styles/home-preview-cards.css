@@ -522,11 +522,34 @@
   flex: 1 1 auto;
   min-height: min-content;
   overflow: visible;
+  justify-content: space-between;
 }
 
 .home-preview-row .venture-listing-card--compact .venture-listing-card__badges {
   row-gap: 0.125rem;
   column-gap: 0.25rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  max-height: 2.75rem;
+  overflow: hidden;
+}
+
+.home-preview-row .venture-listing-card--compact .venture-listing-card__title-row {
+  height: 1.5rem;
+  min-height: 1.5rem;
+  max-height: 1.5rem;
+  overflow: hidden;
+}
+
+.home-preview-row .venture-listing-card--compact .venture-listing-card__metrics {
+  height: 1.25rem;
+  min-height: 1.25rem;
+  max-height: 1.25rem;
+}
+
+.home-preview-row .venture-listing-card--compact .venture-listing-card__footer {
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .home-preview-row .venture-listing-card--home-preview .venture-listing-card__badge {

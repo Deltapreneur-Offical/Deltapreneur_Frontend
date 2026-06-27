@@ -1129,191 +1129,321 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
-          {/* Left Column: Form and Selection */}
-          <div className="flex flex-col gap-6">
-            
-            {/* Buyer details */}
-            <div className="flex flex-col gap-4">
-              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Buyer Information</div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-gray-500 font-semibold">Full Name</label>
-                <input className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm" value={form.buyerFullName}
-                  onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
-                  placeholder="Your full name" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-gray-500 font-semibold">Email</label>
-                  <input className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm" type="email" value={form.buyerEmail}
-                    onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
-                    placeholder="your@email.com" />
+            {/* Left Column: Content */}
+            <div className="flex flex-col gap-8">
+              
+              {/* Plan Selection */}
+              {hasPlans && enabledPlans.length > 1 && (
+                <div className="flex flex-col gap-3">
+                  <div className="text-[0.75rem] font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                    Select a Plan
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {enabledPlans.map(plan => {
+                      const isSub = plan.key !== 'ONE_TIME';
+                      const isSelected = currentPlanKey === plan.key;
+                      return (
+                        <div
+                          key={plan.key}
+                          onClick={() => setCurrentPlanKey(plan.key)}
+                          className={`relative flex flex-col p-5 sm:p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${
+                            isSelected
+                              ? 'border-indigo-600 bg-indigo-50/40 shadow-[0_8px_24px_-6px_rgba(79,70,229,0.2)] scale-[1.02]'
+                              : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-1 bg-indigo-600 text-white text-[0.65rem] font-black uppercase tracking-widest rounded-full shadow-sm">
+                              Selected
+                            </div>
+                          )}
+                          <div className="flex justify-between items-start mb-2">
+                            <span className={`text-sm font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
+                              {plan.label}
+                            </span>
+                          </div>
+                          <div className="mb-4">
+                            <div className={`text-2xl sm:text-3xl font-black tracking-tight ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                              {formatPrice(plan.price)}
+                            </div>
+                            <div className="text-xs text-gray-500 font-medium mt-1">
+                              {plan.key === 'ONE_TIME' ? 'Pay once, own forever' : 'Billed securely today'}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2.5 mt-auto pt-4 border-t border-gray-100">
+                            {!isSub ? (
+                              <>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Lifetime Access
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  No Renewal Fees
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Lifetime Updates
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Full Access
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Product Updates
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Seller Support
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-gray-500 font-semibold">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm"
-                    value={form.buyerPhone}
-                    onChange={handlePhoneChange}
-                    placeholder="10-digit number"
-                    maxLength={10}
-                    inputMode="numeric"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+              )}
 
-            {/* Plan Selection */}
-            {hasPlans && enabledPlans.length > 1 && (
-              <div className="flex flex-col gap-4">
-                <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Pricing Plan</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {enabledPlans.map(plan => {
-                    const isSelected = currentPlanKey === plan.key;
-                    return (
-                      <div
-                        key={plan.key}
-                        onClick={() => setCurrentPlanKey(plan.key)}
-                        className={`relative flex flex-col p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${
-                          isSelected
-                            ? 'border-indigo-600 bg-gradient-to-b from-indigo-50/50 to-white shadow-[0_8px_20px_-4px_rgba(79,70,229,0.15)] scale-[1.02]'
-                            : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md'
-                        }`}
-                      >
-                        {isSelected && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 text-white text-[0.65rem] font-black uppercase tracking-widest rounded-full shadow-sm">
-                            Selected
+              {/* Optional Services */}
+              <div className="flex flex-col gap-3">
+                <div className="text-[0.75rem] font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                  <div className="w-1.5 h-4 bg-purple-500 rounded-full" />
+                  Optional Services
+                </div>
+                
+                {/* ── CoBrother opt-in card ── */}
+                <div
+                  onClick={() => setCoBrotherOptIn(v => !v)}
+                  className={`relative flex flex-col p-5 rounded-xl cursor-pointer transition-all duration-300 border-2 ${
+                    coBrotherOptIn 
+                      ? 'bg-purple-50/50 border-purple-500 shadow-[0_4px_16px_-4px_rgba(168,85,247,0.2)] scale-[1.01]' 
+                      : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className={`font-bold text-[0.95rem] mb-0.5 flex items-center gap-2 ${coBrotherOptIn ? 'text-purple-900' : 'text-gray-900'}`}>
+                        Co-Creator Assistance
+                      </div>
+                      <div className="text-gray-500 text-[0.8rem] leading-relaxed max-w-[90%]">
+                        Professional onboarding and deployment assistance. We'll reach out within 24 hours.
+                      </div>
+                    </div>
+                    <div className={`font-black text-lg ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-700'}`}>
+                      +{formatPrice(1000)}
+                    </div>
+                  </div>
+                </div>
+
+                {ADDON_SERVICES.map(service => {
+                  const isSelected = addons.includes(service.key);
+                  return (
+                    <div
+                      key={service.key}
+                      onClick={() => setAddons(prev => isSelected ? prev.filter(k => k !== service.key) : [...prev, service.key])}
+                      className={`relative flex flex-col p-5 rounded-xl cursor-pointer transition-all duration-300 border-2 ${
+                        isSelected 
+                          ? 'bg-indigo-50/50 border-indigo-500 shadow-[0_4px_16px_-4px_rgba(79,70,229,0.2)] scale-[1.01]' 
+                          : 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-md'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className={`font-bold text-[0.95rem] mb-0.5 flex items-center gap-2 ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
+                            {t(service.labelKey)}
                           </div>
-                        )}
-                        <div className="flex justify-between items-start mb-2">
-                          <span className={`text-sm font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
-                            {plan.label}
-                          </span>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2 ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
-                            {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          <div className="text-gray-500 text-[0.8rem] leading-relaxed max-w-[90%]">
+                            {t(service.descKey || service.labelKey + 'Desc')} 
                           </div>
                         </div>
-                        <div className={`text-2xl font-black mb-1 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
-                          {formatPrice(plan.price)}
-                        </div>
-                        <div className="text-xs text-gray-500 font-medium">
-                          {plan.key === 'ONE_TIME' ? 'Pay once, own forever' : 'Billed securely today'}
+                        <div className={`font-black text-lg ${isSelected ? 'text-indigo-700' : 'text-gray-700'}`}>
+                          +{formatPrice(service.price)}
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
+
+                {!vaLoading && vaServices?.map(va => {
+                  const isSelected = vaAddons.includes(String(va.id));
+                  return (
+                    <div
+                      key={va.id}
+                      onClick={() => setVaAddons(prev => isSelected ? prev.filter(k => k !== String(va.id)) : [...prev, String(va.id)])}
+                      className={`relative flex flex-col p-5 rounded-xl cursor-pointer transition-all duration-300 border-2 ${
+                        isSelected 
+                          ? 'bg-blue-50/50 border-blue-500 shadow-[0_4px_16px_-4px_rgba(59,130,246,0.2)] scale-[1.01]' 
+                          : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className={`font-bold text-[0.95rem] mb-0.5 flex items-center gap-2 ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                            {va.name} (Virtual Assistant)
+                          </div>
+                          <div className="text-gray-500 text-[0.8rem] leading-relaxed max-w-[90%]">
+                            {va.expertise || 'Dedicated operations assistant'}
+                          </div>
+                        </div>
+                        <div className={`font-black text-lg ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                          +{formatPrice(va.monthlyRate)}/mo
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Buyer details */}
+              <div className="flex flex-col gap-3">
+                <div className="text-[0.75rem] font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                  <div className="w-1.5 h-4 bg-gray-400 rounded-full" />
+                  Buyer Information
+                </div>
+                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                    <label className="text-xs text-gray-500 font-semibold">Full Name</label>
+                    <input className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" value={form.buyerFullName}
+                      onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
+                      placeholder="Your full name" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-gray-500 font-semibold">Email</label>
+                    <input className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" type="email" value={form.buyerEmail}
+                      onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
+                      placeholder="your@email.com" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-gray-500 font-semibold">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                      value={form.buyerPhone}
+                      onChange={handlePhoneChange}
+                      placeholder="10-digit number"
+                      maxLength={10}
+                      inputMode="numeric"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-            )}
 
-            <div className="flex flex-col gap-4">
-              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Optional Services</div>
-              {/* ── CoBrother opt-in card ── */}
-              <div
-                onClick={() => setCoBrotherOptIn(v => !v)}
-                className={`flex flex-col gap-3 p-4 cursor-pointer rounded-xl border-2 transition-all shadow-sm ${coBrotherOptIn ? 'bg-purple-50/50 border-purple-400 shadow-md' : 'bg-white border-gray-200 hover:border-purple-300'}`}
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'}`}>
-                    {coBrotherOptIn && (
-                      <span className="text-white text-[0.65rem] font-bold">✓</span>
-                    )}
-                  </div>
-                  <div>
-                    <div className={`font-semibold text-[0.95rem] mb-1 flex items-center gap-2 ${coBrotherOptIn ? 'text-purple-900' : 'text-gray-800'}`}>
-                      <span>◆ Co-Creator Assistance</span>
-                      <span className={`font-display text-[0.9rem] font-bold ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-500'}`}>
-                        +{formatPrice(1000)}
-                      </span>
-                    </div>
-                    <div className="text-gray-500 text-[0.8rem] leading-relaxed pr-2">
-                      Get a dedicated CoBrother to help you set up, deploy, and get the most out of
-                      this software. They'll reach out within 24 hours.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <AddonSections
-                businessSelected={addons}
-                onBusinessChange={setAddons}
-                vaSelected={vaAddons}
-                onVaChange={setVaAddons}
-                vaServices={vaServices}
-                vaLoading={vaLoading}
-              />
             </div>
-
-          </div>
 
           {/* Right Column: Sticky Summary */}
           <div className="sticky top-0">
-            <div className="bg-gray-50 border border-gray-200 rounded-[14px] p-5 shadow-sm">
-              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider mb-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-[20px] p-6 shadow-sm flex flex-col">
+              <div className="text-[0.75rem] font-bold text-gray-800 uppercase tracking-wider mb-5 flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-gray-800 rounded-full" />
                 Order Summary
               </div>
               
-              <div className="flex flex-col gap-2">
-                <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
-                  value={formatPrice(basePrice)} />
+              <div className="flex flex-col gap-3">
+                <div className="flex justify-between items-start pb-4 border-b border-gray-200">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-900 text-sm">{item.name}</span>
+                    {activePlan && <span className="text-xs text-gray-500 font-medium mt-1">{activePlan.label}</span>}
+                  </div>
+                  <span className="font-bold text-gray-900">{formatPrice(basePrice)}</span>
+                </div>
+                
                 {coBrotherOptIn && (
-                  <BillingLine label="◆ Co-Creator Assistance" value={formatPrice(1000)} accent />
+                  <div className="flex justify-between items-center py-1.5">
+                    <span className="text-sm font-medium text-purple-700 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" /> Co-Creator Assistance
+                    </span>
+                    <span className="text-sm font-bold text-purple-700">{formatPrice(1000)}</span>
+                  </div>
                 )}
                 {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
                   const svc = ADDON_SERVICES.find(s => s.key === k);
                   return svc ? (
-                    <BillingLine key={k} label={svc.label}
-                      value={formatPrice(svc.price)} accent />
+                    <div key={k} className="flex justify-between items-center py-1.5">
+                      <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" /> {t(svc.labelKey)}
+                      </span>
+                      <span className="text-sm font-bold text-indigo-700">{formatPrice(svc.price)}</span>
+                    </div>
                   ) : null;
                 })}
                 {vaAddons.map((k) => {
-                  return vaServices.some((s) => String(s.id) === String(k)) ? (
-                    <div key={k} className="flex justify-between items-center py-1.5 text-[0.85rem]">
-                      <span className="truncate mr-2 text-[#7c6fe0]">{vaLabel(k, vaServices)}</span>
-                      <span className="text-xs font-semibold text-amber-700">admin follow-up</span>
+                  return vaServices?.some((s) => String(s.id) === String(k)) ? (
+                    <div key={k} className="flex justify-between items-center py-1.5">
+                      <span className="text-sm font-medium text-blue-700 flex items-center gap-2 truncate pr-4">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0" /> {vaLabel(k, vaServices)} (VA)
+                      </span>
+                      <span className="text-xs font-bold text-amber-600 shrink-0">Admin follow-up</span>
                     </div>
                   ) : null;
                 })}
                 
                 {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
-                  <div className="text-xs text-amber-600 py-1.5 font-medium">+ contact-based services (no charge now)</div>
-                )}
-                {vaAddons.length > 0 && (
-                  <div className="text-xs text-amber-600 py-1.5 font-medium">
-                    Virtual assistant selection will be shared with the admin team for hiring follow-up.
-                  </div>
+                  <div className="text-xs text-amber-600 py-1.5 font-medium">+ Contact-based services (no charge now)</div>
                 )}
               </div>
 
-              <div className="h-px bg-gray-200 my-4" />
+              <div className="h-px bg-gray-200 my-5" />
               
-              <div className="flex justify-between items-center mb-5">
-                <span className="font-semibold text-gray-900 text-[1rem]">Total</span>
-                <span className="font-display text-[1.75rem] font-black text-green-600">
+              <div className="flex justify-between items-end mb-6">
+                <span className="font-bold text-gray-900 text-sm mb-1">Total due today</span>
+                <span className="font-display text-[2rem] leading-none font-black text-gray-900 tracking-tight">
                   {formatPrice(totalPrice)}
                 </span>
               </div>
 
-              {error && <div className="text-sm text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-100">{error}</div>}
+              {error && <div className="text-sm text-red-500 mb-4 p-3.5 bg-red-50 rounded-xl border border-red-100 font-medium flex items-start gap-2">
+                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {error}
+              </div>}
 
-              <div className="flex flex-col gap-3">
-                <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={handlePay} disabled={loading}>
-                  {loading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" /> :
-                    `Pay Securely →`}
+              <div className="flex flex-col gap-3 mt-auto">
+                <button 
+                  className="relative w-full py-4 text-base font-bold text-white rounded-xl shadow-[0_8px_20px_-6px_rgba(79,70,229,0.4)] hover:shadow-[0_12px_24px_-8px_rgba(79,70,229,0.5)] transition-all duration-300 overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed" 
+                  onClick={handlePay} 
+                  disabled={loading}
+                  style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  {loading ? (
+                    <span className="relative flex items-center justify-center gap-2">
+                       <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
+                       Processing...
+                    </span>
+                  ) : (
+                    <span className="relative flex items-center justify-center gap-2">
+                      Pay Securely <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    </span>
+                  )}
                 </button>
-                <button className="w-full py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors" onClick={onClose}>Cancel</button>
-              </div>
-
-              <div className="mt-4 flex items-center justify-center gap-1.5 text-[0.7rem] text-gray-400 font-medium uppercase tracking-wider">
-                🔒 Secure payment via Razorpay
+                <button className="w-full py-3 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors rounded-xl hover:bg-gray-100" onClick={onClose}>
+                  Cancel
+                </button>
               </div>
             </div>
             
-            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-[14px] text-xs text-amber-800 font-medium shadow-sm leading-relaxed">
-              🔒 GitHub/Resources link will be shared after purchase verification.
-              {coBrotherOptIn && ' Your CoBrother will reach out within 24 hours.'}
+            <div className="mt-5 flex flex-col gap-3">
+              <div className="flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <svg className="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.95 11.95 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <div className="text-[0.8rem] text-gray-600 font-medium leading-relaxed">
+                  Secure payment powered by Razorpay. Your data is encrypted and protected.
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <svg className="w-5 h-5 text-indigo-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                <div className="text-[0.8rem] text-gray-600 font-medium leading-relaxed">
+                  GitHub access, documentation, and resources become available immediately after a successful purchase.
+                  {coBrotherOptIn && <span className="font-bold text-gray-800"> Your Co-Creator will reach out within 24 hours.</span>}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1483,14 +1613,14 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                         <div
                           key={plan.key}
                           onClick={() => setSelectedPlanKey(plan.key)}
-                          className={`relative flex flex-col p-5 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${
+                          className={`relative flex flex-col p-5 sm:p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${
                             isSelected
-                              ? 'border-indigo-600 bg-gradient-to-b from-indigo-50/50 to-white shadow-[0_8px_20px_-4px_rgba(79,70,229,0.15)] scale-[1.02]'
-                              : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md'
+                              ? 'border-indigo-600 bg-indigo-50/40 shadow-[0_8px_24px_-6px_rgba(79,70,229,0.2)] scale-[1.02]'
+                              : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5'
                           }`}
                         >
                           {isSelected && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 text-white text-[0.65rem] font-black uppercase tracking-widest rounded-full shadow-sm">
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-1 bg-indigo-600 text-white text-[0.65rem] font-black uppercase tracking-widest rounded-full shadow-sm">
                               Selected
                             </div>
                           )}
@@ -1498,23 +1628,45 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                             <span className={`text-sm font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
                               {plan.label}
                             </span>
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ml-2 ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'}`}>
-                              {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          </div>
+                          <div className="mb-4">
+                            <div className={`text-2xl sm:text-3xl font-black tracking-tight ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                              {formatPrice(plan.price)}
+                            </div>
+                            <div className="text-xs text-gray-500 font-medium mt-1">
+                              {plan.key === 'ONE_TIME' ? 'Pay once, own forever' : 'Billed securely today'}
                             </div>
                           </div>
-                          <div className={`text-2xl font-black mb-3 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
-                            {formatPrice(plan.price)}
-                          </div>
-                          <div className="flex flex-col gap-1.5 mt-auto">
+                          <div className="flex flex-col gap-2.5 mt-auto pt-4 border-t border-gray-100">
                             {!isSub ? (
                               <>
-                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ Lifetime Access</div>
-                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ No Renewal Fees</div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Lifetime Access
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  No Renewal Fees
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Lifetime Updates
+                                </div>
                               </>
                             ) : (
                               <>
-                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ Access until expiry</div>
-                                <div className="text-[0.75rem] font-medium text-gray-500 flex items-center gap-1.5">✓ Product Updates</div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Full Access
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Product Updates
+                                </div>
+                                <div className="text-[0.75rem] font-semibold text-gray-600 flex items-center gap-2">
+                                  <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  Seller Support
+                                </div>
                               </>
                             )}
                           </div>

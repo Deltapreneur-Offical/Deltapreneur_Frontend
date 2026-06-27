@@ -526,9 +526,11 @@
 }
 
 .home-preview-row .venture-listing-card--compact .venture-listing-card__badges {
-  row-gap: 0.125rem;
-  column-gap: 0.25rem;
-  height: 2.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 0.25rem;
+  column-gap: 0;
+  height: auto;
   min-height: 2.75rem;
   max-height: 2.75rem;
   overflow: hidden;

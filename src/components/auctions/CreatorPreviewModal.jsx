@@ -1,120 +1,111 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, X, MapPin, BadgeCheck, Sparkles, Clock, Briefcase, Star, Tag } from 'lucide-react';
+import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatCompactCountdown } from '../../utils/auctionDate';
-import { resolveAuctionListerName } from '../../utils/auctionLister';
+import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
+import { formatCountdown } from '../../utils/auctionDate';
+
+function LinkedInIcon({ size = 18, className = '', fill = 'none' }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={fill}
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect width="4" height="12" x="2" y="9" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+}
 
 function cleanText(value) {
   return String(value || '').trim();
 }
 
-function splitList(value) {
-  return cleanText(value).split(',').map((item) => item.trim()).filter(Boolean);
+function formatLabel(value) {
+  if (!value || typeof value !== 'string') return '';
+  return value.replace(/_/g, ' ').trim();
 }
 
-function normalizeSkills(auction, community) {
-  const raw = (
-    auction?.auctionSkills
-    ?? auction?.auction_skills
-    ?? community?.skills
-    ?? community?.expertise
-    ?? community?.tags
-    ?? ''
-  );
-  if (Array.isArray(raw)) {
-    return raw
-      .map((item) => {
-        if (item && typeof item === 'object') {
-          return cleanText(item.label ?? item.name ?? item.value ?? '');
-        }
-        return cleanText(item);
-      })
-      .filter(Boolean)
-      .slice(0, 10);
-  }
-  return String(raw)
-    .split(/[,\n|]/g)
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, 10);
-}
-
-function readProjects(community) {
-  const source = [
-    community?.projects,
-    community?.portfolioProjects,
-    community?.portfolio_projects,
-    community?.caseStudies,
-    community?.case_studies,
-    community?.workSamples,
-    community?.work_samples,
-  ].find(Boolean);
-
-  if (!source) return [];
-
-  const items = Array.isArray(source) ? source : splitList(source);
-  return items.slice(0, 2).map((item, index) => {
-    if (typeof item === 'string') {
-      return { id: `${index}-${item}`, name: item, description: '', imageUrl: '' };
-    }
-    return {
-      id: item.id ?? item.projectId ?? item.project_id ?? `${index}`,
-      name: item.name ?? item.projectName ?? item.project_name ?? `Project ${index + 1}`,
-      description: item.description ?? item.summary ?? item.tagline ?? '',
-      imageUrl: item.imageUrl ?? item.image_url ?? item.thumbnail ?? item.thumbnailUrl ?? '',
-    };
-  });
-}
-
-function StatCard({ label, value, icon: Icon }) {
+function InfoCard({ label, value, icon: Icon, isLink, linkUrl }) {
   return (
-    <div className="flex min-h-[72px] items-start gap-3 rounded-[18px] border border-[#E5E7EB] bg-[#F8F9FA] px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
-      {Icon ? (
-        <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-[#E5E7EB]">
-          <Icon size={14} />
-        </span>
-      ) : null}
-      <div className="min-w-0">
-        <div className="text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
+    <div className="flex items-start gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.03)] transition-all duration-300 hover:shadow-md hover:border-slate-200/60">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 border border-slate-100 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <Icon size={20} className="text-slate-650" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-400">
           {label}
         </div>
-        <div className="mt-0.5 text-sm font-semibold text-slate-900">
-          {value}
+        <div className="mt-1.5 text-sm font-semibold text-slate-800 break-words leading-relaxed">
+          {isLink && linkUrl ? (
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 hover:underline break-all"
+            >
+              {value}
+              <ExternalLink size={13} className="shrink-0" />
+            </a>
+          ) : (
+            value || '—'
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function CreatorPreviewModal({ auction, open, onClose, onPlaceBid }) {
+export default function CreatorPreviewModal({ profile, auction, open, onClose, onPlaceBid }) {
   const { t } = useTranslation();
-  const [expandedAbout, setExpandedAbout] = useState(false);
   const dialogRef = useRef(null);
 
-  const community = auction?.community || {};
-  const listerName = resolveAuctionListerName(auction) || cleanText(community.name) || t('listingCardAnonymous');
-  const headline = cleanText(community.role || community.industry || community.headline || '');
+  const [timeLeft, setTimeLeft] = useState('');
+  useEffect(() => {
+    if (!auction?.endTime) return;
+    const updateCountdown = () => {
+      const { timeLeft: tl } = formatCountdown(auction.endTime);
+      setTimeLeft(tl);
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [auction?.endTime, open]);
+
+  const community = profile || auction?.community || {};
+  const name = cleanText(community.name) || t('listingCardAnonymous');
+  const roleLabel = formatLabel(community.role);
+  const industryLabel = formatLabel(community.industry);
   const location = cleanText(community.location || '');
-  const skills = normalizeSkills(auction, community);
-  const lookingFor = splitList(community.lookingFor || community.looking_for || community.openTo || community.open_to || community.seeking || '');
-  const about = cleanText(community.whyImHere || community.why_im_here || community.bio || community.description || '');
-  const verified = Boolean(community.isApproved ?? community.is_approved ?? auction?.community?.isApproved ?? false);
-  const featured = Boolean(auction?.featured || community?.featured);
-  const projects = useMemo(() => readProjects(community), [community]);
-  const moreProjects = Math.max(0, Number(community.projectCount ?? community.project_count ?? projects.length) - 2);
-  const startingBid = Number(auction?.minBidPrice ?? 0);
-  const currentBid = Number(auction?.currentHighestBid ?? 0);
-  const timeLeft = formatCompactCountdown(auction?.endTime).timeLeft;
-  const availability = cleanText(community.availability || community.status || 'Available');
-  const years = cleanText(community.yearsOfExperience || community.years_of_experience || '');
-  const projectCount = cleanText(community.projectCount || community.project_count || '');
-  const introductionVideoLink = cleanText(community.introductionVideoLink || community.introduction_video_link || '');
-  const resumeDriveLink = cleanText(community.resumeDriveLink || community.resume_drive_link || '');
-  const portfolioWebsiteLink = cleanText(community.portfolioWebsiteLink || community.portfolio_website_link || '');
+
+  const skills = community.skills
+    ? community.skills.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const about = cleanText(community.about || community.bio || community.why_im_here || community.whyImHere || '');
+  const whyImHere = cleanText(community.why_im_here || community.whyImHere || '');
+
+  const verified = Boolean(community.isApproved ?? community.is_approved ?? false);
+  const featured = Boolean(community.featured ?? auction?.featured ?? false);
+
+  const expectedRate = cleanText(community.expectedRate || community.expected_rate || '');
   const preferredWorkType = cleanText(community.preferredWorkType || community.preferred_work_type || '');
   const industryExpertise = cleanText(community.industryExpertise || community.industry_expertise || '');
   const languagesKnown = cleanText(community.languagesKnown || community.languages_known || '');
+
+  const linkedInUrl = getLinkedInProfileUrl(community);
+  const introductionVideoLink = cleanText(community.introductionVideoLink || community.introduction_video_link || '');
+  const resumeDriveLink = cleanText(community.resumeDriveLink || community.resume_drive_link || '');
+  const portfolioWebsiteLink = cleanText(community.portfolioWebsiteLink || community.portfolio_website_link || '');
 
   useEffect(() => {
     if (!open) return undefined;
@@ -150,18 +141,29 @@ export default function CreatorPreviewModal({ auction, open, onClose, onPlaceBid
     };
   }, [open, onClose]);
 
-  useEffect(() => {
-    if (!open) setExpandedAbout(false);
-  }, [open]);
-
   if (!open || typeof document === 'undefined') return null;
 
   const close = () => onClose?.();
-  const placeBid = () => onPlaceBid?.();
+
+  const handleConnect = () => {
+    if (linkedInUrl) {
+      window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const getCleanDisplayLink = (url) => {
+    if (!url) return '';
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname + parsed.pathname.slice(0, 15) + (parsed.pathname.length > 15 ? '...' : '');
+    } catch {
+      return url.slice(0, 30) + (url.length > 30 ? '...' : '');
+    }
+  };
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/35 p-4 backdrop-blur-[6px]"
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md animate-fadeIn"
       onClick={(e) => {
         e.stopPropagation();
         if (e.target === e.currentTarget) close();
@@ -172,236 +174,256 @@ export default function CreatorPreviewModal({ auction, open, onClose, onPlaceBid
         role="dialog"
         aria-modal="true"
         aria-label="Creator preview"
-        className="w-full max-w-[540px] overflow-hidden rounded-[20px] border border-[#E5E7EB] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.14)] animate-[creatorModalIn_220ms_ease-out]"
+        className="relative w-full max-w-[850px] h-[85vh] overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_32px_96px_-16px_rgba(15,23,42,0.16)] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-[#E5E7EB] px-5 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-lg font-bold text-slate-700 ring-1 ring-[#E5E7EB]">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-6 border-b border-slate-100 p-6 md:p-8 bg-white shrink-0">
+          <div className="flex min-w-0 items-center gap-5">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 shadow-[0_1px_3px_rgba(15,23,42,0.04)] ring-4 ring-slate-50">
               {cleanText(community.imageUrl || community.image_url) ? (
                 <img
                   src={community.imageUrl || community.image_url}
-                  alt={listerName}
+                  alt={name}
                   className="h-full w-full object-cover"
                 />
               ) : (
-                listerName.charAt(0).toUpperCase()
+                <span className="text-3xl font-extrabold text-slate-400">
+                  {name.charAt(0).toUpperCase()}
+                </span>
               )}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-[1.05rem] font-semibold text-slate-900">
-                  {listerName}
+                <h3 className="truncate text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                  {name}
                 </h3>
                 {verified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[0.68rem] font-semibold text-emerald-700">
-                    <BadgeCheck size={11} />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <BadgeCheck size={13} />
                     Verified
                   </span>
                 ) : null}
                 {featured ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-[#F8F9FA] px-2 py-0.5 text-[0.68rem] font-semibold text-slate-700">
-                    <Sparkles size={11} />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50/50 px-2.5 py-0.5 text-xs font-bold text-amber-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Sparkles size={13} className="text-amber-500 fill-amber-500" />
                     Featured
                   </span>
                 ) : null}
               </div>
-              <p className="mt-1 text-sm text-slate-500">
-                {headline || 'Creator profile'}
-              </p>
-              {location ? (
-                <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                  <MapPin size={12} />
-                  {location}
-                </div>
-              ) : null}
+
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                {roleLabel ? (
+                  <span className="inline-block rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 text-[0.68rem] font-bold uppercase tracking-wider px-2.5 py-1">
+                    {roleLabel}
+                  </span>
+                ) : null}
+                {industryLabel ? (
+                  <span className="rounded-lg bg-slate-50 text-slate-600 border border-slate-200/80 text-[0.68rem] font-bold uppercase tracking-wider px-2.5 py-1">
+                    {industryLabel}
+                  </span>
+                ) : null}
+                {location ? (
+                  <div className="flex items-center gap-1 text-xs md:text-sm font-semibold text-slate-500 ml-1">
+                    <MapPin size={14} className="text-slate-400" />
+                    {location}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
           <button
             type="button"
             onClick={close}
-            className="rounded-full p-2 text-slate-500 transition-all duration-150 hover:bg-slate-100 hover:text-slate-900 hover:scale-105"
+            className="rounded-full p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
             aria-label="Close creator preview"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
-        <div className="max-h-[76vh] overflow-y-auto px-5 py-4">
-          <div className="space-y-4">
-            {about ? (
-              <section>
-                <div className="mb-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  About
-                </div>
-                <p className={`${expandedAbout ? '' : 'line-clamp-4'} text-sm leading-6 text-slate-700`}>
-                  {about}
-                </p>
-                {about.length > 180 ? (
-                  <button
-                    type="button"
-                    className="mt-1 text-xs font-semibold text-emerald-700 transition-colors hover:text-emerald-800"
-                    onClick={() => setExpandedAbout((v) => !v)}
-                  >
-                    {expandedAbout ? 'Show less' : 'Read more'}
-                  </button>
-                ) : null}
-              </section>
-            ) : null}
-
-            {skills.length > 0 ? (
-              <section>
-                <div className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Expertise
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <span key={skill} className="rounded-full border border-slate-200 bg-[#F8F9FA] px-3 py-1 text-xs font-medium text-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            <section className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <StatCard label="Experience" value={years || '—'} icon={Clock} />
-              <StatCard label="Projects" value={projectCount || projects.length || '—'} icon={Briefcase} />
-              <StatCard label="Availability" value={availability} icon={Sparkles} />
-            </section>
-
-            {lookingFor.length > 0 ? (
-              <section>
-                <div className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Looking For
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {lookingFor.map((item) => (
-                    <span key={item} className="rounded-full border border-slate-200 bg-[#F8F9FA] px-3 py-1 text-xs font-semibold text-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {preferredWorkType ? (
-              <section>
-                <div className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Preferred Work Type
-                </div>
-                <div className="rounded-full border border-slate-200 bg-[#F8F9FA] px-3 py-1 text-xs font-semibold text-slate-700">
-                  {preferredWorkType.replace(/_/g, ' ')}
-                </div>
-              </section>
-            ) : null}
-
-            {industryExpertise ? (
-              <section>
-                <div className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Industry Expertise
-                </div>
-                <div className="text-sm text-slate-700">
-                  {industryExpertise}
-                </div>
-              </section>
-            ) : null}
-
-            {languagesKnown ? (
-              <section>
-                <div className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Languages Known
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {languagesKnown.split(',').map((lang, idx) => (
-                    <span key={idx} className="rounded-full border border-slate-200 bg-[#F8F9FA] px-3 py-1 text-xs font-medium text-slate-700">
-                      {lang.trim()}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {introductionVideoLink || resumeDriveLink || portfolioWebsiteLink ? (
-              <section>
-                <div className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Links & Resources
-                </div>
-                <div className="space-y-2">
-                  {introductionVideoLink && (
-                    <a href={introductionVideoLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 transition-colors">
-                      🎥 Introduction Video
-                    </a>
-                  )}
-                  {resumeDriveLink && (
-                    <a href={resumeDriveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 transition-colors">
-                      📄 Resume
-                    </a>
-                  )}
-                  {portfolioWebsiteLink && (
-                    <a href={portfolioWebsiteLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 transition-colors">
-                      🌐 Portfolio
-                    </a>
-                  )}
-                </div>
-              </section>
-            ) : null}
-
-            <section>
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Portfolio Preview
-                </div>
-                {moreProjects > 0 ? (
-                  <div className="text-xs font-medium text-slate-500">
-                    + {moreProjects} More Projects
-                  </div>
-                ) : null}
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto p-6 md:p-8 space-y-6 flex-1 bg-slate-50/30">
+          {/* About Section */}
+          {about ? (
+            <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
+              <div className="mb-2.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-400">
+                About
               </div>
-              {projects.length > 0 ? (
-                <div className="space-y-2">
-                  {projects.slice(0, 2).map((project) => (
-                    <div key={project.id} className="flex gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F8F9FA] p-3">
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-200">
-                        {project.imageUrl ? (
-                          <img src={project.imageUrl} alt="" className="h-full w-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-slate-900">{project.name}</div>
-                        <div className="line-clamp-2 text-xs leading-5 text-slate-500">
-                          {project.description || 'Recent work preview'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-[#E5E7EB] px-4 py-4 text-sm text-slate-500">
-                  Portfolio preview will appear here when project data is available.
-                </div>
-              )}
+              <p className="text-sm leading-relaxed text-slate-600 font-medium whitespace-pre-line">
+                {about}
+              </p>
             </section>
+          ) : null}
+
+          {/* Details Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left Column (Details) */}
+            <div className="space-y-4">
+              <InfoCard
+                label="Why I'm Here"
+                value={whyImHere}
+                icon={Target}
+              />
+              <InfoCard
+                label="Expected Rate"
+                value={expectedRate}
+                icon={Tag}
+              />
+              <InfoCard
+                label="Preferred Work Type"
+                value={preferredWorkType ? preferredWorkType.replace(/_/g, ' ') : ''}
+                icon={Briefcase}
+              />
+              <InfoCard
+                label="Industry Expertise"
+                value={industryExpertise}
+                icon={Building2}
+              />
+              <InfoCard
+                label="Languages Known"
+                value={languagesKnown}
+                icon={Globe}
+              />
+            </div>
+
+            {/* Right Column (Links) */}
+            <div className="space-y-4">
+              <InfoCard
+                label="Introduction Video"
+                value={getCleanDisplayLink(introductionVideoLink) || 'Not provided'}
+                icon={Video}
+                isLink={Boolean(introductionVideoLink)}
+                linkUrl={introductionVideoLink}
+              />
+              <InfoCard
+                label="Resume (PDF)"
+                value={getCleanDisplayLink(resumeDriveLink) || 'Not provided'}
+                icon={FileText}
+                isLink={Boolean(resumeDriveLink)}
+                linkUrl={resumeDriveLink}
+              />
+              <InfoCard
+                label="Portfolio Website"
+                value={getCleanDisplayLink(portfolioWebsiteLink) || 'Not provided'}
+                icon={Globe}
+                isLink={Boolean(portfolioWebsiteLink)}
+                linkUrl={portfolioWebsiteLink}
+              />
+            </div>
           </div>
+
+          {skills.length > 0 ? (
+            <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
+              <div className="mb-3.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-400">
+                Skills
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full border border-slate-200 bg-slate-50/50 px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-default"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
-        <div className="border-t border-[#E5E7EB] bg-white px-5 py-4">
-          <div className="grid grid-cols-3 gap-2">
-            <StatCard label="Starting Bid" value={`₹${Number(startingBid).toLocaleString('en-IN')}`} icon={Tag} />
-            <StatCard label="Current Bid" value={currentBid > 0 ? `₹${Number(currentBid).toLocaleString('en-IN')}` : 'No bids yet'} icon={Star} />
-            <StatCard label="Time Left" value={timeLeft} icon={Clock} />
+        {/* Footer Section */}
+        {auction ? (
+          <div className="border-t border-slate-150 bg-white p-6 md:px-8 md:py-6 shadow-[0_-8px_32px_rgba(15,23,42,0.04)] shrink-0 flex flex-col gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+              <div className="px-3 py-2 text-center md:text-left border-r border-slate-100">
+                <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.1em] text-slate-400 flex items-center gap-1.5 justify-center md:justify-start">
+                  <Tag size={11} className="text-slate-400" /> Starting Bid
+                </div>
+                <div className="mt-1 text-base font-extrabold text-slate-800 tracking-tight">
+                  ₹{Number(auction.minBidPrice ?? 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div className="px-3 py-2 text-center md:text-left border-r border-slate-100">
+                <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.1em] text-slate-400 flex items-center gap-1.5 justify-center md:justify-start">
+                  <Gavel size={11} className="text-slate-400" /> Total Bids
+                </div>
+                <div className="mt-1 text-base font-extrabold text-slate-800 tracking-tight">
+                  {auction.totalBids ?? 0}
+                </div>
+              </div>
+              <div className="px-3 py-2 text-center md:text-left border-r border-slate-100">
+                <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.1em] text-slate-400 flex items-center gap-1.5 justify-center md:justify-start">
+                  <Clock size={11} className="text-slate-400" /> Ends In
+                </div>
+                <div className={`mt-1 text-base font-extrabold tracking-tight ${timeLeft === 'Ended' ? 'text-rose-500' : 'text-amber-600'}`}>
+                  {timeLeft || '—'}
+                </div>
+              </div>
+              <div className="px-3 py-2 text-center md:text-left">
+                <div className="text-[0.62rem] font-extrabold uppercase tracking-[0.1em] text-slate-400 flex items-center gap-1.5 justify-center md:justify-start">
+                  <Star size={11} className="text-slate-450" /> Current Bid
+                </div>
+                <div className="mt-1 text-base font-extrabold text-emerald-600 tracking-tight">
+                  {auction.currentHighestBid > 0
+                    ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
+                    : 'No bids yet'}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center gap-4">
+              <button
+                type="button"
+                onClick={close}
+                className="px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md hover:border-slate-400 hover:-translate-y-0.5 active:translate-y-0"
+              >
+                Close
+              </button>
+              {onPlaceBid && (
+                <button
+                  type="button"
+                  onClick={onPlaceBid}
+                  className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold flex items-center gap-2 transition-all shadow-[0_2px_4px_rgba(79,70,229,0.2)] hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-650/30 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  Place Bid <ArrowRight size={16} />
+                </button>
+              )}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={placeBid}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
-          >
-            Place Bid
-            <ArrowRight size={15} />
-          </button>
-        </div>
+        ) : (
+          <div className="border-t border-slate-100 px-6 py-4 flex justify-between items-center bg-slate-50/50 shrink-0">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={close}
+              className="px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md hover:border-slate-400 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Close
+            </button>
+
+            {/* Connect Button */}
+            <button
+              type="button"
+              onClick={handleConnect}
+              disabled={!linkedInUrl}
+              className={`px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 flex items-center gap-3 shadow-sm transition-all duration-300 ${linkedInUrl
+                ? 'hover:bg-slate-50 hover:shadow-md hover:border-slate-450 hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
+                : 'opacity-50 cursor-not-allowed'
+                }`}
+            >
+              {/* LinkedIn Box */}
+              <span className="flex items-center justify-center w-8 h-8 rounded-[6px] bg-[#0A66C2] text-white text-[15px] font-bold transition-all duration-300">
+                in
+              </span>
+
+              <span className="text-sm font-bold">
+                Connect
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }

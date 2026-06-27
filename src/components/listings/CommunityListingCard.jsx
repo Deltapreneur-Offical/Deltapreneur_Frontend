@@ -8,7 +8,6 @@ import LikeButton from '../common/LikeButton';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
-import CreatorPreviewModal from '../auctions/CreatorPreviewModal';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 
 function formatLabel(value) {
@@ -48,7 +47,6 @@ export default function CommunityListingCard({
   followLoading = false,
 }) {
   const { t } = useTranslation();
-  const [showPreview, setShowPreview] = useState(false);
   const cardRef = useRef(null);
 
   if (!profile) return null;
@@ -73,32 +71,17 @@ export default function CommunityListingCard({
     e.preventDefault();
   };
   const interactive = Boolean(onView) && !isMe;
-  const auctionLike = {
-    community: profile,
-    featured: Boolean(profile?.featured),
-    minBidPrice: 0,
-    currentHighestBid: 0,
-    endTime: null,
-  };
+  console.log("DASHBOARD PROFILE", profile);
 
   return (
     <article
       ref={cardRef}
       className={`creator-profile-card community-listing-card card-glow-hover${isMe ? ' creator-profile-card--owner' : ''}`}
-      onClick={interactive ? () => setShowPreview(true) : undefined}
+      onClick={interactive ? onView : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') setShowPreview(true); } : undefined}
+      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView(); } : undefined}
     >
-      <CreatorPreviewModal
-        auction={auctionLike}
-        open={showPreview}
-        onClose={() => {
-          setShowPreview(false);
-          cardRef.current?.focus?.();
-        }}
-        onPlaceBid={onView}
-      />
       <div className="creator-profile-card__banner">
         {coverImageUrl ? (
           <>

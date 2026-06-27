@@ -437,7 +437,7 @@
   "domainsPageFormListSubtitle": "Fill in the details to list your domain for sale.",
   "domainsPageDomainNameLabel": "Domains Name",
   "domainsPageExtensionLabel": "Extension",
-  "domainsPageDomainNamePlaceholder": "e.g. mybrand",
+  "domainsPageDomainNamePlaceholder": "mybrand",
   "domainsPageExtensionPlaceholder": ".com",
   "domainsPagePreview": "Preview:",
   "domainsPageSaleTypeLabel": "Sale Type",

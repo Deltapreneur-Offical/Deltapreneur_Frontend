@@ -622,7 +622,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     ? computeCommissionBreakdown(sellerAmount, commissionPercent)
     : null;
   const selectedExt = normalizeDomainExtension(form.domainExtension);
-  const baseExtensions = ['.com', '.in', '.io', '.net', '.org', '.co', '.ai'];
+  const baseExtensions = ['.com', '.io', '.net', '.org', '.co', '.ai'];
   const extensionOptions =
     selectedExt?.full && !baseExtensions.includes(selectedExt.full)
       ? [...baseExtensions, selectedExt.full]

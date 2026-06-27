@@ -389,6 +389,7 @@
 .creator-profile-card__footer.listing-card-stats-footer--creator {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
+  margin-left: auto;
   align-items: center;
   gap: 0.75rem;
   width: 100%;

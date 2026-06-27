@@ -246,6 +246,14 @@ export default function CoCreationDashboardPage() {
   );
 }
 
+const PLAN_LABELS = {
+  'ONE_TIME': 'One-Time Purchase',
+  '1_MONTH': '1 Month Subscription',
+  '3_MONTHS': '3 Months Subscription',
+  '6_MONTHS': '6 Months Subscription',
+  '12_MONTHS': '12 Months Subscription',
+};
+
 // ─── Listing Row (seller view) ────────────────────────────────────────────────
 function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAuction, onViewAuction }) {
   const { t } = useTranslation();
@@ -253,6 +261,8 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
   const [expanded, setExpanded] = useState(false);
   const sales = item.purchaseCount || 0;
   const verified = Boolean(item.verified);
+  const enabledPlans = item.pricingPlans?.filter(p => p.enabled) || [];
+  const hasSubscriptions = enabledPlans.some(p => p.key !== 'ONE_TIME');
 
   return (
     <div className="bg-white border border-gray-200 rounded-[10px] overflow-hidden">
@@ -264,6 +274,20 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-gray-900 text-[0.95rem]">{item.name}</span>
             <VerificationStatusBadge item={item} type="technology" />
+            {item.technologyType === 'HARDWARE' ? (
+              <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-1.5 py-0.5 rounded">
+                HARDWARE
+              </span>
+            ) : (
+              <span className="text-[0.68rem] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                SOFTWARE
+              </span>
+            )}
+            {hasSubscriptions && (
+              <span className="text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">
+                SUBSCRIPTIONS AVAILABLE
+              </span>
+            )}
             {item.official && (
               <span className="text-[0.68rem] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
                 ✦ Official
@@ -278,9 +302,10 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
         <div className="flex items-center gap-5 flex-shrink-0">
           <div className="text-right">
             <div className="font-display text-[1.1rem] font-bold text-indigo-600">
-              {formatPrice(item.price)}
+              {enabledPlans.length > 0 ? formatPrice(enabledPlans[0].price) : formatPrice(item.price)}
+              {enabledPlans.length > 1 && <span className="text-xs text-gray-400 font-normal"> +</span>}
             </div>
-            <div className="text-[0.72rem] text-gray-400">per sale</div>
+            <div className="text-[0.72rem] text-gray-400">{enabledPlans.length > 0 ? enabledPlans[0].label : 'per sale'}</div>
           </div>
           <div className="text-center">
             <div className="font-display text-[1.3rem] font-bold text-green-600">
@@ -301,15 +326,25 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 px-5 py-3.5 flex gap-3 flex-wrap items-center">
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50" onClick={onAnalytics}>
-            📊 Analytics
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 transition-colors hover:bg-indigo-100"
-            onClick={onShowVerification}
-          >
+        <div className="border-t border-gray-100 px-5 py-3.5 flex flex-col gap-3">
+          {enabledPlans.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-1">
+              {enabledPlans.map(p => (
+                <span key={p.key} className="text-xs px-2.5 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
+                  <span className="font-semibold">{p.label}:</span> {formatPrice(p.price)}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-3 flex-wrap items-center">
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50" onClick={onAnalytics}>
+              📊 Analytics
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 transition-colors hover:bg-indigo-100"
+              onClick={onShowVerification}
+            >
             {verified
               ? t('techVerifyTrackerTitleDone', 'Verification complete — view steps')
               : t('techVerifyTrackerTitle', 'View verification progress')}
@@ -339,6 +374,7 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
               {isTechnologyAuctionLive(item, auctionStatus) ? '🟢 View Live Auction' : 'View Auction'}
             </button>
           )}
+          </div>
           <span className="text-[0.78rem] text-gray-400">
             👁 {item.views || 0} views · ✦ {sales} paid
             {sales > 0 && ` · Revenue: ${formatPrice(item.price * sales)}`}
@@ -358,6 +394,18 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
   const isPending    = purchase.completionStatus === 'PENDING' &&
                        purchase.paymentStatus === 'COMPLETED';
   const helpPaid     = purchase.coBrotherHelpPaid;
+  const planLabel    = PLAN_LABELS[purchase.pricingPlan] || 'One-Time Purchase';
+
+  const purchaseDate = new Date(purchase.soldAt || purchase.created_at || Date.now());
+  let expiryLabel = null;
+  if (purchase.pricingPlan && purchase.pricingPlan !== 'ONE_TIME') {
+    const months = parseInt(purchase.pricingPlan.split('_')[0], 10);
+    if (!isNaN(months)) {
+      const expiry = new Date(purchaseDate);
+      expiry.setMonth(expiry.getMonth() + months);
+      expiryLabel = `Expires: ${expiry.toLocaleDateString()}`;
+    }
+  }
 
   return (
     <div className={`bg-white border rounded-[10px] overflow-hidden ${isConfirmed ? 'border-green-200' : isPending ? 'border-purple-200' : 'border-gray-200'}`}>
@@ -366,6 +414,18 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-gray-900 text-[0.95rem] flex items-center gap-2 flex-wrap">
             {sw.name || '—'}
+            {sw.technologyType === 'HARDWARE' ? (
+              <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-1.5 py-0.5 rounded">
+                HARDWARE
+              </span>
+            ) : (
+              <span className="text-[0.68rem] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                SOFTWARE
+              </span>
+            )}
+            <span className="text-[0.68rem] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+              {planLabel}
+            </span>
             {isConfirmed && (
               <span className="text-[0.68rem] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">
                 ✓ Confirmed
@@ -384,9 +444,10 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
           </div>
           <div className="text-[0.78rem] text-gray-400 mt-0.5">
             {sw.category?.replace(/_/g, ' ')} · Purchased{' '}
-            {formatAuctionDate(purchase.soldAt, {
+            {formatAuctionDate(purchaseDate.toISOString(), {
               day: 'numeric', month: 'short', year: 'numeric',
             }, '')}
+            {expiryLabel && ` · ${expiryLabel}`}
           </div>
         </div>
 
@@ -409,14 +470,43 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
       {expanded && (
         <div className="border-t border-gray-100 px-5 py-4">
 
-          {/* GitHub access */}
-          {sw.githubLink && (
-            <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-3.5 flex items-center justify-between">
-              <span className="text-[0.82rem] text-gray-500">🔗 GitHub Repository</span>
-              <a href={sw.githubLink} target="_blank" rel="noreferrer"
-                 className="text-sm text-green-600 font-semibold no-underline hover:underline">
-                Open →
-              </a>
+          {/* Purchased Resources */}
+          {purchase.paymentStatus === 'COMPLETED' && (
+            <div className="mb-4">
+              <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Purchased Resources</div>
+              
+              {sw.githubLink && (
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-2 flex items-center justify-between">
+                  <span className="text-[0.82rem] text-gray-500">🔗 GitHub Repository</span>
+                  <a href={sw.githubLink} target="_blank" rel="noreferrer"
+                     className="text-sm text-green-600 font-semibold no-underline hover:underline">
+                    Open →
+                  </a>
+                </div>
+              )}
+              
+              {sw.demoUrl && (
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-2 flex items-center justify-between">
+                  <span className="text-[0.82rem] text-gray-500">🌐 Demo URL</span>
+                  <a href={sw.demoUrl} target="_blank" rel="noreferrer"
+                     className="text-sm text-indigo-600 font-semibold no-underline hover:underline">
+                    Open →
+                  </a>
+                </div>
+              )}
+              
+              {sw.supportingDocuments && sw.supportingDocuments.length > 0 && (
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg mb-2">
+                  <span className="text-[0.82rem] text-gray-500 block mb-1">📄 Supporting Documents</span>
+                  <div className="flex flex-col gap-1 mt-2">
+                    {sw.supportingDocuments.map((doc, idx) => (
+                      <a key={idx} href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 font-semibold hover:underline">
+                        {doc.name || `Document ${idx + 1}`} ↗
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

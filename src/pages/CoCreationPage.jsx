@@ -29,7 +29,7 @@ import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
-import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS } from '../constants/listingCategories';
+import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS, HARDWARE_CATEGORIES, HARDWARE_CATEGORY_OPTIONS } from '../constants/listingCategories';
 import TechnologyDemoVideoSection, { isValidDemoVideoUrl } from '../components/technology/TechnologyDemoVideoSection';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import {
@@ -52,13 +52,14 @@ export default function CoCreationPage() {
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol, formatPrice } = useCurrency();
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const [allSoftware, setAllSoftware] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [buyTarget, setBuyTarget] = useState(null);
+  const [buyTargetPlan, setBuyTargetPlan] = useState(null);
   const [successItem, setSuccessItem] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -338,13 +339,15 @@ export default function CoCreationPage() {
       {buyTarget && (
         <BuySoftwareModal
           item={buyTarget}
+          selectedPlan={buyTargetPlan}
           user={user}
           vaServices={vaServices}
           vaLoading={vaLoading}
-          onClose={() => setBuyTarget(null)}
+          onClose={() => { setBuyTarget(null); setBuyTargetPlan(null); }}
           onSuccess={item => {
             setSuccessItem(item);
             setBuyTarget(null);
+            setBuyTargetPlan(null);
             setAllSoftware(prev => prev.map(x => x.id === item.id ? item : x));
           }}
         />
@@ -361,7 +364,7 @@ export default function CoCreationPage() {
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshSoftware(); }}
-          onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
+          onBuy={(plan) => { setBuyTarget(detailTarget); setBuyTargetPlan(plan); closeListingDetail(); }}
           onEdit={user ? () => {
             setEditTarget(detailTarget);
             setShowForm(false);
@@ -396,6 +399,30 @@ export default function CoCreationPage() {
   );
 }
 
+
+// ─── Pricing plan definitions ─────────────────────────────────────────────────
+const PRICING_PLAN_DEFS = [
+  { key: 'ONE_TIME', label: 'One-Time Purchase' },
+  { key: '1_MONTH', label: '1 Month Subscription' },
+  { key: '3_MONTHS', label: '3 Months Subscription' },
+  { key: '6_MONTHS', label: '6 Months Subscription' },
+  { key: '12_MONTHS', label: '12 Months Subscription' },
+];
+
+function normalizePricingPlans(savedPlans) {
+  // Normalize saved pricingPlans (from API) back into the local state shape
+  const savedMap = {};
+  if (Array.isArray(savedPlans)) {
+    savedPlans.forEach((p) => { savedMap[p.key] = p; });
+  }
+  return PRICING_PLAN_DEFS.map((def) => ({
+    key: def.key,
+    label: def.label,
+    enabled: Boolean(savedMap[def.key]?.enabled),
+    price: savedMap[def.key]?.price != null ? String(savedMap[def.key].price) : '',
+  }));
+}
+
 function softwareToFormFields(item, navCurrency) {
   return {
     name: item?.name || '',
@@ -405,16 +432,21 @@ function softwareToFormFields(item, navCurrency) {
     howItHelps: item?.howItHelps || item?.how_it_helps || '',
     githubLink: item?.githubLink || item?.github_link || '',
     liveDemoLink: item?.liveDemoLink || item?.live_demo_link || '',
+    demoUrl: item?.demoUrl || item?.demo_url || '',
     techStack: item?.techStack || item?.tech_stack || '',
     category: item?.category || '',
     pricingDemand: item?.pricingDemand || item?.pricing_demand || '',
     price: item?.price != null && item?.price !== '' ? String(item.price) : '',
     currency: item?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    technologyType: item?.technologyType || item?.technology_type || 'SOFTWARE',
+    pricingPlans: normalizePricingPlans(item?.pricingPlans || item?.pricing_plans),
+    supportingDocuments: [],
     agreement: { terms: Boolean(item?.id) },
   };
 }
 
-// ─── Software Form (create + edit) ────────────────────────────────────────────
+
+// ─── Software / Hardware Listing Form (create + edit) ─────────────────────────
 function SoftwareForm({ initial, onSaved, onCancel }) {
   const { currency: navCurrency } = useCurrency();
   const isEdit = Boolean(initial?.id);
@@ -427,6 +459,11 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef(null);
+
+  // Supporting documents state
+  const [supportingDocs, setSupportingDocs] = useState([]);
+  const [docsError, setDocsError] = useState('');
+  const docsInputRef = useRef(null);
 
   useEffect(() => {
     if (initial?.id) {
@@ -446,11 +483,34 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  // Derived helpers
+  const isHardware = form.technologyType === 'HARDWARE';
+  const activeCategories = isHardware ? HARDWARE_CATEGORIES : TECHNOLOGY_CATEGORIES;
+
   // GitHub URL validation
   const isValidGithubUrl = (url) => {
     const githubRegex = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)?\/?$/;
     return githubRegex.test(url);
   };
+
+  // Pricing plan helpers
+  const setPlanField = (key, field, value) => {
+    setForm(f => ({
+      ...f,
+      pricingPlans: f.pricingPlans.map(p =>
+        p.key === key ? { ...p, [field]: value } : p
+      ),
+    }));
+  };
+
+  // First enabled plan's price used as the legacy price for backward compat
+  const firstEnabledPlan = form.pricingPlans.find(p => p.enabled);
+  const legacyPriceFromPlans = firstEnabledPlan ? (parseFloat(firstEnabledPlan.price) || 0) : 0;
+
+  // Commission breakdown based on first enabled plan
+  const commissionBreakdown = legacyPriceFromPlans > 0
+    ? computeCommissionBreakdown(legacyPriceFromPlans, commissionPercent)
+    : null;
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -468,18 +528,37 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
       return;
     }
 
-    // Validate GitHub URL
-    if (!isValidGithubUrl(form.githubLink)) {
+    // Validate GitHub URL — required for Software, optional for Hardware
+    if (!isHardware && !isValidGithubUrl(form.githubLink)) {
       setError('Please enter a valid GitHub URL (e.g., https://github.com/username/repo).');
+      setLoading(false);
+      return;
+    }
+    if (isHardware && form.githubLink && !isValidGithubUrl(form.githubLink)) {
+      setError('Please enter a valid GitHub URL or leave it blank.');
       setLoading(false);
       return;
     }
 
     try {
+      // Build payload: keep all legacy fields, append new pricingPlans and technologyType
       const payload = {
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
+        technologyType: form.technologyType,
+        // Legacy price auto-set from first enabled plan for backward compat
+        price: legacyPriceFromPlans > 0 ? legacyPriceFromPlans : (parseFloat(form.price) || 0),
+        // pricingDemand kept from form state (legacy compat)
+        pricingDemand: form.pricingDemand || 'FIXED',
+        // Dedicated pricingPlans field — only enabled plans with a price
+        pricingPlans: form.pricingPlans.map(p => ({
+          key: p.key,
+          label: p.label,
+          enabled: p.enabled,
+          price: p.enabled && p.price !== '' ? parseFloat(p.price) || null : null,
+        })),
       };
+
       const { data } = isEdit
         ? await technologyAPI.update(initial.id, payload)
         : await technologyAPI.create(payload);
@@ -501,6 +580,19 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
             || uploadErr.response?.data?.message
             || 'Listing saved but logo upload failed. You can update it again later.',
           );
+        }
+      }
+
+      // Supporting documents upload (mirrors image upload pattern)
+      if (supportingDocs.length > 0 && saved?.id && technologyAPI.uploadSupportingDoc) {
+        for (const docFile of supportingDocs) {
+          const fd = new FormData();
+          fd.append('file', docFile);
+          try {
+            await technologyAPI.uploadSupportingDoc(saved.id, fd);
+          } catch {
+            setDocsError('Listing saved but one or more supporting documents failed to upload. You can retry later.');
+          }
         }
       }
 
@@ -530,12 +622,25 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
     reader.readAsDataURL(file);
   };
 
+  const handleDocsChange = e => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setDocsError('');
+    setSupportingDocs(prev => {
+      const existing = new Set(prev.map(f => f.name + f.size));
+      const newOnes = files.filter(f => !existing.has(f.name + f.size));
+      return [...prev, ...newOnes];
+    });
+    // Reset the input so the same file can be re-selected after removal
+    e.target.value = '';
+  };
+
+  const removeDoc = (idx) => {
+    setSupportingDocs(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
-  const sellerAmount = parseFloat(form.price) || 0;
-  const commissionBreakdown = sellerAmount > 0
-    ? computeCommissionBreakdown(sellerAmount, commissionPercent)
-    : null;
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
@@ -549,18 +654,56 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
+
+        {/* ── Technology Type Selector ── */}
+        {!isEdit && (
+          <div className="flex flex-col gap-2">
+            <label className={labelCls}>Technology Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'SOFTWARE', label: 'Software', desc: 'Apps, SaaS, APIs, automation tools, and other software products.', accent: 'blue' },
+                { value: 'HARDWARE', label: 'Hardware', desc: 'Physical devices, IoT, electronics, robotics, and embedded systems.', accent: 'teal' },
+              ].map((opt) => {
+                const selected = form.technologyType === opt.value;
+                const borderCls = opt.accent === 'teal'
+                  ? (selected ? 'border-teal-400 bg-teal-50/40' : 'border-gray-200 hover:border-teal-200')
+                  : (selected ? 'border-blue-400 bg-blue-50/40' : 'border-gray-200 hover:border-blue-200');
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      set('technologyType', opt.value);
+                      set('category', ''); // reset category on type switch
+                    }}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${borderCls}`}
+                  >
+                    <div className="font-semibold text-sm text-gray-900">{opt.label}</div>
+                    <div className="text-xs text-gray-500 mt-1">{opt.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Name ── */}
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Software Name <span className="text-red-500">*</span></label>
+          <label className={labelCls}>
+            {isHardware ? 'Hardware Name' : 'Software Name'} <span className="text-red-500">*</span>
+          </label>
           <input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)}
-            placeholder="e.g. InvoiceFlow" required />
+            placeholder={isHardware ? 'e.g. SmartSensor Pro' : 'e.g. InvoiceFlow'} required />
         </div>
 
+        {/* ── Description ── */}
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>Description <span className="text-red-500">*</span></label>
           <textarea className={`${inputCls} resize-vertical`} value={form.description} onChange={e => set('description', e.target.value)}
-            placeholder="Brief overview of your software" rows={3} required />
+            placeholder={isHardware ? 'Brief overview of your hardware product' : 'Brief overview of your software'} rows={3} required />
         </div>
 
+        {/* ── What It Does / How It Helps ── */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>What It Does <span className="text-red-500">*</span></label>
@@ -574,54 +717,103 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           </div>
         </div>
 
+        {/* ── Category / Tech Stack or Hardware Specs ── */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Category <span className="text-red-500">*</span></label>
             <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)} required>
               <option value="">Select category</option>
-              {TECHNOLOGY_CATEGORIES.map(c => (
+              {activeCategories.map(c => (
                 <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>
               ))}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Tech Stack</label>
+            <label className={labelCls}>{isHardware ? 'Hardware Specifications' : 'Tech Stack'}</label>
             <input className={inputCls} value={form.techStack} onChange={e => set('techStack', e.target.value)}
-              placeholder="React, Spring Boot, PostgreSQL" />
+              placeholder={isHardware
+                ? 'Processor, chipset, sensors, communication protocol, power requirements…'
+                : 'React, Spring Boot, PostgreSQL'} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <CurrencyPriceInput
-            id="software-price"
-            label="Price"
-            value={form.price}
-            onChange={(v) => set('price', v)}
-            currency={form.currency}
-            onCurrencyChange={(code) => set('currency', code)}
-            required
-            placeholder="e.g. 25000"
-            inputClassName={inputCls}
-            labelClassName={labelCls}
-          />
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
-            <select className={inputCls} value={form.pricingDemand}
-              onChange={e => set('pricingDemand', e.target.value)} required>
-              <option value="">Select type</option>
-              <option value="FIXED">Fixed Price</option>
-              <option value="NEGOTIABLE">Negotiable</option>
-            </select>
+        {/* ── Pricing Plans ── */}
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className={labelCls}>Pricing Plans <span className="text-red-500">*</span></label>
+            <p className="text-xs text-gray-400 mt-0.5">Enable one or more plans and set a price for each.</p>
           </div>
-        </div>
-        {commissionBreakdown && (
-          <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
-            <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
-            <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
-          </div>
-        )}
+          <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+            {form.pricingPlans.map((plan) => (
+              <div key={plan.key} className="flex items-center gap-4 px-4 py-3 bg-white">
+                {/* Checkbox */}
+                <label className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 min-w-[180px]">
+                  <span
+                    onClick={() => setPlanField(plan.key, 'enabled', !plan.enabled)}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${plan.enabled
+                        ? 'bg-indigo-600 border-indigo-600'
+                        : 'bg-white border-gray-300 hover:border-indigo-400'
+                      }`}
+                  >
+                    {plan.enabled && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700 select-none">{plan.label}</span>
+                </label>
 
+                {/* Price input — only visible when enabled */}
+                {plan.enabled ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-sm text-gray-500 flex-shrink-0">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className={`${inputCls} max-w-[180px]`}
+                      placeholder="Enter price"
+                      value={plan.price}
+                      onChange={e => setPlanField(plan.key, 'price', e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex-1 text-xs text-gray-300 italic">Not offered</div>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* Commission breakdown for One-Time Purchase */}
+          {form.pricingPlans.find(p => p.key === 'ONE_TIME')?.enabled && commissionBreakdown && (
+            <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
+              <div className="text-xs text-purple-500 font-semibold mb-1 uppercase tracking-wide">
+                Commission preview · One-Time Purchase
+              </div>
+              <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
+              <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
+              <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+            </div>
+          )}
+          {/* Subscription Revenue Policy if any subscription is enabled */}
+          {form.pricingPlans.some(p => p.enabled && p.key !== 'ONE_TIME') && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-sm text-gray-700 space-y-2">
+              <div className="text-xs text-blue-600 font-semibold uppercase tracking-wide flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Subscription Revenue Policy
+              </div>
+              <ul className="list-disc pl-5 space-y-1 text-gray-600 text-xs leading-relaxed">
+                <li>CoBrother retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
+                <li>CoBrother charges <strong>no commission</strong> on renewal payments.</li>
+                <li>The seller receives <strong>100%</strong> of all future subscription renewals.</li>
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* ── Demo Video ── */}
         <TechnologyDemoVideoSection
           value={form.videoLink}
           onChange={(v) => set('videoLink', v)}
@@ -629,23 +821,29 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           labelClassName={labelCls}
         />
 
+        {/* ── Demo URL (replaces Live Demo Link) ── */}
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Live Demo Link</label>
-          <input className={inputCls} value={form.liveDemoLink} onChange={e => set('liveDemoLink', e.target.value)}
-            placeholder="https://yourdemo.com" />
+          <label className={labelCls}>Demo URL <span className="text-gray-400 text-xs font-normal">(optional)</span></label>
+          <input className={inputCls} value={form.demoUrl} onChange={e => set('demoUrl', e.target.value)}
+            placeholder="https://demo.yourproduct.com" />
         </div>
 
+
+
+        {/* ── GitHub Link ── */}
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>
-            GitHub Link <span className="text-red-500">*</span>
+            GitHub Link {!isHardware && <span className="text-red-500">*</span>}
+            {isHardware && <span className="text-[0.72rem] text-gray-400 ml-2 font-normal">(optional)</span>}
             <span className="text-[0.72rem] text-gray-400 ml-2 font-normal">
               🔒 Not shared until buyer confirms purchase
             </span>
           </label>
           <input className={inputCls} value={form.githubLink} onChange={e => set('githubLink', e.target.value)}
-            placeholder="https://github.com/you/repo" required />
+            placeholder="https://github.com/you/repo" required={!isHardware} />
         </div>
 
+        {/* ── Logo / Cover Image ── */}
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>
             Logo / cover image <span className="text-gray-400 text-xs font-normal">(optional)</span>
@@ -678,6 +876,48 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           {imageError && <div className="text-sm text-amber-700">{imageError}</div>}
         </div>
 
+        {/* ── Supporting Documents ── */}
+        <div className="flex flex-col gap-2">
+          <label className={labelCls}>
+            Supporting Documents <span className="text-gray-400 text-xs font-normal">(optional)</span>
+          </label>
+          <p className="text-xs text-gray-400 -mt-1">
+            PDFs, ZIP, DOC/DOCX, PPT/PPTX, images, or other downloadable resources. Multiple files allowed.
+          </p>
+          <div
+            onClick={() => docsInputRef.current?.click()}
+            className="border-2 border-dashed border-gray-200 bg-gray-50 hover:border-indigo-300 rounded-xl p-5 text-center cursor-pointer transition-all"
+          >
+            <div className="text-2xl mb-1">📎</div>
+            <div className="text-sm text-gray-500">Click to attach documents</div>
+            <div className="text-xs text-gray-400 mt-1">PDF, ZIP, DOC, DOCX, PPT, PPTX, images</div>
+          </div>
+          <input
+            ref={docsInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.zip,.doc,.docx,.ppt,.pptx,image/*"
+            className="hidden"
+            onChange={handleDocsChange}
+          />
+          {supportingDocs.length > 0 && (
+            <ul className="flex flex-col gap-1.5 mt-1">
+              {supportingDocs.map((f, idx) => (
+                <li key={idx} className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
+                  <span className="truncate">{f.name}</span>
+                  <button
+                    type="button"
+                    className="text-xs text-gray-400 hover:text-red-500 flex-shrink-0"
+                    onClick={() => removeDoc(idx)}
+                  >✕</button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {docsError && <div className="text-sm text-amber-700">{docsError}</div>}
+        </div>
+
+        {/* ── Terms Agreement ── */}
         {!isEdit && (
           <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
             <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
@@ -690,7 +930,9 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                 </svg>
               )}
             </span>
-            <span className="text-sm text-gray-700 leading-snug">I confirm this software is ready for sale and agree to the Terms & Conditions.</span>
+            <span className="text-sm text-gray-700 leading-snug">
+              I confirm this {isHardware ? 'hardware' : 'software'} is ready for sale and agree to the Terms &amp; Conditions.
+            </span>
           </label>
         )}
 
@@ -707,8 +949,10 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   );
 }
 
+
+
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
-function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaLoading = false }) {
+function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServices = [], vaLoading = false }) {
   const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
@@ -716,13 +960,21 @@ function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaL
     buyerEmail: user?.email || '',
     buyerPhone: user?.phoneNumber || '',
   });
+
+  const enabledPlans = item.pricingPlans?.filter(p => p.enabled) || [];
+  const hasPlans = enabledPlans.length > 0;
+  const [currentPlanKey, setCurrentPlanKey] = useState(
+    selectedPlan?.key || (hasPlans ? enabledPlans[0].key : null)
+  );
+
   const [coBrotherOptIn, setCoBrotherOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [addons, setAddons] = useState([]);
   const [vaAddons, setVaAddons] = useState([]);
 
-  const basePrice = item.price;
+  const activePlan = hasPlans ? enabledPlans.find(p => p.key === currentPlanKey) : null;
+  const basePrice = activePlan ? parseFloat(activePlan.price) : (item.price || 0);
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
   const addonExtra = addonTotal(addons);
   const totalPrice = basePrice + coBrotherFee + addonExtra;
@@ -752,6 +1004,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaL
         ...form,
         coBrotherOptIn,
         services: [...addons, ...vaAddons],
+        pricingPlan: currentPlanKey,
         ...buildOrderCurrencyPayload(currency),
       });
 
@@ -809,6 +1062,26 @@ function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaL
           <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{item.name}</h2>
           <p className="text-sm text-gray-500">{item.category?.replace(/_/g, ' ')} · {item.pricingDemand}</p>
         </div>
+
+        {/* Plan Selection */}
+        {hasPlans && enabledPlans.length > 1 && (
+          <div className="mb-5 flex flex-col gap-2">
+            <label className="text-xs text-gray-500 font-medium">Selected Pricing Plan</label>
+            <div className="flex flex-col gap-2">
+              {enabledPlans.map(plan => (
+                <label key={plan.key} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${currentPlanKey === plan.key ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-300'}`}>
+                  <div className="flex items-center gap-2">
+                    <input type="radio" name="checkoutPricingPlan" value={plan.key} checked={currentPlanKey === plan.key} onChange={() => setCurrentPlanKey(plan.key)} className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
+                    <span className={`text-sm font-medium ${currentPlanKey === plan.key ? 'text-indigo-900' : 'text-gray-700'}`}>{plan.label}</span>
+                  </div>
+                  <div className={`text-sm font-bold ${currentPlanKey === plan.key ? 'text-indigo-700' : 'text-gray-900'}`}>
+                    {formatPrice(plan.price)}
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Buyer details */}
         <div className="flex flex-col gap-3 mb-5">
@@ -885,7 +1158,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess, vaServices = [], vaL
           <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Billing Breakdown
           </div>
-          <BillingLine label={item.name}
+          <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
             value={formatPrice(basePrice)} />
           {coBrotherOptIn && (
             <BillingLine label="◆ CoBrother Helper" value={formatPrice(1000)} accent />
@@ -1016,6 +1289,16 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
   }, [item.id]);
 
   const d = detail || item;
+  
+  const enabledPlans = d.pricingPlans?.filter(p => p.enabled) || [];
+  const hasPlans = enabledPlans.length > 0;
+  const [selectedPlanKey, setSelectedPlanKey] = useState(hasPlans ? enabledPlans[0].key : '');
+
+  useEffect(() => {
+    if (hasPlans && !selectedPlanKey) {
+      setSelectedPlanKey(enabledPlans[0].key);
+    }
+  }, [hasPlans, enabledPlans, selectedPlanKey]);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -1032,6 +1315,11 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1">
                 <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide">{d.category?.replace(/_/g, ' ')}</div>
+                {d.technologyType === 'HARDWARE' ? (
+                  <div className="inline-flex items-center px-2.5 py-0.5 bg-gray-800 border border-gray-900 rounded-full text-[0.72rem] font-semibold text-white uppercase tracking-wide">HARDWARE</div>
+                ) : (
+                  <div className="inline-flex items-center px-2.5 py-0.5 bg-blue-50 border border-blue-200 rounded-full text-[0.72rem] font-semibold text-blue-600 uppercase tracking-wide">SOFTWARE</div>
+                )}
                 {d.official && (
                   <span className="text-[0.72rem] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                     ✦ Official
@@ -1043,9 +1331,28 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             </div>
 
             <div className="flex gap-3 mb-6 flex-wrap">
-              <div className="px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                💰 {formatPrice(d.price)}
-              </div>
+              {hasPlans ? (
+                <div className="w-full flex flex-col gap-2 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select Pricing Plan</div>
+                  <div className="flex flex-col gap-2">
+                    {enabledPlans.map(plan => (
+                      <label key={plan.key} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${selectedPlanKey === plan.key ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-300'}`}>
+                        <div className="flex items-center gap-2">
+                          <input type="radio" name="pricingPlan" value={plan.key} checked={selectedPlanKey === plan.key} onChange={() => setSelectedPlanKey(plan.key)} className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
+                          <span className={`text-sm font-medium ${selectedPlanKey === plan.key ? 'text-indigo-900' : 'text-gray-700'}`}>{plan.label}</span>
+                        </div>
+                        <div className={`text-sm font-bold ${selectedPlanKey === plan.key ? 'text-indigo-700' : 'text-gray-900'}`}>
+                          {formatPrice(plan.price)}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                  💰 {formatPrice(d.price)}
+                </div>
+              )}
               <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
                 👁 {d.views || 0} views
               </div>
@@ -1159,7 +1466,10 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                       Verification pending — available for purchase after admin approval
                     </span>
                   ) : (
-                    <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
+                    <button className="btn-glow btn-glow-sm" onClick={() => {
+                       const selPlan = enabledPlans.find(p => p.key === selectedPlanKey);
+                       onBuy(selPlan);
+                    }}>Buy Now →</button>
                   )
                 )}
               {!isOwner && isTechnologyAuctionLive(d, auctionStatus) && (

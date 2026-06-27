@@ -1132,6 +1132,42 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
             {/* Left Column: Content */}
             <div className="flex flex-col gap-8">
               
+              {/* Buyer details */}
+              <div className="flex flex-col gap-3">
+                <div className="text-[0.75rem] font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                  <div className="w-1.5 h-4 bg-gray-400 rounded-full" />
+                  Buyer Information
+                </div>
+                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                    <label className="text-xs text-gray-500 font-semibold">Full Name</label>
+                    <input className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" value={form.buyerFullName}
+                      onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
+                      placeholder="Your full name" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-gray-500 font-semibold">Email</label>
+                    <input className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" type="email" value={form.buyerEmail}
+                      onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
+                      placeholder="your@email.com" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-gray-500 font-semibold">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                      value={form.buyerPhone}
+                      onChange={handlePhoneChange}
+                      placeholder="10-digit number"
+                      maxLength={10}
+                      inputMode="numeric"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Plan Selection */}
               {hasPlans && enabledPlans.length > 1 && (
                 <div className="flex flex-col gap-3">
@@ -1242,99 +1278,14 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
                   </div>
                 </div>
 
-                {ADDON_SERVICES.map(service => {
-                  const isSelected = addons.includes(service.key);
-                  return (
-                    <div
-                      key={service.key}
-                      onClick={() => setAddons(prev => isSelected ? prev.filter(k => k !== service.key) : [...prev, service.key])}
-                      className={`relative flex flex-col p-5 rounded-xl cursor-pointer transition-all duration-300 border-2 ${
-                        isSelected 
-                          ? 'bg-indigo-50/50 border-indigo-500 shadow-[0_4px_16px_-4px_rgba(79,70,229,0.2)] scale-[1.01]' 
-                          : 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-md'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className={`font-bold text-[0.95rem] mb-0.5 flex items-center gap-2 ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
-                            {t(service.labelKey)}
-                          </div>
-                          <div className="text-gray-500 text-[0.8rem] leading-relaxed max-w-[90%]">
-                            {t(service.descKey || service.labelKey + 'Desc')} 
-                          </div>
-                        </div>
-                        <div className={`font-black text-lg ${isSelected ? 'text-indigo-700' : 'text-gray-700'}`}>
-                          +{formatPrice(service.price)}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {!vaLoading && vaServices?.map(va => {
-                  const isSelected = vaAddons.includes(String(va.id));
-                  return (
-                    <div
-                      key={va.id}
-                      onClick={() => setVaAddons(prev => isSelected ? prev.filter(k => k !== String(va.id)) : [...prev, String(va.id)])}
-                      className={`relative flex flex-col p-5 rounded-xl cursor-pointer transition-all duration-300 border-2 ${
-                        isSelected 
-                          ? 'bg-blue-50/50 border-blue-500 shadow-[0_4px_16px_-4px_rgba(59,130,246,0.2)] scale-[1.01]' 
-                          : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className={`font-bold text-[0.95rem] mb-0.5 flex items-center gap-2 ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
-                            {va.name} (Virtual Assistant)
-                          </div>
-                          <div className="text-gray-500 text-[0.8rem] leading-relaxed max-w-[90%]">
-                            {va.expertise || 'Dedicated operations assistant'}
-                          </div>
-                        </div>
-                        <div className={`font-black text-lg ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
-                          +{formatPrice(va.monthlyRate)}/mo
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Buyer details */}
-              <div className="flex flex-col gap-3">
-                <div className="text-[0.75rem] font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
-                  <div className="w-1.5 h-4 bg-gray-400 rounded-full" />
-                  Buyer Information
-                </div>
-                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label className="text-xs text-gray-500 font-semibold">Full Name</label>
-                    <input className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" value={form.buyerFullName}
-                      onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
-                      placeholder="Your full name" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs text-gray-500 font-semibold">Email</label>
-                    <input className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" type="email" value={form.buyerEmail}
-                      onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
-                      placeholder="your@email.com" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs text-gray-500 font-semibold">
-                      Phone <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
-                      value={form.buyerPhone}
-                      onChange={handlePhoneChange}
-                      placeholder="10-digit number"
-                      maxLength={10}
-                      inputMode="numeric"
-                      required
-                    />
-                  </div>
-                </div>
+                <AddonSections
+                  businessSelected={addons}
+                  onBusinessChange={setAddons}
+                  vaSelected={vaAddons}
+                  onVaChange={setVaAddons}
+                  vaServices={vaServices}
+                  vaLoading={vaLoading}
+                />
               </div>
 
             </div>

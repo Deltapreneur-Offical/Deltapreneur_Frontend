@@ -200,7 +200,7 @@ export default function DomainsPage() {
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
               {t('domainsPageListedSuccessSubtitle', {
                 defaultValue:
-                  'Your domain has been listed successfully and is now live in the marketplace. Complete the domain verification process to earn the Verified badge.',
+                  'Your domain is saved. Complete verification in Domains Dashboard to show it in the public marketplace.',
               })}
             </p>
             <button
@@ -241,7 +241,7 @@ export default function DomainsPage() {
                           : isDomainPendingVerification(normalizedSaved)
                             ? t('domainsVerifyPendingShort', {
                                 defaultValue:
-                                  'Listed successfully and now live in the marketplace. Complete verification to earn the Verified badge.',
+                                  'Listed successfully. Verify ownership in Domains Dashboard to publish in the marketplace.',
                               })
                             : ''),
                     );
@@ -674,14 +674,6 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                 </button>
               ))}
             </div>
-            <input
-              className={inputCls}
-              value={form.domainExtension}
-              onChange={e => setForm(f => ({ ...f, domainExtension: e.target.value.replace(/\s/g, '').toLowerCase() }))}
-              placeholder={t('domainsPageExtensionPlaceholder')}
-              maxLength={32}
-              aria-label={t('domainsPageExtensionLabel')}
-            />
           </div>
         </div>
         {form.domainName && extPreview && (

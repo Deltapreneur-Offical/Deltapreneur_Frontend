@@ -453,6 +453,7 @@ function softwareToFormFields(item, navCurrency) {
     price: item?.price != null && item?.price !== '' ? String(item.price) : '',
     currency: item?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
     technologyType: item?.technologyType || item?.technology_type || 'SOFTWARE',
+    purchaseType: item?.purchaseType || item?.purchase_type || 'ONE_TIME',
     pricingPlans: normalizePricingPlans(item?.pricingPlans || item?.pricing_plans),
     supportingDocuments: [],
     agreement: { terms: Boolean(item?.id) },
@@ -560,17 +561,26 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
         technologyType: form.technologyType,
+        purchaseType: form.purchaseType,
         // Legacy price auto-set from first enabled plan for backward compat
         price: legacyPriceFromPlans > 0 ? legacyPriceFromPlans : (parseFloat(form.price) || 0),
         // pricingDemand kept from form state (legacy compat)
         pricingDemand: form.pricingDemand || 'FIXED',
         // Dedicated pricingPlans field — only enabled plans with a price
-        pricingPlans: form.pricingPlans.map(p => ({
+        pricingPlans: form.purchaseType === 'AUCTION' ? [] : form.pricingPlans.map(p => ({
           key: p.key,
           label: p.label,
           enabled: p.enabled,
           price: p.enabled && p.price !== '' ? parseFloat(p.price) || null : null,
         })),
+        // Auction fields
+        minBidPrice: form.purchaseType === 'AUCTION' ? (parseFloat(form.minBidPrice) || 0) : undefined,
+        auctionDuration: form.purchaseType === 'AUCTION' ? form.auctionDuration : undefined,
+        auctionRationale: form.purchaseType === 'AUCTION' ? form.auctionRationale : undefined,
+        sourceCodeIncluded: form.purchaseType === 'AUCTION' ? form.sourceCodeIncluded : undefined,
+        supportIncluded: form.purchaseType === 'AUCTION' ? form.supportIncluded : undefined,
+        supportDays: form.purchaseType === 'AUCTION' ? (parseInt(form.supportDays) || 0) : undefined,
+        transferDetails: form.purchaseType === 'AUCTION' ? form.transferDetails : undefined,
       };
 
       const { data } = isEdit
@@ -753,81 +763,221 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           </div>
         </div>
 
-        {/* ── Pricing Plans ── */}
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className={labelCls}>Pricing Plans <span className="text-red-500">*</span></label>
-            <p className="text-xs text-gray-400 mt-0.5">Enable one or more plans and set a price for each.</p>
+        {/* ── Purchase Type ── */}
+        <div className="flex flex-col gap-2">
+          <label className={labelCls}>Purchase Type <span className="text-red-500">*</span></label>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { value: 'ONE_TIME', label: 'One-Time', desc: 'Fixed price, one-time purchase' },
+              { value: 'SUBSCRIPTION', label: 'Subscription', desc: 'Recurring payments (monthly/yearly)' },
+              { value: 'AUCTION', label: 'Auction', desc: 'Bidding system for one-time sale' },
+            ].map((opt) => {
+              const selected = form.purchaseType === opt.value;
+              const borderCls = selected
+                ? 'border-indigo-400 bg-indigo-50/40'
+                : 'border-gray-200 hover:border-indigo-200';
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    set('purchaseType', opt.value);
+                    // Reset pricing plans when switching to auction
+                    if (opt.value === 'AUCTION') {
+                      setForm(f => ({
+                        ...f,
+                        pricingPlans: f.pricingPlans.map(p => ({
+                          ...p,
+                          enabled: p.key === 'ONE_TIME',
+                          price: p.key === 'ONE_TIME' ? p.price : '',
+                        })),
+                      }));
+                    }
+                  }}
+                  className={`p-3 rounded-xl border-2 text-left transition-all ${borderCls}`}
+                >
+                  <div className="font-semibold text-sm text-gray-900">{opt.label}</div>
+                  <div className="text-xs text-gray-500 mt-1">{opt.desc}</div>
+                </button>
+              );
+            })}
           </div>
-          <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
-            {form.pricingPlans.map((plan) => (
-              <div key={plan.key} className="flex items-center gap-4 px-4 py-3 bg-white">
-                {/* Checkbox */}
-                <label className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 min-w-[180px]">
-                  <span
-                    onClick={() => setPlanField(plan.key, 'enabled', !plan.enabled)}
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${plan.enabled
-                      ? 'bg-indigo-600 border-indigo-600'
-                      : 'bg-white border-gray-300 hover:border-indigo-400'
-                      }`}
-                  >
-                    {plan.enabled && (
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                    )}
-                  </span>
-                  <span className="text-sm font-medium text-gray-700 select-none">{plan.label}</span>
-                </label>
-
-                {/* Price input — only visible when enabled */}
-                {plan.enabled ? (
-                  <div className="flex items-center gap-2 flex-1">
-                    <span className="text-sm text-gray-500 flex-shrink-0">₹</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      className={`${inputCls} max-w-[180px]`}
-                      placeholder="Enter price"
-                      value={plan.price}
-                      onChange={e => setPlanField(plan.key, 'price', e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex-1 text-xs text-gray-300 italic">Not offered</div>
-                )}
-              </div>
-            ))}
-          </div>
-          {/* Commission breakdown for One-Time Purchase */}
-          {form.pricingPlans.find(p => p.key === 'ONE_TIME')?.enabled && commissionBreakdown && (
-            <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-              <div className="text-xs text-purple-500 font-semibold mb-1 uppercase tracking-wide">
-                Commission preview · One-Time Purchase
-              </div>
-              <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
-              <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
-              <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
-            </div>
-          )}
-          {/* Subscription Revenue Policy if any subscription is enabled */}
-          {form.pricingPlans.some(p => p.enabled && p.key !== 'ONE_TIME') && (
-            <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-sm text-gray-700 space-y-2">
-              <div className="text-xs text-blue-600 font-semibold uppercase tracking-wide flex items-center gap-1.5">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Subscription Revenue Policy
-              </div>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600 text-xs leading-relaxed">
-                <li>CoBrother retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
-                <li>CoBrother charges <strong>no commission</strong> on renewal payments.</li>
-                <li>The seller receives <strong>100%</strong> of all future subscription renewals.</li>
-              </ul>
+          {form.purchaseType === 'AUCTION' && (
+            <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+              Auction is only available for one-time purchases. Subscription plans will be disabled.
             </div>
           )}
         </div>
+
+        {/* ── Pricing Plans (hidden for Auction) ── */}
+        {form.purchaseType !== 'AUCTION' && (
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className={labelCls}>Pricing Plans <span className="text-red-500">*</span></label>
+              <p className="text-xs text-gray-400 mt-0.5">Enable one or more plans and set a price for each.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+              {form.pricingPlans.map((plan) => (
+                <div key={plan.key} className="flex items-center gap-4 px-4 py-3 bg-white">
+                  {/* Checkbox */}
+                  <label className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 min-w-[180px]">
+                    <span
+                      onClick={() => setPlanField(plan.key, 'enabled', !plan.enabled)}
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${plan.enabled
+                        ? 'bg-indigo-600 border-indigo-600'
+                        : 'bg-white border-gray-300 hover:border-indigo-400'
+                        }`}
+                    >
+                      {plan.enabled && (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className="text-sm font-medium text-gray-700 select-none">{plan.label}</span>
+                  </label>
+
+                  {/* Price input — only visible when enabled */}
+                  {plan.enabled ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-sm text-gray-500 flex-shrink-0">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        className={`${inputCls} max-w-[180px]`}
+                        placeholder="Enter price"
+                        value={plan.price}
+                        onChange={e => setPlanField(plan.key, 'price', e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex-1 text-xs text-gray-300 italic">Not offered</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Commission breakdown for One-Time Purchase */}
+            {form.pricingPlans.find(p => p.key === 'ONE_TIME')?.enabled && commissionBreakdown && (
+              <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
+                <div className="text-xs text-purple-500 font-semibold mb-1 uppercase tracking-wide">
+                  Commission preview · One-Time Purchase
+                </div>
+                <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
+                <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
+                <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+              </div>
+            )}
+            {/* Subscription Revenue Policy if any subscription is enabled */}
+            {form.pricingPlans.some(p => p.enabled && p.key !== 'ONE_TIME') && (
+              <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-sm text-gray-700 space-y-2">
+                <div className="text-xs text-blue-600 font-semibold uppercase tracking-wide flex items-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Subscription Revenue Policy
+                </div>
+                <ul className="list-disc pl-5 space-y-1 text-gray-600 text-xs leading-relaxed">
+                  <li>CoBrother retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
+                  <li>CoBrother charges <strong>no commission</strong> on renewal payments.</li>
+                  <li>The seller receives <strong>100%</strong> of all future subscription renewals.</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Auction Fields (only shown when Auction is selected) ── */}
+        {form.purchaseType === 'AUCTION' && (
+          <div className="flex flex-col gap-3 p-4 border-2 border-indigo-200 bg-indigo-50/40 rounded-xl">
+            <div className="text-sm font-semibold text-indigo-900">Auction Settings</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Minimum Bid Price (₹) <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  className={inputCls}
+                  placeholder="Enter minimum bid"
+                  value={form.minBidPrice || ''}
+                  onChange={e => set('minBidPrice', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Auction Duration <span className="text-red-500">*</span></label>
+                <select
+                  className={inputCls}
+                  value={form.auctionDuration || ''}
+                  onChange={e => set('auctionDuration', e.target.value)}
+                  required
+                >
+                  <option value="">Select duration</option>
+                  <option value="ONE_DAY">1 Day</option>
+                  <option value="THREE_DAYS">3 Days</option>
+                  <option value="FIVE_DAYS">5 Days</option>
+                  <option value="SEVEN_DAYS">7 Days</option>
+                  <option value="FOURTEEN_DAYS">14 Days</option>
+                  <option value="THIRTY_DAYS">30 Days</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls}>Auction Rationale</label>
+              <textarea
+                className={`${inputCls} resize-vertical`}
+                value={form.auctionRationale || ''}
+                onChange={e => set('auctionRationale', e.target.value)}
+                placeholder="Why are you auctioning this technology?"
+                rows={2}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  checked={form.sourceCodeIncluded || false}
+                  onChange={e => set('sourceCodeIncluded', e.target.checked)}
+                />
+                <span className="text-sm text-gray-700">Source code included</span>
+              </label>
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  checked={form.supportIncluded || false}
+                  onChange={e => set('supportIncluded', e.target.checked)}
+                />
+                <span className="text-sm text-gray-700">Support included</span>
+              </label>
+            </div>
+            {form.supportIncluded && (
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Support Duration (days)</label>
+                <input
+                  type="number"
+                  min="0"
+                  className={inputCls}
+                  placeholder="Number of support days"
+                  value={form.supportDays || ''}
+                  onChange={e => set('supportDays', e.target.value)}
+                />
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls}>Transfer Details</label>
+              <textarea
+                className={`${inputCls} resize-vertical`}
+                value={form.transferDetails || ''}
+                onChange={e => set('transferDetails', e.target.value)}
+                placeholder="How will the technology be transferred to the buyer?"
+                rows={2}
+              />
+            </div>
+          </div>
+        )}
 
         {/* ── Demo Video ── */}
         <TechnologyDemoVideoSection

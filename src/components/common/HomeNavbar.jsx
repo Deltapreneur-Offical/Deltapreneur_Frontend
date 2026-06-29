@@ -186,7 +186,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             type="button"
             className="home-nav-logo-btn brand-logo-interactive shrink-0"
             onClick={handleLogoClick}
-            aria-label="CoBrother home"
+            aria-label="CoɃrother home"
           >
             <BrandNavLogo />
           </button>

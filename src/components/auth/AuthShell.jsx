@@ -48,7 +48,7 @@ export default function AuthShell({
 
           <img
             src={logoBlack}
-            alt="CoBrother"
+            alt="CoɃrother"
             className="auth-page__logo"
           />
 

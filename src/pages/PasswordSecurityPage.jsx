@@ -40,7 +40,7 @@ const TABS = [
     title: 'Add a password to your account',
     description:
       'You signed in with Google or another provider and have not set a password yet. Create one to also sign in with email.',
-    hint: 'Use this only if you have never set a password on CoBrother.',
+    hint: 'Use this only if you have never set a password on CoɃrother.',
     mobileLine: 'For Google / social sign-in only',
   },
 ];

@@ -102,7 +102,7 @@ export default function CoCreationDashboardPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your software listings and purchases.</p>
+            <p className="text-gray-600 mt-1">Manage your technology listings and purchases.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <PayoutSettingsButton />
@@ -156,7 +156,7 @@ export default function CoCreationDashboardPage() {
               </div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No listings yet</h3>
               <button className="btn-glow" onClick={() => navigate('/technology')}>
-                List Software
+                List Technology
               </button>
             </div>
           ) : (
@@ -268,11 +268,11 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
           <span className="truncate">{item.name}</span>
           <VerificationStatusBadge item={item} type="badge" />
           {item.technologyType === 'HARDWARE' ? (
-            <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="text-[0.68rem] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
               HARDWARE
             </span>
           ) : (
-            <span className="text-[0.68rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="text-[0.68rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
               SOFTWARE
             </span>
           )}
@@ -412,7 +412,7 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
             )}
             {helpPaid && (
               <span className="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md tracking-wider">
-                ◆ CoBrother
+                ◆ CoɃrother
               </span>
             )}
           </div>
@@ -434,7 +434,7 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
               <div className="text-[0.7rem] text-gray-400 font-medium">+ {formatPrice(1000)} pending</div>
             )}
             {helpPaid && (
-              <div className="text-[0.7rem] text-emerald-600 font-medium">+ {formatPrice(1000)} CoBrother</div>
+              <div className="text-[0.7rem] text-emerald-600 font-medium">+ {formatPrice(1000)} CoɃrother</div>
             )}
           </div>
           <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>
@@ -495,11 +495,11 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
             </div>
           )}
 
-          {/* CoBrother status */}
+          {/* CoɃrother status */}
           {helpPaid && (
             <div className="px-4 py-3.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-5 text-[0.85rem] text-emerald-800 font-medium shadow-sm flex items-start gap-2">
               <span className="text-emerald-500 text-lg leading-none mt-0.5">◆</span>
-              <span>CoBrother assigned — check your email for introduction details.</span>
+              <span>CoɃrother assigned — check your email for introduction details.</span>
             </div>
           )}
 

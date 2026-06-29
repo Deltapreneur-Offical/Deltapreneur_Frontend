@@ -94,7 +94,7 @@ export default function TechnologyListingCard({
       : `${APP_BASE_URL.replace(/\/$/, '')}/technology?id=${item.id}`;
   const shareText = t('listingCardShareTechnology', {
     name: item.name || t('listingCardTechnology'),
-    defaultValue: `Check out this technology: ${item.name || 'Technology'} - Listed on CoBrother!`,
+    defaultValue: `Check out this technology: ${item.name || 'Technology'} - Listed on CoɃrother!`,
   });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -440,6 +440,10 @@ export default function TechnologyListingCard({
             aria-hidden
           />
         </div>
+
+        <span className={`text-[0.65rem] font-bold px-2.5 py-1 rounded-full tracking-wider inline-block w-fit mb-1 ${item.technologyType === 'HARDWARE' ? 'text-orange-700 bg-orange-50 border border-orange-200' : 'text-blue-700 bg-blue-50 border border-blue-200'}`}>
+          {item.technologyType === 'HARDWARE' ? 'HARDWARE' : 'SOFTWARE'}
+        </span>
 
         {techCategory ? (
           <p className="technology-listing-card__industry" title={techCategory}>

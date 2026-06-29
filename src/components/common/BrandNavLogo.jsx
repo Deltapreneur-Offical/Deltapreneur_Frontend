@@ -10,7 +10,7 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
     <span className={`home-nav-logo-swap ${className}`.trim()}>
       <img
         src={logoBlack}
-        alt="CoBrother"
+        alt="CoɃrother"
         className={`${imgClassName} home-nav-logo-img home-nav-logo-img--default`.trim()}
       />
       <img

@@ -214,7 +214,7 @@ export default function VentureListingCard({
 
     name: brandName,
 
-    defaultValue: `Check out this venture: ${brandName} - Listed on CoBrother!`,
+    defaultValue: `Check out this venture: ${brandName} - Listed on CoɃrother!`,
 
   });
 

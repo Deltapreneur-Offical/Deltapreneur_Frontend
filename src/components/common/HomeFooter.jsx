@@ -217,7 +217,7 @@ export default function HomeFooter() {
 
                 src={coBrotherLogo}
 
-                alt="CoBrother"
+                alt="CoɃrother"
 
                 className="h-9 w-auto max-w-full opacity-95 transition-opacity group-hover:opacity-100 sm:h-10 md:h-11"
 

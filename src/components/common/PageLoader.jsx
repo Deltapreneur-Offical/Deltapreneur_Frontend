@@ -50,7 +50,7 @@ export default function PageLoader({
         transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="page-loader__logo-wrap">
-          <img src={logoBlack} alt="CoBrother" className="page-loader__logo" />
+          <img src={logoBlack} alt="CoɃrother" className="page-loader__logo" />
         </div>
         <div className="page-loader__ring" aria-hidden />
         <p className="page-loader__message">

@@ -10,10 +10,10 @@ export default function PartnershipTimelineCard({ ventureName, partnerName }) {
             {partnerName
               ? `${partnerName} was selected as partner for ${ventureName || 'your venture'}.`
               : `A partner was selected for ${ventureName || 'your venture'}.`}
-            {' '}CoBrother will assist both parties with next steps.
+            {' '}CoɃrother will assist both parties with next steps.
           </p>
           <div className="text-sm bg-white/80 border border-teal-100 rounded-lg px-4 py-3">
-            <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">CoBrother contact</div>
+            <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">CoɃrother contact</div>
             <a href="mailto:contact@cobrother.com" className="text-teal-900 font-medium hover:underline">
               contact@cobrother.com
             </a>

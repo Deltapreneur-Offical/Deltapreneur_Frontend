@@ -6,6 +6,7 @@ import useCurrency from '../../context/CurrencyContext';
 export default function FilterBar({
   search, onSearch,
   category, onCategory, categoryOptions = [],
+  technologyType, onTechnologyType,
   minPrice, maxPrice, onMinPrice, onMaxPrice,
   sortBy, onSort, sortOptions,
   onClear, activeFilterCount = 0,
@@ -117,6 +118,27 @@ export default function FilterBar({
           </div>
         )}
 
+        {onTechnologyType && (
+          <div className="relative flex-[1_1_140px] md:flex-[1_1_160px] min-w-[120px]">
+            <select
+              value={technologyType || ''}
+              onChange={(e) => onTechnologyType(e.target.value)}
+              aria-label="Technology Type"
+              className={`filter-category-select ${selectClass}`}
+            >
+              <option value="">All Types</option>
+              <option value="SOFTWARE">Software</option>
+              <option value="HARDWARE">Hardware</option>
+            </select>
+            <ChevronDown
+              size={16}
+              strokeWidth={2.25}
+              className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 ${isLight ? 'text-gray-500' : 'text-gray-400'}`}
+              aria-hidden
+            />
+          </div>
+        )}
+
         {showPrice && (
           <div className="flex gap-2 items-center flex-[1_1_200px] md:flex-[1_1_220px]">
             <input
@@ -168,6 +190,9 @@ export default function FilterBar({
           )}
           {category && (
             <Chip label={category.replace(/_/g, ' ')} onRemove={() => onCategory('')} light={isLight} />
+          )}
+          {technologyType && (
+            <Chip label={technologyType === 'HARDWARE' ? 'Hardware' : 'Software'} onRemove={() => onTechnologyType('')} light={isLight} />
           )}
           {minPrice && (
             <Chip label={`${t('filterMin')} ${formatPrice(minPrice)}`} onRemove={() => onMinPrice('')} light={isLight} />

@@ -2371,7 +2371,7 @@ const ADMIN_PENDING_CHIPS = [
   { key: 'technologies',      tab: 'cocreations',       label: 'Technology',       color: 'bg-rose-100 text-rose-700 ring-rose-200' },
   { key: 'domains',           tab: 'domains',           label: 'Domains',          color: 'bg-sky-100 text-sky-700 ring-sky-200' },
   { key: 'domainEnquiries',   tab: 'domain-enquiries',  label: 'Domain enquiries', color: 'bg-sky-100 text-sky-700 ring-sky-200' },
-  { key: 'cobrotherPayments', tab: 'requests',          label: 'CoBrother payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
+  { key: 'cobrotherPayments', tab: 'requests',          label: 'CoɃrother payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
   { key: 'operations',        tab: 'operations',        label: 'Operations',       color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
 ];
 
@@ -2516,7 +2516,7 @@ function AdminPendingCard({ icon: Icon, label, hint, count, accent, loading, onC
 function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, total, onJump }) {
   const platformStats = [
     { key: 'totalUsers',        Icon: UsersRound,   label: 'Users',       value: stats?.totalUsers,        accent: 'indigo'  },
-    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'CoBrothers',  value: stats?.totalCoBrothers,   accent: 'violet'  },
+    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'CoɃrothers',  value: stats?.totalCoBrothers,   accent: 'violet'  },
     { key: 'totalVentures',     Icon: Briefcase,    label: 'Ventures',    value: stats?.totalVentures,     accent: 'emerald' },
     { key: 'totalDomains',      Icon: Globe,        label: 'Domains',     value: stats?.totalDomains,      accent: 'sky'     },
     { key: 'totalTechnologies', Icon: Cpu,          label: 'Technology',  value: stats?.totalTechnologies, accent: 'rose'    },
@@ -2529,7 +2529,7 @@ function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, tota
     { key: 'domainEnquiries',   Icon: FileQuestion,   label: 'Domain enquiries',         hint: 'Buyer enquiries pending action',          count: counts?.domainEnquiries,   tab: 'domain-enquiries',  accent: 'sky'     },
     { key: 'technologies',      Icon: Cpu,            label: 'Technology verifications', hint: 'Software/technology awaiting verification', count: counts?.technologies,    tab: 'cocreations',       accent: 'rose'    },
     { key: 'softwareAuctions',  Icon: Package,        label: 'Software auctions',        hint: 'Pending approval to go live',             count: counts?.softwareAuctions,  tab: 'software-auctions', accent: 'violet'  },
-    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'CoBrother payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
+    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'CoɃrother payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
     { key: 'operations',        Icon: Headset,        label: 'Operations requests',      hint: 'Customer service requests pending',       count: counts?.operations,        tab: 'operations',        accent: 'indigo'  },
   ];
 
@@ -2639,7 +2639,7 @@ const QUEUE_TYPE_META = {
   domain_enquiry:    { label: 'Domain enquiry',    Icon: FileQuestion,  chip: 'bg-sky-50 text-sky-700 ring-sky-200',             tab: 'domain-enquiries' },
   technology:        { label: 'Technology',        Icon: Cpu,           chip: 'bg-rose-50 text-rose-700 ring-rose-200',          tab: 'cocreations' },
   software_auction:  { label: 'Software auction',  Icon: Package,       chip: 'bg-violet-50 text-violet-700 ring-violet-200',    tab: 'software-auctions' },
-  cobrother_payment: { label: 'CoBrother payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
+  cobrother_payment: { label: 'CoɃrother payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
   operations:        { label: 'Operations',        Icon: Headset,       chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200',    tab: 'operations' },
 };
 
@@ -2650,7 +2650,7 @@ const QUEUE_FILTER_OPTIONS = [
   { id: 'domain_enquiry',    label: 'Domain enquiries' },
   { id: 'technology',        label: 'Technology' },
   { id: 'software_auction',  label: 'Software auctions' },
-  { id: 'cobrother_payment', label: 'CoBrother payments' },
+  { id: 'cobrother_payment', label: 'CoɃrother payments' },
   { id: 'operations',        label: 'Operations' },
 ];
 
@@ -2703,7 +2703,7 @@ function mapQueueItem(item, type) {
     domain_enquiry: getString(item?.domainName, item?.domain?.domainName, 'Domain enquiry'),
     technology: getString(item?.name, item?.title, 'Technology'),
     software_auction: getString(item?.softwareName, item?.software?.title, item?.software?.name, item?.title, 'Software auction'),
-    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'CoBrother request'),
+    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'CoɃrother request'),
     operations: getString(item?.title, item?.serviceName, item?.requestType, 'Operations request'),
   };
   return {

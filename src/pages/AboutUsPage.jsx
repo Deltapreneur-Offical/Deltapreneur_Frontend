@@ -160,7 +160,7 @@ export default function AboutUsPage() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             className="mt-7 max-w-2xl text-lg sm:text-xl text-slate-600 leading-relaxed"
           >
-            <BrandWordmark className="h-6 w-auto align-middle inline-block mr-1.5" inline alt="CoBrother" />{' '}
+            <BrandWordmark className="h-6 w-auto align-middle inline-block mr-1.5" inline alt="CoɃrother" />{' '}
             is a collaboration-driven ecosystem for founders, entrepreneurs, and
             organizations who are serious about challenging the status quo — equipped with
             the systems, brand, and technology to back it up.
@@ -178,7 +178,7 @@ export default function AboutUsPage() {
               whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
               className="cb-display inline-flex items-center gap-2 rounded-xl bg-[#9440dd] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 no-underline transition-all duration-200 hover:bg-[#7c3aed] hover:shadow-[0_10px_28px_rgba(124,58,237,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400"
             >
-              Join CoBrother <ArrowRight className="h-4 w-4" />
+              Join CoɃrother <ArrowRight className="h-4 w-4" />
             </motion.a>
             <motion.a
               href="/contact"
@@ -239,7 +239,7 @@ export default function AboutUsPage() {
             </Reveal>
             <Reveal delay={0.24}>
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoBrother" />{' '}
+                <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoɃrother" />{' '}
                 exists to bridge these gaps with one unified, execution-first
                 ecosystem featuring Domains, Ventures, Creators, and Technology — so founders spend their energy on growth, not setup.
               </p>
@@ -393,7 +393,7 @@ export default function AboutUsPage() {
               {
                 num: '02', icon: Palette, title: 'Domains',
                 sub: 'Your domain, your identity',
-                body: "In today's digital market, a strong domain is your foundation. Our Domains pillar helps you register, manage, and leverage domains to build a distinct, market-ready presence — while CoBrother powers the engine behind the scenes. You leverage our ecosystem. You own your domain — completely.",
+                body: "In today's digital market, a strong domain is your foundation. Our Domains pillar helps you register, manage, and leverage domains to build a distinct, market-ready presence — while CoɃrother powers the engine behind the scenes. You leverage our ecosystem. You own your domain — completely.",
                 points: ['Premium domain registration', 'Domain management systems', 'Identity-ready domains', 'Complete ownership & control'],
                 accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
@@ -469,7 +469,7 @@ export default function AboutUsPage() {
             <Reveal delay={0.1}>
               <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
                 What makes{' '}
-                <BrandWordmark className="h-9 sm:h-11 w-auto align-middle inline-block mx-1" inline alt="CoBrother" />{' '}
+                <BrandWordmark className="h-9 sm:h-11 w-auto align-middle inline-block mx-1" inline alt="CoɃrother" />{' '}
                 different?
               </h2>
             </Reveal>
@@ -523,7 +523,7 @@ export default function AboutUsPage() {
             </Reveal>
             <Reveal direction="left" delay={0.18}>
               <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed">
-                <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoBrother" />{' '}
+                <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoɃrother" />{' '}
                 is built for people who are serious about execution — whether
                 you're just starting out or ready to scale what you've already built.
               </p>
@@ -619,7 +619,7 @@ export default function AboutUsPage() {
               Join{' '}
               <BrandWordmark
                 className="h-5 w-auto align-middle inline-block mx-1 brightness-0 invert opacity-70"
-                inline alt="CoBrother"
+                inline alt="CoɃrother"
               />.
               Access technology. Build faster. Disrupt with confidence.
             </p>
@@ -631,7 +631,7 @@ export default function AboutUsPage() {
                 whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
                 className="cb-display inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#9440dd] px-9 py-4 text-base font-semibold text-white shadow-2xl shadow-purple-900/40 hover:bg-[#7c3aed] transition-colors no-underline w-full sm:w-auto"
               >
-                Join CoBrother <ArrowRight className="h-4 w-4" />
+                Join CoɃrother <ArrowRight className="h-4 w-4" />
               </motion.a>
               <motion.a
                 href="/contact"

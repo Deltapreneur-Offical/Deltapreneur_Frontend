@@ -18,7 +18,7 @@ export default function HeroGlow() {
       <p className="hero-tagline m-0 font-sans">{t('heroEyebrow')}</p>
       <h1 className="hero-headline m-0 font-sans font-normal text-black">
         Start It Up With{' '}
-        <span className="hero-emphasis">CoBrother</span>
+        <span className="hero-emphasis">CoɃrother</span>
         {' '}To{' '}
         <span className="hero-emphasis">Disrupt</span>
       </h1>
@@ -43,7 +43,7 @@ export default function HeroGlow() {
         variants={heroHeadlineEnter}
       >
         Start It Up With{' '}
-        <span className="hero-emphasis">CoBrother</span>
+        <span className="hero-emphasis">CoɃrother</span>
         {' '}To{' '}
         <span className="hero-emphasis">Disrupt</span>
       </motion.h1>

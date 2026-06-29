@@ -291,7 +291,7 @@ export default function CoCreationPage() {
 
             {!loading && totalCount > 0 && (
               <div className="text-sm text-gray-600 mb-4">
-                {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
+                {totalCount} technology listing{totalCount !== 1 ? 's' : ''} found
               </div>
             )}
 

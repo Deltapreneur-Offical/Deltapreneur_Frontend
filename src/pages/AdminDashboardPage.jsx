@@ -412,6 +412,7 @@ export default function AdminDashboardPage() {
   const location = useLocation();
   const { toasts: toastList, dismiss: dismissToast, api: toast } = useAdminToastInternal();
   const [tab, setTab]                       = useState('overview');
+  const [cocreationsSubTab, setCocreationsSubTab] = useState('listings');
   const [data, setData]                     = useState([]);
   const [coBrothers, setCoBrothers]         = useState([]);
   const [requests, setRequests]             = useState([]);
@@ -431,7 +432,7 @@ export default function AdminDashboardPage() {
     refreshing: pendingRefreshing,
     lastFetchedAt: pendingLastFetchedAt,
     refresh: refreshPendingCounts,
-  } = useAdminPendingCounts({ intervalMs: 90000 });
+  } = useAdminPendingCounts({ enabled: tab !== 'fees-charges' && tab !== 'domain-transfers' && tab !== 'venture-deals' });
 
   const loadTab = (currentTab, options = {}) => {
     const { silent = false } = options;
@@ -439,7 +440,7 @@ export default function AdminDashboardPage() {
       ventures:            adminAPI.getVentures,
       domains:             adminAPI.getDomains,
       'domain-enquiries':  adminAPI.getDomainEnquiries,
-      cocreations:         adminAPI.getTechnologies,
+      cocreations:         cocreationsSubTab === 'payouts' ? adminAPI.getTechnologyTransfers : adminAPI.getTechnologies,
       auctions:            adminAPI.getAllAuctions,
       meetings:            meetingAPI.adminGetAll,
       operations:          operationsAdminAPI.list,
@@ -535,7 +536,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadTab(tab);
-  }, [tab]);
+  }, [tab, cocreationsSubTab]);
 
 
   const handleForward = async (entityId, type, coBrotherId) => {
@@ -698,6 +699,27 @@ export default function AdminDashboardPage() {
           className="admin-page-content bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden"
           data-admin-section={tab}
         >
+          {tab === 'cocreations' && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.75rem' }}>
+              <button
+                type="button"
+                className={`filter-tab ${cocreationsSubTab === 'listings' ? 'active' : ''}`}
+                onClick={() => setCocreationsSubTab('listings')}
+                style={{ fontSize: '0.85rem', padding: '0.4rem 1rem', borderRadius: '6px' }}
+              >
+                Listing Verifications (Unsold)
+              </button>
+              <button
+                type="button"
+                className={`filter-tab ${cocreationsSubTab === 'payouts' ? 'active' : ''}`}
+                onClick={() => setCocreationsSubTab('payouts')}
+                style={{ fontSize: '0.85rem', padding: '0.4rem 1rem', borderRadius: '6px' }}
+              >
+                Sales & Payouts (Sold)
+              </button>
+            </div>
+          )}
+
           {tab === 'overview' && (
             <AdminOverviewSection
               stats={dashboardStats}
@@ -759,6 +781,8 @@ export default function AdminDashboardPage() {
               <DomainTransferAdminTab />
             ) : tab === 'requests' ? (
               <RequestsTable requests={requests} />
+            ) : tab === 'cocreations' && cocreationsSubTab === 'payouts' ? (
+              <DomainTransferAdminTab isTechnologyOnly={true} />
             ) : data.length === 0 ? (
               <div className="text-center py-20">
                 <h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoRecords')}</h3>

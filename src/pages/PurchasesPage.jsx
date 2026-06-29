@@ -356,6 +356,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
 function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const [expanded, setExpanded] = useState(false);
   const sw = purchase.software || {};
   const helpPaid = purchase.coBrotherHelpPaid;
   const confirmed = purchase.completionStatus === 'CONFIRMED';
@@ -366,80 +367,168 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
     'THREE_MONTHS': '3 Months Subscription',
     'SIX_MONTHS': '6 Months Subscription',
     'TWELVE_MONTHS': '12 Months Subscription',
-    'ONE_TIME': 'Lifetime Access',
+    'ONE_TIME': 'One-Time Purchase',
   }[purchase.selectedPlan] || purchase.selectedPlan : null;
 
-  const isSubscription = purchase.selectedPlan && purchase.selectedPlan !== 'ONE_TIME';
-
+  const purchaseDate = new Date(purchase.soldAt || purchase.createdAt || Date.now());
+  
+  let isExpired = false;
+  let isExpiringSoon = false;
+  
+  if (purchase.expiryDate) {
+    const expiryDate = new Date(purchase.expiryDate);
+    const now = new Date();
+    isExpired = expiryDate < now;
+    isExpiringSoon = !isExpired && (expiryDate.getTime() - now.getTime()) < 7 * 24 * 60 * 60 * 1000;
+  }
+  
   const formattedExpiry = purchase.expiryDate 
     ? new Date(purchase.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : null;
 
   return (
-    <div className={`p-5 bg-white rounded-xl shadow-sm ${helpPaid ? 'border border-green-300' : 'border border-gray-200'}`}>
-      <div className="flex justify-between flex-wrap gap-3">
+    <div className={`bg-white border rounded-[12px] overflow-hidden transition-all ${confirmed ? 'border-green-200 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+           onClick={() => setExpanded(v => !v)}>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center flex-wrap gap-2 mb-2">
-            <span className="text-xs font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded">⟁ {t('purchasesBadgeSoftware')}</span>
+          <div className="font-semibold text-gray-900 text-[1rem] flex items-center gap-2 flex-wrap mb-1">
+            <span className="truncate">{sw.name || '—'}</span>
+            {sw.technologyType === 'HARDWARE' ? (
+              <span className="text-[0.65rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md tracking-wider">
+                HARDWARE
+              </span>
+            ) : (
+              <span className="text-[0.65rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md tracking-wider">
+                SOFTWARE
+              </span>
+            )}
             {planLabel && (
-              <span className={`text-xs font-bold px-2.5 py-0.5 rounded border ${isSubscription ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+              <span className="text-[0.65rem] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md tracking-wider">
                 {planLabel}
               </span>
             )}
-            {confirmed && <span className="text-xs font-bold text-green-600">✓ {t('completed')}</span>}
-            {helpPaid && <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-200 px-2 py-0.5 rounded">◆ {t('purchasesCoBrotherActive')}</span>}
+            {confirmed && (
+              <span className="text-[0.65rem] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md tracking-wider">
+                ✓ Confirmed
+              </span>
+            )}
+            {isExpired && (
+              <span className="text-[0.65rem] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md tracking-wider animate-pulse">
+                EXPIRED
+              </span>
+            )}
+            {isExpiringSoon && (
+              <span className="text-[0.65rem] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
+                EXPIRING SOON
+              </span>
+            )}
+            {helpPaid && (
+              <span className="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md tracking-wider">
+                ◆ CoBrother
+              </span>
+            )}
           </div>
-          <div className="font-bold text-lg text-gray-900">
-            {sw.name || '—'}
+          <div className="text-[0.8rem] text-gray-500 font-medium">
+            {sw.category?.replace(/_/g, ' ')} <span className="mx-1.5 text-gray-300">•</span> Purchased{' '}
+            {purchaseDate.toLocaleDateString('en-IN', {
+              day: 'numeric', month: 'short', year: 'numeric',
+            })}
+            {formattedExpiry && <><span className="mx-1.5 text-gray-300">•</span> <span className={isExpired ? 'text-red-600 font-semibold' : isExpiringSoon ? 'text-amber-600 font-semibold' : 'text-gray-500'}>Expires: {formattedExpiry}</span></>}
           </div>
-          {sw.description && (
-            <div className="text-xs text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap max-w-[400px]">
-              {sw.description}
-            </div>
-          )}
         </div>
-        <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
-          <div className="text-xl font-semibold tabular-nums text-gray-900">
-            {formatPrice(sw.price || 0)}
-          </div>
-          {formattedExpiry && (
-            <div className="text-[0.7rem] text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded border border-indigo-200 uppercase tracking-wider">
-              Valid till: {formattedExpiry}
+
+        <div className="flex items-center gap-5 flex-shrink-0">
+          <div className="text-right">
+            <div className="font-display text-[1.2rem] font-bold text-purple-700">
+              {formatPrice(purchase.grossAmountInr || sw.price || 0)}
             </div>
-          )}
-          {helpPaid && <div className="text-xs text-gray-600">+ {formatPrice(HELP_FEE_INR)} CoBrother</div>}
-          <div className="text-xs text-gray-600">✓ {t('purchasesPaymentConfirmed')}</div>
-          <InvoiceDownloadButton onClick={onDownloadInvoice} />
+          </div>
+          <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>
         </div>
       </div>
 
-      {sw.githubLink && (
-        <div className="mt-3.5 p-4 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-between">
-          <span className="text-xs text-gray-600">🔗 {t('purchasesGithubRepo')}</span>
-          <a href={sw.githubLink} target="_blank" rel="noreferrer" className="text-xs text-gray-700 font-bold hover:text-gray-900 transition-all duration-200">
-            {t('openLink')}
-          </a>
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50/30 px-5 py-4">
+
+          {/* Purchased Resources */}
+          {confirmed && (
+            <div className="mb-5">
+              <div className="text-[0.75rem] font-bold text-gray-700 uppercase tracking-wider mb-3">Purchased Resources</div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {sw.githubLink && (
+                  <div className="px-4 py-3.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between shadow-sm hover:border-green-300 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-lg">🔓</span>
+                      <span className="text-[0.85rem] font-semibold text-gray-800">GitHub Repository</span>
+                    </div>
+                    <a href={sw.githubLink} target="_blank" rel="noreferrer"
+                       className="text-sm text-green-600 font-bold no-underline hover:underline bg-green-50 px-3 py-1 rounded-lg">
+                      Open →
+                    </a>
+                  </div>
+                )}
+                
+                {sw.demoUrl && (
+                  <div className="px-4 py-3.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between shadow-sm hover:border-indigo-300 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-indigo-500 text-lg">🌐</span>
+                      <span className="text-[0.85rem] font-semibold text-gray-800">Demo URL</span>
+                    </div>
+                    <a href={sw.demoUrl} target="_blank" rel="noreferrer"
+                       className="text-sm text-indigo-600 font-bold no-underline hover:underline bg-indigo-50 px-3 py-1 rounded-lg">
+                      Open →
+                    </a>
+                  </div>
+                )}
+              </div>
+              
+              {sw.supportingDocuments && sw.supportingDocuments.length > 0 && (
+                <div className="mt-3 px-4 py-3.5 bg-white border border-gray-200 rounded-xl shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-gray-500 text-lg">📄</span>
+                    <span className="text-[0.85rem] font-semibold text-gray-800">Supporting Documents</span>
+                  </div>
+                  <div className="flex flex-col gap-2 pl-7">
+                    {sw.supportingDocuments.map((doc, idx) => (
+                      <a key={idx} href={doc.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 font-medium hover:underline inline-flex items-center gap-1.5">
+                        {doc.name || `Document ${idx + 1}`} <span className="text-xs">↗</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* CoBrother status */}
+          {helpPaid && (
+            <div className="px-4 py-3.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-5 text-[0.85rem] text-emerald-800 font-medium shadow-sm flex items-start gap-2">
+              <span className="text-emerald-500 text-lg leading-none mt-0.5">◆</span>
+              <span>CoBrother assigned — check your email for introduction details.</span>
+            </div>
+          )}
+
+          {!helpPaid && (
+            <div className="p-4 bg-purple-50 border border-purple-100 rounded-lg flex items-center justify-between flex-wrap gap-3 mb-5">
+              <div>
+                <div className="font-bold text-sm text-purple-700 mb-1">{t('purchasesNeedHelpTitle')}</div>
+                <div className="text-xs text-gray-600 leading-relaxed">{t('purchasesNeedHelpDesc')}</div>
+              </div>
+              <button type="button" onClick={onGetHelp} className="btn-glow btn-glow-sm">
+                {t('purchasesGetHelp', { price: formatPrice(HELP_FEE_INR) })}
+              </button>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex items-center justify-between flex-wrap gap-3 pt-2">
+            <div className="flex items-center gap-3">
+              <InvoiceDownloadButton onClick={onDownloadInvoice} />
+            </div>
+          </div>
         </div>
       )}
-
-      <div className="mt-3.5">
-        {helpPaid ? (
-          <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
-            <div className="font-bold text-sm text-green-600 mb-1">◆ {t('purchasesHelperAssigned')}</div>
-            <div className="text-xs text-gray-600 leading-relaxed">{t('purchasesHelperEmailHint')}</div>
-          </div>
-        ) : (
-          <div className="p-4 bg-purple-50 border border-purple-100 rounded-lg flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <div className="font-bold text-sm text-purple-700 mb-1">{t('purchasesNeedHelpTitle')}</div>
-              <div className="text-xs text-gray-600 leading-relaxed">{t('purchasesNeedHelpDesc')}</div>
-            </div>
-            <button type="button" onClick={onGetHelp} className="btn-glow btn-glow-sm">
-              {t('purchasesGetHelp', { price: formatPrice(HELP_FEE_INR) })}
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

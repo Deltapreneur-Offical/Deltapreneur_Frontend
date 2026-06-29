@@ -292,7 +292,10 @@ export const adminAPI = {
   rejectVentureVerification: (id, r)    => api.post(`/api/v1/admin/ventures/${id}/verification/reject`, { reason: r }),
   getListingFeesAndCharges:  ()         => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
   updateListingFeesAndCharges: (data)   => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
-
+  getTechnologyTransfers: () => api.get('/api/v1/admin/technology-transfers/'),
+  getTechnologyTransferDetail: (id) => api.get(`/api/v1/admin/technology-transfers/${id}`),
+  approveTechnologyPayout: (id) => api.post(`/api/v1/admin/technology-transfers/${id}/approve-payout`),
+  releaseTechnologyPayout: (id, data) => api.post(`/api/v1/admin/technology-transfers/${id}/release-payout`, data),
 };
 
 export const coBrotherAPI = {

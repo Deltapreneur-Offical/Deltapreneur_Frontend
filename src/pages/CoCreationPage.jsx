@@ -1426,7 +1426,9 @@ function PurchaseSuccessModal({ item, onClose }) {
     '3_MONTHS': '3 Months Subscription',
     '6_MONTHS': '6 Months Subscription',
     '12_MONTHS': '12 Months Subscription',
+    '12_MONTHS': '12 Months Subscription',
   }[planKey] || 'Lifetime Access';
+  const navigate = useNavigate();
   
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -1466,11 +1468,14 @@ function PurchaseSuccessModal({ item, onClose }) {
         <div className="w-full text-left text-sm text-gray-600 bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-8">
           <p className="mb-2 font-medium text-blue-900 flex items-center gap-1.5">✉️ A confirmation email has been sent.</p>
           <p className="m-0 leading-relaxed text-blue-800/80">
-            🔒 Once you verify everything works, mark it as complete from your Purchases dashboard to unlock the repository and resources.
+            🚀 Your GitHub repository and resources are now available in your Purchases dashboard.
           </p>
         </div>
 
-        <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={onClose}>
+        <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={() => {
+          onClose();
+          navigate('/purchases');
+        }}>
           Go to My Purchases →
         </button>
       </div>

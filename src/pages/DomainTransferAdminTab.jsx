@@ -14,6 +14,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { domainTransferAdminAPI } from '../api/domainTransferAPI';
+import { adminAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
 import ConfirmationModal, { buttonVariantMap } from '../components/common/ConfirmationModal';
 
@@ -225,7 +226,15 @@ function AdminActionButton({ action, busyActionId, onClick }) {
   );
 }
 
-export default function DomainTransferAdminTab() {
+export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
+  const api = isTechnologyOnly
+    ? {
+        list: adminAPI.getTechnologyTransfers,
+        get: adminAPI.getTechnologyTransferDetail,
+        approvePayout: adminAPI.approveTechnologyPayout,
+        releasePayout: adminAPI.releaseTechnologyPayout,
+      }
+    : domainTransferAdminAPI;
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -281,7 +290,7 @@ export default function DomainTransferAdminTab() {
 
   const loadList = () => {
     setLoading(true);
-    domainTransferAdminAPI
+    api
       .list()
       .then(({ data }) => setItems(data?.items || []))
       .catch((error) => {
@@ -297,7 +306,7 @@ export default function DomainTransferAdminTab() {
 
   const openDetail = async (id) => {
     try {
-      const { data } = await domainTransferAdminAPI.get(id);
+      const { data } = await api.get(id);
       setSelected(data);
     } catch (error) {
       pushToast('error', getApiErrorMessage(error));
@@ -328,7 +337,7 @@ export default function DomainTransferAdminTab() {
         message: 'Are you sure you want to approve this payout request?',
         confirmLabel: 'Approve',
         successMessage: 'Payout approved successfully.',
-        run: (id) => domainTransferAdminAPI.approvePayout(id),
+        run: (id) => api.approvePayout(id),
       });
     }
 
@@ -345,11 +354,11 @@ export default function DomainTransferAdminTab() {
         confirmLabel: 'Release Payout',
         successMessage: 'Payout released successfully.',
         requiresReleaseDetails: true,
-        run: (id, data) => domainTransferAdminAPI.releasePayout(id, data),
+        run: (id, data) => api.releasePayout(id, data),
       });
     }
 
-    if (!isClosed && escrowHeld) {
+    if (!isTechnologyOnly && !isClosed && escrowHeld) {
       availableActions.push({
         id: 'refund',
         label: 'Refund',
@@ -359,11 +368,11 @@ export default function DomainTransferAdminTab() {
         message: 'Are you sure you want to refund this transaction? This action may not be reversible.',
         confirmLabel: 'Confirm Refund',
         successMessage: 'Refund completed successfully.',
-        run: (id) => domainTransferAdminAPI.refund(id),
+        run: (id) => api.refund(id),
       });
     }
 
-    if (!isClosed && !FINAL_ESCROW_STATUSES.has(escrowStatus) && !transferCompleted && !payoutApproved) {
+    if (!isTechnologyOnly && !isClosed && !FINAL_ESCROW_STATUSES.has(escrowStatus) && !transferCompleted && !payoutApproved) {
       availableActions.push({
         id: 'forceComplete',
         label: 'Force Complete',
@@ -373,15 +382,15 @@ export default function DomainTransferAdminTab() {
         message: 'This will manually mark the transfer as completed. Please ensure all verification steps have been completed before proceeding.',
         confirmLabel: 'Force Complete',
         successMessage: 'Transfer marked as completed.',
-        run: (id) => domainTransferAdminAPI.forceComplete(id),
+        run: (id) => api.forceComplete(id),
       });
     }
 
     return availableActions;
-  }, [selected]);
+  }, [selected, isTechnologyOnly]);
 
   const reviewActions = useMemo(() => {
-    if (selected?.transferStatus !== 'ADMIN_REVIEW_REQUIRED') return [];
+    if (isTechnologyOnly || selected?.transferStatus !== 'ADMIN_REVIEW_REQUIRED') return [];
     return [
       {
         id: 'extendReview',
@@ -390,7 +399,7 @@ export default function DomainTransferAdminTab() {
         variant: 'neutral',
         successMessage: 'Seller deadline extended by 36 hours.',
         run: (id) =>
-          domainTransferAdminAPI.resolveAdminReview(id, {
+          api.resolveAdminReview(id, {
             action: 'extend_deadline',
             extensionHours: 36,
           }),
@@ -404,10 +413,10 @@ export default function DomainTransferAdminTab() {
         message: 'Are you sure you want to refund this transaction? This action may not be reversible.',
         confirmLabel: 'Confirm Refund',
         successMessage: 'Refund completed successfully.',
-        run: (id) => domainTransferAdminAPI.resolveAdminReview(id, { action: 'refund' }),
+        run: (id) => api.resolveAdminReview(id, { action: 'refund' }),
       },
     ];
-  }, [selected]);
+  }, [selected, isTechnologyOnly]);
 
   const runAction = async (action) => {
     if (!selected?.id || busyActionId) return;
@@ -448,10 +457,10 @@ export default function DomainTransferAdminTab() {
   };
 
   const syncWhois = async () => {
-    if (!selected?.id || busyActionId) return;
+    if (isTechnologyOnly || !selected?.id || busyActionId) return;
     setBusyActionId('syncWhois');
     try {
-      await domainTransferAdminAPI.syncWhois(selected.id);
+      await api.syncWhois(selected.id);
       pushToast('success', 'WHOIS sync completed successfully.');
       await openDetail(selected.id);
       loadList();
@@ -466,7 +475,7 @@ export default function DomainTransferAdminTab() {
     if (!selected?.id || busyActionId) return;
     setBusyActionId('payoutReminder');
     try {
-      await domainTransferAdminAPI.sendPayoutProfileReminder(selected.id);
+      await api.sendPayoutProfileReminder(selected.id);
       pushToast('success', 'Reminder sent successfully.');
       await openDetail(selected.id);
       loadList();
@@ -488,7 +497,7 @@ export default function DomainTransferAdminTab() {
             <table className="w-full min-w-[560px] text-sm">
               <thead className="sticky top-0 z-10 bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
-                  <th className="p-3">Domain</th>
+                  <th className="p-3">{isTechnologyOnly ? 'Technology' : 'Domain'}</th>
                   <th className="p-3">Transfer</th>
                   <th className="p-3">Escrow</th>
                   <th className="p-3" />
@@ -497,7 +506,9 @@ export default function DomainTransferAdminTab() {
               <tbody>
                 {items.length === 0 ? (
                   <tr>
-                    <td className="p-4 text-gray-500" colSpan={4}>No domain transfers found.</td>
+                    <td className="p-4 text-gray-500" colSpan={4}>
+                      {isTechnologyOnly ? 'No technology transfers found.' : 'No domain transfers found.'}
+                    </td>
                   </tr>
                 ) : (
                   items.map((row) => (
@@ -533,19 +544,21 @@ export default function DomainTransferAdminTab() {
                     <h3 className="truncate text-lg font-bold text-gray-950">{selected.domainFqdn}</h3>
                     <p className="mt-1 text-xs text-gray-500">Transaction ID: {selected.id}</p>
                   </div>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-65"
-                    disabled={Boolean(busyActionId)}
-                    onClick={syncWhois}
-                  >
-                    {busyActionId === 'syncWhois' ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    {busyActionId === 'syncWhois' ? 'Syncing...' : 'Sync WHOIS'}
-                  </button>
+                  {!isTechnologyOnly && (
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-65"
+                      disabled={Boolean(busyActionId)}
+                      onClick={syncWhois}
+                    >
+                      {busyActionId === 'syncWhois' ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                      {busyActionId === 'syncWhois' ? 'Syncing...' : 'Sync WHOIS'}
+                    </button>
+                  )}
                 </div>
               </div>
 

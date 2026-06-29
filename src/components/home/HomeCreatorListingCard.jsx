@@ -122,7 +122,7 @@ export default function HomeCreatorListingCard({
       onView();
     }
     : undefined;
-  console.log("HOME PAGE PROFILE", profile);
+  // console.log("HOME PAGE PROFILE", profile);
 
   return (
     <article

@@ -576,7 +576,6 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
         // Auction fields
         minBidPrice: form.purchaseType === 'AUCTION' ? (parseFloat(form.minBidPrice) || 0) : undefined,
         auctionDuration: form.purchaseType === 'AUCTION' ? form.auctionDuration : undefined,
-        auctionRationale: form.purchaseType === 'AUCTION' ? form.auctionRationale : undefined,
         sourceCodeIncluded: form.purchaseType === 'AUCTION' ? form.sourceCodeIncluded : undefined,
         supportIncluded: form.purchaseType === 'AUCTION' ? form.supportIncluded : undefined,
         supportDays: form.purchaseType === 'AUCTION' ? (parseInt(form.supportDays) || 0) : undefined,
@@ -766,11 +765,10 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
         {/* ── Purchase Type ── */}
         <div className="flex flex-col gap-2">
           <label className={labelCls}>Purchase Type <span className="text-red-500">*</span></label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {[
-              { value: 'ONE_TIME', label: 'One-Time', desc: 'Fixed price, one-time purchase' },
-              { value: 'SUBSCRIPTION', label: 'Subscription', desc: 'Recurring payments (monthly/yearly)' },
-              { value: 'AUCTION', label: 'Auction', desc: 'Bidding system for one-time sale' },
+              { value: 'ONE_TIME', label: 'Regular Listing', desc: 'Fixed price, one-time purchase' },
+              { value: 'AUCTION', label: 'Auction Listing', desc: 'Bidding system for one-time sale' },
             ].map((opt) => {
               const selected = form.purchaseType === opt.value;
               const borderCls = selected
@@ -782,17 +780,6 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                   type="button"
                   onClick={() => {
                     set('purchaseType', opt.value);
-                    // Reset pricing plans when switching to auction
-                    if (opt.value === 'AUCTION') {
-                      setForm(f => ({
-                        ...f,
-                        pricingPlans: f.pricingPlans.map(p => ({
-                          ...p,
-                          enabled: p.key === 'ONE_TIME',
-                          price: p.key === 'ONE_TIME' ? p.price : '',
-                        })),
-                      }));
-                    }
                   }}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${borderCls}`}
                 >
@@ -802,11 +789,6 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
               );
             })}
           </div>
-          {form.purchaseType === 'AUCTION' && (
-            <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-              Auction is only available for one-time purchases. Subscription plans will be disabled.
-            </div>
-          )}
         </div>
 
         {/* ── Pricing Plans (hidden for Auction) ── */}
@@ -922,16 +904,6 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                   <option value="THIRTY_DAYS">30 Days</option>
                 </select>
               </div>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Auction Rationale</label>
-              <textarea
-                className={`${inputCls} resize-vertical`}
-                value={form.auctionRationale || ''}
-                onChange={e => set('auctionRationale', e.target.value)}
-                placeholder="Why are you auctioning this technology?"
-                rows={2}
-              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <label className="inline-flex items-center gap-2 cursor-pointer">

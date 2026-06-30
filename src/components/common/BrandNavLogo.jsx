@@ -1,5 +1,5 @@
-import logoBlack from '../../assets/Cobrother_logo.png';
-import logoGreen from '../../assets/Cobrother_Green.png';
+import logoBlack from '../../assets/Cobrother_logo.svg';
+import logoGreen from '../../assets/Cobrother_Green.svg';
 
 /**
  * Black CoBrother wordmark with green swap on parent hover/focus

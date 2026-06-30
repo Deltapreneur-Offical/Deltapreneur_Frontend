@@ -105,7 +105,7 @@ export default function TermsAndConditionsPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
                 <TermsSection id="acceptance" title={t('termsSection1Title')}>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    <BrandWordmark inline className="h-4 w-auto mx-1" /> {t('termsSection1Body')}
+                    <BrandWordmark inline /> {t('termsSection1Body')}
                   </p>
                 </TermsSection>
                 <TermsSection id="services" title={t('termsSection2Title')}>
@@ -126,7 +126,7 @@ export default function TermsAndConditionsPage() {
                 </TermsSection>
                 <TermsSection id="intellectual-property" title={t('termsSection4Title')}>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    <BrandWordmark inline className="h-4 w-auto mx-1" /> {t('termsSection4Body')}
+                    <BrandWordmark inline /> {t('termsSection4Body')}
                   </p>
                 </TermsSection>
                 <TermsSection id="payments" title={t('termsSection5Title')}>

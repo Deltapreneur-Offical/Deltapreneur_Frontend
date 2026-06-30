@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import DomainSearchBar from './DomainSearchBar';
+import BrandWordmark from './BrandWordmark';
 import {
   heroDotEnter,
   heroEnterContainer,
@@ -17,9 +18,9 @@ export default function HeroGlow() {
       <span className="hero-tagline-dot" aria-hidden="true" />
       <p className="hero-tagline m-0 font-sans">{t('heroEyebrow')}</p>
       <h1 className="hero-headline m-0 font-sans font-normal text-black">
-        Start It Up With{' '}
-        <span className="hero-emphasis">CoɃrother</span>
-        {' '}To{' '}
+        <span>Start It Up With</span>
+        <BrandWordmark inline className="h-[0.9em] w-auto" />
+        <span>To</span>
         <span className="hero-emphasis">Disrupt</span>
       </h1>
     </div>
@@ -42,9 +43,9 @@ export default function HeroGlow() {
         className="hero-headline m-0 font-sans font-normal text-black"
         variants={heroHeadlineEnter}
       >
-        Start It Up With{' '}
-        <span className="hero-emphasis">CoɃrother</span>
-        {' '}To{' '}
+        <span>Start It Up With</span>
+        <BrandWordmark inline className="h-[0.9em] w-auto" />
+        <span>To</span>
         <span className="hero-emphasis">Disrupt</span>
       </motion.h1>
     </motion.div>
@@ -129,7 +130,10 @@ export default function HeroGlow() {
         .hero-headline {
           grid-column: 2;
           grid-row: 2;
-          display: block;
+          display: inline-flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.15rem 0.35rem;
           width: 100%;
           margin: 0;
           line-height: 1.25;

@@ -73,7 +73,7 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
-              <BrandWordmark inline className="h-10 sm:h-11 md:h-12 w-auto mr-2" />
+              <BrandWordmark inline />
               <span className="text-indigo-600">{t('privacyPageTitle')}</span>
             </h1>
 

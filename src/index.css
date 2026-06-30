@@ -184,10 +184,12 @@ a:hover {
 }
 .btn-danger:hover { background: rgba(200,110,110,0.1); }
 
-.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; color:#000000}
+.btn-sm:hover{
+  color: #047857;
+}
 /* ─── Form Elements ──────────────────────────────────── */
-.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; } 
 .form-group label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); letter-spacing: 0.04em; text-transform: uppercase; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
@@ -11295,4 +11297,13 @@ body.home-menu-open {
   .whatsapp-floating-btn__glow {
     opacity: 0.45;
   }
+}
+
+.brand-wordmark-inline {
+  display: inline-block !important;
+  height: 1.25em !important;
+  width: auto !important;
+  vertical-align: -0.16em !important;
+  margin-left: 0.15em !important;
+  margin-right: 0.15em !important;
 }

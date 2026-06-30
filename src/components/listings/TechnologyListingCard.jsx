@@ -302,9 +302,9 @@ export default function TechnologyListingCard({
     if (user?.role === 'ADMIN') {
       if (isDirectPurchase(item, auctionStatus)) {
         return (
-          <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onBuy?.(); }}>
-            <ShoppingCart size={13} aria-hidden />
-            {t('listingCardBuyNowArrow')}
+          <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onView?.(); }}>
+            <span>View Details</span>
+            <ArrowRight size={13} aria-hidden />
           </button>
         );
       }
@@ -336,9 +336,9 @@ export default function TechnologyListingCard({
 
     if (isDirectPurchase(item, auctionStatus)) {
       return (
-        <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onBuy?.(); }}>
-          <ShoppingCart size={13} aria-hidden />
-          {t('listingCardBuyNowArrow')}
+        <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onView?.(); }}>
+          <span>View Details</span>
+          <ArrowRight size={13} aria-hidden />
         </button>
       );
     }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Plus, CircleUser, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft } from 'lucide-react';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -44,7 +44,7 @@ import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows } from '../utils/listingVisibility';
 import { asArray } from '../utils/asArray';
-import { computeCommissionBreakdown, fetchListingFeesAndCharges } from '../utils/auctionFees';
+import { computeCommissionBreakdown, fetchListingFeesAndCharges, payAuctionCreationFee } from '../utils/auctionFees';
 import { useVirtualAssistantCatalog, vaLabel } from '../hooks/useVirtualAssistantCatalog';
 
 export default function CoCreationPage() {
@@ -463,12 +463,15 @@ function softwareToFormFields(item, navCurrency) {
 
 // ─── Software / Hardware Listing Form (create + edit) ─────────────────────────
 function SoftwareForm({ initial, onSaved, onCancel }) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const { currency: navCurrency } = useCurrency();
   const isEdit = Boolean(initial?.id);
   const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [commissionPercent, setCommissionPercent] = useState(15);
+  const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -492,7 +495,10 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
   useEffect(() => {
     fetchListingFeesAndCharges()
-      .then((fees) => setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15)))
+      .then((fees) => {
+        setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15));
+        setAuctionCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118));
+      })
       .catch(() => { });
   }, []);
 
@@ -556,6 +562,28 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
     }
 
     try {
+      let creationFeeOrderId;
+      if (!isEdit && form.purchaseType === 'AUCTION') {
+        if (!user) {
+          throw new Error('Please sign in again.');
+        }
+        if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) {
+          setError('Minimum bid price is required for auction listings.');
+          setLoading(false);
+          return;
+        }
+        if (!form.auctionDuration) {
+          setError('Auction duration is required for auction listings.');
+          setLoading(false);
+          return;
+        }
+        creationFeeOrderId = await payAuctionCreationFee({
+          auctionType: 'SOFTWARE',
+          user,
+          referenceId: null,
+          description: t('softwareAuctionCreationFee', { defaultValue: 'Software auction creation fee' }),
+        });
+      }
       // Build payload: keep all legacy fields, append new pricingPlans and technologyType
       const payload = {
         ...form,
@@ -580,6 +608,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
         supportIncluded: form.purchaseType === 'AUCTION' ? form.supportIncluded : undefined,
         supportDays: form.purchaseType === 'AUCTION' ? (parseInt(form.supportDays) || 0) : undefined,
         transferDetails: form.purchaseType === 'AUCTION' ? form.transferDetails : undefined,
+        creationFeeOrderId: form.purchaseType === 'AUCTION' ? (creationFeeOrderId || undefined) : undefined,
       };
 
       const { data } = isEdit
@@ -1078,7 +1107,16 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : (isEdit ? 'Save changes →' : 'List technology →')}
+            {loading
+              ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+              : (
+                isEdit
+                  ? 'Save changes →'
+                  : (form.purchaseType === 'AUCTION'
+                    ? `Pay ₹${Number(auctionCreationFeeInr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })} & List technology →`
+                    : 'List technology →'
+                  )
+              )}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
         </div>
@@ -1120,7 +1158,9 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
   const basePrice = activePlan ? parseFloat(activePlan.price) : (item.price || 0);
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
   const addonExtra = addonTotal(addons);
-  const totalPrice = basePrice + coBrotherFee + addonExtra;
+  const subTotal = basePrice + coBrotherFee + addonExtra;
+  const gstAmount = subTotal * 0.18;
+  const totalPrice = subTotal + gstAmount;
 
   const handlePhoneChange = (e) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -1369,7 +1409,14 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
 
               <div className="h-px bg-gray-200 my-4" />
 
-              <div className="flex justify-between items-center mb-5">
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-semibold text-gray-500 text-[0.85rem]">GST (18%)</span>
+                <span className="font-semibold text-gray-700 text-[0.85rem]">
+                  {formatPrice(gstAmount)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center mb-5 border-t border-gray-200 pt-3">
                 <span className="font-semibold text-gray-900 text-[1rem]">Total</span>
                 <span className="font-display text-[1.75rem] font-black text-green-600">
                   {formatPrice(totalPrice)}
@@ -1497,6 +1544,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
   const enabledPlans = normalizePricingPlans(d.pricingPlans || d.pricing_plans || []).filter(p => p.enabled);
   const hasPlans = enabledPlans.length > 0;
   const [selectedPlanKey, setSelectedPlanKey] = useState(hasPlans ? enabledPlans[0].key : '');
+  const [showPricing, setShowPricing] = useState(false);
 
   useEffect(() => {
     if (hasPlans && !selectedPlanKey) {
@@ -1518,6 +1566,16 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
           <>
             <div className="mb-8 border-b border-gray-100 pb-6">
               <div className="flex items-center gap-2 mb-3">
+                {showPricing && (
+                  <button 
+                    type="button"
+                    className="inline-flex items-center justify-center p-1.5 mr-1 text-gray-500 hover:text-gray-950 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors cursor-pointer"
+                    onClick={() => setShowPricing(false)}
+                    aria-label="Back to details"
+                  >
+                    <ArrowLeft size={16} strokeWidth={2.5} />
+                  </button>
+                )}
                 <div className="inline-flex items-center px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-[0.7rem] font-bold text-gray-700 uppercase tracking-widest">{d.category?.replace(/_/g, ' ')}</div>
                 {d.technologyType === 'HARDWARE' ? (
                   <div className="inline-flex items-center px-2.5 py-1 bg-gray-900 border border-gray-800 rounded-md text-[0.7rem] font-bold text-white uppercase tracking-widest">HARDWARE</div>
@@ -1549,215 +1607,232 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
               </div>
             </div>
 
-            <div className="mb-8">
-              {hasPlans ? (
-                <div className="w-full flex flex-col gap-4">
-                  <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Select Pricing Plan</div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {enabledPlans.map(plan => {
-                      const isSub = plan.key !== 'ONE_TIME';
-                      const isSelected = selectedPlanKey === plan.key;
-                      const subtitle = plan.key === 'ONE_TIME'
-                        ? 'Pay once, own forever'
-                        : 'Billed securely today';
+            {showPricing && (
+              <div className="mb-8 p-5 bg-indigo-50/30 border border-indigo-100 rounded-2xl animate-[fadeIn_0.2s_ease-out]">
+                {hasPlans ? (
+                  <div className="w-full flex flex-col gap-4">
+                    <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Select Pricing Plan</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {enabledPlans.map(plan => {
+                        const isSub = plan.key !== 'ONE_TIME';
+                        const isSelected = selectedPlanKey === plan.key;
+                        const subtitle = plan.key === 'ONE_TIME'
+                          ? 'Pay once, own forever'
+                          : 'Billed securely today';
 
-                      return (
-                        <div
-                          key={plan.key}
-                          onClick={() => setSelectedPlanKey(plan.key)}
-                          className={`relative flex flex-col p-5 min-h-[160px] justify-between border-2 rounded-2xl cursor-pointer transition-all duration-200 ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-indigo-300'}`}
-                        >
-                          {isSelected && (
-                            <div className="absolute -top-2.5 left-4 bg-indigo-600 text-white font-extrabold text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
-                              Selected
-                            </div>
-                          )}
-
-                          <div className="flex items-start gap-3 mb-2">
-                            <span className={`text-[0.88rem] font-extrabold leading-snug ${isSelected ? 'text-indigo-950' : 'text-gray-800'}`}>
-                              {plan.label}
-                            </span>
-                          </div>
-
-                          <div className="mt-auto">
-                            <div className={`text-xl font-black mb-1 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
-                              {formatPrice(plan.price)}
-                            </div>
-
-                            <div className="text-[0.74rem] text-gray-400 font-medium leading-normal mb-3">
-                              {subtitle}
-                            </div>
-
-                            <div className="flex flex-col gap-1.5 pt-2 border-t border-gray-100">
-                            {!isSub ? (
-                              <>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Access until expiry</div>
-                                <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Product Updates included</div>
-                              </>
+                        return (
+                          <div
+                            key={plan.key}
+                            onClick={() => setSelectedPlanKey(plan.key)}
+                            className={`relative flex flex-col p-5 min-h-[160px] justify-between border-2 rounded-2xl cursor-pointer transition-all duration-200 ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-indigo-300'}`}
+                          >
+                            {isSelected && (
+                              <div className="absolute -top-2.5 left-4 bg-indigo-600 text-white font-extrabold text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
+                                Selected
+                              </div>
                             )}
+
+                            <div className="flex items-start gap-3 mb-2">
+                              <span className={`text-[0.88rem] font-extrabold leading-snug ${isSelected ? 'text-indigo-950' : 'text-gray-800'}`}>
+                                {plan.label}
+                              </span>
+                            </div>
+
+                            <div className="mt-auto">
+                              <div className={`text-xl font-black mb-1 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                                {formatPrice(Number(plan.price) * 1.18)} <span className="text-sm font-medium text-gray-500">(inc. 18% GST)</span>
+                              </div>
+
+                              <div className="text-[0.74rem] text-gray-400 font-medium leading-normal mb-3">
+                                {subtitle}
+                              </div>
+
+                              <div className="flex flex-col gap-1.5 pt-2 border-t border-gray-100">
+                                {!isSub ? (
+                                  <>
+                                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
+                                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Access until expiry</div>
+                                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Product Updates included</div>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* Subscription Info Card */}
+                    {selectedPlanKey !== 'ONE_TIME' && (
+                      <div className="mt-2 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3">
+                        <div className="text-blue-500 mt-0.5">ℹ️</div>
+                        <div className="flex flex-col gap-1">
+                          <div className="text-[0.85rem] font-bold text-blue-900">Subscription Information</div>
+                          <div className="text-[0.8rem] text-blue-800/80 leading-relaxed">
+                            Your subscription becomes active immediately upon payment. You will have full access and receive product updates until the selected term expires. You can renew anytime before expiry.
                           </div>
                         </div>
                       </div>
-                      );
-                    })}
+                    )}
                   </div>
-                  {/* Subscription Info Card */}
-                  {selectedPlanKey !== 'ONE_TIME' && (
-                    <div className="mt-2 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3">
-                      <div className="text-blue-500 mt-0.5">ℹ️</div>
-                      <div className="flex flex-col gap-1">
-                        <div className="text-[0.85rem] font-bold text-blue-900">Subscription Information</div>
-                        <div className="text-[0.8rem] text-blue-800/80 leading-relaxed">
-                          Your subscription becomes active immediately upon payment. You will have full access and receive product updates until the selected term expires. You can renew anytime before expiry.
-                        </div>
+                ) : (
+                  <div className="flex flex-col gap-2 bg-gray-50 border border-gray-200 rounded-xl p-5">
+                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">One-Time Purchase</div>
+                    <div className="text-2xl font-black text-gray-900 mb-2">
+                      {formatPrice(Number(d.price) * 1.18)} <span className="text-base font-medium text-gray-500">(inc. 18% GST)</span>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
+                      <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!showPricing && (
+              <>
+                {d.description && (
+                  <Section title={t('technologyPageDescriptionSection')}>
+                    <p className="text-gray-600 leading-relaxed text-[0.9rem]">
+                      {d.description}
+                    </p>
+                  </Section>
+                )}
+
+                {d.whatItDoes && (
+                  <Section title={t('technologyPageWhatItDoes')}>
+                    <p className="text-gray-600 leading-relaxed text-[0.9rem]">
+                      {d.whatItDoes}
+                    </p>
+                  </Section>
+                )}
+
+                {d.howItHelps && (
+                  <Section title={t('technologyPageHowItHelps')}>
+                    <p className="text-gray-600 leading-relaxed text-[0.9rem]">
+                      {d.howItHelps}
+                    </p>
+                  </Section>
+                )}
+
+                {d.techStack && (
+                  <Section title={t('technologyPageTechStack')}>
+                    <div className="flex flex-wrap gap-1.5">
+                      {d.techStack.split(',').map(t => (
+                        <span key={t} className="text-xs px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200">
+                          {t.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </Section>
+                )}
+
+                {(d.videoLink || d.liveDemoLink) && (
+                  <Section title={t('technologyPageLinksSection')}>
+                    <div className="flex gap-3 flex-wrap">
+                      {d.videoLink && (
+                        <a href={d.videoLink} target="_blank" rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
+                          ▶ Demo Video ↗
+                        </a>
+                      )}
+                      {d.liveDemoLink && (
+                        <a href={d.liveDemoLink} target="_blank" rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
+                          🌐 Live Demo ↗
+                        </a>
+                      )}
+                    </div>
+                  </Section>
+                )}
+
+                <Section title={t('technologyPageGithubSection')}>
+                  <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-gray-500">
+                    {t('technologyPageGithubLocked')}
+                  </div>
+                </Section>
+
+                {d.listedBy && (
+                  <Section title={t('technologyPageListedBySection')}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600">
+                        {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
+                      </div>
+                      <div className="font-medium text-gray-800 text-[0.9rem]">
+                        {d.listedBy.firstname} {d.listedBy.lastname}
                       </div>
                     </div>
+                  </Section>
+                )}
+              </>
+            )}
+
+            <div className="flex gap-3 mt-6 flex-wrap items-center w-full">
+              {!showPricing ? (
+                <>
+                  {isOwner && onEdit && (
+                    <button type="button" className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={onEdit}>
+                      Edit listing
+                    </button>
                   )}
-                </div>
+                  {isOwner && canRequestTechnologyAuction(d, auctionStatus) && onAuction && (
+                    <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={onAuction}>
+                      🔨 List for auction
+                    </button>
+                  )}
+                  {isOwner && isTechnologyAuctionPending(d, auctionStatus) && (
+                    <span className="text-sm font-semibold text-amber-700 px-3 py-3 bg-amber-50 border border-amber-200 rounded-lg flex-1 text-center">
+                      ⏳ Auction pending admin review
+                    </span>
+                  )}
+                  {isOwner && (auctionStatus?.approvalStatus === 'APPROVED' || d.auctionApprovalStatus === 'APPROVED')
+                    && technologyAuctionId(d, auctionStatus) && (
+                      <button
+                        className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer"
+                        onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
+                      >
+                        View Auction →
+                      </button>
+                    )}
+                  {!isOwner
+                    && d.softwareStatus === 'AVAILABLE'
+                    && d.purchaseType !== 'AUCTION'
+                    && d.auctionApprovalStatus !== 'PENDING_APPROVAL' && (
+                      REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
+                        <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-3 rounded-md flex-1 text-center font-semibold">
+                          Verification pending — available for purchase after admin approval
+                        </span>
+                      ) : (
+                        <button className="btn-glow flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={() => setShowPricing(true)}>Buy Now →</button>
+                      )
+                    )}
+                  {!isOwner && isTechnologyAuctionLive(d, auctionStatus) && (
+                    <button
+                      className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer"
+                      onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
+                    >
+                      Place Bid →
+                    </button>
+                  )}
+                  <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 focus-visible:bg-gray-200 cursor-pointer" onClick={onClose}>Close</button>
+                </>
               ) : (
-                <div className="flex flex-col gap-2 bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">One-Time Purchase</div>
-                  <div className="text-2xl font-black text-gray-900 mb-2">
-                    {formatPrice(d.price)}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ Lifetime Access</div>
-                    <div className="text-[0.8rem] text-gray-600 flex items-center gap-1.5">✓ No Renewal Fees</div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {d.description && (
-              <Section title={t('technologyPageDescriptionSection')}>
-                <p className="text-gray-600 leading-relaxed text-[0.9rem]">
-                  {d.description}
-                </p>
-              </Section>
-            )}
-
-            {d.whatItDoes && (
-              <Section title={t('technologyPageWhatItDoes')}>
-                <p className="text-gray-600 leading-relaxed text-[0.9rem]">
-                  {d.whatItDoes}
-                </p>
-              </Section>
-            )}
-
-            {d.howItHelps && (
-              <Section title={t('technologyPageHowItHelps')}>
-                <p className="text-gray-600 leading-relaxed text-[0.9rem]">
-                  {d.howItHelps}
-                </p>
-              </Section>
-            )}
-
-            {d.techStack && (
-              <Section title={t('technologyPageTechStack')}>
-                <div className="flex flex-wrap gap-1.5">
-                  {d.techStack.split(',').map(t => (
-                    <span key={t} className="text-xs px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200">
-                      {t.trim()}
-                    </span>
-                  ))}
-                </div>
-              </Section>
-            )}
-
-            {(d.videoLink || d.liveDemoLink) && (
-              <Section title={t('technologyPageLinksSection')}>
-                <div className="flex gap-3 flex-wrap">
-                  {d.videoLink && (
-                    <a href={d.videoLink} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
-                      ▶ Demo Video ↗
-                    </a>
-                  )}
-                  {d.liveDemoLink && (
-                    <a href={d.liveDemoLink} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent text-gray-500 font-semibold text-xs rounded-lg border border-gray-200 cursor-pointer transition-colors hover:bg-gray-100 hover:text-black focus-visible:text-black no-underline" onClick={e => e.stopPropagation()}>
-                      🌐 Live Demo ↗
-                    </a>
-                  )}
-                </div>
-              </Section>
-            )}
-
-            <Section title={t('technologyPageGithubSection')}>
-              <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-gray-500">
-                {t('technologyPageGithubLocked')}
-              </div>
-            </Section>
-
-            {d.listedBy && (
-              <Section title={t('technologyPageListedBySection')}>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600">
-                    {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
-                  </div>
-                  <div className="font-medium text-gray-800 text-[0.9rem]">
-                    {d.listedBy.firstname} {d.listedBy.lastname}
-                  </div>
-                </div>
-              </Section>
-            )}
-
-            <div className="flex gap-3 mt-6 flex-wrap items-center">
-              {isOwner && onEdit && (
-                <button type="button" className="btn-glow btn-glow-sm" onClick={onEdit}>
-                  Edit listing
-                </button>
-              )}
-              {isOwner && canRequestTechnologyAuction(d, auctionStatus) && onAuction && (
-                <button className="btn-glow btn-glow-sm" onClick={onAuction}>
-                  🔨 List for auction
-                </button>
-              )}
-              {isOwner && isTechnologyAuctionPending(d, auctionStatus) && (
-                <span className="text-sm font-semibold text-amber-700 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
-                  ⏳ Auction pending admin review
-                </span>
-              )}
-              {isOwner && (auctionStatus?.approvalStatus === 'APPROVED' || d.auctionApprovalStatus === 'APPROVED')
-                && technologyAuctionId(d, auctionStatus) && (
-                  <button
-                    className="btn-glow btn-glow-sm"
-                    onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
-                  >
-                    View Auction →
+                <div className="flex gap-3 w-full">
+                  <button className="btn-glow flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={() => {
+                    const selPlan = enabledPlans.find(p => p.key === selectedPlanKey);
+                    onBuy(selPlan);
+                  }}>
+                    Confirm Purchase & Pay →
                   </button>
-                )}
-              {!isOwner
-                && d.softwareStatus === 'AVAILABLE'
-                && d.purchaseType !== 'AUCTION'
-                && d.auctionApprovalStatus !== 'PENDING_APPROVAL' && (
-                  REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !d.verified ? (
-                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
-                      Verification pending — available for purchase after admin approval
-                    </span>
-                  ) : (
-                    <button className="btn-glow btn-glow-sm" onClick={() => {
-                      const selPlan = enabledPlans.find(p => p.key === selectedPlanKey);
-                      onBuy(selPlan);
-                    }}>Buy Now →</button>
-                  )
-                )}
-              {!isOwner && isTechnologyAuctionLive(d, auctionStatus) && (
-                <button
-                  className="btn-glow btn-glow-sm"
-                  onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
-                >
-                  Place Bid →
-                </button>
+                  <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 focus-visible:bg-gray-200 cursor-pointer" onClick={onClose}>
+                    Close
+                  </button>
+                </div>
               )}
-              <LikeButton liked={likeState?.liked} count={likeState?.count}
-                onToggle={onLike} size="md" />
-              <button className="btn-glow btn-glow-sm" onClick={onClose}>Close</button>
             </div>
           </>
         )}

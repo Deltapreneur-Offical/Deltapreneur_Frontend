@@ -413,6 +413,7 @@ export default function AdminDashboardPage() {
   const { toasts: toastList, dismiss: dismissToast, api: toast } = useAdminToastInternal();
   const [tab, setTab]                       = useState('overview');
   const [cocreationsSubTab, setCocreationsSubTab] = useState('listings');
+  const [venturesSubTab, setVenturesSubTab]       = useState('all');
   const [data, setData]                     = useState([]);
   const [coBrothers, setCoBrothers]         = useState([]);
   const [requests, setRequests]             = useState([]);
@@ -700,25 +701,105 @@ export default function AdminDashboardPage() {
           data-admin-section={tab}
         >
           {tab === 'cocreations' && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.75rem' }}>
+            <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-xl mb-5 w-fit border border-gray-200 shadow-inner">
               <button
                 type="button"
-                className={`filter-tab ${cocreationsSubTab === 'listings' ? 'active' : ''}`}
+                className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${
+                  cocreationsSubTab === 'listings' 
+                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-gray-200/50' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                }`}
                 onClick={() => setCocreationsSubTab('listings')}
-                style={{ fontSize: '0.85rem', padding: '0.4rem 1rem', borderRadius: '6px' }}
               >
                 Listing Verifications (Unsold)
               </button>
               <button
                 type="button"
-                className={`filter-tab ${cocreationsSubTab === 'payouts' ? 'active' : ''}`}
+                className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${
+                  cocreationsSubTab === 'payouts' 
+                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-gray-200/50' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                }`}
                 onClick={() => setCocreationsSubTab('payouts')}
-                style={{ fontSize: '0.85rem', padding: '0.4rem 1rem', borderRadius: '6px' }}
               >
                 Sales & Payouts (Sold)
               </button>
             </div>
           )}
+
+          {tab === 'ventures' && (() => {
+            const totalCount = data.length;
+            const coVentureCount = data.filter(item => item.listingMode === 'CO_VENTURE' || item.listing_mode === 'CO_VENTURE').length;
+            const ventureCount = totalCount - coVentureCount;
+            return (
+              <div className="operations-section-tabs-wrap">
+                <p className="operations-section-tabs-eyebrow">
+                  Venture Categories & Filters
+                </p>
+                <div className="operations-section-tabs operations-section-tabs--admin operations-admin-partition-tabs mb-6" role="tablist">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={venturesSubTab === 'all'}
+                    className={`operations-section-tab operations-section-tab--assistance ${venturesSubTab === 'all' ? 'is-active' : ''}`}
+                    onClick={() => setVenturesSubTab('all')}
+                  >
+                    <span className="operations-section-tab-accent" aria-hidden />
+                    <span className="operations-section-tab-main">
+                      <span className="operations-section-tab-icon-wrap">
+                        <ClipboardList size={18} strokeWidth={2} aria-hidden />
+                      </span>
+                      <span className="operations-section-tab-copy">
+                        <span className="operations-section-tab-label">All Records</span>
+                        <span className="operations-section-tab-hint">Every registered venture & partner request</span>
+                      </span>
+                    </span>
+                    <span className="operations-section-tab-count">{totalCount}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={venturesSubTab === 'ventures'}
+                    className={`operations-section-tab operations-section-tab--compliance ${venturesSubTab === 'ventures' ? 'is-active' : ''}`}
+                    onClick={() => setVenturesSubTab('ventures')}
+                  >
+                    <span className="operations-section-tab-accent" aria-hidden />
+                    <span className="operations-section-tab-main">
+                      <span className="operations-section-tab-icon-wrap">
+                        <Briefcase size={18} strokeWidth={2} aria-hidden />
+                      </span>
+                      <span className="operations-section-tab-copy">
+                        <span className="operations-section-tab-label">Standard Ventures</span>
+                        <span className="operations-section-tab-hint">Venture profiles, equity sales & pitches</span>
+                      </span>
+                    </span>
+                    <span className="operations-section-tab-count">{ventureCount}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={venturesSubTab === 'coventures'}
+                    className={`operations-section-tab operations-section-tab--requests ${venturesSubTab === 'coventures' ? 'is-active' : ''}`}
+                    onClick={() => setVenturesSubTab('coventures')}
+                  >
+                    <span className="operations-section-tab-accent" aria-hidden />
+                    <span className="operations-section-tab-main">
+                      <span className="operations-section-tab-icon-wrap">
+                        <UsersRound size={18} strokeWidth={2} aria-hidden />
+                      </span>
+                      <span className="operations-section-tab-copy">
+                        <span className="operations-section-tab-label">CoVentures</span>
+                        <span className="operations-section-tab-hint">Co-branding partnerships & applications</span>
+                      </span>
+                    </span>
+                    <span className="operations-section-tab-count">{coVentureCount}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {tab === 'overview' && (
             <AdminOverviewSection
@@ -792,7 +873,14 @@ export default function AdminDashboardPage() {
                 {listCount != null && data.length > 0 && (
                   <p className="text-sm text-gray-500 mb-3">{t('adminRecordsShown', { count: data.length })}</p>
                 )}
-                {data.map(item => (
+                {data.filter(item => {
+                  if (tab !== 'ventures') return true;
+                  if (venturesSubTab === 'all') return true;
+                  const isCoVenture = item.listingMode === 'CO_VENTURE' || item.listing_mode === 'CO_VENTURE';
+                  if (venturesSubTab === 'coventures') return isCoVenture;
+                  if (venturesSubTab === 'ventures') return !isCoVenture;
+                  return true;
+                }).map(item => (
                   tab === 'ventures' ? (
                     <VentureAdminRow
                       key={`venture-${item.id}`}
@@ -1543,6 +1631,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                 >
                   {item.verified ? t('adminReverifyDomain') : t('adminVerifyDomain')}
                 </button>
+
                 {domainNeedsMarkVerified(item) && (
                   <button
                     type="button"
@@ -1592,24 +1681,54 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
 
 function AuctionsAdminTable({ auctions }) {
   const { t } = useTranslation();
+  const [filter, setFilter] = useState('ALL');
+
   if (!auctions.length) return (
     <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoAuctions')}</h3></div>
   );
+
+  const filteredAuctions = auctions.filter((item) => {
+    if (filter === 'ALL') return true;
+    const auction = item.auction ?? item;
+    return auction.status === filter;
+  });
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      {auctions.map((item) => {
-        // Handle both { auction, bids, domain } and flat auction objects
-        const auction = item.auction ?? item;
-        const bids    = item.bids ?? [];
-        const domain  = item.domain ?? auction.domain;
-        return (
-          <AuctionAdminRow
-            key={auction.id}
-            auction={domain ? { ...auction, domain } : auction}
-            bids={bids}
-          />
-        );
-      })}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <span className="text-sm font-semibold text-gray-700">Filter Auctions:</span>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="form-select text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          <option value="ALL">All Auctions</option>
+          <option value="ACTIVE">Active</option>
+          <option value="UNSOLD">Unsold</option>
+          <option value="SOLD">Sold</option>
+          <option value="DRAFT">Draft</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+      </div>
+      
+      {!filteredAuctions.length ? (
+        <div className="text-center py-10 text-gray-500">No auctions found matching this status.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {filteredAuctions.map((item) => {
+            const auction = item.auction ?? item;
+            const bids    = item.bids ?? [];
+            const domain  = item.domain ?? auction.domain;
+            return (
+              <AuctionAdminRow
+                key={auction.id}
+                auction={domain ? { ...auction, domain } : auction}
+                bids={bids}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

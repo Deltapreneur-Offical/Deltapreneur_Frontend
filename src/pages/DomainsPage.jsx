@@ -908,7 +908,9 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
 
   const addonExtra  = addonTotal(addons);
   const domainPrice = Number(domain.askingPrice);
-  const totalPrice  = domainPrice + addonExtra;
+  const subTotal  = domainPrice + addonExtra;
+  const gstAmount = subTotal * 0.18;
+  const totalPrice = subTotal + gstAmount;
 
   const handlePhoneChange = (e) => {
     setBuyer(b => ({ ...b, buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }));
@@ -1075,6 +1077,10 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
               Virtual assistant selection will be shared with the admin team for hiring follow-up.
             </div>
           )}
+          <div className="flex justify-between text-gray-500 mb-1">
+            <span>GST (18%)</span>
+            <span>{formatPrice(gstAmount)}</span>
+          </div>
           <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2 mt-1">
             <span>{t('domainsPageTotalLabel')}</span>
             <span>{formatPrice(totalPrice)}</span>
@@ -1204,7 +1210,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                 </>
               ) : (
                 <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
-                  {t('domainsPagePriceChip', { amount: formatPrice(d.askingPrice) })}
+                  {t('domainsPagePriceChip', { amount: formatPrice(Number(d.askingPrice) * 1.18) })} (inc. 18% GST)
                 </div>
               )}
               <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">

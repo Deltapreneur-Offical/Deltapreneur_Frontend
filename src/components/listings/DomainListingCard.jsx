@@ -111,9 +111,10 @@ export default function DomainListingCard({
   const needsVerification = false;
   const purchaseBlocked = needsVerification && !isOwner;
 
-  const priceAmount = isAuction
+  const basePrice = isAuction
     ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
     : domain.askingPrice;
+  const priceAmount = basePrice;
 
   useEffect(() => {
     setImgFailed(false);

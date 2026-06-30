@@ -52,7 +52,7 @@ export default function CommunityAuctionPage() {
   const { auctionId } = useParams();
   const { user }      = useAuth();
   const navigate      = useNavigate();
-  const { auction, bids, minNextBid, maxBidPrice, wsState, loading, lastUpdate, placeBid, refresh }
+  const { auction, bids, minNextBid, maxBidPrice, bidFee, wsState, loading, lastUpdate, placeBid, refresh }
                       = useCommunityAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
   const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
@@ -410,7 +410,7 @@ export default function CommunityAuctionPage() {
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
                   Allowed bid range:{' '}
                   <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
-                  <span className="text-gray-500 ml-2">(5% above current)</span>
+                  <span className="text-gray-500 ml-2">(between min and 150% max)</span>
                 </div>
               )}
             </div>
@@ -595,6 +595,12 @@ export default function CommunityAuctionPage() {
                   </div>
                 )}
 
+                {bidFee > 0 && (
+                  <div className="text-[0.75rem] text-gray-500 mb-3 text-center font-medium bg-gray-50 p-2 rounded">
+                    A non-refundable per-bid fee of ₹{Number(bidFee).toLocaleString('en-IN')} will be charged.
+                  </div>
+                )}
+
                 <button className="btn-glow w-full" onClick={handleBid}
                   disabled={bidLoading || !bidAmount}>
                   {bidLoading
@@ -603,7 +609,7 @@ export default function CommunityAuctionPage() {
                 </button>
 
                 <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
-                  Each bid must be at least 5% above the current highest bid.
+                  Each bid must be strictly greater than the current highest bid.
                 </p>
               </div>
             )}

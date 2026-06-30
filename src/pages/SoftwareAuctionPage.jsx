@@ -12,6 +12,7 @@ import { formatAuctionDateTime, formatCountdown, resolveAuctionEndTime } from '.
 import { isSoftwareAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 import useCurrency from '../context/CurrencyContext';
+import { fetchListingFeesAndCharges } from '../utils/auctionFees';
 
 function Countdown({ endTime, status }) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -69,6 +70,7 @@ export default function SoftwareAuctionPage() {
   const [participation, setParticipation]   = useState({ loading: true, paid: false, fee: 0 });
   const [payingParticipation, setPayingParticipation] = useState(false);
   const [participationError, setParticipationError] = useState('');
+  const [bidFee, setBidFee] = useState(null);
 
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const isOwner = resolveAuctionLister(
@@ -96,6 +98,16 @@ export default function SoftwareAuctionPage() {
         });
       })
       .catch(() => setParticipation({ loading: false, paid: false, fee: 0, isOwner: false }));
+
+    if (user && isActive) {
+      fetchListingFeesAndCharges()
+        .then(data => {
+          if (data?.auctionBidFeeInr) {
+            setBidFee(data.auctionBidFeeInr);
+          }
+        })
+        .catch(console.error);
+    }
   }, [auction?.id, user?.id, isActive]);
 
   const handlePayParticipation = async () => {
@@ -539,6 +551,11 @@ export default function SoftwareAuctionPage() {
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1.25rem' }}>
                   {t('auctionDetailAllowedRange', { range: formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice) })}
                 </p>
+                {bidFee !== null && (
+                  <div style={{ fontSize: '0.82rem', color: '#6b7280', margin: '-0.5rem 0 1rem 0', padding: '0.5rem', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                    A fee of <strong>{formatPrice(bidFee)}</strong> will be charged for placing this bid.
+                  </div>
+                )}
                 {biddingBlocked ? (
                   <div style={{ padding: '0.75rem', borderRadius: 8, background: '#fff8e7', border: '1px solid #f3d38a', fontSize: '0.82rem', color: '#8a6d1f' }}>
                     {t('auctionDetailBiddingBlockedTech')}

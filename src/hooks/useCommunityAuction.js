@@ -58,6 +58,7 @@ export function useCommunityAuction(auctionId) {
   const [bids, setBids] = useState([]);
   const [minNextBid, setMinNextBid] = useState(0);
   const [maxBidPrice, setMaxBidPrice] = useState(0);
+  const [bidFee, setBidFee] = useState(0);
   const [connected, setConnected] = useState(false);
   const [wsState, setWsState] = useState('connecting');
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,9 @@ export function useCommunityAuction(auctionId) {
       setBids(normalizedBids);
       setMinNextBid(limits.minNextBid);
       setMaxBidPrice(limits.maxBidPrice);
+      if (data?.auctionBidFeeInr) {
+        setBidFee(data.auctionBidFeeInr);
+      }
     } catch (error) {
       console.error('Failed to load creator auction:', error);
       setAuction(null);
@@ -242,5 +246,5 @@ export function useCommunityAuction(auctionId) {
     return res;
   }, [auctionId, fetchAuctionDetail]);
 
-  return { auction, bids, minNextBid, maxBidPrice, connected, wsState, loading, lastUpdate, placeBid, refresh: fetchAuctionDetail };
+  return { auction, bids, minNextBid, maxBidPrice, bidFee, connected, wsState, loading, lastUpdate, placeBid, refresh: fetchAuctionDetail };
 }

@@ -6,7 +6,7 @@ import { useAuction } from '../hooks/useAuction';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-import { payAuctionCreationFee } from '../utils/auctionFees';
+import { payAuctionCreationFee, fetchListingFeesAndCharges } from '../utils/auctionFees';
 import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctionTime, resolveAuctionEndTime } from '../utils/auctionDate';
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
@@ -56,6 +56,7 @@ export default function AuctionPage() {
   const [payingParticipation, setPayingParticipation] = useState(false);
   const [payingWinnerBid, setPayingWinnerBid] = useState(false);
   const [winnerPaymentError, setWinnerPaymentError] = useState('');
+  const [bidFee, setBidFee] = useState(null);
   const bidListRef = useRef(null);
 
   // FIX #13: access domain.listedBy safely — it comes through because
@@ -144,6 +145,16 @@ export default function AuctionPage() {
           });
         }
       });
+
+    if (user && isActive) {
+      fetchListingFeesAndCharges()
+        .then(data => {
+          if (data?.auctionBidFeeInr) {
+            setBidFee(data.auctionBidFeeInr);
+          }
+        })
+        .catch(console.error);
+    }
   }, [auction?.id, user?.id, isActive, biddingBlocked]);
 
   const handlePayParticipation = async () => {
@@ -585,6 +596,12 @@ export default function AuctionPage() {
                   </div>
                 )}
 
+                {bidFee !== null && (
+                  <div className="mb-4 text-[0.82rem] text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
+                    A fee of <strong>{formatPrice(bidFee)}</strong> will be charged for placing this bid.
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-1.5 mb-4">
                   <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
                     {t('auctionDetailYourBidAmount', { symbol: getSymbol() })}
@@ -610,6 +627,12 @@ export default function AuctionPage() {
                 {bidSuccess && (
                   <div className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4 text-[0.82rem] text-green-700">
                     ✓ {bidSuccess}
+                  </div>
+                )}
+
+                {bidFee > 0 && (
+                  <div className="text-[0.75rem] text-gray-500 mb-3 text-center font-medium bg-gray-50 p-2 rounded">
+                    A non-refundable per-bid fee of {formatPrice(bidFee)} will be charged.
                   </div>
                 )}
 

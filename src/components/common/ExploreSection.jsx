@@ -42,16 +42,16 @@ export default function ExploreSection() {
         <CoVenturesSection />
       </LazySection>
 
+      <LazySection title={t('auctions')} to="/auctions" variant="auction">
+        <AuctionsSection />
+      </LazySection>
+
       <LazySection title={t('technologySoftware')} to="/technology">
         <TechnologySection />
       </LazySection>
 
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
-      </LazySection>
-
-      <LazySection title={t('auctions')} to="/auctions" variant="auction">
-        <AuctionsSection />
       </LazySection>
 
       <LazyWhenVisible>

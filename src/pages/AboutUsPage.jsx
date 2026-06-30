@@ -9,7 +9,6 @@ import {
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
-import BrandWordmark from '../components/common/BrandWordmark';
 import { pageViewport, HOME_EASE, pageRevealFade, pageRevealLeft, pageRevealRight, pageRevealUp } from '../components/motion/motionPresets';
 
 /* ─────────────────────────────────────────────────────────────
@@ -160,8 +159,7 @@ export default function AboutUsPage() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             className="mt-7 max-w-2xl text-lg sm:text-xl text-slate-600 leading-relaxed"
           >
-            <BrandWordmark className="h-6 w-auto align-middle inline-block mr-1.5" inline alt="CoBrother" />{' '}
-            is a collaboration-driven ecosystem for founders, entrepreneurs, and
+            CoBrother is a collaboration-driven ecosystem for founders, entrepreneurs, and
             organizations who are serious about challenging the status quo — equipped with
             the systems, brand, and technology to back it up.
           </motion.p>
@@ -239,8 +237,7 @@ export default function AboutUsPage() {
             </Reveal>
             <Reveal delay={0.24}>
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoBrother" />{' '}
-                exists to bridge these gaps with one unified, execution-first
+                CoBrother exists to bridge these gaps with one unified, execution-first
                 ecosystem featuring Domains, Ventures, Creators, and Technology — so founders spend their energy on growth, not setup.
               </p>
             </Reveal>
@@ -467,10 +464,8 @@ export default function AboutUsPage() {
           <div className="max-w-2xl mb-14">
             <Reveal><Chip>Our Difference</Chip></Reveal>
             <Reveal delay={0.1}>
-              <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-                What makes{' '}
-                <BrandWordmark className="h-9 sm:h-11 w-auto align-middle inline-block mx-1" inline alt="CoBrother" />{' '}
-                different?
+              <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight flex items-center flex-wrap gap-x-2 gap-y-1">
+                <span>What makes CoBrother different?</span>
               </h2>
             </Reveal>
           </div>
@@ -523,8 +518,7 @@ export default function AboutUsPage() {
             </Reveal>
             <Reveal direction="left" delay={0.18}>
               <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed">
-                <BrandWordmark className="h-5 w-auto align-middle inline-block mr-1" inline alt="CoBrother" />{' '}
-                is built for people who are serious about execution — whether
+                CoBrother is built for people who are serious about execution — whether
                 you're just starting out or ready to scale what you've already built.
               </p>
             </Reveal>
@@ -616,12 +610,7 @@ export default function AboutUsPage() {
           </Reveal>
           <Reveal delay={0.18}>
             <p className="mt-5 text-slate-400 text-base sm:text-lg leading-relaxed">
-              Join{' '}
-              <BrandWordmark
-                className="h-5 w-auto align-middle inline-block mx-1 brightness-0 invert opacity-70"
-                inline alt="CoBrother"
-              />.
-              Access technology. Build faster. Disrupt with confidence.
+              Join CoBrother. Access technology. Build faster. Disrupt with confidence.
             </p>
           </Reveal>
           <Reveal delay={0.26}>

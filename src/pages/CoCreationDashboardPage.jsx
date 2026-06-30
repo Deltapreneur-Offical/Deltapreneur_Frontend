@@ -102,7 +102,7 @@ export default function CoCreationDashboardPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your software listings and purchases.</p>
+            <p className="text-gray-600 mt-1">Manage your technology listings and purchases.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <PayoutSettingsButton />
@@ -156,7 +156,7 @@ export default function CoCreationDashboardPage() {
               </div>
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No listings yet</h3>
               <button className="btn-glow" onClick={() => navigate('/technology')}>
-                List Software
+                List Technology
               </button>
             </div>
           ) : (
@@ -268,11 +268,11 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
           <span className="truncate">{item.name}</span>
           <VerificationStatusBadge item={item} type="badge" />
           {item.technologyType === 'HARDWARE' ? (
-            <span className="text-[0.68rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="text-[0.68rem] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
               HARDWARE
             </span>
           ) : (
-            <span className="text-[0.68rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="text-[0.68rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
               SOFTWARE
             </span>
           )}

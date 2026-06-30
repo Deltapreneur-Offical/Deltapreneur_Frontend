@@ -17,11 +17,26 @@ export function isActiveListing(item, type = 'domain') {
     if (domainStatus === 'SOLD' || domainStatus === 'REMOVED' || domainStatus === 'DELETED') {
       return false;
     }
+    // Hide domains that have been purchased by someone
+    if (item.purchasedBy != null || item.purchased_by_user_id != null) {
+      return false;
+    }
   }
 
   if (type === 'software') {
     const softwareStatus = (item.softwareStatus ?? item.software_status ?? '').toString().toUpperCase();
     if (softwareStatus === 'SOLD' || softwareStatus === 'REMOVED' || softwareStatus === 'DELETED') {
+      return false;
+    }
+  }
+
+  if (type === 'venture') {
+    // Hide ventures that have been purchased/acquired
+    if (item.purchasedByUserId != null || item.purchased_by_user_id != null) {
+      return false;
+    }
+    const ventureListingStatus = (item.ventureListingStatus ?? item.venture_listing_status ?? '').toString().toUpperCase();
+    if (ventureListingStatus === 'SOLD' || ventureListingStatus === 'ACQUIRED' || ventureListingStatus === 'CLOSED') {
       return false;
     }
   }

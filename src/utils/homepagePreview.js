@@ -170,11 +170,9 @@ export async function fetchHomepageSectionPreview(
         filterFn,
         treatAllAsFeatured: true,
       });
-      if (featuredRows.length > 0) {
-        return featuredRows;
-      }
+      return featuredRows;
     } catch {
-      // Fall through to the public catalog fetch.
+      return [];
     }
   }
 

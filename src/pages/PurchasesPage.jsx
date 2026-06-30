@@ -394,11 +394,11 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
           <div className="font-semibold text-gray-900 text-[1rem] flex items-center gap-2 flex-wrap mb-1">
             <span className="truncate">{sw.name || '—'}</span>
             {sw.technologyType === 'HARDWARE' ? (
-              <span className="text-[0.65rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md tracking-wider">
+              <span className="text-[0.65rem] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full tracking-wider">
                 HARDWARE
               </span>
             ) : (
-              <span className="text-[0.65rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md tracking-wider">
+              <span className="text-[0.65rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full tracking-wider">
                 SOFTWARE
               </span>
             )}

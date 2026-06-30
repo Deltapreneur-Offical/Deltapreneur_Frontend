@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -67,13 +67,23 @@ export default function CoCreationPage() {
   const [filterTab, setFilterTab] = useState('all');
   const [showConfetti, setShowConfetti] = useState(false);
   const [accessNotice, setAccessNotice] = useState('');
+  const [technologyType, setTechnologyType] = useState('');
 
   const [auctionTarget, setAuctionTarget] = useState(null);  // software to auction
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
 
+  const filteredByType = useMemo(() => {
+    if (!technologyType) return allSoftware;
+    return allSoftware.filter(item => (item.technologyType || 'SOFTWARE') === technologyType);
+  }, [allSoftware, technologyType]);
 
+  const activeCategoryOptions = useMemo(() => {
+    if (technologyType === 'HARDWARE') return HARDWARE_CATEGORY_OPTIONS;
+    if (technologyType === 'SOFTWARE') return TECHNOLOGY_CATEGORY_OPTIONS;
+    return [...TECHNOLOGY_CATEGORY_OPTIONS, ...HARDWARE_CATEGORY_OPTIONS];
+  }, [technologyType]);
 
-  const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', allSoftware);
+  const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', filteredByType);
 
   const {
     paginated, totalCount,
@@ -82,7 +92,7 @@ export default function CoCreationPage() {
     clearAll, activeFilterCount,
     page, totalPages, setPage,
   } = useFilterSort(
-    resolveMarketplaceListingRows(allSoftware, {
+    resolveMarketplaceListingRows(filteredByType, {
       tab: filterTab,
       user,
       type: 'technology',
@@ -99,6 +109,11 @@ export default function CoCreationPage() {
       resetPageWhen: filterTab,
     },
   );
+
+  const handleTechnologyTypeChange = useCallback((val) => {
+    setTechnologyType(val);
+    handleCategory('');
+  }, [handleCategory]);
 
   useEffect(() => {
     if (location.state?.openListTechnologyForm) {
@@ -263,11 +278,12 @@ export default function CoCreationPage() {
             <FilterBar
               search={search} onSearch={handleSearch}
               category={category} onCategory={handleCategory}
-              categoryOptions={TECHNOLOGY_CATEGORY_OPTIONS}
+              categoryOptions={activeCategoryOptions}
+              technologyType={technologyType} onTechnologyType={handleTechnologyTypeChange}
               minPrice={minPrice} onMinPrice={handleMinPrice}
               maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
               sortBy={sortBy} onSort={handleSort}
-              onClear={clearAll} activeFilterCount={activeFilterCount}
+              onClear={() => { clearAll(); setTechnologyType(''); }} activeFilterCount={activeFilterCount + (technologyType ? 1 : 0)}
               placeholder={t('technologyPageSearchPlaceholder')}
               priceSymbol={getSymbol(currency)}
               theme="light"
@@ -275,7 +291,7 @@ export default function CoCreationPage() {
 
             {!loading && totalCount > 0 && (
               <div className="text-sm text-gray-600 mb-4">
-                {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
+                {totalCount} technology listing{totalCount !== 1 ? 's' : ''} found
               </div>
             )}
 
@@ -296,7 +312,7 @@ export default function CoCreationPage() {
                 <p className="text-gray-600 mb-6">
                   {activeFilterCount > 0
                     ? 'Try adjusting your search or filters.'
-                    : 'Check back soon for new software listings.'}
+                    : 'Check back soon for new technology listings.'}
                 </p>
                 {activeFilterCount > 0 && (
                   <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
@@ -1240,7 +1256,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
-        <div className="mb-8 border-b border-gray-100 pb-5">
+        <div className="mb-6 text-center">
           <div className="inline-flex items-center px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-md text-[0.7rem] font-bold text-indigo-700 uppercase tracking-widest mb-3">Complete Your Purchase</div>
           <h2 className="font-display text-[2rem] leading-tight font-bold text-gray-900 mb-1">{item.name}</h2>
           <p className="text-sm text-gray-500 font-medium">{item.category?.replace(/_/g, ' ')}</p>
@@ -1249,7 +1265,6 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
           {/* Left Column: Form and Selection */}
           <div className="flex flex-col gap-6">
-
             {/* Buyer details */}
             <div className="flex flex-col gap-4">
               <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Buyer Information</div>
@@ -1578,9 +1593,9 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                 )}
                 <div className="inline-flex items-center px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-[0.7rem] font-bold text-gray-700 uppercase tracking-widest">{d.category?.replace(/_/g, ' ')}</div>
                 {d.technologyType === 'HARDWARE' ? (
-                  <div className="inline-flex items-center px-2.5 py-1 bg-gray-900 border border-gray-800 rounded-md text-[0.7rem] font-bold text-white uppercase tracking-widest">HARDWARE</div>
+                  <div className="inline-flex items-center px-2.5 py-1 bg-orange-50 border border-orange-200 rounded-full text-[0.7rem] font-bold text-orange-700 uppercase tracking-widest">HARDWARE</div>
                 ) : (
-                  <div className="inline-flex items-center px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-md text-[0.7rem] font-bold text-indigo-700 uppercase tracking-widest">SOFTWARE</div>
+                  <div className="inline-flex items-center px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full text-[0.7rem] font-bold text-blue-700 uppercase tracking-widest">SOFTWARE</div>
                 )}
                 {d.official && (
                   <span className="text-[0.7rem] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">

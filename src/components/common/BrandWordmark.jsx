@@ -1,6 +1,6 @@
 import coBrotherLogo from '../../assets/Cobrother_logo.svg';
 
-export default function BrandWordmark({ inline = false, className = '', alt = 'CoɃrother' }) {
+export default function BrandWordmark({ inline = false, className = '', alt = 'CoBrother' }) {
   const displayClass = inline ? 'brand-wordmark-inline' : 'block';
 
   return (

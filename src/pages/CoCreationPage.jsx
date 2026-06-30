@@ -837,8 +837,8 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                 Subscription Revenue Policy
               </div>
               <ul className="list-disc pl-5 space-y-1 text-gray-600 text-xs leading-relaxed">
-                <li>CoɃrother retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
-                <li>CoɃrother charges <strong>no commission</strong> on renewal payments.</li>
+                <li>CoBrother retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
+                <li>CoBrother charges <strong>no commission</strong> on renewal payments.</li>
                 <li>The seller receives <strong>100%</strong> of all future subscription renewals.</li>
               </ul>
             </div>
@@ -1048,7 +1048,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
       openRazorpayCheckout({
         orderData,
         user,
-        description: `${item.name}${coBrotherOptIn ? ' + CoɃrother Help' : ''}`,
+        description: `${item.name}${coBrotherOptIn ? ' + CoBrother Help' : ''}`,
         themeColor: '#a06ec8',
         onSuccess: async (response) => {
           try {
@@ -1202,7 +1202,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
                       </span>
                     </div>
                     <div className="text-gray-500 text-[0.8rem] leading-relaxed pr-2">
-                      Get a dedicated CoɃrother to help you set up, deploy, and get the most out of
+                      Get a dedicated CoBrother to help you set up, deploy, and get the most out of
                       this software. They'll reach out within 24 hours.
                     </div>
                   </div>
@@ -1286,7 +1286,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
 
             <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-[14px] text-xs text-amber-800 font-medium shadow-sm leading-relaxed">
               🔒 GitHub/Resources link will be shared after purchase verification.
-              {coBrotherOptIn && ' Your CoɃrother will reach out within 24 hours.'}
+              {coBrotherOptIn && ' Your CoBrother will reach out within 24 hours.'}
             </div>
           </div>
         </div>

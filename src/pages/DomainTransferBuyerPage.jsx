@@ -38,7 +38,7 @@ const timelineLabels = {
   AUTH_CODE_AVAILABLE: 'Authorization Code Available',
   OTP_REVEAL: 'Authorization Code Viewed',
   TRANSFER_STARTED: 'Transfer In Progress',
-  ASSISTANCE_REQUESTED: 'CoɃrother Assistance Requested',
+  ASSISTANCE_REQUESTED: 'CoBrother Assistance Requested',
   TRANSFER_CONFIRMED: 'Transfer Confirmed',
   TRANSFER_COMPLETED: 'Transfer Completed',
   REFUNDED: 'Refunded',
@@ -210,7 +210,7 @@ export default function DomainTransferBuyerPage() {
   const requestHelp = () => run(
     'requestHelp',
     () => domainTransferAPI.requestAssistance(transactionId),
-    'CoɃrother assistance requested. A transfer specialist will guide you through the process.',
+    'CoBrother assistance requested. A transfer specialist will guide you through the process.',
   );
 
   const sendOtp = () => run(
@@ -273,7 +273,7 @@ export default function DomainTransferBuyerPage() {
                   <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">Secure Domain Transfer</p>
                   <h1 className="mt-2 text-2xl font-bold text-gray-950 sm:text-3xl">{tx.domainFqdn}</h1>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-                    CoɃrother is holding your payment securely while the domain transfer is completed.
+                    CoBrother is holding your payment securely while the domain transfer is completed.
                   </p>
                 </div>
                 <StatusBadge tx={tx} />
@@ -313,7 +313,7 @@ export default function DomainTransferBuyerPage() {
                     disabled={Boolean(busyAction)}
                     onClick={requestHelp}
                   >
-                    <span className="font-semibold text-gray-950">Get CoɃrother Assistance</span>
+                    <span className="font-semibold text-gray-950">Get CoBrother Assistance</span>
                     <span className="mt-1 block text-sm text-gray-600">A transfer specialist will guide you through the process.</span>
                   </button>
                 </div>

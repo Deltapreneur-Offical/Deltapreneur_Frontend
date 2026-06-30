@@ -57,22 +57,22 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Globe2,
       text: 'How do I buy a domain?',
-      prompt: 'How do I buy a premium domain on CoɃrother?',
+      prompt: 'How do I buy a premium domain on CoBrother?',
     },
     {
       icon: Globe2,
       text: 'Domain transfer after purchase',
-      prompt: 'Explain the CoɃrother domain transfer process after I buy a domain.',
+      prompt: 'Explain the CoBrother domain transfer process after I buy a domain.',
     },
     {
       icon: Globe2,
       text: 'When will I get paid?',
-      prompt: 'When will I get paid as a seller after a domain transfer on CoɃrother?',
+      prompt: 'When will I get paid as a seller after a domain transfer on CoBrother?',
     },
     {
       icon: Globe2,
       text: 'What should I do next?',
-      prompt: 'What should I do next in my domain transfer on CoɃrother?',
+      prompt: 'What should I do next in my domain transfer on CoBrother?',
     },
     {
       icon: Globe2,
@@ -82,14 +82,14 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Globe2,
       text: 'How do I list my domain?',
-      prompt: 'Explain how to list my domain on CoɃrother.',
+      prompt: 'Explain how to list my domain on CoBrother.',
     },
   ],
   ventures: [
     {
       icon: BriefcaseBusiness,
       text: 'How do I list a venture?',
-      prompt: 'Explain how to list my venture on CoɃrother.',
+      prompt: 'Explain how to list my venture on CoBrother.',
     },
     {
       icon: BriefcaseBusiness,
@@ -101,12 +101,12 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Cpu,
       text: 'Find technology listings',
-      prompt: 'Show me software and technology listings on CoɃrother and explain how to evaluate them.',
+      prompt: 'Show me software and technology listings on CoBrother and explain how to evaluate them.',
     },
     {
       icon: Cpu,
       text: 'How do I buy software?',
-      prompt: 'How do I buy or acquire a technology listing on CoɃrother?',
+      prompt: 'How do I buy or acquire a technology listing on CoBrother?',
     },
   ],
   auctions: [
@@ -118,7 +118,7 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Gavel,
       text: 'Auction bidding tips',
-      prompt: 'What should I know before placing a bid in a CoɃrother domain auction?',
+      prompt: 'What should I know before placing a bid in a CoBrother domain auction?',
     },
   ],
 };
@@ -997,7 +997,7 @@ export default function CoBrotherAI({ initialOpen = false }) {
                           isDark ? 'text-white' : 'text-slate-950'
                         }`}
                       >
-                        Welcome to CoɃrother
+                        Welcome to CoBrother
                       </h3>
                       <p className={`mx-auto mt-2 max-w-sm text-sm leading-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                         {EMPTY_SECTIONS[mode]} Get focused guidance without leaving the marketplace.
@@ -1190,7 +1190,7 @@ export default function CoBrotherAI({ initialOpen = false }) {
                 </form>
                 <div className={`mt-2 flex items-center justify-between gap-2 text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                   <span className="truncate">
-                    {hasAccessToken ? 'Responses can use your CoɃrother context.' : 'Sign in for saved chats and favorites.'}
+                    {hasAccessToken ? 'Responses can use your CoBrother context.' : 'Sign in for saved chats and favorites.'}
                   </span>
                   <button
                     type="button"

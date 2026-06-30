@@ -190,7 +190,7 @@ export default function VentureDealPage() {
       const { data: orderResp } = await ventureDealAPI.createPaymentOrder(dealId);
       const order = unwrapApiData(orderResp) || orderResp;
       if (order?.contactOnly) {
-        setMessage('No payment required. CoɃrother will contact you shortly.');
+        setMessage('No payment required. CoBrother will contact you shortly.');
         await load();
         return;
       }
@@ -244,9 +244,9 @@ export default function VentureDealPage() {
   const typeLabel = isPartnership ? 'Co-Venture Partnership' : 'Venture Deal';
   const headerSubtitle = isPartnership
     ? (dealAmount > 0
-      ? 'Complete payment after admin approval. CoɃrother will assist both parties with next steps.'
-      : 'CoɃrother is assisting both parties with next steps.')
-    : 'CoɃrother is holding payment securely while the deal is completed.';
+      ? 'Complete payment after admin approval. CoBrother will assist both parties with next steps.'
+      : 'CoBrother is assisting both parties with next steps.')
+    : 'CoBrother is holding payment securely while the deal is completed.';
   const showPayoutReminder = isSeller
     && !['COMPLETED', 'CANCELLED'].includes(deal?.dealStatus);
 
@@ -319,7 +319,7 @@ export default function VentureDealPage() {
                       </>
                     ) : (
                       <p className="mt-2 text-sm font-medium leading-6 text-emerald-950">
-                        CoɃrother is assisting both parties with next steps.
+                        CoBrother is assisting both parties with next steps.
                       </p>
                     )}
                     {deal.venture?.equityPercentOffered != null && (
@@ -360,7 +360,7 @@ export default function VentureDealPage() {
 
             {isPartnership && isBuyer && dealAmount <= 0 && (
               <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900">
-                This co-venture partnership does not require a payment. CoɃrother will assist both parties with next steps.
+                This co-venture partnership does not require a payment. CoBrother will assist both parties with next steps.
               </section>
             )}
 
@@ -369,11 +369,11 @@ export default function VentureDealPage() {
                 <h2 className="text-lg font-semibold text-gray-950">Payment</h2>
                 <p className="mt-1 text-sm text-gray-600">
                   {paymentWaitingOnBuyer && 'Waiting for the partner/buyer to complete payment.'}
-                  {!paymentWaitingOnBuyer && paymentLocked && 'This deal is awaiting CoɃrother admin approval. Payment will unlock once approved.'}
+                  {!paymentWaitingOnBuyer && paymentLocked && 'This deal is awaiting CoBrother admin approval. Payment will unlock once approved.'}
                   {!paymentWaitingOnBuyer && canPay && (isPartnership
                     ? 'Complete payment to confirm your partnership placement.'
                     : 'Complete payment to hold funds in escrow while the deal progresses.')}
-                  {!paymentWaitingOnBuyer && paymentComplete && deal.dealStatus !== 'COMPLETED' && 'Payment received and held in escrow. CoɃrother will assist with next steps.'}
+                  {!paymentWaitingOnBuyer && paymentComplete && deal.dealStatus !== 'COMPLETED' && 'Payment received and held in escrow. CoBrother will assist with next steps.'}
                   {!paymentWaitingOnBuyer && deal.dealStatus === 'COMPLETED' && 'Payment completed and deal finalized.'}
                   {!paymentWaitingOnBuyer && paymentRefunded && 'This payment was refunded.'}
                   {!paymentWaitingOnBuyer && deal.dealStatus === 'CANCELLED' && 'This deal was cancelled.'}
@@ -425,7 +425,7 @@ export default function VentureDealPage() {
                   <Mail className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-950">Contact CoɃrother</h2>
+                  <h2 className="text-lg font-semibold text-gray-950">Contact CoBrother</h2>
                   <p className="mt-1 text-sm leading-6 text-gray-700">
                     For deal assistance, email{' '}
                     <a

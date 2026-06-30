@@ -7,7 +7,6 @@ import { useCookieConsent } from '../../context/CookieConsentContext';
 import { FaWhatsapp } from 'react-icons/fa';
 
 import coBrotherLogo from '../../assets/Cobrother_Green.svg';
-import BrandWordmark from './BrandWordmark';
 import { EXTERNAL_LINK_PROPS, WHATSAPP_URL } from '../../config/contactLinks';
 
 
@@ -204,24 +203,6 @@ export default function HomeFooter() {
 
   const { openPreferences } = useCookieConsent();
 
-  const replaceBrandText = (text, logoSizeClass = 'h-3.5 w-auto') => {
-    if (!text) return '';
-    const regex = /(Co[BɃ]rother(?:™)?)/g;
-    const parts = text.split(regex);
-    return parts.map((part, index) => {
-      if (part.match(/^Co[BɃ]rother(?:™)?$/i)) {
-        return (
-          <BrandWordmark
-            key={index}
-            inline
-            className={`inline-block align-middle mx-1 ${logoSizeClass}`}
-          />
-        );
-      }
-      return <span key={index}>{part}</span>;
-    });
-  };
-
   const footerBody = (
 
       <div className="relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
@@ -236,7 +217,7 @@ export default function HomeFooter() {
 
                 src={coBrotherLogo}
 
-                alt="CoɃrother"
+                alt="CoBrother"
 
                 className="h-9 w-auto max-w-full opacity-95 transition-opacity group-hover:opacity-100 sm:h-10 md:h-11"
 
@@ -265,7 +246,7 @@ export default function HomeFooter() {
 
 
           <div className="home-footer-nav-col md:col-span-1">
-            <h3 className={`${headingClass} flex items-center flex-wrap gap-1`}>{replaceBrandText(t('Company'), 'h-3 w-auto')}</h3>
+            <h3 className={headingClass}>{t('Company')}</h3>
 
             <nav className="flex flex-col">
 
@@ -358,13 +339,13 @@ export default function HomeFooter() {
 
         <div className="home-footer-copyright mt-10 border-t border-slate-200/45 pt-5 text-left sm:mt-12 sm:pt-6">
 
-          <p className="text-xs text-slate-600 sm:text-sm flex items-center flex-wrap gap-x-1.5 gap-y-1">
+          <p className="text-xs text-slate-600 sm:text-sm">
 
-            {replaceBrandText(t('footerCopyright', {
+            {t('footerCopyright', {
 
               year: new Date().getFullYear(),
 
-            }), 'h-[0.85em] w-auto')}
+            })}
 
           </p>
 

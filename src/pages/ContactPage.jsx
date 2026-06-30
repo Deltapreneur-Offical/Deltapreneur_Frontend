@@ -78,7 +78,7 @@ export default function ContactPage() {
           <BackToHomeButton />
           <img
             src={coBrotherLogo}
-            alt="CoɃrother"
+            alt="CoBrother"
             className="h-10 cursor-pointer"
             onClick={() => navigate('/')}
           />

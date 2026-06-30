@@ -94,7 +94,7 @@ export default function TechnologyListingCard({
       : `${APP_BASE_URL.replace(/\/$/, '')}/technology?id=${item.id}`;
   const shareText = t('listingCardShareTechnology', {
     name: item.name || t('listingCardTechnology'),
-    defaultValue: `Check out this technology: ${item.name || 'Technology'} - Listed on CoɃrother!`,
+    defaultValue: `Check out this technology: ${item.name || 'Technology'} - Listed on CoBrother!`,
   });
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

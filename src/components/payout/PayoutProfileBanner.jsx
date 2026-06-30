@@ -4,7 +4,7 @@ import usePayoutProfile from '../../hooks/usePayoutProfile';
 
 const CONTEXT_COPY = {
   default: {
-    incomplete: 'Add your UPI or bank details so CoɃrother can send payouts when a sale is completed.',
+    incomplete: 'Add your UPI or bank details so CoBrother can send payouts when a sale is completed.',
     complete: 'Your payout details are saved and ready for seller payouts.',
   },
   domain: {
@@ -16,7 +16,7 @@ const CONTEXT_COPY = {
     complete: 'Payout details saved — you are ready to receive venture deal earnings.',
   },
   coventure: {
-    incomplete: 'Add your UPI or bank details now so you are ready for any future venture payouts from CoɃrother.',
+    incomplete: 'Add your UPI or bank details now so you are ready for any future venture payouts from CoBrother.',
     complete: 'Payout details saved — you are ready for venture and partnership payouts.',
   },
   technology: {

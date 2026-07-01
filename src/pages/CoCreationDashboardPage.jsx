@@ -25,6 +25,7 @@ export default function CoCreationDashboardPage() {
   const [tab, setTab]                   = useState('listings');
   const [listings, setListings]         = useState([]);   // Software[]  (with purchaseCount)
   const [purchases, setPurchases]       = useState([]);   // SoftwarePurchase[]
+  const [soldTransfers, setSoldTransfers] = useState([]); // SoftwarePurchase[]
   const [loading, setLoading]           = useState(true);
   const [confirmingId, setConfirmingId] = useState(null); // purchaseId being confirmed
   const [githubModal, setGithubModal]   = useState(null); // { link, softwareName }
@@ -37,9 +38,11 @@ export default function CoCreationDashboardPage() {
     Promise.all([
       technologyAPI.getMyListings(),
       technologyAPI.getMyPurchases(),
-    ]).then(([l, p]) => {
+      technologyAPI.getMySales().catch(() => ({ data: [] })),
+    ]).then(([l, p, s]) => {
       setListings(Array.isArray(l.data) ? l.data : (l.data?.data ?? []));
       setPurchases(Array.isArray(p.data) ? p.data : (p.data?.data ?? []));
+      setSoldTransfers(Array.isArray(s.data) ? s.data : (s.data?.data ?? []));
     }).catch(() => {}).finally(() => setLoading(false));
   };
 
@@ -144,10 +147,31 @@ export default function CoCreationDashboardPage() {
               </span>
             )}
           </button>
+          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+            onClick={() => setTab('sold')}>
+            Sold Listings ({soldTransfers.length})
+          </button>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+        ) : tab === 'sold' ? (
+          soldTransfers.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">🤝</div>
+              <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No sold listings yet</h3>
+              <p className="text-gray-500 text-sm mt-1">When someone buys one of your listings, it will appear here.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {soldTransfers.map(tx => (
+                <SoldRow
+                  key={tx.id}
+                  tx={tx}
+                />
+              ))}
+            </div>
+          )
         ) : tab === 'listings' ? (
           listings.length === 0 ? (
             <div className="text-center py-20">
@@ -252,6 +276,10 @@ const PLAN_LABELS = {
   '3_MONTHS': '3 Months Subscription',
   '6_MONTHS': '6 Months Subscription',
   '12_MONTHS': '12 Months Subscription',
+  'ONE_MONTH': '1 Month Subscription',
+  'THREE_MONTHS': '3 Months Subscription',
+  'SIX_MONTHS': '6 Months Subscription',
+  'TWELVE_MONTHS': '12 Months Subscription',
 };
 
 // ─── Listing Row (seller view) ────────────────────────────────────────────────
@@ -529,6 +557,107 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
                 🔄 Renew Subscription
               </button>
             )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ─── Sold Row (seller view of purchases) ──────────────────────────────────────
+function SoldRow({ tx }) {
+  const { formatPrice } = useCurrency();
+  const [expanded, setExpanded] = useState(false);
+  const sw = tx.software || {};
+  const isConfirmed = tx.completionStatus === 'CONFIRMED';
+  const isPending = tx.completionStatus === 'PENDING';
+  const selectedPlan = tx.selectedPlan || tx.pricingPlan;
+  const planLabel = PLAN_LABELS[selectedPlan] || 'One-Time Purchase';
+  const saleDate = new Date(tx.soldAt || tx.createdAt || Date.now());
+
+  return (
+    <div className={`bg-white border rounded-[12px] overflow-hidden transition-all ${isConfirmed ? 'border-green-200 shadow-sm' : 'border-purple-200 shadow-sm'}`}>
+      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+           onClick={() => setExpanded(v => !v)}>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-gray-900 text-[1rem] flex items-center gap-2 flex-wrap mb-1">
+            <span className="truncate">{sw.name || '—'}</span>
+            {sw.technologyType === 'HARDWARE' ? (
+              <span className="text-[0.65rem] font-bold text-white bg-gray-800 border border-gray-900 px-2 py-0.5 rounded-md tracking-wider">
+                HARDWARE
+              </span>
+            ) : (
+              <span className="text-[0.65rem] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md tracking-wider">
+                SOFTWARE
+              </span>
+            )}
+            <span className="text-[0.65rem] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md tracking-wider">
+              {planLabel}
+            </span>
+            {isConfirmed ? (
+              <span className="text-[0.65rem] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md tracking-wider">
+                ✓ Confirmed by Buyer
+              </span>
+            ) : (
+              <span className="text-[0.65rem] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md tracking-wider">
+                ⏳ Delivery Pending
+              </span>
+            )}
+          </div>
+          <div className="text-[0.8rem] text-gray-500 font-medium">
+            Buyer: <span className="font-semibold text-gray-700">{tx.buyerFullName || '—'}</span> · Sold{' '}
+            {formatAuctionDate(saleDate.toISOString(), {
+              day: 'numeric', month: 'short', year: 'numeric',
+            }, '')}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-5 flex-shrink-0">
+          <div className="text-right">
+            <div className="font-display text-[1.2rem] font-bold text-green-700">
+              {formatPrice(tx.grossAmountInr || sw.price || 0)}
+            </div>
+            {tx.coBrotherOptIn && (
+              <div className="text-[0.7rem] text-emerald-600 font-medium">CoBrother Assisted</div>
+            )}
+          </div>
+          <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50/30 px-5 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Buyer Contact Information */}
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="text-[0.72rem] font-bold text-gray-400 uppercase tracking-wider mb-2">Buyer Details</div>
+              <div className="text-sm text-gray-700 flex flex-col gap-1.5">
+                <div><strong>Full Name:</strong> {tx.buyerFullName || '—'}</div>
+                <div><strong>Email:</strong> <a href={`mailto:${tx.buyerEmail}`} className="text-indigo-600 hover:underline">{tx.buyerEmail || '—'}</a></div>
+                {tx.buyerPhone && <div><strong>Phone:</strong> {tx.buyerPhone}</div>}
+              </div>
+            </div>
+
+            {/* Payout Information */}
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="text-[0.72rem] font-bold text-gray-400 uppercase tracking-wider mb-2">Payout & Order Details</div>
+              <div className="text-sm text-gray-700 flex flex-col gap-1.5">
+                <div><strong>Transaction ID:</strong> <span className="font-mono text-xs">{tx.id}</span></div>
+                <div>
+                  <strong>Payout Status:</strong>{' '}
+                  {isConfirmed ? (
+                    <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      Approved (Awaiting Payout Release)
+                    </span>
+                  ) : (
+                    <span className="text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                      Pending Delivery Confirmation
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -192,6 +192,7 @@ export const technologyAPI = {
   getAll:          (params)   => api.get('/api/v1/technology/all', { params }),
   getMyListings:   ()         => api.get('/api/v1/technology/my-listings'),
   getMyPurchases:  ()         => api.get('/api/v1/technology/my-purchases'),
+  getMySales:      ()         => api.get('/api/v1/technology/my-sales'),
   get:             (id)       => api.get(`/api/v1/technology/${id}`),
   create:          (data)     => api.post('/api/v1/technology', data),
   update:          (id, data) => api.put(`/api/v1/technology/${id}`, data),

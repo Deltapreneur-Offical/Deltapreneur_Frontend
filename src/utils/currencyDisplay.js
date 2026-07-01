@@ -105,7 +105,6 @@ export function convertInrAmount(inrAmount, currencyCode, meta = FALLBACK_META) 
 }
 
 function fractionDigitsFor(amount, code) {
-  if (code === 'INR') return 0;
   const normalized = roundMoney(amount);
   return Number.isInteger(normalized) ? 0 : 2;
 }

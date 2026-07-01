@@ -23,10 +23,10 @@ export function registrationStatusBadgeClass(status, lifecycleStatus) {
 
 export function registrationStatusLabel(status, lifecycleStatus, t) {
   const life = lifecycleStatus || '';
-  if (life === 'registration_confirmed') return t('storefrontStatusConfirmed');
-  if (life === 'registration_pending') return t('storefrontStatusPending');
-  if (life === 'payment_success') return t('storefrontStatusPaid');
-  if (life === 'registration_failed') return t('storefrontStatusFailed');
+  if (life === 'registration_confirmed') return t('storefrontStatusConfirmed', { defaultValue: 'Storefront Status Confirmed' });
+  if (life === 'registration_pending') return t('storefrontStatusPending', { defaultValue: 'Storefront Status Pending' });
+  if (life === 'payment_success') return t('storefrontStatusPaid', { defaultValue: 'Storefront Status Paid' });
+  if (life === 'registration_failed') return t('storefrontStatusFailed', { defaultValue: 'Storefront Status Failed' });
   if (life === 'refunded') return t('regOrderRefunded', { defaultValue: 'Refunded' });
   if (life === 'awaiting_payment') return t('regOrderAwaitingPayment', { defaultValue: 'Awaiting payment' });
   return status || life;

@@ -132,6 +132,15 @@ function domainNeedsMarkVerified(item) {
   return !item.verified;
 }
 
+function domainNeedsMarkUnverified(item) {
+  const isAuction = domainListingType(item) === 'domain_auction';
+  const status = String(item.verificationStatus ?? (item.verified ? 'VERIFIED' : 'PENDING')).toUpperCase();
+  if (isAuction) {
+    return status === 'VERIFIED';
+  }
+  return !!item.verified || status === 'VERIFIED';
+}
+
 function DomainListingBadges({ item }) {
   const { t } = useTranslation();
   const listingType = domainListingType(item);
@@ -1619,6 +1628,30 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                     {t('adminMarkVerified')}
                   </button>
                 )}
+                {item.verified && (
+                  <button
+                    type="button"
+                    className="btn-outline btn-sm"
+                    style={{ fontSize: '0.8rem', border: '1px solid gray' }}
+                    onClick={async () => {
+                      try {
+                        // Assuming you might need an API endpoint for this, we use a placeholder or handle it if it exists.
+                        // I will assume adminAPI.markTechnologyUnverified doesn't exist yet, but I can add it to services.js
+                        if (adminAPI.markTechnologyUnverified) {
+                          await adminAPI.markTechnologyUnverified(item.id);
+                          adminToast.success("Technology marked as unverified.");
+                          onRefresh?.();
+                        } else {
+                          alert("markTechnologyUnverified API is not defined yet.");
+                        }
+                      } catch (e) {
+                        adminToast.error(e.response?.data?.error || "Could not mark unverified.");
+                      }
+                    }}
+                  >
+                    Mark Unverified
+                  </button>
+                )}
               </>
             )}
             {tabType === 'domains' && !item.takenDown && onVerifyDomain && (
@@ -1648,6 +1681,24 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                     }}
                   >
                     {t('adminMarkVerified')}
+                  </button>
+                )}
+                {domainNeedsMarkUnverified(item) && (
+                  <button
+                    type="button"
+                    className="btn-ghost btn-sm"
+                    style={{ fontSize: '0.8rem' }}
+                    onClick={async () => {
+                      try {
+                        await adminAPI.markDomainUnverified(item.id);
+                        alert("Domain marked as unverified.");
+                        onRefresh?.();
+                      } catch (e) {
+                        alert(e.response?.data?.error || e.response?.data?.message || "Could not mark unverified.");
+                      }
+                    }}
+                  >
+                    Mark Unverified
                   </button>
                 )}
               </>

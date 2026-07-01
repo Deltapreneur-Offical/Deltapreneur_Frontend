@@ -72,7 +72,7 @@ export default function LoginPage() {
       google_authentication_failed: t('googleSignInFailed'),
       oauth_token_exchange_failed: t(
         'googleTokenExchangeFailed',
-        'Google sign-in could not complete. Please check the Google OAuth redirect URI and try again.',
+        'Google sign-in could not complete. Please check the server configuration and try again.',
       ),
       oauth_clock_skew: t(
         'googleClockSkew',

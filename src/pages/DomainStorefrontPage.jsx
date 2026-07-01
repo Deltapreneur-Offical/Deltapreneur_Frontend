@@ -43,10 +43,10 @@ function statusBadgeClass(status, lifecycleStatus) {
 
 function statusLabel(status, lifecycleStatus, t) {
   const life = lifecycleStatus || '';
-  if (life === 'registration_confirmed') return t('storefrontStatusConfirmed');
-  if (life === 'registration_pending') return t('storefrontStatusPending');
-  if (life === 'payment_success') return t('storefrontStatusPaid');
-  if (life === 'registration_failed') return t('storefrontStatusFailed');
+  if (life === 'registration_confirmed') return t('storefrontStatusConfirmed', { defaultValue: 'Storefront Status Confirmed' });
+  if (life === 'registration_pending') return t('storefrontStatusPending', { defaultValue: 'Storefront Status Pending' });
+  if (life === 'payment_success') return t('storefrontStatusPaid', { defaultValue: 'Storefront Status Paid' });
+  if (life === 'registration_failed') return t('storefrontStatusFailed', { defaultValue: 'Storefront Status Failed' });
   return status || life;
 }
 

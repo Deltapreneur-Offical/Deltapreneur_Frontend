@@ -2119,69 +2119,94 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-card" style={{ maxWidth: 440 }}>
-        <div className="modal-glow" />
-        <button className="modal-close" onClick={onClose}>✕</button>
-        <div className="modal-header">
-          <div className="modal-badge">{t('adminForwardModalBadge')}</div>
-          <h2>{t('adminAssignCoBrother')}</h2>
-          <p>{t('adminForwardSelectDesc', { type: formatAdminRequestType(type, t).toLowerCase() })}</p>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full max-w-[460px] bg-[#fdfcff] border border-gray-200 rounded-[20px] shadow-[0_24px_50px_rgba(0,0,0,0.1)] p-8 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-72 h-72 bg-purple-100/50 rounded-full blur-3xl pointer-events-none" />
+        
+        <button className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors" onClick={onClose} aria-label="Close">
+          <X size={24} strokeWidth={1.5} />
+        </button>
+        
+        <div className="relative z-10 mb-6">
+          <div className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-600 text-[10px] font-bold tracking-wider uppercase rounded-lg mb-4">
+            {t('adminForwardModalBadge', 'Forward to CoBrother')}
+          </div>
+          <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignCoBrother')}</h2>
+          <p className="text-[15px] text-gray-500">
+            {t('adminForwardSelectDesc', { type: formatAdminRequestType(type, t).toLowerCase() })}
+          </p>
         </div>
 
-        {noCoBrothers && (
-          <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.08)',
-                        border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
-                        marginBottom: '1rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-            {t('adminNoCoBrotherAccounts')}
+        <div className="relative z-10">
+          {noCoBrothers && (
+            <div className="px-4 py-3 bg-[#fdf5f5] border border-[#f3d9d9] text-[#c95b5b] text-[13px] rounded-xl mb-6">
+              {t('adminNoCoBrotherAccounts', 'No CoBrother accounts found. Create or promote a user to the CoBrother role before forwarding.')}
+            </div>
+          )}
+
+          {!noCoBrothers && alreadyAccepted && (
+            <div className="px-4 py-3 bg-[#fdf5f5] border border-[#f3d9d9] text-[#c95b5b] text-[13px] rounded-xl mb-6">
+              {t('adminAlreadyAccepted')}
+            </div>
+          )}
+
+          {!noCoBrothers && !alreadyAccepted && pendingPayment && (
+            <div className="px-4 py-3 bg-amber-50 border border-amber-200 text-amber-700 text-[13px] rounded-xl mb-6">
+              {t('adminPendingPayment')}
+            </div>
+          )}
+
+          <div className="mb-6">
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2.5">
+              {t('adminSelectCoBrother', 'Select CoBrother')}
+            </label>
+            <select 
+              value={selectedCoBrother} 
+              onChange={e => setSelectedCoBrother(e.target.value)} 
+              disabled={noCoBrothers}
+              className="w-full px-4 py-3.5 bg-white border border-gray-200 text-gray-700 text-[15px] rounded-xl outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{t('adminChooseCoBrother', 'Choose a CoBrother...')}</option>
+              {coBrothers.map(cb => {
+                const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
+                return (
+                  <option key={cb.id} value={cb.id} disabled={alreadyAssigned}>
+                    {cb.firstname} {cb.lastname} ({cb.email})
+                    {alreadyAssigned ? ` - ${t('adminAlreadyAssigned')}` : ''}
+                  </option>
+                );
+              })}
+            </select>
           </div>
-        )}
 
-        {!noCoBrothers && alreadyAccepted && (
-          <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.08)',
-                        border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
-                        marginBottom: '1rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-            {t('adminAlreadyAccepted')}
+          <div className="mb-6 flex flex-col gap-1 text-[14px]">
+            <div className="flex gap-2 text-slate-500 font-medium leading-snug">
+              <span>
+                {t('adminPaymentRequestNote', { amount: formatPrice(1000) }).replace(/CoBrother/g, 'CoBrother')}
+              </span>
+            </div>
+            <div className="pl-6">
+              <LearnMoreTooltip>
+                <span className="text-indigo-600 underline text-sm cursor-pointer">{t('Learn More', 'Learn More')}</span>
+              </LearnMoreTooltip>
+            </div>
           </div>
-        )}
 
-        {!noCoBrothers && !alreadyAccepted && pendingPayment && (
-          <div className="admin-alert-banner admin-alert-banner--warning">
-            {t('adminPendingPayment')}
+          <div className="flex gap-3">
+            <button 
+              className="flex-1 py-3.5 px-4 bg-[#a78bfa] hover:bg-[#8b5cf6] text-white text-[15px] font-semibold rounded-[12px] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={handleSubmit}
+              disabled={loading || noCoBrothers || !selectedCoBrother || alreadyAccepted || pendingPayment}
+            >
+              {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" /> : t('adminSendPaymentRequest', 'Send Payment Request →')}
+            </button>
+            <button 
+              className="py-3.5 px-6 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 text-[15px] font-medium rounded-[12px] transition-colors shadow-sm"
+              onClick={onClose}
+            >
+              {t('cancel', 'Cancel')}
+            </button>
           </div>
-        )}
-
-        <div className="form-group" style={{ margin: '1rem 0' }}>
-          <label className="admin-form-label">{t('adminSelectCoBrother')}</label>
-          <select value={selectedCoBrother} onChange={e => setSelectedCoBrother(e.target.value)} disabled={noCoBrothers}>
-            <option value="">{t('adminChooseCoBrother')}</option>
-            {coBrothers.map(cb => {
-              const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
-              return (
-                <option key={cb.id} value={cb.id} disabled={alreadyAssigned}>
-                  {cb.firstname} {cb.lastname} ({cb.email})
-                  {alreadyAssigned ? t('adminAlreadyAssigned') : ''}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div className="admin-alert-banner admin-alert-banner--warning" style={{ marginBottom: '1.25rem' }}>
-          <span>{t('adminPaymentRequestNote', { amount: formatPrice(1000) })}</span>
-          {' '}
-          <LearnMoreTooltip>
-            {t('adminPaymentLearnMore', { amount: formatPrice(1000) })}
-          </LearnMoreTooltip>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn-primary" onClick={handleSubmit}
-            disabled={loading || noCoBrothers || !selectedCoBrother || alreadyAccepted || pendingPayment}
-            style={{ flex: 1 }}>
-            {loading ? <span className="btn-spinner" /> : t('adminSendPaymentRequest')}
-          </button>
-          <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
         </div>
       </div>
     </div>

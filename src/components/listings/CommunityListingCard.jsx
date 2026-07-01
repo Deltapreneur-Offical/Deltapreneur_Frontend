@@ -1,11 +1,20 @@
 import { useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Briefcase, 
+  Code, 
+  MapPin, 
+  User2, 
+  Building, 
+  Clock, 
+  CheckCircle2,
+  Globe,
+  Lightbulb
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { isCreatorProfileComplete } from '../../utils/creatorProfile';
-// Follow button disabled until creator follow UX is finalized.
 import LikeButton from '../common/LikeButton';
-import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
@@ -18,19 +27,22 @@ function formatLabel(value) {
 function CreatorAvatar({ imageUrl, name }) {
   const initial = name?.[0]?.toUpperCase() || '?';
 
-  if (imageUrl) {
-    return (
-      <img
-        src={imageUrl}
-        alt={name || 'Creator'}
-        className="creator-profile-card__avatar"
-      />
-    );
-  }
-
   return (
-    <div className="creator-profile-card__avatar creator-profile-card__avatar--fallback" aria-hidden>
-      {initial}
+    <div className="creator-profile-card__avatar-container">
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name || 'Creator'}
+          className="creator-profile-card__avatar"
+        />
+      ) : (
+        <div className="creator-profile-card__avatar creator-profile-card__avatar--fallback" aria-hidden>
+          {initial}
+        </div>
+      )}
+      <div className="creator-profile-card__verified-badge">
+        <CheckCircle2 size={16} strokeWidth={2.5} />
+      </div>
     </div>
   );
 }
@@ -42,9 +54,6 @@ export default function CommunityListingCard({
   onEdit,
   likeState,
   onLike,
-  followState,
-  onFollow,
-  followLoading = false,
 }) {
   const { t } = useTranslation();
   const cardRef = useRef(null);
@@ -57,21 +66,22 @@ export default function CommunityListingCard({
     profile.coverImageUrl
     || profile.cover_image_url
     || imageUrl;
+    
   const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
   const roleLabel = formatLabel(profile.role);
   const industryLabel = formatLabel(profile.industry);
   const locationLabel = formatLabel(profile.location);
   const primarySkill = skills[0] || '';
-  const headline = [roleLabel, industryLabel].filter(Boolean).join(' · ');
-  const metaLine = [locationLabel, primarySkill].filter(Boolean).join(' · ');
   const viewCount = Number(profile.views ?? profile.view_count ?? 0);
+  const expLabel = profile.experience || profile.years_experience || '5+ Years';
+  const workTypeLabel = formatLabel(profile.workType || profile.work_type || 'Full-time');
+  const description = profile.description || profile.about_me || 'Building scalable tech products and solving real world problems.';
 
   const stop = (e) => {
     e.stopPropagation();
     e.preventDefault();
   };
   const interactive = Boolean(onView) && !isMe;
-  console.log("DASHBOARD PROFILE", profile);
 
   return (
     <article
@@ -108,49 +118,137 @@ export default function CommunityListingCard({
       </div>
 
       <div className="creator-profile-card__body">
-        <div className="creator-profile-card__avatar-wrap">
+        <div className="creator-profile-card__top-section">
           <CreatorAvatar imageUrl={imageUrl} name={profile.name} />
+          
+          <div className="creator-profile-card__header-right">
+             <div className="creator-profile-card__name-section">
+                <h3 className="creator-profile-card__name" title={profile.name || undefined}>
+                  {profile.name || t('listingCardAnonymous')}
+                </h3>
+                <div className="creator-profile-card__badge-slot">
+                  {isMe ? (
+                    <span className="creator-profile-card__badge creator-profile-card__badge--owner">
+                      {t('listingCardOwner', 'Owner')}
+                    </span>
+                  ) : roleLabel ? (
+                    <span className="creator-profile-card__badge">{roleLabel}</span>
+                  ) : null}
+                </div>
+             </div>
+             
+             <div className="creator-profile-card__rate-wrapper">
+                <CreatorExpectedRateCard profile={profile} />
+             </div>
+          </div>
         </div>
 
-        <div className="creator-profile-card__content">
-          <h3 className="creator-profile-card__name" title={profile.name || undefined}>
-            <OverflowMarqueeText text={profile.name || t('listingCardAnonymous')} />
-          </h3>
+        <div className="creator-profile-card__details-row mt-2 flex items-center flex-wrap gap-y-2 gap-x-2">
+          {locationLabel && (
+            <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
+              <MapPin size={14} className="text-slate-400 mr-1" /> {locationLabel}
+            </span>
+          )}
+          {locationLabel && (profile.languagesKnown || profile.languages_known) && <Globe size={14} className="text-slate-400 ml-2" />}
+          {(profile.languagesKnown || profile.languages_known) && (
+            <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
+               {String(profile.languagesKnown || profile.languages_known).toUpperCase()} 
+            </span>
+          )}
+        </div>
 
-          <div className="creator-profile-card__badge-slot">
-            {isMe ? (
-              <span className="creator-profile-card__badge creator-profile-card__badge--owner">
-                {t('listingCardOwner', 'Owner')}
-              </span>
-            ) : roleLabel ? (
-              <span className="creator-profile-card__badge">{roleLabel}</span>
+        <hr className="creator-profile-card__divider mt-3" />
+
+        <div className="creator-profile-card__description-section flex items-start py-3 gap-3">
+          <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+             <User2 size={18} className="text-indigo-600" />
+          </div>
+          <div className="desc-content flex-1 pt-0.5">
+            <p className="desc-text text-sm text-slate-700 leading-relaxed font-medium">{description}</p>
+          </div>
+        </div>
+
+        {skills.length > 0 && (
+          <div className="creator-profile-card__skills-section flex items-start gap-3 mt-1 pb-2">
+            <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+               <Lightbulb size={18} className="text-indigo-600" />
+            </div>
+            <div className="desc-content flex-1 pt-1.5 flex flex-wrap items-center gap-y-1.5">
+               {skills.slice(0, 4).map((skill, i) => (
+                  <span key={i} className="flex items-center text-slate-700 text-[13px] font-medium mr-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mr-1.5 flex-shrink-0"></span>
+                    {skill}
+                  </span>
+               ))}
+               {skills.length > 4 && (
+                  <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-1 shadow-sm">
+                    +{skills.length - 4}
+                  </span>
+               )}
+            </div>
+          </div>
+        )}
+
+        <hr className="creator-profile-card__divider mt-auto" />
+
+        <div className="creator-profile-card__stats-grid">
+           <div className="stat-col">
+              <Briefcase size={15} className="stat-icon" />
+              <span className="stat-value">{expLabel}</span>
+              <span className="stat-label">Experience</span>
+           </div>
+           <div className="stat-col stat-col--center">
+              <Building size={15} className="stat-icon" />
+              <span className="stat-value">{industryLabel || 'Tech'}</span>
+              <span className="stat-label">Industry</span>
+           </div>
+           <div className="stat-col">
+              <Clock size={15} className="stat-icon" />
+              <span className="stat-value">{workTypeLabel}</span>
+              <span className="stat-label">Work Type</span>
+           </div>
+        </div>
+
+        <hr className="creator-profile-card__divider" />
+
+        <div className="creator-profile-card__footer">
+          <div className="footer-left">
+             <span className="creator-profile-card__views" title={t('creatorProfileViews', 'Profile views')}>
+               <img src={cobrotherViewMark} alt="" aria-hidden className="creator-profile-card__brand-mark" />
+               <span>{viewCount}</span>
+             </span>
+          </div>
+          
+          <div className="footer-center">
+            {interactive ? (
+              <button
+                type="button"
+                className="creator-profile-card__cta"
+                aria-label={t('listingCardViewDetails', 'View details')}
+                onClick={(e) => {
+                  stop(e);
+                  onView();
+                }}
+              >
+                <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
+              </button>
             ) : (
-              <span className="creator-profile-card__badge-placeholder" aria-hidden />
+              <div className="creator-profile-card__cta-placeholder" />
             )}
           </div>
 
-          <p className="creator-profile-card__headline">
-            {headline ? headline.toUpperCase() : '\u00A0'}
-          </p>
-
-          <p className="creator-profile-card__meta">
-            {metaLine || '\u00A0'}
-          </p>
-
-          <CreatorExpectedRateCard profile={profile} />
+          <div className="footer-right">
+            {onLike ? (
+              <LikeButton
+                liked={likeState?.liked}
+                count={likeState?.count}
+                onToggle={onLike}
+              />
+            ) : null}
+          </div>
         </div>
-
-        {/* Follow button disabled until creator follow UX is finalized */}
-
-        <ListingCardStatsFooter
-          viewCount={viewCount}
-          likeState={likeState}
-          onLike={onLike}
-          onView={onView}
-          layout="creator-centered"
-          className="creator-profile-card__footer"
-        />
       </div>
     </article>
   );
 }
+

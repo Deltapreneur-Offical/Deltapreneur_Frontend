@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel } from 'lucide-react';
+import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel, ChevronRight, User2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
 import { formatCountdown } from '../../utils/auctionDate';
@@ -35,17 +35,17 @@ function formatLabel(value) {
   return value.replace(/_/g, ' ').trim();
 }
 
-function InfoCard({ label, value, icon: Icon, isLink, linkUrl }) {
+function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) {
   return (
-    <div className="flex items-start gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.03)] transition-all duration-300 hover:shadow-md hover:border-slate-200/60">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 border border-slate-100 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-        <Icon size={20} className="text-slate-650" />
+    <div className={`flex items-center gap-4 px-4 py-4 md:py-5 ${border ? 'border-b border-slate-100' : ''}`}>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
+        <Icon size={22} strokeWidth={1.75} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-400">
+        <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500">
           {label}
         </div>
-        <div className="mt-1.5 text-sm font-semibold text-slate-800 break-words leading-relaxed">
+        <div className="mt-1 text-[0.95rem] font-medium text-slate-800 break-words leading-relaxed">
           {isLink && linkUrl ? (
             <a
               href={linkUrl}
@@ -54,12 +54,15 @@ function InfoCard({ label, value, icon: Icon, isLink, linkUrl }) {
               className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 hover:underline break-all"
             >
               {value}
-              <ExternalLink size={13} className="shrink-0" />
+              <ExternalLink size={14} className="shrink-0" />
             </a>
           ) : (
-            value || '—'
+            value || 'Not provided'
           )}
         </div>
+      </div>
+      <div className="flex-shrink-0 text-slate-400 pr-2">
+        <ChevronRight size={20} />
       </div>
     </div>
   );
@@ -163,7 +166,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn"
       onClick={(e) => {
         e.stopPropagation();
         if (e.target === e.currentTarget) close();
@@ -178,9 +181,9 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-6 border-b border-slate-100 p-6 md:p-8 bg-white shrink-0">
+        <div className="flex items-start justify-between gap-6 p-6 md:p-8 bg-white shrink-0">
           <div className="flex min-w-0 items-center gap-5">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 shadow-[0_1px_3px_rgba(15,23,42,0.04)] ring-4 ring-slate-50">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 shadow-sm">
               {cleanText(community.imageUrl || community.image_url) ? (
                 <img
                   src={community.imageUrl || community.image_url}
@@ -193,39 +196,39 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                 </span>
               )}
             </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h3 className="truncate text-xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-tight">
                   {name}
                 </h3>
                 {verified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                     <BadgeCheck size={13} />
                     Verified
                   </span>
                 ) : null}
                 {featured ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50/50 px-2.5 py-0.5 text-xs font-bold text-amber-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.65rem] font-bold text-amber-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                     <Sparkles size={13} className="text-amber-500 fill-amber-500" />
                     Featured
                   </span>
                 ) : null}
               </div>
 
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
                 {roleLabel ? (
-                  <span className="inline-block rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 text-[0.68rem] font-bold uppercase tracking-wider px-2.5 py-1">
+                  <span className="inline-block rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 text-[0.68rem] font-bold uppercase tracking-wider px-3 py-1">
                     {roleLabel}
                   </span>
                 ) : null}
                 {industryLabel ? (
-                  <span className="rounded-lg bg-slate-50 text-slate-600 border border-slate-200/80 text-[0.68rem] font-bold uppercase tracking-wider px-2.5 py-1">
+                  <span className="rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-[0.68rem] font-bold uppercase tracking-wider px-3 py-1">
                     {industryLabel}
                   </span>
                 ) : null}
                 {location ? (
-                  <div className="flex items-center gap-1 text-xs md:text-sm font-semibold text-slate-500 ml-1">
-                    <MapPin size={14} className="text-slate-400" />
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 ml-1">
+                    <MapPin size={15} className="text-slate-400" />
                     {location}
                   </div>
                 ) : null}
@@ -235,87 +238,74 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
           <button
             type="button"
             onClick={close}
-            className="rounded-full p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+            className="rounded-full p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
             aria-label="Close creator preview"
           >
-            <X size={20} />
+            <X size={24} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="overflow-y-auto p-6 md:p-8 space-y-6 flex-1 bg-slate-50/30">
-          {/* About Section */}
-          {about ? (
-            <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
-              <div className="mb-2.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-400">
-                About
-              </div>
-              <p className="text-sm leading-relaxed text-slate-600 font-medium whitespace-pre-line">
-                {about}
-              </p>
-            </section>
-          ) : null}
-
-          {/* Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Left Column (Details) */}
-            <div className="space-y-4">
-              <InfoCard
+        <div className="overflow-y-auto px-6 md:px-8 pb-6 md:pb-8 flex-1 bg-white">
+          <div className="rounded-[1.25rem] border border-slate-150 p-1 shadow-[0_1px_4px_rgba(15,23,42,0.02)]">
+             <InfoCard
+                label="About"
+                value={about}
+                icon={User2}
+             />
+             <InfoCard
                 label="Why I'm Here"
                 value={whyImHere}
                 icon={Target}
-              />
-              <InfoCard
-                label="Expected Rate"
-                value={expectedRate}
-                icon={Tag}
-              />
-              <InfoCard
-                label="Preferred Work Type"
-                value={preferredWorkType ? preferredWorkType.replace(/_/g, ' ') : ''}
-                icon={Briefcase}
-              />
-              <InfoCard
-                label="Industry Expertise"
-                value={industryExpertise}
-                icon={Building2}
-              />
-              <InfoCard
-                label="Languages Known"
-                value={languagesKnown}
-                icon={Globe}
-              />
-            </div>
-
-            {/* Right Column (Links) */}
-            <div className="space-y-4">
-              <InfoCard
+             />
+             <InfoCard
                 label="Introduction Video"
-                value={getCleanDisplayLink(introductionVideoLink) || 'Not provided'}
+                value={getCleanDisplayLink(introductionVideoLink)}
                 icon={Video}
                 isLink={Boolean(introductionVideoLink)}
                 linkUrl={introductionVideoLink}
-              />
-              <InfoCard
+             />
+             <InfoCard
+                label="Expected Rate"
+                value={expectedRate}
+                icon={Tag}
+             />
+             <InfoCard
                 label="Resume (PDF)"
-                value={getCleanDisplayLink(resumeDriveLink) || 'Not provided'}
+                value={getCleanDisplayLink(resumeDriveLink)}
                 icon={FileText}
                 isLink={Boolean(resumeDriveLink)}
                 linkUrl={resumeDriveLink}
-              />
-              <InfoCard
+                border={true}
+             />
+             <InfoCard
+                label="Preferred Work Type"
+                value={preferredWorkType ? preferredWorkType.replace(/_/g, ' ') : ''}
+                icon={Briefcase}
+             />
+             <InfoCard
                 label="Portfolio Website"
-                value={getCleanDisplayLink(portfolioWebsiteLink) || 'Not provided'}
+                value={getCleanDisplayLink(portfolioWebsiteLink)}
                 icon={Globe}
                 isLink={Boolean(portfolioWebsiteLink)}
                 linkUrl={portfolioWebsiteLink}
-              />
-            </div>
+             />
+             <InfoCard
+                label="Industry Expertise"
+                value={industryExpertise}
+                icon={Building2}
+             />
+             <InfoCard
+                label="Languages Known"
+                value={languagesKnown}
+                icon={Globe}
+                border={false}
+             />
           </div>
 
-          {skills.length > 0 ? (
-            <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
-              <div className="mb-3.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-400">
+          {skills.length > 0 && (
+            <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">
+              <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500 mb-3.5">
                 Skills
               </div>
               <div className="flex flex-wrap gap-2">
@@ -328,8 +318,8 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                   </span>
                 ))}
               </div>
-            </section>
-          ) : null}
+            </div>
+          )}
         </div>
 
         {/* Footer Section */}

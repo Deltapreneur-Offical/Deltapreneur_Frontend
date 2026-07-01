@@ -599,7 +599,7 @@ export default function CommunityPage() {
             ) : null}
           </div>
         ) : profilesForDisplay.length > 0 ? (
-          <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-3 md:gap-4">
+          <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
             {profilesForDisplay.map(p => (
               <ListingCardShell key={p.id} className="community-listing-card-shell">
               <CommunityListingCard
@@ -1053,7 +1053,7 @@ function CommunityProfileForm({
         {linkedInImported && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              LinkedIn URL
+              LinkedIn URL <span className="text-red-500">*</span>
               <span className="text-gray-400 font-normal text-xs ml-1">
                 {linkedInUrlMissing
                   ? '(paste your profile link)'
@@ -1063,6 +1063,7 @@ function CommunityProfileForm({
             <input
               name="linkedInProfileUrl"
               type="url"
+              required
               value={form.linkedInProfileUrl}
               onChange={handleChange}
               placeholder={t(

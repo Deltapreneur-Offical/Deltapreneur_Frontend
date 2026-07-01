@@ -29,7 +29,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
+import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI, domainEnquiryAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
 import { formatInr } from '../utils/money';
@@ -41,6 +41,7 @@ import PurchaseIcon from '../assets/purchase.png';
 import RequestIcon from '../assets/Request.png';
 import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
 import VentureDealsAdminTab from './VentureDealsAdminTab';
@@ -557,6 +558,9 @@ export default function AdminDashboardPage() {
       adminAPI.getCoBrotherRequests()
         .then(({ data }) => setRequests(asArray(data)));
       refreshPendingCounts();
+      if (tab === 'domain-enquiries') {
+        loadTab(tab, { silent: true });
+      }
     } catch (e) {
       toast.error(e.response?.data?.error || t('adminForwardFailed'));
     }
@@ -845,6 +849,7 @@ export default function AdminDashboardPage() {
               <DomainEnquiriesTable
                 enquiries={data}
                 onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                onRefresh={() => loadTab(tab, { silent: true })}
               />
             ) : tab === 'auctions' ? (
               <AuctionsAdminTable auctions={data} />
@@ -1977,71 +1982,473 @@ function CommunityAuctionAdminRow({ auction, community }) {
   );
 }
 
-function DomainEnquiriesTable({ enquiries, onForward }) {
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  if (enquiries.length === 0) return (
-    <div className="text-center py-20">
-      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('adminNoDomainEnquiries')}</h3>
-      <p className="text-gray-600">{t('adminDomainEnquiriesHint')}</p>
-    </div>
-  );
+const DOMAIN_ENQUIRY_STATUS_COLORS = {
+  PENDING: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' },
+  IN_PROGRESS: { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' },
+  COMPLETED: { bg: '#d1fae5', text: '#059669', border: '#6ee7b7' },
+  DECLINED: { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
+  FORWARDED: { bg: '#ede9fe', text: '#7c3aed', border: '#c4b5fd' },
+};
 
-  const ENQUIRY_STATUS = { PENDING: '#b45309', FORWARDED: '#7c3aed', CLOSED: '#059669' };
+const DOMAIN_ENQUIRY_FILTER_TABS = [
+  { id: 'all', label: 'All' },
+  { id: 'PENDING', label: 'Pending' },
+  { id: 'IN_PROGRESS', label: 'In Progress' },
+  { id: 'COMPLETED', label: 'Completed' },
+  { id: 'DECLINED', label: 'Declined' },
+  { id: 'FORWARDED', label: 'Forwarded' },
+];
+
+const DOMAIN_ENQUIRY_STATUS_ACTIONS = {
+  IN_PROGRESS: {
+    title: 'Move to In Progress',
+    confirmLabel: 'Confirm',
+    variant: 'blue',
+    newStatus: 'IN_PROGRESS',
+  },
+  COMPLETED: {
+    title: 'Mark as Completed',
+    confirmLabel: 'Confirm',
+    variant: 'green',
+    newStatus: 'COMPLETED',
+  },
+  DECLINED: {
+    title: 'Decline Enquiry',
+    confirmLabel: 'Confirm',
+    variant: 'red',
+    newStatus: 'DECLINED',
+  },
+  PENDING: {
+    title: 'Reopen Enquiry',
+    confirmLabel: 'Confirm',
+    variant: 'blue',
+    newStatus: 'PENDING',
+  },
+  REMOVE: {
+    title: 'Remove Enquiry',
+    confirmLabel: 'Confirm',
+    variant: 'red',
+    action: 'remove',
+  },
+};
+
+function getDomainEnquiryCardActions(status) {
+  switch (status) {
+    case 'PENDING':
+      return {
+        forward: true,
+        inProgress: true,
+        completed: true,
+        decline: true,
+        remove: true,
+      };
+    case 'IN_PROGRESS':
+      return {
+        completed: true,
+        decline: true,
+        remove: true,
+      };
+    case 'COMPLETED':
+      return {
+        reopen: true,
+        remove: true,
+      };
+    case 'DECLINED':
+      return {
+        reopen: true,
+        remove: true,
+      };
+    case 'FORWARDED':
+      return { forwardDisabled: true };
+    default:
+      return {};
+  }
+}
+
+function formatEnquiryDate(value) {
+  if (!value) return null;
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+}
+
+function DomainEnquiryStatusBadge({ status }) {
+  const normalized = String(status || '').toUpperCase();
+  const colors = DOMAIN_ENQUIRY_STATUS_COLORS[normalized] || { bg: '#f3f4f6', text: '#6b7280', border: '#d1d5db' };
+  const label = normalized.replace(/_/g, ' ');
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '0.2rem 0.55rem',
+        borderRadius: '999px',
+        fontSize: '0.72rem',
+        fontWeight: 700,
+        letterSpacing: '0.02em',
+        background: colors.bg,
+        color: colors.text,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm, onNotesChange }) {
+  if (!modal || !enquiry) return null;
+  const isRemove = modal.action === 'remove';
+  const action = isRemove
+    ? DOMAIN_ENQUIRY_STATUS_ACTIONS.REMOVE
+    : DOMAIN_ENQUIRY_STATUS_ACTIONS[modal.newStatus];
+  const domainLabel = `${enquiry.domain?.domainName || ''}${enquiry.domain?.domainExtension || ''}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      {enquiries.map(e => (
-        <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between',
-                        flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <div>
-              <div className="admin-record-title">
-                {e.domain?.domainName}{e.domain?.domainExtension}
-              </div>
-              <div className="admin-record-id">
-                {formatPrice(e.domain?.askingPrice || 0)}
-              </div>
-            </div>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700,
-                           color: ENQUIRY_STATUS[e.status] || '#6b7280' }}>
-              {e.status}
-            </span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
-                        gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <div>
-              <div className="admin-field-label">{t('adminEnquirer')}</div>
-              <div className="admin-field-value">{e.fullName}</div>
-              <div className="admin-field-meta">{e.email}</div>
-              <div className="admin-field-meta">{e.phone}</div>
-            </div>
-            <div>
-              <div className="admin-field-label">{t('adminDomainLister')}</div>
-              <div className="admin-field-value">
-                {e.domain?.listedBy?.firstname} {e.domain?.listedBy?.lastname}
-              </div>
-              <div className="admin-field-meta">{e.domain?.listedBy?.email}</div>
-            </div>
-          </div>
-
-          {e.message && (
-            <div className="admin-quote">
-              "{e.message}"
-            </div>
-          )}
-
-          {e.status === 'PENDING' && (
-            <button className="btn-secondary btn-sm"
-              onClick={() => onForward(e.id, 'DOMAIN_ENQUIRY')}
-              style={{ fontSize: '0.8rem' }}>
-              {t('adminForwardToCoBrother')}
-            </button>
-          )}
+    <ConfirmationModal
+      open
+      title={action?.title || (isRemove ? 'Remove Enquiry' : 'Update Enquiry Status')}
+      message={isRemove ? 'This enquiry will be hidden from the admin list. History is preserved in the database.' : ''}
+      confirmLabel={action?.confirmLabel || 'Confirm'}
+      cancelLabel="Cancel"
+      variant={action?.variant || 'blue'}
+      loading={loading}
+      loadingLabel={isRemove ? 'Removing...' : 'Updating...'}
+      size="lg"
+      onCancel={onClose}
+      onConfirm={onConfirm}
+    >
+      <div style={{ display: 'grid', gap: '0.85rem' }}>
+        <div>
+          <div className="admin-field-label">Domain Name</div>
+          <div className="admin-field-value">{domainLabel || '—'}</div>
         </div>
-      ))}
-    </div>
+        {!isRemove && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div>
+              <div className="admin-field-label">Current Status</div>
+              <DomainEnquiryStatusBadge status={enquiry.status} />
+            </div>
+            <div>
+              <div className="admin-field-label">New Status</div>
+              <DomainEnquiryStatusBadge status={modal.newStatus} />
+            </div>
+          </div>
+        )}
+        {isRemove && (
+          <div>
+            <div className="admin-field-label">Current Status</div>
+            <DomainEnquiryStatusBadge status={enquiry.status} />
+          </div>
+        )}
+        <div>
+          <label className="admin-field-label" htmlFor="domain-enquiry-admin-notes">
+            Admin Notes
+          </label>
+          <textarea
+            id="domain-enquiry-admin-notes"
+            className="admin-textarea"
+            rows={4}
+            value={modal.adminNotes}
+            onChange={(event) => onNotesChange(event.target.value)}
+            placeholder="Add optional notes..."
+            disabled={loading}
+            style={{ width: '100%', marginTop: '0.35rem' }}
+          />
+        </div>
+      </div>
+    </ConfirmationModal>
+  );
+}
+
+function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
+  const toast = useAdminToast();
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusModal, setStatusModal] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(false);
+
+  const filteredEnquiries = useMemo(() => {
+    if (statusFilter === 'all') return enquiries;
+    return enquiries.filter((item) => String(item?.status || '').toUpperCase() === statusFilter);
+  }, [enquiries, statusFilter]);
+
+  const openStatusModal = (enquiry, newStatus) => {
+    setStatusModal({
+      enquiryId: enquiry.id,
+      action: 'status',
+      newStatus,
+      adminNotes: enquiry.adminNotes || '',
+    });
+  };
+
+  const openRemoveModal = (enquiry) => {
+    setStatusModal({
+      enquiryId: enquiry.id,
+      action: 'remove',
+      adminNotes: enquiry.adminNotes || '',
+    });
+  };
+
+  const closeStatusModal = () => {
+    if (statusLoading) return;
+    setStatusModal(null);
+  };
+
+  const handleStatusConfirm = async () => {
+    if (!statusModal) return;
+    setStatusLoading(true);
+    try {
+      if (statusModal.action === 'remove') {
+        const { data } = await domainEnquiryAPI.remove(statusModal.enquiryId, {
+          adminNotes: statusModal.adminNotes,
+        });
+        if (data?.success === false) {
+          throw new Error(data?.error || data?.message || 'Remove failed.');
+        }
+        toast.success('Enquiry removed from admin list.');
+      } else {
+        const { data } = await domainEnquiryAPI.updateStatus(statusModal.enquiryId, {
+          status: statusModal.newStatus,
+          adminNotes: statusModal.adminNotes,
+        });
+        if (data?.success === false) {
+          throw new Error(data?.error || data?.message || 'Update failed.');
+        }
+        const action = DOMAIN_ENQUIRY_STATUS_ACTIONS[statusModal.newStatus];
+        toast.success(
+          action?.title
+            ? `${action.title} successful.`
+            : 'Enquiry status updated.',
+        );
+      }
+      setStatusModal(null);
+      onRefresh?.();
+    } catch (error) {
+      const reason = error.response?.data?.error
+        || error.response?.data?.message
+        || error.message
+        || 'Unknown error';
+      toast.error(`Unable to update enquiry.\n\nReason:\n${reason}`);
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
+  const activeModalEnquiry = statusModal
+    ? enquiries.find((item) => String(item.id) === String(statusModal.enquiryId))
+    : null;
+
+  if (enquiries.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('adminNoDomainEnquiries')}</h3>
+        <p className="text-gray-600">{t('adminDomainEnquiriesHint')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+        {DOMAIN_ENQUIRY_FILTER_TABS.map((tab) => {
+          const count = tab.id === 'all'
+            ? enquiries.length
+            : enquiries.filter((item) => String(item?.status || '').toUpperCase() === tab.id).length;
+          const active = statusFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setStatusFilter(tab.id)}
+              className={active ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+              style={{ fontSize: '0.78rem' }}
+            >
+              {tab.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {filteredEnquiries.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-gray-600">No enquiries match this filter.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {filteredEnquiries.map((e) => {
+            const status = String(e.status || '').toUpperCase();
+            const actions = getDomainEnquiryCardActions(status);
+
+            return (
+              <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                              flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <div>
+                    <div className="admin-record-title">
+                      {e.domain?.domainName}{e.domain?.domainExtension}
+                    </div>
+                    <div className="admin-record-id">
+                      {formatPrice(e.domain?.askingPrice || 0)}
+                    </div>
+                  </div>
+                  <DomainEnquiryStatusBadge status={e.status} />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                              gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div>
+                    <div className="admin-field-label">{t('adminEnquirer')}</div>
+                    <div className="admin-field-value">{e.fullName}</div>
+                    <div className="admin-field-meta">{e.email}</div>
+                    <div className="admin-field-meta">{e.phone}</div>
+                  </div>
+                  <div>
+                    <div className="admin-field-label">{t('adminDomainLister')}</div>
+                    <div className="admin-field-value">
+                      {e.domain?.listedBy?.firstname} {e.domain?.listedBy?.lastname}
+                    </div>
+                    <div className="admin-field-meta">{e.domain?.listedBy?.email}</div>
+                  </div>
+                </div>
+
+                {e.message && (
+                  <div className="admin-quote">
+                    "{e.message}"
+                  </div>
+                )}
+
+                {e.adminNotes && (
+                  <div style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div className="admin-field-label">Admin Notes</div>
+                    <div className="admin-field-value" style={{ whiteSpace: 'pre-wrap' }}>
+                      {e.adminNotes}
+                    </div>
+                  </div>
+                )}
+
+                {(e.inProgressAt || e.completedAt || e.declinedAt) && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                      gap: '0.65rem',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    {e.inProgressAt && (
+                      <div>
+                        <div className="admin-field-label">In Progress Date</div>
+                        <div className="admin-field-meta">{formatEnquiryDate(e.inProgressAt)}</div>
+                      </div>
+                    )}
+                    {e.completedAt && (
+                      <div>
+                        <div className="admin-field-label">Completed Date</div>
+                        <div className="admin-field-meta">{formatEnquiryDate(e.completedAt)}</div>
+                      </div>
+                    )}
+                    {e.declinedAt && (
+                      <div>
+                        <div className="admin-field-label">Declined Date</div>
+                        <div className="admin-field-meta">{formatEnquiryDate(e.declinedAt)}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {actions.forward && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => onForward(e.id, 'DOMAIN_ENQUIRY')}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      {t('adminForwardToCoBrother')}
+                    </button>
+                  )}
+                  {actions.forwardDisabled && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      disabled
+                      style={{ fontSize: '0.8rem', opacity: 0.6, cursor: 'not-allowed' }}
+                    >
+                      {t('adminForwardToCoBrother')}
+                    </button>
+                  )}
+                  {actions.inProgress && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'IN_PROGRESS')}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Mark In Progress
+                    </button>
+                  )}
+                  {actions.completed && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'COMPLETED')}
+                      style={{ fontSize: '0.8rem', color: '#059669' }}
+                    >
+                      Mark Completed
+                    </button>
+                  )}
+                  {actions.decline && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'DECLINED')}
+                      style={{ fontSize: '0.8rem', color: '#dc2626' }}
+                    >
+                      Decline
+                    </button>
+                  )}
+                  {actions.reopen && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'PENDING')}
+                      style={{ fontSize: '0.8rem', color: '#1d4ed8' }}
+                    >
+                      Reopen
+                    </button>
+                  )}
+                  {actions.remove && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openRemoveModal(e)}
+                      style={{ fontSize: '0.8rem', color: '#6b7280' }}
+                    >
+                      Remove Enquiry
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <DomainEnquiryStatusModal
+        modal={statusModal}
+        enquiry={activeModalEnquiry}
+        loading={statusLoading}
+        onClose={closeStatusModal}
+        onConfirm={handleStatusConfirm}
+        onNotesChange={(value) => setStatusModal((current) => (
+          current ? { ...current, adminNotes: value } : current
+        ))}
+      />
+    </>
   );
 }
 

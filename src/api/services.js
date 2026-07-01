@@ -316,6 +316,8 @@ export const feeAPI = {
 
 export const domainEnquiryAPI = {
   submit: (domainId, data) => api.post(`/api/v1/domain-enquiry/${domainId}`, data),
+  updateStatus: (enquiryId, data) => api.put(`/api/v1/domain-enquiry/${enquiryId}/status`, data),
+  remove: (enquiryId, data = {}) => api.post(`/api/v1/domain-enquiry/${enquiryId}/remove`, data),
 };
 
 export const auctionAPI = {

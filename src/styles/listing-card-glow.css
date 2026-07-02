@@ -56,15 +56,13 @@
   border-radius: 20px;
   transition: opacity 0.35s ease;
   filter: blur(16px);
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.18) 0%,
-    rgba(15, 23, 42, 0.06) 20%,
-    transparent 42%,
-    transparent 58%,
-    rgba(15, 23, 42, 0.06) 80%,
-    rgba(15, 23, 42, 0.18) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.18) 0%,
+      rgba(15, 23, 42, 0.06) 20%,
+      transparent 42%,
+      transparent 58%,
+      rgba(15, 23, 42, 0.06) 80%,
+      rgba(15, 23, 42, 0.18) 100%);
 }
 
 .listing-card-glow-shell.community-listing-card-shell {
@@ -118,7 +116,7 @@
 }
 
 .venture-listing-card.card-glow-hover {
-  border: 1px solid #e2e8f0 !important;
+  border: none !important;
   border-radius: 1.5rem;
   overflow: hidden;
   box-shadow:
@@ -128,7 +126,7 @@
 
 .technology-listing-card.technology-listing-card--browse.card-glow-hover,
 .technology-listing-card.domain-listing-card--browse.card-glow-hover {
-  border: 1px solid #e5e7eb !important;
+  border: none !important;
   border-radius: 1.5rem;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
@@ -144,7 +142,7 @@
 
 .domain-listing-card.card-glow-hover,
 .home-feature-card.card-glow-hover {
-  border: 1px solid #e5e7eb;
+  border: none !important;
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
@@ -158,7 +156,7 @@
 .venture-listing-card.card-glow-hover:hover,
 .community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-3px) translateZ(0);
-  border-color: rgba(15, 23, 42, 0.18) !important;
+  border-color: transparent !important;
   background: var(--listing-card-gradient-hover) !important;
   box-shadow:
     0 12px 32px rgba(15, 23, 42, 0.12),

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
@@ -22,28 +22,17 @@ function resolveStatusDotClass(status) {
 }
 
 function DomainListingCover({
-  logo,
-  logoAlt,
   fullDomain,
+  logoText,
   verified,
-  onCoverError,
 }) {
   return (
     <div className="domain-listing-card__cover">
-      {logo ? (
-        <img
-          src={logo}
-          alt={logoAlt}
-          className="domain-listing-card__cover-img"
-          loading="lazy"
-          decoding="async"
-          onError={onCoverError}
-        />
-      ) : (
-        <div className="domain-listing-card__cover-fallback" aria-hidden>
-          <span className="domain-listing-card__cover-fallback-domain">{fullDomain}</span>
-        </div>
-      )}
+      <div className="domain-listing-card__cover-fallback" aria-hidden>
+        <span className="domain-listing-card__cover-fallback-domain">
+          {logoText || ''}
+        </span>
+      </div>
       {verified ? (
         <img
           src={verifiedIcon}
@@ -95,7 +84,6 @@ export default function DomainListingCard({
 }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const [imgFailed, setImgFailed] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
@@ -105,7 +93,6 @@ export default function DomainListingCard({
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
   const display = resolveDomainDisplay(domain);
-  const domainLogo = domain.logo && !imgFailed ? domain.logo : null;
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const needsVerification = false;
@@ -115,10 +102,6 @@ export default function DomainListingCard({
     ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
     : domain.askingPrice;
   const priceAmount = basePrice;
-
-  useEffect(() => {
-    setImgFailed(false);
-  }, [domain.logo, domain.id]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -318,11 +301,9 @@ export default function DomainListingCard({
       )}
 
       <DomainListingCover
-        logo={domainLogo}
-        logoAlt={display.fullDomain}
         fullDomain={display.fullDomain}
+        logoText={domain.logo_text ?? domain.logoText}
         verified={domain.verified}
-        onCoverError={() => setImgFailed(true)}
       />
 
       <div className="domain-listing-card__body">

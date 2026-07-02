@@ -13,9 +13,9 @@ export default function HomePreviewCardShell({ children, className = '', accent 
   const borderMotionProps = reduceMotion
     ? {}
     : {
-        whileHover: homeCardHover,
-        whileTap: homeCardTap,
-      };
+      whileHover: homeCardHover,
+      whileTap: homeCardTap,
+    };
 
   return (
     <ListingCardShell className={`home-preview-card-shell${className ? ` ${className}` : ''}`}>
@@ -23,6 +23,8 @@ export default function HomePreviewCardShell({ children, className = '', accent 
         className={`home-preview-card-border w-full${accentClass}`}
         {...borderMotionProps}
       >
+        <div className="home-feature-card-beam-spinner" aria-hidden="true" />
+
         <div className="home-preview-card-border__inner w-full">
           {children}
         </div>

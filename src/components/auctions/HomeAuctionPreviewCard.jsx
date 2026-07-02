@@ -290,6 +290,8 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
           </div>
         </div>
 
+        <div className="flex-grow min-h-0" aria-hidden="true" />
+
         <div className="home-auction-preview-card__footer flex flex-col gap-2 mt-auto">
           <div
             className="domain-listing-card__price-box domain-listing-card__price-box--auction domain-listing-card__price-box--compact"

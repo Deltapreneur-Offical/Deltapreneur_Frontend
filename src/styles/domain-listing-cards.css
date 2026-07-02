@@ -57,16 +57,22 @@
 
 .domain-listing-card__cover-fallback-domain {
   max-width: 100%;
-  font-size: 0.95rem;
+  font-family: 'Saira Stencil', sans-serif !important;
+  font-size: 1.45rem;
+  /* slightly smaller */
   font-weight: 500;
-  letter-spacing: 0.01em;
-  color: #8b95a5;
+  /* less heavy */
+  letter-spacing: 0.6px;
+  /* cleaner spacing */
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #1f2937;
   overflow: hidden;
   text-overflow: clip;
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
-  display: -webkit-box;
+  display: flex;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -158,14 +164,9 @@
   margin-top: 0;
   padding: 0.32rem 0.45rem 0.32rem 0.6rem;
   border-radius: 1rem;
-  border: 2px solid transparent;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
-  box-shadow:
-    -8px 0 16px -8px rgba(0, 195, 255, 0.22),
-    8px 0 16px -8px rgba(255, 48, 108, 0.18),
-    0 0 10px -4px rgba(120, 80, 220, 0.18);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: none;
   transition: box-shadow 0.3s ease;
 }
 
@@ -368,6 +369,7 @@
   min-width: 0;
   flex: 1 1 auto;
 }
+
 
 .domain-listing-card__availability {
   margin-top: 0.12rem;
@@ -902,6 +904,7 @@
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1157,7 +1160,8 @@
 }
 
 .venture-listing-card .domain-listing-card__cover {
-  height: 7.5rem !important; /* Taller cover for a bigger, more premium card */
+  height: 7.5rem !important;
+  /* Taller cover for a bigger, more premium card */
 }
 
 .venture-listing-card .domain-listing-card__price-value {
@@ -1215,7 +1219,8 @@
 
 /* Compact Card Overrides for Split Columns */
 .venture-listing-card--compact .domain-listing-card__cover {
-  height: 5.5rem !important; /* Shorter cover for compact split panel view */
+  height: 5.5rem !important;
+  /* Shorter cover for compact split panel view */
 }
 
 .venture-listing-card--compact .domain-listing-card__price-value {

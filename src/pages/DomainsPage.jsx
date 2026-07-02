@@ -67,6 +67,7 @@ function buildDomainFormState(domain, navCurrency) {
   const display = domain ? resolveDomainDisplay(domain) : { name: '', ext: null, fullDomain: '' };
   return {
     domainName: ['—', 'Unnamed', 'domain'].includes(display.name) ? '' : display.name,
+    logoText: domain?.logo_text ?? domain?.logoText ?? '',
     domainExtension: display.ext?.full ?? (domain ? '' : '.com'),
     askingPrice: domain?.askingPrice != null ? String(domain.askingPrice) : '',
     pricingDemand: domain?.pricingDemand ?? '',
@@ -527,6 +528,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
 
       const payload = {
         domainName:      form.domainName.trim(),
+        logoText:        form.logoText?.trim() || null,
         domainExtension: extNorm.full,
         askingPrice:     askingPriceInr,
         contactInfo:     form.contactInfo,
@@ -653,6 +655,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               onChange={e => setForm(f => ({ ...f, domainName: e.target.value.replace(/\s/g, '').toLowerCase() }))}
               placeholder={t('domainsPageDomainNamePlaceholder')}
               required
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Logo Display Name</label>
+            <input
+              className={inputCls}
+              value={form.logoText}
+              onChange={e => setForm(f => ({ ...f, logoText: e.target.value }))}
+              placeholder="e.g. Dry Chilli"
             />
           </div>
           <div className="flex flex-col gap-1.5">

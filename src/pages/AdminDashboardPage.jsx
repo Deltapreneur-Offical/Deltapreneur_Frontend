@@ -2699,11 +2699,17 @@ function MeetingsAdminTab({ meetings }) {
     if (filter === 'all')     return true;
     if (filter === 'upcoming') return categorise(m) === 'upcoming';
     if (filter === 'ongoing')  return categorise(m) === 'ongoing';
+    if (filter === 'pending')  return m.status === 'PENDING';
+    if (filter === 'completed') return m.status === 'COMPLETED';
+    if (filter === 'cancelled') return m.status === 'CANCELLED';
     return true;
   });
 
   const countUpcoming = meetings.filter(m => categorise(m) === 'upcoming').length;
   const countOngoing  = meetings.filter(m => categorise(m) === 'ongoing').length;
+  const countPending  = meetings.filter(m => m.status === 'PENDING').length;
+  const countCompleted = meetings.filter(m => m.status === 'COMPLETED').length;
+  const countCancelled = meetings.filter(m => m.status === 'CANCELLED').length;
 
   const MEETING_STATUS = {
     PENDING:   { color: '#b45309', label: t('adminMeetingPending')   },
@@ -2727,6 +2733,9 @@ function MeetingsAdminTab({ meetings }) {
           { id: 'all',      label: t('adminMeetingsAll', { count: meetings.length }) },
           { id: 'ongoing',  label: t('adminMeetingsOngoing', { count: countOngoing }) },
           { id: 'upcoming', label: t('adminMeetingsUpcoming', { count: countUpcoming }) },
+          { id: 'pending',  label: `Pending (${countPending})` },
+          { id: 'completed', label: `Completed (${countCompleted})` },
+          { id: 'cancelled', label: `Cancelled (${countCancelled})` },
         ].map(f => (
           <button key={f.id}
             className={`filter-tab ${filter === f.id ? 'active' : ''}`}
@@ -2790,6 +2799,18 @@ function MeetingsAdminTab({ meetings }) {
                     {m.message && (
                       <div className="admin-quote" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
                         "{m.message}"
+                      </div>
+                    )}
+                    
+                    {m.status === 'PENDING' && (
+                      <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, fontSize: '0.8rem', color: '#92400e' }}>
+                        <strong>Pending Confirmation:</strong> This meeting is pending approval from the Profile Owner ({lister.firstname || lister.firstName || lister.email || '—'}).
+                      </div>
+                    )}
+                    {m.status === 'CANCELLED' && (
+                      <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, fontSize: '0.8rem', color: '#991b1b' }}>
+                        <strong>Cancelled By:</strong> {m.cancelledBy || 'System / Admin'} <br />
+                        <strong>Reason:</strong> {m.cancelReason || m.cancel_reason || 'No specific reason provided.'}
                       </div>
                     )}
                   </div>

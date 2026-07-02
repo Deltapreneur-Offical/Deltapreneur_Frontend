@@ -451,6 +451,13 @@ export default function CommunityPage() {
   return (
     <AppLayout>
       <div>
+        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 text-sm font-medium mb-6 leading-relaxed flex items-start gap-3 shadow-sm">
+          <span className="text-lg leading-none select-none" aria-hidden>✨</span>
+          <div className="flex-1">
+            Complete your profile today to unlock your verified badge, instantly establish credibility, maximize your visibility, and attract top-tier opportunities.
+          </div>
+        </div>
+
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
@@ -505,7 +512,7 @@ export default function CommunityPage() {
                   </div>
                 ) : (
                   <button
-                    className="inline-block outline-none text-[16px] box-border rounded-[5px] py-[13px] px-[25px] uppercase shadow-[0_3px_6px_rgba(0,0,0,0.16),0_3px_6px_rgba(110,80,20,0.4),inset_0_-2px_5px_1px_rgba(139,66,8,1),inset_0_-1px_1px_3px_rgba(250,227,133,1)] bg-[linear-gradient(160deg,#a54e07,#b47e11,#fef1a2,#bc881b,#a54e07)] border border-[#a55d07] text-[rgb(120,50,5)] [text-shadow:0_2px_2px_rgba(250,227,133,1)] cursor-pointer transition-all duration-200 ease-in-out bg-[length:100%_100%] bg-center select-none font-bold hover:bg-[length:150%_150%] focus:bg-[length:150%_150%] hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23),inset_0_-2px_5px_1px_#b17d10,inset_0_-1px_1px_3px_rgba(250,227,133,1)] focus:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23),inset_0_-2px_5px_1px_#b17d10,inset_0_-1px_1px_3px_rgba(250,227,133,1)] hover:border-[rgba(165,93,7,0.6)] focus:border-[rgba(165,93,7,0.6)] hover:text-[rgba(120,50,5,0.8)] focus:text-[rgba(120,50,5,0.8)] active:shadow-[0_3px_6px_rgba(0,0,0,0.16),0_3px_6px_rgba(110,80,20,0.4),inset_0_-2px_5px_1px_#b17d10,inset_0_-1px_1px_3px_rgba(250,227,133,1)] disabled:pointer-events-none disabled:opacity-65 disabled:text-[#7e7e7e] disabled:bg-[#dcdcdc] disabled:bg-none disabled:shadow-none disabled:[text-shadow:none] disabled:border-[#c2c2c2]"
+                    className="btn-glow btn-glow-sm"
                     onClick={() => {
                       if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
                         const targetId = resolveCreatorAuctionId(myAuction);
@@ -531,7 +538,7 @@ export default function CommunityPage() {
                 </button>
                 <button
                   type="button"
-                  className="btn-glow btn-glow-sm border-red-300 text-red-600 hover:bg-red-50"
+                  className="btn-glow btn-glow-sm btn-glow-danger"
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={deleteLoading}
                 >
@@ -966,7 +973,7 @@ function CommunityProfileForm({
             {onDelete && (
               <button
                 type="button"
-                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
                 onClick={onDelete}
               >
                 Delete profile

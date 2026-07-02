@@ -114,7 +114,7 @@
   position: absolute;
   top: 0.2rem;
   right: -0.1rem;
-  color: #8B5CF6;
+  color: #22c55e;
   background: #fff;
   border-radius: 999px;
   display: flex;
@@ -123,7 +123,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .creator-profile-card__verified-badge svg {
-  fill: #8B5CF6;
+  fill: #22c55e;
   color: #fff;
 }
 

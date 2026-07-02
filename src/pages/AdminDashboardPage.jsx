@@ -858,7 +858,12 @@ export default function AdminDashboardPage() {
             ) : tab === 'software-auctions' ? (
               <SoftwareAuctionAdminTab auctions={data} onRefresh={() => loadTab(tab)} />
             ) : tab === 'community-auctions' ? (
-              <CommunityAuctionsAdminTable auctions={data} />
+              <CommunityAuctionsAdminTable
+                auctions={data}
+                onRefresh={() => loadTab(tab)}
+                onTakeDown={handleTakeDown}
+                onRestore={handleRestore}
+              />
             ) : tab === 'meetings' ? (
               <MeetingsAdminTab meetings={data} />
             ) : tab === 'operations' ? (
@@ -1898,8 +1903,10 @@ function AuctionAdminRow({ auction, bids }) {
   );
 }
 
-function CommunityAuctionsAdminTable({ auctions }) {
+function CommunityAuctionsAdminTable({ auctions, onRefresh, onTakeDown, onRestore }) {
   const { t } = useTranslation();
+  const [filter, setFilter] = useState('ALL');
+
   if (!auctions.length) {
     return (
       <div className="text-center py-20">
@@ -1907,27 +1914,65 @@ function CommunityAuctionsAdminTable({ auctions }) {
       </div>
     );
   }
+
+  const filteredAuctions = auctions.filter((item) => {
+    if (filter === 'ALL') return true;
+    const auction = item.auction ?? item;
+    return auction.status === filter;
+  });
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      {auctions.map((item) => {
-        const auction = item.auction ?? item;
-        const community = item.community ?? auction.community ?? {};
-        return (
-          <CommunityAuctionAdminRow
-            key={auction.id}
-            auction={auction}
-            community={community}
-          />
-        );
-      })}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <span className="text-sm font-semibold text-gray-700">Filter Creator Auctions:</span>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="form-select text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          <option value="ALL">All Auctions</option>
+          <option value="ACTIVE">Active</option>
+          <option value="EXTENDED">Extended</option>
+          <option value="UNSOLD">Unsold</option>
+          <option value="ENDED">Ended</option>
+          <option value="CLOSED">Closed</option>
+          <option value="PAYMENT_PENDING">Draft / Payment Pending</option>
+        </select>
+      </div>
+
+      {!filteredAuctions.length ? (
+        <div className="text-center py-10 text-gray-500">No creator auctions found matching this status.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {filteredAuctions.map((item) => {
+            const auction = item.auction ?? item;
+            const bids = item.bids ?? [];
+            const community = item.community ?? auction.community ?? {};
+            return (
+              <CommunityAuctionAdminRow
+                key={auction.id}
+                auction={auction}
+                bids={bids}
+                community={community}
+                onRefresh={onRefresh}
+                onTakeDown={onTakeDown}
+                onRestore={onRestore}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-function CommunityAuctionAdminRow({ auction, community }) {
+function CommunityAuctionAdminRow({ auction, bids, community, onRefresh, onTakeDown, onRestore }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
+  const [featured, setFeatured] = useState(auction.featured || false);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   const title = auction.auctionTitle || community.name || `${t('adminTabCreatorAuctions')} #${auction.id}`;
   const totalBids = auction.totalBids ?? auction.total_bids ?? 0;
   const currentHighestBid = Number(auction.currentHighestBid ?? auction.current_highest_bid ?? 0);
@@ -1936,11 +1981,54 @@ function CommunityAuctionAdminRow({ auction, community }) {
     ? `${winner.firstname || ''} ${winner.lastname || ''}`.trim() || winner.email
     : null;
 
+  const getRemainingDays = () => {
+    const end = auction.endTime ?? auction.end_time;
+    if (!end) return 0;
+    const diffTime = new Date(end).getTime() - Date.now();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const getWinnerText = () => {
+    if (winnerName) return winnerName;
+    if (auction.status === 'ACTIVE' || auction.status === 'EXTENDED') {
+      return `Auction Active — ${getRemainingDays()} days remaining`;
+    }
+    if (auction.status === 'UNSOLD') {
+      return 'No bids received — Reserve price not met';
+    }
+    return '—';
+  };
+
+  const handleToggleFeatured = async (e) => {
+    e.stopPropagation();
+    if (toggleLoading) return;
+    setToggleLoading(true);
+    const nextFeatured = !featured;
+    try {
+      await adminAPI.toggleFeatured('COMMUNITY_AUCTION', auction.id, nextFeatured);
+      setFeatured(nextFeatured);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to toggle featured status.');
+    } finally {
+      setToggleLoading(false);
+    }
+  };
+
+  const isClosed = auction.status === 'CLOSED';
+
   return (
     <div className="admin-record-card">
       <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
         <div style={{ flex: 1 }}>
-          <div className="admin-record-title">{title}</div>
+          <div className="admin-record-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>{title}</span>
+            {featured && (
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#b45309', background: '#fffbeb', border: '1px solid #fcd34d', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
+                ★ Featured
+              </span>
+            )}
+          </div>
           <div className="admin-record-id">
             {t('adminBidsStatus', { count: totalBids, status: auction.status })}
             {community.role ? ` · ${String(community.role).replace(/_/g, ' ')}` : ''}
@@ -1950,23 +2038,24 @@ function CommunityAuctionAdminRow({ auction, community }) {
           <div className={`admin-price-amount ${currentHighestBid > 0 ? 'admin-price-amount--bid' : 'admin-price-amount--empty'}`}>
             {currentHighestBid > 0 ? `${formatPrice(currentHighestBid)}` : t('adminNoBids')}
           </div>
-          {winnerName && (
-            <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>{winnerName}</div>
-          )}
+          <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>
+            {getWinnerText()}
+          </div>
         </div>
         <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
       {expanded && (
         <div className="admin-record-body">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
             <div>
               <div className="admin-field-label">{t('adminCreatorProfile')}</div>
               <div className="admin-field-value">{community.name || '—'}</div>
               <div className="admin-field-meta">{community.email || '—'}</div>
+              {community.industry && <div className="admin-field-meta">Industry: {community.industry}</div>}
             </div>
             <div>
               <div className="admin-field-label">{t('adminWinner')}</div>
-              <div className="admin-field-value">{winnerName || '—'}</div>
+              <div className="admin-field-value">{getWinnerText()}</div>
               <div className="admin-field-meta">{winner?.email || ''}</div>
             </div>
             <div>
@@ -1975,6 +2064,78 @@ function CommunityAuctionAdminRow({ auction, community }) {
                 {formatPrice(auction.minBidPrice ?? auction.min_bid_price ?? 0)}
               </div>
             </div>
+            <div>
+              <div className="admin-field-label">Timeline</div>
+              <div style={{ fontSize: '0.82rem', color: '#374151' }}>
+                Started: {auction.startTime ? formatAuctionDate(auction.startTime) : 'Not started'}
+              </div>
+              {auction.endTime && (
+                <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+                  Ends: {formatAuctionDateTime(auction.endTime)}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {bids?.length > 0 && (
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div className="admin-field-label">All Bids ({bids.length})</div>
+              <div className="admin-bids-panel">
+                {bids.map((bid, i) => (
+                  <div key={bid.id || i} style={{ display: 'flex', justifyContent: 'space-between',
+                                        padding: '0.4rem 0.5rem', fontSize: '0.8rem',
+                                        borderBottom: i < bids.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
+                    <span style={{ color: '#111827', fontWeight: 500 }}>
+                      {bid.bidderName || bid.bidder_name}
+                    </span>
+                    <span style={{ color: (bid.winningBid || bid.winning_bid) ? '#059669' : '#7c3aed',
+                                   fontWeight: 600 }}>
+                      {formatPrice(bid.amount)}
+                      {(bid.winningBid || bid.winning_bid) && ' 🏆'}
+                    </span>
+                    <span className="admin-field-meta" style={{ fontSize: '0.75rem' }}>
+                      {formatAuctionDateTime(bid.bidTime ?? bid.bid_time ?? bid.createdAt, {
+                        hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
+                      }, '')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
+            <button
+              onClick={handleToggleFeatured}
+              disabled={toggleLoading}
+              className="btn-secondary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+            >
+              ★ {featured ? 'Unfeature' : 'Feature on Homepage'}
+            </button>
+
+            {!isClosed ? (
+              <button
+                className="btn-danger btn-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTakeDown(auction.id, 'COMMUNITY_AUCTION', title);
+                }}
+              >
+                Close Auction
+              </button>
+            ) : (
+              <button
+                className="btn-secondary btn-sm"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  await onRestore(auction.id, 'COMMUNITY_AUCTION');
+                  onRefresh?.();
+                }}
+              >
+                Restore Auction (Make Active)
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -2696,26 +2857,26 @@ function MeetingsAdminTab({ meetings }) {
   };
 
   const filtered = meetings.filter(m => {
-    if (filter === 'all')     return true;
-    if (filter === 'upcoming') return categorise(m) === 'upcoming';
-    if (filter === 'ongoing')  return categorise(m) === 'ongoing';
-    if (filter === 'pending')  return m.status === 'PENDING';
+    if (filter === 'all')       return true;
+    if (filter === 'pending')   return m.status === 'PENDING';
+    if (filter === 'ongoing')   return m.status === 'CONFIRMED' && categorise(m) === 'ongoing';
+    if (filter === 'upcoming')  return m.status === 'CONFIRMED' && categorise(m) === 'upcoming';
     if (filter === 'completed') return m.status === 'COMPLETED';
     if (filter === 'cancelled') return m.status === 'CANCELLED';
     return true;
   });
 
-  const countUpcoming = meetings.filter(m => categorise(m) === 'upcoming').length;
-  const countOngoing  = meetings.filter(m => categorise(m) === 'ongoing').length;
-  const countPending  = meetings.filter(m => m.status === 'PENDING').length;
+  const countPending   = meetings.filter(m => m.status === 'PENDING').length;
+  const countOngoing   = meetings.filter(m => m.status === 'CONFIRMED' && categorise(m) === 'ongoing').length;
+  const countUpcoming  = meetings.filter(m => m.status === 'CONFIRMED' && categorise(m) === 'upcoming').length;
   const countCompleted = meetings.filter(m => m.status === 'COMPLETED').length;
   const countCancelled = meetings.filter(m => m.status === 'CANCELLED').length;
 
   const MEETING_STATUS = {
-    PENDING:   { color: '#b45309', label: t('adminMeetingPending')   },
-    CONFIRMED: { color: '#059669', label: t('adminMeetingConfirmed')  },
-    CANCELLED: { color: '#dc2626', label: t('adminMeetingCancelled')  },
-    COMPLETED: { color: '#4b5563', label: t('adminMeetingCompleted')  },
+    PENDING:   { color: '#b45309', label: t('adminMeetingPending', 'Pending')   },
+    CONFIRMED: { color: '#059669', label: t('adminMeetingConfirmed', 'Confirmed')  },
+    CANCELLED: { color: '#dc2626', label: t('adminMeetingCancelled', 'Cancelled')  },
+    COMPLETED: { color: '#4b5563', label: t('adminMeetingCompleted', 'Completed')  },
   };
 
   if (meetings.length === 0) return (
@@ -2730,10 +2891,10 @@ function MeetingsAdminTab({ meetings }) {
       {/* Sub-filter bar */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         {[
-          { id: 'all',      label: t('adminMeetingsAll', { count: meetings.length }) },
-          { id: 'ongoing',  label: t('adminMeetingsOngoing', { count: countOngoing }) },
-          { id: 'upcoming', label: t('adminMeetingsUpcoming', { count: countUpcoming }) },
-          { id: 'pending',  label: `Pending (${countPending})` },
+          { id: 'all',       label: t('adminMeetingsAll', { count: meetings.length, defaultValue: `All (${meetings.length})` }) },
+          { id: 'pending',   label: `Pending (${countPending})` },
+          { id: 'ongoing',   label: t('adminMeetingsOngoing', { count: countOngoing, defaultValue: `Ongoing (${countOngoing})` }) },
+          { id: 'upcoming',  label: t('adminMeetingsUpcoming', { count: countUpcoming, defaultValue: `Upcoming (${countUpcoming})` }) },
           { id: 'completed', label: `Completed (${countCompleted})` },
           { id: 'cancelled', label: `Cancelled (${countCancelled})` },
         ].map(f => (
@@ -2756,12 +2917,15 @@ function MeetingsAdminTab({ meetings }) {
             const lister    = m.lister    || {};
             const requester = m.requester || {};
 
+            const cardClass = m.status === 'PENDING' ? 'admin-record-card--pending'
+              : m.status === 'COMPLETED' ? 'admin-meeting-card--past'
+              : m.status === 'CONFIRMED' && cat === 'ongoing' ? 'admin-meeting-card--ongoing'
+              : m.status === 'CONFIRMED' && cat === 'upcoming' ? 'admin-meeting-card--upcoming'
+              : 'admin-record-card';
+            const borderStyle = m.status === 'CANCELLED' ? { borderLeft: '4px solid #dc2626' } : {};
+
             return (
-              <div key={m.id} className={`admin-record-card ${
-                cat === 'ongoing' ? 'admin-meeting-card--ongoing'
-                : cat === 'upcoming' ? 'admin-meeting-card--upcoming'
-                : 'admin-meeting-card--past'
-              }`} style={{ padding: '1rem 1.25rem' }}>
+              <div key={m.id} className={`admin-record-card ${cardClass}`} style={{ padding: '1rem 1.25rem', ...borderStyle }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                   {/* Left: topic + participants */}
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -2774,7 +2938,7 @@ function MeetingsAdminTab({ meetings }) {
                                      padding: '0.15rem 0.5rem', borderRadius: 4 }}>
                         {sc.label}
                       </span>
-                      {cat === 'ongoing' && (
+                      {m.status === 'CONFIRMED' && cat === 'ongoing' && (
                         <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c86e6e',
                                        background: 'rgba(200,110,110,0.1)', border: '1px solid rgba(200,110,110,0.3)',
                                        padding: '0.15rem 0.5rem', borderRadius: 4, animation: 'pulse 1.5s infinite' }}>
@@ -2801,18 +2965,42 @@ function MeetingsAdminTab({ meetings }) {
                         "{m.message}"
                       </div>
                     )}
-                    
-                    {m.status === 'PENDING' && (
-                      <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, fontSize: '0.8rem', color: '#92400e' }}>
-                        <strong>Pending Confirmation:</strong> This meeting is pending approval from the Profile Owner ({lister.firstname || lister.firstName || lister.email || '—'}).
-                      </div>
-                    )}
-                    {m.status === 'CANCELLED' && (
-                      <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, fontSize: '0.8rem', color: '#991b1b' }}>
-                        <strong>Cancelled By:</strong> {m.cancelledBy || 'System / Admin'} <br />
-                        <strong>Reason:</strong> {m.cancelReason || m.cancel_reason || 'No specific reason provided.'}
-                      </div>
-                    )}
+
+                    {/* Timeline & detailed status info */}
+                    <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed #e5e7eb' }}>
+                      {m.status === 'PENDING' && (
+                        <div style={{ fontSize: '0.82rem', color: '#b45309', fontWeight: 500 }}>
+                          ⏳ <strong>Pending action from:</strong> Profile Owner — {lister.firstname || lister.firstName || '—'} {lister.lastname || lister.lastName || ''} ({lister.email || '—'})
+                        </div>
+                      )}
+                      {m.status === 'CANCELLED' && (
+                        <div style={{ fontSize: '0.82rem', color: '#dc2626' }}>
+                          <div>
+                            🚫 <strong>Cancelled by:</strong>{' '}
+                            {m.cancelledBy === 'LISTER'
+                              ? `Profile Owner — ${lister.firstname || lister.firstName || '—'} ${lister.lastname || lister.lastName || ''} (${lister.email || '—'})`
+                              : m.cancelledBy === 'REQUESTER'
+                              ? `Requester — ${requester.firstname || requester.firstName || '—'} ${requester.lastname || requester.lastName || ''} (${requester.email || '—'})`
+                              : m.cancelledBy || '—'}
+                          </div>
+                          {m.cancelReason && (
+                            <div style={{ marginTop: '0.2rem', color: '#4b5563', paddingLeft: '1.25rem', fontStyle: 'italic' }}>
+                              Reason: "{m.cancelReason}"
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {m.status === 'COMPLETED' && (
+                        <div style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 500 }}>
+                          ✅ <strong>Completed</strong>
+                        </div>
+                      )}
+                      {m.status === 'CONFIRMED' && (
+                        <div style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 500 }}>
+                          🤝 <strong>Confirmed & Scheduled</strong>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Right: time info + meet link */}

@@ -79,6 +79,7 @@ export default function DomainListingCard({
   onEnquire,
   onViewAuction,
   onDelete,
+  onPutForAuction,
   likeState,
   onLike,
 }) {
@@ -166,49 +167,72 @@ export default function DomainListingCard({
               <Trash2 size={12} /> {t('remove')}
             </button>
           </div>
-          <div className="relative shrink-0" ref={shareRef}>
-            <button
-              type="button"
-              className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
-              onClick={(e) => {
-                stop(e);
-                setShareOpen(!shareOpen);
-              }}
-              title={t('listingCardShare')}
-            >
-              <Share2 size={12} />
-            </button>
-            {shareOpen && (
-              <div
-                className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
-                onClick={stop}
+          <div className="flex items-center shrink-0 gap-1">
+            {!isAuction && onPutForAuction && (
+              <button
+                type="button"
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                onClick={(e) => {
+                  stop(e);
+                  onPutForAuction();
+                }}
+                title="Put for Auction"
               >
-                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-600">Share via</span>
-                </div>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={() => handleShare(linkedinShare)}
-                >
-                  {t('listingCardLinkedIn')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  onClick={() => handleShare(facebookShare)}
-                >
-                  {t('listingCardFacebook')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={() => handleShare(whatsappShare)}
-                >
-                  {t('listingCardWhatsApp')}
-                </button>
-              </div>
+                <Gavel size={12} />
+              </button>
             )}
+            {isAuction && (
+              <span
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-400 cursor-default"
+                title="In Auction"
+              >
+                <Gavel size={12} />
+              </span>
+            )}
+            <div className="relative" ref={shareRef}>
+              <button
+                type="button"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
+                onClick={(e) => {
+                  stop(e);
+                  setShareOpen(!shareOpen);
+                }}
+                title={t('listingCardShare')}
+              >
+                <Share2 size={12} />
+              </button>
+              {shareOpen && (
+                <div
+                  className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+                  onClick={stop}
+                >
+                  <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                    <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    onClick={() => handleShare(linkedinShare)}
+                  >
+                    {t('listingCardLinkedIn')}
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    onClick={() => handleShare(facebookShare)}
+                  >
+                    {t('listingCardFacebook')}
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    onClick={() => handleShare(whatsappShare)}
+                  >
+                    {t('listingCardWhatsApp')}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );

@@ -24,7 +24,7 @@ function formatLabel(value) {
   return value.replace(/_/g, ' ').trim();
 }
 
-function CreatorAvatar({ imageUrl, name }) {
+function CreatorAvatar({ imageUrl, name, isComplete }) {
   const initial = name?.[0]?.toUpperCase() || '?';
 
   return (
@@ -40,9 +40,11 @@ function CreatorAvatar({ imageUrl, name }) {
           {initial}
         </div>
       )}
-      <div className="creator-profile-card__verified-badge">
-        <CheckCircle2 size={16} strokeWidth={2.5} />
-      </div>
+      {isComplete && (
+        <div className="creator-profile-card__verified-badge">
+          <CheckCircle2 size={16} strokeWidth={2.5} style={{ fill: '#22c55e', color: '#fff' }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -119,7 +121,7 @@ export default function CommunityListingCard({
 
       <div className="creator-profile-card__body">
         <div className="creator-profile-card__top-section">
-          <CreatorAvatar imageUrl={imageUrl} name={profile.name} />
+          <CreatorAvatar imageUrl={imageUrl} name={profile.name} isComplete={isCreatorProfileComplete(profile)} />
           
           <div className="creator-profile-card__header-right">
              <div className="creator-profile-card__name-section">

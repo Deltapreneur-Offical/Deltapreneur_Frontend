@@ -537,35 +537,44 @@ function DomainAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="mb-2 min-h-[1.5rem]">
+      <div className="flex-1 flex flex-col min-h-0 justify-between">
+        <div>
           {domain.verified && (
-            <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-              ✓ Verified
-            </span>
+            <div className="mb-2">
+              <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
+                ✓ Verified
+              </span>
+            </div>
+          )}
+          {domain.description && (
+            <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed" title={domain.description}>
+              {domain.description}
+            </p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 my-3">
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">
-              {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+        <div>
+          <div className="grid grid-cols-2 gap-3 my-3">
+            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-600 font-medium mb-1">
+                {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+              </div>
+              <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+                ₹{currentAmount.toLocaleString('en-IN')}
+              </div>
             </div>
-            <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-              ₹{currentAmount.toLocaleString('en-IN')}
+            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-600 font-medium mb-1">
+                Total Bids
+              </div>
+              <div className="font-display text-xl font-bold text-gray-900">
+                {totalBids}
+              </div>
             </div>
           </div>
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">
-              Total Bids
-            </div>
-            <div className="font-display text-xl font-bold text-gray-900">
-              {totalBids}
-            </div>
-          </div>
-        </div>
 
-        <AuctionCardNextBidLine highestBid={highestBid} />
+          <AuctionCardNextBidLine highestBid={highestBid} />
+        </div>
       </div>
 
       <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
@@ -684,23 +693,34 @@ function SoftwareAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="grid grid-cols-2 gap-3 my-3">
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">
-              {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
-            </div>
-            <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-              ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
-            </div>
-          </div>
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">Total Bids</div>
-            <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
-          </div>
-        </div>
+      <div className="flex-1 flex flex-col min-h-0 justify-between">
+        {(() => {
+          const description = software.what_it_does || software.whatItDoes || software.description || '';
+          return description ? (
+            <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed" title={description}>
+              {description}
+            </p>
+          ) : null;
+        })()}
 
-        <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
+        <div>
+          <div className="grid grid-cols-2 gap-3 my-3">
+            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-600 font-medium mb-1">
+                {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+              </div>
+              <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+              </div>
+            </div>
+            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-600 font-medium mb-1">Total Bids</div>
+              <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
+            </div>
+          </div>
+
+          <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
+        </div>
       </div>
 
       <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">

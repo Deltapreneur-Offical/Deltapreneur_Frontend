@@ -5,11 +5,12 @@ const INVALID_LINKEDIN_PROFILE_RE =
 
 const REQUIRED_CREATOR_FIELDS = [
   { key: 'name', aliases: ['name'], label: 'Creator name' },
+  { key: 'about', aliases: ['about'], label: 'About' },
   { key: 'role', aliases: ['role'], label: 'Role' },
   { key: 'industry', aliases: ['industry'], label: 'Industry' },
   { key: 'skills', aliases: ['skills'], label: 'Skills' },
   { key: 'location', aliases: ['location'], label: 'Location' },
-  { key: 'linked_in_id', aliases: ['linkedInId'], label: 'LinkedIn account' },
+  { key: 'linked_in_profile_url', aliases: ['linkedInProfileUrl'], label: 'LinkedIn profile link' },
   { key: 'why_im_here', aliases: ['whyImHere'], label: 'Bio' },
   { key: 'expected_rate', aliases: ['expectedRate'], label: 'Expected Rate' },
 ];
@@ -52,6 +53,17 @@ export function hasLinkedInAccount(profile) {
   );
 }
 
+const BASIC_REQUIRED_FIELDS = [
+  { key: 'name', aliases: ['name'] },
+  { key: 'role', aliases: ['role'] },
+  { key: 'industry', aliases: ['industry'] },
+  { key: 'skills', aliases: ['skills'] },
+  { key: 'location', aliases: ['location'] },
+  { key: 'linked_in_id', aliases: ['linkedInId', 'linked_in_id'] },
+  { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'] },
+  { key: 'expected_rate', aliases: ['expectedRate', 'expected_rate'] },
+];
+
 /** Mirrors backend profile completeness — used when API metadata is absent. */
 export function evaluateCreatorProfileCompletion(profile) {
   if (!profile) {
@@ -64,14 +76,6 @@ export function evaluateCreatorProfileCompletion(profile) {
         label: field.label,
       })),
     };
-  }
-
-  if (typeof profile.profileComplete === 'boolean' || typeof profile.profile_complete === 'boolean') {
-    const isComplete = Boolean(profile.profileComplete ?? profile.profile_complete);
-    const percent = Number(profile.profileCompletionPercent ?? profile.profile_completion_percent ?? (isComplete ? 100 : 0));
-    const status = profile.profileStatus ?? profile.profile_status ?? (isComplete ? 'COMPLETE' : 'INCOMPLETE');
-    const missingFields = profile.profileMissingFields ?? profile.profile_missing_fields ?? [];
-    return { isComplete, percent, status, missingFields };
   }
 
   const missingFields = [];
@@ -98,5 +102,6 @@ export function evaluateCreatorProfileCompletion(profile) {
 }
 
 export function isCreatorProfileComplete(profile) {
-  return evaluateCreatorProfileCompletion(profile).isComplete;
+  if (!profile) return false;
+  return BASIC_REQUIRED_FIELDS.every((field) => isCreatorFieldComplete(profile, field));
 }

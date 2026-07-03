@@ -381,7 +381,8 @@ export default function TechnologyListingCard({
 
   const techName = item.name || t('listingCardTechnology');
   const techCategory = (item.category || 'Technology').replace(/_/g, ' ');
-  const techImage = item.imageUrl && !imgFailed ? item.imageUrl : null;
+  const rawImgUrl = item.logoUrl || item.logo || item.imageUrl || item.image_url;
+  const techImage = rawImgUrl && !imgFailed ? rawImgUrl : null;
   const useCase = item.whatItDoes || item.what_it_does || item.description || '';
   const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
   const priceAmount = Number(item.price || 0);

@@ -830,7 +830,12 @@ export default function VentureListingCard({
 
                 <div className="domain-listing-card__price-text min-w-0 flex flex-col">
 
-                  <span className="venture-listing-card__price-label uppercase leading-none">
+                  <span 
+                    className="venture-listing-card__price-label uppercase leading-none truncate"
+                    title={isHomePreview
+                      ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
+                      : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
+                  >
 
                     {isHomePreview
                       ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))

@@ -3,7 +3,7 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, CheckCircle, Gavel } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
@@ -67,6 +67,7 @@ function buildDomainFormState(domain, navCurrency) {
   const display = domain ? resolveDomainDisplay(domain) : { name: '', ext: null, fullDomain: '' };
   return {
     domainName: ['—', 'Unnamed', 'domain'].includes(display.name) ? '' : display.name,
+    logoText: domain?.logo_text ?? domain?.logoText ?? '',
     domainExtension: display.ext?.full ?? (domain ? '' : '.com'),
     askingPrice: domain?.askingPrice != null ? String(domain.askingPrice) : '',
     pricingDemand: domain?.pricingDemand ?? '',
@@ -100,6 +101,7 @@ export default function DomainsPage() {
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
   const [globalNotice, setGlobalNotice]     = useState('');
+  const [auctionTarget, setAuctionTarget]   = useState(null);
   const { pendingVerificationCount } = useDomainPendingVerification();
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
@@ -363,6 +365,7 @@ export default function DomainsPage() {
                   onEnquire={() => setEnquireTarget(d)}
                   onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
                   onDelete={() => setDeleteTarget(d.id)}
+                  onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
                 />
                 </ListingCardShell>
               ))}
@@ -450,7 +453,158 @@ export default function DomainsPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      {auctionTarget && (
+        <PutForAuctionModal
+          domain={auctionTarget}
+          user={user}
+          onClose={() => setAuctionTarget(null)}
+          onSuccess={(updatedDomain) => {
+            setAuctionTarget(null);
+            setAllDomains(prev => prev.map(x => x.id === updatedDomain.id ? { ...x, ...updatedDomain } : x));
+            setGlobalNotice('Your domain has been put for auction successfully!');
+          }}
+        />
+      )}
     </AppLayout>
+  );
+}
+
+// ─── Put for Auction Modal ─────────────────────────────────────────────────────
+function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
+  const { currency: navCurrency, convertToInr } = useCurrency();
+  const display = resolveDomainDisplay(domain);
+  const [minBidPrice, setMinBidPrice]     = useState('');
+  const [duration, setDuration]           = useState('SEVEN_DAYS');
+  const [auctionFeeInr, setAuctionFeeInr] = useState(118);
+  const [submitting, setSubmitting]       = useState(false);
+  const [error, setError]                 = useState('');
+
+  useEffect(() => {
+    import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
+      fetchListingFeesAndCharges()
+        .then((fees) => setAuctionFeeInr(Number(fees?.auctionCreationFeeInr ?? 118)))
+        .catch(() => {});
+    });
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!minBidPrice || parseFloat(minBidPrice) <= 0) {
+      setError(t('domainsPageErrorMinBid', 'Please enter a valid minimum bid price.'));
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      const { payAuctionCreationFee } = await import('../utils/auctionFees');
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'DOMAIN',
+        user,
+        description: t('domainsPageAuctionFeeDescription', { defaultValue: 'Domain auction listing fee' }),
+      });
+
+      const minBidInr = navCurrency === 'INR'
+        ? parseFloat(minBidPrice)
+        : convertToInr(parseFloat(minBidPrice), navCurrency);
+
+      await auctionAPI.create(domain.id, {
+        domain_id: domain.id,
+        minBidPrice: minBidInr,
+        duration,
+        creationFeeOrderId,
+      });
+
+      onSuccess({ ...domain, saleType: 'AUCTION' });
+    } catch (err) {
+      setError(readApiError(err, 'Failed to create auction. Please try again.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400 text-sm';
+  const labelCls = 'text-sm font-medium text-gray-700';
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-[18px] shadow-2xl p-6 sm:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Gavel size={20} className="text-indigo-600" />
+            <h2 className="font-display text-xl font-bold text-gray-900 m-0">Put for Auction</h2>
+          </div>
+          <p className="text-sm text-gray-500">
+            Set up an auction for <strong>{display.fullDomain}</strong>. The auction creation fee will be charged upfront.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <CurrencyPriceInput
+            id="auction-min-bid"
+            label={`${t('domainsPageMinBidLabel', 'Minimum bid price')} *`}
+            value={minBidPrice}
+            onChange={setMinBidPrice}
+            required
+            placeholder={t('domainsPageMinBidPlaceholder', 'e.g. 10000')}
+            inputClassName={inputCls}
+            labelClassName={labelCls}
+          />
+
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>{t('domainsPageAuctionDurationLabel', 'Auction duration')} *</label>
+            <FormSelect
+              className={inputCls}
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+            >
+              <option value="ONE_DAY">{t('domainsPageDurationOneDay', '1 day')}</option>
+              <option value="SEVEN_DAYS">{t('domainsPageDurationSevenDays', '7 days')}</option>
+              <option value="THIRTY_DAYS">{t('domainsPageDurationThirtyDays', '30 days')}</option>
+              <option value="SIXTY_DAYS">{t('domainsPageDurationSixtyDays', '60 days')}</option>
+              <option value="NINETY_DAYS">{t('domainsPageDurationNinetyDays', '90 days')}</option>
+            </FormSelect>
+          </div>
+
+          <div className="rounded-lg bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-900 leading-relaxed">
+            {t('domainsPageAuctionFeeNotice', {
+              defaultValue: 'Auction listing fee: {{fee}} (charged when you submit).',
+              fee: formatInr(auctionFeeInr),
+            })}
+          </div>
+
+          {error && (
+            <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 btn-glow btn-glow-sm inline-flex items-center justify-center gap-2"
+              disabled={submitting}
+            >
+              <Gavel size={14} />
+              {submitting ? 'Processing…' : 'Start Auction'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -527,6 +681,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
 
       const payload = {
         domainName:      form.domainName.trim(),
+        logoText:        form.logoText?.trim() || null,
         domainExtension: extNorm.full,
         askingPrice:     askingPriceInr,
         contactInfo:     form.contactInfo,
@@ -653,6 +808,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               onChange={e => setForm(f => ({ ...f, domainName: e.target.value.replace(/\s/g, '').toLowerCase() }))}
               placeholder={t('domainsPageDomainNamePlaceholder')}
               required
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Logo Display Name</label>
+            <input
+              className={inputCls}
+              value={form.logoText}
+              onChange={e => setForm(f => ({ ...f, logoText: e.target.value }))}
+              placeholder="e.g. Dry Chilli"
             />
           </div>
           <div className="flex flex-col gap-1.5">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
@@ -22,28 +22,17 @@ function resolveStatusDotClass(status) {
 }
 
 function DomainListingCover({
-  logo,
-  logoAlt,
   fullDomain,
+  logoText,
   verified,
-  onCoverError,
 }) {
   return (
     <div className="domain-listing-card__cover">
-      {logo ? (
-        <img
-          src={logo}
-          alt={logoAlt}
-          className="domain-listing-card__cover-img"
-          loading="lazy"
-          decoding="async"
-          onError={onCoverError}
-        />
-      ) : (
-        <div className="domain-listing-card__cover-fallback" aria-hidden>
-          <span className="domain-listing-card__cover-fallback-domain">{fullDomain}</span>
-        </div>
-      )}
+      <div className="domain-listing-card__cover-fallback" aria-hidden>
+        <span className="domain-listing-card__cover-fallback-domain">
+          {logoText || ''}
+        </span>
+      </div>
       {verified ? (
         <img
           src={verifiedIcon}
@@ -90,12 +79,12 @@ export default function DomainListingCard({
   onEnquire,
   onViewAuction,
   onDelete,
+  onPutForAuction,
   likeState,
   onLike,
 }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const [imgFailed, setImgFailed] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const isAuction = domain.saleType === 'AUCTION';
@@ -105,7 +94,6 @@ export default function DomainListingCard({
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
   const display = resolveDomainDisplay(domain);
-  const domainLogo = domain.logo && !imgFailed ? domain.logo : null;
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const needsVerification = false;
@@ -115,10 +103,6 @@ export default function DomainListingCard({
     ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
     : domain.askingPrice;
   const priceAmount = basePrice;
-
-  useEffect(() => {
-    setImgFailed(false);
-  }, [domain.logo, domain.id]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -183,49 +167,72 @@ export default function DomainListingCard({
               <Trash2 size={12} /> {t('remove')}
             </button>
           </div>
-          <div className="relative shrink-0" ref={shareRef}>
-            <button
-              type="button"
-              className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
-              onClick={(e) => {
-                stop(e);
-                setShareOpen(!shareOpen);
-              }}
-              title={t('listingCardShare')}
-            >
-              <Share2 size={12} />
-            </button>
-            {shareOpen && (
-              <div
-                className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
-                onClick={stop}
+          <div className="flex items-center shrink-0 gap-1">
+            {!isAuction && onPutForAuction && (
+              <button
+                type="button"
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                onClick={(e) => {
+                  stop(e);
+                  onPutForAuction();
+                }}
+                title="Put for Auction"
               >
-                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-600">Share via</span>
-                </div>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={() => handleShare(linkedinShare)}
-                >
-                  {t('listingCardLinkedIn')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  onClick={() => handleShare(facebookShare)}
-                >
-                  {t('listingCardFacebook')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={() => handleShare(whatsappShare)}
-                >
-                  {t('listingCardWhatsApp')}
-                </button>
-              </div>
+                <Gavel size={12} />
+              </button>
             )}
+            {isAuction && (
+              <span
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-400 cursor-default"
+                title="In Auction"
+              >
+                <Gavel size={12} />
+              </span>
+            )}
+            <div className="relative" ref={shareRef}>
+              <button
+                type="button"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
+                onClick={(e) => {
+                  stop(e);
+                  setShareOpen(!shareOpen);
+                }}
+                title={t('listingCardShare')}
+              >
+                <Share2 size={12} />
+              </button>
+              {shareOpen && (
+                <div
+                  className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
+                  onClick={stop}
+                >
+                  <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                    <span className="text-[10px] font-semibold text-gray-600">Share via</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    onClick={() => handleShare(linkedinShare)}
+                  >
+                    {t('listingCardLinkedIn')}
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    onClick={() => handleShare(facebookShare)}
+                  >
+                    {t('listingCardFacebook')}
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    onClick={() => handleShare(whatsappShare)}
+                  >
+                    {t('listingCardWhatsApp')}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );
@@ -318,11 +325,9 @@ export default function DomainListingCard({
       )}
 
       <DomainListingCover
-        logo={domainLogo}
-        logoAlt={display.fullDomain}
         fullDomain={display.fullDomain}
+        logoText={domain.logo_text ?? domain.logoText}
         verified={domain.verified}
-        onCoverError={() => setImgFailed(true)}
       />
 
       <div className="domain-listing-card__body">

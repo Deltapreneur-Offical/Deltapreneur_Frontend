@@ -451,6 +451,13 @@ export default function CommunityPage() {
   return (
     <AppLayout>
       <div>
+        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 text-sm font-medium mb-6 leading-relaxed flex items-start gap-3 shadow-sm">
+          <span className="text-lg leading-none select-none" aria-hidden>✨</span>
+          <div className="flex-1">
+            Complete your profile today to unlock your verified badge, instantly establish credibility, maximize your visibility, and attract top-tier opportunities.
+          </div>
+        </div>
+
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
@@ -531,7 +538,7 @@ export default function CommunityPage() {
                 </button>
                 <button
                   type="button"
-                  className="btn-glow btn-glow-sm border-red-300 text-red-600 hover:bg-red-50"
+                  className="btn-glow btn-glow-sm btn-glow-danger"
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={deleteLoading}
                 >
@@ -966,7 +973,7 @@ function CommunityProfileForm({
             {onDelete && (
               <button
                 type="button"
-                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
                 onClick={onDelete}
               >
                 Delete profile

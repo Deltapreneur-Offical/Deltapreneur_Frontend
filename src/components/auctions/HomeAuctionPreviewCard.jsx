@@ -199,17 +199,17 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       />
 
       <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-2.5 p-3">
-        <div className="home-auction-preview-card__content flex flex-col gap-2.5">
-          <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
+        <div className="home-auction-preview-card__content flex flex-col flex-1 gap-2.5">
+          <div className="home-auction-preview-card__title-row flex items-center justify-between gap-2">
             <h3
-              className="venture-listing-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
+              className="home-auction-preview-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
               title={title}
               style={{
                 overflowWrap: 'anywhere',
                 wordBreak: 'break-word',
               }}
             >
-              <OverflowMarqueeText text={title} />
+              {title}
             </h3>
             <span
               className="domain-listing-card__status-dot listing-availability-badge__dot listing-availability-badge__dot--available shrink-0"
@@ -218,14 +218,18 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             />
           </div>
 
-          {listerName ? (
-            <p className="home-auction-preview-card__creator" title={listerName}>
-              {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
-              <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom">
-                <OverflowMarqueeText text={listerName} />
-              </span>
-            </p>
-          ) : null}
+          <p className="home-auction-preview-card__creator" title={listerName || ''}>
+            {listerName ? (
+              <>
+                {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
+                <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom">
+                  <OverflowMarqueeText text={listerName} />
+                </span>
+              </>
+            ) : (
+              <span className="invisible" aria-hidden="true">&nbsp;</span>
+            )}
+          </p>
 
           <div
             className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1${badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
@@ -235,7 +239,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             {badges.map((badge) => (
               <span
                 key={badge.label}
-                className={`venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0 rounded-full ${badgeToneClass[badge.tone] || badgeToneClass.primary
+                className={`venture-listing-card__badge venture-listing-card__badge--compact ${badgeToneClass[badge.tone] || badgeToneClass.primary
                   }`}
               >
                 {badge.label}
@@ -243,14 +247,12 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             ))}
           </div>
 
-          {descriptionFromData ? (
-            <p
-              className="home-auction-preview-card__detail"
-              title={descriptionFromData}
-            >
-              {descriptionFromData}
-            </p>
-          ) : null}
+          <p
+            className="home-auction-preview-card__detail"
+            title={descriptionFromData || ''}
+          >
+            {descriptionFromData || <span className="invisible" aria-hidden="true">&nbsp;</span>}
+          </p>
 
           <div className="home-auction-preview-card__metrics">
             <div className="home-auction-preview-card__metric home-auction-preview-card__metric--bid">
@@ -289,6 +291,8 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
           </div>
         </div>
+
+        <div className="flex-grow min-h-0" aria-hidden="true" />
 
         <div className="home-auction-preview-card__footer flex flex-col gap-2 mt-auto">
           <div

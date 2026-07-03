@@ -24,7 +24,7 @@ describe('listingVisibility', () => {
         active: true,
         status: true,
         verified: false,
-      }),
+      }, 'software'),
     ).toBe(false);
   });
 

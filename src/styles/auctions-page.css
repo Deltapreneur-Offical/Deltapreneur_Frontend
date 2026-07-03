@@ -120,7 +120,7 @@
 
 .auctions-page-search {
   position: relative;
-  flex: 1 1 220px;
+  flex: 1 1 180px;
   min-width: 0;
 }
 
@@ -157,14 +157,14 @@
 
 .auctions-page-select-wrap {
   position: relative;
-  flex: 0 1 148px;
+  flex: 0 1 170px;
   min-width: 132px;
 }
 
 @media (min-width: 768px) {
   .auctions-page-select-wrap {
     flex: 0 0 auto;
-    width: 148px;
+    width: 170px;
   }
 }
 

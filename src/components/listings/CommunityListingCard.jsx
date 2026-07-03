@@ -77,7 +77,7 @@ export default function CommunityListingCard({
   const viewCount = Number(profile.views ?? profile.view_count ?? 0);
   const expLabel = profile.experience || profile.years_experience || '5+ Years';
   const workTypeLabel = formatLabel(profile.workType || profile.work_type || 'Full-time');
-  const description = profile.description || profile.about_me || 'Building scalable tech products and solving real world problems.';
+  const description = profile.about || profile.description || profile.about_me || 'Building scalable tech products and solving real world problems.';
 
   const stop = (e) => {
     e.stopPropagation();
@@ -154,7 +154,18 @@ export default function CommunityListingCard({
           {locationLabel && (profile.languagesKnown || profile.languages_known) && <Globe size={14} className="text-slate-400 ml-2" />}
           {(profile.languagesKnown || profile.languages_known) && (
             <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
-               {String(profile.languagesKnown || profile.languages_known).toUpperCase()} 
+               {(() => {
+                 const langs = String(profile.languagesKnown || profile.languages_known).split(',').map(l => l.trim()).filter(Boolean);
+                 if (langs.length <= 3) return langs.join(', ').toUpperCase();
+                 return (
+                   <>
+                     {langs.slice(0, 3).join(', ').toUpperCase()}
+                     <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
+                       +{langs.length - 3}
+                     </span>
+                   </>
+                 );
+               })()}
             </span>
           )}
         </div>

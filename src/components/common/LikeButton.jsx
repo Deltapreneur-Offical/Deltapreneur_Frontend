@@ -31,7 +31,7 @@ export default function LikeButton({
         <Heart
           size={iconSize}
           className={heartClass}
-          strokeWidth={2}
+          strokeWidth={1.5}
           fill={isActive ? 'currentColor' : 'none'}
           aria-hidden="true"
         />
@@ -65,7 +65,7 @@ export default function LikeButton({
       <Heart
         size={iconSize}
         className={heartClass}
-        strokeWidth={2}
+        strokeWidth={1.5}
         fill={isActive ? 'currentColor' : 'none'}
         aria-hidden="true"
       />

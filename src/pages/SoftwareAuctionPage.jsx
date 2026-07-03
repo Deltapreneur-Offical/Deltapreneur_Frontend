@@ -223,7 +223,7 @@ export default function SoftwareAuctionPage() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 1rem' }}>
 
         {/* Back */}
-        <button className="btn-ghost mb-4" style={{ fontSize: '0.85rem' }}
+        <button className="btn-ghost mb-4 font-bold text-gray-800 hover:text-purple-700 transition-colors" style={{ fontSize: '0.85rem' }}
           onClick={() => navigate('/technology')}>
           {t('auctionDetailBackTechnology')}
         </button>
@@ -290,10 +290,10 @@ export default function SoftwareAuctionPage() {
             {/* Countdown */}
             {isActive && (
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.72rem', color: '#9ca3af',
+                <div style={{ fontSize: '0.75rem', color: '#4b5563', fontWeight: 700,
                               textTransform: 'uppercase', letterSpacing: '0.06em',
-                              marginBottom: '0.3rem' }}>
-                  <Clock size={11} style={{ marginRight: 4 }} />{t('auctionDetailTimeLeft')}
+                              marginBottom: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
+                  <Clock size={12} />{t('auctionDetailTimeLeft')}
                 </div>
                 <Countdown endTime={resolvedEndTime} status={auction.status} />
                 {auction.status === 'EXTENDED' && (

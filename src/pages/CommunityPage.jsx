@@ -40,21 +40,28 @@ import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpecte
 import { readApiError } from '../utils/apiError';
 
 const ROLES = [
-  'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
-  'OPERATOR','FREELANCER','STUDENT','OTHER'
+  { value: 'STUDENT', label: 'STUDENT' },
+  { value: 'FREELANCER', label: 'FREELANCER' },
+  { value: 'JOB_SEEKER', label: 'JOB SEEKER' },
+  { value: 'EMPLOYEE', label: 'EMPLOYEE' },
+  { value: 'EMPLOYER', label: 'EMPLOYER' },
+  { value: 'MENTOR', label: 'MENTOR' },
+  { value: 'INVESTOR', label: 'INVESTOR' },
+  { value: 'FOUNDER_CO_FOUNDER', label: 'FOUNDER / CO-FOUNDER' },
+  { value: 'INCUBATORS', label: 'INCUBATORS' }
 ];
 const WORK_TYPES = [
-  { value: 'FREELANCE',   label: 'Freelance' },
-  { value: 'FULL_TIME',   label: 'Full Time' },
-  { value: 'PART_TIME',   label: 'Part Time' },
-  { value: 'CONTRACT',    label: 'Contract'  },
+  { value: 'FREELANCE', label: 'Freelance' },
+  { value: 'FULL_TIME', label: 'Full Time' },
+  { value: 'PART_TIME', label: 'Part Time' },
+  { value: 'CONTRACT', label: 'Contract' },
   { value: 'OPEN_TO_ALL', label: 'Open to All' },
 ];
 const DURATIONS = [
-  { value: 'ONE_DAY',      label: '1 Day'    },
-  { value: 'SEVEN_DAYS',   label: '7 Days'   },
-  { value: 'FIFTEEN_DAYS', label: '15 Days'  },
-  { value: 'THIRTY_DAYS',  label: '30 Days'  },
+  { value: 'ONE_DAY', label: '1 Day' },
+  { value: 'SEVEN_DAYS', label: '7 Days' },
+  { value: 'FIFTEEN_DAYS', label: '15 Days' },
+  { value: 'THIRTY_DAYS', label: '30 Days' },
 ];
 
 function apiErrorMessage(err, fallback) {
@@ -103,22 +110,22 @@ export default function CommunityPage() {
   const { user, loading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [profiles, setProfiles]             = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const { toggle: toggleFollow, get: getFollow } = useCreatorFollows(profiles);
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', profiles);
-  const [loading, setLoading]               = useState(true);
-  const [showForm, setShowForm]             = useState(false);
-  const [myProfile, setMyProfile]           = useState(null);
-  const [myAuction, setMyAuction]           = useState(null);
-  const [detailProfile, setDetailProfile]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [myProfile, setMyProfile] = useState(null);
+  const [myAuction, setMyAuction] = useState(null);
+  const [detailProfile, setDetailProfile] = useState(null);
 
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInRedirecting, setLinkedInRedirecting] = useState(false);
-  const [linkedInError, setLinkedInError]     = useState('');
+  const [linkedInError, setLinkedInError] = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
-  const [profileNotice, setProfileNotice]     = useState('');
+  const [profileNotice, setProfileNotice] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteLoading, setDeleteLoading]         = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -260,7 +267,7 @@ export default function CommunityPage() {
     communityIds: profileCommunityIds,
     onUpdate: handleAuctionProfileUpdate,
     onReconnect: () => {
-      reloadProfiles().catch(() => {});
+      reloadProfiles().catch(() => { });
     },
   });
 
@@ -304,13 +311,13 @@ export default function CommunityPage() {
           setLinkedInSuccess(
             hasUrl
               ? t(
-                  'communityPageLinkedInImported',
-                  'LinkedIn connected! Your profile link was imported — complete the details below.',
-                )
+                'communityPageLinkedInImported',
+                'LinkedIn connected! Your profile link was imported — complete the details below.',
+              )
               : t(
-                  'communityPageLinkedInImportedNoUrl',
-                  'LinkedIn connected! We imported your name and photo. Paste your public LinkedIn profile URL below and save.',
-                ),
+                'communityPageLinkedInImportedNoUrl',
+                'LinkedIn connected! We imported your name and photo. Paste your public LinkedIn profile URL below and save.',
+              ),
           );
           try {
             await reloadProfiles({ preferProfile: profile });
@@ -329,7 +336,7 @@ export default function CommunityPage() {
   useEffect(() => {
     if (authLoading) return;
     reloadProfiles()
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [user, authLoading]);
 
@@ -365,7 +372,7 @@ export default function CommunityPage() {
     try {
       const { data } = await communityAPI.linkedInAuthUrl();
       const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      const url    = parsed?.url ?? parsed?.authUrl ?? parsed;
+      const url = parsed?.url ?? parsed?.authUrl ?? parsed;
       if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
       window.location.assign(url);
     } catch {
@@ -455,7 +462,9 @@ export default function CommunityPage() {
         <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 text-sm font-medium mb-6 leading-relaxed flex items-start gap-3 shadow-sm">
           <span className="text-lg leading-none select-none" aria-hidden>✨</span>
           <div className="flex-1">
-            Complete your profile today to unlock your verified badge, instantly establish credibility, maximize your visibility, and attract top-tier opportunities.
+            {myProfileCompletion?.isComplete
+              ? 'You have completed your profile and earned the verified badge.'
+              : 'Complete your profile today to unlock your verified badge, instantly establish credibility, maximize your visibility, and attract top-tier opportunities.'}
           </div>
         </div>
 
@@ -485,145 +494,144 @@ export default function CommunityPage() {
           </>
         ) : (
           <>
-        {/* ── Header ── */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
-            <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
-          </div>
-          <div className="flex gap-3 flex-wrap items-center">
-            {effectiveMyProfile ? (
+            {/* ── Header ── */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
+                <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
+              </div>
               <div className="flex gap-3 flex-wrap items-center">
-                {/* Auction status / button */}
-                {auctionBadge ? (
-                  <div className="flex gap-2 items-center">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                      auctionBadge.color === 'green'  ? 'bg-green-50 text-green-700 border-green-300'  :
-                      auctionBadge.color === 'amber'  ? 'bg-amber-50 text-amber-700 border-amber-300'  :
-                      auctionBadge.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-300' :
-                      'bg-red-50 text-red-600 border-red-300'
-                    }`}>{auctionBadge.text}</span>
-                    <button className="btn-glow btn-glow-sm"
-                      onClick={() => {
-                        const targetId = resolveCreatorAuctionId(myAuction);
-                        if (targetId) navigate(`/creator-auction/${targetId}`);
-                      }}>
-                      View Auction →
+                {effectiveMyProfile ? (
+                  <div className="flex gap-3 flex-wrap items-center">
+                    {/* Auction status / button */}
+                    {auctionBadge ? (
+                      <div className="flex gap-2 items-center">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${auctionBadge.color === 'green' ? 'bg-green-50 text-green-700 border-green-300' :
+                            auctionBadge.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                              auctionBadge.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-300' :
+                                'bg-red-50 text-red-600 border-red-300'
+                          }`}>{auctionBadge.text}</span>
+                        <button className="btn-glow btn-glow-sm"
+                          onClick={() => {
+                            const targetId = resolveCreatorAuctionId(myAuction);
+                            if (targetId) navigate(`/creator-auction/${targetId}`);
+                          }}>
+                          View Auction →
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn-glow btn-glow-sm"
+                        onClick={() => {
+                          if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
+                            const targetId = resolveCreatorAuctionId(myAuction);
+                            if (targetId) navigate(`/creator-auction/${targetId}`);
+                            return;
+                          }
+                          if (!readCreatorExpectedRate(effectiveMyProfile)) {
+                            setAccessNotice('Add your Expected Rate in Edit Profile before putting your profile to auction.');
+                            setShowForm(true);
+                            return;
+                          }
+                          setShowAuctionModal(true);
+                        }}
+                      >
+                        🔨 Put Profile to Auction
+                      </button>
+                    )}
+                    <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
+                      📈 Analytics
+                    </button>
+                    <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
+                      <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-glow btn-glow-sm btn-glow-danger"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      disabled={deleteLoading}
+                    >
+                      Delete Profile
                     </button>
                   </div>
                 ) : (
-                  <button
-                    className="btn-glow btn-glow-sm"
-                    onClick={() => {
-                      if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
-                        const targetId = resolveCreatorAuctionId(myAuction);
-                        if (targetId) navigate(`/creator-auction/${targetId}`);
-                        return;
-                      }
-                      if (!readCreatorExpectedRate(effectiveMyProfile)) {
-                        setAccessNotice('Add your Expected Rate in Edit Profile before putting your profile to auction.');
-                        setShowForm(true);
-                        return;
-                      }
-                      setShowAuctionModal(true);
-                    }}
-                  >
-                    🔨 Put Profile to Auction
-                  </button>
+                  <div className="inline-flex items-center gap-2">
+                    <LinkedInConnectInfoTooltip />
+                    <button
+                      className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
+                      onClick={handleConnectLinkedIn}
+                      disabled={linkedInBusy}
+                    >
+                      {linkedInBusy
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
+                        : <><LinkedInIcon /> Connect with LinkedIn</>}
+                    </button>
+                  </div>
                 )}
-                <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
-                  📈 Analytics
-                </button>
-                <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
-                  <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
-                </button>
-                <button
-                  type="button"
-                  className="btn-glow btn-glow-sm btn-glow-danger"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={deleteLoading}
-                >
-                  Delete Profile
-                </button>
               </div>
-            ) : (
-              <div className="inline-flex items-center gap-2">
-                <LinkedInConnectInfoTooltip />
-                <button
-                  className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
-                  onClick={handleConnectLinkedIn}
-                  disabled={linkedInBusy}
-                >
-                  {linkedInBusy
-                    ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
-                    : <><LinkedInIcon /> Connect with LinkedIn</>}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder={t('searchCreatorsPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
-            />
-          </div>
-        </div>
-
-        {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
-          <CreatorProfileCompletionBanner
-            profile={effectiveMyProfile}
-            onEdit={() => setShowForm(true)}
-          />
-        ) : null}
-
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-          </div>
-        ) : showEmptyCreators ? (
-          <div className="text-center py-20">
-            <div className="mb-4 flex justify-center">
-              <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
             </div>
-            <h3
-              className={
-                searchQuery
-                  ? 'font-display text-2xl font-bold text-gray-900 mb-2'
-                  : 'font-display text-sm font-medium text-gray-400 mb-2'
-              }
-            >
-              {searchQuery ? t('noCreatorsFound') : t('noCreatorsYet')}
-            </h3>
-            {searchQuery ? (
-              <p className="text-gray-600">Try adjusting your search terms.</p>
-            ) : null}
-          </div>
-        ) : profilesForDisplay.length > 0 ? (
-          <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
-            {profilesForDisplay.map(p => (
-              <ListingCardShell key={p.id} className="community-listing-card-shell">
-              <CommunityListingCard
-                profile={p}
-                isMe={isListingOwner(p, user, 'community')}
-                likeState={getLike(p.id)}
-                onLike={() => toggleLike(p.id)}
-                followState={getFollow(p.id)}
-                onFollow={() => toggleFollow(p.id)}
-                onView={() => openDetailIfAllowed(p)}
-                onEdit={() => { setMyProfile(p); setShowForm(true); }}
+
+            {/* Search Bar */}
+            <div className="mb-6">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder={t('searchCreatorsPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+            </div>
+
+            {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
+              <CreatorProfileCompletionBanner
+                profile={effectiveMyProfile}
+                onEdit={() => setShowForm(true)}
               />
-              </ListingCardShell>
-            ))}
-          </div>
-        ) : null}
+            ) : null}
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+              </div>
+            ) : showEmptyCreators ? (
+              <div className="text-center py-20">
+                <div className="mb-4 flex justify-center">
+                  <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
+                </div>
+                <h3
+                  className={
+                    searchQuery
+                      ? 'font-display text-2xl font-bold text-gray-900 mb-2'
+                      : 'font-display text-sm font-medium text-gray-400 mb-2'
+                  }
+                >
+                  {searchQuery ? t('noCreatorsFound') : t('noCreatorsYet')}
+                </h3>
+                {searchQuery ? (
+                  <p className="text-gray-600">Try adjusting your search terms.</p>
+                ) : null}
+              </div>
+            ) : profilesForDisplay.length > 0 ? (
+              <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
+                {profilesForDisplay.map(p => (
+                  <ListingCardShell key={p.id} className="community-listing-card-shell">
+                    <CommunityListingCard
+                      profile={p}
+                      isMe={isListingOwner(p, user, 'community')}
+                      likeState={getLike(p.id)}
+                      onLike={() => toggleLike(p.id)}
+                      followState={getFollow(p.id)}
+                      onFollow={() => toggleFollow(p.id)}
+                      onView={() => openDetailIfAllowed(p)}
+                      onEdit={() => { setMyProfile(p); setShowForm(true); }}
+                    />
+                  </ListingCardShell>
+                ))}
+              </div>
+            ) : null}
           </>
         )}
       </div>
@@ -665,8 +673,8 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
   const { currency, formatPrice, getSymbol } = useCurrency();
   const [creationFeeInr, setCreationFeeInr] = useState(118);
   const creationFeeDisplay = formatPrice(creationFeeInr);
-  const [step, setStep]       = useState('form'); // form | done
-  const [form, setForm]       = useState({
+  const [step, setStep] = useState('form'); // form | done
+  const [form, setForm] = useState({
     auctionTitle: '',
     auctionSkills: '',
     workType: 'OPEN_TO_ALL',
@@ -675,9 +683,9 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
     minBidPrice: '',
     duration: 'SEVEN_DAYS',
   });
-  const [auctionId, setAuctionId]   = useState(null);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState('');
+  const [auctionId, setAuctionId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -685,7 +693,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
       fetchListingFeesAndCharges()
         .then((fees) => setCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118)))
-        .catch(() => {});
+        .catch(() => { });
     });
   }, []);
 
@@ -862,7 +870,7 @@ function CommunityProfileForm({
   };
   const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setForm(buildForm(initial));
@@ -990,29 +998,29 @@ function CommunityProfileForm({
       ) : null}
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
 
-  {/* About - full width */}
-  <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-medium text-gray-700">
-      About <span className="text-red-500">*</span>
-    </label>
-    <textarea
-      name="about"
-      value={form.about}
-      onChange={handleChange}
-      placeholder="Tell others about yourself..."
-      rows={3}
-      required
-      className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
-    />
-  </div>
+        {/* About - full width */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">
+            About <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            name="about"
+            value={form.about}
+            onChange={handleChange}
+            placeholder="Tell others about yourself..."
+            rows={3}
+            required
+            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
+          />
+        </div>
 
-  {/* Role + Industry */}
-  <div className="grid grid-cols-2 gap-4">
+        {/* Role + Industry */}
+        <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500">*</span></label>
             <select name="role" value={form.role} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select role</option>
-              {ROLES.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+              {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">

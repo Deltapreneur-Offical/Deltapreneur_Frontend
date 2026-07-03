@@ -1649,19 +1649,29 @@
 .home-auction-preview-card__live {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0;
   flex-shrink: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #16a34a;
+  padding: 0.2rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #047857;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.18);
   line-height: 1;
 }
 
-.home-auction-preview-card__live-dot {
-  width: 0.5rem;
-  height: 0.5rem;
+.home-auction-preview-card__live::before {
+  content: '';
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
   border-radius: 999px;
-  background: #22c55e;
+  background: #10b981;
+  box-shadow: none;
+  margin-right: 0.35rem;
 }
 
 .home-auction-preview-card__detail {

@@ -200,22 +200,26 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
 
       <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-2.5 p-3">
         <div className="home-auction-preview-card__content flex flex-col flex-1 gap-2.5">
-          <div className="home-auction-preview-card__title-row flex items-center justify-between gap-2">
-            <h3
-              className="home-auction-preview-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
-              title={title}
-              style={{
-                overflowWrap: 'anywhere',
-                wordBreak: 'break-word',
-              }}
-            >
-              {title}
-            </h3>
-            <span
-              className="domain-listing-card__status-dot listing-availability-badge__dot listing-availability-badge__dot--available shrink-0"
-              title={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
-              aria-hidden
-            />
+          <div className="home-auction-preview-card__title-row">
+            <div className="home-auction-preview-card__title-line">
+              <h3
+                className="home-auction-preview-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
+                title={title}
+                style={{
+                  overflowWrap: 'anywhere',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {title}
+              </h3>
+              <span
+                className="home-auction-preview-card__live shrink-0"
+                title={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
+                aria-label={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
+              >
+                <span>{t('auctionsPageStatusLive', { defaultValue: 'Live' })}</span>
+              </span>
+            </div>
           </div>
 
           <p className="home-auction-preview-card__creator" title={listerName || ''}>

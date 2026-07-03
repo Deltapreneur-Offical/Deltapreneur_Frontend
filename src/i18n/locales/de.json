@@ -536,7 +536,7 @@
   "auctionsPageLiveBadge_plural": "{{count}} live",
   "auctionsPageStatusDraft": "📝 DRAFT",
   "auctionsPageStatusExtended": "⚡ EXTENDED",
-  "auctionsPageStatusLive": "🟢 LIVE",
+  "auctionsPageStatusLive": "LIVE",
   "auctionsPageEquityAuction": "🔨 Equity Auction",
   "auctionsPageGstinVerified": "✓ GSTIN Verified",
   "auctionsPageGstinPending": "GSTIN verification pending",

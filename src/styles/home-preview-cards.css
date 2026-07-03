@@ -32,20 +32,8 @@
     gap: 1rem !important;
     width: auto !important;
   }
-<<<<<<< Updated upstream
   .home-preview-row__item:first-child { margin-left: 1rem !important; }
   .home-preview-row__item:last-child  { margin-right: 1rem !important; }
-=======
-
-  .home-preview-row__item:first-child {
-    margin-left: 1.75rem !important;
-  }
-
-  .home-preview-row__item:last-child {
-    margin-right: 1.75rem !important;
-  }
-
->>>>>>> Stashed changes
   .home-auto-scroll-row {
     margin-left: -2rem !important;
     margin-right: -2rem !important;
@@ -69,20 +57,8 @@
     gap: 1rem !important;
     width: auto !important;
   }
-<<<<<<< Updated upstream
   .home-preview-row__item:first-child { margin-left: 1rem !important; }
   .home-preview-row__item:last-child  { margin-right: 1rem !important; }
-=======
-
-  .home-preview-row__item:first-child {
-    margin-left: 2.75rem !important;
-  }
-
-  .home-preview-row__item:last-child {
-    margin-right: 2.75rem !important;
-  }
-
->>>>>>> Stashed changes
   .home-auto-scroll-row {
     margin-left: -3rem !important;
     margin-right: -3rem !important;
@@ -107,20 +83,8 @@
     gap: 1.25rem !important;
     width: auto !important;
   }
-<<<<<<< Updated upstream
   .home-preview-row__item:first-child { margin-left: 1.25rem !important; }
   .home-preview-row__item:last-child  { margin-right: 1.25rem !important; }
-=======
-
-  .home-preview-row__item:first-child {
-    margin-left: 3.75rem !important;
-  }
-
-  .home-preview-row__item:last-child {
-    margin-right: 2.5rem !important;
-  }
-
->>>>>>> Stashed changes
   .home-auto-scroll-row {
     margin-left: -3.5rem !important;
     margin-right: -2.25rem !important;
@@ -2040,35 +2004,11 @@
   padding: 4px 2px 8px;
 }
 
-<<<<<<< HEAD
 .home-auto-scroll-row__item:has(.community-listing-card) {
   width: min(90vw, 360px); /* Mobile: 1 full card */
 }
 
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border,
-=======
-/* Large phone 640–767px: 1 card per view */
-@media (min-width: 640px) and (max-width: 767px) {
-  .home-auto-scroll-row__item {
-    width: calc(100vw - 2.5rem);
-  }
-}
-
-/* Tablet 768px+: exactly 2 cards per view — matches .home-preview-row__item */
-/* Formula: (100vw - 1.25rem left - 1.25rem gap - 1.25rem right) / 2 = 50vw - 1.875rem */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .home-auto-scroll-row__item {
-    width: calc(50vw - 1.875rem);
-  }
-}
-
-/* Desktop: comfortable fixed width */
-@media (min-width: 1024px) {
-  .home-auto-scroll-row__item {
-    width: min(22vw, 280px);
-  }
-}
->>>>>>> ae94db6585bdc711d112abd473394378ded60231
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border__inner,
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-shell,
 .home-auto-scroll-row__item:has(.community-listing-card) .home-preview-card-border,
@@ -2092,10 +2032,15 @@
   height: 100%;
 }
 
-<<<<<<< HEAD
+@media (min-width: 640px) and (max-width: 767px) {
+  .home-auto-scroll-row__item {
+    width: calc(100vw - 2.5rem);
+  }
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-auto-scroll-row__item {
-    width: min(42vw, 292px);
+    width: calc(50vw - 1.875rem);
   }
   .home-auto-scroll-row__item:has(.community-listing-card) {
     width: 360px; /* Tablet: 2 full cards */
@@ -2110,8 +2055,6 @@
     width: 380px; /* Desktop: 3 full cards */
   }
 }
-=======
->>>>>>> ae94db6585bdc711d112abd473394378ded60231
 
 @keyframes home-auto-scroll-row-marquee {
   0% {
@@ -2266,9 +2209,4 @@
   .home-preview-card-skeleton .animate-shimmer {
     animation: none;
   }
-<<<<<<< Updated upstream
 }
-
-=======
-}
->>>>>>> Stashed changes

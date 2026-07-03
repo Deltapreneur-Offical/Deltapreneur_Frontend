@@ -86,7 +86,8 @@ export function AdminGuard({ children }) {
     return <Navigate to="/login" replace />;
   }
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  if (!loading && roleUpper !== 'ADMIN' && roleUpper !== 'ROLE_ADMIN') {
+  const allowedAdminRoles = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'];
+  if (!loading && !allowedAdminRoles.includes(roleUpper)) {
     return <Navigate to="/dashboard" replace />;
   }
   return <GuardedContent loading={loading}>{children}</GuardedContent>;

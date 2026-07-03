@@ -38,7 +38,8 @@ function readNextGreetingIndex() {
 function displayRoleLabel(role, t) {
   const raw = (role ?? 'GUEST').toString();
   const upper = raw.toUpperCase();
-  if (upper === 'ADMIN' || upper === 'ROLE_ADMIN') return t('roleAdministrator');
+  const allowedAdminRoles = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'];
+  if (allowedAdminRoles.includes(upper)) return t('roleAdministrator');
   if (upper === 'USER' || upper === 'ROLE_USER') return t('roleUser');
   if (upper === 'GUEST') return t('roleGuest');
   return raw;
@@ -203,7 +204,7 @@ export default function DashboardPage() {
   });
 
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+  const isAdmin = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'].includes(roleUpper);
 
   useEffect(() => {
     if (!user?.id) {

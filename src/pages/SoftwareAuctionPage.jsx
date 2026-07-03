@@ -68,6 +68,7 @@ export default function SoftwareAuctionPage() {
   const [bidSuccess, setBidSuccess]         = useState('');
   const [placing, setPlacing]               = useState(false);
   const [participation, setParticipation]   = useState({ loading: true, paid: false, fee: 0 });
+  const [imgError, setImgError]             = useState(false);
   const [payingParticipation, setPayingParticipation] = useState(false);
   const [participationError, setParticipationError] = useState('');
   const [bidFee, setBidFee] = useState(null);
@@ -233,10 +234,15 @@ export default function SoftwareAuctionPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between',
                         alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              {sw.imageUrl && (
+              {sw.imageUrl && !imgError ? (
                 <img src={sw.imageUrl} alt={sw.name}
+                  onError={() => setImgError(true)}
                   style={{ width: 56, height: 56, borderRadius: 10,
                            objectFit: 'cover', border: '1px solid #e5e7eb' }} />
+              ) : (
+                <div style={{ width: 56, height: 56, borderRadius: 10, background: '#f3f4f6',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '1.5rem', color: '#9ca3af', border: '1px solid #e5e7eb' }}>⌥</div>
               )}
               <div>
                 <h1 style={{ fontFamily: 'Inter, system-ui, sans-serif',

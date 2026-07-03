@@ -105,8 +105,8 @@ export default function FilterBar({
               className={`filter-category-select ${selectClass}`}
             >
               <option value="">{t('filterAllCategories')}</option>
-              {categoryOptions.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+              {categoryOptions.map((c, idx) => (
+                <option key={`${c.value}-${idx}`} value={c.value}>{c.label}</option>
               ))}
             </select>
             <ChevronDown

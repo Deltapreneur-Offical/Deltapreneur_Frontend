@@ -274,13 +274,6 @@ export default function TechnologyListingCard({
 
   const renderPrimaryAction = () => {
     if (owner) {
-      if (isTechnologyAuctionPending(item, auctionStatus)) {
-        return (
-          <span className={statusChip}>
-            {t('listingCardAuctionPending')}
-          </span>
-        );
-      }
       if (isTechnologyAuctionLive(item, auctionStatus) && technologyAuctionId(item, auctionStatus)) {
         return (
           <button
@@ -292,14 +285,21 @@ export default function TechnologyListingCard({
             }}
           >
             <Gavel size={13} aria-hidden />
-            {t('listingCardViewLiveAuction')}
+            <span>🟢 On Live Auction</span>
           </button>
+        );
+      }
+      if (isTechnologyAuctionPending(item, auctionStatus)) {
+        return (
+          <span className={statusChip}>
+            {t('listingCardAuctionPending')}
+          </span>
         );
       }
       return renderOwnerListingChip();
     }
 
-    if (user?.role === 'ADMIN') {
+    if (['ADMIN', 'SUPER_ADMIN', 'AUCTION_MODERATOR'].includes(user?.role)) {
       if (isDirectPurchase(item, auctionStatus)) {
         return (
           <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onView?.(); }}>
@@ -329,7 +329,7 @@ export default function TechnologyListingCard({
           }}
         >
           <Gavel size={13} aria-hidden />
-          {t('listingCardPlaceBid')}
+          <span>🟢 On Live Auction</span>
         </button>
       );
     }
@@ -360,7 +360,7 @@ export default function TechnologyListingCard({
 
   const primaryAction = renderPrimaryAction();
   const ownerMenuItems = owner ? buildOwnerMenuItems() : [];
-  const adminMenuItems = !owner && user?.role === 'ADMIN' ? buildAdminMenuItems() : [];
+  const adminMenuItems = !owner && ['ADMIN', 'SUPER_ADMIN', 'AUCTION_MODERATOR'].includes(user?.role) ? buildAdminMenuItems() : [];
   const menuItems = ownerMenuItems.length ? ownerMenuItems : adminMenuItems;
 
   const actionButtons = (

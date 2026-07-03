@@ -78,9 +78,19 @@ export default function CoCreationPage() {
   }, [allSoftware, technologyType]);
 
   const activeCategoryOptions = useMemo(() => {
-    if (technologyType === 'HARDWARE') return HARDWARE_CATEGORY_OPTIONS;
-    if (technologyType === 'SOFTWARE') return TECHNOLOGY_CATEGORY_OPTIONS;
-    return [...TECHNOLOGY_CATEGORY_OPTIONS, ...HARDWARE_CATEGORY_OPTIONS];
+    const rawOptions =
+      technologyType === 'HARDWARE'
+        ? HARDWARE_CATEGORY_OPTIONS
+        : technologyType === 'SOFTWARE'
+        ? TECHNOLOGY_CATEGORY_OPTIONS
+        : [...TECHNOLOGY_CATEGORY_OPTIONS, ...HARDWARE_CATEGORY_OPTIONS];
+    const seen = new Set();
+    return rawOptions.filter(opt => {
+      const val = opt.value;
+      if (seen.has(val)) return false;
+      seen.add(val);
+      return true;
+    });
   }, [technologyType]);
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', filteredByType);
@@ -1810,7 +1820,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                         className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer"
                         onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
                       >
-                        View Auction →
+                        {isTechnologyAuctionLive(d, auctionStatus) ? '🟢 On Live Auction' : 'View Auction →'}
                       </button>
                     )}
                   {!isOwner
@@ -1830,7 +1840,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                       className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer"
                       onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
                     >
-                      Place Bid →
+                      🟢 On Live Auction
                     </button>
                   )}
                   <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 focus-visible:bg-gray-200 cursor-pointer" onClick={onClose}>Close</button>

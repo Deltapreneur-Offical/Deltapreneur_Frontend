@@ -335,7 +335,12 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
               🔨 List for auction
             </button>
           )}
-          {isTechnologyAuctionPending(item, auctionStatus) && (
+          {isTechnologyAuctionLive(item, auctionStatus) && (
+            <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg">
+              🟢 On Live Auction
+            </span>
+          )}
+          {!isTechnologyAuctionLive(item, auctionStatus) && isTechnologyAuctionPending(item, auctionStatus) && (
             <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg">
               ⏳ Auction Pending
             </span>

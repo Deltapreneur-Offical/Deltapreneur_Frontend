@@ -26,6 +26,7 @@ export function resolveTechnologyAuctionMeta(item, auctionStatus) {
 }
 
 export function isTechnologyAuctionPending(item, auctionStatus) {
+  if (isTechnologyAuctionLive(item, auctionStatus)) return false;
   const meta = resolveTechnologyAuctionMeta(item, auctionStatus);
   return (
     meta?.approvalStatus === 'PENDING_APPROVAL'

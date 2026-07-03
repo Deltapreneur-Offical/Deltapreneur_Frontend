@@ -43,7 +43,9 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
+import SoftwareAuctionTakeDownTab from './SoftwareAuctionTakeDownTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import DomainsAdminTab from './DomainsAdminTab';
 import VentureDealsAdminTab from './VentureDealsAdminTab';
 import OperationsAdminTab from './OperationsAdminTab';
 import DomainVerificationModal from './DomainVerificationModal';
@@ -535,6 +537,7 @@ export default function AdminDashboardPage() {
       'operations',
       'homepage-features',
       'software-auctions',
+      'software-auctions-takedown',
       'community-auctions',
       'addon-orders',
       'domain-transfers',
@@ -614,6 +617,7 @@ export default function AdminDashboardPage() {
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
+    { id: 'software-auctions-takedown', label: 'Tech Takedowns', icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
@@ -857,6 +861,8 @@ export default function AdminDashboardPage() {
               <AddonOrdersTable orders={data} />
             ) : tab === 'software-auctions' ? (
               <SoftwareAuctionAdminTab auctions={data} onRefresh={() => loadTab(tab)} />
+            ) : tab === 'software-auctions-takedown' ? (
+              <SoftwareAuctionTakeDownTab />
             ) : tab === 'community-auctions' ? (
               <CommunityAuctionsAdminTable auctions={data} />
             ) : tab === 'meetings' ? (
@@ -874,6 +880,26 @@ export default function AdminDashboardPage() {
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />
+            ) : tab === 'domains' ? (
+              <DomainsAdminTab
+                data={data}
+                renderItem={(item) => (
+                  <AdminRow
+                    key={`domains-${item.id}-${item.purchaseId || ''}`}
+                    item={item}
+                    tabType="domains"
+                    onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                    onTakeDown={handleTakeDown}
+                    onRestore={handleRestore}
+                    onVerifyDomain={setVerifyDomain}
+                    onVerifyVenture={setVerifyVenture}
+                    onRefresh={() => {
+                      loadTab('domains', { silent: true });
+                      refreshPendingCounts();
+                    }}
+                  />
+                )}
+              />
             ) : tab === 'requests' ? (
               <RequestsTable requests={requests} />
             ) : tab === 'cocreations' && cocreationsSubTab === 'payouts' ? (

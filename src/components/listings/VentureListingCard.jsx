@@ -506,11 +506,10 @@ export default function VentureListingCard({
 
     <article
 
-      className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white ${
-        isCoVenture 
-          ? 'venture-listing-card--coventure' 
+      className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white ${isCoVenture
+          ? 'venture-listing-card--coventure'
           : 'venture-listing-card--venture'
-      } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
+        } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
 
       onClick={interactive ? onView : undefined}
 
@@ -540,19 +539,16 @@ export default function VentureListingCard({
 
         ) : (
 
-          <div 
+          <div
 
-            className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${
-              compact ? 'p-2' : 'p-4'
-            } ${
+            className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${compact ? 'p-2' : 'p-4'
+              } ${isCoVenture
 
-              isCoVenture 
-
-                ? 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700' 
+                ? 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700'
 
                 : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800'
 
-            }`}
+              }`}
 
             aria-hidden
 
@@ -574,25 +570,23 @@ export default function VentureListingCard({
 
             </div>
 
-            
+
 
             {/* Brand Name Text */}
 
-            <span className={`relative z-10 venture-listing-card__cover-title max-w-full px-2 whitespace-normal break-words leading-tight text-center ${
-              compact ? 'venture-listing-card__cover-title--compact' : ''
-            }`}>
+            <span className={`relative z-10 venture-listing-card__cover-title max-w-full px-2 whitespace-normal break-words leading-tight text-center ${compact ? 'venture-listing-card__cover-title--compact' : ''
+              }`}>
 
               {brandName}
 
             </span>
 
-            
+
 
             {/* Subtle badge on cover */}
 
-            <span className={`relative z-10 mt-1 venture-listing-card__cover-badge uppercase ${
-              compact ? 'venture-listing-card__cover-badge--compact' : ''
-            }`}>
+            <span className={`relative z-10 mt-1 venture-listing-card__cover-badge uppercase ${compact ? 'venture-listing-card__cover-badge--compact' : ''
+              }`}>
 
               {isCoVenture ? 'Co-Venture' : 'Venture'}
 
@@ -624,13 +618,12 @@ export default function VentureListingCard({
 
 
 
-      <div className={`domain-listing-card__body flex flex-col flex-1 ${
-        compact && browseMode
+      <div className={`domain-listing-card__body flex flex-col flex-1 ${compact && browseMode
           ? 'gap-2 p-3'
           : compact
             ? 'justify-between gap-2 p-3'
             : 'justify-between gap-3 p-4'
-      }`}>
+        }`}>
 
         <div className="flex flex-col gap-2">
 
@@ -640,17 +633,14 @@ export default function VentureListingCard({
 
             {b.industry && (
 
-              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${
-                compact ? 'venture-listing-card__badge--compact' : ''
-              } ${
+              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
+                } ${isCoVenture
 
-                isCoVenture 
-
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
 
                   : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
 
-              }`}>
+                }`}>
 
                 {b.industry}
 
@@ -660,17 +650,14 @@ export default function VentureListingCard({
 
             {sellerAsk.dealTypeLabel && (
 
-              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${
-                compact ? 'venture-listing-card__badge--compact' : ''
-              } ${
+              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
+                } ${isCoVenture
 
-                isCoVenture 
-
-                  ? 'bg-teal-50 text-teal-700 border border-teal-100' 
+                  ? 'bg-teal-50 text-teal-700 border border-teal-100'
 
                   : 'bg-purple-50 text-purple-700 border border-purple-100'
 
-              }`}>
+                }`}>
 
                 {sellerAsk.dealTypeLabel}
 
@@ -687,9 +674,8 @@ export default function VentureListingCard({
           <div className="venture-listing-card__title-row flex items-start justify-between gap-2">
 
             <h3
-              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words leading-snug ${
-              compact ? 'venture-listing-card__title--compact' : ''
-              }`}
+              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words leading-snug ${compact ? 'venture-listing-card__title--compact' : ''
+                }`}
               title={brandName}
               style={{
                 display: '-webkit-box',
@@ -708,11 +694,9 @@ export default function VentureListingCard({
 
             <span
 
-              className={`w-2 h-2 rounded-full shrink-0 ${
+              className={`w-2 h-2 rounded-full shrink-0 ${venture.status === false ? 'bg-slate-300' : 'bg-emerald-500'
 
-                venture.status === false ? 'bg-slate-300' : 'bg-emerald-500'
-
-              }`}
+                }`}
 
               title={venture.status === false ? 'INACTIVE' : 'AVAILABLE'}
 
@@ -758,11 +742,10 @@ export default function VentureListingCard({
             <div className="grid grid-cols-2 gap-2 mt-1">
               {/* Equity Offered */}
               {sellerAsk.equityLabel && (
-                <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${
-                  isCoVenture 
-                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800' 
+                <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${isCoVenture
+                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800'
                     : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800'
-                }`}>
+                  }`}>
                   <span className="text-[11px] font-medium truncate">
                     {sellerAsk.equityLabel} Equity
                   </span>
@@ -780,13 +763,12 @@ export default function VentureListingCard({
               ) : null}
 
               {/* Interest/Pitches Count */}
-              <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${
-                interestCount > 0
-                  ? (isCoVenture 
-                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800' 
+              <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${interestCount > 0
+                  ? (isCoVenture
+                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800'
                     : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800')
                   : 'bg-slate-50 border-slate-100 text-slate-500'
-              }`}>
+                }`}>
                 <span className="text-[11px] font-medium truncate">
                   {formatInterestCountLabel(interestCount, isCoVenture)}
                 </span>
@@ -804,13 +786,12 @@ export default function VentureListingCard({
 
           {showPriceBox && (
 
-            <div 
+            <div
 
-              className={`domain-listing-card__price-box ${
-                isCoVenture 
-                  ? 'domain-listing-card__price-box--coventure' 
+              className={`domain-listing-card__price-box ${isCoVenture
+                  ? 'domain-listing-card__price-box--coventure'
                   : 'domain-listing-card__price-box--venture'
-              } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
+                } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
 
               style={isHomePreview ? undefined : {
                 borderRadius: compact ? '0.75rem' : '1rem',
@@ -838,9 +819,8 @@ export default function VentureListingCard({
 
                   </span>
 
-                  <span className={`domain-listing-card__price-value currency-display truncate ${
-                    compact ? 'venture-listing-card__price-value--compact' : ''
-                  }`}>
+                  <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''
+                    }`}>
 
                     {priceDisplay}
 
@@ -858,9 +838,8 @@ export default function VentureListingCard({
 
                   type="button"
 
-                  className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${
-                    compact ? 'w-6 h-6' : ''
-                  }`}
+                  className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${compact ? 'w-6 h-6' : ''
+                    }`}
 
                   aria-label={t('listingCardViewDetails', 'View details')}
 

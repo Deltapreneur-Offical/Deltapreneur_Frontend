@@ -4,7 +4,7 @@ import '../../styles/overflow-marquee.css';
 export default function OverflowMarqueeText({
   text,
   className = '',
-  minChars = 20,
+  minChars = 0,
   title,
 }) {
   const containerRef = useRef(null);

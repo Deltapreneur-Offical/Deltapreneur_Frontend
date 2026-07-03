@@ -55,11 +55,12 @@ export function hasLinkedInAccount(profile) {
 
 const BASIC_REQUIRED_FIELDS = [
   { key: 'name', aliases: ['name'] },
+  { key: 'about', aliases: ['about', 'aboutMe', 'about_me'] },
   { key: 'role', aliases: ['role'] },
   { key: 'industry', aliases: ['industry'] },
   { key: 'skills', aliases: ['skills'] },
   { key: 'location', aliases: ['location'] },
-  { key: 'linked_in_id', aliases: ['linkedInId', 'linked_in_id'] },
+  { key: 'linked_in_profile_url', aliases: ['linkedInProfileUrl', 'linked_in_profile_url', 'linkedInUrl', 'linked_in_url'] },
   { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'] },
   { key: 'expected_rate', aliases: ['expectedRate', 'expected_rate'] },
 ];
@@ -99,6 +100,22 @@ export function evaluateCreatorProfileCompletion(profile) {
     status: isComplete ? 'COMPLETE' : 'INCOMPLETE',
     missingFields,
   };
+}
+
+const VISIBILITY_REQUIRED_FIELDS = [
+  { key: 'name', aliases: ['name'] },
+  { key: 'role', aliases: ['role'] },
+  { key: 'industry', aliases: ['industry'] },
+  { key: 'skills', aliases: ['skills'] },
+  { key: 'location', aliases: ['location'] },
+  { key: 'linked_in_id', aliases: ['linkedInId', 'linked_in_id'] },
+  { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'] },
+  { key: 'expected_rate', aliases: ['expectedRate', 'expected_rate'] },
+];
+
+export function isCreatorProfileVisible(profile) {
+  if (!profile) return false;
+  return VISIBILITY_REQUIRED_FIELDS.every((field) => isCreatorFieldComplete(profile, field));
 }
 
 export function isCreatorProfileComplete(profile) {

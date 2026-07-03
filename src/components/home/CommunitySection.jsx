@@ -65,6 +65,7 @@ export default function CommunitySection() {
                 <HomePreviewCardShell accent="community">
                   <CommunityListingCard
                     profile={item}
+                    isMe={false}
                     likeState={getLike(item.id)}
                     onLike={() => toggleLike(item.id)}
                     onView={() => handleViewProfile(item.id)}

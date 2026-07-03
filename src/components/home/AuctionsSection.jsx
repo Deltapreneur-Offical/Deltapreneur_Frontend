@@ -76,7 +76,7 @@ export default function AuctionsSection() {
     navigate(resolveHomeAuctionPath(auction));
   };
 
-  const shouldAutoScroll = displayAuctions.length > 5;
+  const shouldAutoScroll = false;
 
   if (loading) {
     return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" variant="auction" />;

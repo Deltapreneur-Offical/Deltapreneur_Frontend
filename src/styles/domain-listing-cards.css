@@ -175,7 +175,6 @@
   min-width: 0;
   align-items: baseline;
   gap: 0.4rem;
-  flex: 1 1 0%;
 }
 
 .domain-listing-card__price-cta {

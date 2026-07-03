@@ -11,7 +11,6 @@
   overflow-y: visible;
   padding-top: 10px;
   padding-bottom: 1.25rem;
-  margin-inline: -0.25rem;
   padding-inline: 0.25rem;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -23,100 +22,170 @@
   display: none;
 }
 
+/* ─── Mobile < 640px: outer=1rem + inner=1rem = 2rem total each side ───────── */
 @media (max-width: 639px) {
   .home-preview-row {
+    /* negate the 2rem total container padding to bleed edge-to-edge */
     margin-left: -2rem !important;
     margin-right: -2rem !important;
-    padding-inline: 0.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1rem !important;
     width: auto !important;
   }
+<<<<<<< Updated upstream
+  .home-preview-row__item:first-child { margin-left: 1rem !important; }
+  .home-preview-row__item:last-child  { margin-right: 1rem !important; }
+=======
+
   .home-preview-row__item:first-child {
     margin-left: 1.75rem !important;
   }
+
   .home-preview-row__item:last-child {
     margin-right: 1.75rem !important;
   }
+
+>>>>>>> Stashed changes
   .home-auto-scroll-row {
     margin-left: -2rem !important;
     margin-right: -2rem !important;
-    padding-inline: 0.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1rem !important;
     width: auto !important;
+  }
+  .home-auto-scroll-row__viewport {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
   }
 }
 
+/* ─── Large phone 640–767px: outer=1.5rem + inner=1.5rem = 3rem each side ─── */
 @media (min-width: 640px) and (max-width: 767px) {
   .home-preview-row {
     margin-left: -3rem !important;
     margin-right: -3rem !important;
-    padding-inline: 0.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1rem !important;
     width: auto !important;
   }
+<<<<<<< Updated upstream
+  .home-preview-row__item:first-child { margin-left: 1rem !important; }
+  .home-preview-row__item:last-child  { margin-right: 1rem !important; }
+=======
+
   .home-preview-row__item:first-child {
     margin-left: 2.75rem !important;
   }
+
   .home-preview-row__item:last-child {
     margin-right: 2.75rem !important;
   }
+
+>>>>>>> Stashed changes
   .home-auto-scroll-row {
     margin-left: -3rem !important;
     margin-right: -3rem !important;
-    padding-inline: 0.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1rem !important;
     width: auto !important;
+  }
+  .home-auto-scroll-row__viewport {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
   }
 }
 
+/* ─── Tablet 768–1023px: outer=2.5rem+1.25rem, inner=1rem each side ─────────
+   left total=3.5rem, right total=2.25rem → negate both                        */
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-preview-row {
-    margin-left: -4rem !important;
-    margin-right: -2.75rem !important;
-    padding-inline: 0.25rem !important;
+    margin-left: -3.5rem !important;
+    margin-right: -2.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1.25rem !important;
     width: auto !important;
   }
+<<<<<<< Updated upstream
+  .home-preview-row__item:first-child { margin-left: 1.25rem !important; }
+  .home-preview-row__item:last-child  { margin-right: 1.25rem !important; }
+=======
+
   .home-preview-row__item:first-child {
     margin-left: 3.75rem !important;
   }
+
   .home-preview-row__item:last-child {
     margin-right: 2.5rem !important;
   }
+
+>>>>>>> Stashed changes
   .home-auto-scroll-row {
-    margin-left: -4rem !important;
-    margin-right: -2.75rem !important;
-    padding-inline: 0.25rem !important;
+    margin-left: -3.5rem !important;
+    margin-right: -2.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1.25rem !important;
     width: auto !important;
+  }
+  .home-auto-scroll-row__viewport {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    box-sizing: border-box;
   }
 }
 
+/* ─── Desktop ≥ 1024px: outer=5rem+2rem, inner=2rem each side ───────────────*/
 @media (min-width: 1024px) {
   .home-preview-row.home-preview-row--always-scroll {
     margin-left: -7rem !important;
     margin-right: -4rem !important;
-    padding-inline: 0.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1.25rem !important;
     width: auto !important;
   }
+
   .home-preview-row.home-preview-row--always-scroll .home-preview-row__item:first-child {
-    margin-left: 6.75rem !important;
+    margin-left: 1.5rem !important;
   }
+
   .home-preview-row.home-preview-row--always-scroll .home-preview-row__item:last-child {
-    margin-right: 3.75rem !important;
+    margin-right: 1.5rem !important;
   }
+
   .home-auto-scroll-row {
     margin-left: -7rem !important;
     margin-right: -4rem !important;
-    padding-inline: 0.25rem !important;
+    padding-inline: 0 !important;
+    gap: 1.25rem !important;
     width: auto !important;
+  }
+  .home-auto-scroll-row__viewport {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    box-sizing: border-box;
   }
 }
 
+/* ─── Card item widths ───────────────────────────────────────────────────────
+   Mobile < 640px:
+     card = 100vw - 1rem(left) - 1rem(gap) - ~0.5rem(next-card peek) = 100vw - 2.5rem
+   Large phone 640–767px:
+     card = 100vw - 1rem(left) - 1rem(gap) - ~0.5rem(peek) = 100vw - 2.5rem
+   Tablet 768–1023px:  2 cards per view
+     card = (100vw - 1.25rem(left) - 1.25rem(gap) - 1.25rem(right)) / 2 = 50vw - 1.875rem
+   Desktop ≥ 1024px: fixed comfortable width                                    */
+
 .home-preview-row__item {
   flex: 0 0 auto;
-  width: min(86vw, 300px);
+  width: calc(100vw - 2.5rem);   /* phone: 1 card fills view, ~8px peek of next */
   scroll-snap-align: start;
   scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
   overflow: visible;
   box-sizing: border-box;
-  padding: 4px 4px 8px;
+  padding: 4px 2px 8px;
 }
 
 .home-preview-row__card {
@@ -128,16 +197,31 @@
   box-sizing: border-box;
 }
 
+/* Tablet 640–767px: same 1-card formula, same width */
+@media (min-width: 640px) and (max-width: 767px) {
+  .home-preview-row__item {
+    width: calc(100vw - 2.5rem);
+  }
+}
+
+/* Tablet 768px+: exactly 2 cards */
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-preview-row__item {
-    width: min(42vw, 292px);
+    width: calc(50vw - 1.875rem);
+  }
+}
+
+/* Desktop: fixed comfortable width */
+@media (min-width: 1024px) {
+  .home-preview-row__item {
+    width: min(300px, 30vw);
   }
 }
 
 @media (min-width: 1024px) {
   .home-preview-row {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
     overflow-x: visible;
     overflow-y: visible;
     margin-inline: 0;
@@ -304,10 +388,10 @@
   border-radius: 1.5rem;
   border: 1px solid #e5e7eb !important;
   background: #ffffff !important;
-  box-shadow: none !important;
+  box-shadow: none;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.06);
+    0 4px 12px rgba(15, 23, 42, 0.08),
+    0 2px 4px rgba(15, 23, 42, 0.04);
   box-sizing: border-box;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -320,7 +404,10 @@
 .home-preview-card-border:hover {
   border: 1px solid #e5e7eb !important;
   background: #ffffff !important;
-  box-shadow: none !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 16px 36px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset !important;
 }
 
 .home-preview-card-border:hover .home-feature-card-beam-spinner {
@@ -487,8 +574,8 @@
 }
 
 /* Ensure home auction preview cards stretch to fill the inner border wrapper */
-.home-preview-card-border__inner > .home-auction-preview-card,
-.home-preview-card-border__inner > article.home-auction-preview-card {
+.home-preview-card-border__inner>.home-auction-preview-card,
+.home-preview-card-border__inner>article.home-auction-preview-card {
   flex: 1 1 auto !important;
   height: 100% !important;
 }
@@ -1072,9 +1159,21 @@
 .home-preview-row .home-preview-card-border__inner .card-glow-hover:hover,
 .home-auto-scroll-row .home-preview-card-border__inner .card-glow-hover:hover {
   transform: none !important;
-  box-shadow: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
+    0 22px 50px rgba(15, 23, 42, 0.14),
+    0 8px 26px rgba(15, 23, 42, 0.08) !important;
   border: none !important;
-  background-color: #fff !important;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(241, 245, 255, 0.5) 56%,
+      rgba(224, 231, 255, 0.78) 100%),
+    linear-gradient(135deg,
+      rgba(56, 189, 248, 0.12) 0%,
+      rgba(99, 102, 241, 0.08) 48%,
+      rgba(168, 85, 247, 0.12) 100%) !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__cover-img,
@@ -1854,7 +1953,7 @@
 
 .home-auto-scroll-row__track {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 1rem;
   width: max-content;
   will-change: transform;
@@ -1932,19 +2031,44 @@
 
 .home-auto-scroll-row__item {
   flex: 0 0 auto;
-  width: min(86vw, 300px);
+  /* Phone default: 1 card fills the view — matches .home-preview-row__item */
+  width: calc(100vw - 2.5rem);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow: visible;
-  padding: 4px 4px 8px;
+  padding: 4px 2px 8px;
 }
 
+<<<<<<< HEAD
 .home-auto-scroll-row__item:has(.community-listing-card) {
   width: min(90vw, 360px); /* Mobile: 1 full card */
 }
 
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border,
+=======
+/* Large phone 640–767px: 1 card per view */
+@media (min-width: 640px) and (max-width: 767px) {
+  .home-auto-scroll-row__item {
+    width: calc(100vw - 2.5rem);
+  }
+}
+
+/* Tablet 768px+: exactly 2 cards per view — matches .home-preview-row__item */
+/* Formula: (100vw - 1.25rem left - 1.25rem gap - 1.25rem right) / 2 = 50vw - 1.875rem */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-auto-scroll-row__item {
+    width: calc(50vw - 1.875rem);
+  }
+}
+
+/* Desktop: comfortable fixed width */
+@media (min-width: 1024px) {
+  .home-auto-scroll-row__item {
+    width: min(22vw, 280px);
+  }
+}
+>>>>>>> ae94db6585bdc711d112abd473394378ded60231
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border__inner,
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-shell,
 .home-auto-scroll-row__item:has(.community-listing-card) .home-preview-card-border,
@@ -1968,6 +2092,7 @@
   height: 100%;
 }
 
+<<<<<<< HEAD
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-auto-scroll-row__item {
     width: min(42vw, 292px);
@@ -1985,6 +2110,8 @@
     width: 380px; /* Desktop: 3 full cards */
   }
 }
+=======
+>>>>>>> ae94db6585bdc711d112abd473394378ded60231
 
 @keyframes home-auto-scroll-row-marquee {
   0% {
@@ -2020,8 +2147,20 @@
 .home-preview-row .home-auction-preview-card--home-preview:hover,
 .home-preview-card-border__inner .home-auction-preview-card--home-preview:hover {
   transform: translateY(-2px) translateZ(0);
-  background: #ffffff !important;
-  box-shadow: none !important;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(241, 245, 255, 0.5) 56%,
+      rgba(224, 231, 255, 0.78) 100%),
+    linear-gradient(135deg,
+      rgba(56, 189, 248, 0.12) 0%,
+      rgba(99, 102, 241, 0.08) 48%,
+      rgba(168, 85, 247, 0.12) 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
+    0 22px 50px rgba(15, 23, 42, 0.14),
+    0 8px 26px rgba(15, 23, 42, 0.08) !important;
 }
 
 /* ─── Homepage preview skeleton — neutral shell, no section accent until loaded ─── */
@@ -2127,4 +2266,9 @@
   .home-preview-card-skeleton .animate-shimmer {
     animation: none;
   }
+<<<<<<< Updated upstream
 }
+
+=======
+}
+>>>>>>> Stashed changes

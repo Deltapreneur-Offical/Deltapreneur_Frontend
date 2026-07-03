@@ -1,5 +1,5 @@
 import { asArray } from './asArray';
-import { isCreatorProfileComplete } from './creatorProfile';
+import { isCreatorProfileComplete, isCreatorProfileVisible } from './creatorProfile';
 import { isPublicMarketplaceListing } from './listingVisibility';
 
 /** Whether a listing is visible on marketplace browse pages and can be homepage-featured. */
@@ -59,7 +59,7 @@ export function isHomepageVerifiedListing(item, type = 'domain') {
     return status === 'APPROVED';
   }
   if (type === 'community') {
-    return isCreatorProfileComplete(item);
+    return isCreatorProfileVisible(item);
   }
   return Boolean(item.verified);
 }

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
-import { isCreatorProfileComplete } from '../../utils/creatorProfile';
+import { isCreatorProfileComplete, isCreatorProfileVisible } from '../../utils/creatorProfile';
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
@@ -61,7 +61,7 @@ export default function CommunityListingCard({
   const cardRef = useRef(null);
 
   if (!profile) return null;
-  if (!isMe && !isCreatorProfileComplete(profile)) return null;
+  if (!isMe && !isCreatorProfileVisible(profile)) return null;
 
   const imageUrl = profile.imageUrl || profile.image_url || null;
   const coverImageUrl =
@@ -126,7 +126,7 @@ export default function CommunityListingCard({
           <div className="creator-profile-card__header-right">
              <div className="creator-profile-card__name-section">
                 <h3 className="creator-profile-card__name" title={profile.name || undefined}>
-                  {profile.name || t('listingCardAnonymous')}
+                  <OverflowMarqueeText text={profile.name || t('listingCardAnonymous')} />
                 </h3>
                 <div className="creator-profile-card__badge-slot">
                   {isMe ? (

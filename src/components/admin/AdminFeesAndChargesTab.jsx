@@ -2,9 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminAPI } from '../../api/services';
 
-/**
- * All editable fee keys persisted via GET/PUT /api/v1/auction-fees/listing-fees-and-charges.
- */
 const EDITABLE_KEYS = [
   'listingCommissionPercent',
   'auctionCreationFeeInr',
@@ -13,196 +10,189 @@ const EDITABLE_KEYS = [
   'ventureAcquisitionCommissionPercent',
 ];
 
-/**
- * Platform-wide auction fees — displayed once at the top, not repeated per product.
- */
-const PLATFORM_AUCTION_FIELDS = [
-  {
-    key: 'auctionCreationFeeInr',
-    label: 'Auction creation fee (INR)',
-    hint: 'One-time fee paid by the seller when publishing an auction. Applies to Domain, Technology, and Creator auctions.',
-  },
-  {
-    key: 'auctionBidFeeInr',
-    label: 'Auction bid fee (INR)',
-    hint: 'Charged to the bidder each time they place a bid. Applies to all auction types.',
-  },
-];
-
-/**
- * Product sections — only show fees that are UNIQUE to that product.
- * Platform auction fees are NOT repeated here.
- */
-const PRODUCT_SECTIONS = [
-  {
-    id: 'marketplace',
-    icon: '🏷️',
-    title: 'Marketplace listing commission',
-    description:
-      "Percentage markup on the seller's asking price for fixed-price listings. The buyer sees the final price including commission.",
-    usageNote: null,
-    appliesTo: [
-      'Domains — buy-now / marketplace listings (DomainsPage)',
-      'Technology — Co-Creation fixed-price listings (CoCreationPage)',
-    ],
-    fields: [
-      {
-        key: 'listingCommissionPercent',
-        label: 'Listing commission (%)',
-        hint: 'Not used for venture acquisition listings (see Ventures below).',
-      },
-    ],
-  },
-  {
-    id: 'domains',
-    icon: '🌐',
-    title: 'Domains',
-    description:
-      'Domain buy-now listings use the marketplace commission. Domain auctions use the platform-wide creation and bid fees above — there are no separate domain-specific fees.',
-    usageNote: 'Uses platform auction fees only — no unique domain fees.',
-    appliesTo: [
-      'Seller lists auction → creation fee (DomainsPage, AuctionPage)',
-      'Bidder places each bid → bid fee (AuctionPage)',
-    ],
-    fields: [],
-  },
-  {
-    id: 'technology',
-    icon: '⚙️',
-    title: 'Technology (Co-Creation)',
-    description:
-      'Fixed-price listings use marketplace commission. Software auctions use the platform-wide creation and bid fees above — there are no separate technology-specific fees.',
-    usageNote: 'Uses platform auction fees only — no unique technology fees.',
-    appliesTo: [
-      'Seller requests auction → creation fee (SoftwareAuctionRequestModal)',
-      'Bidder places each bid → bid fee (SoftwareAuctionPage)',
-    ],
-    fields: [],
-  },
-  {
-    id: 'creator',
-    icon: '✨',
-    title: 'Creator (Community)',
-    description:
-      'Creator profile auctions use platform-wide creation and bid fees. The fee below is specific to Creator — it applies only when a company requests a meeting on a creator auction page.',
-    usageNote: 'Also uses platform auction fees for auction creation and bidding.',
-    appliesTo: [
-      'Seller starts auction → creation fee (CommunityPage)',
-      'Bidder places each bid → bid fee (CommunityAuctionPage)',
-      'Bidder requests a meeting → meeting request fee (CommunityAuctionPage)',
-    ],
-    fields: [
-      {
-        key: 'communityParticipationFeeInr',
-        label: 'Meeting request fee (INR)',
-        hint: 'One-time fee to request a meeting on a creator auction. Not charged for placing bids.',
-      },
-    ],
-  },
-  {
-    id: 'ventures',
-    icon: '🚀',
-    title: 'Ventures',
-    description:
-      'Acquisition and equity sale listings. Co-venture (partnership) listings have no platform fees at selection.',
-    usageNote: null,
-    appliesTo: [
-      'Venture listing form → commission deducted from seller asking price (VentureForm)',
-      'Venture deal checkout → same rate applied on deal completion',
-    ],
-    fields: [
-      {
-        key: 'ventureAcquisitionCommissionPercent',
-        label: 'Acquisition commission (%)',
-        hint: "Deducted from the seller's asking price (not added to buyer price).",
-      },
-    ],
-  },
-];
-
-function normalizeFees(src = {}) {
-  return Object.fromEntries(EDITABLE_KEYS.map((key) => [key, src[key] ?? '']));
-}
-
-function FeeInput({ fieldKey, label, hint, value, onChange }) {
+/* ─── Reusable input ─────────────────────────────────────────────────────── */
+function FeeInput({ fieldKey, label, hint, value, onChange, prefix, suffix, highlight }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-      <label htmlFor={`fee-${fieldKey}`} className="block text-xs font-semibold text-gray-800 mb-1">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        padding: '14px 16px',
+        borderRadius: 12,
+        border: highlight ? '1.5px solid #a78bfa' : '1px solid #e5e7eb',
+        background: highlight ? '#faf5ff' : '#f9fafb',
+        transition: 'background 0.15s',
+      }}
+    >
+      <label
+        htmlFor={`fee-${fieldKey}`}
+        style={{ fontSize: 11, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+      >
         {label}
       </label>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        {prefix && (
+          <span style={{
+            position: 'absolute', left: 10, fontSize: 13, color: '#6b7280', fontWeight: 600, pointerEvents: 'none',
+          }}>
+            {prefix}
+          </span>
+        )}
+        <input
+          id={`fee-${fieldKey}`}
+          type="number"
+          min="0"
+          step="any"
+          value={value ?? ''}
+          onChange={(e) => onChange(fieldKey, e.target.value)}
+          style={{
+            width: '100%',
+            padding: `8px ${suffix ? 44 : 12}px 8px ${prefix ? 28 : 12}px`,
+            borderRadius: 8,
+            border: '1px solid #d1d5db',
+            background: '#fff',
+            fontSize: 14,
+            fontWeight: 700,
+            color: '#111827',
+            outline: 'none',
+            boxSizing: 'border-box',
+          }}
+          onFocus={(e) => (e.target.style.borderColor = '#8b5cf6')}
+          onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
+        />
+        {suffix && (
+          <span style={{
+            position: 'absolute', right: 10, fontSize: 11, color: '#9ca3af', fontWeight: 700, pointerEvents: 'none',
+          }}>
+            {suffix}
+          </span>
+        )}
+      </div>
       {hint && (
-        <p className="text-[0.65rem] text-gray-400 mb-2 m-0 leading-snug">{hint}</p>
+        <p style={{ fontSize: 11, color: '#6b7280', margin: 0, lineHeight: 1.5 }}>{hint}</p>
       )}
-      <input
-        id={`fee-${fieldKey}`}
-        type="number"
-        min="0"
-        step="any"
-        value={value ?? ''}
-        onChange={(e) => onChange(fieldKey, e.target.value)}
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-gray-50/50 focus:bg-white focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none"
-      />
     </div>
   );
 }
 
-function PlatformFeeChip() {
+/* ─── Product section card ───────────────────────────────────────────────── */
+function ProductCard({ emoji, title, subtitle, accentColor, children }) {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
+    <section style={{
+      borderRadius: 16,
+      border: `1.5px solid ${accentColor}22`,
+      background: '#fff',
+      overflow: 'hidden',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    }}>
+      {/* Header strip */}
+      <div style={{
+        display: 'flex',
         alignItems: 'center',
-        gap: '0.3rem',
-        fontSize: '0.7rem',
-        fontWeight: 600,
-        color: '#4338ca',
-        background: '#eef2ff',
-        border: '1px solid #c7d2fe',
-        borderRadius: '9999px',
-        padding: '0.2rem 0.55rem',
-        marginTop: '0.5rem',
-      }}
-    >
-      <span aria-hidden>🔨</span> Uses platform auction fees
-    </span>
+        gap: 12,
+        padding: '14px 20px',
+        background: `${accentColor}10`,
+        borderBottom: `1.5px solid ${accentColor}22`,
+      }}>
+        <span style={{ fontSize: 22 }}>{emoji}</span>
+        <div>
+          <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#111827' }}>{title}</h4>
+          <p style={{ margin: 0, fontSize: 11, color: '#6b7280', marginTop: 2 }}>{subtitle}</p>
+        </div>
+      </div>
+      {/* Body */}
+      <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {children}
+      </div>
+    </section>
   );
 }
 
+/* ─── Fee row: read-only reference badge ────────────────────────────────── */
+function SharedFeeBadge({ label, description }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: 10,
+      padding: '10px 14px',
+      borderRadius: 10,
+      background: '#f5f3ff',
+      border: '1px dashed #c4b5fd',
+    }}>
+      <span style={{ fontSize: 14, marginTop: 1 }}>🔗</span>
+      <div>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6d28d9' }}>{label}</p>
+        <p style={{ margin: 0, fontSize: 11, color: '#7c3aed', marginTop: 2, opacity: 0.8 }}>{description}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Info row: non-editable explanation ────────────────────────────────── */
+function InfoRow({ emoji, label, description, value }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      padding: '10px 14px',
+      borderRadius: 10,
+      background: '#f9fafb',
+      border: '1px solid #e5e7eb',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: 14 }}>{emoji}</span>
+        <div>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#374151' }}>{label}</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#6b7280', marginTop: 2 }}>{description}</p>
+        </div>
+      </div>
+      {value != null && (
+        <span style={{
+          fontSize: 12, fontWeight: 800, color: '#374151',
+          background: '#e5e7eb', borderRadius: 8, padding: '3px 10px', whiteSpace: 'nowrap',
+        }}>
+          {value}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ─── Main component ─────────────────────────────────────────────────────── */
 export default function AdminFeesAndChargesTab() {
   const { t } = useTranslation();
-  const [fees, setFees] = useState(() => normalizeFees());
+  const [fees, setFees] = useState(() => Object.fromEntries(EDITABLE_KEYS.map((k) => [k, ''])));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const loadFees = useCallback(() => {
     setLoading(true);
-    return adminAPI.getListingFeesAndCharges()
+    return adminAPI
+      .getListingFeesAndCharges()
       .then(({ data }) => {
         const src = data?.data ?? data ?? {};
-        setFees(normalizeFees(src));
+        setFees(Object.fromEntries(EDITABLE_KEYS.map((key) => [key, src[key] ?? ''])));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    loadFees();
-  }, [loadFees]);
+  useEffect(() => { loadFees(); }, [loadFees]);
 
-  const handleFieldChange = (key, value) => {
-    setFees((prev) => ({ ...prev, [key]: value }));
-  };
+  const handleFieldChange = (key, value) => setFees((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const payload = Object.fromEntries(
-        EDITABLE_KEYS.map((key) => [key, Number(fees[key])]),
-      );
+      const payload = Object.fromEntries(EDITABLE_KEYS.map((key) => [key, Number(fees[key])]));
       const { data } = await adminAPI.updateListingFeesAndCharges(payload);
       const saved = data?.data ?? data ?? {};
-      setFees(normalizeFees(saved));
-      alert(t('adminFeesUpdated', 'Fees updated.'));
+      setFees(Object.fromEntries(EDITABLE_KEYS.map((key) => [key, saved[key] ?? ''])));
+      alert(t('adminFeesUpdated', 'Fees updated successfully.'));
     } catch (e) {
       alert(e?.response?.data?.error || t('adminFeesUpdateFailed', 'Failed to update fees.'));
     } finally {
@@ -211,147 +201,252 @@ export default function AdminFeesAndChargesTab() {
   };
 
   if (loading) {
-    return <p className="text-gray-500 py-8 text-center">Loading fees…</p>;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #ede9fe', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} />
+        <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>Loading configuration…</p>
+      </div>
+    );
   }
 
+  const fmt = (v, prefix = '') => (v !== '' && v != null ? `${prefix}${v}` : '—');
+
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      {/* Page header */}
-      <div className="px-5 sm:px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white">
-        <h3 className="font-display text-xl font-bold text-gray-900 m-0 mb-1">Fees &amp; Charges</h3>
-        <p className="text-sm text-gray-600 m-0 max-w-3xl">
-          Configure fees by product line. Platform-wide auction fees apply to all auction types and are set once below.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* ── Page Header ─────────────────────────────────────────────────── */}
+      <div style={{ paddingBottom: 16, borderBottom: '1px solid #f1f5f9' }}>
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>Fees &amp; Charges</h3>
+        <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6b7280', maxWidth: 600, lineHeight: 1.6 }}>
+          All platform fees are listed below, grouped by product. Changes you make here apply
+          immediately across the entire platform. Each section clearly shows <strong>who pays</strong> the
+          fee and <strong>when</strong> it is charged.
         </p>
       </div>
 
-      <div className="p-5 sm:p-6 flex flex-col gap-6">
+      {/* ── 1. DOMAINS ──────────────────────────────────────────────────── */}
+      <ProductCard
+        emoji="🌐"
+        title="Domains"
+        subtitle="Buy-now domain listings on the marketplace (DomainsPage)"
+        accentColor="#0ea5e9"
+      >
+        <FeeInput
+          fieldKey="listingCommissionPercent"
+          label="Marketplace Commission"
+          hint="Added on top of the seller's asking price. The buyer sees the final (higher) price. Example: if seller sets ₹10,000 and commission is 15%, buyer pays ₹11,500."
+          value={fees.listingCommissionPercent}
+          onChange={handleFieldChange}
+          suffix="%"
+        />
+        <InfoRow
+          emoji="💡"
+          label="Who pays this?"
+          description="The buyer pays the commission as part of the total purchase price. The seller receives their original asking amount."
+        />
+        <SharedFeeBadge
+          label="Auction fees also apply to Domain Auctions"
+          description="If a domain is listed as an auction (not buy-now), the Auction Creation Fee and Bid Fee below apply instead of the commission above."
+        />
+      </ProductCard>
 
-        {/* ── Platform-wide auction fees ── shown ONCE, at the top */}
-        <section
-          style={{
-            border: '1.5px solid #c7d2fe',
-            borderRadius: '0.875rem',
-            overflow: 'hidden',
-            background: 'linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%)',
-          }}
+      {/* ── 2. VENTURES ─────────────────────────────────────────────────── */}
+      <ProductCard
+        emoji="🚀"
+        title="Ventures"
+        subtitle="Venture acquisition deals and equity transfers (VenturesPage)"
+        accentColor="#8b5cf6"
+      >
+        <FeeInput
+          fieldKey="ventureAcquisitionCommissionPercent"
+          label="Acquisition Commission"
+          hint="Deducted from the seller's payout when a venture deal is completed. Example: if a venture sells for ₹5,00,000 and commission is 10%, the seller receives ₹4,50,000."
+          value={fees.ventureAcquisitionCommissionPercent}
+          onChange={handleFieldChange}
+          suffix="%"
+        />
+        <InfoRow
+          emoji="💡"
+          label="Who pays this?"
+          description="The seller pays this. It is automatically deducted from the transaction payout at the time of deal completion."
+        />
+        <InfoRow
+          emoji="ℹ️"
+          label="Commission is NOT applied to"
+          description="Regular venture listings on the marketplace. This commission only triggers when a formal acquisition/equity transfer deal is closed."
+        />
+      </ProductCard>
+
+      {/* ── 3. TECHNOLOGY (Co-Creation) ─────────────────────────────────── */}
+      <ProductCard
+        emoji="💻"
+        title="Technology / Co-Creation"
+        subtitle="Software & hardware listings on the Co-Creation marketplace (CoCreationPage)"
+        accentColor="#10b981"
+      >
+        <InfoRow
+          emoji="🏷️"
+          label="Marketplace Commission (shared with Domains)"
+          description={`Same commission rate as Domains applies here for buy-now technology listings. Current rate: ${fmt(fees.listingCommissionPercent, '')}%`}
+          value={`${fmt(fees.listingCommissionPercent, '')}%`}
+        />
+        <SharedFeeBadge
+          label="Auction fees also apply to Technology Auctions"
+          description="If a technology item is listed as an auction (via SoftwareAuctionRequestModal), the Auction Creation Fee and Bid Fee below apply."
+        />
+        <InfoRow
+          emoji="💡"
+          label="Who pays this?"
+          description="The buyer pays the commission on top of the listing price, same as domain buy-now purchases."
+        />
+      </ProductCard>
+
+      {/* ── 4. CREATOR AUCTIONS ─────────────────────────────────────────── */}
+      <ProductCard
+        emoji="🎨"
+        title="Creator Auctions"
+        subtitle="Creators listing themselves for acquisition or collaboration (CommunityPage → AuctionPage)"
+        accentColor="#f59e0b"
+      >
+        <SharedFeeBadge
+          label="Uses the platform-wide Auction Creation Fee and Bid Fee"
+          description="Creator auctions share the same fee structure as all other auctions. Configure those amounts in the 'Platform-Wide Auction Fees' section below."
+        />
+        <FeeInput
+          fieldKey="communityParticipationFeeInr"
+          label="Meeting Request Fee"
+          hint="A company pays this fee when requesting a 1-on-1 meeting or consultation with a creator through their auction profile. This is separate from bidding — it covers the creator's time for a scheduled meeting."
+          value={fees.communityParticipationFeeInr}
+          onChange={handleFieldChange}
+          prefix="₹"
+          suffix="INR"
+        />
+        <InfoRow
+          emoji="💡"
+          label="Who pays the Meeting Request Fee?"
+          description="The company (requester) pays this fee upfront when submitting a meeting request. It does not affect the creator's earnings from the auction itself."
+        />
+      </ProductCard>
+
+      {/* ── 5. PLATFORM-WIDE AUCTION FEES ───────────────────────────────── */}
+      <ProductCard
+        emoji="🔨"
+        title="Platform-Wide Auction Fees"
+        subtitle="These apply to ALL auction types: Domain Auctions, Technology Auctions, and Creator Auctions"
+        accentColor="#ef4444"
+      >
+        <div style={{
+          padding: '10px 14px',
+          borderRadius: 10,
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          fontSize: 12,
+          color: '#991b1b',
+          marginBottom: 4,
+          lineHeight: 1.6,
+        }}>
+          ⚠️ <strong>Important:</strong> Changing these fees affects <em>every</em> auction category simultaneously
+          — Domains, Technology, and Creator auctions all use the same values set here.
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+          <FeeInput
+            fieldKey="auctionCreationFeeInr"
+            label="Auction Creation Fee"
+            hint="One-time fee paid by the SELLER when they publish/list a new auction. Charged once per auction, regardless of outcome."
+            value={fees.auctionCreationFeeInr}
+            onChange={handleFieldChange}
+            prefix="₹"
+            suffix="INR"
+            highlight
+          />
+          <FeeInput
+            fieldKey="auctionBidFeeInr"
+            label="Bid Placement Fee"
+            hint="Fee paid by the BIDDER each time they place a bid on any active auction. Charged per bid, not per auction."
+            value={fees.auctionBidFeeInr}
+            onChange={handleFieldChange}
+            prefix="₹"
+            suffix="INR"
+            highlight
+          />
+        </div>
+
+        {/* Who pays what summary */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginTop: 4 }}>
+          <InfoRow
+            emoji="🧑‍💼"
+            label="Seller pays"
+            description="Auction Creation Fee — once, when they list the auction."
+          />
+          <InfoRow
+            emoji="🙋"
+            label="Bidder pays"
+            description="Bid Placement Fee — every time they submit a bid."
+          />
+        </div>
+
+        {/* Applies to list */}
+        <div style={{
+          padding: '10px 14px',
+          borderRadius: 10,
+          background: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          fontSize: 12,
+          color: '#166534',
+          lineHeight: 1.8,
+        }}>
+          ✅ <strong>Applies to:</strong><br />
+          • <strong>Domain Auctions</strong> — listed on DomainsPage / AuctionPage<br />
+          • <strong>Technology Auctions</strong> — listed via SoftwareAuctionRequestModal<br />
+          • <strong>Creator Auctions</strong> — listed on CommunityPage / CommunityAuctionPage
+        </div>
+      </ProductCard>
+
+      {/* ── Summary strip ───────────────────────────────────────────────── */}
+      <div style={{
+        borderRadius: 12,
+        border: '1px solid #e5e7eb',
+        background: '#f9fafb',
+        padding: '14px 20px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: 12,
+      }}>
+        {[
+          { label: 'Marketplace Commission', value: `${fmt(fees.listingCommissionPercent, '')}%`, color: '#0ea5e9' },
+          { label: 'Venture Acquisition Commission', value: `${fmt(fees.ventureAcquisitionCommissionPercent, '')}%`, color: '#8b5cf6' },
+          { label: 'Auction Creation Fee', value: fmt(fees.auctionCreationFeeInr, '₹'), color: '#ef4444' },
+          { label: 'Bid Placement Fee', value: fmt(fees.auctionBidFeeInr, '₹'), color: '#ef4444' },
+          { label: 'Meeting Request Fee', value: fmt(fees.communityParticipationFeeInr, '₹'), color: '#f59e0b' },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color }}>{value}</p>
+            <p style={{ margin: 0, fontSize: 10, color: '#6b7280', marginTop: 3, lineHeight: 1.4 }}>{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Footer / Save ────────────────────────────────────────────────── */}
+      <div style={{
+        paddingTop: 16,
+        borderTop: '1px solid #f1f5f9',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        flexWrap: 'wrap',
+      }}>
+        <p style={{ margin: 0, fontSize: 11, color: '#9ca3af', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {EDITABLE_KEYS.length} configurable fees
+        </p>
+        <button
+          type="button"
+          className="btn-professional-sm"
+          onClick={handleSave}
+          disabled={saving}
         >
-          <div
-            style={{
-              padding: '0.875rem 1.25rem',
-              borderBottom: '1px solid #ddd6fe',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.75rem',
-            }}
-          >
-            <span style={{ fontSize: '1.25rem', flexShrink: 0, marginTop: '0.125rem' }} aria-hidden>🔨</span>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <h4 className="font-semibold text-gray-900 m-0">Auction fees</h4>
-                <span
-                  style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    color: '#4338ca',
-                    background: '#e0e7ff',
-                    border: '1px solid #c7d2fe',
-                    borderRadius: '9999px',
-                    padding: '0.1rem 0.45rem',
-                  }}
-                >
-                  Platform-wide
-                </span>
-              </div>
-              <p className="text-xs text-gray-600 mt-1 m-0 leading-relaxed">
-                Shared across <strong>all</strong> auction types — domain, technology, and creator.
-                Sellers pay the creation fee once when publishing; bidders pay the bid fee on every bid.
-              </p>
-            </div>
-          </div>
-          <div className="p-4 sm:p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {PLATFORM_AUCTION_FIELDS.map(({ key, label, hint }) => (
-                <FeeInput
-                  key={key}
-                  fieldKey={key}
-                  label={label}
-                  hint={hint}
-                  value={fees[key]}
-                  onChange={handleFieldChange}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Product-specific sections ── */}
-        {PRODUCT_SECTIONS.map((section) => {
-          const hasUniqueFields = section.fields.length > 0;
-
-          return (
-            <section
-              key={section.id}
-              className="rounded-xl border border-gray-200 overflow-hidden"
-            >
-              {/* Section header */}
-              <div className="px-4 py-3 sm:px-5 bg-gray-50/80 border-b border-gray-100">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl shrink-0 mt-0.5" aria-hidden>{section.icon}</span>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-semibold text-gray-900 m-0">{section.title}</h4>
-                    <p className="text-xs text-gray-600 mt-1 m-0 leading-relaxed">{section.description}</p>
-                    {section.appliesTo?.length > 0 && (
-                      <ul className="mt-2 mb-0 pl-4 text-[0.7rem] text-gray-500 space-y-0.5 list-disc">
-                        {section.appliesTo.map((line) => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {section.usageNote && <PlatformFeeChip />}
-                  </div>
-                </div>
-              </div>
-
-              {/* Section body — only if there are unique editable fields */}
-              {hasUniqueFields && (
-                <div className="p-4 sm:p-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {section.fields.map(({ key, label, hint }) => (
-                      <FeeInput
-                        key={key}
-                        fieldKey={key}
-                        label={label}
-                        hint={hint}
-                        value={fees[key]}
-                        onChange={handleFieldChange}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* If no unique fields — compact info note */}
-              {!hasUniqueFields && (
-                <div className="px-4 sm:px-5 py-3">
-                  <p className="text-xs text-gray-400 m-0 italic">
-                    No unique fees for this product line. All auction fees are configured in the platform-wide section above.
-                  </p>
-                </div>
-              )}
-            </section>
-          );
-        })}
-      </div>
-
-      {/* Footer with save */}
-      <div className="px-5 sm:px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-gray-500 m-0">
-          {EDITABLE_KEYS.length} active fee settings
-        </p>
-        <button type="button" className="btn-glow btn-glow-sm" onClick={handleSave} disabled={saving}>
-          {saving ? t('adminSaving', 'Saving…') : t('adminSaveFees', 'Save fees')}
+          {saving ? t('adminSaving', 'Saving…') : t('adminSaveFees', 'Save All Fees')}
         </button>
       </div>
     </div>

@@ -180,11 +180,10 @@
   font-weight: 800;
   line-height: 1.25;
   color: #0f172a;
-  width: auto;
+  width: 100%;
   display: block;
-  white-space: normal; /* Allow wrapping */
-  word-break: normal; 
-  overflow-wrap: break-word;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .creator-profile-card__badge-slot {

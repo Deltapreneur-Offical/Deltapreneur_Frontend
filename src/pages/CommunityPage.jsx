@@ -25,6 +25,7 @@ import {
   getLinkedInProfileUrl,
   hasLinkedInAccount,
   isCreatorProfileComplete,
+  isCreatorProfileVisible,
 } from '../utils/creatorProfile';
 import { isListingOwner } from '../utils/listingVisibility';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
@@ -229,7 +230,7 @@ export default function CommunityPage() {
   const effectiveMyProfile = myProfile ?? ownedProfileInList;
 
   const profilesForDisplay = useMemo(() => {
-    const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileComplete(profile));
+    const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileVisible(profile));
     if (!effectiveMyProfile) return publicProfiles;
     if (publicProfiles.some((p) => String(p.id) === String(effectiveMyProfile.id))) {
       return publicProfiles;

@@ -23,6 +23,31 @@
   min-width: 320px; 
 }
 
+.creator-profile-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(241, 245, 255, 0.48) 58%,
+      rgba(224, 231, 255, 0.8) 100%),
+    linear-gradient(135deg,
+      rgba(56, 189, 248, 0.12) 0%,
+      rgba(99, 102, 241, 0.08) 48%,
+      rgba(168, 85, 247, 0.12) 100%);
+}
+
+.creator-profile-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 .creator-profile-card__banner {
   display: none; /* Removed banner to match Image 2 */
 }
@@ -530,16 +555,24 @@
   z-index: 4;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -10px 22px rgba(99, 102, 241, 0.06),
-    0 8px 24px rgba(15, 23, 42, 0.08),
-    0 16px 32px rgba(15, 23, 42, 0.08);
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
+    0 10px 28px rgba(15, 23, 42, 0.09),
+    0 18px 36px rgba(15, 23, 42, 0.09);
+}
+
+.listing-card-glow-grid .creator-profile-card.community-listing-card:hover::after {
+  opacity: 1;
 }
 
 .listing-card-glow-grid .creator-profile-card--owner:hover {
   border-color: #a5b4fc;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -10px 22px rgba(99, 102, 241, 0.06),
-    0 6px 12px rgba(99, 102, 241, 0.08),
-    0 16px 32px rgba(99, 102, 241, 0.12);
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
+    0 8px 14px rgba(99, 102, 241, 0.1),
+    0 18px 36px rgba(99, 102, 241, 0.14);
+}
+
+.listing-card-glow-grid .creator-profile-card--owner:hover::after {
+  opacity: 1;
 }

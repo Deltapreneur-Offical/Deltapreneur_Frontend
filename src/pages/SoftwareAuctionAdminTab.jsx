@@ -4,6 +4,7 @@ import { softwareAuctionAPI, adminAPI } from '../api/services';
 import { formatAuctionDate, formatAuctionDateTime } from '../utils/auctionDate';
 import useCurrency from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import SoftwareAuctionTakeDownTab from './SoftwareAuctionTakeDownTab';
 
 const APPROVAL_COLORS = {
   PENDING_APPROVAL: { color: '#b45309', bg: 'rgba(245,158,11,0.12)', labelKey: 'softwareAuctionAdminPendingReview' },
@@ -80,6 +81,7 @@ export default function SoftwareAuctionAdminTab({ auctions: initialAuctions, onR
           { id: 'PENDING_APPROVAL', label: t('softwareAuctionAdminFilterPending', { count: pendingCount }) },
           { id: 'APPROVED',         label: `Approved (${approvedCount})` },
           { id: 'REJECTED',         label: `Rejected (${rejectedCount})` },
+          { id: 'TAKEDOWNS',        label: 'Tech Takedowns' },
         ].map(f => (
           <button key={f.id}
             className={`filter-tab ${filter === f.id ? 'active' : ''}`}
@@ -90,7 +92,9 @@ export default function SoftwareAuctionAdminTab({ auctions: initialAuctions, onR
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {filter === 'TAKEDOWNS' ? (
+        <SoftwareAuctionTakeDownTab />
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400 text-sm">{t('softwareAuctionAdminNoMatches')}</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

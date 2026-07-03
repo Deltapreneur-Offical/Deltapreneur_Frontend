@@ -43,7 +43,6 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
-import SoftwareAuctionTakeDownTab from './SoftwareAuctionTakeDownTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
 import DomainsAdminTab from './DomainsAdminTab';
 import VentureDealsAdminTab from './VentureDealsAdminTab';
@@ -537,7 +536,6 @@ export default function AdminDashboardPage() {
       'operations',
       'homepage-features',
       'software-auctions',
-      'software-auctions-takedown',
       'community-auctions',
       'addon-orders',
       'domain-transfers',
@@ -617,7 +615,6 @@ export default function AdminDashboardPage() {
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
-    { id: 'software-auctions-takedown', label: 'Tech Takedowns', icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
@@ -861,8 +858,6 @@ export default function AdminDashboardPage() {
               <AddonOrdersTable orders={data} />
             ) : tab === 'software-auctions' ? (
               <SoftwareAuctionAdminTab auctions={data} onRefresh={() => loadTab(tab)} />
-            ) : tab === 'software-auctions-takedown' ? (
-              <SoftwareAuctionTakeDownTab />
             ) : tab === 'community-auctions' ? (
               <CommunityAuctionsAdminTable
                 auctions={data}

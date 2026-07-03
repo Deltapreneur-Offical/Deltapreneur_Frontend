@@ -1940,21 +1940,31 @@
   padding: 4px 4px 8px;
 }
 
+.home-auto-scroll-row__item:has(.community-listing-card) {
+  width: min(90vw, 360px); /* Mobile: 1 full card */
+}
+
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border,
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-border__inner,
-.home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-shell {
+.home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-preview-card-shell,
+.home-auto-scroll-row__item:has(.community-listing-card) .home-preview-card-border,
+.home-auto-scroll-row__item:has(.community-listing-card) .home-preview-card-border__inner,
+.home-auto-scroll-row__item:has(.community-listing-card) .home-preview-card-shell {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.home-auto-scroll-row__track:has(.home-auction-preview-card--home-preview) {
+.home-auto-scroll-row__track:has(.home-auction-preview-card--home-preview),
+.home-auto-scroll-row__track:has(.community-listing-card) {
   align-items: stretch;
 }
 
 .home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .home-auction-preview-card--home-preview,
-.home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .domain-listing-card__body {
+.home-auto-scroll-row__item:has(.home-auction-preview-card--home-preview) .domain-listing-card__body,
+.home-auto-scroll-row__item:has(.community-listing-card) .community-listing-card,
+.home-auto-scroll-row__item:has(.community-listing-card) .creator-profile-card__body {
   height: 100%;
 }
 
@@ -1962,11 +1972,17 @@
   .home-auto-scroll-row__item {
     width: min(42vw, 292px);
   }
+  .home-auto-scroll-row__item:has(.community-listing-card) {
+    width: 360px; /* Tablet: 2 full cards */
+  }
 }
 
 @media (min-width: 1024px) {
   .home-auto-scroll-row__item {
     width: min(22vw, 280px);
+  }
+  .home-auto-scroll-row__item:has(.community-listing-card) {
+    width: 380px; /* Desktop: 3 full cards */
   }
 }
 

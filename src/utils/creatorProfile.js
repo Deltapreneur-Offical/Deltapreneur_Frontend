@@ -86,8 +86,9 @@ function isCreatorFieldComplete(profile, field) {
   }
   const value = readProfileField(profile, field);
   if (field.key === 'skills') {
-    if (!value || typeof value !== 'string') return false;
-    return value.split(',').some((part) => part.trim());
+    if (!value) return false;
+    if (typeof value === 'string') return value.split(',').some((part) => part.trim());
+    if (Array.isArray(value)) return value.length > 0;
   }
   return Boolean(value);
 }

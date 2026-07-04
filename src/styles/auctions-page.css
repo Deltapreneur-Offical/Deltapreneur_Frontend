@@ -53,11 +53,6 @@
     0 4px 14px rgba(124, 58, 237, 0.08);
 }
 
-.auctions-page-technology-icon {
-  filter: brightness(0) saturate(100%) invert(29%) sepia(94%) saturate(2198%) hue-rotate(254deg) brightness(98%) contrast(96%);
-  opacity: 0.92;
-}
-
 .auctions-page-hero-copy {
   min-width: 0;
 }

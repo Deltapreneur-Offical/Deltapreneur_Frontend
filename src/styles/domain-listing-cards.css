@@ -66,7 +66,7 @@
   /* cleaner spacing */
   line-height: 1.2;
   /* text-transform: uppercase; */
-  color: #4b00a8;
+  color: #1f2937;
   overflow: hidden;
   text-overflow: clip;
   white-space: normal;
@@ -593,12 +593,12 @@
 }
 
 .listing-like-btn__icon--idle {
-  color: #111827;
+  color: #94a3b8;
 }
 
 .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #111827;
+  color: #94a3b8;
 }
 
 .listing-like-btn__icon--active {

@@ -437,7 +437,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  flex-direction: row-reverse;
+  flex-direction: row; 
 }
 
 .creator-profile-card__footer .listing-like-btn:hover {
@@ -452,7 +452,7 @@
 }
 
 .creator-profile-card__footer .listing-like-btn__icon--idle {
-  color: #111827;
+  color: #94a3b8;
 }
 
 .footer-center {

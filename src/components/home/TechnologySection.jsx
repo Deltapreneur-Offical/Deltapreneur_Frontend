@@ -8,7 +8,6 @@ import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import TechnologyListingCard from '../listings/TechnologyListingCard';
 import '../../styles/domain-listing-cards.css';
@@ -45,20 +44,6 @@ export default function TechnologySection() {
     navigateToListingDetail(navigate, 'software', softwareId);
   };
 
-  const shouldAutoScroll = previewSoftwares.length > 4;
-
-  const renderTechnologyCard = (item) => (
-    <HomePreviewCardShell accent="technology">
-      <TechnologyListingCard
-        item={item}
-        browseMode
-        likeState={getLike(item.id)}
-        onLike={() => toggleLike(item.id)}
-        onView={() => handleViewDetails(item.id)}
-      />
-    </HomePreviewCardShell>
-  );
-
   if (loading) {
     return <HomeSectionCardSkeleton title={t('technologySoftware')} to="/technology" />;
   }
@@ -69,19 +54,19 @@ export default function TechnologySection() {
         <HomeSectionHeader title={t('technologySoftware')} to="/technology" />
         {previewSoftwares.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noSoftware')}</p>
-        ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={50} ariaLabel={t('technologySoftware')}>
-            {previewSoftwares.map((item) => (
-              <HomeAutoScrollRowItem key={item.id}>
-                {renderTechnologyCard(item)}
-              </HomeAutoScrollRowItem>
-            ))}
-          </HomeAutoScrollRow>
         ) : (
           <HomePreviewRow>
             {previewSoftwares.map((item) => (
               <HomePreviewRowItem key={item.id}>
-                {renderTechnologyCard(item)}
+                <HomePreviewCardShell accent="technology">
+                  <TechnologyListingCard
+                    item={item}
+                    browseMode
+                    likeState={getLike(item.id)}
+                    onLike={() => toggleLike(item.id)}
+                    onView={() => handleViewDetails(item.id)}
+                  />
+                </HomePreviewCardShell>
               </HomePreviewRowItem>
             ))}
           </HomePreviewRow>

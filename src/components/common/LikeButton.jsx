@@ -11,7 +11,7 @@ export default function LikeButton({
 }) {
   const [animating, setAnimating] = useState(false);
   const isActive = liked || forceRed;
-  const iconSize = size === 'sm' ? 16 : 18;
+  const iconSize = size === 'sm' ? 14 : 16;
 
   const stop = (e) => {
     e.stopPropagation();
@@ -31,7 +31,7 @@ export default function LikeButton({
         <Heart
           size={iconSize}
           className={heartClass}
-          strokeWidth={2.5}
+          strokeWidth={1.5}
           fill={isActive ? 'currentColor' : 'none'}
           aria-hidden="true"
         />
@@ -65,7 +65,7 @@ export default function LikeButton({
       <Heart
         size={iconSize}
         className={heartClass}
-        strokeWidth={2.5}
+        strokeWidth={1.5}
         fill={isActive ? 'currentColor' : 'none'}
         aria-hidden="true"
       />

@@ -163,9 +163,25 @@ export function evaluateCreatorProfileCompletion(profile) {
   };
 }
 
+const VISIBILITY_REQUIRED_FIELDS = [
+  { key: 'name', aliases: ['name'] },
+  { key: 'role', aliases: ['role'] },
+  { key: 'industry', aliases: ['industry'] },
+  { key: 'skills', aliases: ['skills'] },
+  { key: 'location', aliases: ['location'] },
+  { key: 'linked_in_id', aliases: ['linkedInId', 'linked_in_id'] },
+  { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'] },
+  { key: 'expected_rate', aliases: ['expectedRate', 'expected_rate'] },
+];
+
 export function isCreatorProfileVisible(profile) {
   if (!profile) return false;
-  return getRoleRequiredFields(profile).every((field) => isCreatorFieldComplete(profile, field));
+  return VISIBILITY_REQUIRED_FIELDS.every((field) => {
+    if (field.key === 'linked_in_id') {
+      return hasLinkedInAccount(profile);
+    }
+    return isCreatorFieldComplete(profile, field);
+  });
 }
 
 export function isCreatorProfileComplete(profile) {

@@ -155,16 +155,23 @@ export default function CommunityListingCard({
           {(profile.languagesKnown || profile.languages_known) && (
             <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
                {(() => {
-                 const langs = String(profile.languagesKnown || profile.languages_known).split(',').map(l => l.trim()).filter(Boolean);
-                 if (langs.length <= 3) return langs.join(', ').toUpperCase();
-                 return (
-                   <>
-                     {langs.slice(0, 3).join(', ').toUpperCase()}
-                     <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
-                       +{langs.length - 3}
-                     </span>
-                   </>
-                 );
+                 const langs = String(profile.languagesKnown || profile.languages_known)
+                  .split(',')
+                  .map(l => l.trim())
+                  .filter(Boolean);
+
+                if (langs.length <= 2) {
+                  return langs.join(', ').toUpperCase();
+                }
+
+                return (
+                  <>
+                    {langs.slice(0, 2).join(', ').toUpperCase()}
+                    <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
+                      +{langs.length - 2}
+                    </span>
+                  </>
+                );
                })()}
             </span>
           )}

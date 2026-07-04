@@ -750,7 +750,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
             <div className={`font-display font-bold text-[1.1rem] ${isUrgent ? 'text-red-500 animate-pulse' : 'text-purple-700'}`}>
               {timeLeft.split('').map((char, i) => {
                 if (['D', 'H', 'M', 'S'].includes(char)) {
-                  return <span key={i} className="text-gray-900">{char.toLowerCase()}</span>;
+                  return <span key={i} className="text-gray-900">{char.toUpperCase()}</span>;
                 }
                 return char;
               })}
@@ -834,7 +834,7 @@ function CommunityAuctionCard({ auction, onClick }) {
           {skills.length > 0 ? (
             <>
               {skills.map((s, i) => (
-                <span key={i} className="px-2 py-0.5 text-[0.68rem] font-semibold rounded-full bg-gray-100 border border-gray-200 text-gray-600">
+                <span key={i} className="venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
                   {s}
                 </span>
               ))}

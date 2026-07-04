@@ -441,7 +441,7 @@ export default function TechnologyListingCard({
           />
         </div>
 
-        <span className={`text-[0.65rem] font-bold px-2.5 py-1 rounded-full tracking-wider inline-block w-fit mb-1 ${item.technologyType === 'HARDWARE' ? 'text-orange-700 bg-orange-50 border border-orange-200' : 'text-blue-700 bg-blue-50 border border-blue-200'}`}>
+        <span className="venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 inline-block w-fit mb-1">
           {item.technologyType === 'HARDWARE' ? 'HARDWARE' : 'SOFTWARE'}
         </span>
 

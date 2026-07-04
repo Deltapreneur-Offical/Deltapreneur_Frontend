@@ -1431,9 +1431,9 @@
   --auction-metric-bids: #2563eb;
   --auction-metric-bids-soft: #eff6ff;
   --auction-metric-bids-border: #3b82f6;
-  --auction-metric-time: #ea580c;
-  --auction-metric-time-soft: #fff7ed;
-  --auction-metric-time-border: #f97316;
+  --auction-metric-time: #dc2626;
+  --auction-metric-time-soft: #fef2f2;
+  --auction-metric-time-border: #ef4444;
   font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   height: auto;
@@ -1788,7 +1788,6 @@
 }
 
 .home-auction-preview-card__metric-value--time {
-  color: var(--auction-metric-time);
 }
 
 .home-auction-preview-card__bid-panel {

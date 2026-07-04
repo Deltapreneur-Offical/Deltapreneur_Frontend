@@ -634,13 +634,7 @@ export default function VentureListingCard({
             {b.industry && (
 
               <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } ${isCoVenture
-
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-
-                  : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-
-                }`}>
+                } bg-indigo-50 text-indigo-700 border border-indigo-100`}>
 
                 {b.industry}
 
@@ -651,13 +645,7 @@ export default function VentureListingCard({
             {sellerAsk.dealTypeLabel && (
 
               <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } ${isCoVenture
-
-                  ? 'bg-teal-50 text-teal-700 border border-teal-100'
-
-                  : 'bg-purple-50 text-purple-700 border border-purple-100'
-
-                }`}>
+                } bg-purple-50 text-purple-700 border border-purple-100`}>
 
                 {sellerAsk.dealTypeLabel}
 

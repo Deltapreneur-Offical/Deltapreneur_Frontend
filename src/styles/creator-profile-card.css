@@ -193,13 +193,14 @@
 
 .creator-profile-card__badge {
   display: inline-flex;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  background: #F3E8FF; 
-  color: #7C3AED;
-  font-size: 0.65rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  background: #faf5ff;
+  color: #7e22ce;
+  border: 1px solid #f3e8ff;
+  font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 

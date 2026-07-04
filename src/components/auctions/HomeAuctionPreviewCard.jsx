@@ -78,16 +78,16 @@ const PRICE_BOX_GRADIENT = {
 
 const BADGE_TONE_CLASS = {
   domain: {
-    primary: 'bg-amber-50 text-amber-800 border border-amber-100',
-    secondary: 'bg-orange-50 text-orange-700 border border-orange-100',
+    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
+    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
   },
   technology: {
     primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
     secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
   },
   community: {
-    primary: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-    secondary: 'bg-teal-50 text-teal-700 border border-teal-100',
+    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
+    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
   },
 };
 

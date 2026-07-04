@@ -227,8 +227,8 @@ function formatTimeLeft(value) {
   if (diff <= 0) return 'Ended';
   const hours = Math.floor(diff / 36e5);
   const days = Math.floor(hours / 24);
-  if (days > 0) return `${days}d ${hours % 24}h left`;
-  return `${Math.max(1, hours)}h left`;
+  if (days > 0) return `${days}D ${(hours % 24)}H left`;
+  return `${Math.max(1, hours)}H left`;
 }
 
 function transcriptMarkdown(messages) {

@@ -27,6 +27,8 @@ import {
   isCreatorProfileComplete,
   isCreatorProfileVisible,
 } from '../utils/creatorProfile';
+import { getVisibleCreatorFields } from '../utils/creatorRoleFields';
+import SkillsInput from '../components/common/SkillsInput';
 import { isListingOwner } from '../utils/listingVisibility';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import { useCreatorAuctionProfileSync } from '../hooks/useCreatorAuctionProfileSync';
@@ -56,6 +58,26 @@ const WORK_TYPES = [
   { value: 'PART_TIME', label: 'Part Time' },
   { value: 'CONTRACT', label: 'Contract' },
   { value: 'OPEN_TO_ALL', label: 'Open to All' },
+];
+const CREATOR_PROFILE_EXTRA_FIELDS = [
+  { name: 'headline', label: 'Professional Headline', placeholder: 'e.g. Full-stack developer building AI tools' },
+  { name: 'education', label: 'Education', placeholder: 'e.g. B.Tech CSE, PES University' },
+  { name: 'graduationYear', label: 'Graduation Year', placeholder: 'e.g. 2027' },
+  { name: 'githubProfile', label: 'GitHub Profile', placeholder: 'https://github.com/your-username' },
+  { name: 'currentCompany', label: 'Current Company', placeholder: 'e.g. Infosys, Google, Self-employed' },
+  { name: 'designation', label: 'Designation', placeholder: 'e.g. Product Manager, Founder, HR Lead' },
+  { name: 'companyName', label: 'Company / Organization Name', placeholder: 'e.g. Acme Ventures Pvt Ltd' },
+  { name: 'companyWebsite', label: 'Company Website', placeholder: 'https://company.com', type: 'url' },
+  { name: 'availability', label: 'Availability', placeholder: 'e.g. Weekends, 10 hrs/week, Immediate joining' },
+  { name: 'hiringFor', label: 'Hiring / Collaboration Need', placeholder: 'e.g. React interns, marketing partners, sales consultants', multiline: true },
+  { name: 'mentorshipTopics', label: 'Mentorship Topics', placeholder: 'e.g. Career guidance, fundraising, product strategy', multiline: true },
+  { name: 'investmentFocus', label: 'Investment Focus', placeholder: 'e.g. AI SaaS, HealthTech, early-stage B2B', multiline: true },
+  { name: 'investmentStage', label: 'Preferred Investment Stage', placeholder: 'e.g. Idea, MVP, Seed, Series A' },
+  { name: 'ticketSize', label: 'Typical Ticket Size', placeholder: 'e.g. ₹5L - ₹25L or strategic advisory' },
+  { name: 'startupStage', label: 'Startup Stage', placeholder: 'e.g. Idea, MVP, Revenue, Scaling' },
+  { name: 'coFounderNeeds', label: 'Co-founder / Team Need', placeholder: 'e.g. Looking for a technical co-founder and GTM partner', multiline: true },
+  { name: 'incubationPrograms', label: 'Incubation Programs', placeholder: 'e.g. 12-week accelerator, grants, workspace, demo day', multiline: true },
+  { name: 'supportOffered', label: 'Support Offered', placeholder: 'e.g. Mentorship, funding access, legal, product, cloud credits', multiline: true },
 ];
 const DURATIONS = [
   { value: 'ONE_DAY', label: '1 Day' },
@@ -848,12 +870,19 @@ function CommunityProfileForm({
   onDelete,
 }) {
   const { t } = useTranslation();
-  const buildForm = (profile) => {
+const buildForm = (profile) => {
     const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
+    const parseSkills = (skillsStr) => {
+      if (!skillsStr) return [];
+      if (Array.isArray(skillsStr)) {
+        return skillsStr.map((s) => (typeof s === 'string' ? { skill: s, level: 'INTERMEDIATE' } : s));
+      }
+      return skillsStr.split(',').map((s) => ({ skill: s.trim(), level: 'INTERMEDIATE' })).filter((s) => s.skill);
+    };
     return {
       about: profile?.about || '',
       role: profile?.role || '',
-      skills: profile?.skills || '',
+      skills: parseSkills(profile?.skills),
       industry: profile?.industry || '',
       location: profile?.location || '',
       whyImHere: profile?.whyImHere || profile?.why_im_here || '',
@@ -866,11 +895,37 @@ function CommunityProfileForm({
       preferredWorkType: profile?.preferredWorkType || profile?.preferred_work_type || '',
       industryExpertise: profile?.industryExpertise || profile?.industry_expertise || '',
       languagesKnown: profile?.languagesKnown || profile?.languages_known || '',
+      headline: profile?.headline || '',
+      education: profile?.education || '',
+      graduationYear: profile?.graduationYear || profile?.graduation_year || '',
+      experience: profile?.experience || profile?.years_experience || '',
+      githubProfile: profile?.githubProfile || profile?.github_profile || '',
+      currentCompany: profile?.currentCompany || profile?.current_company || '',
+      designation: profile?.designation || '',
+      companyName: profile?.companyName || profile?.company_name || '',
+      companyWebsite: profile?.companyWebsite || profile?.company_website || '',
+      availability: profile?.availability || '',
+      hiringFor: profile?.hiringFor || profile?.hiring_for || '',
+      mentorshipTopics: profile?.mentorshipTopics || profile?.mentorship_topics || '',
+      investmentFocus: profile?.investmentFocus || profile?.investment_focus || '',
+      investmentStage: profile?.investmentStage || profile?.investment_stage || '',
+      ticketSize: profile?.ticketSize || profile?.ticket_size || '',
+      startupStage: profile?.startupStage || profile?.startup_stage || '',
+      coFounderNeeds: profile?.coFounderNeeds || profile?.co_founder_needs || '',
+      incubationPrograms: profile?.incubationPrograms || profile?.incubation_programs || '',
+      supportOffered: profile?.supportOffered || profile?.support_offered || '',
     };
   };
   const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const visibleFields = getVisibleCreatorFields(form.role);
+  const isFieldVisible = (fieldName) => visibleFields.includes(fieldName);
+  const isFieldRequired = isFieldVisible;
+  const requiredMark = (fieldName) => (
+    isFieldRequired(fieldName) ? <span className="text-red-500">*</span> : null
+  );
 
   useEffect(() => {
     setForm(buildForm(initial));
@@ -898,36 +953,102 @@ function CommunityProfileForm({
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const renderExtraField = (field) => {
+    if (!isFieldVisible(field.name)) return null;
+    const commonProps = {
+      name: field.name,
+      value: form[field.name] || '',
+      onChange: handleChange,
+      placeholder: field.placeholder,
+      required: isFieldRequired(field.name),
+      className: 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all',
+    };
+
+    return (
+      <div key={field.name} className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          {field.label} {requiredMark(field.name)}
+        </label>
+        {field.multiline ? (
+          <textarea
+            {...commonProps}
+            rows={3}
+            className={`${commonProps.className} resize-vertical`}
+          />
+        ) : (
+          <input
+            {...commonProps}
+            type={field.type || 'text'}
+          />
+        )}
+      </div>
+    );
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
-    const expectedRate = buildCreatorExpectedRate(
-      form.expectedRateAmount,
-      form.expectedRatePeriod,
-    );
-    if (!expectedRate) {
-      setError('Enter a valid Expected Rate amount and select a period.');
-      return;
+    if (isFieldVisible('expectedRateAmount')) {
+      const expectedRate = buildCreatorExpectedRate(
+        form.expectedRateAmount,
+        form.expectedRatePeriod,
+      );
+      if (!expectedRate) {
+        setError('Enter a valid Expected Rate amount and select a period.');
+        return;
+      }
     }
-    setLoading(true); setError('');
+setLoading(true); setError('');
     try {
-      const payload = {
-        about: form.about,
-        role: form.role,
-        skills: form.skills,
-        industry: form.industry,
-        location: form.location,
-        whyImHere: form.whyImHere,
-        expectedRate,
-        introductionVideoLink: form.introductionVideoLink,
-        resumeDriveLink: form.resumeDriveLink,
-        portfolioWebsiteLink: form.portfolioWebsiteLink,
-        preferredWorkType: form.preferredWorkType,
-        industryExpertise: form.industryExpertise,
-        languagesKnown: form.languagesKnown,
+      const skillsString = form.skills && form.skills.length > 0
+        ? form.skills.map((s) => typeof s === 'string' ? s : s.skill).join(', ')
+        : '';
+      const fieldPayloadMap = {
+        about: 'about',
+        role: 'role',
+        skills: skillsString,
+        industry: 'industry',
+        location: 'location',
+        whyImHere: 'whyImHere',
+        introductionVideoLink: 'introductionVideoLink',
+        resumeDriveLink: 'resumeDriveLink',
+        portfolioWebsiteLink: 'portfolioWebsiteLink',
+        preferredWorkType: 'preferredWorkType',
+        industryExpertise: 'industryExpertise',
+        languagesKnown: 'languagesKnown',
+        headline: 'headline',
+        education: 'education',
+        graduationYear: 'graduationYear',
+        experience: 'experience',
+        githubProfile: 'githubProfile',
+        currentCompany: 'currentCompany',
+        designation: 'designation',
+        companyName: 'companyName',
+        companyWebsite: 'companyWebsite',
+        availability: 'availability',
+        hiringFor: 'hiringFor',
+        mentorshipTopics: 'mentorshipTopics',
+        investmentFocus: 'investmentFocus',
+        investmentStage: 'investmentStage',
+        ticketSize: 'ticketSize',
+        startupStage: 'startupStage',
+        coFounderNeeds: 'coFounderNeeds',
+        incubationPrograms: 'incubationPrograms',
+        supportOffered: 'supportOffered',
       };
+      const payload = Object.fromEntries(
+        Object.entries(fieldPayloadMap)
+          .filter(([fieldName]) => isFieldVisible(fieldName))
+          .map(([fieldName, payloadKey]) => [payloadKey, form[fieldName]]),
+      );
+      if (isFieldVisible('expectedRateAmount')) {
+        payload.expectedRate = buildCreatorExpectedRate(
+          form.expectedRateAmount,
+          form.expectedRatePeriod,
+        );
+      }
       const linkedInProfileUrl = (form.linkedInProfileUrl || '').trim();
-      if (linkedInImported && linkedInProfileUrl) {
+      if (linkedInImported && linkedInProfileUrl && isFieldVisible('linkedInProfileUrl')) {
         payload.linkedInProfileUrl = linkedInProfileUrl;
       }
       const { data } = await communityAPI.update(initial.id, payload);
@@ -1001,7 +1122,7 @@ function CommunityProfileForm({
         {/* About - full width */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">
-            About <span className="text-red-500">*</span>
+            About {requiredMark('about')}
           </label>
           <textarea
             name="about"
@@ -1009,7 +1130,7 @@ function CommunityProfileForm({
             onChange={handleChange}
             placeholder="Tell others about yourself..."
             rows={3}
-            required
+            required={isFieldRequired('about')}
             className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
           />
         </div>
@@ -1017,59 +1138,78 @@ function CommunityProfileForm({
         {/* Role + Industry */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500">*</span></label>
-            <select name="role" value={form.role} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Your Role {requiredMark('role')}</label>
+            <select name="role" value={form.role} onChange={handleChange} required={isFieldRequired('role')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select role</option>
               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500">*</span></label>
-            <select name="industry" value={form.industry} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Industry {requiredMark('industry')}</label>
+            <select name="industry" value={form.industry} onChange={handleChange} required={isFieldRequired('industry')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select industry</option>
               {COMMUNITY_INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
-            </select>
+</select>
           </div>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Skills <span className="text-red-500">*</span></label>
-          <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Location <span className="text-red-500">*</span></label>
-          <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Expected Rate <span className="text-red-500">*</span></label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              name="expectedRateAmount"
-              type="number"
-              min="1"
-              step="1"
-              value={form.expectedRateAmount}
-              onChange={handleChange}
-              placeholder="e.g. 4000"
-              required
-              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+
+        {isFieldVisible('skills') && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkillsInput
+              skills={form.skills}
+              onChange={(skills) => setForm({ ...form, skills })}
+              placeholder="Search skills..."
             />
-            <select
-              name="expectedRatePeriod"
-              value={form.expectedRatePeriod}
-              onChange={handleChange}
-              required
-              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
-            >
-              {CREATOR_RATE_PERIODS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            {isFieldVisible('experience') && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Experience {requiredMark('experience')}</label>
+                <input
+                  name="experience"
+                  value={form.experience}
+                  onChange={handleChange}
+                  placeholder="e.g. 3 years at Google, or companies..."
+                  required={isFieldRequired('experience')}
+                  className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                />
+              </div>
+            )}
           </div>
-        </div>
-        {linkedInImported && (
+        )}
+
+        {CREATOR_PROFILE_EXTRA_FIELDS.map(renderExtraField)}
+        {isFieldVisible('expectedRateAmount') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Expected Rate {requiredMark('expectedRateAmount')}</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                name="expectedRateAmount"
+                type="number"
+                min="1"
+                step="1"
+                value={form.expectedRateAmount}
+                onChange={handleChange}
+                placeholder="e.g. 4000"
+                required={isFieldRequired('expectedRateAmount')}
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+              />
+              <select
+                name="expectedRatePeriod"
+                value={form.expectedRatePeriod}
+                onChange={handleChange}
+                required={isFieldRequired('expectedRatePeriod')}
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
+              >
+                {CREATOR_RATE_PERIODS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+        {linkedInImported && isFieldVisible('linkedInProfileUrl') && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              LinkedIn URL <span className="text-red-500">*</span>
+              LinkedIn URL {requiredMark('linkedInProfileUrl')}
               <span className="text-gray-400 font-normal text-xs ml-1">
                 {linkedInUrlMissing
                   ? '(paste your profile link)'
@@ -1079,7 +1219,7 @@ function CommunityProfileForm({
             <input
               name="linkedInProfileUrl"
               type="url"
-              required
+              required={isFieldRequired('linkedInProfileUrl')}
               value={form.linkedInProfileUrl}
               onChange={handleChange}
               placeholder={t(
@@ -1102,41 +1242,55 @@ function CommunityProfileForm({
             ) : null}
           </div>
         )}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-red-500">*</span></label>
-          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700"> Introduction Video Link (Google Drive / YouTube / Loom)</label>
-          <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF)</label>
-          <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Portfolio Website Link</label>
-          <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Preferred Work Type</label>
-          <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-            <option value="">Select work type</option>
-            <option value="FREELANCE">Freelance</option>
-            <option value="FULL_TIME">Full-Time</option>
-            <option value="CONTRACT">Contract</option>
-            <option value="CO_FOUNDER">Co-Founder</option>
-            <option value="OPEN_TO_ALL">Open to All</option>
-          </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Industry Expertise</label>
-          <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Languages Known</label>
-          <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
+        {isFieldVisible('whyImHere') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Why I'm Here {requiredMark('whyImHere')}</label>
+            <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required={isFieldRequired('whyImHere')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
+          </div>
+        )}
+        {isFieldVisible('introductionVideoLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Introduction Video Link (Google Drive / YouTube / Loom) {requiredMark('introductionVideoLink')}</label>
+            <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." required={isFieldRequired('introductionVideoLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('resumeDriveLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF) {requiredMark('resumeDriveLink')}</label>
+            <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." required={isFieldRequired('resumeDriveLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('portfolioWebsiteLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Portfolio Website Link {requiredMark('portfolioWebsiteLink')}</label>
+            <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" required={isFieldRequired('portfolioWebsiteLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('preferredWorkType') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Preferred Work Type {requiredMark('preferredWorkType')}</label>
+            <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} required={isFieldRequired('preferredWorkType')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+              <option value="">Select work type</option>
+              <option value="FREELANCE">Freelance</option>
+              <option value="FULL_TIME">Full-Time</option>
+              <option value="CONTRACT">Contract</option>
+              <option value="CO_FOUNDER">Co-Founder</option>
+              <option value="OPEN_TO_ALL">Open to All</option>
+            </select>
+          </div>
+        )}
+        {isFieldVisible('industryExpertise') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Industry Expertise {requiredMark('industryExpertise')}</label>
+            <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" required={isFieldRequired('industryExpertise')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('languagesKnown') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Languages Known {requiredMark('languagesKnown')}</label>
+            <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" required={isFieldRequired('languagesKnown')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">
           <button type="submit" className="btn-glow" disabled={loading}>

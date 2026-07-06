@@ -122,7 +122,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const cardRef = useRef(null);
 
   const handleView = (e) => {
-    if (e && e.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="link"]')) return;
+    if (e && e.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
     onView?.();
   };
 

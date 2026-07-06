@@ -29,7 +29,7 @@ export default function MarketplaceListingCardFrame({
       className={listingCardBaseClass(cardClassName)}
       onClick={interactive ? (e) => {
         if (!onClick) return;
-        if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="link"]')) return;
+        if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
         onClick();
       } : undefined}
       role={interactive ? 'button' : undefined}

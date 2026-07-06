@@ -255,7 +255,7 @@ export default function VentureListingCard({
 
   const handleCardClick = (e) => {
     if (!onView) return;
-    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="link"]')) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
     onView();
   };
 

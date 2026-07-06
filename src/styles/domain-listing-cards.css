@@ -66,7 +66,7 @@
   /* cleaner spacing */
   line-height: 1.2;
   /* text-transform: uppercase; */
-  color: #1f2937;
+  color: #4b00a8;
   overflow: hidden;
   text-overflow: clip;
   white-space: normal;
@@ -83,8 +83,8 @@
   right: 1rem;
   left: auto;
   z-index: 3;
-  width: 2.65rem;
-  height: 2.65rem;
+  width: 1.55rem;
+  height: 1.55rem;
   object-fit: contain;
   pointer-events: none;
 }
@@ -593,12 +593,12 @@
 }
 
 .listing-like-btn__icon--idle {
-  color: #94a3b8;
+  color: #111827;
 }
 
 .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #94a3b8;
+  color: #111827;
 }
 
 .listing-like-btn__icon--active {

@@ -106,7 +106,6 @@ export default function VentureListingCard({
   onDelete,
 
   likeState,
-
   onLike,
 
 }) {
@@ -253,6 +252,18 @@ export default function VentureListingCard({
     }
 
     : undefined;
+
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
 
 
 
@@ -499,25 +510,30 @@ export default function VentureListingCard({
 
   const showPriceBox = showPriceText || handleViewDetails;
   const isHomePreview = compact && browseMode;
-
-
-
-  return (
+return (
 
     <article
 
       className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white ${isCoVenture
+
           ? 'venture-listing-card--coventure'
+
           : 'venture-listing-card--venture'
+
         } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
 
-      onClick={interactive ? onView : undefined}
+
+      onClick={interactive ? handleCardClick : undefined}
+
 
       role={interactive ? 'button' : undefined}
 
+
       tabIndex={interactive ? 0 : undefined}
 
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
+
 
     >
 

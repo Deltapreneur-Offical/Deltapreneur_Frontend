@@ -350,7 +350,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 1.5rem;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #000000 !important;
   background: #ffffff !important;
   box-shadow: none;
   box-shadow:
@@ -366,7 +366,7 @@
 }
 
 .home-preview-card-border:hover {
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #000000 !important;
   background: #ffffff !important;
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.04),
@@ -1452,12 +1452,12 @@
 }
 
 .home-auction-preview-card--category-technology {
-  --auction-accent: #6366f1;
-  --auction-accent-strong: #4f46e5;
-  --auction-accent-soft: #eef2ff;
-  --auction-accent-border: #c7d2fe;
-  --auction-badge-text: #4338ca;
-  --auction-badge-border: #c7d2fe;
+  --auction-accent: #7c3aed;
+  --auction-accent-strong: #6d28d9;
+  --auction-accent-soft: #f5f3ff;
+  --auction-accent-border: #e9d5ff;
+  --auction-badge-text: #1d4ed8;
+  --auction-badge-border: #e9d5ff;
 }
 
 .home-auction-preview-card--category-community {
@@ -1749,8 +1749,8 @@
 }
 
 .home-auction-preview-card__metric--time .home-auction-preview-card__metric-icon {
-  color: var(--auction-metric-time);
-}
+   color: #0f172a;
+ }
 
 .home-auction-preview-card__metric-label {
   font-size: 0.625rem;
@@ -1770,8 +1770,8 @@
 }
 
 .home-auction-preview-card__metric--time .home-auction-preview-card__metric-label {
-  color: var(--auction-metric-time);
-}
+   color: #0f172a;
+ }
 
 .home-auction-preview-card__metric-value {
   display: block;
@@ -1930,7 +1930,7 @@
   gap: 1rem;
   width: max-content;
   will-change: transform;
-  padding-block: 0.5rem;
+  padding-block: 0.9rem;
   margin-block: -0.5rem;
 }
 

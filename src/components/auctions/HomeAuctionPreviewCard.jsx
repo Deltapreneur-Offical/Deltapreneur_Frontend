@@ -13,8 +13,8 @@ import {
   resolveHomeAuctionVerified,
 } from '../../utils/homepageAuctions';
 import verifiedIcon from '../../assets/Verified_Icon.png';
-import CreatorPreviewModal from './CreatorPreviewModal';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import CreatorPreviewModal from './CreatorPreviewModal';
 
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
@@ -95,6 +95,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [imgFailed, setImgFailed] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const title = resolveHomeAuctionTitle(auction);
   const image = resolveHomeAuctionImage(auction);
   const verified = resolveHomeAuctionVerified(auction);
@@ -118,30 +119,25 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const badgeToneClass = BADGE_TONE_CLASS[category] || BADGE_TONE_CLASS.domain;
   const isFeatured = Boolean(auction?.featured);
   const categoryLabel = t(categoryMeta.labelKey);
-  const [showPreview, setShowPreview] = useState(false);
   const cardRef = useRef(null);
 
   const handleView = (e) => {
-    e?.stopPropagation?.();
+    if (e && e.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="link"]')) return;
     onView?.();
-  };
-
-  const openPreview = (event) => {
-    cardRef.current = event?.currentTarget || cardRef.current;
-    setShowPreview(true);
   };
 
   return (
     <article
       ref={cardRef}
       className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white`}
-      onClick={openPreview}
+      onClick={handleView}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
-          openPreview();
+          handleView();
         }
       }}
     >

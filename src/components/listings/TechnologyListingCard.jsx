@@ -385,7 +385,7 @@ export default function TechnologyListingCard({
   const useCase = item.whatItDoes || item.what_it_does || item.description || '';
   const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
   const priceAmount = Number(item.price || 0);
-  const interactive = !browseMode && onView;
+  const interactive = Boolean(onView);
 
   const handleViewDetails = onView
     ? (e) => {
@@ -394,6 +394,18 @@ export default function TechnologyListingCard({
     }
     : undefined;
 
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
+
   const showPriceBox = browseMode
     ? (priceAmount > 0 || handleViewDetails)
     : true;
@@ -401,10 +413,10 @@ export default function TechnologyListingCard({
   return (
     <article
       className={`domain-listing-card technology-listing-card card-glow-hover relative flex w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse technology-listing-card--browse home-preview-browse-card' : ''}${interactive ? ' cursor-pointer' : ''}`}
-      onClick={interactive ? onView : undefined}
+      onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       <div className="domain-listing-card__cover">
         {techImage ? (

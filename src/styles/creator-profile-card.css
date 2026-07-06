@@ -438,7 +438,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  flex-direction: row; 
 }
 
 .creator-profile-card__footer .listing-like-btn:hover {
@@ -453,8 +452,15 @@
 }
 
 .creator-profile-card__footer .listing-like-btn__icon--idle {
-  color: #94a3b8;
-}
+   color: #94a3b8;
+   opacity: 0.72;
+ }
+
+.creator-profile-card__footer .listing-like-btn__icon {
+   width: 0.875rem;
+   height: 0.875rem;
+   flex-shrink: 0;
+ }
 
 .footer-center {
   display: flex;

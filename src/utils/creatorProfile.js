@@ -16,6 +16,7 @@ const CREATOR_FIELD_REQUIREMENTS = {
   experience: { key: 'experience', aliases: ['experience', 'yearsExperience', 'years_experience'], label: 'Experience' },
   currentCompany: { key: 'current_company', aliases: ['currentCompany', 'current_company'], label: 'Current Company' },
   designation: { key: 'designation', aliases: ['designation'], label: 'Designation' },
+  roleDescription: { key: 'role_description', aliases: ['roleDescription', 'role_description'], label: 'Role Description' },
   companyName: { key: 'company_name', aliases: ['companyName', 'company_name'], label: 'Company / Organization Name' },
   companyWebsite: { key: 'company_website', aliases: ['companyWebsite', 'company_website'], label: 'Company Website' },
   availability: { key: 'availability', aliases: ['availability'], label: 'Availability' },
@@ -26,6 +27,8 @@ const CREATOR_FIELD_REQUIREMENTS = {
   ticketSize: { key: 'ticket_size', aliases: ['ticketSize', 'ticket_size'], label: 'Typical Ticket Size' },
   startupStage: { key: 'startup_stage', aliases: ['startupStage', 'startup_stage'], label: 'Startup Stage' },
   coFounderNeeds: { key: 'co_founder_needs', aliases: ['coFounderNeeds', 'co_founder_needs'], label: 'Co-founder / Team Need' },
+  pitchDeckLink: { key: 'pitch_deck_link', aliases: ['pitchDeckLink', 'pitch_deck_link'], label: 'Pitch Deck' },
+  youtubeVideoLink: { key: 'youtube_video_link', aliases: ['youtubeVideoLink', 'youtube_video_link'], label: 'YouTube Video Link' },
   incubationPrograms: { key: 'incubation_programs', aliases: ['incubationPrograms', 'incubation_programs'], label: 'Incubation Programs' },
   supportOffered: { key: 'support_offered', aliases: ['supportOffered', 'support_offered'], label: 'Support Offered' },
   skills: { key: 'skills', aliases: ['skills'], label: 'Skills' },
@@ -36,10 +39,15 @@ const CREATOR_FIELD_REQUIREMENTS = {
     label: 'LinkedIn profile link',
   },
   whyImHere: { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'], label: 'Bio' },
-  expectedRateAmount: {
-    key: 'expected_rate',
-    aliases: ['expectedRate', 'expected_rate'],
-    label: 'Expected Rate',
+  expectedPriceAmount: {
+    key: 'expected_price',
+    aliases: ['expectedPrice', 'expected_price'],
+    label: 'Expected Compensation',
+  },
+  expectedPricePeriod: {
+    key: 'expected_price_period',
+    aliases: ['expectedPricePeriod', 'expected_price_period'],
+    label: 'Expected Compensation Period',
   },
   introductionVideoLink: {
     key: 'introduction_video_link',
@@ -96,7 +104,7 @@ function isCreatorFieldComplete(profile, field) {
 function getRoleRequiredFields(profile) {
   const role = readProfileField(profile, CREATOR_FIELD_REQUIREMENTS.role);
   const fields = getVisibleCreatorFields(role)
-    .filter((field) => field !== 'expectedRatePeriod')
+    .filter((field) => field !== 'expectedPricePeriod')
     .map((field) => CREATOR_FIELD_REQUIREMENTS[field])
     .filter(Boolean);
 
@@ -171,7 +179,7 @@ const VISIBILITY_REQUIRED_FIELDS = [
   { key: 'location', aliases: ['location'] },
   { key: 'linked_in_id', aliases: ['linkedInId', 'linked_in_id'] },
   { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'] },
-  { key: 'expected_rate', aliases: ['expectedRate', 'expected_rate'] },
+  { key: 'expected_price', aliases: ['expectedPrice', 'expected_price'] },
 ];
 
 export function isCreatorProfileVisible(profile) {

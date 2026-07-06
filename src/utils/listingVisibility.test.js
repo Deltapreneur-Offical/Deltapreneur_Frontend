@@ -57,7 +57,7 @@ describe('listingVisibility', () => {
       location: 'Bengaluru',
       linked_in_profile_url: 'https://linkedin.com/in/jane',
       why_im_here: 'Build',
-      expected_rate: '5000/month',
+      expected_price: '5000/month',
       introduction_video_link: 'https://youtube.com/watch?v=abc',
       resume_drive_link: 'https://drive.google.com/file/d/abc',
       preferred_work_type: 'FULL_TIME',
@@ -78,7 +78,7 @@ describe('listingVisibility', () => {
       location: 'Bengaluru',
       linked_in_id: 'sub-123',
       why_im_here: 'Build',
-      expected_rate: '5000/month',
+      expected_price: '5000/month',
     };
     expect(isCommunityProfilePublic(profile)).toBe(true);
   });

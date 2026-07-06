@@ -59,16 +59,23 @@ const WORK_TYPES = [
   { value: 'CONTRACT', label: 'Contract' },
   { value: 'OPEN_TO_ALL', label: 'Open to All' },
 ];
+const STUDENT_WORK_TYPES = [
+  { value: 'INTERNSHIP', label: 'Internship' },
+  { value: 'CERTIFICATIONS', label: 'Certifications' },
+  { value: 'COURSES', label: 'Courses' },
+];
 const CREATOR_PROFILE_EXTRA_FIELDS = [
   { name: 'headline', label: 'Professional Headline', placeholder: 'e.g. Full-stack developer building AI tools' },
   { name: 'education', label: 'Education', placeholder: 'e.g. B.Tech CSE, PES University' },
   { name: 'graduationYear', label: 'Graduation Year', placeholder: 'e.g. 2027' },
   { name: 'githubProfile', label: 'GitHub Profile', placeholder: 'https://github.com/your-username' },
+  { name: 'socialMediaProfile', label: 'Social Media Profile', placeholder: 'https://twitter.com/your-username' },
   { name: 'currentCompany', label: 'Current Company', placeholder: 'e.g. Infosys, Google, Self-employed' },
-  { name: 'designation', label: 'Designation', placeholder: 'e.g. Product Manager, Founder, HR Lead' },
+  { name: 'designation', label: 'Designation', placeholder: 'e.g. HR, CEO, Manager' },
+  { name: 'roleDescription', label: 'Role Description', placeholder: 'e.g. Looking for a software engineer with 5+ years experience in React and Node.js', multiline: true },
   { name: 'companyName', label: 'Company / Organization Name', placeholder: 'e.g. Acme Ventures Pvt Ltd' },
   { name: 'companyWebsite', label: 'Company Website', placeholder: 'https://company.com', type: 'url' },
-  { name: 'availability', label: 'Availability', placeholder: 'e.g. Weekends, 10 hrs/week, Immediate joining' },
+  { name: 'availability', label: 'Notice Period', placeholder: 'e.g. Immediately, 30 days' },
   { name: 'hiringFor', label: 'Hiring / Collaboration Need', placeholder: 'e.g. React interns, marketing partners, sales consultants', multiline: true },
   { name: 'mentorshipTopics', label: 'Mentorship Topics', placeholder: 'e.g. Career guidance, fundraising, product strategy', multiline: true },
   { name: 'investmentFocus', label: 'Investment Focus', placeholder: 'e.g. AI SaaS, HealthTech, early-stage B2B', multiline: true },
@@ -76,6 +83,8 @@ const CREATOR_PROFILE_EXTRA_FIELDS = [
   { name: 'ticketSize', label: 'Typical Ticket Size', placeholder: 'e.g. ₹5L - ₹25L or strategic advisory' },
   { name: 'startupStage', label: 'Startup Stage', placeholder: 'e.g. Idea, MVP, Revenue, Scaling' },
   { name: 'coFounderNeeds', label: 'Co-founder / Team Need', placeholder: 'e.g. Looking for a technical co-founder and GTM partner', multiline: true },
+  { name: 'pitchDeckLink', label: 'Pitch Deck', placeholder: 'https://drive.google.com/file/d/...' },
+  { name: 'youtubeVideoLink', label: 'YouTube Video Link', placeholder: 'https://youtube.com/watch?v=...' },
   { name: 'incubationPrograms', label: 'Incubation Programs', placeholder: 'e.g. 12-week accelerator, grants, workspace, demo day', multiline: true },
   { name: 'supportOffered', label: 'Support Offered', placeholder: 'e.g. Mentorship, funding access, legal, product, cloud credits', multiline: true },
 ];
@@ -879,16 +888,16 @@ const buildForm = (profile) => {
       }
       return skillsStr.split(',').map((s) => ({ skill: s.trim(), level: 'INTERMEDIATE' })).filter((s) => s.skill);
     };
-    return {
-      about: profile?.about || '',
-      role: profile?.role || '',
-      skills: parseSkills(profile?.skills),
-      industry: profile?.industry || '',
-      location: profile?.location || '',
-      whyImHere: profile?.whyImHere || profile?.why_im_here || '',
-      expectedRateAmount: amount,
-      expectedRatePeriod: period,
-      linkedInProfileUrl: getLinkedInProfileUrl(profile),
+return {
+       about: profile?.about || '',
+       role: profile?.role || '',
+       skills: parseSkills(profile?.skills),
+       industry: profile?.industry || '',
+       location: profile?.location || '',
+       whyImHere: profile?.whyImHere || profile?.why_im_here || '',
+       expectedPriceAmount: amount,
+       expectedPricePeriod: period,
+       linkedInProfileUrl: getLinkedInProfileUrl(profile),
       introductionVideoLink: profile?.introductionVideoLink || profile?.introduction_video_link || '',
       resumeDriveLink: profile?.resumeDriveLink || profile?.resume_drive_link || '',
       portfolioWebsiteLink: profile?.portfolioWebsiteLink || profile?.portfolio_website_link || '',
@@ -900,8 +909,10 @@ const buildForm = (profile) => {
       graduationYear: profile?.graduationYear || profile?.graduation_year || '',
       experience: profile?.experience || profile?.years_experience || '',
       githubProfile: profile?.githubProfile || profile?.github_profile || '',
+      socialMediaProfile: profile?.socialMediaProfile || profile?.social_media_profile || '',
       currentCompany: profile?.currentCompany || profile?.current_company || '',
       designation: profile?.designation || '',
+      roleDescription: profile?.roleDescription || profile?.role_description || '',
       companyName: profile?.companyName || profile?.company_name || '',
       companyWebsite: profile?.companyWebsite || profile?.company_website || '',
       availability: profile?.availability || '',
@@ -912,6 +923,8 @@ const buildForm = (profile) => {
       ticketSize: profile?.ticketSize || profile?.ticket_size || '',
       startupStage: profile?.startupStage || profile?.startup_stage || '',
       coFounderNeeds: profile?.coFounderNeeds || profile?.co_founder_needs || '',
+      pitchDeckLink: profile?.pitchDeckLink || profile?.pitch_deck_link || '',
+      youtubeVideoLink: profile?.youtubeVideoLink || profile?.youtube_video_link || '',
       incubationPrograms: profile?.incubationPrograms || profile?.incubation_programs || '',
       supportOffered: profile?.supportOffered || profile?.support_offered || '',
     };
@@ -939,7 +952,29 @@ const buildForm = (profile) => {
     initial?.imageUrl,
     initial?.expectedRate,
     initial?.expected_rate,
+    initial?.expectedPrice,
+    initial?.expected_price,
+    initial?.designation,
+    initial?.roleDescription,
+    initial?.role_description,
+    initial?.pitchDeckLink,
+    initial?.pitch_deck_link,
+    initial?.youtubeVideoLink,
+    initial?.youtube_video_link,
   ]);
+
+  useEffect(() => {
+    if (!form.role || form.role === initial?.role) return;
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (key !== 'role') {
+          next[key] = '';
+        }
+      }
+      return next;
+    });
+  }, [form.role, initial?.id, initial?.role]);
 
   const linkedInUrl = useMemo(
     () => getLinkedInProfileUrl(form) || getLinkedInProfileUrl(initial),
@@ -985,16 +1020,16 @@ const buildForm = (profile) => {
     );
   };
 
-  const handleSubmit = async e => {
+const handleSubmit = async e => {
     e.preventDefault();
     if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
-    if (isFieldVisible('expectedRateAmount')) {
-      const expectedRate = buildCreatorExpectedRate(
-        form.expectedRateAmount,
-        form.expectedRatePeriod,
+    if (isFieldVisible('expectedPriceAmount')) {
+      const expectedPrice = buildCreatorExpectedRate(
+        form.expectedPriceAmount,
+        form.expectedPricePeriod,
       );
-      if (!expectedRate) {
-        setError('Enter a valid Expected Rate amount and select a period.');
+      if (!expectedPrice) {
+        setError((form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE') ? 'Enter a valid Expected Compensation amount and select a period.' : 'Enter a valid Expected Price amount and select a period.');
         return;
       }
     }
@@ -1021,8 +1056,10 @@ setLoading(true); setError('');
         graduationYear: 'graduationYear',
         experience: 'experience',
         githubProfile: 'githubProfile',
+        socialMediaProfile: 'socialMediaProfile',
         currentCompany: 'currentCompany',
-        designation: 'designation',
+         designation: 'designation',
+        roleDescription: 'roleDescription',
         companyName: 'companyName',
         companyWebsite: 'companyWebsite',
         availability: 'availability',
@@ -1030,21 +1067,23 @@ setLoading(true); setError('');
         mentorshipTopics: 'mentorshipTopics',
         investmentFocus: 'investmentFocus',
         investmentStage: 'investmentStage',
-        ticketSize: 'ticketSize',
-        startupStage: 'startupStage',
-        coFounderNeeds: 'coFounderNeeds',
-        incubationPrograms: 'incubationPrograms',
-        supportOffered: 'supportOffered',
+         ticketSize: 'ticketSize',
+         startupStage: 'startupStage',
+         coFounderNeeds: 'coFounderNeeds',
+         pitchDeckLink: 'pitchDeckLink',
+        youtubeVideoLink: 'youtubeVideoLink',
+         incubationPrograms: 'incubationPrograms',
+         supportOffered: 'supportOffered',
       };
       const payload = Object.fromEntries(
         Object.entries(fieldPayloadMap)
           .filter(([fieldName]) => isFieldVisible(fieldName))
           .map(([fieldName, payloadKey]) => [payloadKey, form[fieldName]]),
       );
-      if (isFieldVisible('expectedRateAmount')) {
-        payload.expectedRate = buildCreatorExpectedRate(
-          form.expectedRateAmount,
-          form.expectedRatePeriod,
+if (isFieldVisible('expectedPriceAmount')) {
+        payload.expectedPrice = buildCreatorExpectedRate(
+          form.expectedPriceAmount,
+          form.expectedPricePeriod,
         );
       }
       const linkedInProfileUrl = (form.linkedInProfileUrl || '').trim();
@@ -1177,35 +1216,33 @@ setLoading(true); setError('');
         )}
 
         {CREATOR_PROFILE_EXTRA_FIELDS.map(renderExtraField)}
-        {isFieldVisible('expectedRateAmount') && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Expected Rate {requiredMark('expectedRateAmount')}</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                name="expectedRateAmount"
-                type="number"
-                min="1"
-                step="1"
-                value={form.expectedRateAmount}
-                onChange={handleChange}
-                placeholder="e.g. 4000"
-                required={isFieldRequired('expectedRateAmount')}
-                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
-              />
-              <select
-                name="expectedRatePeriod"
-                value={form.expectedRatePeriod}
-                onChange={handleChange}
-                required={isFieldRequired('expectedRatePeriod')}
-                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
-              >
-                {CREATOR_RATE_PERIODS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </div>
+        <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">{(form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE') ? 'Expected Compensation' : 'Expected Price'} {requiredMark('expectedPriceAmount')}</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              name="expectedPriceAmount"
+              type="number"
+              min="1"
+              step="1"
+              value={form.expectedPriceAmount}
+              onChange={handleChange}
+              placeholder="e.g. 4000"
+              required={isFieldRequired('expectedPriceAmount')}
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+            />
+            <select
+              name="expectedPricePeriod"
+              value={form.expectedPricePeriod}
+              onChange={handleChange}
+              required={isFieldRequired('expectedPricePeriod')}
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
+            >
+              {CREATOR_RATE_PERIODS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
-        )}
+        </div>
         {linkedInImported && isFieldVisible('linkedInProfileUrl') && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
@@ -1266,19 +1303,37 @@ setLoading(true); setError('');
             <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" required={isFieldRequired('portfolioWebsiteLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
           </div>
         )}
-        {isFieldVisible('preferredWorkType') && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Preferred Work Type {requiredMark('preferredWorkType')}</label>
-            <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} required={isFieldRequired('preferredWorkType')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-              <option value="">Select work type</option>
-              <option value="FREELANCE">Freelance</option>
-              <option value="FULL_TIME">Full-Time</option>
-              <option value="CONTRACT">Contract</option>
-              <option value="CO_FOUNDER">Co-Founder</option>
-              <option value="OPEN_TO_ALL">Open to All</option>
-            </select>
-          </div>
-        )}
+{isFieldVisible('preferredWorkType') && (
+           <div className="flex flex-col gap-1.5">
+             <label className="text-sm font-medium text-gray-700">Preferred Work Type {requiredMark('preferredWorkType')}</label>
+             <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} required={isFieldRequired('preferredWorkType')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+               <option value="">Select work type</option>
+               {form.role === 'STUDENT' ? (
+                 <>
+                   <option value="INTERNSHIP">Internship</option>
+                   <option value="CERTIFICATIONS">Certifications</option>
+                   <option value="COURSES">Courses</option>
+                 </>
+                ) : form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE' ? (
+                  <>
+                    <option value="FULL_TIME">Full-Time</option>
+                    <option value="PART_TIME">Part-Time</option>
+                    <option value="CONTRACT">Contract</option>
+                    <option value="OPEN_TO_ALL">Open to All</option>
+                  </>
+               ) : (
+                 <>
+                   <option value="FREELANCE">Freelance</option>
+                   <option value="FULL_TIME">Full-Time</option>
+                   <option value="PART_TIME">Part-Time</option>
+                   <option value="CONTRACT">Contract</option>
+                   <option value="CO_FOUNDER">Co-Founder</option>
+                   <option value="OPEN_TO_ALL">Open to All</option>
+                 </>
+               )}
+             </select>
+           </div>
+         )}
         {isFieldVisible('industryExpertise') && (
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Industry Expertise {requiredMark('industryExpertise')}</label>

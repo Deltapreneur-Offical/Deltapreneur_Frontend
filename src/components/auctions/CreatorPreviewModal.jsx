@@ -120,7 +120,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
   const verified = Boolean(community.isApproved ?? community.is_approved ?? false);
   const featured = Boolean(community.featured ?? auction?.featured ?? false);
 
-  const expectedRate = cleanText(community.expectedRate || community.expected_rate || '');
+  const expectedPrice = cleanText(community.expectedPrice || community.expected_price || community.expectedRate || community.expected_rate || '');
   const preferredWorkType = cleanText(community.preferredWorkType || community.preferred_work_type || '');
   const industryExpertise = cleanText(community.industryExpertise || community.industry_expertise || '');
   const languagesKnown = cleanText(community.languagesKnown || community.languages_known || '');
@@ -338,13 +338,13 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                 linkUrl={introductionVideoLink}
               />
              ) : null}
-             {isFieldVisible('expectedRateAmount') ? (
-              <InfoCard
-                label="Expected Rate"
-                value={expectedRate}
-                icon={Tag}
-              />
-             ) : null}
+ {isFieldVisible('expectedPriceAmount') ? (
+                 <InfoCard
+                  label={(community.role === 'JOB_SEEKER' || community.role === 'EMPLOYEE') ? 'Expected Compensation' : 'Expected Price'}
+                  value={expectedPrice}
+                  icon={Tag}
+                />
+               ) : null}
              {isFieldVisible('resumeDriveLink') ? (
               <InfoCard
                 label="Resume (PDF)"

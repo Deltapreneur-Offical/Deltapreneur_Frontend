@@ -41,7 +41,7 @@ const CREATOR_FIELD_REQUIREMENTS = {
   whyImHere: { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'], label: 'Bio' },
   expectedPriceAmount: {
     key: 'expected_price',
-    aliases: ['expectedPrice', 'expected_price'],
+    aliases: ['expectedPrice', 'expected_price', 'expectedRate', 'expected_rate'],
     label: 'Expected Compensation',
   },
   expectedPricePeriod: {
@@ -179,7 +179,7 @@ const VISIBILITY_REQUIRED_FIELDS = [
   { key: 'location', aliases: ['location'] },
   { key: 'linked_in_id', aliases: ['linkedInId', 'linked_in_id'] },
   { key: 'why_im_here', aliases: ['whyImHere', 'why_im_here'] },
-  { key: 'expected_price', aliases: ['expectedPrice', 'expected_price'] },
+  { key: 'expected_price', aliases: ['expectedPrice', 'expected_price', 'expectedRate', 'expected_rate'] },
 ];
 
 export function isCreatorProfileVisible(profile) {

@@ -6009,11 +6009,24 @@ body.home-page-body {
 .home-nav-logo-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
+  height: var(--brand-nav-logo-height);
+  width: auto;
+  max-width: 11rem;
+}
+
+.home-nav-logo-video {
+  height: 100%;
+  width: auto;
+  max-width: 11rem;
+  object-fit: contain;
+  object-position: left center;
+  display: block;
 }
 
 .home-nav-logo-swap {

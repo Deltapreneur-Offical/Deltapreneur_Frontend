@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCompactCountdown } from '../../utils/auctionDate';
@@ -119,7 +120,80 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const badgeToneClass = BADGE_TONE_CLASS[category] || BADGE_TONE_CLASS.domain;
   const isFeatured = Boolean(auction?.featured);
   const categoryLabel = t(categoryMeta.labelKey);
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = useRef(null);
   const cardRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
+    };
+    const handleClose = () => setShareOpen(false);
+    document.addEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleClose, { passive: true });
+    window.addEventListener('resize', handleClose);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleClose);
+      window.removeEventListener('resize', handleClose);
+    };
+  }, []);
+
+  const toggleShare = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Auction: ${title}`,
+          text: `Check out this Auction listed on CoBrother!`,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    if (!shareOpen && shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect();
+      let left = rect.right + window.scrollX - 200;
+      if (left < 10) left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY;
+      if (rect.bottom + 270 > window.innerHeight) {
+        top = rect.top + window.scrollY - 270;
+      }
+      setCoords({ top, left });
+    }
+    setShareOpen(!shareOpen);
+  };
+
+  const shareUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/auctions?id=${auction?.id}`
+      : ``;
+  const shareSubject = `Check out this Auction on CoBrother`;
+  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: Auction\n📝 Name: ${title}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+
+  const handleShare = (platform) => {
+    window.open(platform, '_blank', 'width=600,height=400');
+    setShareOpen(false);
+  };
+
+  const stop = (e) => e.stopPropagation();
 
   const handleView = (e) => {
     if (e && e.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
@@ -173,14 +247,73 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
           </span>
         ) : null}
-        {verified ? (
-          <img
-            src={verifiedIcon}
-            alt=""
-            className="domain-listing-card__verified-icon"
-            aria-hidden
-          />
-        ) : null}
+        <div className="domain-listing-card__share-container" ref={shareRef}>
+          <button
+            type="button"
+            className="domain-listing-card__share-btn"
+            onClick={toggleShare}
+            title={t('listingCardShare')}
+          >
+            <Share2 size={18} strokeWidth={2} />
+          </button>
+          {shareOpen && createPortal(
+            <div
+              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+              style={{
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+              }}
+              onClick={stop}
+            >
+              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(linkedinShare)}
+              >
+                {t('listingCardLinkedIn')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(facebookShare)}
+              >
+                {t('listingCardFacebook')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(twitterShare)}
+              >
+                Twitter / X
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(whatsappShare)}
+              >
+                {t('listingCardWhatsApp')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(gmailShare)}
+              >
+                Gmail
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(emailShare)}
+              >
+                Email
+              </button>
+            </div>,
+            document.body
+          )}
+        </div>
       </div>
 
       <CreatorPreviewModal

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Share2, MoreVertical, Trash2, Gavel, ShoppingCart, Pencil, CircleUser } from 'lucide-react';
@@ -70,6 +71,7 @@ export default function TechnologyListingCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const shareRef = useRef(null);
   const menuRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
   const owner = Boolean(user?.id) && (isOwner === true || isTechnologyListingOwner(item, user));
   const isAuction = item.purchaseType === 'AUCTION';
   const showVerificationNotice =
@@ -84,21 +86,67 @@ export default function TechnologyListingCard({
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
+    const handleClose = () => {
+      setShareOpen(false);
+      setMenuOpen(false);
+    };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleClose, { passive: true });
+    window.addEventListener('resize', handleClose);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleClose);
+      window.removeEventListener('resize', handleClose);
+    };
   }, []);
+
+  const toggleShare = async (e) => {
+    stop(e);
+    setMenuOpen(false);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Technology: ${item.name || 'Technology'}`,
+          text: `Check out this Technology listed on CoBrother!`,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    if (!shareOpen && shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect();
+      let left = rect.right + window.scrollX - 200;
+      if (left < 10) left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY;
+      if (rect.bottom + 270 > window.innerHeight) {
+        top = rect.top + window.scrollY - 270;
+      }
+      setCoords({ top, left });
+    }
+    setShareOpen(!shareOpen);
+  };
 
   const shareUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/technology?id=${item.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/technology?id=${item.id}`;
-  const shareText = t('listingCardShareTechnology', {
-    name: item.name || t('listingCardTechnology'),
-    defaultValue: `Check out this technology: ${item.name || 'Technology'} - Listed on CoBrother!`,
-  });
+  const shareSubject = `Check out this Technology listed on CoBrother`;
+  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: Technology\n📝 Name: ${item.name || 'Technology'}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 
   const handleShare = (platform) => {
     window.open(platform, '_blank', 'width=600,height=400');
@@ -156,35 +204,7 @@ export default function TechnologyListingCard({
     );
   };
 
-  const shareButton = (
-    <div className="relative shrink-0" ref={shareRef}>
-      <button
-        type="button"
-        className={`domain-listing-card__btn domain-listing-card__btn--icon${shareOpen ? ' is-active' : ''}`}
-        onClick={(e) => { stop(e); setMenuOpen(false); setShareOpen(!shareOpen); }}
-        title={t('listingCardShare')}
-        aria-label={t('listingCardShare')}
-      >
-        <Share2 size={14} strokeWidth={2.1} />
-      </button>
-      {shareOpen && (
-        <div className="domain-listing-card__menu domain-listing-card__menu--trailing domain-listing-card__menu--share" onClick={stop}>
-          <div className="domain-listing-card__menu-heading">
-            {t('listingCardShareVia', { defaultValue: 'Share via' })}
-          </div>
-          <button type="button" className="domain-listing-card__menu-item" onClick={() => handleShare(linkedinShare)}>
-            {t('listingCardLinkedIn')}
-          </button>
-          <button type="button" className="domain-listing-card__menu-item" onClick={() => handleShare(facebookShare)}>
-            {t('listingCardFacebook')}
-          </button>
-          <button type="button" className="domain-listing-card__menu-item" onClick={() => handleShare(whatsappShare)}>
-            {t('listingCardWhatsApp')}
-          </button>
-        </div>
-      )}
-    </div>
-  );
+
 
   const buildOwnerMenuItems = () => {
     const items = [];
@@ -373,9 +393,6 @@ export default function TechnologyListingCard({
       <div className={`domain-listing-card__actions-primary${primaryAction ? '' : ' domain-listing-card__actions-primary--empty'}`}>
         {primaryAction}
       </div>
-      <div className="domain-listing-card__actions-trailing">
-        {shareButton}
-      </div>
     </div>
   );
 
@@ -431,14 +448,75 @@ export default function TechnologyListingCard({
             <span className="domain-listing-card__cover-fallback-domain">{techName}</span>
           </div>
         )}
-        {item.verified ? (
-          <img
-            src={verifiedIcon}
-            alt=""
-            className="domain-listing-card__verified-icon"
-            aria-hidden
-          />
-        ) : null}
+
+        <div className="domain-listing-card__share-container" ref={shareRef}>
+          <button
+            type="button"
+            className="domain-listing-card__share-btn"
+            onClick={toggleShare}
+            title={t('listingCardShare')}
+          >
+            <Share2 size={18} strokeWidth={2} />
+          </button>
+          {shareOpen && createPortal(
+            <div
+              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+              style={{
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+              }}
+              onClick={stop}
+            >
+              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(linkedinShare)}
+              >
+                {t('listingCardLinkedIn')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(facebookShare)}
+              >
+                {t('listingCardFacebook')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(twitterShare)}
+              >
+                Twitter / X
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(whatsappShare)}
+              >
+                {t('listingCardWhatsApp')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(gmailShare)}
+              >
+                Gmail
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(emailShare)}
+              >
+                Email
+              </button>
+            </div>,
+            document.body
+          )}
+        </div>
+
       </div>
 
       <div className="domain-listing-card__body">
@@ -446,11 +524,13 @@ export default function TechnologyListingCard({
           <p className="domain-listing-card__domain" title={techName}>
             <OverflowMarqueeText text={techName} />
           </p>
-          <span
-            className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveSoftwareStatusDotClass(statusKey)}`}
-            title={statusKey}
-            aria-hidden
-          />
+          {item.verified ? (
+            <img
+              src={verifiedIcon}
+              alt="Verified"
+              className="domain-listing-card__verified-badge"
+            />
+          ) : null}
         </div>
 
         <span className="venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 inline-block w-fit mb-1">

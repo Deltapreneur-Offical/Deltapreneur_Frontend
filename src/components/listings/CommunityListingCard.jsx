@@ -18,13 +18,15 @@ import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import verifiedIcon from '../../assets/Verified_Icon.png';
+import '../../styles/domain-listing-cards.css';
 
 function formatLabel(value) {
   if (!value || typeof value !== 'string') return '';
   return value.replace(/_/g, ' ').trim();
 }
 
-function CreatorAvatar({ imageUrl, name, isComplete }) {
+function CreatorAvatar({ imageUrl, name }) {
   const initial = name?.[0]?.toUpperCase() || '?';
 
   return (
@@ -38,11 +40,6 @@ function CreatorAvatar({ imageUrl, name, isComplete }) {
       ) : (
         <div className="creator-profile-card__avatar creator-profile-card__avatar--fallback" aria-hidden>
           {initial}
-        </div>
-      )}
-      {isComplete && (
-        <div className="creator-profile-card__verified-badge">
-          <CheckCircle2 size={16} strokeWidth={2.5} style={{ fill: '#22c55e', color: '#fff' }} />
         </div>
       )}
     </div>
@@ -133,13 +130,22 @@ export default function CommunityListingCard({
 
       <div className="creator-profile-card__body">
         <div className="creator-profile-card__top-section">
-          <CreatorAvatar imageUrl={imageUrl} name={profile.name} isComplete={isCreatorProfileComplete(profile)} />
+          <CreatorAvatar imageUrl={imageUrl} name={profile.name} />
           
           <div className="creator-profile-card__header-right">
              <div className="creator-profile-card__name-section">
-                <h3 className="creator-profile-card__name" title={profile.name || undefined}>
-                  <OverflowMarqueeText text={profile.name || t('listingCardAnonymous')} />
-                </h3>
+                <div className="flex items-center gap-2 w-full">
+                  <h3 className="creator-profile-card__name flex-1 min-w-0" title={profile.name || undefined}>
+                    <OverflowMarqueeText text={profile.name || t('listingCardAnonymous')} />
+                  </h3>
+                  {isCreatorProfileComplete(profile) ? (
+                    <img
+                      src={verifiedIcon}
+                      alt="Verified"
+                      className="domain-listing-card__verified-badge"
+                    />
+                  ) : null}
+                </div>
                 <div className="creator-profile-card__badge-slot">
                   {isMe ? (
                     <span className="creator-profile-card__badge creator-profile-card__badge--owner">

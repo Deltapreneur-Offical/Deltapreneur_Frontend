@@ -15,6 +15,7 @@ import {
   resolveHomeAuctionPath,
 } from '../../utils/homepageAuctions';
 import HomePreviewCardShell from './HomePreviewCardShell';
+import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -76,7 +77,7 @@ export default function AuctionsSection() {
     navigate(resolveHomeAuctionPath(auction));
   };
 
-  const shouldAutoScroll = displayAuctions.length > 4;
+  const shouldAutoScroll = useShouldAutoScroll(displayAuctions.length);
 
   if (loading) {
     return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" variant="auction" />;

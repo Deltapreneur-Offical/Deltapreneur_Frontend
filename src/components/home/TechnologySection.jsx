@@ -5,6 +5,7 @@ import { cocreationAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
+import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -45,7 +46,7 @@ export default function TechnologySection() {
     navigateToListingDetail(navigate, 'software', softwareId);
   };
 
-  const shouldAutoScroll = previewSoftwares.length > 4;
+  const shouldAutoScroll = useShouldAutoScroll(previewSoftwares.length);
 
   const renderTechnologyCard = (item) => (
     <HomePreviewCardShell accent="technology">

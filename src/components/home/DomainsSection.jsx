@@ -5,6 +5,7 @@ import { domainAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
+import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
@@ -47,7 +48,7 @@ export default function DomainsSection() {
     navigateToListingDetail(navigate, 'domain', domainId);
   };
 
-  const shouldAutoScroll = previewDomains.length > 4;
+  const shouldAutoScroll = useShouldAutoScroll(previewDomains.length);
 
   const renderDomainCard = (domain) => (
     <HomePreviewCardShell accent="domain">

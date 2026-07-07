@@ -5,6 +5,7 @@ import { ventureAPI } from '../../api/services';
 import { fetchHomepageVenturePreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
+import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -43,7 +44,7 @@ export default function VenturesSection() {
     navigateToListingDetail(navigate, 'venture', ventureId);
   };
 
-  const shouldAutoScroll = ventures.length > 4;
+  const shouldAutoScroll = useShouldAutoScroll(ventures.length);
 
   const renderVentureCard = (venture) => (
     <HomePreviewCardShell accent="venture">

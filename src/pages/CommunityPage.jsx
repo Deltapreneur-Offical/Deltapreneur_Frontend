@@ -27,6 +27,8 @@ import {
   isCreatorProfileComplete,
   isCreatorProfileVisible,
 } from '../utils/creatorProfile';
+import { getVisibleCreatorFields } from '../utils/creatorRoleFields';
+import SkillsInput from '../components/common/SkillsInput';
 import { isListingOwner } from '../utils/listingVisibility';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import { useCreatorAuctionProfileSync } from '../hooks/useCreatorAuctionProfileSync';
@@ -58,6 +60,35 @@ const WORK_TYPES = [
   { value: 'PART_TIME', label: 'Part Time' },
   { value: 'CONTRACT', label: 'Contract' },
   { value: 'OPEN_TO_ALL', label: 'Open to All' },
+];
+const STUDENT_WORK_TYPES = [
+  { value: 'INTERNSHIP', label: 'Internship' },
+  { value: 'CERTIFICATIONS', label: 'Certifications' },
+  { value: 'COURSES', label: 'Courses' },
+];
+const CREATOR_PROFILE_EXTRA_FIELDS = [
+  { name: 'headline', label: 'Professional Headline', placeholder: 'e.g. Full-stack developer building AI tools' },
+  { name: 'education', label: 'Education', placeholder: 'e.g. B.Tech CSE, PES University' },
+  { name: 'graduationYear', label: 'Graduation Year', placeholder: 'e.g. 2027' },
+  { name: 'githubProfile', label: 'GitHub Profile', placeholder: 'https://github.com/your-username' },
+  { name: 'socialMediaProfile', label: 'Social Media Profile', placeholder: 'https://twitter.com/your-username' },
+  { name: 'currentCompany', label: 'Current Company', placeholder: 'e.g. Infosys, Google, Self-employed' },
+  { name: 'designation', label: 'Designation', placeholder: 'e.g. HR, CEO, Manager' },
+  { name: 'roleDescription', label: 'Role Description', placeholder: 'e.g. Looking for a software engineer with 5+ years experience in React and Node.js', multiline: true },
+  { name: 'companyName', label: 'Company / Organization Name', placeholder: 'e.g. Acme Ventures Pvt Ltd' },
+  { name: 'companyWebsite', label: 'Company Website', placeholder: 'https://company.com', type: 'url' },
+  { name: 'availability', label: 'Notice Period', placeholder: 'e.g. Immediately, 30 days' },
+  { name: 'hiringFor', label: 'Hiring / Collaboration Need', placeholder: 'e.g. React interns, marketing partners, sales consultants', multiline: true },
+  { name: 'mentorshipTopics', label: 'Mentorship Topics', placeholder: 'e.g. Career guidance, fundraising, product strategy', multiline: true },
+  { name: 'investmentFocus', label: 'Investment Focus', placeholder: 'e.g. AI SaaS, HealthTech, early-stage B2B', multiline: true },
+  { name: 'investmentStage', label: 'Preferred Investment Stage', placeholder: 'e.g. Idea, MVP, Seed, Series A' },
+  { name: 'ticketSize', label: 'Typical Ticket Size', placeholder: 'e.g. ₹5L - ₹25L or strategic advisory' },
+  { name: 'startupStage', label: 'Startup Stage', placeholder: 'e.g. Idea, MVP, Revenue, Scaling' },
+  { name: 'coFounderNeeds', label: 'Co-founder / Team Need', placeholder: 'e.g. Looking for a technical co-founder and GTM partner', multiline: true },
+  { name: 'pitchDeckLink', label: 'Pitch Deck', placeholder: 'https://drive.google.com/file/d/...' },
+  { name: 'youtubeVideoLink', label: 'YouTube Video Link', placeholder: 'https://youtube.com/watch?v=...' },
+  { name: 'incubationPrograms', label: 'Incubation Programs', placeholder: 'e.g. 12-week accelerator, grants, workspace, demo day', multiline: true },
+  { name: 'supportOffered', label: 'Support Offered', placeholder: 'e.g. Mentorship, funding access, legal, product, cloud credits', multiline: true },
 ];
 const DURATIONS = [
   { value: 'ONE_DAY', label: '1 Day' },
@@ -862,13 +893,24 @@ function CommunityProfileForm({
     if (currencyCode === 'INR') return String(Math.round(converted));
     return String(Number(converted.toFixed(2)));
   };
+  const parseSkills = (skillsStr) => {
+    if (!skillsStr) return [];
+    if (Array.isArray(skillsStr)) {
+      return skillsStr.map((s) => (typeof s === 'string' ? { skill: s, level: 'INTERMEDIATE' } : s));
+    }
+    return skillsStr
+      .split(',')
+      .map((s) => ({ skill: s.trim(), level: 'INTERMEDIATE' }))
+      .filter((s) => s.skill);
+  };
+
   const buildForm = (profile) => {
     const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
     const expectedRateCurrency = navCurrency || 'INR';
     return {
       about: profile?.about || '',
       role: profile?.role || '',
-      skills: profile?.skills || '',
+      skills: parseSkills(profile?.skills),
       industry: profile?.industry || '',
       location: profile?.location || '',
       whyImHere: profile?.whyImHere || profile?.why_im_here || '',
@@ -885,11 +927,39 @@ function CommunityProfileForm({
       preferredWorkType: profile?.preferredWorkType || profile?.preferred_work_type || '',
       industryExpertise: profile?.industryExpertise || profile?.industry_expertise || '',
       languagesKnown: profile?.languagesKnown || profile?.languages_known || '',
+      headline: profile?.headline || '',
+      education: profile?.education || '',
+      graduationYear: profile?.graduationYear || profile?.graduation_year || '',
+      experience: profile?.experience || profile?.years_experience || '',
+      githubProfile: profile?.githubProfile || profile?.github_profile || '',
+      socialMediaProfile: profile?.socialMediaProfile || profile?.social_media_profile || '',
+      currentCompany: profile?.currentCompany || profile?.current_company || '',
+      designation: profile?.designation || '',
+      roleDescription: profile?.roleDescription || profile?.role_description || '',
+      companyName: profile?.companyName || profile?.company_name || '',
+      companyWebsite: profile?.companyWebsite || profile?.company_website || '',
+      availability: profile?.availability || '',
+      hiringFor: profile?.hiringFor || profile?.hiring_for || '',
+      mentorshipTopics: profile?.mentorshipTopics || profile?.mentorship_topics || '',
+      investmentFocus: profile?.investmentFocus || profile?.investment_focus || '',
+      investmentStage: profile?.investmentStage || profile?.investment_stage || '',
+      ticketSize: profile?.ticketSize || profile?.ticket_size || '',
+      startupStage: profile?.startupStage || profile?.startup_stage || '',
+      coFounderNeeds: profile?.coFounderNeeds || profile?.co_founder_needs || '',
+      incubationPrograms: profile?.incubationPrograms || profile?.incubation_programs || '',
+      supportOffered: profile?.supportOffered || profile?.support_offered || '',
     };
   };
   const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const visibleFields = getVisibleCreatorFields(form.role);
+  const isFieldVisible = (fieldName) => visibleFields.includes(fieldName);
+  const isFieldRequired = isFieldVisible;
+  const requiredMark = (fieldName) => (
+    isFieldRequired(fieldName) ? <span className="text-red-500">*</span> : null
+  );
 
   useEffect(() => {
     setForm(buildForm(initial));
@@ -903,7 +973,29 @@ function CommunityProfileForm({
     initial?.imageUrl,
     initial?.expectedRate,
     initial?.expected_rate,
+    initial?.expectedPrice,
+    initial?.expected_price,
+    initial?.designation,
+    initial?.roleDescription,
+    initial?.role_description,
+    initial?.pitchDeckLink,
+    initial?.pitch_deck_link,
+    initial?.youtubeVideoLink,
+    initial?.youtube_video_link,
   ]);
+
+  useEffect(() => {
+    if (!form.role || form.role === initial?.role) return;
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (key !== 'role') {
+          next[key] = '';
+        }
+      }
+      return next;
+    });
+  }, [form.role, initial?.id, initial?.role]);
 
   const linkedInUrl = useMemo(
     () => getLinkedInProfileUrl(form) || getLinkedInProfileUrl(initial),
@@ -947,9 +1039,45 @@ function CommunityProfileForm({
     }));
   };
 
-  const handleSubmit = async e => {
+  const renderExtraField = (field) => {
+    if (!isFieldVisible(field.name)) return null;
+    const commonProps = {
+      name: field.name,
+      value: form[field.name] || '',
+      onChange: handleChange,
+      placeholder: field.placeholder,
+      required: isFieldRequired(field.name),
+      className: 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all',
+    };
+
+    return (
+      <div key={field.name} className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          {field.label} {requiredMark(field.name)}
+        </label>
+        {field.multiline ? (
+          <textarea
+            {...commonProps}
+            rows={3}
+            className={`${commonProps.className} resize-vertical`}
+          />
+        ) : (
+          <input
+            {...commonProps}
+            type={field.type || 'text'}
+          />
+        )}
+      </div>
+    );
+  };
+
+const handleSubmit = async e => {
     e.preventDefault();
-    if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
+    if (!initial?.id) {
+      setError('Profile ID missing — please refresh.');
+      return;
+    }
+
     const expectedRate = buildCreatorExpectedRate(
       form.expectedRateAmountInr,
       form.expectedRatePeriod,
@@ -958,34 +1086,103 @@ function CommunityProfileForm({
       setError('Enter a valid Expected Rate amount and select a period.');
       return;
     }
-    setLoading(true); setError('');
+
+    if (isFieldVisible('expectedPriceAmount')) {
+      const expectedPrice = buildCreatorExpectedRate(
+        form.expectedPriceAmount,
+        form.expectedPricePeriod,
+      );
+      if (!expectedPrice) {
+        setError(
+          form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE'
+            ? 'Enter a valid Expected Compensation amount and select a period.'
+            : 'Enter a valid Expected Price amount and select a period.'
+        );
+        return;
+      }
+    }
+
+    setLoading(true);
+    setError('');
+
     try {
-      const payload = {
-        about: form.about,
-        role: form.role,
-        skills: form.skills,
-        industry: form.industry,
-        location: form.location,
-        whyImHere: form.whyImHere,
-        expectedRate,
-        introductionVideoLink: form.introductionVideoLink,
-        resumeDriveLink: form.resumeDriveLink,
-        portfolioWebsiteLink: form.portfolioWebsiteLink,
-        pitchDeckLink: isFounderRole ? form.pitchDeckLink : '',
-        youtubeVideoLink: isFounderRole ? form.youtubeVideoLink : '',
-        preferredWorkType: form.preferredWorkType,
-        industryExpertise: form.industryExpertise,
-        languagesKnown: form.languagesKnown,
-      };
+      const skillsString = form.skills && form.skills.length > 0
+        ? form.skills.map((s) => (typeof s === 'string' ? s : s.skill)).join(', ')
+        : '';
+
+      const fieldPayloadMap = [
+        ['about', 'about'],
+        ['role', 'role'],
+        ['skills', 'skills'],
+        ['industry', 'industry'],
+        ['location', 'location'],
+        ['whyImHere', 'whyImHere'],
+        ['introductionVideoLink', 'introductionVideoLink'],
+        ['resumeDriveLink', 'resumeDriveLink'],
+        ['portfolioWebsiteLink', 'portfolioWebsiteLink'],
+        ['preferredWorkType', 'preferredWorkType'],
+        ['industryExpertise', 'industryExpertise'],
+        ['languagesKnown', 'languagesKnown'],
+        ['headline', 'headline'],
+        ['education', 'education'],
+        ['graduationYear', 'graduationYear'],
+        ['experience', 'experience'],
+        ['githubProfile', 'githubProfile'],
+        ['socialMediaProfile', 'socialMediaProfile'],
+        ['currentCompany', 'currentCompany'],
+        ['designation', 'designation'],
+        ['roleDescription', 'roleDescription'],
+        ['companyName', 'companyName'],
+        ['companyWebsite', 'companyWebsite'],
+        ['availability', 'availability'],
+        ['hiringFor', 'hiringFor'],
+        ['mentorshipTopics', 'mentorshipTopics'],
+        ['investmentFocus', 'investmentFocus'],
+        ['investmentStage', 'investmentStage'],
+        ['ticketSize', 'ticketSize'],
+        ['startupStage', 'startupStage'],
+        ['coFounderNeeds', 'coFounderNeeds'],
+        ['pitchDeckLink', 'pitchDeckLink'],
+        ['youtubeVideoLink', 'youtubeVideoLink'],
+        ['incubationPrograms', 'incubationPrograms'],
+        ['supportOffered', 'supportOffered'],
+      ];
+
+      const payload = Object.fromEntries(
+        fieldPayloadMap
+          .filter(([fieldName]) => isFieldVisible(fieldName))
+          .map(([fieldName, payloadKey]) => [
+            payloadKey,
+            fieldName === 'skills' ? skillsString : form[fieldName],
+          ]),
+      );
+
+      payload.expectedRate = expectedRate;
+
+      if (isFieldVisible('expectedPriceAmount')) {
+        payload.expectedPrice = buildCreatorExpectedRate(
+          form.expectedPriceAmount,
+          form.expectedPricePeriod,
+        );
+      }
+
+      if (isFounderRole) {
+        payload.pitchDeckLink = form.pitchDeckLink;
+        payload.youtubeVideoLink = form.youtubeVideoLink;
+      }
+
       const linkedInProfileUrl = (form.linkedInProfileUrl || '').trim();
-      if (linkedInImported && linkedInProfileUrl) {
+      if (linkedInImported && linkedInProfileUrl && isFieldVisible('linkedInProfileUrl')) {
         payload.linkedInProfileUrl = linkedInProfileUrl;
       }
+
       const { data } = await communityAPI.update(initial.id, payload);
       onSaved(data?.data ?? data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save. Please try again.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1052,7 +1249,7 @@ function CommunityProfileForm({
         {/* About - full width */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">
-            About <span className="text-red-500">*</span>
+            About {requiredMark('about')}
           </label>
           <textarea
             name="about"
@@ -1060,7 +1257,7 @@ function CommunityProfileForm({
             onChange={handleChange}
             placeholder="Tell others about yourself..."
             rows={3}
-            required
+            required={isFieldRequired('about')}
             className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
           />
         </div>
@@ -1068,20 +1265,45 @@ function CommunityProfileForm({
         {/* Role + Industry */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500">*</span></label>
-            <select name="role" value={form.role} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Your Role {requiredMark('role')}</label>
+            <select name="role" value={form.role} onChange={handleChange} required={isFieldRequired('role')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select role</option>
               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500">*</span></label>
-            <select name="industry" value={form.industry} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Industry {requiredMark('industry')}</label>
+            <select name="industry" value={form.industry} onChange={handleChange} required={isFieldRequired('industry')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select industry</option>
               {COMMUNITY_INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
-            </select>
+</select>
           </div>
         </div>
+
+        {isFieldVisible('skills') && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkillsInput
+              skills={form.skills}
+              onChange={(skills) => setForm({ ...form, skills })}
+              placeholder="Search skills..."
+            />
+            {isFieldVisible('experience') && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Experience {requiredMark('experience')}</label>
+                <input
+                  name="experience"
+                  value={form.experience}
+                  onChange={handleChange}
+                  placeholder="e.g. 3 years at Google, or companies..."
+                  required={isFieldRequired('experience')}
+                  className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {CREATOR_PROFILE_EXTRA_FIELDS.map(renderExtraField)}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Skills <span className="text-red-500">*</span></label>
           <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
@@ -1129,10 +1351,10 @@ function CommunityProfileForm({
             </select>
           </div>
         </div>
-        {linkedInImported && (
+        {linkedInImported && isFieldVisible('linkedInProfileUrl') && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              LinkedIn URL <span className="text-red-500">*</span>
+              LinkedIn URL {requiredMark('linkedInProfileUrl')}
               <span className="text-gray-400 font-normal text-xs ml-1">
                 {linkedInUrlMissing
                   ? '(paste your profile link)'
@@ -1142,7 +1364,7 @@ function CommunityProfileForm({
             <input
               name="linkedInProfileUrl"
               type="url"
-              required
+              required={isFieldRequired('linkedInProfileUrl')}
               value={form.linkedInProfileUrl}
               onChange={handleChange}
               placeholder={t(
@@ -1226,6 +1448,73 @@ function CommunityProfileForm({
           <label className="text-sm font-medium text-gray-700">Languages Known</label>
           <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
+        {isFieldVisible('whyImHere') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Why I'm Here {requiredMark('whyImHere')}</label>
+            <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required={isFieldRequired('whyImHere')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
+          </div>
+        )}
+        {isFieldVisible('introductionVideoLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Introduction Video Link (Google Drive / YouTube / Loom) {requiredMark('introductionVideoLink')}</label>
+            <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." required={isFieldRequired('introductionVideoLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('resumeDriveLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF) {requiredMark('resumeDriveLink')}</label>
+            <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." required={isFieldRequired('resumeDriveLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('portfolioWebsiteLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Portfolio Website Link {requiredMark('portfolioWebsiteLink')}</label>
+            <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" required={isFieldRequired('portfolioWebsiteLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+{isFieldVisible('preferredWorkType') && (
+           <div className="flex flex-col gap-1.5">
+             <label className="text-sm font-medium text-gray-700">Preferred Work Type {requiredMark('preferredWorkType')}</label>
+             <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} required={isFieldRequired('preferredWorkType')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+               <option value="">Select work type</option>
+               {form.role === 'STUDENT' ? (
+                 <>
+                   <option value="INTERNSHIP">Internship</option>
+                   <option value="CERTIFICATIONS">Certifications</option>
+                   <option value="COURSES">Courses</option>
+                 </>
+                ) : form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE' ? (
+                  <>
+                    <option value="FULL_TIME">Full-Time</option>
+                    <option value="PART_TIME">Part-Time</option>
+                    <option value="CONTRACT">Contract</option>
+                    <option value="OPEN_TO_ALL">Open to All</option>
+                  </>
+               ) : (
+                 <>
+                   <option value="FREELANCE">Freelance</option>
+                   <option value="FULL_TIME">Full-Time</option>
+                   <option value="PART_TIME">Part-Time</option>
+                   <option value="CONTRACT">Contract</option>
+                   <option value="CO_FOUNDER">Co-Founder</option>
+                   <option value="OPEN_TO_ALL">Open to All</option>
+                 </>
+               )}
+             </select>
+           </div>
+         )}
+        {isFieldVisible('industryExpertise') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Industry Expertise {requiredMark('industryExpertise')}</label>
+            <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" required={isFieldRequired('industryExpertise')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('languagesKnown') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Languages Known {requiredMark('languagesKnown')}</label>
+            <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" required={isFieldRequired('languagesKnown')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">
           <button type="submit" className="btn-glow" disabled={loading}>

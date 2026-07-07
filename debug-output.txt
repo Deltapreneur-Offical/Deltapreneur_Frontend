@@ -1,0 +1,59 @@
+Line 0: colonIdx=-1 len=1
+Line 1: colonIdx=18 len=67
+  beforeColon="  \"footerCopyright"
+  keyMatch=null
+Line 2: colonIdx=13 len=41
+  beforeColon="  \"footerMade"
+  keyMatch=null
+Line 3: colonIdx=12 len=28
+  beforeColon="  \"contactUs"
+  keyMatch=null
+Line 4: colonIdx=12 len=28
+  beforeColon="  \"myAccount"
+  keyMatch=null
+Line 5: colonIdx=9 len=22
+  beforeColon="  \"joinUs"
+  keyMatch=null
+Line 6: colonIdx=16 len=29
+  beforeColon="  \"joinCoBrother"
+  keyMatch=null
+Line 7: colonIdx=9 len=22
+  beforeColon="  \"signIn"
+  keyMatch=null
+Line 8: colonIdx=13 len=29
+  beforeColon="  \"operations"
+  keyMatch=null
+Line 9: colonIdx=10 len=23
+  beforeColon="  \"domains"
+  keyMatch=null
+Line 10: colonIdx=13 len=36
+  beforeColon="  \"storefront"
+  keyMatch=null
+Line 11: colonIdx=20 len=45
+  beforeColon="  \"storefrontEyebrow"
+  keyMatch=null
+Line 12: colonIdx=18 len=45
+  beforeColon="  \"storefrontTitle"
+  keyMatch=null
+Line 13: colonIdx=21 len=116
+  beforeColon="  \"storefrontSubtitle"
+  keyMatch=null
+Line 14: colonIdx=25 len=38
+  beforeColon="  \"storefrontSandboxBadge"
+  keyMatch=null
+Line 15: colonIdx=22 len=32
+  beforeColon="  \"storefrontDemoBadge"
+  keyMatch=null
+Line 16: colonIdx=24 len=46
+  beforeColon="  \"storefrontSearchTitle"
+  keyMatch=null
+Line 17: colonIdx=21 len=36
+  beforeColon="  \"storefrontChecking"
+  keyMatch=null
+Line 18: colonIdx=24 len=66
+  beforeColon="  \"storefrontCheckFailed"
+  keyMatch=null
+Line 19: colonIdx=22 len=37
+  beforeColon="  \"storefrontAvailable"
+  keyMatch=null
+checked=19 keyMatched=0

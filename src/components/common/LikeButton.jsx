@@ -11,7 +11,7 @@ export default function LikeButton({
 }) {
   const [animating, setAnimating] = useState(false);
   const isActive = liked || forceRed;
-  const iconSize = size === 'sm' ? 16 : 18;
+  const iconSize = size === 'sm' ? 14 : 16;
 
   const stop = (e) => {
     e.stopPropagation();
@@ -28,16 +28,16 @@ export default function LikeButton({
         className={`listing-like-btn listing-like-btn--readonly ${size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'}`}
         aria-label={`${count || 0} likes`}
       >
-        <Heart
-          size={iconSize}
-          className={heartClass}
-          strokeWidth={2.5}
-          fill={isActive ? 'currentColor' : 'none'}
-          aria-hidden="true"
-        />
         <span className="listing-like-btn__count">
           {count || 0}
         </span>
+        <Heart
+          size={14}
+          className={heartClass}
+          strokeWidth={2.25}
+          fill={isActive ? 'currentColor' : 'none'}
+          aria-hidden="true"
+        />
       </span>
     );
   }
@@ -62,16 +62,16 @@ export default function LikeButton({
         size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'
       } listing-like-btn--light ${animating ? 'listing-like-btn--animating' : ''}`}
     >
-      <Heart
-        size={iconSize}
-        className={heartClass}
-        strokeWidth={2.5}
-        fill={isActive ? 'currentColor' : 'none'}
-        aria-hidden="true"
-      />
       <span className="listing-like-btn__count">
         {count || 0}
       </span>
+      <Heart
+        size={14}
+        className={heartClass}
+        strokeWidth={2.25}
+        fill={isActive ? 'currentColor' : 'none'}
+        aria-hidden="true"
+      />
     </button>
   );
 }

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel, ChevronRight, User2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
+import { getVisibleCreatorFields } from '../../utils/creatorRoleFields';
 import { formatCountdown } from '../../utils/auctionDate';
 
 function LinkedInIcon({ size = 18, className = '', fill = 'none' }) {
@@ -33,6 +34,16 @@ function cleanText(value) {
 function formatLabel(value) {
   if (!value || typeof value !== 'string') return '';
   return value.replace(/_/g, ' ').trim();
+}
+
+function getCleanDisplayLink(url) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname + parsed.pathname.slice(0, 15) + (parsed.pathname.length > 15 ? '...' : '');
+  } catch {
+    return url.slice(0, 30) + (url.length > 30 ? '...' : '');
+  }
 }
 
 function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) {
@@ -89,9 +100,18 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
   const roleLabel = formatLabel(community.role);
   const industryLabel = formatLabel(community.industry);
   const location = cleanText(community.location || '');
+  const visibleFields = getVisibleCreatorFields(community.role);
+  const isFieldVisible = (fieldName) => visibleFields.includes(fieldName);
 
   const skills = community.skills
-    ? community.skills.split(',').map((s) => s.trim()).filter(Boolean)
+    ? (typeof community.skills[0] === 'object'
+       ? community.skills.map((s) => s.skill || s).filter(Boolean)
+       : community.skills.split(',').map((s) => s.trim()).filter(Boolean))
+    : [];
+  const skillLevels = community.skills
+    ? (typeof community.skills[0] === 'object'
+       ? community.skills.map((s) => s.level || 'INTERMEDIATE')
+       : community.skills.split(',').map(() => 'INTERMEDIATE'))
     : [];
 
   const about = cleanText(community.about || community.bio || community.why_im_here || community.whyImHere || '');
@@ -100,15 +120,60 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
   const verified = Boolean(community.isApproved ?? community.is_approved ?? false);
   const featured = Boolean(community.featured ?? auction?.featured ?? false);
 
-  const expectedRate = cleanText(community.expectedRate || community.expected_rate || '');
+  const expectedPrice = cleanText(community.expectedPrice || community.expected_price || community.expectedRate || community.expected_rate || '');
   const preferredWorkType = cleanText(community.preferredWorkType || community.preferred_work_type || '');
   const industryExpertise = cleanText(community.industryExpertise || community.industry_expertise || '');
   const languagesKnown = cleanText(community.languagesKnown || community.languages_known || '');
+  const headline = cleanText(community.headline || '');
+  const education = cleanText(community.education || '');
+  const graduationYear = cleanText(community.graduationYear || community.graduation_year || '');
+  const experience = cleanText(community.experience || community.years_experience || '');
+  const currentCompany = cleanText(community.currentCompany || community.current_company || '');
+  const designation = cleanText(community.designation || '');
+  const companyName = cleanText(community.companyName || community.company_name || '');
+  const companyWebsite = cleanText(community.companyWebsite || community.company_website || '');
+  const availability = cleanText(community.availability || '');
+  const hiringFor = cleanText(community.hiringFor || community.hiring_for || '');
+  const mentorshipTopics = cleanText(community.mentorshipTopics || community.mentorship_topics || '');
+  const investmentFocus = cleanText(community.investmentFocus || community.investment_focus || '');
+  const investmentStage = cleanText(community.investmentStage || community.investment_stage || '');
+  const ticketSize = cleanText(community.ticketSize || community.ticket_size || '');
+  const startupStage = cleanText(community.startupStage || community.startup_stage || '');
+  const coFounderNeeds = cleanText(community.coFounderNeeds || community.co_founder_needs || '');
+  const incubationPrograms = cleanText(community.incubationPrograms || community.incubation_programs || '');
+  const supportOffered = cleanText(community.supportOffered || community.support_offered || '');
 
   const linkedInUrl = getLinkedInProfileUrl(community);
   const introductionVideoLink = cleanText(community.introductionVideoLink || community.introduction_video_link || '');
   const resumeDriveLink = cleanText(community.resumeDriveLink || community.resume_drive_link || '');
   const portfolioWebsiteLink = cleanText(community.portfolioWebsiteLink || community.portfolio_website_link || '');
+  const extraInfoCards = [
+    { name: 'headline', label: 'Professional Headline', value: headline, icon: Star },
+    { name: 'education', label: 'Education', value: education, icon: User2 },
+    { name: 'graduationYear', label: 'Graduation Year', value: graduationYear, icon: Clock },
+    { name: 'experience', label: 'Experience', value: experience, icon: Briefcase },
+    { name: 'currentCompany', label: 'Current Company', value: currentCompany, icon: Building2 },
+    { name: 'designation', label: 'Designation', value: designation, icon: BadgeCheck },
+    { name: 'companyName', label: 'Company / Organization', value: companyName, icon: Building2 },
+    {
+      name: 'companyWebsite',
+      label: 'Company Website',
+      value: getCleanDisplayLink(companyWebsite),
+      icon: Globe,
+      isLink: Boolean(companyWebsite),
+      linkUrl: companyWebsite,
+    },
+    { name: 'availability', label: 'Availability', value: availability, icon: Clock },
+    { name: 'hiringFor', label: 'Hiring / Collaboration Need', value: hiringFor, icon: Briefcase },
+    { name: 'mentorshipTopics', label: 'Mentorship Topics', value: mentorshipTopics, icon: Target },
+    { name: 'investmentFocus', label: 'Investment Focus', value: investmentFocus, icon: Sparkles },
+    { name: 'investmentStage', label: 'Preferred Investment Stage', value: investmentStage, icon: Gavel },
+    { name: 'ticketSize', label: 'Typical Ticket Size', value: ticketSize, icon: Tag },
+    { name: 'startupStage', label: 'Startup Stage', value: startupStage, icon: Sparkles },
+    { name: 'coFounderNeeds', label: 'Co-founder / Team Need', value: coFounderNeeds, icon: Target },
+    { name: 'incubationPrograms', label: 'Incubation Programs', value: incubationPrograms, icon: Building2 },
+    { name: 'supportOffered', label: 'Support Offered', value: supportOffered, icon: Star },
+  ];
 
   useEffect(() => {
     if (!open) return undefined;
@@ -151,16 +216,6 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
   const handleConnect = () => {
     if (linkedInUrl) {
       window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  const getCleanDisplayLink = (url) => {
-    if (!url) return '';
-    try {
-      const parsed = new URL(url);
-      return parsed.hostname + parsed.pathname.slice(0, 15) + (parsed.pathname.length > 15 ? '...' : '');
-    } catch {
-      return url.slice(0, 30) + (url.length > 30 ? '...' : '');
     }
   };
 
@@ -248,78 +303,117 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
         {/* Scrollable Body */}
         <div className="overflow-y-auto px-6 md:px-8 pb-6 md:pb-8 flex-1 bg-white">
           <div className="rounded-[1.25rem] border border-slate-150 p-1 shadow-[0_1px_4px_rgba(15,23,42,0.02)]">
-             <InfoCard
+             {isFieldVisible('about') ? (
+              <InfoCard
                 label="About"
                 value={about}
                 icon={User2}
-             />
-             <InfoCard
+              />
+             ) : null}
+             {extraInfoCards
+              .filter((field) => isFieldVisible(field.name))
+              .map((field) => (
+                <InfoCard
+                  key={field.name}
+                  label={field.label}
+                  value={field.value}
+                  icon={field.icon}
+                  isLink={field.isLink}
+                  linkUrl={field.linkUrl}
+                />
+              ))}
+             {isFieldVisible('whyImHere') ? (
+              <InfoCard
                 label="Why I'm Here"
                 value={whyImHere}
                 icon={Target}
-             />
-             <InfoCard
+              />
+             ) : null}
+             {isFieldVisible('introductionVideoLink') ? (
+              <InfoCard
                 label="Introduction Video"
                 value={getCleanDisplayLink(introductionVideoLink)}
                 icon={Video}
                 isLink={Boolean(introductionVideoLink)}
                 linkUrl={introductionVideoLink}
-             />
-             <InfoCard
-                label="Expected Rate"
-                value={expectedRate}
-                icon={Tag}
-             />
-             <InfoCard
+              />
+             ) : null}
+ {isFieldVisible('expectedPriceAmount') ? (
+                 <InfoCard
+                  label={(community.role === 'JOB_SEEKER' || community.role === 'EMPLOYEE') ? 'Expected Compensation' : 'Expected Price'}
+                  value={expectedPrice}
+                  icon={Tag}
+                />
+               ) : null}
+             {isFieldVisible('resumeDriveLink') ? (
+              <InfoCard
                 label="Resume (PDF)"
                 value={getCleanDisplayLink(resumeDriveLink)}
                 icon={FileText}
                 isLink={Boolean(resumeDriveLink)}
                 linkUrl={resumeDriveLink}
                 border={true}
-             />
-             <InfoCard
+              />
+             ) : null}
+             {isFieldVisible('preferredWorkType') ? (
+              <InfoCard
                 label="Preferred Work Type"
                 value={preferredWorkType ? preferredWorkType.replace(/_/g, ' ') : ''}
                 icon={Briefcase}
-             />
-             <InfoCard
+              />
+             ) : null}
+             {isFieldVisible('portfolioWebsiteLink') ? (
+              <InfoCard
                 label="Portfolio Website"
                 value={getCleanDisplayLink(portfolioWebsiteLink)}
                 icon={Globe}
                 isLink={Boolean(portfolioWebsiteLink)}
                 linkUrl={portfolioWebsiteLink}
-             />
-             <InfoCard
+              />
+             ) : null}
+             {isFieldVisible('industryExpertise') ? (
+              <InfoCard
                 label="Industry Expertise"
                 value={industryExpertise}
                 icon={Building2}
-             />
-             <InfoCard
+              />
+             ) : null}
+             {isFieldVisible('languagesKnown') ? (
+              <InfoCard
                 label="Languages Known"
                 value={languagesKnown}
                 icon={Globe}
                 border={false}
-             />
+              />
+             ) : null}
           </div>
 
-          {skills.length > 0 && (
-            <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">
-              <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500 mb-3.5">
-                Skills
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full border border-slate-200 bg-slate-50/50 px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-default"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+{isFieldVisible('skills') && skills.length > 0 && (
+             <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">
+               <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500 mb-3.5">
+                 Skills
+               </div>
+               <div className="flex flex-wrap gap-2">
+                 {skills.map((skill, idx) => {
+                   const level = skillLevels[idx] || 'INTERMEDIATE';
+                   const levelColors = {
+                     BEGINNER: 'bg-slate-50 border-slate-200 text-slate-600',
+                     INTERMEDIATE: 'bg-blue-50 border-blue-200 text-blue-600',
+                     ADVANCED: 'bg-indigo-50 border-indigo-200 text-indigo-600',
+                     EXPERT: 'bg-purple-50 border-purple-200 text-purple-600',
+                   };
+                   return (
+                     <span
+                       key={`${skill}-${idx}`}
+                       className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-default ${levelColors[level] || 'bg-slate-50/50'}`}
+                     >
+                       {skill}
+                     </span>
+                   );
+                 })}
+               </div>
+             </div>
+           )}
         </div>
 
         {/* Footer Section */}

@@ -128,7 +128,7 @@ export default function DomainListingCard({
 
   const stop = (e) => e.stopPropagation();
 
-  const interactive = !browseMode && onView;
+  const interactive = Boolean(onView);
 
   const handleViewDetails = onView
     ? (e) => {
@@ -136,6 +136,18 @@ export default function DomainListingCard({
       onView();
     }
     : undefined;
+
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
 
   const renderPrimaryAction = () => {
     if (browseMode) {
@@ -313,10 +325,10 @@ export default function DomainListingCard({
   return (
     <article
       className={`domain-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
-      onClick={interactive ? onView : undefined}
+      onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       {domain.takenDown && (
         <span className="absolute top-3 right-3 z-20 rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">

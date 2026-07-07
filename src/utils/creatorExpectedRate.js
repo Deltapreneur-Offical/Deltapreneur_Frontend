@@ -1,4 +1,4 @@
-/** Creator profile expected rate (amount + period, e.g. 4000/day). */
+/** Creator profile expected price (amount + period, e.g. 4000/day). */
 
 export const CREATOR_RATE_PERIODS = [
   { value: '/day', label: '/ Day' },
@@ -9,7 +9,7 @@ export const CREATOR_RATE_PERIODS = [
 const PERIOD_VALUES = new Set(CREATOR_RATE_PERIODS.map((option) => option.value));
 
 export function readCreatorExpectedRate(profile) {
-  const raw = profile?.expectedRate ?? profile?.expected_rate;
+  const raw = profile?.expectedPrice ?? profile?.expected_price ?? profile?.expectedRate ?? profile?.expected_rate;
   const trimmed = typeof raw === 'string' ? raw.trim() : '';
   return trimmed || null;
 }

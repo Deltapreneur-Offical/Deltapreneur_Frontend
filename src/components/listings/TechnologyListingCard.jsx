@@ -385,7 +385,7 @@ export default function TechnologyListingCard({
   const useCase = item.whatItDoes || item.what_it_does || item.description || '';
   const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
   const priceAmount = Number(item.price || 0);
-  const interactive = !browseMode && onView;
+  const interactive = Boolean(onView);
 
   const handleViewDetails = onView
     ? (e) => {
@@ -394,6 +394,18 @@ export default function TechnologyListingCard({
     }
     : undefined;
 
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
+
   const showPriceBox = browseMode
     ? (priceAmount > 0 || handleViewDetails)
     : true;
@@ -401,10 +413,10 @@ export default function TechnologyListingCard({
   return (
     <article
       className={`domain-listing-card technology-listing-card card-glow-hover relative flex w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse technology-listing-card--browse home-preview-browse-card' : ''}${interactive ? ' cursor-pointer' : ''}`}
-      onClick={interactive ? onView : undefined}
+      onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       <div className="domain-listing-card__cover">
         {techImage ? (
@@ -441,7 +453,7 @@ export default function TechnologyListingCard({
           />
         </div>
 
-        <span className={`text-[0.65rem] font-bold px-2.5 py-1 rounded-full tracking-wider inline-block w-fit mb-1 ${item.technologyType === 'HARDWARE' ? 'text-orange-700 bg-orange-50 border border-orange-200' : 'text-blue-700 bg-blue-50 border border-blue-200'}`}>
+        <span className="venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 inline-block w-fit mb-1">
           {item.technologyType === 'HARDWARE' ? 'HARDWARE' : 'SOFTWARE'}
         </span>
 

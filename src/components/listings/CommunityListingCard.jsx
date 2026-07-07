@@ -83,16 +83,28 @@ export default function CommunityListingCard({
     e.stopPropagation();
     e.preventDefault();
   };
-  const interactive = Boolean(onView) && !isMe;
+  const interactive = Boolean(onView);
+
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
 
   return (
     <article
       ref={cardRef}
       className={`creator-profile-card community-listing-card card-glow-hover${isMe ? ' creator-profile-card--owner' : ''}`}
-      onClick={interactive ? onView : undefined}
+      onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView(); } : undefined}
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       <div className="creator-profile-card__banner">
         {coverImageUrl ? (
@@ -151,27 +163,20 @@ export default function CommunityListingCard({
               <MapPin size={14} className="text-slate-400 mr-1" /> {locationLabel}
             </span>
           )}
-          {locationLabel && (profile.languagesKnown || profile.languages_known) && <Globe size={14} className="text-slate-400 ml-2" />}
           {(profile.languagesKnown || profile.languages_known) && (
             <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
+               <Globe size={14} className="text-slate-400 mr-1" />
                {(() => {
-                 const langs = String(profile.languagesKnown || profile.languages_known)
-                  .split(',')
-                  .map(l => l.trim())
-                  .filter(Boolean);
-
-                if (langs.length <= 2) {
-                  return langs.join(', ').toUpperCase();
-                }
-
-                return (
-                  <>
-                    {langs.slice(0, 2).join(', ').toUpperCase()}
-                    <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
-                      +{langs.length - 2}
-                    </span>
-                  </>
-                );
+                 const langs = String(profile.languagesKnown || profile.languages_known).split(',').map(l => l.trim()).filter(Boolean);
+                 if (langs.length <= 2) return langs.join(', ').toUpperCase();
+                 return (
+                   <>
+                     {langs.slice(0, 2).join(', ').toUpperCase()}
+                     <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
+                       +{langs.length - 2}
+                     </span>
+                   </>
+                 );
                })()}
             </span>
           )}

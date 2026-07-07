@@ -11,6 +11,7 @@ import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
 import { ventureListChooseUrl } from '../../constants/ventureListingTypeContent';
 import rollingLogoMobile from '../../assets/Rolling Logo center to outwards GIF.mp4';
+import BrandNavLogo from './BrandNavLogo';
 
 function NavDropdown({ label, open, onToggle, children }) {
   const triggerRef = useRef(null);
@@ -102,6 +103,38 @@ function MobileAccordion({ title, open, onToggle, children }) {
 }
 
 function AnimatedNavLogo({ onClick }) {
+  const videoRef = useRef(null);
+  const playCountRef = useRef(0);
+  const [showStatic, setShowStatic] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    playCountRef.current = 0;
+
+    const handleEnded = () => {
+      playCountRef.current += 1;
+      if (playCountRef.current === 1) {
+        setShowStatic(true);
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            setShowStatic(false);
+            videoRef.current.play().catch((err) => console.log('Replay error:', err));
+          }
+        }, 5000);
+      } else if (playCountRef.current >= 2) {
+        setShowStatic(true);
+      }
+    };
+
+    video.addEventListener('ended', handleEnded);
+    return () => {
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
   return (
     <button
       type="button"
@@ -109,16 +142,33 @@ function AnimatedNavLogo({ onClick }) {
       onClick={onClick}
       aria-label="CoBrother home"
     >
-      <video
-        className="home-nav-logo-video"
-        src={rollingLogoMobile}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-      />
+      <div className="relative w-full h-full flex items-center">
+        <div
+          className="absolute inset-0 flex items-center"
+          style={{
+            opacity: showStatic ? 1 : 0,
+            pointerEvents: showStatic ? 'auto' : 'none',
+            transition: 'opacity 0.15s ease',
+          }}
+        >
+          <BrandNavLogo />
+        </div>
+        <video
+          ref={videoRef}
+          className="home-nav-logo-video"
+          src={rollingLogoMobile}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          style={{
+            opacity: showStatic ? 0 : 1,
+            pointerEvents: showStatic ? 'none' : 'auto',
+            transition: 'opacity 0.15s ease',
+          }}
+        />
+      </div>
     </button>
   );
 }

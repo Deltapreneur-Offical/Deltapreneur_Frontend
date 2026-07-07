@@ -142,6 +142,5 @@ export function pickHomepagePreviewListings(
   limit = HOMEPAGE_PREVIEW_LIMIT,
 ) {
   return asArray(items)
-    .filter((item) => isHomepageFeaturedListing(item, type))
-    .slice(0, limit);
+    .filter((item) => isHomepageFeaturedListing(item, type));
 }

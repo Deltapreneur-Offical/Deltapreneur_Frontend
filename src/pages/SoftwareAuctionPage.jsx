@@ -15,6 +15,7 @@ import useCurrency from '../context/CurrencyContext';
 import { fetchListingFeesAndCharges } from '../utils/auctionFees';
 import { CURRENCY_LABELS } from '../constants/currencies';
 import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
+import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 
 function Countdown({ endTime, status }) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -614,10 +615,11 @@ export default function SoftwareAuctionPage() {
                 <>
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
-                    <select
+                    <SearchableCurrencySelect
                       value={bidCurrency}
-                      onChange={(e) => handleBidCurrencyChange(e.target.value)}
-                      aria-label="Bid currency"
+                      onChange={handleBidCurrencyChange}
+                      wrapperClassName="shrink-0"
+                      showFlag={false}
                       style={{
                         width: 96,
                         padding: '0.55rem 0.5rem',
@@ -629,13 +631,7 @@ export default function SoftwareAuctionPage() {
                         outline: 'none',
                         fontWeight: 600,
                       }}
-                    >
-                      {supportedCurrencies.map((code) => (
-                        <option key={code} value={code}>
-                          {CURRENCY_LABELS[code] || code}
-                        </option>
-                      ))}
-                    </select>
+                    />
                     <input type="number" value={bidAmount}
                       onChange={e => handleBidAmountChange(e.target.value)}
                       placeholder={bidPlaceholder}

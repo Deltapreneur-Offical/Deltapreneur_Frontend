@@ -29,6 +29,7 @@ import {
 } from '../utils/creatorProfile';
 import { getVisibleCreatorFields } from '../utils/creatorRoleFields';
 import SkillsInput from '../components/common/SkillsInput';
+import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import { isListingOwner } from '../utils/listingVisibility';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import { useCreatorAuctionProfileSync } from '../hooks/useCreatorAuctionProfileSync';
@@ -1304,29 +1305,22 @@ const handleSubmit = async e => {
         )}
 
         {CREATOR_PROFILE_EXTRA_FIELDS.map(renderExtraField)}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Skills <span className="text-red-500">*</span></label>
-          <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Location <span className="text-red-500">*</span></label>
-          <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
+        {isFieldVisible('location') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Location {requiredMark('location')}</label>
+            <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required={isFieldRequired('location')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Expected Rate <span className="text-red-500">*</span></label>
           <div className="grid grid-cols-1 sm:grid-cols-[8rem_minmax(0,1fr)_minmax(9rem,1fr)] gap-3">
-            <select
-              name="expectedRateCurrency"
+            <SearchableCurrencySelect
               value={form.expectedRateCurrency}
-              onChange={handleChange}
-              required
-              aria-label="Expected rate currency"
+              onChange={(code) => handleChange({ target: { name: 'expectedRateCurrency', value: code } })}
               className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
-            >
-              {supportedCurrencies.map((code) => (
-                <option key={code} value={code}>{CURRENCY_LABELS[code] || code}</option>
-              ))}
-            </select>
+              wrapperClassName="shrink-0 w-full"
+              showFlag={false}
+            />
             <input
               name="expectedRateAmount"
               type="number"
@@ -1387,67 +1381,6 @@ const handleSubmit = async e => {
             ) : null}
           </div>
         )}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-red-500">*</span></label>
-          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700"> Introduction Video Link (Google Drive / YouTube / Loom)</label>
-          <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF)</label>
-          <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Portfolio Website Link</label>
-          <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        {isFounderRole && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Pitch Deck Link</label>
-              <input
-                name="pitchDeckLink"
-                type="url"
-                value={form.pitchDeckLink}
-                onChange={handleChange}
-                placeholder="https://drive.google.com/file/d/..."
-                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">YouTube Video Link</label>
-              <input
-                name="youtubeVideoLink"
-                type="url"
-                value={form.youtubeVideoLink}
-                onChange={handleChange}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
-              />
-            </div>
-          </div>
-        )}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Preferred Work Type</label>
-          <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-            <option value="">Select work type</option>
-            <option value="FREELANCE">Freelance</option>
-            <option value="FULL_TIME">Full-Time</option>
-            <option value="CONTRACT">Contract</option>
-            <option value="CO_FOUNDER">Co-Founder</option>
-            <option value="OPEN_TO_ALL">Open to All</option>
-          </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Industry Expertise</label>
-          <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Languages Known</label>
-          <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
         {isFieldVisible('whyImHere') && (
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Why I'm Here {requiredMark('whyImHere')}</label>

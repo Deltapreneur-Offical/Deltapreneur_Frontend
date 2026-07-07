@@ -25,6 +25,7 @@ import AddonSections from '../components/addon/AddonSections';
 import { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import FormSelect from '../components/common/FormSelect';
+import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import { DEFAULT_LISTING_CURRENCY, CURRENCY_LABELS } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
@@ -908,19 +909,13 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                   {/* Price input — only visible when enabled */}
                   {plan.enabled ? (
                     <div className="flex items-center gap-2 flex-1">
-                      <FormSelect
+                      <SearchableCurrencySelect
                         className="shrink-0 w-[6rem] sm:w-[7.25rem] px-2 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white text-sm outline-none focus:border-indigo-500 transition-all cursor-pointer"
                         wrapperClassName="shrink-0 w-[6rem] sm:w-[7.25rem]"
                         value={form.currency}
-                        onChange={(e) => handleCurrencyChange(e.target.value)}
-                        aria-label="Currency"
-                      >
-                        {supportedCurrencies.map((code) => (
-                          <option key={code} value={code}>
-                            {CURRENCY_LABELS[code] || code}
-                          </option>
-                        ))}
-                      </FormSelect>
+                        onChange={handleCurrencyChange}
+                        showFlag={false}
+                      />
                       <input
                         type="number"
                         min="0"

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { CURRENCY_LABELS } from '../../constants/currencies';
+import { getCurrencySymbol, getCurrencyFlag } from '../../utils/currencyDisplay';
 
 const LANGUAGES = [
   { code: 'en-IN', name: 'English (IND)' },
@@ -105,9 +106,18 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
   const { currency, setCurrency, supportedCurrencies } = useCurrency();
   const [expanded, setExpanded] = useState(null);
 
+  const [currencySearch, setCurrencySearch] = useState('');
+
   const toggle = (section) => {
     setExpanded((prev) => (prev === section ? null : section));
   };
+
+  const filteredCurrencies = supportedCurrencies.filter((code) => {
+    const search = currencySearch.toLowerCase().trim();
+    if (!search) return true;
+    const label = (CURRENCY_LABELS[code] || '').toLowerCase();
+    return code.toLowerCase().includes(search) || label.includes(search);
+  });
 
   return (
     <div className="app-profile-regional-menu">
@@ -161,18 +171,43 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
         onToggle={toggle}
         icon={CircleDollarSign}
         label={t('currency', { defaultValue: 'Currency' })}
-        summary={`${CURRENCY_SHORT[currency] || ''} ${currency}`.trim()}
+        summary={`${getCurrencySymbol(currency)} ${currency}`}
       >
-        <div className="max-h-48 space-y-0.5 overflow-y-auto" role="listbox" aria-label="Currency">
-          {supportedCurrencies.map((code) => (
-            <OptionButton
-              key={code}
-              active={currency === code}
-              primary={`${CURRENCY_SHORT[code] || ''} ${code}`.trim()}
-              secondary={CURRENCY_LABELS[code] || code}
-              onClick={() => setCurrency(code)}
-            />
-          ))}
+        <div className="px-2 py-1 bg-white rounded-lg border border-gray-100 mb-2">
+          <input
+            type="text"
+            placeholder="Search currency..."
+            value={currencySearch}
+            onChange={(e) => setCurrencySearch(e.target.value)}
+            className="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+          />
+        </div>
+        <div className="max-h-60 space-y-1 overflow-y-auto pr-1" role="listbox" aria-label="Currency">
+          {filteredCurrencies.map((code) => {
+            const flag = getCurrencyFlag(code);
+            const symbol = getCurrencySymbol(code);
+            const label = CURRENCY_LABELS[code] || code;
+            const cleanLabel = label.includes(symbol) ? label.replace(symbol, '').trim() : label;
+            return (
+              <button
+                key={code}
+                type="button"
+                className={`flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors border-none cursor-pointer ${
+                  currency === code ? 'bg-indigo-50 font-semibold text-indigo-800' : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                onClick={() => setCurrency(code)}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <img src={flag} alt="" className="w-5 h-3.5 object-cover rounded-[3px] shrink-0 border border-gray-200/60 shadow-sm" />
+                  <div className="min-w-0">
+                    <span className="block font-medium text-gray-900 leading-tight">{code}</span>
+                    <span className="block text-[10px] text-gray-400 truncate leading-tight mt-0.5">{cleanLabel}</span>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-gray-500 shrink-0">{symbol}</span>
+              </button>
+            );
+          })}
         </div>
       </AccordionRow>
     </div>

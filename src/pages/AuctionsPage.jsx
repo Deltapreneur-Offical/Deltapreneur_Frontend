@@ -19,6 +19,7 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { normalizeCommunityAuction } from '../utils/homepageAuctions';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
+import { useCurrency } from '../context/CurrencyContext';
 import '../styles/auctions-page.css';
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
@@ -38,14 +39,16 @@ const toNum = (value, fallback = 0) => {
 };
 
 function AuctionCardNextBidLine({ highestBid }) {
+  const { formatPrice } = useCurrency();
   const hasNextBid = highestBid > 0;
+  const nextBid = Math.ceil(highestBid * 1.05 / 100) * 100;
   return (
     <div
       className={`text-sm font-semibold mb-3 min-h-[1.375rem] leading-snug ${hasNextBid ? 'text-gray-700' : 'invisible select-none pointer-events-none'}`}
       aria-hidden={!hasNextBid}
     >
       {hasNextBid
-        ? `Next bid: ≥ ₹${Number(highestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+        ? `Next bid: ≥ ${formatPrice(nextBid)}`
         : '\u00A0'}
     </div>
   );
@@ -560,7 +563,7 @@ function DomainAuctionCard({ auction, onClick }) {
                 {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
               </div>
               <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-                ₹{currentAmount.toLocaleString('en-IN')}
+                {formatPrice(currentAmount)}
               </div>
             </div>
             <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
@@ -637,6 +640,7 @@ const bone = (style) => ({
 function SoftwareAuctionCard({ auction, onClick }) {
   const [imgFailed, setImgFailed] = useState(false);
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { formatPrice } = useCurrency();
   const software = auction.software || {};
   const isExtended = auction.status === 'EXTENDED';
   const title = auction.auctionTitle || auction.name || software.name || 'Technology';
@@ -720,7 +724,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
                 {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
               </div>
               <div className="font-display text-xl font-bold text-purple-500">
-                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
               </div>
             </div>
             <div className="bg-gray-50/80 rounded-xl p-3.5 border border-gray-100">
@@ -773,6 +777,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
 function CommunityAuctionCard({ auction, onClick }) {
   const [imgFailed, setImgFailed] = useState(false);
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { formatPrice } = useCurrency();
   const community  = auction.community || {};
   const isExtended = auction.status === 'EXTENDED';
   const profileImg = pickMediaUrl(community) || community.profileImageUrl || community.profilePicture;
@@ -855,7 +860,7 @@ function CommunityAuctionCard({ auction, onClick }) {
                 {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
               </div>
               <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
               </div>
             </div>
             <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">

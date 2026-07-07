@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Mail, Phone, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useCurrency } from '../../context/CurrencyContext';
 import { formatRequestAdminPrice } from '../../utils/operationsPricing';
 
 function normalizePhone(phone) {
@@ -11,6 +12,7 @@ function normalizePhone(phone) {
 
 export default function OperationsContactModal({ request, loading, onClose, onMarkContacted }) {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -64,7 +66,7 @@ export default function OperationsContactModal({ request, loading, onClose, onMa
                 ? t('operationsHire', { defaultValue: 'Hire' })
                 : t('operationsBookSlot', { defaultValue: 'Book Your Slot' })}
             </span>
-            <span className="text-xs font-medium text-gray-500">{formatRequestAdminPrice(request)}</span>
+            <span className="text-xs font-medium text-gray-500">{formatRequestAdminPrice(request, formatPrice)}</span>
           </div>
         </div>
 

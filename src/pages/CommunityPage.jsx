@@ -38,6 +38,8 @@ import {
 } from '../utils/creatorAuctionSummary';
 import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpectedRate, buildCreatorExpectedRate, CREATOR_RATE_PERIODS } from '../utils/creatorExpectedRate';
 import { readApiError } from '../utils/apiError';
+import { CURRENCY_LABELS } from '../constants/currencies';
+import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 
 const ROLES = [
   { value: 'STUDENT', label: 'STUDENT' },
@@ -848,8 +850,21 @@ function CommunityProfileForm({
   onDelete,
 }) {
   const { t } = useTranslation();
+  const {
+    currency: navCurrency,
+    supportedCurrencies,
+    convertToInr,
+    ratesMeta,
+  } = useCurrency();
+  const formatExpectedRateInputValue = (inrAmount, currencyCode) => {
+    const converted = convertInrToCurrency(inrAmount, currencyCode, ratesMeta);
+    if (!Number.isFinite(converted)) return '';
+    if (currencyCode === 'INR') return String(Math.round(converted));
+    return String(Number(converted.toFixed(2)));
+  };
   const buildForm = (profile) => {
     const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
+    const expectedRateCurrency = navCurrency || 'INR';
     return {
       about: profile?.about || '',
       role: profile?.role || '',
@@ -857,12 +872,16 @@ function CommunityProfileForm({
       industry: profile?.industry || '',
       location: profile?.location || '',
       whyImHere: profile?.whyImHere || profile?.why_im_here || '',
-      expectedRateAmount: amount,
+      expectedRateAmount: amount ? formatExpectedRateInputValue(Number(amount), expectedRateCurrency) : '',
+      expectedRateAmountInr: amount,
+      expectedRateCurrency,
       expectedRatePeriod: period,
       linkedInProfileUrl: getLinkedInProfileUrl(profile),
       introductionVideoLink: profile?.introductionVideoLink || profile?.introduction_video_link || '',
       resumeDriveLink: profile?.resumeDriveLink || profile?.resume_drive_link || '',
       portfolioWebsiteLink: profile?.portfolioWebsiteLink || profile?.portfolio_website_link || '',
+      pitchDeckLink: profile?.pitchDeckLink || profile?.pitch_deck_link || '',
+      youtubeVideoLink: profile?.youtubeVideoLink || profile?.youtube_video_link || '',
       preferredWorkType: profile?.preferredWorkType || profile?.preferred_work_type || '',
       industryExpertise: profile?.industryExpertise || profile?.industry_expertise || '',
       languagesKnown: profile?.languagesKnown || profile?.languages_known || '',
@@ -894,15 +913,45 @@ function CommunityProfileForm({
   const linkedInImported = hasLinkedInAccount(initial);
   const linkedInUrlMissing = linkedInImported && !linkedInUrl;
 
+  const isFounderRole = form.role === 'FOUNDER_CO_FOUNDER';
+
   const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'expectedRateAmount') {
+      const numeric = Number(value);
+      setForm((prev) => ({
+        ...prev,
+        expectedRateAmount: value,
+        expectedRateAmountInr: Number.isFinite(numeric) && numeric > 0
+          ? String(convertToInr(numeric, prev.expectedRateCurrency || 'INR'))
+          : '',
+      }));
+      return;
+    }
+    if (name === 'expectedRateCurrency') {
+      setForm((prev) => ({
+        ...prev,
+        expectedRateCurrency: value,
+        expectedRateAmount: prev.expectedRateAmountInr
+          ? formatExpectedRateInputValue(Number(prev.expectedRateAmountInr), value)
+          : '',
+      }));
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'role' && value !== 'FOUNDER_CO_FOUNDER'
+        ? { pitchDeckLink: '', youtubeVideoLink: '' }
+        : {}),
+    }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
     const expectedRate = buildCreatorExpectedRate(
-      form.expectedRateAmount,
+      form.expectedRateAmountInr,
       form.expectedRatePeriod,
     );
     if (!expectedRate) {
@@ -922,6 +971,8 @@ function CommunityProfileForm({
         introductionVideoLink: form.introductionVideoLink,
         resumeDriveLink: form.resumeDriveLink,
         portfolioWebsiteLink: form.portfolioWebsiteLink,
+        pitchDeckLink: isFounderRole ? form.pitchDeckLink : '',
+        youtubeVideoLink: isFounderRole ? form.youtubeVideoLink : '',
         preferredWorkType: form.preferredWorkType,
         industryExpertise: form.industryExpertise,
         languagesKnown: form.languagesKnown,
@@ -1041,12 +1092,24 @@ function CommunityProfileForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Expected Rate <span className="text-red-500">*</span></label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-[8rem_minmax(0,1fr)_minmax(9rem,1fr)] gap-3">
+            <select
+              name="expectedRateCurrency"
+              value={form.expectedRateCurrency}
+              onChange={handleChange}
+              required
+              aria-label="Expected rate currency"
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
+            >
+              {supportedCurrencies.map((code) => (
+                <option key={code} value={code}>{CURRENCY_LABELS[code] || code}</option>
+              ))}
+            </select>
             <input
               name="expectedRateAmount"
               type="number"
               min="1"
-              step="1"
+              step="any"
               value={form.expectedRateAmount}
               onChange={handleChange}
               placeholder="e.g. 4000"
@@ -1118,6 +1181,32 @@ function CommunityProfileForm({
           <label className="text-sm font-medium text-gray-700">Portfolio Website Link</label>
           <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
+        {isFounderRole && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">Pitch Deck Link</label>
+              <input
+                name="pitchDeckLink"
+                type="url"
+                value={form.pitchDeckLink}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/file/d/..."
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">YouTube Video Link</label>
+              <input
+                name="youtubeVideoLink"
+                type="url"
+                value={form.youtubeVideoLink}
+                onChange={handleChange}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+              />
+            </div>
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Preferred Work Type</label>
           <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">

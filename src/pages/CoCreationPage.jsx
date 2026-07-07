@@ -8,7 +8,7 @@ import { technologyAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
+import { buildOrderCurrencyPayload, convertForeignToInr, convertPrice as convertInrToForeign } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 import TechnologyIcon from '../assets/CoCreation.png';
 import { useLikes } from '../hooks/useLikes';
@@ -24,7 +24,8 @@ import { softwareAuctionAPI } from '../api/services';
 import AddonSections from '../components/addon/AddonSections';
 import { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
-import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
+import FormSelect from '../components/common/FormSelect';
+import { DEFAULT_LISTING_CURRENCY, CURRENCY_LABELS } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
@@ -50,7 +51,7 @@ import { useVirtualAssistantCatalog, vaLabel } from '../hooks/useVirtualAssistan
 export default function CoCreationPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
-  const { currency, getSymbol, formatPrice } = useCurrency();
+  const { currency, getSymbol, formatPrice, supportedCurrencies, ratesMeta } = useCurrency();
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate = useNavigate();
   const location = useLocation();
@@ -491,7 +492,7 @@ function softwareToFormFields(item, navCurrency) {
 function SoftwareForm({ initial, onSaved, onCancel }) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { currency: navCurrency } = useCurrency();
+  const { currency: navCurrency, ratesMeta, supportedCurrencies, getSymbol, formatCurrency } = useCurrency();
   const isEdit = Boolean(initial?.id);
   const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency));
   const [loading, setLoading] = useState(false);
@@ -529,6 +530,36 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleCurrencyChange = (newCurrency) => {
+    const oldCurrency = form.currency || DEFAULT_LISTING_CURRENCY;
+    set('currency', newCurrency);
+    if (oldCurrency !== newCurrency) {
+      setForm(f => {
+        const nextF = { ...f, currency: newCurrency };
+        
+        const convertVal = (valStr) => {
+          if (!valStr) return valStr;
+          const currentVal = Number(valStr);
+          if (Number.isFinite(currentVal) && currentVal > 0) {
+            const inr = convertForeignToInr(currentVal, oldCurrency, ratesMeta);
+            const newVal = convertInrToForeign(inr, newCurrency, ratesMeta);
+            if (newVal != null && Number.isFinite(newVal)) {
+              return String(newVal);
+            }
+          }
+          return valStr;
+        };
+
+        nextF.pricingPlans = f.pricingPlans.map(p => ({
+          ...p,
+          price: convertVal(p.price)
+        }));
+        nextF.minBidPrice = convertVal(f.minBidPrice);
+        return nextF;
+      });
+    }
+  };
 
   // Derived helpers
   const isHardware = form.technologyType === 'HARDWARE';
@@ -877,7 +908,19 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                   {/* Price input — only visible when enabled */}
                   {plan.enabled ? (
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-sm text-gray-500 flex-shrink-0">₹</span>
+                      <FormSelect
+                        className="shrink-0 w-[6rem] sm:w-[7.25rem] px-2 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white text-sm outline-none focus:border-indigo-500 transition-all cursor-pointer"
+                        wrapperClassName="shrink-0 w-[6rem] sm:w-[7.25rem]"
+                        value={form.currency}
+                        onChange={(e) => handleCurrencyChange(e.target.value)}
+                        aria-label="Currency"
+                      >
+                        {supportedCurrencies.map((code) => (
+                          <option key={code} value={code}>
+                            {CURRENCY_LABELS[code] || code}
+                          </option>
+                        ))}
+                      </FormSelect>
                       <input
                         type="number"
                         min="0"
@@ -900,9 +943,9 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                 <div className="text-xs text-purple-500 font-semibold mb-1 uppercase tracking-wide">
                   Commission preview · One-Time Purchase
                 </div>
-                <div className="flex justify-between"><span>Seller amount</span><span>{commissionBreakdown.sellerAmount}</span></div>
-                <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{commissionBreakdown.commissionAmount}</span></div>
-                <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{commissionBreakdown.finalListingPrice}</span></div>
+                <div className="flex justify-between"><span>Seller amount</span><span>{formatCurrency(commissionBreakdown.sellerAmount, form.currency)}</span></div>
+                <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatCurrency(commissionBreakdown.commissionAmount, form.currency)}</span></div>
+                <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{formatCurrency(commissionBreakdown.finalListingPrice, form.currency)}</span></div>
               </div>
             )}
             {/* Subscription Revenue Policy if any subscription is enabled */}
@@ -930,7 +973,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
             <div className="text-sm font-semibold text-indigo-900">Auction Settings</div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className={labelCls}>Minimum Bid Price (₹) <span className="text-red-500">*</span></label>
+                <label className={labelCls}>Minimum Bid Price ({getSymbol(form.currency)}) <span className="text-red-500">*</span></label>
                 <input
                   type="number"
                   min="0"

@@ -12,11 +12,10 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import { computeCommissionBreakdown } from '../utils/auctionFees';
-import { roundInr } from '../utils/money';
+import { roundInr, roundMoney } from '../utils/money';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
+import { buildOrderCurrencyPayload, convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import { formatAuctionDateTime } from '../utils/auctionDate';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
@@ -63,15 +62,44 @@ const formatInr = (value) =>
     maximumFractionDigits: 0,
   }).format(Number(value || 0));
 
-function buildDomainFormState(domain, navCurrency) {
+function formatPriceInputAmount(value, currencyCode) {
+  const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  const amount = code === DEFAULT_LISTING_CURRENCY ? roundInr(value) : roundMoney(value);
+  return String(amount);
+}
+
+function computeListingCurrencyCommission(sellerAmount, commissionPercent = 15, currencyCode = DEFAULT_LISTING_CURRENCY) {
+  const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  const round = code === DEFAULT_LISTING_CURRENCY ? roundInr : roundMoney;
+  const listingPrice = round(sellerAmount);
+  const commissionAmount = round((listingPrice * Number(commissionPercent || 0)) / 100);
+  const sellerEarnings = round(listingPrice - commissionAmount);
+
+  return {
+    listingPrice,
+    sellerAmount: sellerEarnings,
+    sellerEarnings,
+    commissionAmount,
+    finalListingPrice: listingPrice,
+    commissionPercent,
+  };
+}
+
+function buildDomainFormState(domain, navCurrency, ratesMeta) {
   const display = domain ? resolveDomainDisplay(domain) : { name: '', ext: null, fullDomain: '' };
+  const listingCurrency = domain?.currency || navCurrency || DEFAULT_LISTING_CURRENCY;
+  const storedAskingPrice = Number(domain?.askingPrice ?? 0);
+  const displayAskingPrice =
+    domain?.askingPrice != null
+      ? convertInrToCurrency(storedAskingPrice, listingCurrency, ratesMeta)
+      : '';
   return {
     domainName: ['—', 'Unnamed', 'domain'].includes(display.name) ? '' : display.name,
     logoText: domain?.logo_text ?? domain?.logoText ?? '',
     domainExtension: display.ext?.full ?? (domain ? '' : '.com'),
-    askingPrice: domain?.askingPrice != null ? String(domain.askingPrice) : '',
+    askingPrice: domain?.askingPrice != null ? formatPriceInputAmount(displayAskingPrice, listingCurrency) : '',
     pricingDemand: domain?.pricingDemand ?? '',
-    currency: domain?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    currency: listingCurrency,
     saleType: domain?.saleType ?? 'ONE_TIME',
     minBidPrice: '',
     auctionDuration: 'SEVEN_DAYS',
@@ -229,6 +257,10 @@ export default function DomainsPage() {
                 flushSync(() => {
                   if (editTarget) {
                     setAllDomains(prev => prev.map(x => (x.id === normalizedSaved.id ? { ...x, ...normalizedSaved } : x)));
+                    setDetailTarget(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
+                    setBuyTarget(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
+                    setSuccessDomain(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
+                    setGlobalNotice(`Saved ${normalizedSaved.domainName}${normalizedSaved.domainExtension} at ${formatInr(normalizedSaved.askingPrice)}.`);
                     setEditTarget(null);
                   } else {
                     setAllDomains(prev => [normalizedSaved, ...prev]);
@@ -612,20 +644,20 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
 function DomainForm({ editDomain, onSaved, onCancel }) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { currency: navCurrency, convertToInr, ratesLoading } = useCurrency();
+  const { currency: navCurrency, convertToInr, ratesLoading, formatCurrency, ratesMeta } = useCurrency();
   const [commissionPercent, setCommissionPercent] = useState(15);
   const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
   const isEdit = Boolean(editDomain?.id);
-  const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency));
+  const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency, ratesMeta));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
 
   useEffect(() => {
-    setForm(buildDomainFormState(editDomain, navCurrency));
+    setForm(buildDomainFormState(editDomain, navCurrency, ratesMeta));
     setError('');
     setWarning('');
-  }, [editDomain?.id, navCurrency]);
+  }, [editDomain?.id, navCurrency, ratesMeta]);
 
   useEffect(() => {
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
@@ -646,6 +678,44 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     setForm(f => ({ ...f, domainExtension: full }));
   };
 
+  const convertAmountBetweenCurrencies = (amount, fromCurrency, toCurrency) => {
+    if (amount == null || amount === '') return '';
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) return amount;
+    const source = (fromCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+    const target = (toCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+    if (source === target) return formatPriceInputAmount(numericAmount, target);
+
+    const inrAmount =
+      source === DEFAULT_LISTING_CURRENCY
+        ? roundInr(numericAmount)
+        : convertToInr(numericAmount, source);
+    const convertedAmount =
+      target === DEFAULT_LISTING_CURRENCY
+        ? roundInr(inrAmount)
+        : convertInrToCurrency(inrAmount, target, ratesMeta);
+
+    return formatPriceInputAmount(convertedAmount, target);
+  };
+
+  const changeFormCurrency = (nextCurrency) => {
+    setForm((current) => ({
+      ...current,
+      currency: nextCurrency,
+      askingPrice: convertAmountBetweenCurrencies(current.askingPrice, current.currency, nextCurrency),
+      minBidPrice: convertAmountBetweenCurrencies(current.minBidPrice, current.currency, nextCurrency),
+    }));
+  };
+
+  const getAskingPriceInr = () => {
+    if (form.saleType === 'AUCTION') return 0;
+    const rawPrice = parseFloat(form.askingPrice);
+    if (!Number.isFinite(rawPrice)) return 0;
+    return form.currency === DEFAULT_LISTING_CURRENCY
+      ? roundInr(rawPrice)
+      : convertToInr(rawPrice, form.currency);
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     const extNorm = normalizeDomainExtension(form.domainExtension);
@@ -663,13 +733,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     }
     setLoading(true); setError(''); setWarning('');
     try {
-      const rawPrice = form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice);
-      const askingPriceInr =
-        form.saleType === 'AUCTION'
-          ? 0
-          : form.currency === 'INR'
-            ? roundInr(rawPrice)
-            : convertToInr(rawPrice, form.currency);
+      const askingPriceInr = getAskingPriceInr();
 
       const payload = {
         domainName: form.domainName.trim(),
@@ -684,7 +748,25 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
       let saved = null;
       if (isEdit) {
         const { data: updated } = await domainAPI.update(editDomain.id, payload);
-        saved = updated?.data ?? updated;
+        const updatedListing = updated?.data ?? updated;
+        const inrBreakdown = computeListingCurrencyCommission(askingPriceInr, commissionPercent, DEFAULT_LISTING_CURRENCY);
+        saved = {
+          ...updatedListing,
+          askingPrice: askingPriceInr,
+          asking_price: askingPriceInr,
+          listingPrice: askingPriceInr,
+          listing_price: askingPriceInr,
+          finalListingPrice: askingPriceInr,
+          final_listing_price: askingPriceInr,
+          commissionPercentage: inrBreakdown.commissionPercent,
+          commission_percentage: inrBreakdown.commissionPercent,
+          commissionAmount: inrBreakdown.commissionAmount,
+          commission_amount: inrBreakdown.commissionAmount,
+          sellerPayoutAmount: inrBreakdown.sellerEarnings,
+          seller_payout_amount: inrBreakdown.sellerEarnings,
+          sellerPrice: inrBreakdown.sellerEarnings,
+          seller_price: inrBreakdown.sellerEarnings,
+        };
       } else {
         const createPayload = {
           ...payload,
@@ -742,9 +824,11 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
 
   const isAuction = form.saleType === 'AUCTION';
   const sellerAmount = parseFloat(form.askingPrice) || 0;
+  const savedAskingPriceInr = getAskingPriceInr();
   const commissionBreakdown = !isAuction && sellerAmount > 0
-    ? computeCommissionBreakdown(sellerAmount, commissionPercent)
+    ? computeListingCurrencyCommission(sellerAmount, commissionPercent, form.currency)
     : null;
+  const formatListingCurrency = (value) => formatCurrency(value, form.currency || DEFAULT_LISTING_CURRENCY);
   const selectedExt = normalizeDomainExtension(form.domainExtension);
   const baseExtensions = ['.com', '.io', '.net', '.org', '.co', '.ai'];
   const extensionOptions =
@@ -850,7 +934,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               value={form.askingPrice}
               onChange={(v) => setForm((f) => ({ ...f, askingPrice: v }))}
               currency={form.currency}
-              onCurrencyChange={(code) => setForm((f) => ({ ...f, currency: code }))}
+              onCurrencyChange={changeFormCurrency}
               required={!isAuction}
               inputClassName={inputCls}
               labelClassName={labelCls}
@@ -873,11 +957,16 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               : t('domainsPageRatesConvertHint')}
           </p>
         )}
+        {(!isAuction || isEdit) && sellerAmount > 0 && (
+          <p className="text-[0.72rem] text-gray-600 -mt-2">
+            Marketplace card will show about {formatInr(savedAskingPriceInr)} when your app currency is INR.
+          </p>
+        )}
         {commissionBreakdown && (
           <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Listing Price</span><span>{formatInr(commissionBreakdown.listingPrice)}</span></div>
-            <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatInr(commissionBreakdown.commissionAmount)}</span></div>
-            <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatInr(commissionBreakdown.sellerEarnings)}</span></div>
+            <div className="flex justify-between"><span>Listing Price</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
+            <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span></div>
+            <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatListingCurrency(commissionBreakdown.sellerEarnings)}</span></div>
             <p className="pt-2 text-xs leading-5 text-gray-600">
               CoBrother charges a 15% commission on successful sales. The commission is deducted from the final sale amount. You will receive approximately 85% of the sale price.
             </p>
@@ -894,7 +983,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                   value={form.minBidPrice}
                   onChange={(v) => setForm((f) => ({ ...f, minBidPrice: v }))}
                   currency={form.currency}
-                  onCurrencyChange={(code) => setForm((f) => ({ ...f, currency: code }))}
+                  onCurrencyChange={changeFormCurrency}
                   required
                   placeholder={t('domainsPageMinBidPlaceholder')}
                   inputClassName={inputCls}

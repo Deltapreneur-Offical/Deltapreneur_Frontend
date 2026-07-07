@@ -7,12 +7,13 @@ import FormSelect from '../common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../../constants/currencies';
 import { VENTURE_INDUSTRIES } from '../../constants/listingCategories';
 import { normalizeEquityPercent } from '../../constants/ventureLabels';
-import { computeInrCommission, parseInrInput } from '../../utils/money';
+import { computeCurrencyCommission, parseInrInput } from '../../utils/money';
 import { fetchListingFeesAndCharges } from '../../utils/auctionFees';
 import {
   resolveRoleEquityOffer,
   resolveRoleInvestmentSeeking,
 } from '../../utils/ventureListingHelpers';
+import { convertForeignToInr, convertPrice as convertInrToForeign } from '../../utils/currencyDisplay';
 import CompanyProfileSections, {
   isCompanyProfileComplete,
   EMPTY_COMPANY_PROFILE,
@@ -94,7 +95,7 @@ export default function VentureForm({
   onListingTypeChange,
 }) {
   const { t } = useTranslation();
-  const { currency: navCurrency, convertToInr, convertFromInr, formatPrice } = useCurrency();
+  const { currency: navCurrency, convertToInr, convertFromInr, formatPrice, formatCurrency, ratesMeta } = useCurrency();
   const [listingType, setListingType] = useState(
     coVentureMode ? 'CO_VENTURE' : defaultListingType,
   );
@@ -243,6 +244,22 @@ export default function VentureForm({
 
   const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
+  const handleCurrencyChange = (newCurrency) => {
+    const oldCurrency = form.currency || DEFAULT_LISTING_CURRENCY;
+    setField('currency', newCurrency);
+
+    if (oldCurrency !== newCurrency && form.brandDetails.dealValue) {
+      const currentVal = Number(form.brandDetails.dealValue);
+      if (Number.isFinite(currentVal) && currentVal > 0) {
+        const inr = convertForeignToInr(currentVal, oldCurrency, ratesMeta);
+        const newVal = convertInrToForeign(inr, newCurrency, ratesMeta);
+        if (newVal != null && Number.isFinite(newVal)) {
+          setBrand('dealValue', String(newVal));
+        }
+      }
+    }
+  };
+
   const setCompanyProfile = (profile) => setForm((f) => ({ ...f, companyProfile: profile }));
 
   const handleVerificationUpload = async (file) => {
@@ -360,7 +377,7 @@ export default function VentureForm({
   const sellerDealAmount = parseFloat(form.brandDetails.dealValue) || 0;
   const acquisitionBreakdown = !isAuction && sellerDealAmount > 0
     ? (() => {
-        const breakdown = computeInrCommission(sellerDealAmount, acquisitionCommissionPercent);
+        const breakdown = computeCurrencyCommission(sellerDealAmount, acquisitionCommissionPercent);
         return {
           askingPrice: breakdown.amount,
           commissionAmount: breakdown.commission,
@@ -509,7 +526,7 @@ export default function VentureForm({
                 value={form.brandDetails.dealValue}
                 onChange={(v) => setBrand('dealValue', v)}
                 currency={form.currency}
-                onCurrencyChange={(code) => setField('currency', code)}
+                onCurrencyChange={handleCurrencyChange}
                 placeholder="e.g. 500000"
                 inputClassName={ventureInputCls}
                 labelClassName={ventureLabelCls}
@@ -519,9 +536,9 @@ export default function VentureForm({
           </div>
           {acquisitionBreakdown && (
             <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-              <div className="flex justify-between"><span>Asking price (listing)</span><span>{formatPrice(acquisitionBreakdown.askingPrice)}</span></div>
-              <div className="flex justify-between"><span>Platform commission ({acquisitionBreakdown.commissionPercent}%)</span><span>{formatPrice(acquisitionBreakdown.commissionAmount)}</span></div>
-              <div className="flex justify-between font-semibold text-gray-900"><span>You receive (after commission)</span><span>{formatPrice(acquisitionBreakdown.sellerReceives)}</span></div>
+              <div className="flex justify-between"><span>Asking price (listing)</span><span>{formatCurrency(acquisitionBreakdown.askingPrice, form.currency)}</span></div>
+              <div className="flex justify-between"><span>Platform commission ({acquisitionBreakdown.commissionPercent}%)</span><span>{formatCurrency(acquisitionBreakdown.commissionAmount, form.currency)}</span></div>
+              <div className="flex justify-between font-semibold text-gray-900"><span>You receive (after commission)</span><span>{formatCurrency(acquisitionBreakdown.sellerReceives, form.currency)}</span></div>
             </div>
           )}
         </section>
@@ -611,7 +628,7 @@ export default function VentureForm({
               value={form.brandDetails.dealValue}
               onChange={(v) => setBrand('dealValue', v)}
               currency={form.currency}
-              onCurrencyChange={(code) => setField('currency', code)}
+              onCurrencyChange={handleCurrencyChange}
               placeholder="e.g. 500000"
               inputClassName={ventureInputCls}
               labelClassName={ventureLabelCls}

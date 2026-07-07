@@ -13,6 +13,8 @@ import { isSoftwareAuctionLister, resolveAuctionLister } from '../utils/auctionL
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 import useCurrency from '../context/CurrencyContext';
 import { fetchListingFeesAndCharges } from '../utils/auctionFees';
+import { CURRENCY_LABELS } from '../constants/currencies';
+import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 
 function Countdown({ endTime, status }) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -61,9 +63,18 @@ export default function SoftwareAuctionPage() {
   const { auction, bids, minNextBid, maxBidPrice,
           wsState, loading, loadError, placeBid } = useSoftwareAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
-  const { formatPrice, getSymbol } = useCurrency();
+  const {
+    currency: navCurrency,
+    formatPrice,
+    formatCurrency,
+    convertToInr,
+    supportedCurrencies,
+    ratesMeta,
+  } = useCurrency();
 
   const [bidAmount, setBidAmount]           = useState('');
+  const [bidAmountInr, setBidAmountInr]     = useState('');
+  const [bidCurrency, setBidCurrency]       = useState(navCurrency || 'INR');
   const [bidError, setBidError]             = useState('');
   const [bidSuccess, setBidSuccess]         = useState('');
   const [placing, setPlacing]               = useState(false);
@@ -81,6 +92,37 @@ export default function SoftwareAuctionPage() {
   const biddingBlocked = REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE && !auction?.software?.verified;
   const statusStyleBase = STATUS_STYLE_BASE[auction?.status] || STATUS_STYLE_BASE.DRAFT;
   const statusStyle = { ...statusStyleBase, label: t(statusStyleBase.labelKey) };
+  const formatBidCurrencyFromInr = (amount) => (
+    formatCurrency(convertInrToCurrency(amount, bidCurrency, ratesMeta), bidCurrency)
+  );
+  const formatBidInputValue = (inrAmount, currencyCode) => {
+    const converted = convertInrToCurrency(inrAmount, currencyCode, ratesMeta);
+    if (!Number.isFinite(converted)) return '';
+    if (currencyCode === 'INR') return String(Math.round(converted));
+    return String(Number(converted.toFixed(2)));
+  };
+  const bidPlaceholder = minNextBid > 0
+    ? formatBidInputValue(minNextBid, bidCurrency)
+    : '';
+
+  const handleBidAmountChange = (value) => {
+    setBidAmount(value);
+    const parsed = Number(value);
+    setBidAmountInr(
+      Number.isFinite(parsed) && parsed > 0
+        ? String(convertToInr(parsed, bidCurrency))
+        : '',
+    );
+    setBidError('');
+  };
+
+  const handleBidCurrencyChange = (nextCurrency) => {
+    if (bidAmountInr) {
+      setBidAmount(formatBidInputValue(Number(bidAmountInr), nextCurrency));
+    }
+    setBidCurrency(nextCurrency);
+    setBidError('');
+  };
 
   useEffect(() => {
     if (!auction?.id || !user || !isActive) {
@@ -158,7 +200,8 @@ export default function SoftwareAuctionPage() {
   const handleBid = async () => {
     const amt = parseFloat(bidAmount);
     if (isNaN(amt) || amt <= 0) { setBidError(t('auctionDetailEnterValidAmount')); return; }
-    const bidErrorMsg = validateBidAmount(amt, { minNextBid, maxBidPrice }, formatPrice);
+    const bidAmountInrValue = Number(bidAmountInr) || convertToInr(amt, bidCurrency);
+    const bidErrorMsg = validateBidAmount(bidAmountInrValue, { minNextBid, maxBidPrice }, formatBidCurrencyFromInr);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -170,18 +213,19 @@ export default function SoftwareAuctionPage() {
       const payment = await payBidFee({
         auctionType: 'SOFTWARE',
         auctionId: auction.id,
-        bidAmount: amt,
+        bidAmount: bidAmountInrValue,
         user,
         description: t('auctionDetailBidFee', { defaultValue: 'Auction bid fee' }),
       });
       await placeBid({
-        amount: amt,
+        amount: bidAmountInrValue,
         razorpayOrderId: payment.razorpayOrderId,
         razorpayPaymentId: payment.razorpayPaymentId,
         razorpaySignature: payment.razorpaySignature,
       });
       setBidSuccess(t('auctionDetailBidPlacedSuccess'));
       setBidAmount('');
+      setBidAmountInr('');
       setTimeout(() => setBidSuccess(''), 4000);
     } catch (e) {
       const data = e.response?.data;
@@ -555,7 +599,7 @@ export default function SoftwareAuctionPage() {
                   {t('auctionDetailPlaceBid')}
                 </h3>
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1.25rem' }}>
-                  {t('auctionDetailAllowedRange', { range: formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice) })}
+                  {t('auctionDetailAllowedRange', { range: formatBidRangeLabel({ minNextBid, maxBidPrice }, formatBidCurrencyFromInr) })}
                 </p>
                 {bidFee !== null && (
                   <div style={{ fontSize: '0.82rem', color: '#6b7280', margin: '-0.5rem 0 1rem 0', padding: '0.5rem', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
@@ -569,14 +613,37 @@ export default function SoftwareAuctionPage() {
                 ) : (
                 <>
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                  <div style={{ position: 'relative', flex: 1 }}>
-                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%',
-                                   transform: 'translateY(-50%)', color: '#6b7280',
-                                   fontWeight: 600 }}>{getSymbol()}</span>
+                  <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
+                    <select
+                      value={bidCurrency}
+                      onChange={(e) => handleBidCurrencyChange(e.target.value)}
+                      aria-label="Bid currency"
+                      style={{
+                        width: 96,
+                        padding: '0.55rem 0.5rem',
+                        border: '1px solid #d1d5db',
+                        borderRight: 0,
+                        borderRadius: '8px 0 0 8px',
+                        color: '#111827',
+                        background: '#fff',
+                        outline: 'none',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {supportedCurrencies.map((code) => (
+                        <option key={code} value={code}>
+                          {CURRENCY_LABELS[code] || code}
+                        </option>
+                      ))}
+                    </select>
                     <input type="number" value={bidAmount}
-                      onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
-                      placeholder={Number(minNextBid).toFixed(0)}
-                      style={{ paddingLeft: '1.75rem', width: '100%' }} />
+                      onChange={e => handleBidAmountChange(e.target.value)}
+                      placeholder={bidPlaceholder}
+                      style={{
+                        width: '100%',
+                        minWidth: 0,
+                        borderRadius: '0 8px 8px 0',
+                      }} />
                   </div>
                   <button className="btn-glow" onClick={handleBid} disabled={placing}
                     style={{ whiteSpace: 'nowrap', minWidth: 80 }}>
@@ -589,13 +656,18 @@ export default function SoftwareAuctionPage() {
                               marginBottom: '0.75rem' }}>
                   {[1, 1.1, 1.25].map(mult => {
                     const val = Math.ceil(minNextBid * mult);
+                    const bidValue = formatBidInputValue(val, bidCurrency);
                     return (
                       <button key={mult}
-                        onClick={() => setBidAmount(String(val))}
+                        onClick={() => {
+                          setBidAmount(bidValue);
+                          setBidAmountInr(String(val));
+                          setBidError('');
+                        }}
                         style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem',
                                  background: '#f9fafb', border: '1px solid #e5e7eb',
                                  borderRadius: 6, cursor: 'pointer', color: '#374151' }}>
-                        {formatPrice(val)}
+                        {formatBidCurrencyFromInr(val)}
                       </button>
                     );
                   })}

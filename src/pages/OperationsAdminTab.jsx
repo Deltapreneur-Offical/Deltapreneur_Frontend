@@ -4,6 +4,7 @@ import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck, CheckCircle2, AlertC
 import OperationsAdminPartitionTabs from '../components/operations/OperationsAdminPartitionTabs';
 import OperationsContactModal from '../components/operations/OperationsContactModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
+import { useCurrency } from '../context/CurrencyContext';
 import { operationsAdminAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
 import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
@@ -568,7 +569,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                             <span className={`operations-admin-request-type operations-admin-request-type--${isHire ? 'hire' : 'booking'}`}>
                               {getRequestActionLabel(row, t)}
                             </span>
-                            <span className="operations-admin-price">{formatRequestAdminPrice(row)}</span>
+                            <span className="operations-admin-price">{formatRequestAdminPrice(row, formatPrice)}</span>
                           </div>
                         </td>
                         <td className="operations-admin-request-contact-cell">

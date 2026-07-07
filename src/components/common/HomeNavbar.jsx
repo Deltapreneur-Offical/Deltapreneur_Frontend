@@ -102,33 +102,6 @@ function MobileAccordion({ title, open, onToggle, children }) {
 }
 
 function AnimatedNavLogo({ onClick }) {
-  const videoRef = useRef(null);
-  const playCountRef = useRef(0);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    playCountRef.current = 0;
-
-    const handleEnded = () => {
-      playCountRef.current += 1;
-      if (playCountRef.current === 1) {
-        setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.currentTime = 0;
-            videoRef.current.play().catch((err) => console.log('Replay error:', err));
-          }
-        }, 5000);
-      }
-    };
-
-    video.addEventListener('ended', handleEnded);
-    return () => {
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, []);
-
   return (
     <button
       type="button"
@@ -137,10 +110,10 @@ function AnimatedNavLogo({ onClick }) {
       aria-label="CoBrother home"
     >
       <video
-        ref={videoRef}
         className="home-nav-logo-video"
         src={rollingLogoMobile}
         autoPlay
+        loop
         muted
         playsInline
         preload="auto"

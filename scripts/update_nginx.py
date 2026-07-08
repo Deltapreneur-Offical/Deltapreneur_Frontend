@@ -1,3 +1,4 @@
+import re
 import sys
 
 def main():
@@ -5,15 +6,12 @@ def main():
     try:
         with open(config_path, "r") as f:
             content = f.read()
-            # Normalize line endings to avoid matching failures due to CRLF/LF mismatch
-            content = content.replace("\r\n", "\n")
     except Exception as e:
         print(f"Error reading config: {e}")
         sys.exit(1)
 
-    target = """    location / {
-        try_files $uri $uri/ /index.html;
-    }"""
+    # Normalize line endings to avoid matching failures due to CRLF/LF mismatch
+    content = content.replace("\r\n", "\n")
 
     replacement = """    location / {
         # Check if bot
@@ -53,29 +51,18 @@ def main():
         try_files $uri $uri/ /index.html;
     }"""
 
-    if target in content:
-        content = content.replace(target, replacement)
-        print("Updated Nginx location block.")
+    # Robust regex matching location / block with try_files to index.html
+    pattern = r"location\s+/\s*\{[^{}]*try_files[^{}]+/index.html;[^{}]*\}"
+    
+    if re.search(pattern, content):
+        content = re.sub(pattern, replacement, content)
+        print("Updated Nginx location block via regex.")
     else:
-        # Fallback in case spacing is slightly different
-        print("Target location block not found. Trying regex or manual check.")
-        if "try_files $uri $uri/ /index.html;" in content and "facebookexternalhit" not in content:
-            # Let's replace the try_files line
-            old_str = "location / {\n        try_files $uri $uri/ /index.html;\n    }"
-            if old_str in content:
-                content = content.replace(old_str, replacement)
-                print("Updated Nginx location block via fallback spacing 1.")
-            else:
-                # Replace try_files $uri $uri/ /index.html; directly inside location /
-                # Find 'location / {'
-                idx = content.find("location / {")
-                if idx != -1:
-                    # Replace next try_files to index.html with replacement
-                    end_idx = content.find("}", idx)
-                    if end_idx != -1:
-                        block = content[idx:end_idx+1]
-                        content = content.replace(block, replacement)
-                        print("Updated Nginx location block via fallback spacing 2.")
+        print("Target location block not found via regex.")
+        if "facebookexternalhit" in content:
+            print("Config already contains bot rules.")
+        else:
+            print("Config does not contain target block. Writing backup info.")
 
     with open(config_path, "w") as f:
         f.write(content)

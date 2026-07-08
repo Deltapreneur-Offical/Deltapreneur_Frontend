@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "frontend-dist.tar.gz,nginx-frontend.conf,scripts/update_nginx.py"
+          source: "frontend-dist.tar.gz,nginx-frontend.conf,scripts/update_nginx.py,scripts/deploy_nginx.sh"
           target: /tmp
 
       - name: Extract build and verify
@@ -89,32 +89,6 @@ jobs:
             test -f "${DEST}/assets/${CSS_FILE}"
             grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
 
-            # Create backup of cobrother before patching
-            if [ -f "/etc/nginx/sites-available/cobrother" ] && [ ! -f "/etc/nginx/sites-available/cobrother.save" ]; then
-                echo "Creating backup of cobrother config..."
-                sudo cp /etc/nginx/sites-available/cobrother /etc/nginx/sites-available/cobrother.save
-            fi
-
-            # Clean up the port 80 config symlink to prevent conflicts
-            sudo rm -f /etc/nginx/sites-enabled/cobrother-frontend
-            sudo rm -f /etc/nginx/sites-available/cobrother-frontend
-
-            # Dynamically update the main HTTPS unified cobrother configuration if present
-            if [ -f "/etc/nginx/sites-available/cobrother" ]; then
-                echo "Dynamically patching active unified cobrother Nginx configuration..."
-                sudo python3 /tmp/scripts/update_nginx.py
-            fi
-
-            # Clean up temp files
-            sudo rm -f /tmp/nginx-frontend.conf
-            sudo rm -rf /tmp/scripts
-
-            # Debug active Nginx configurations and dump list to web folder
-            echo "--- SITES ENABLED ---" | sudo tee "${DEST}/debug-nginx.txt" > /dev/null
-            sudo ls -la /etc/nginx/sites-enabled/ | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-            echo "--- SITES AVAILABLE ---" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-            sudo ls -la /etc/nginx/sites-available/ | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -123,31 +97,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            if ! sudo nginx -t > /tmp/nginx_error.log 2>&1; then
-                echo "NGINX CONFIG ERROR:"
-                cat /tmp/nginx_error.log
-                
-                # Restore backup
-                if [ -f "/etc/nginx/sites-available/cobrother.save" ]; then
-                    echo "Restoring Nginx backup..."
-                    sudo cp /etc/nginx/sites-available/cobrother.save /etc/nginx/sites-available/cobrother
-                fi
-                
-                # Delete conflicting port 80 config
-                sudo rm -f /etc/nginx/sites-enabled/cobrother-frontend
-                sudo rm -f /etc/nginx/sites-available/cobrother-frontend
-                
-                # Write error to web directory so we can read it
-                sudo mkdir -p /opt/cobrother/frontend/dist
-                sudo cp /tmp/nginx_error.log /opt/cobrother/frontend/dist/debug-nginx.txt
-                
-                # Restart with the restored configuration
-                sudo systemctl restart nginx
-                exit 1
-            else
-                # Clean up any leftover frontend config to be safe
-                sudo rm -f /etc/nginx/sites-enabled/cobrother-frontend
-                sudo rm -f /etc/nginx/sites-available/cobrother-frontend
-                sudo systemctl restart nginx
-                echo "Nginx restarted successfully."
-            fi
+            sudo bash /tmp/scripts/deploy_nginx.sh
+            sudo rm -rf /tmp/nginx-frontend.conf
+            sudo rm -rf /tmp/scripts

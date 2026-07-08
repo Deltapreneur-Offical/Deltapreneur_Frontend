@@ -2,8 +2,8 @@
 export const supportedLanguages = [
   'en-IN',
   'hi',
-  'en-US',
-  'en-GB',
+  'es',
+  'ar',
   'ur',
   'zh',
   'fr',
@@ -37,7 +37,7 @@ export function applyDocumentLanguage(lang) {
   const base = normalized.split('-')[0];
 
   document.documentElement.lang = normalized;
-  document.documentElement.dir = base === 'ur' ? 'rtl' : 'ltr';
+  document.documentElement.dir = (base === 'ur' || base === 'ar') ? 'rtl' : 'ltr';
 }
 
 export function readStoredLanguage() {

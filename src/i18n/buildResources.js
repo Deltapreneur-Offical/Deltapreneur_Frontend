@@ -17,8 +17,8 @@ export function buildInitialResources() {
 export const lazyLocaleLoaders = {
   'en-IN': () => Promise.resolve({ default: enIN }),
   hi: () => import('./locales/hi.json'),
-  'en-GB': () => import('./locales/en-GB.json'),
-  'en-US': () => import('./locales/en-US.json'),
+  es: () => import('./locales/es.json'),
+  ar: () => import('./locales/ar.json'),
   ur: () => import('./locales/ur.json'),
   zh: () => import('./locales/zh.json'),
   fr: () => import('./locales/fr.json'),

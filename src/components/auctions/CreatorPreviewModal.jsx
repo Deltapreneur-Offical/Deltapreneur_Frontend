@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel, ChevronRight, User2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useCurrency } from '../../context/CurrencyContext';
 import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
 import { getVisibleCreatorFields } from '../../utils/creatorRoleFields';
 import { formatCountdown } from '../../utils/auctionDate';
@@ -81,6 +82,7 @@ function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) 
 
 export default function CreatorPreviewModal({ profile, auction, open, onClose, onPlaceBid }) {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const dialogRef = useRef(null);
 
   const [timeLeft, setTimeLeft] = useState('');
@@ -425,7 +427,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                   <Tag size={11} className="text-slate-400" /> Starting Bid
                 </div>
                 <div className="mt-1 text-base font-extrabold text-slate-800 tracking-tight">
-                  ₹{Number(auction.minBidPrice ?? 0).toLocaleString('en-IN')}
+                  {formatPrice(auction.minBidPrice ?? 0)}
                 </div>
               </div>
               <div className="px-3 py-2 text-center md:text-left border-r border-slate-100">
@@ -450,7 +452,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                 </div>
                 <div className="mt-1 text-base font-extrabold text-emerald-600 tracking-tight">
                   {auction.currentHighestBid > 0
-                    ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
+                    ? formatPrice(auction.currentHighestBid)
                     : 'No bids yet'}
                 </div>
               </div>

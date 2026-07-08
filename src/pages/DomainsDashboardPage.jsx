@@ -251,7 +251,7 @@ export default function DomainsDashboardPage() {
                   </div>
                   <div className="flex items-center gap-3 flex-wrap justify-end">
                     <span className="text-[0.95rem] font-bold text-gray-900">
-                      ₹{Number(order.priceInr || 0).toLocaleString('en-IN')}
+                      {formatPrice(order.priceInr || 0)}
                     </span>
                     {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
                       <a

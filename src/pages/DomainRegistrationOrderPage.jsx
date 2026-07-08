@@ -16,6 +16,7 @@ import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
 import DomainManagementCard from '../components/domain/DomainManagementCard';
 import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
+import { useCurrency } from '../context/CurrencyContext';
 import {
   readApiError,
   registrationStatusBadgeClass,
@@ -30,6 +31,7 @@ export default function DomainRegistrationOrderPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -218,7 +220,7 @@ export default function DomainRegistrationOrderPage() {
           ) : (
             <Detail
               label={t('storefrontColPrice', { defaultValue: 'Price' })}
-              value={`₹${Number(order.priceInr || 0).toLocaleString('en-IN')}`}
+              value={formatPrice(order.priceInr || 0)}
             />
           )}
         </section>

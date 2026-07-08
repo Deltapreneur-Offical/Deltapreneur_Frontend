@@ -326,7 +326,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
         </div>
         <div className="text-right flex flex-col items-end gap-2">
           <div className="font-display text-xl font-bold text-emerald-700">
-            ₹{amount.toLocaleString('en-IN')}
+            {formatPrice(amount)}
           </div>
           {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
             <a

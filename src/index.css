@@ -5975,6 +5975,24 @@ body.home-page-body {
   overflow: visible;
 }
 
+/* ─── Sticky search bar wrapper (persists across all page sections) ─────────
+   Position at page level so it remains visible while scrolling through all
+   sections (Domains, Ventures, etc.). */
+.hero-search-sticky-wrapper {
+  position: sticky;
+  top: var(--home-nav-stack-height, 6rem);
+  z-index: 95;
+  width: 100%;
+  display: block;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  margin: 0;
+  left: 0;
+  right: 0;
+  overflow: visible;
+}
+
 .menu-item-gradient {
   position: relative;
   overflow: hidden;

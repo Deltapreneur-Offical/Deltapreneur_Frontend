@@ -3,15 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "os": [
-    "darwin",
-    "linux",
-    "win32"
-  ],
-  "cpu": [
-    "x64",
-    "arm64"
-  ],
   "dev": "vite --host 127.0.0.1",
   "scripts": {
     "dev": "vite",
@@ -51,6 +42,6 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.19",
     "vite": "^5.4.19",
-    "vitest": "^4.1.9"
+    "vitest": "^2.1.8"
   }
 }

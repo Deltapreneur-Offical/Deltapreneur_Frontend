@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { canViewListingDetail } from '../utils/listingVisibility';
 
 /**
- * Opens a listing detail modal when the URL contains ?id= or ?highlight= (e.g. from homepage).
+ * Opens a listing detail modal when the URL contains /:id or ?id= / ?highlight= (e.g. from homepage).
  * Returns closeListingDetail — always use this instead of setDetail(null) so the URL clears.
  */
 export function useOpenListingDetailFromUrl({
@@ -20,19 +20,29 @@ export function useOpenListingDetailFromUrl({
   authLoading = false,
   onAccessDenied,
 }) {
+  const { id: routeId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const fetchedIdRef = useRef(null);
-  const id = searchParams.get('id') || searchParams.get('highlight');
+  const id = routeId || searchParams.get('id') || searchParams.get('highlight');
 
   const clearUrlListingParams = useCallback(() => {
-    const next = new URLSearchParams(searchParams);
-    next.delete('id');
-    next.delete('highlight');
-    if (next.toString() !== searchParams.toString()) {
-      setSearchParams(next, { replace: true });
+    if (routeId) {
+      // e.g. /domains/uuid -> /domains
+      const index = pathname.lastIndexOf('/' + routeId);
+      const basePath = index !== -1 ? pathname.substring(0, index) : pathname;
+      navigate(basePath || pathname, { replace: true });
+    } else {
+      const next = new URLSearchParams(searchParams);
+      next.delete('id');
+      next.delete('highlight');
+      if (next.toString() !== searchParams.toString()) {
+        setSearchParams(next, { replace: true });
+      }
     }
     fetchedIdRef.current = null;
-  }, [searchParams, setSearchParams]);
+  }, [routeId, pathname, navigate, searchParams, setSearchParams]);
 
   const denyDetailAccess = useCallback(() => {
     setDetail(null);

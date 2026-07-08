@@ -33,7 +33,10 @@ def main():
         
         # Check if listing route
         set $is_listing "";
-        if ($uri ~* "^/(ventures|auction|creator-auction|technology/auction|software-auction)/[0-9a-fA-F-]+$") {
+        if ($uri ~* "^/(ventures|domains|technology|auction|creator-auction|technology/auction|software-auction)/[0-9a-fA-F-]+$") {
+            set $is_listing "Y";
+        }
+        if ($uri ~* "^/ventures/deals/[0-9a-fA-F-]+$") {
             set $is_listing "Y";
         }
         if ($uri = "/domains") {
@@ -50,7 +53,9 @@ def main():
         if ($bot_listing = "YY") {
             rewrite ^/ventures/deals/([0-9a-f-]+)$ /api/v1/public/share-preview/deals/$1 last;
             rewrite ^/ventures/([0-9a-f-]+)$ /api/v1/public/share-preview/ventures/$1 last;
+            rewrite ^/domains/([0-9a-f-]+)$ /api/v1/public/share-preview/domains/$1 last;
             rewrite ^/domains$ /api/v1/public/share-preview/domains/$arg_id last;
+            rewrite ^/technology/([0-9a-f-]+)$ /api/v1/public/share-preview/technology/$1 last;
             rewrite ^/technology$ /api/v1/public/share-preview/technology/$arg_id last;
             rewrite ^/auction/([0-9a-f-]+)$ /api/v1/public/share-preview/auction/$1 last;
             rewrite ^/auctions$ /api/v1/public/share-preview/auction/$arg_id last;

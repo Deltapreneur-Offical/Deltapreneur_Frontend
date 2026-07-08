@@ -249,17 +249,16 @@ export default function VentureListingCard({
       : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}`;
 
   const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
-  const oppSuffix = isCoVenture ? 'opportunity' : 'opportunity';
-  const shareSubject = `Check out this ${typeLabel} ${oppSuffix} on CoBrother`;
-  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: ${typeLabel}\n📝 Name: ${brandName}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+  const shareSubject = `Check out this exciting ${typeLabel} on CoBrother!`;
+  const shareBody = `Hi,\n\nI found this exciting ${typeLabel} opportunity on CoBrother and thought you might be interested.\n\n🌐 ${typeLabel}: ${brandName}\nCheck out this exciting ${typeLabel} opportunity on CoBrother!\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
 
-  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
 
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
   const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
 
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this exciting ' + typeLabel + ' opportunity on CoBrother!\n\n' + shareUrl)}`;
 
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 

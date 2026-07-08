@@ -15,9 +15,18 @@ export async function middleware(request) {
     } else if (pathname.startsWith('/ventures/')) {
       listingType = 'ventures';
       listingId = pathname.split('/').pop();
+    } else if (pathname.startsWith('/domains/')) {
+      listingType = 'domains';
+      listingId = pathname.split('/').pop();
     } else if (pathname === '/domains') {
       listingId = url.searchParams.get('id') || url.searchParams.get('highlight');
       if (listingId) listingType = 'domains';
+    } else if (pathname.startsWith('/technology/auction/')) {
+      listingType = 'technology-auction';
+      listingId = pathname.split('/').pop();
+    } else if (pathname.startsWith('/technology/')) {
+      listingType = 'technology';
+      listingId = pathname.split('/').pop();
     } else if (pathname === '/technology') {
       listingId = url.searchParams.get('id');
       if (listingId) listingType = 'technology';
@@ -29,9 +38,6 @@ export async function middleware(request) {
       if (listingId) listingType = 'auction';
     } else if (pathname.startsWith('/creator-auction/')) {
       listingType = 'creator-auction';
-      listingId = pathname.split('/').pop();
-    } else if (pathname.startsWith('/technology/auction/')) {
-      listingType = 'technology-auction';
       listingId = pathname.split('/').pop();
     } else if (pathname.startsWith('/software-auction/')) {
       listingType = 'technology-auction';

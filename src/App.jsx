@@ -377,6 +377,14 @@ useEffect(() => {
                 </ProfileGuard>
               }
             />
+            <Route
+              path="/domains/:id"
+              element={
+                <ProfileGuard>
+                  <DomainsPage />
+                </ProfileGuard>
+              }
+            />
 
             <Route
               path="/domains/dashboard"
@@ -428,6 +436,14 @@ useEffect(() => {
 
             <Route
               path="/technology"
+              element={
+                <ProfileGuard>
+                  <CoCreationPage />
+                </ProfileGuard>
+              }
+            />
+            <Route
+              path="/technology/:id"
               element={
                 <ProfileGuard>
                   <CoCreationPage />

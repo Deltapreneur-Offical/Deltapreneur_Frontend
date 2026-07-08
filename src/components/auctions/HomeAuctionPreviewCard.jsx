@@ -174,17 +174,28 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     setShareOpen(!shareOpen);
   };
 
+  let relativePath = `/auction/${auction?.id}`;
+  let shareCaption = "Check out this domain Auction on CoBrother!";
+  if (category === 'community' || category === 'creator') {
+    relativePath = `/creator-auction/${auction?.id}`;
+    shareCaption = "Check out this Creator Auction on CoBrother!";
+  } else if (category === 'technology' || category === 'software') {
+    relativePath = `/technology/auction/${auction?.id}`;
+    shareCaption = "Check out this Technology Auction on CoBrother!";
+  }
+
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/auctions?id=${auction?.id}`
-      : ``;
-  const shareSubject = `Check out this Auction on CoBrother`;
-  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: Auction\n📝 Name: ${title}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+      ? `${window.location.origin}${relativePath}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}`;
 
-  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const shareSubject = shareCaption;
+  const shareBody = `Hi,\n\nI found this auction on CoBrother and thought you might be interested.\n\n🌐 Auction: ${title}\n${shareCaption}\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
+
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareCaption + '\n\n' + shareUrl)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 

@@ -33,7 +33,7 @@ if [ -f "${CONFIG_PATH}" ]; then
 fi
 
 # 4. Test configuration
-if ! nginx -t > /tmp/nginx_error.log 2>&1; then
+if ! /usr/sbin/nginx -t > /tmp/nginx_error.log 2>&1; then
     echo "NGINX CONFIG TEST FAILED! ROLLING BACK..."
     cat /tmp/nginx_error.log
     

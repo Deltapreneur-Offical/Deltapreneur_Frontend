@@ -20,7 +20,16 @@ rm -f /etc/nginx/sites-available/cobrother-frontend
 # 3. Patch Nginx configuration dynamically
 if [ -f "${CONFIG_PATH}" ]; then
     echo "Running Python updater on cobrother config..."
-    python3 /tmp/scripts/update_nginx.py
+    python3 /tmp/scripts/update_nginx.py > /tmp/python_updater.log 2>&1
+    python_status=$?
+    cat /tmp/python_updater.log
+    if [ $python_status -ne 0 ]; then
+        echo "PYTHON UPDATER FAILED!"
+        mkdir -p "${DEST}"
+        cp /tmp/python_updater.log "${DEST}/debug-nginx.txt"
+        chown -R ubuntu:ubuntu "${DEST}"
+        exit 1
+    fi
 fi
 
 # 4. Test configuration

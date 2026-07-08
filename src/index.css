@@ -5979,9 +5979,8 @@ body.home-page-body {
    Position at page level so it remains visible while scrolling through all
    sections (Domains, Ventures, etc.). */
 .hero-search-sticky-wrapper {
-  position: sticky;
-  top: var(--home-nav-stack-height, 6rem);
-  z-index: 95;
+  position: relative;
+  z-index: 10;
   width: 100%;
   display: block;
   background: white;

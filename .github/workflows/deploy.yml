@@ -94,6 +94,17 @@ jobs:
             sudo ln -sf /etc/nginx/sites-available/cobrother-frontend /etc/nginx/sites-enabled/
             sudo rm -f /tmp/nginx-frontend.conf
 
+            # Debug active Nginx configurations and dump list to web folder
+            echo "--- SITES ENABLED ---" | sudo tee "${DEST}/debug-nginx.txt" > /dev/null
+            sudo ls -la /etc/nginx/sites-enabled/ | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
+            echo "--- SITES AVAILABLE ---" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
+            sudo ls -la /etc/nginx/sites-available/ | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
+            echo "--- ACTIVE NGINX CONFS ---" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
+            for f in /etc/nginx/sites-enabled/*; do
+                echo "FILE: $f" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
+                sudo cat "$f" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
+            done
+
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3
         with:

@@ -40,6 +40,7 @@ if ! nginx -t > /tmp/nginx_error.log 2>&1; then
     # Write error log to web directory
     mkdir -p "${DEST}"
     cp /tmp/nginx_error.log "${DEST}/debug-nginx.txt"
+    cp "${CONFIG_PATH}" "${DEST}/debug-active-cobrother.conf"
     chown -R ubuntu:ubuntu "${DEST}"
     
     # Restart Nginx to restore origin status
@@ -59,6 +60,7 @@ else
     # Write success log to web directory
     mkdir -p "${DEST}"
     echo "SUCCESS: Nginx updated and restarted successfully." > "${DEST}/debug-nginx.txt"
+    cp "${CONFIG_PATH}" "${DEST}/debug-active-cobrother.conf"
     chown -R ubuntu:ubuntu "${DEST}"
     
     echo "=== DEPLOYMENT SUCCESSFUL ==="

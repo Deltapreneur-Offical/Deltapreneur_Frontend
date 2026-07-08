@@ -95,9 +95,9 @@ jobs:
                 sudo cp /etc/nginx/sites-available/cobrother /etc/nginx/sites-available/cobrother.save
             fi
 
-            # Copy and enable updated Nginx configuration (port 80 fallback)
-            sudo cp /tmp/nginx-frontend.conf /etc/nginx/sites-available/cobrother-frontend
-            sudo ln -sf /etc/nginx/sites-available/cobrother-frontend /etc/nginx/sites-enabled/
+            # Clean up the port 80 config symlink to prevent conflicts
+            sudo rm -f /etc/nginx/sites-enabled/cobrother-frontend
+            sudo rm -f /etc/nginx/sites-available/cobrother-frontend
 
             # Dynamically update the main HTTPS unified cobrother configuration if present
             if [ -f "/etc/nginx/sites-available/cobrother" ]; then
@@ -133,6 +133,10 @@ jobs:
                     sudo cp /etc/nginx/sites-available/cobrother.save /etc/nginx/sites-available/cobrother
                 fi
                 
+                # Delete conflicting port 80 config
+                sudo rm -f /etc/nginx/sites-enabled/cobrother-frontend
+                sudo rm -f /etc/nginx/sites-available/cobrother-frontend
+                
                 # Write error to web directory so we can read it
                 sudo mkdir -p /opt/cobrother/frontend/dist
                 sudo cp /tmp/nginx_error.log /opt/cobrother/frontend/dist/debug-nginx.txt
@@ -141,6 +145,9 @@ jobs:
                 sudo systemctl restart nginx
                 exit 1
             else
+                # Clean up any leftover frontend config to be safe
+                sudo rm -f /etc/nginx/sites-enabled/cobrother-frontend
+                sudo rm -f /etc/nginx/sites-available/cobrother-frontend
                 sudo systemctl restart nginx
                 echo "Nginx restarted successfully."
             fi

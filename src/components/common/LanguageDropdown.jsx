@@ -6,8 +6,8 @@ import { useLanguage } from '../../context/LanguageContext';
 const LANGUAGES = [
   { code: 'en-IN', name: 'English (IND)' },
   { code: 'hi', name: 'Hindi' },
-  { code: 'en-US', name: 'English (US)' },
-  { code: 'en-GB', name: 'English (UK)' },
+  { code: 'es', name: 'Español' },
+  { code: 'ar', name: 'العربية' },
   { code: 'ur', name: 'Urdu' },
   { code: 'zh', name: '中文' },
   { code: 'fr', name: 'Français' },
@@ -18,8 +18,8 @@ const LANGUAGES = [
 const LANG_SHORT = {
   'en-IN': 'EN',
   hi: 'HI',
-  'en-US': 'US',
-  'en-GB': 'UK',
+  es: 'ES',
+  ar: 'AR',
   ur: 'UR',
   zh: 'ZH',
   fr: 'FR',

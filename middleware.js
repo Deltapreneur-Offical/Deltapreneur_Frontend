@@ -1,6 +1,6 @@
 export async function middleware(request) {
   const userAgent = request.headers.get('user-agent') || '';
-  const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot/i.test(userAgent);
+  const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot|opengraph|OpenGraphXYZBot/i.test(userAgent);
   
   if (isCrawler) {
     const url = new URL(request.url);

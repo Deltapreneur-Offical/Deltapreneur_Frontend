@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
             const userAgent = req.headers['user-agent'] || '';
-            const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot/i.test(userAgent);
+            const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot|opengraph|OpenGraphXYZBot/i.test(userAgent);
             
             if (isCrawler) {
               const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);

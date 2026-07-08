@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "frontend-dist.tar.gz,nginx-frontend.conf"
+          source: "frontend-dist.tar.gz,nginx-frontend.conf,scripts/update_nginx.py"
           target: /tmp
 
       - name: Extract build and verify
@@ -89,20 +89,19 @@ jobs:
             test -f "${DEST}/assets/${CSS_FILE}"
             grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
 
-            # Copy and enable updated Nginx configuration
+            # Copy and enable updated Nginx configuration (port 80 fallback)
             sudo cp /tmp/nginx-frontend.conf /etc/nginx/sites-available/cobrother-frontend
             sudo ln -sf /etc/nginx/sites-available/cobrother-frontend /etc/nginx/sites-enabled/
 
-            # Overwrite other potential frontend Nginx configuration files to prevent stale conflicts
-            for name in cobrother default; do
-                if [ -f "/etc/nginx/sites-available/$name" ]; then
-                    echo "Overwriting config: $name"
-                    sudo cp /tmp/nginx-frontend.conf "/etc/nginx/sites-available/$name"
-                    sudo ln -sf "/etc/nginx/sites-available/$name" /etc/nginx/sites-enabled/
-                fi
-            done
+            # Dynamically update the main HTTPS unified cobrother configuration if present
+            if [ -f "/etc/nginx/sites-available/cobrother" ]; then
+                echo "Dynamically patching active unified cobrother Nginx configuration..."
+                sudo python3 /tmp/scripts/update_nginx.py
+            fi
 
+            # Clean up temp files
             sudo rm -f /tmp/nginx-frontend.conf
+            sudo rm -rf /tmp/scripts
 
             # Debug active Nginx configurations and dump list to web folder
             echo "--- SITES ENABLED ---" | sudo tee "${DEST}/debug-nginx.txt" > /dev/null

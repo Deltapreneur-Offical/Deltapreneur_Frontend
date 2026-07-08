@@ -57,14 +57,14 @@ jobs:
       - name: Create deployment archive
         run: tar -czf frontend-dist.tar.gz -C dist .
 
-      - name: Upload deployment archive
+      - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: frontend-dist.tar.gz
+          source: "frontend-dist.tar.gz,nginx-frontend.conf"
           target: /tmp
 
       - name: Extract build and verify
@@ -88,6 +88,11 @@ jobs:
             CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' "${DEST}/index.html" | head -1 | tr -d '"')")"
             test -f "${DEST}/assets/${CSS_FILE}"
             grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
+
+            # Copy and enable updated Nginx configuration
+            sudo cp /tmp/nginx-frontend.conf /etc/nginx/sites-available/cobrother-frontend
+            sudo ln -sf /etc/nginx/sites-available/cobrother-frontend /etc/nginx/sites-enabled/
+            sudo rm -f /tmp/nginx-frontend.conf
 
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3

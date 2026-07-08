@@ -63,7 +63,7 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -76,12 +76,12 @@ body {
   font-synthesis: none;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
 #root {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -5938,7 +5938,7 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
 body.home-page-body {
   background: #ffffff !important;
   color: #111827 !important;
-  overflow-x: hidden;
+  overflow-x: clip;
   --home-topbar-height: 2.5rem;
   --home-main-nav-height: 3.5rem;
   --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));

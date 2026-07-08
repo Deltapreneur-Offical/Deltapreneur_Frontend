@@ -248,7 +248,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
   return (
     <>
       <nav
-        className="home-main-nav w-full min-w-0 bg-white border-b border-gray-100 sticky z-[1000]"
+        className="home-main-nav w-full min-w-0 bg-white border-b border-gray-100 md:sticky z-[1000]"
         style={{ top: 'var(--home-topbar-height, 40px)' }}
         ref={navRef}
       >

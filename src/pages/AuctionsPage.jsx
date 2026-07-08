@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Gavel, Search, ChevronDown, X } from 'lucide-react';
+import { Gavel, Search, ChevronDown, X, Home, Smartphone, Cpu, Code } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   auctionAPI,
@@ -19,6 +19,7 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { normalizeCommunityAuction } from '../utils/homepageAuctions';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
+import { useCurrency } from '../context/CurrencyContext';
 import '../styles/auctions-page.css';
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
@@ -38,14 +39,16 @@ const toNum = (value, fallback = 0) => {
 };
 
 function AuctionCardNextBidLine({ highestBid }) {
+  const { formatPrice } = useCurrency();
   const hasNextBid = highestBid > 0;
+  const nextBid = Math.ceil(highestBid * 1.05 / 100) * 100;
   return (
     <div
       className={`text-sm font-semibold mb-3 min-h-[1.375rem] leading-snug ${hasNextBid ? 'text-gray-700' : 'invisible select-none pointer-events-none'}`}
       aria-hidden={!hasNextBid}
     >
       {hasNextBid
-        ? `Next bid: ≥ ₹${Number(highestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+        ? `Next bid: ≥ ${formatPrice(nextBid)}`
         : '\u00A0'}
     </div>
   );
@@ -537,35 +540,44 @@ function DomainAuctionCard({ auction, onClick }) {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="mb-2 min-h-[1.5rem]">
+      <div className="flex-1 flex flex-col min-h-0 justify-between">
+        <div>
           {domain.verified && (
-            <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-              ✓ Verified
-            </span>
+            <div className="mb-2">
+              <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
+                ✓ Verified
+              </span>
+            </div>
+          )}
+          {domain.description && (
+            <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed" title={domain.description}>
+              {domain.description}
+            </p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 my-3">
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">
-              {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+        <div>
+          <div className="grid grid-cols-2 gap-3 my-3">
+            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-600 font-medium mb-1">
+                {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+              </div>
+              <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+                {formatPrice(currentAmount)}
+              </div>
             </div>
-            <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-              ₹{currentAmount.toLocaleString('en-IN')}
+            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-600 font-medium mb-1">
+                Total Bids
+              </div>
+              <div className="font-display text-xl font-bold text-gray-900">
+                {totalBids}
+              </div>
             </div>
           </div>
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">
-              Total Bids
-            </div>
-            <div className="font-display text-xl font-bold text-gray-900">
-              {totalBids}
-            </div>
-          </div>
-        </div>
 
-        <AuctionCardNextBidLine highestBid={highestBid} />
+          <AuctionCardNextBidLine highestBid={highestBid} />
+        </div>
       </div>
 
       <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
@@ -628,56 +640,66 @@ const bone = (style) => ({
 function SoftwareAuctionCard({ auction, onClick }) {
   const [imgFailed, setImgFailed] = useState(false);
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { formatPrice } = useCurrency();
   const software = auction.software || {};
   const isExtended = auction.status === 'EXTENDED';
   const title = auction.auctionTitle || auction.name || software.name || 'Technology';
   const category = auction.category || software.category;
   const imageSrc = pickMediaUrl(auction) || pickMediaUrl(software) || auction.imageUrl || software.imageUrl;
 
+  const CategoryIcon = useMemo(() => {
+    const catUpper = String(category || '').toUpperCase();
+    if (catUpper.includes('SMART_HOME') || catUpper.includes('SMART HOME')) return Home;
+    if (catUpper.includes('MOBILE') || catUpper.includes('APP')) return Smartphone;
+    if (catUpper.includes('WEB') || catUpper.includes('CODE') || catUpper.includes('SOFTWARE')) return Code;
+    return Cpu; // Default fallback icon
+  }, [category]);
+
   return (
     <div
-      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col"
+      className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] border-b-[5px] border-purple-600 overflow-hidden flex flex-col p-5 h-full relative cursor-pointer transition-shadow duration-300"
       onClick={onClick}
     >
-      <div
-        className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold"
-        style={{
-          color: isExtended ? '#c8a96e' : '#6ec896',
-          background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
-          border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
-        }}
-      >
-        {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
+      {/* Top Row: Badges */}
+      <div className="flex justify-between items-center mb-5">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          {isExtended ? 'EXTENDED' : 'LIVE'}
+        </div>
+        
+        {category && (
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-[0.7rem] font-bold border border-purple-100 uppercase tracking-wider">
+            <CategoryIcon className="w-3.5 h-3.5 text-purple-500" />
+            {String(category).replace(/_/g, ' ')}
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-3 mb-3 pr-20">
+      {/* Header Row: Image & Info */}
+      <div className="flex items-start gap-4 mb-5">
         {imageSrc && !imgFailed ? (
           <img
             src={imageSrc}
             alt={title}
-            className="w-11 h-11 rounded-[10px] object-cover border-2 border-indigo-200 flex-shrink-0"
+            className="w-[5.5rem] h-[5.5rem] rounded-2xl object-cover border border-purple-100 flex-shrink-0 bg-purple-50/50"
             onError={() => setImgFailed(true)}
           />
         ) : (
-          <div className="w-11 h-11 rounded-[10px] bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center text-lg font-bold text-indigo-600 flex-shrink-0">
+          <div className="w-[5.5rem] h-[5.5rem] rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-3xl font-black text-purple-300 flex-shrink-0">
             {title[0]?.toUpperCase() || 'T'}
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">{title}</h3>
-          <div className="flex flex-wrap items-center gap-1">
-            <span className="text-[0.72rem] text-indigo-600 font-semibold inline-flex items-center gap-1">
-              <AuctionCategoryIcon src={TechnologyIcon} className="w-3.5 h-3.5 object-contain" />
-              Technology Auction
-            </span>
-            {category && (
-              <span className="text-[0.72rem] text-gray-500">
-                · {String(category).replace(/_/g, ' ')}
-              </span>
-            )}
+        
+        <div className="flex flex-col justify-center min-w-0 flex-1 pt-1">
+          <h3 className="text-[1.1rem] font-bold text-gray-900 leading-tight mb-1.5 truncate">
+            {title}
+          </h3>
+          <div className="flex items-center gap-1.5 text-[0.75rem] font-semibold text-purple-600 mb-1.5 truncate">
+            <AuctionCategoryIcon src={TechnologyIcon} className="w-3.5 h-3.5 object-contain" />
+            Technology Auction
           </div>
           {resolveAuctionListerName(auction) && (
-            <div className="text-[0.72rem] text-gray-500 mt-1 truncate">
+            <div className="text-[0.75rem] text-gray-500 truncate">
               Listed by {resolveAuctionListerName(auction)}
             </div>
           )}
@@ -685,35 +707,64 @@ function SoftwareAuctionCard({ auction, onClick }) {
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="grid grid-cols-2 gap-3 my-3">
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">
-              {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
-            </div>
-            <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-              ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
-            </div>
-          </div>
-          <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 font-medium mb-1">Total Bids</div>
-            <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
-          </div>
-        </div>
+        {(() => {
+          const description = software.what_it_does || software.whatItDoes || software.description || '';
+          return description ? (
+            <p className="text-[0.8rem] text-gray-500 line-clamp-2 mb-4 leading-relaxed" title={description}>
+              {description}
+            </p>
+          ) : null;
+        })()}
 
-        <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
+        <div className="mt-auto">
+          {/* Metrics Row */}
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <div className="bg-purple-50/60 rounded-xl p-3.5 border border-purple-50">
+              <div className="text-[0.65rem] uppercase tracking-wider text-gray-500 font-bold mb-1">
+                {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+              </div>
+              <div className="font-display text-xl font-bold text-purple-500">
+                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
+              </div>
+            </div>
+            <div className="bg-gray-50/80 rounded-xl p-3.5 border border-gray-100">
+              <div className="text-[0.65rem] uppercase tracking-wider text-gray-500 font-bold mb-1">
+                Total Bids
+              </div>
+              <div className="font-display text-xl font-bold text-gray-900">
+                {auction.totalBids}
+              </div>
+            </div>
+          </div>
+          
+          {auction.currentHighestBid > 0 && (
+            <div className="mb-4">
+              <AuctionCardNextBidLine highestBid={auction.currentHighestBid} />
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
-        <div>
-          <div className="text-xs text-gray-600 font-medium">Ends In</div>
-          <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
-            {timeLeft}
+      {/* Footer Row */}
+      <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-4 shrink-0">
+        <div className="flex flex-col">
+          <div className="text-[0.65rem] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Ends In</div>
+          <div className="flex items-center gap-1.5">
+            <svg className={`w-4 h-4 ${isUrgent ? 'text-red-500' : 'text-purple-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div className={`font-display font-bold text-[1.1rem] ${isUrgent ? 'text-red-500 animate-pulse' : 'text-purple-700'}`}>
+              {timeLeft.split('').map((char, i) => {
+                if (['D', 'H', 'M', 'S'].includes(char)) {
+                  return <span key={i} className="text-gray-900">{char.toUpperCase()}</span>;
+                }
+                return char;
+              })}
+            </div>
           </div>
         </div>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onClick(); }}
-          className="btn-glow btn-glow-sm"
+          className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 py-2.5 text-[0.85rem] font-bold transition-colors shadow-sm"
         >
           Bid Now →
         </button>
@@ -726,6 +777,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
 function CommunityAuctionCard({ auction, onClick }) {
   const [imgFailed, setImgFailed] = useState(false);
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { formatPrice } = useCurrency();
   const community  = auction.community || {};
   const isExtended = auction.status === 'EXTENDED';
   const profileImg = pickMediaUrl(community) || community.profileImageUrl || community.profilePicture;
@@ -787,7 +839,7 @@ function CommunityAuctionCard({ auction, onClick }) {
           {skills.length > 0 ? (
             <>
               {skills.map((s, i) => (
-                <span key={i} className="px-2 py-0.5 text-[0.68rem] font-semibold rounded-full bg-gray-100 border border-gray-200 text-gray-600">
+                <span key={i} className="venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
                   {s}
                 </span>
               ))}
@@ -808,7 +860,7 @@ function CommunityAuctionCard({ auction, onClick }) {
                 {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
               </div>
               <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
-                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
               </div>
             </div>
             <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">

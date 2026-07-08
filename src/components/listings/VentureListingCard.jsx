@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -106,7 +107,6 @@ export default function VentureListingCard({
   onDelete,
 
   likeState,
-
   onLike,
 
 }) {
@@ -118,12 +118,9 @@ export default function VentureListingCard({
   const navigate = useNavigate();
 
   const [shareOpen, setShareOpen] = useState(false);
-
   const [imgFailed, setImgFailed] = useState(false);
-
   const shareRef = useRef(null);
-
-
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   const b = venture.brandDetails || {};
 
@@ -193,13 +190,54 @@ export default function VentureListingCard({
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
 
     };
+    const handleClose = () => setShareOpen(false);
 
     document.addEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleClose, { passive: true });
+    window.addEventListener('resize', handleClose);
 
-    return () => document.removeEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleClose);
+      window.removeEventListener('resize', handleClose);
+    };
 
   }, []);
 
+  const toggleShare = async (e) => {
+    stop(e);
+
+    const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${typeLabel}: ${brandName}`,
+          text: `Check out this ${typeLabel} listed on CoBrother!`,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    if (!shareOpen && shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect();
+      let left = rect.right + window.scrollX - 200;
+      if (left < 10) left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY;
+      if (rect.bottom + 270 > window.innerHeight) {
+        top = rect.top + window.scrollY - 270;
+      }
+      setCoords({ top, left });
+    }
+    setShareOpen(!shareOpen);
+  };
 
 
   const shareUrl =
@@ -210,20 +248,22 @@ export default function VentureListingCard({
 
       : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}`;
 
-  const shareText = t('listingCardShareVenture', {
-
-    name: brandName,
-
-    defaultValue: `Check out this venture: ${brandName} - Listed on CoBrother!`,
-
-  });
+  const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
+  const oppSuffix = isCoVenture ? 'opportunity' : 'opportunity';
+  const shareSubject = `Check out this ${typeLabel} ${oppSuffix} on CoBrother`;
+  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: ${typeLabel}\n📝 Name: ${brandName}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
 
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
 
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+
+  const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 
 
   const handleShare = (platform) => {
@@ -254,99 +294,21 @@ export default function VentureListingCard({
 
     : undefined;
 
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
 
 
-  const shareButton = (
 
-    <div className="relative shrink-0" ref={shareRef}>
 
-      <button
-
-        type="button"
-
-        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
-
-        onClick={(e) => {
-
-          stop(e);
-
-          setShareOpen(!shareOpen);
-
-        }}
-
-        title={t('listingCardShare')}
-
-      >
-
-        <Share2 size={12} />
-
-      </button>
-
-      {shareOpen && (
-
-        <div
-
-          className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
-
-          onClick={stop}
-
-        >
-
-          <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-
-            <span className="text-[10px] font-semibold text-gray-600">Share via</span>
-
-          </div>
-
-          <button
-
-            type="button"
-
-            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-
-            onClick={() => handleShare(linkedinShare)}
-
-          >
-
-            {t('listingCardLinkedIn')}
-
-          </button>
-
-          <button
-
-            type="button"
-
-            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-
-            onClick={() => handleShare(facebookShare)}
-
-          >
-
-            {t('listingCardFacebook')}
-
-          </button>
-
-          <button
-
-            type="button"
-
-            className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-green-50 hover:text-green-700 transition-colors"
-
-            onClick={() => handleShare(whatsappShare)}
-
-          >
-
-            {t('listingCardWhatsApp')}
-
-          </button>
-
-        </div>
-
-      )}
-
-    </div>
-
-  );
 
 
 
@@ -430,8 +392,6 @@ export default function VentureListingCard({
 
           </div>
 
-          {shareButton}
-
         </div>
 
       );
@@ -499,26 +459,30 @@ export default function VentureListingCard({
 
   const showPriceBox = showPriceText || handleViewDetails;
   const isHomePreview = compact && browseMode;
-
-
-
-  return (
+return (
 
     <article
 
-      className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white ${
-        isCoVenture 
-          ? 'venture-listing-card--coventure' 
-          : 'venture-listing-card--venture'
-      } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
+      className={`domain-listing-card venture-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white ${isCoVenture
 
-      onClick={interactive ? onView : undefined}
+          ? 'venture-listing-card--coventure'
+
+          : 'venture-listing-card--venture'
+
+        } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
+
+
+      onClick={interactive ? handleCardClick : undefined}
+
 
       role={interactive ? 'button' : undefined}
 
+
       tabIndex={interactive ? 0 : undefined}
 
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
+
 
     >
 
@@ -540,19 +504,16 @@ export default function VentureListingCard({
 
         ) : (
 
-          <div 
+          <div
 
-            className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${
-              compact ? 'p-2' : 'p-4'
-            } ${
+            className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${compact ? 'p-2' : 'p-4'
+              } ${isCoVenture
 
-              isCoVenture 
-
-                ? 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700' 
+                ? 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700'
 
                 : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800'
 
-            }`}
+              }`}
 
             aria-hidden
 
@@ -574,63 +535,108 @@ export default function VentureListingCard({
 
             </div>
 
-            
+
 
             {/* Brand Name Text */}
 
-            <span className={`relative z-10 venture-listing-card__cover-title max-w-full px-2 whitespace-normal break-words leading-tight text-center ${
-              compact ? 'venture-listing-card__cover-title--compact' : ''
-            }`}>
+            <span className={`relative z-10 venture-listing-card__cover-title max-w-full px-2 whitespace-normal break-words leading-tight text-center ${compact ? 'venture-listing-card__cover-title--compact' : ''
+              }`}>
 
               {brandName}
 
             </span>
 
-            
+
 
             {/* Subtle badge on cover */}
 
-            <span className={`relative z-10 mt-1 venture-listing-card__cover-badge uppercase ${
-              compact ? 'venture-listing-card__cover-badge--compact' : ''
-            }`}>
+            <span className={`relative z-10 mt-1 venture-listing-card__cover-badge uppercase ${compact ? 'venture-listing-card__cover-badge--compact' : ''
+              }`}>
 
               {isCoVenture ? 'Co-Venture' : 'Venture'}
 
             </span>
-
           </div>
-
         )}
 
-        {isGstinVerified ? (
-
-          <img
-
-            src={verifiedIcon}
-
-            alt=""
-
-            className="domain-listing-card__verified-icon"
-
-            title={t('listingCardGstVerified', 'GST verified')}
-
-            aria-hidden
-
-          />
-
-        ) : null}
+        <div className="domain-listing-card__share-container" ref={shareRef}>
+          <button
+            type="button"
+            className="domain-listing-card__share-btn"
+            onClick={toggleShare}
+            title={t('listingCardShare')}
+          >
+            <Share2 size={18} strokeWidth={2} />
+          </button>
+          {shareOpen && createPortal(
+            <div
+              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+              style={{
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+              }}
+              onClick={stop}
+            >
+              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(linkedinShare)}
+              >
+                {t('listingCardLinkedIn')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(facebookShare)}
+              >
+                {t('listingCardFacebook')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(twitterShare)}
+              >
+                Twitter / X
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(whatsappShare)}
+              >
+                {t('listingCardWhatsApp')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(gmailShare)}
+              >
+                Gmail
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(emailShare)}
+              >
+                Email
+              </button>
+            </div>,
+            document.body
+          )}
+        </div>
 
       </div>
 
 
 
-      <div className={`domain-listing-card__body flex flex-col flex-1 ${
-        compact && browseMode
+      <div className={`domain-listing-card__body flex flex-col flex-1 ${compact && browseMode
           ? 'gap-2 p-3'
           : compact
             ? 'justify-between gap-2 p-3'
             : 'justify-between gap-3 p-4'
-      }`}>
+        }`}>
 
         <div className="flex flex-col gap-2">
 
@@ -640,17 +646,8 @@ export default function VentureListingCard({
 
             {b.industry && (
 
-              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${
-                compact ? 'venture-listing-card__badge--compact' : ''
-              } ${
-
-                isCoVenture 
-
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
-
-                  : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-
-              }`}>
+              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
+                } bg-indigo-50 text-indigo-700 border border-indigo-100`}>
 
                 {b.industry}
 
@@ -660,17 +657,8 @@ export default function VentureListingCard({
 
             {sellerAsk.dealTypeLabel && (
 
-              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${
-                compact ? 'venture-listing-card__badge--compact' : ''
-              } ${
-
-                isCoVenture 
-
-                  ? 'bg-teal-50 text-teal-700 border border-teal-100' 
-
-                  : 'bg-purple-50 text-purple-700 border border-purple-100'
-
-              }`}>
+              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
+                } bg-purple-50 text-purple-700 border border-purple-100`}>
 
                 {sellerAsk.dealTypeLabel}
 
@@ -684,12 +672,11 @@ export default function VentureListingCard({
 
           {/* Brand Name & Status Dot */}
 
-          <div className="venture-listing-card__title-row flex items-start justify-between gap-2">
+          <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
 
             <h3
-              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words leading-snug ${
-              compact ? 'venture-listing-card__title--compact' : ''
-              }`}
+              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words leading-snug ${compact ? 'venture-listing-card__title--compact' : ''
+                }`}
               title={brandName}
               style={{
                 display: '-webkit-box',
@@ -706,17 +693,13 @@ export default function VentureListingCard({
 
             </h3>
 
-            <span
-
-              className={`w-2 h-2 rounded-full shrink-0 ${
-
-                venture.status === false ? 'bg-slate-300' : 'bg-emerald-500'
-
-              }`}
-
-              title={venture.status === false ? 'INACTIVE' : 'AVAILABLE'}
-
-            />
+            {isGstinVerified ? (
+              <img
+                src={verifiedIcon}
+                alt="Verified"
+                className="domain-listing-card__verified-badge"
+              />
+            ) : null}
 
           </div>
 
@@ -758,11 +741,10 @@ export default function VentureListingCard({
             <div className="grid grid-cols-2 gap-2 mt-1">
               {/* Equity Offered */}
               {sellerAsk.equityLabel && (
-                <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${
-                  isCoVenture 
-                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800' 
+                <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${isCoVenture
+                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800'
                     : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800'
-                }`}>
+                  }`}>
                   <span className="text-[11px] font-medium truncate">
                     {sellerAsk.equityLabel} Equity
                   </span>
@@ -780,13 +762,12 @@ export default function VentureListingCard({
               ) : null}
 
               {/* Interest/Pitches Count */}
-              <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${
-                interestCount > 0
-                  ? (isCoVenture 
-                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800' 
+              <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${interestCount > 0
+                  ? (isCoVenture
+                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800'
                     : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800')
                   : 'bg-slate-50 border-slate-100 text-slate-500'
-              }`}>
+                }`}>
                 <span className="text-[11px] font-medium truncate">
                   {formatInterestCountLabel(interestCount, isCoVenture)}
                 </span>
@@ -804,13 +785,12 @@ export default function VentureListingCard({
 
           {showPriceBox && (
 
-            <div 
+            <div
 
-              className={`domain-listing-card__price-box ${
-                isCoVenture 
-                  ? 'domain-listing-card__price-box--coventure' 
+              className={`domain-listing-card__price-box ${isCoVenture
+                  ? 'domain-listing-card__price-box--coventure'
                   : 'domain-listing-card__price-box--venture'
-              } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
+                } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
 
               style={isHomePreview ? undefined : {
                 borderRadius: compact ? '0.75rem' : '1rem',
@@ -838,9 +818,8 @@ export default function VentureListingCard({
 
                   </span>
 
-                  <span className={`domain-listing-card__price-value currency-display truncate ${
-                    compact ? 'venture-listing-card__price-value--compact' : ''
-                  }`}>
+                  <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''
+                    }`}>
 
                     {priceDisplay}
 
@@ -858,9 +837,8 @@ export default function VentureListingCard({
 
                   type="button"
 
-                  className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${
-                    compact ? 'w-6 h-6' : ''
-                  }`}
+                  className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${compact ? 'w-6 h-6' : ''
+                    }`}
 
                   aria-label={t('listingCardViewDetails', 'View details')}
 

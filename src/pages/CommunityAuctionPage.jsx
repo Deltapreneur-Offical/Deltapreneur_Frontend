@@ -25,6 +25,7 @@ import {
 } from '../utils/auctionDate';
 import { getLinkedInProfileUrl } from '../utils/creatorProfile';
 import { payAuctionCreationFee } from '../utils/auctionFees';
+import useCurrency from '../context/CurrencyContext';
 import { hasPlacedCommunityAuctionBid } from '../utils/communityAuctionMeetings';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ export default function CommunityAuctionPage() {
                       = useCommunityAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
   const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
+  const { formatPrice, getSymbol } = useCurrency();
 
   // Bid state
   const [bidAmount, setBidAmount]   = useState('');
@@ -212,7 +214,7 @@ export default function CommunityAuctionPage() {
         razorpayPaymentId: payment.razorpayPaymentId,
         razorpaySignature: payment.razorpaySignature,
       });
-      setBidSuccess(`Bid of ₹${Number(amount).toLocaleString('en-IN')} placed!`);
+      setBidSuccess(`Bid of ${formatPrice(amount)} placed!`);
       setBidAmount('');
     } catch (err) {
       setBidError(err.response?.data?.error || err?.message || 'Failed to place bid.');
@@ -383,7 +385,7 @@ export default function CommunityAuctionPage() {
                   <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Current Highest Bid</div>
                   <div className={`font-display text-[2rem] font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                     {auction.currentHighestBid > 0
-                      ? `₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
+                      ? formatPrice(auction.currentHighestBid)
                       : 'No bids yet'}
                   </div>
                   {auction.currentWinnerName && (
@@ -395,7 +397,7 @@ export default function CommunityAuctionPage() {
                 <div>
                   <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Starting Bid</div>
                   <div className="font-display text-[1.5rem] font-bold text-amber-600">
-                    ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+                    {formatPrice(auction.minBidPrice)}
                   </div>
                 </div>
                 <div>
@@ -409,7 +411,7 @@ export default function CommunityAuctionPage() {
               {isActive && auction.currentHighestBid > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800">
                   Allowed bid range:{' '}
-                  <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice })}</strong>
+                  <strong>{formatBidRangeLabel({ minNextBid, maxBidPrice }, formatPrice)}</strong>
                   <span className="text-gray-500 ml-2">(between min and 150% max)</span>
                 </div>
               )}
@@ -474,7 +476,7 @@ export default function CommunityAuctionPage() {
                   <strong className="text-gray-900">{auction.currentWinnerName || 'A bidder'}</strong>
                   {' '}won with a bid of{' '}
                   <strong className="text-green-700">
-                    ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
+                    {formatPrice(auction.currentHighestBid)}
                   </strong>
                 </p>
                 {awaitingWinnerPayment && (
@@ -488,7 +490,7 @@ export default function CommunityAuctionPage() {
                       disabled={payingWinnerBid}>
                       {payingWinnerBid
                         ? 'Processing…'
-                        : `Pay Winning Bid — ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`}
+                        : `Pay Winning Bid — ${formatPrice(auction.currentHighestBid)}`}
                     </button>
                     {winnerPaymentError && (
                       <div className="text-xs text-red-600 mt-2">{winnerPaymentError}</div>
@@ -560,7 +562,7 @@ export default function CommunityAuctionPage() {
                                 ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
                                 : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
                             }`}>
-                            ₹{Number(quickAmount).toLocaleString('en-IN')}
+                            {formatPrice(quickAmount)}
                           </button>
                         );
                       })}
@@ -570,13 +572,13 @@ export default function CommunityAuctionPage() {
 
                 <div className="flex flex-col gap-1.5 mb-4">
                   <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
-                    YOUR BID AMOUNT (₹)
+                    YOUR BID AMOUNT ({getSymbol()})
                   </label>
                   <input
                     type="number"
                     value={bidAmount}
                     onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
-                    placeholder={`Min ₹${Number(minNextBid).toLocaleString('en-IN')}`}
+                    placeholder={`Min ${formatPrice(minNextBid)}`}
                     min={minNextBid}
                     max={maxBidPrice || undefined}
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
@@ -597,7 +599,7 @@ export default function CommunityAuctionPage() {
 
                 {bidFee > 0 && (
                   <div className="text-[0.75rem] text-gray-500 mb-3 text-center font-medium bg-gray-50 p-2 rounded">
-                    A non-refundable per-bid fee of ₹{Number(bidFee).toLocaleString('en-IN')} will be charged.
+                    A non-refundable per-bid fee of {formatPrice(bidFee)} will be charged.
                   </div>
                 )}
 
@@ -605,7 +607,7 @@ export default function CommunityAuctionPage() {
                   disabled={bidLoading || !bidAmount}>
                   {bidLoading
                     ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-                    : `Place Bid${bidAmount ? ` — ₹${Number(bidAmount).toLocaleString('en-IN')}` : ''} →`}
+                    : `Place Bid${bidAmount ? ` — ${formatPrice(Number(bidAmount))}` : ''} →`}
                 </button>
 
                 <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
@@ -872,7 +874,7 @@ function MeetingsSection({
         <div className="px-5 py-4 bg-amber-50 border-b border-amber-200">
           <div className="text-sm text-amber-800 mb-2">
             Meeting request fee required to request a meeting:{' '}
-            <strong>₹{Number(participationFee || 0).toLocaleString('en-IN')}</strong>
+            <strong>{formatPrice(participationFee || 0)}</strong>
           </div>
           <button className="btn-glow btn-glow-sm w-full sm:w-auto" onClick={onPayParticipation} disabled={payingParticipation}>
             {payingParticipation ? 'Processing…' : 'Pay Meeting Request Fee →'}
@@ -1277,7 +1279,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">New Minimum Bid (₹) *</label>
+            <label className="text-sm font-medium text-gray-700">New Minimum Bid ({getSymbol()}) *</label>
             <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500"
               type="number" min="1" value={form.minBidPrice}
               onChange={e => setForm(f => ({ ...f, minBidPrice: e.target.value }))}
@@ -1328,7 +1330,7 @@ function BidRow({ bid, isLatest, isWinner }) {
         <div className="text-[0.72rem] text-gray-400">{bidTimeStr}</div>
       </div>
       <div className={`font-display text-[1.1rem] font-bold flex-shrink-0 ${isLatest ? 'text-green-600' : 'text-amber-600'}`}>
-        ₹{Number(bid.amount).toLocaleString('en-IN')}
+        {formatPrice(bid.amount)}
       </div>
     </div>
   );

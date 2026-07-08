@@ -5,7 +5,9 @@ import { domainAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
+import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomePreviewCardShell from './HomePreviewCardShell';
+import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import DomainListingCard from '../listings/DomainListingCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -46,6 +48,20 @@ export default function DomainsSection() {
     navigateToListingDetail(navigate, 'domain', domainId);
   };
 
+  const shouldAutoScroll = useShouldAutoScroll(previewDomains.length);
+
+  const renderDomainCard = (domain) => (
+    <HomePreviewCardShell accent="domain">
+      <DomainListingCard
+        domain={domain}
+        browseMode={true}
+        likeState={getLike(domain.id)}
+        onLike={() => toggleLike(domain.id)}
+        onView={() => handleViewDetails(domain.id)}
+      />
+    </HomePreviewCardShell>
+  );
+
   if (loading || !hasFetchedDomains) {
     return <HomeSectionCardSkeleton title={t('domains')} to="/domains" />;
   }
@@ -56,19 +72,19 @@ export default function DomainsSection() {
         <HomeSectionHeader title={t('domains')} to="/domains" />
         {previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
+        ) : shouldAutoScroll ? (
+          <HomeAutoScrollRow durationSec={50} ariaLabel={t('domains')}>
+            {previewDomains.map((domain) => (
+              <HomeAutoScrollRowItem key={domain.id}>
+                {renderDomainCard(domain)}
+              </HomeAutoScrollRowItem>
+            ))}
+          </HomeAutoScrollRow>
         ) : (
           <HomePreviewRow>
             {previewDomains.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
-                <HomePreviewCardShell accent="domain">
-                  <DomainListingCard
-                    domain={domain}
-                    browseMode={true}
-                    likeState={getLike(domain.id)}
-                    onLike={() => toggleLike(domain.id)}
-                    onView={() => handleViewDetails(domain.id)}
-                  />
-                </HomePreviewCardShell>
+                {renderDomainCard(domain)}
               </HomePreviewRowItem>
             ))}
           </HomePreviewRow>

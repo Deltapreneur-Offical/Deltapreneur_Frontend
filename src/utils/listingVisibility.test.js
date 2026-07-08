@@ -24,7 +24,7 @@ describe('listingVisibility', () => {
         active: true,
         status: true,
         verified: false,
-      }),
+      }, 'software'),
     ).toBe(false);
   });
 
@@ -47,13 +47,38 @@ describe('listingVisibility', () => {
       active: true,
       status: true,
       name: 'Jane',
-      role: 'DEV',
+      about: 'CSE student',
+      headline: 'Computer science student building AI tools',
+      role: 'STUDENT',
+      industry: 'TECH',
+      education: 'B.Tech CSE',
+      graduation_year: '2027',
+      skills: 'React,TypeScript',
+      location: 'Bengaluru',
+      linked_in_profile_url: 'https://linkedin.com/in/jane',
+      why_im_here: 'Build',
+      expected_price: '5000/month',
+      introduction_video_link: 'https://youtube.com/watch?v=abc',
+      resume_drive_link: 'https://drive.google.com/file/d/abc',
+      preferred_work_type: 'FULL_TIME',
+      availability: 'Weekends',
+      languages_known: 'English',
+    };
+    expect(isCommunityProfilePublic(profile)).toBe(true);
+  });
+
+  it('considers basic creator profiles with only 8 core fields public', () => {
+    const profile = {
+      active: true,
+      status: true,
+      name: 'Jane',
+      role: 'STUDENT',
       industry: 'TECH',
       skills: 'React,TypeScript',
       location: 'Bengaluru',
-      linked_in_id: 'sub-1',
+      linked_in_id: 'sub-123',
       why_im_here: 'Build',
-      expected_rate: '5000/month',
+      expected_price: '5000/month',
     };
     expect(isCommunityProfilePublic(profile)).toBe(true);
   });

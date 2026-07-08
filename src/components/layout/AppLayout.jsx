@@ -44,7 +44,7 @@ const adminNavItem = { icon: Shield, labelKey: 'navAdminPanel', to: '/admin', is
 
 function isAdminUser(user) {
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  return roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+  return ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'].includes(roleUpper);
 }
 
 function getNavItems(user) {

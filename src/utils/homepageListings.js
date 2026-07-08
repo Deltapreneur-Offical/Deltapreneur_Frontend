@@ -1,5 +1,5 @@
 import { asArray } from './asArray';
-import { isCreatorProfileComplete } from './creatorProfile';
+import { isCreatorProfileComplete, isCreatorProfileVisible } from './creatorProfile';
 import { isPublicMarketplaceListing } from './listingVisibility';
 
 /** Whether a listing is visible on marketplace browse pages and can be homepage-featured. */
@@ -59,7 +59,7 @@ export function isHomepageVerifiedListing(item, type = 'domain') {
     return status === 'APPROVED';
   }
   if (type === 'community') {
-    return isCreatorProfileComplete(item);
+    return isCreatorProfileVisible(item);
   }
   return Boolean(item.verified);
 }
@@ -80,10 +80,12 @@ const ADMIN_ROLES = new Set([
   'ADMIN',
   'COBROTHER',
   'SUPER_ADMIN',
+  'AUCTION_MODERATOR',
   'ADMINISTRATOR',
   'ROLE_ADMIN',
   'ROLE_COBROTHER',
   'ROLE_SUPER_ADMIN',
+  'ROLE_AUCTION_MODERATOR',
   'ROLE_ADMINISTRATOR',
 ]);
 
@@ -140,6 +142,5 @@ export function pickHomepagePreviewListings(
   limit = HOMEPAGE_PREVIEW_LIMIT,
 ) {
   return asArray(items)
-    .filter((item) => isHomepageFeaturedListing(item, type))
-    .slice(0, limit);
+    .filter((item) => isHomepageFeaturedListing(item, type));
 }

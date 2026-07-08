@@ -3,7 +3,7 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, CheckCircle, Gavel } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
@@ -12,11 +12,10 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import { computeCommissionBreakdown } from '../utils/auctionFees';
-import { roundInr } from '../utils/money';
+import { roundInr, roundMoney } from '../utils/money';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
+import { buildOrderCurrencyPayload, convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import { formatAuctionDateTime } from '../utils/auctionDate';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
@@ -52,8 +51,8 @@ import { notifyDomainVerificationChanged } from '../utils/domainVerificationEven
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
-  PENDING:   { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
-  SOLD:      { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
+  PENDING: { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
+  SOLD: { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
 
 const formatInr = (value) =>
@@ -63,14 +62,44 @@ const formatInr = (value) =>
     maximumFractionDigits: 0,
   }).format(Number(value || 0));
 
-function buildDomainFormState(domain, navCurrency) {
+function formatPriceInputAmount(value, currencyCode) {
+  const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  const amount = code === DEFAULT_LISTING_CURRENCY ? roundInr(value) : roundMoney(value);
+  return String(amount);
+}
+
+function computeListingCurrencyCommission(sellerAmount, commissionPercent = 15, currencyCode = DEFAULT_LISTING_CURRENCY) {
+  const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  const round = code === DEFAULT_LISTING_CURRENCY ? roundInr : roundMoney;
+  const listingPrice = round(sellerAmount);
+  const commissionAmount = round((listingPrice * Number(commissionPercent || 0)) / 100);
+  const sellerEarnings = round(listingPrice - commissionAmount);
+
+  return {
+    listingPrice,
+    sellerAmount: sellerEarnings,
+    sellerEarnings,
+    commissionAmount,
+    finalListingPrice: listingPrice,
+    commissionPercent,
+  };
+}
+
+function buildDomainFormState(domain, navCurrency, ratesMeta) {
   const display = domain ? resolveDomainDisplay(domain) : { name: '', ext: null, fullDomain: '' };
+  const listingCurrency = domain?.currency || navCurrency || DEFAULT_LISTING_CURRENCY;
+  const storedAskingPrice = Number(domain?.askingPrice ?? 0);
+  const displayAskingPrice =
+    domain?.askingPrice != null
+      ? convertInrToCurrency(storedAskingPrice, listingCurrency, ratesMeta)
+      : '';
   return {
     domainName: ['—', 'Unnamed', 'domain'].includes(display.name) ? '' : display.name,
+    logoText: domain?.logo_text ?? domain?.logoText ?? '',
     domainExtension: display.ext?.full ?? (domain ? '' : '.com'),
-    askingPrice: domain?.askingPrice != null ? String(domain.askingPrice) : '',
+    askingPrice: domain?.askingPrice != null ? formatPriceInputAmount(displayAskingPrice, listingCurrency) : '',
     pricingDemand: domain?.pricingDemand ?? '',
-    currency: domain?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    currency: listingCurrency,
     saleType: domain?.saleType ?? 'ONE_TIME',
     minBidPrice: '',
     auctionDuration: 'SEVEN_DAYS',
@@ -81,25 +110,26 @@ function buildDomainFormState(domain, navCurrency) {
 
 export default function DomainsPage() {
   const { t } = useTranslation();
-  const { user, loading: authLoading }  = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol } = useCurrency();
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [allDomains, setAllDomains]         = useState([]);
-  const [loading, setLoading]               = useState(true);
-  const [showForm, setShowForm]             = useState(false);
-  const [editTarget, setEditTarget]         = useState(null);
-  const [buyTarget, setBuyTarget]           = useState(null);
-  const [successDomain, setSuccessDomain]   = useState(null);
-  const [detailTarget, setDetailTarget]     = useState(null);
-  const [deleteTarget, setDeleteTarget]     = useState(null);
-  const [enquireTarget, setEnquireTarget]   = useState(null);
+  const [allDomains, setAllDomains] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+  const [buyTarget, setBuyTarget] = useState(null);
+  const [successDomain, setSuccessDomain] = useState(null);
+  const [detailTarget, setDetailTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [enquireTarget, setEnquireTarget] = useState(null);
   const [enquireSuccess, setEnquireSuccess] = useState(false);
-  const [filterTab, setFilterTab]           = useState('all');
-  const [showConfetti, setShowConfetti]     = useState(false);
-  const [globalNotice, setGlobalNotice]     = useState('');
+  const [filterTab, setFilterTab] = useState('all');
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [globalNotice, setGlobalNotice] = useState('');
+  const [auctionTarget, setAuctionTarget] = useState(null);
   const { pendingVerificationCount } = useDomainPendingVerification();
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
@@ -118,10 +148,10 @@ export default function DomainsPage() {
     clearAll, activeFilterCount,
     page, totalPages, setPage,
   } = useFilterSort(visibleDomains, {
-    searchFields:  ['domainName', 'domainExtension'],
-    priceField:    'askingPrice',
+    searchFields: ['domainName', 'domainExtension'],
+    priceField: 'askingPrice',
     categoryField: 'pricingDemand',
-    dateField:     'createdAt',
+    dateField: 'createdAt',
   }, 20, {
     getLikeCount: (item) => getLike(item.id).count,
     resetPageWhen: filterTab,
@@ -134,8 +164,8 @@ export default function DomainsPage() {
     const loadAll = filterTab === 'mine'
       ? domainAPI.getMyListings().then(({ data }) => extractDomainList(data))
       : fetchAllListPages((params) => domainAPI.getAll(params)).then(
-          (items) => extractDomainList({ items, data: items }),
-        );
+        (items) => extractDomainList({ items, data: items }),
+      );
 
     loadAll
       .then((rows) => {
@@ -227,6 +257,10 @@ export default function DomainsPage() {
                 flushSync(() => {
                   if (editTarget) {
                     setAllDomains(prev => prev.map(x => (x.id === normalizedSaved.id ? { ...x, ...normalizedSaved } : x)));
+                    setDetailTarget(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
+                    setBuyTarget(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
+                    setSuccessDomain(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
+                    setGlobalNotice(`Saved ${normalizedSaved.domainName}${normalizedSaved.domainExtension} at ${formatInr(normalizedSaved.askingPrice)}.`);
                     setEditTarget(null);
                   } else {
                     setAllDomains(prev => [normalizedSaved, ...prev]);
@@ -235,14 +269,14 @@ export default function DomainsPage() {
                     setFilterTab('mine');
                     setGlobalNotice(
                       d?._warning
-                        || (isPremiumDomain(normalizedSaved)
-                          ? t('domainsPagePremiumListedNotice')
-                          : isDomainPendingVerification(normalizedSaved)
-                            ? t('domainsVerifyPendingShort', {
-                                defaultValue:
-                                  'Listed successfully and live in the marketplace. Complete verification in Domains Dashboard to earn the Verified badge.',
-                              })
-                            : ''),
+                      || (isPremiumDomain(normalizedSaved)
+                        ? t('domainsPagePremiumListedNotice')
+                        : isDomainPendingVerification(normalizedSaved)
+                          ? t('domainsVerifyPendingShort', {
+                            defaultValue:
+                              'Listed successfully and live in the marketplace. Complete verification in Domains Dashboard to earn the Verified badge.',
+                          })
+                          : ''),
                     );
                   }
                 });
@@ -257,120 +291,121 @@ export default function DomainsPage() {
           </>
         ) : (
           <>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
-              {t('domains')}
-              {pendingVerificationCount > 0 ? (
-                <PendingVerificationDot className="h-2.5 w-2.5" title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
-              ) : null}
-            </h1>
-            <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
-          </div>
-          <div className="flex gap-2 md:gap-3">
-            <Link className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" to="/settings/payouts">
-              <CreditCard size={14} className="md:w-4 md:h-4" /> <span className="truncate">Payout Settings</span>
-            </Link>
-            <button className="btn-glow btn-glow-sm relative flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
-              <LayoutDashboard size={14} className="md:w-4 md:h-4" />
-              <span className="truncate">{t('dashboard')}</span>
-              {pendingVerificationCount > 0 ? (
-                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
-                  <PendingVerificationDot className="h-2.5 w-2.5" />
-                </span>
-              ) : null}
-            </button>
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
-              <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allDomains')}</button>
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
-        </div>
-
-        {filterTab === 'mine' && pendingVerificationCount > 0 ? (
-          <DomainVerificationPendingBanner
-            count={pendingVerificationCount}
-            onVerifyClick={() => navigate('/domains/dashboard')}
-          />
-        ) : null}
-
-        {globalNotice && (
-          <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            {globalNotice}
-          </div>
-        )}
-
-        <FilterBar
-          search={search}           onSearch={handleSearch}
-          category={category}       onCategory={handleCategory}
-          categoryOptions={DOMAIN_PRICING_OPTIONS}
-          minPrice={minPrice}       onMinPrice={handleMinPrice}
-          maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-          sortBy={sortBy}           onSort={handleSort}
-          onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder={t('domainsPageSearchPlaceholder')}
-          priceSymbol={getSymbol(currency)}
-          theme="light"
-        />
-
-        {!loading && totalCount > 0 && (
-          <div className="text-sm text-gray-600 mb-4">
-            {t('domainsPageResultsFound', { count: totalCount })}
-          </div>
-        )}
-
-        {loading ? (
-          <PageContentSkeleton variant="cards" rows={8} />
-        ) : paginated.length === 0 ? (
-          <div className="text-center py-20">
-            <img src={DomainsIcon} alt={t('domains')} className="mx-auto mb-4 w-16 h-16 object-contain" />
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? t('domainsPageEmptyFilteredTitle') :
-               filterTab === 'mine' ? t('domainsPageEmptyMineTitle') :
-               t('domainsPageEmptyAllTitle')}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {activeFilterCount > 0
-                ? t('domainsPageEmptyFilteredHint')
-                : t('domainsPageEmptyAllHint')}
-            </p>
-            {activeFilterCount > 0
-              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClear')}</button>
-              : <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(true)}>
-                  {t('domainsPageListDomainCta')}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
+                  {t('domains')}
+                  {pendingVerificationCount > 0 ? (
+                    <PendingVerificationDot className="h-2.5 w-2.5" title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
+                  ) : null}
+                </h1>
+                <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
+              </div>
+              <div className="flex gap-2 md:gap-3">
+                <Link className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" to="/settings/payouts">
+                  <CreditCard size={14} className="md:w-4 md:h-4" /> <span className="truncate">Payout Settings</span>
+                </Link>
+                <button className="btn-glow btn-glow-sm relative flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
+                  <LayoutDashboard size={14} className="md:w-4 md:h-4" />
+                  <span className="truncate">{t('dashboard')}</span>
+                  {pendingVerificationCount > 0 ? (
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
+                      <PendingVerificationDot className="h-2.5 w-2.5" />
+                    </span>
+                  ) : null}
                 </button>
-            }
-          </div>
-        ) : (
-          <>
-            <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {paginated.map(d => (
-                <ListingCardShell key={d.id}>
-                <DomainListingCard
-                  domain={d}
-                  isOwner={isListingOwner(d, user, 'domain')}
-                  likeState={getLike(d.id)}
-                  onLike={() => toggleLike(d.id)}
-                  onView={() => openDetailIfAllowed(d)}
-                  onEdit={() => { setEditTarget(d); setShowForm(false); }}
-                  onBuy={() => setBuyTarget(d)}
-                  onEnquire={() => setEnquireTarget(d)}
-                  onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
-                  onDelete={() => setDeleteTarget(d.id)}
-                />
-                </ListingCardShell>
-              ))}
+                <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
+                  <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
+                </button>
+              </div>
             </div>
-            <Pagination page={page} totalPages={totalPages}
-              onPage={setPage} totalCount={totalCount} pageSize={20} />
-          </>
-        )}
+
+            <div className="flex gap-2 mb-6">
+              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allDomains')}</button>
+              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
+            </div>
+
+            {filterTab === 'mine' && pendingVerificationCount > 0 ? (
+              <DomainVerificationPendingBanner
+                count={pendingVerificationCount}
+                onVerifyClick={() => navigate('/domains/dashboard')}
+              />
+            ) : null}
+
+            {globalNotice && (
+              <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                {globalNotice}
+              </div>
+            )}
+
+            <FilterBar
+              search={search} onSearch={handleSearch}
+              category={category} onCategory={handleCategory}
+              categoryOptions={DOMAIN_PRICING_OPTIONS}
+              minPrice={minPrice} onMinPrice={handleMinPrice}
+              maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
+              sortBy={sortBy} onSort={handleSort}
+              onClear={clearAll} activeFilterCount={activeFilterCount}
+              placeholder={t('domainsPageSearchPlaceholder')}
+              priceSymbol={getSymbol(currency)}
+              theme="light"
+            />
+
+            {!loading && totalCount > 0 && (
+              <div className="text-sm text-gray-600 mb-4">
+                {t('domainsPageResultsFound', { count: totalCount })}
+              </div>
+            )}
+
+            {loading ? (
+              <PageContentSkeleton variant="cards" rows={8} />
+            ) : paginated.length === 0 ? (
+              <div className="text-center py-20">
+                <img src={DomainsIcon} alt={t('domains')} className="mx-auto mb-4 w-16 h-16 object-contain" />
+                <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+                  {activeFilterCount > 0 ? t('domainsPageEmptyFilteredTitle') :
+                    filterTab === 'mine' ? t('domainsPageEmptyMineTitle') :
+                      t('domainsPageEmptyAllTitle')}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {activeFilterCount > 0
+                    ? t('domainsPageEmptyFilteredHint')
+                    : t('domainsPageEmptyAllHint')}
+                </p>
+                {activeFilterCount > 0
+                  ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClear')}</button>
+                  : <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(true)}>
+                    {t('domainsPageListDomainCta')}
+                  </button>
+                }
+              </div>
+            ) : (
+              <>
+                <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {paginated.map(d => (
+                    <ListingCardShell key={d.id}>
+                      <DomainListingCard
+                        domain={d}
+                        isOwner={isListingOwner(d, user, 'domain')}
+                        likeState={getLike(d.id)}
+                        onLike={() => toggleLike(d.id)}
+                        onView={() => openDetailIfAllowed(d)}
+                        onEdit={() => { setEditTarget(d); setShowForm(false); }}
+                        onBuy={() => setBuyTarget(d)}
+                        onEnquire={() => setEnquireTarget(d)}
+                        onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
+                        onDelete={() => setDeleteTarget(d.id)}
+                        onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
+                      />
+                    </ListingCardShell>
+                  ))}
+                </div>
+                <Pagination page={page} totalPages={totalPages}
+                  onPage={setPage} totalCount={totalCount} pageSize={20} />
+              </>
+            )}
           </>
         )}
       </div>
@@ -450,7 +485,158 @@ export default function DomainsPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      {auctionTarget && (
+        <PutForAuctionModal
+          domain={auctionTarget}
+          user={user}
+          onClose={() => setAuctionTarget(null)}
+          onSuccess={(updatedDomain) => {
+            setAuctionTarget(null);
+            setAllDomains(prev => prev.map(x => x.id === updatedDomain.id ? { ...x, ...updatedDomain } : x));
+            setGlobalNotice('Your domain has been put for auction successfully!');
+          }}
+        />
+      )}
     </AppLayout>
+  );
+}
+
+// ─── Put for Auction Modal ─────────────────────────────────────────────────────
+function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
+  const { currency: navCurrency, convertToInr } = useCurrency();
+  const display = resolveDomainDisplay(domain);
+  const [minBidPrice, setMinBidPrice] = useState('');
+  const [duration, setDuration] = useState('SEVEN_DAYS');
+  const [auctionFeeInr, setAuctionFeeInr] = useState(118);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
+      fetchListingFeesAndCharges()
+        .then((fees) => setAuctionFeeInr(Number(fees?.auctionCreationFeeInr ?? 118)))
+        .catch(() => { });
+    });
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!minBidPrice || parseFloat(minBidPrice) <= 0) {
+      setError(t('domainsPageErrorMinBid', 'Please enter a valid minimum bid price.'));
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      const { payAuctionCreationFee } = await import('../utils/auctionFees');
+      const creationFeeOrderId = await payAuctionCreationFee({
+        auctionType: 'DOMAIN',
+        user,
+        description: t('domainsPageAuctionFeeDescription', { defaultValue: 'Domain auction listing fee' }),
+      });
+
+      const minBidInr = navCurrency === 'INR'
+        ? parseFloat(minBidPrice)
+        : convertToInr(parseFloat(minBidPrice), navCurrency);
+
+      await auctionAPI.create(domain.id, {
+        domain_id: domain.id,
+        minBidPrice: minBidInr,
+        duration,
+        creationFeeOrderId,
+      });
+
+      onSuccess({ ...domain, saleType: 'AUCTION' });
+    } catch (err) {
+      setError(readApiError(err, 'Failed to create auction. Please try again.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400 text-sm';
+  const labelCls = 'text-sm font-medium text-gray-700';
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-[18px] shadow-2xl p-6 sm:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Gavel size={20} className="text-indigo-600" />
+            <h2 className="font-display text-xl font-bold text-gray-900 m-0">Put for Auction</h2>
+          </div>
+          <p className="text-sm text-gray-500">
+            Set up an auction for <strong>{display.fullDomain}</strong>. The auction creation fee will be charged upfront.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <CurrencyPriceInput
+            id="auction-min-bid"
+            label={`${t('domainsPageMinBidLabel', 'Minimum bid price')} *`}
+            value={minBidPrice}
+            onChange={setMinBidPrice}
+            required
+            placeholder={t('domainsPageMinBidPlaceholder', 'e.g. 10000')}
+            inputClassName={inputCls}
+            labelClassName={labelCls}
+          />
+
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>{t('domainsPageAuctionDurationLabel', 'Auction duration')} *</label>
+            <FormSelect
+              className={inputCls}
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+            >
+              <option value="ONE_DAY">{t('domainsPageDurationOneDay', '1 day')}</option>
+              <option value="SEVEN_DAYS">{t('domainsPageDurationSevenDays', '7 days')}</option>
+              <option value="THIRTY_DAYS">{t('domainsPageDurationThirtyDays', '30 days')}</option>
+              <option value="SIXTY_DAYS">{t('domainsPageDurationSixtyDays', '60 days')}</option>
+              <option value="NINETY_DAYS">{t('domainsPageDurationNinetyDays', '90 days')}</option>
+            </FormSelect>
+          </div>
+
+          <div className="rounded-lg bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-900 leading-relaxed">
+            {t('domainsPageAuctionFeeNotice', {
+              defaultValue: 'Auction listing fee: {{fee}} (charged when you submit).',
+              fee: formatInr(auctionFeeInr),
+            })}
+          </div>
+
+          {error && (
+            <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 btn-glow btn-glow-sm inline-flex items-center justify-center gap-2"
+              disabled={submitting}
+            >
+              <Gavel size={14} />
+              {submitting ? 'Processing…' : 'Start Auction'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -458,28 +644,20 @@ export default function DomainsPage() {
 function DomainForm({ editDomain, onSaved, onCancel }) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { currency: navCurrency, convertToInr, ratesLoading } = useCurrency();
+  const { currency: navCurrency, convertToInr, ratesLoading, formatCurrency, ratesMeta } = useCurrency();
   const [commissionPercent, setCommissionPercent] = useState(15);
   const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
   const isEdit = Boolean(editDomain?.id);
-  const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency));
+  const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency, ratesMeta));
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
 
-  const [imageFile, setImageFile]       = useState(null);
-  const [imagePreview, setImagePreview] = useState(() => editDomain?.logo ?? null);
-  const [imageError, setImageError]     = useState('');
-  const fileInputRef                    = useRef(null);
-
   useEffect(() => {
-    setForm(buildDomainFormState(editDomain, navCurrency));
+    setForm(buildDomainFormState(editDomain, navCurrency, ratesMeta));
     setError('');
     setWarning('');
-    setImageFile(null);
-    setImagePreview(editDomain?.logo ?? null);
-    setImageError('');
-  }, [editDomain?.id, navCurrency]);
+  }, [editDomain?.id, navCurrency, ratesMeta]);
 
   useEffect(() => {
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
@@ -488,7 +666,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15));
           setAuctionCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118));
         })
-        .catch(() => {});
+        .catch(() => { });
     });
   }, []);
 
@@ -498,6 +676,44 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const setExtension = (ext) => {
     const full = ext.startsWith('.') ? ext : `.${ext}`;
     setForm(f => ({ ...f, domainExtension: full }));
+  };
+
+  const convertAmountBetweenCurrencies = (amount, fromCurrency, toCurrency) => {
+    if (amount == null || amount === '') return '';
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) return amount;
+    const source = (fromCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+    const target = (toCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+    if (source === target) return formatPriceInputAmount(numericAmount, target);
+
+    const inrAmount =
+      source === DEFAULT_LISTING_CURRENCY
+        ? roundInr(numericAmount)
+        : convertToInr(numericAmount, source);
+    const convertedAmount =
+      target === DEFAULT_LISTING_CURRENCY
+        ? roundInr(inrAmount)
+        : convertInrToCurrency(inrAmount, target, ratesMeta);
+
+    return formatPriceInputAmount(convertedAmount, target);
+  };
+
+  const changeFormCurrency = (nextCurrency) => {
+    setForm((current) => ({
+      ...current,
+      currency: nextCurrency,
+      askingPrice: convertAmountBetweenCurrencies(current.askingPrice, current.currency, nextCurrency),
+      minBidPrice: convertAmountBetweenCurrencies(current.minBidPrice, current.currency, nextCurrency),
+    }));
+  };
+
+  const getAskingPriceInr = () => {
+    if (form.saleType === 'AUCTION') return 0;
+    const rawPrice = parseFloat(form.askingPrice);
+    if (!Number.isFinite(rawPrice)) return 0;
+    return form.currency === DEFAULT_LISTING_CURRENCY
+      ? roundInr(rawPrice)
+      : convertToInr(rawPrice, form.currency);
   };
 
   const handleSubmit = async e => {
@@ -517,19 +733,14 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     }
     setLoading(true); setError(''); setWarning('');
     try {
-      const rawPrice = form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice);
-      const askingPriceInr =
-        form.saleType === 'AUCTION'
-          ? 0
-          : form.currency === 'INR'
-            ? roundInr(rawPrice)
-            : convertToInr(rawPrice, form.currency);
+      const askingPriceInr = getAskingPriceInr();
 
       const payload = {
-        domainName:      form.domainName.trim(),
+        domainName: form.domainName.trim(),
+        logoText: form.logoText?.trim() || null,
         domainExtension: extNorm.full,
-        askingPrice:     askingPriceInr,
-        contactInfo:     form.contactInfo,
+        askingPrice: askingPriceInr,
+        contactInfo: form.contactInfo,
       };
       if (form.pricingDemand) {
         payload.pricingDemand = form.pricingDemand;
@@ -537,7 +748,25 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
       let saved = null;
       if (isEdit) {
         const { data: updated } = await domainAPI.update(editDomain.id, payload);
-        saved = updated?.data ?? updated;
+        const updatedListing = updated?.data ?? updated;
+        const inrBreakdown = computeListingCurrencyCommission(askingPriceInr, commissionPercent, DEFAULT_LISTING_CURRENCY);
+        saved = {
+          ...updatedListing,
+          askingPrice: askingPriceInr,
+          asking_price: askingPriceInr,
+          listingPrice: askingPriceInr,
+          listing_price: askingPriceInr,
+          finalListingPrice: askingPriceInr,
+          final_listing_price: askingPriceInr,
+          commissionPercentage: inrBreakdown.commissionPercent,
+          commission_percentage: inrBreakdown.commissionPercent,
+          commissionAmount: inrBreakdown.commissionAmount,
+          commission_amount: inrBreakdown.commissionAmount,
+          sellerPayoutAmount: inrBreakdown.sellerEarnings,
+          seller_payout_amount: inrBreakdown.sellerEarnings,
+          sellerPrice: inrBreakdown.sellerEarnings,
+          seller_price: inrBreakdown.sellerEarnings,
+        };
       } else {
         const createPayload = {
           ...payload,
@@ -587,40 +816,19 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           saved = domain?.data ?? domain;
         }
       }
-      let uploadWarning = '';
-      if (imageFile && saved?.id) {
-        try {
-          const formData = new FormData();
-          formData.append('file', imageFile);
-          const { data } = await domainAPI.uploadImage(saved.id, formData);
-          saved = { ...saved, logo: pickMediaUrl(data) };
-        } catch {
-          uploadWarning = t('domainsPageWarningLogoFailed');
-          setWarning(uploadWarning);
-        }
-      }
-      onSaved(uploadWarning ? { ...saved, _warning: uploadWarning } : saved);
+      onSaved(saved);
     } catch (err) {
       setError(readApiError(err, isEdit ? t('domainsPageErrorUpdateFailed') : t('domainsPageErrorListFailed')));
     } finally { setLoading(false); }
   };
 
-  const handleImageChange = e => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { setImageError(t('domainsPageImageOnly')); return; }
-    setImageError('');
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = ev => setImagePreview(ev.target.result);
-    reader.readAsDataURL(file);
-  };
-
   const isAuction = form.saleType === 'AUCTION';
   const sellerAmount = parseFloat(form.askingPrice) || 0;
+  const savedAskingPriceInr = getAskingPriceInr();
   const commissionBreakdown = !isAuction && sellerAmount > 0
-    ? computeCommissionBreakdown(sellerAmount, commissionPercent)
+    ? computeListingCurrencyCommission(sellerAmount, commissionPercent, form.currency)
     : null;
+  const formatListingCurrency = (value) => formatCurrency(value, form.currency || DEFAULT_LISTING_CURRENCY);
   const selectedExt = normalizeDomainExtension(form.domainExtension);
   const baseExtensions = ['.com', '.io', '.net', '.org', '.co', '.ai'];
   const extensionOptions =
@@ -656,6 +864,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Display Name</label>
+            <input
+              className={inputCls}
+              value={form.logoText}
+              onChange={e => setForm(f => ({ ...f, logoText: e.target.value }))}
+              placeholder="e.g. Dry Chilli"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
             <label className={labelCls}>{t('domainsPageExtensionLabel')} <span className="text-red-500">*</span></label>
             <div className="flex flex-wrap gap-2">
               {extensionOptions.map((ext) => (
@@ -663,11 +880,10 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                   key={ext}
                   type="button"
                   onClick={() => setExtension(ext)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors ${
-                    selectedExt?.full === ext
+                  className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors ${selectedExt?.full === ext
                       ? 'bg-indigo-600 text-white border-indigo-600'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
-                  }`}
+                    }`}
                 >
                   {ext.toUpperCase()}
                 </button>
@@ -686,30 +902,28 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         )}
 
         {!isEdit && (
-        <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>{t('domainsPageSaleTypeLabel')} <span className="text-red-500">*</span></label>
-          <div className="grid grid-cols-2 gap-3 mt-1.5">
-            {[
-              { value: 'ONE_TIME', label: t('domainsPageSaleOneTime'), desc: t('domainsPageSaleOneTimeDesc') },
-              { value: 'AUCTION',  label: t('domainsPageSaleAuction'), desc: t('domainsPageSaleAuctionDesc') },
-            ].map(opt => (
-              <div key={opt.value}
-                onClick={() => setForm(f => ({ ...f, saleType: opt.value }))}
-                className={`p-3.5 rounded-lg cursor-pointer border-2 transition-all duration-150 ${
-                  form.saleType === opt.value 
-                    ? 'border-purple-600 bg-purple-50' 
-                    : 'border-gray-200 bg-white'
-                }`}>
-                <div className={`font-semibold text-sm mb-1 ${
-                  form.saleType === opt.value ? 'text-purple-600' : 'text-gray-600'
-                }`}>
-                  {opt.label}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>{t('domainsPageSaleTypeLabel')} <span className="text-red-500">*</span></label>
+            <div className="grid grid-cols-2 gap-3 mt-1.5">
+              {[
+                { value: 'ONE_TIME', label: t('domainsPageSaleOneTime'), desc: t('domainsPageSaleOneTimeDesc') },
+                { value: 'AUCTION', label: t('domainsPageSaleAuction'), desc: t('domainsPageSaleAuctionDesc') },
+              ].map(opt => (
+                <div key={opt.value}
+                  onClick={() => setForm(f => ({ ...f, saleType: opt.value }))}
+                  className={`p-3.5 rounded-lg cursor-pointer border-2 transition-all duration-150 ${form.saleType === opt.value
+                      ? 'border-purple-600 bg-purple-50'
+                      : 'border-gray-200 bg-white'
+                    }`}>
+                  <div className={`font-semibold text-sm mb-1 ${form.saleType === opt.value ? 'text-purple-600' : 'text-gray-600'
+                    }`}>
+                    {opt.label}
+                  </div>
+                  <div className="text-xs text-gray-500 leading-snug">{opt.desc}</div>
                 </div>
-                <div className="text-xs text-gray-500 leading-snug">{opt.desc}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
@@ -720,7 +934,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               value={form.askingPrice}
               onChange={(v) => setForm((f) => ({ ...f, askingPrice: v }))}
               currency={form.currency}
-              onCurrencyChange={(code) => setForm((f) => ({ ...f, currency: code }))}
+              onCurrencyChange={changeFormCurrency}
               required={!isAuction}
               inputClassName={inputCls}
               labelClassName={labelCls}
@@ -743,11 +957,16 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               : t('domainsPageRatesConvertHint')}
           </p>
         )}
+        {(!isAuction || isEdit) && sellerAmount > 0 && (
+          <p className="text-[0.72rem] text-gray-600 -mt-2">
+            Marketplace card will show about {formatInr(savedAskingPriceInr)} when your app currency is INR.
+          </p>
+        )}
         {commissionBreakdown && (
           <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Listing Price</span><span>{formatInr(commissionBreakdown.listingPrice)}</span></div>
-            <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatInr(commissionBreakdown.commissionAmount)}</span></div>
-            <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatInr(commissionBreakdown.sellerEarnings)}</span></div>
+            <div className="flex justify-between"><span>Listing Price</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
+            <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span></div>
+            <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatListingCurrency(commissionBreakdown.sellerEarnings)}</span></div>
             <p className="pt-2 text-xs leading-5 text-gray-600">
               CoBrother charges a 15% commission on successful sales. The commission is deducted from the final sale amount. You will receive approximately 85% of the sale price.
             </p>
@@ -764,7 +983,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                   value={form.minBidPrice}
                   onChange={(v) => setForm((f) => ({ ...f, minBidPrice: v }))}
                   currency={form.currency}
-                  onCurrencyChange={(code) => setForm((f) => ({ ...f, currency: code }))}
+                  onCurrencyChange={changeFormCurrency}
                   required
                   placeholder={t('domainsPageMinBidPlaceholder')}
                   inputClassName={inputCls}
@@ -816,63 +1035,24 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>
-            {t('domainsPageLogoLabel')} <span className="text-slate-400 font-normal">{t('domainsPageLogoOptional')}</span>
-          </label>
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => fileInputRef.current?.click()}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
-            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-              imagePreview ? 'border-gray-400 bg-gray-50' : 'border-gray-200 bg-gray-50 hover:border-gray-400'
-            }`}
-          >
-            {imagePreview ? (
-              <img src={imagePreview} alt={t('domainsPageLogoPreviewAlt')} className="max-h-[100px] max-w-full rounded-lg object-contain mx-auto" />
-            ) : (
-              <>
-                <div className="text-3xl mb-1.5">🖼</div>
-                <div className="text-sm text-gray-500">{t('domainsPageLogoUpload')}</div>
-                <div className="text-xs text-gray-400 mt-0.5">{t('domainsPageLogoFormats')}</div>
-              </>
-            )}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-          {imagePreview && (
-            <button
-              type="button"
-              className="text-xs text-gray-500 hover:text-red-500 self-start"
-              onClick={() => {
-                setImageFile(null);
-                setImagePreview(isEdit && editDomain?.logo ? editDomain.logo : null);
-              }}
-            >
-              {t('domainsPageRemoveLogo')}
-            </button>
-          )}
-          {imageError && <div className="text-sm text-red-500">{imageError}</div>}
-        </div>
-
         {!isEdit && (
-        <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
-          <input
-            type="checkbox"
-            checked={form.agreement.terms}
-            onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
-            required
-            className="peer sr-only"
-          />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
-            {form.agreement.terms && (
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            )}
-          </span>
-          <span className="text-sm text-gray-700 leading-snug">{t('domainsPageTermsAgreement')}</span>
-        </label>
+          <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
+            <input
+              type="checkbox"
+              checked={form.agreement.terms}
+              onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
+              required
+              className="peer sr-only"
+            />
+            <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
+              {form.agreement.terms && (
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              )}
+            </span>
+            <span className="text-sm text-gray-700 leading-snug">{t('domainsPageTermsAgreement')}</span>
+          </label>
         )}
 
         {error && <div className="text-sm text-red-500">{error}</div>}
@@ -897,8 +1077,8 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
   const { user } = useAuth();
   const { currency, formatPrice } = useCurrency();
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
-  const [addons, setAddons]   = useState([]);
+  const [error, setError] = useState('');
+  const [addons, setAddons] = useState([]);
   const [vaAddons, setVaAddons] = useState([]);
   const [buyer, setBuyer] = useState({
     buyerFullName: `${user?.firstname || user?.firstName || ''} ${user?.lastname || user?.lastName || ''}`.trim(),
@@ -906,9 +1086,9 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
     buyerPhone: (user?.phoneNumber || user?.phone || '').replace(/\D/g, '').slice(-10),
   });
 
-  const addonExtra  = addonTotal(addons);
+  const addonExtra = addonTotal(addons);
   const domainPrice = Number(domain.askingPrice);
-  const subTotal  = domainPrice + addonExtra;
+  const subTotal = domainPrice + addonExtra;
   const gstAmount = subTotal * 0.18;
   const totalPrice = subTotal + gstAmount;
 
@@ -946,15 +1126,15 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
           try {
             const { data: verifyData } = await domainAPI.verifyPayment(domain.id, {
               razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId:   response.razorpay_order_id,
+              razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
             const transactionId = verifyData?.transactionId;
             onSuccess({
               ...domain,
-              domainStatus:  'SOLD',
+              domainStatus: 'SOLD',
               paymentStatus: 'COMPLETED',
-              _addons:       [...addons, ...vaAddons],
+              _addons: [...addons, ...vaAddons],
             });
             if (transactionId) {
               navigate(`/purchases/transfers/${transactionId}`);
@@ -1127,12 +1307,12 @@ function PurchaseSuccessModal({ domain, onClose }) {
 
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
 function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
-                              onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
+  onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const [detail, setDetail]   = useState(null);
+  const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
-  const hasFetched            = useRef(false);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     if (hasFetched.current) return;
@@ -1147,13 +1327,13 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
       .finally(() => setLoading(false));
   }, [domain.id]);
 
-  const d           = detail || domain;
-  const display     = resolveDomainDisplay(d);
-  const c           = normalizeContactInfo(d.contactInfo, d.contact_info);
-  const s           = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
-  const isAuction   = d.saleType === 'AUCTION';
+  const d = detail || domain;
+  const display = resolveDomainDisplay(d);
+  const c = normalizeContactInfo(d.contactInfo, d.contact_info);
+  const s = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
+  const isAuction = d.saleType === 'AUCTION';
   const isHighValue = isPremiumDomain(d);
-  const auction     = d.auction;
+  const auction = d.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
   return (
@@ -1227,10 +1407,10 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
               <Section title={t('domainsPageAuctionInfoSection')}>
                 <div className="grid grid-cols-2 gap-3">
                   <DetailItem label={t('domainsPageStatusLabel')}
-                    value={auction.status === 'ACTIVE'   ? t('domainsPageStatusLive') :
-                           auction.status === 'EXTENDED' ? t('domainsPageStatusExtended') :
-                           auction.status === 'DRAFT'    ? t('domainsPageStatusPendingVerification') :
-                           auction.status} />
+                    value={auction.status === 'ACTIVE' ? t('domainsPageStatusLive') :
+                      auction.status === 'EXTENDED' ? t('domainsPageStatusExtended') :
+                        auction.status === 'DRAFT' ? t('domainsPageStatusPendingVerification') :
+                          auction.status} />
                   <DetailItem label={t('domainsPageDurationLabel')} value={auction.duration?.replace(/_/g, ' ')} />
                   {auction.endTime && (
                     <DetailItem label={t('domainsPageEndsLabel')}
@@ -1308,7 +1488,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                 ) : null
               )}
               <LikeButton liked={likeState?.liked} count={likeState?.count}
-                          onToggle={onLike} size="md" />
+                onToggle={onLike} size="md" />
               <button className="btn-glow btn-glow-sm" onClick={onClose}>{t('close')}</button>
             </div>
           </>
@@ -1324,12 +1504,12 @@ function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
   const { formatPrice } = useCurrency();
   const [form, setForm] = useState({
     fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
-    email:    user?.email || '',
-    phone:    user?.phoneNumber || '',
-    message:  '',
+    email: user?.email || '',
+    phone: user?.phoneNumber || '',
+    message: '',
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -1338,9 +1518,9 @@ function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
       // Correct signature: (domainId, { fullName, email, phone, message })
       await domainEnquiryAPI.submit(domain.id, {
         fullName: form.fullName,
-        email:    form.email,
-        phone:    form.phone,
-        message:  form.message,
+        email: form.email,
+        phone: form.phone,
+        message: form.message,
       });
       onSuccess();
     } catch (err) {

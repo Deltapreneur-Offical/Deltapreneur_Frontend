@@ -27,7 +27,7 @@ export default function PlatformAnalyticsCategoryPage() {
   const { user } = useAuth();
   const tableSectionRef = useRef(null);
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+  const isAdmin = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'].includes(roleUpper);
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -34,7 +34,7 @@ export default function VenturesPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency, getSymbol } = useCurrency();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') === 'mine' ? 'mine' : 'all';
   const listingModeParam = searchParams.get('mode');
@@ -44,12 +44,12 @@ export default function VenturesPage() {
       ? 'VENTURE'
       : null;
 
-  const [allVentures, setAllVentures]       = useState([]);
-  const [loading, setLoading]               = useState(true);
-  const [applyTarget, setApplyTarget]       = useState(null);
-  const [verifyTarget, setVerifyTarget]     = useState(null);
-  const [deleteTarget, setDeleteTarget]     = useState(null);
-  const [filterTab, setFilterTab]           = useState(tabFromUrl);
+  const [allVentures, setAllVentures] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [applyTarget, setApplyTarget] = useState(null);
+  const [verifyTarget, setVerifyTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [filterTab, setFilterTab] = useState(tabFromUrl);
 
   const handleMarketplaceTabChange = (tab) => {
     setFilterTab(tab);
@@ -108,10 +108,10 @@ export default function VenturesPage() {
   } = useFilterSort(
     marketplaceRows,
     {
-      searchFields:  ['brandDetails.brandName', 'brandDetails.description', 'brand_details.brand_name', 'brand_details.description'],
-      priceField:    'brandDetails.dealValue',
+      searchFields: ['brandDetails.brandName', 'brandDetails.description', 'brand_details.brand_name', 'brand_details.description'],
+      priceField: 'brandDetails.dealValue',
       categoryField: 'brandDetails.industry',
-      dateField:     'createdAt',
+      dateField: 'createdAt',
     },
     20,
     {
@@ -132,11 +132,10 @@ export default function VenturesPage() {
 
   const renderVentureCards = (ventures, { compact = false } = {}) => (
     <div
-      className={`listing-card-glow-grid grid gap-4 md:gap-5 ${
-        compact
+      className={`listing-card-glow-grid grid gap-4 md:gap-5 ${compact
           ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 min-[1400px]:grid-cols-2'
           : 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-      }`}
+        }`}
     >
       {ventures.map((v) => (
         <ListingCardShell key={v.id}>
@@ -259,13 +258,13 @@ export default function VenturesPage() {
           <p className="text-gray-600 mt-1 text-sm sm:text-base">
             {listingModeFilter === 'CO_VENTURE'
               ? t('coVenturesPageSubtitle', {
-                  defaultValue: 'Browse partnership and co-founder opportunities.',
-                })
+                defaultValue: 'Browse partnership and co-founder opportunities.',
+              })
               : listingModeFilter === 'VENTURE'
                 ? t('venturesPageSubtitle')
                 : t('venturesPageSplitSubtitle', {
-                    defaultValue: 'Browse venture sales and co-venture partnerships side by side.',
-                  })}
+                  defaultValue: 'Browse venture sales and co-venture partnerships side by side.',
+                })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -284,13 +283,13 @@ export default function VenturesPage() {
 
       {/* ── Filter bar ── */}
       <FilterBar
-        search={search}           onSearch={handleSearch}
-        category={category}       onCategory={handleCategory}
+        search={search} onSearch={handleSearch}
+        category={category} onCategory={handleCategory}
         categoryOptions={VENTURE_INDUSTRY_OPTIONS}
-        minPrice={minPrice}       onMinPrice={handleMinPrice}
-        maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-        sortBy={sortBy}           onSort={handleSort}
-        onClear={clearAll}        activeFilterCount={activeFilterCount}
+        minPrice={minPrice} onMinPrice={handleMinPrice}
+        maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
+        sortBy={sortBy} onSort={handleSort}
+        onClear={clearAll} activeFilterCount={activeFilterCount}
         placeholder={t('venturesPageSearchPlaceholder')}
         priceSymbol={getSymbol(currency)}
         theme="light"
@@ -313,8 +312,8 @@ export default function VenturesPage() {
           </div>
           <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
             {activeFilterCount > 0 ? t('venturesPageEmptyFilteredTitle') :
-             filterTab === 'mine' ? t('venturesPageEmptyMineTitle') :
-             t('venturesPageEmptyAllTitle')}
+              filterTab === 'mine' ? t('venturesPageEmptyMineTitle') :
+                t('venturesPageEmptyAllTitle')}
           </h3>
           <p className="text-gray-600 mb-6">
             {activeFilterCount > 0

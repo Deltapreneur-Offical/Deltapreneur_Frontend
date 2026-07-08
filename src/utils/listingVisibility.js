@@ -1,6 +1,6 @@
 import { asArray } from './asArray';
 import { matchUserId } from './auctionLister';
-import { isCreatorProfileComplete } from './creatorProfile';
+import { isCreatorProfileComplete, isCreatorProfileVisible } from './creatorProfile';
 import { isActiveListing } from './homepageListings';
 
 /** @typedef {'domain' | 'venture' | 'software' | 'technology' | 'community'} ListingType */
@@ -58,7 +58,7 @@ export function isListingOwner(item, user, type = 'domain') {
 /** Whether a creator profile is public (homepage, browse, detail for non-owners). */
 export function isCommunityProfilePublic(item) {
   if (!item || !isActiveListing(item, 'community')) return false;
-  return isCreatorProfileComplete(item);
+  return isCreatorProfileVisible(item);
 }
 
 /** Whether a listing passed marketplace verification (domain / technology / venture / creator). */

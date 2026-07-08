@@ -56,15 +56,13 @@
   border-radius: 20px;
   transition: opacity 0.35s ease;
   filter: blur(16px);
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.18) 0%,
-    rgba(15, 23, 42, 0.06) 20%,
-    transparent 42%,
-    transparent 58%,
-    rgba(15, 23, 42, 0.06) 80%,
-    rgba(15, 23, 42, 0.18) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.18) 0%,
+      rgba(15, 23, 42, 0.06) 20%,
+      transparent 42%,
+      transparent 58%,
+      rgba(15, 23, 42, 0.06) 80%,
+      rgba(15, 23, 42, 0.18) 100%);
 }
 
 .listing-card-glow-shell.community-listing-card-shell {
@@ -108,6 +106,9 @@
     transform 0.35s ease;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.08),
+    0 2px 4px rgba(15, 23, 42, 0.04);
 }
 
 .technology-listing-card.card-glow-hover:not(.technology-listing-card--browse):not(.domain-listing-card),
@@ -118,20 +119,16 @@
 }
 
 .venture-listing-card.card-glow-hover {
-  border: 1px solid #e2e8f0 !important;
+  border: none !important;
   border-radius: 1.5rem;
   overflow: hidden;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 14px rgba(15, 23, 42, 0.05);
 }
 
 .technology-listing-card.technology-listing-card--browse.card-glow-hover,
 .technology-listing-card.domain-listing-card--browse.card-glow-hover {
-  border: 1px solid #e5e7eb !important;
+  border: none !important;
   border-radius: 1.5rem;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .creator-profile-card.community-listing-card.card-glow-hover {
@@ -144,10 +141,8 @@
 
 .domain-listing-card.card-glow-hover,
 .home-feature-card.card-glow-hover {
-  border: 1px solid #e5e7eb;
+  border: none !important;
   border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
   overflow: hidden;
 }
 
@@ -158,11 +153,13 @@
 .venture-listing-card.card-glow-hover:hover,
 .community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-3px) translateZ(0);
-  border-color: rgba(15, 23, 42, 0.18) !important;
+  border-color: transparent !important;
   background: var(--listing-card-gradient-hover) !important;
   box-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.12),
-    0 4px 20px rgba(15, 23, 42, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
+    0 22px 50px rgba(15, 23, 42, 0.14),
+    0 8px 26px rgba(15, 23, 42, 0.08);
 }
 
 .community-listing-card .listing-browse-footer {

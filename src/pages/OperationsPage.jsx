@@ -8,6 +8,7 @@ import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import OperationsRequestModal from '../components/operations/OperationsRequestModal';
 import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { operationsAPI, operationsRequestAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
@@ -32,6 +33,7 @@ function formatMyRequestDate(value) {
 export default function OperationsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionId = searchParams.get('section') || 'assistance';
   const activeSection = resolveOperationsSection(sectionId);
@@ -285,7 +287,7 @@ export default function OperationsPage() {
                 const Icon = resolveOperationsIcon(service);
                 const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
                 const cardCompliance = isComplianceService(service);
-                const priceInfo = formatOperationsPrice(service, { t });
+                const priceInfo = formatOperationsPrice(service, { t, formatPrice });
                 return (
                   <article
                     key={service.id}
@@ -373,7 +375,7 @@ export default function OperationsPage() {
                         <p className="operations-my-requests-date">{formatMyRequestDate(row.createdAt)}</p>
                         <h3 className="operations-my-requests-service">{row.serviceName}</h3>
                         <div className="operations-my-requests-meta">
-                          <span className="operations-my-requests-price">{formatRequestAdminPrice(row)}</span>
+                          <span className="operations-my-requests-price">{formatRequestAdminPrice(row, formatPrice)}</span>
                         </div>
                       </div>
                       <span className={`operations-my-requests-status operations-my-requests-status--${String(row.status || '').toLowerCase()}`}>

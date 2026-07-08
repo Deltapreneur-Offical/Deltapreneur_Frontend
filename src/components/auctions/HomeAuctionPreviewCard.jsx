@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCompactCountdown } from '../../utils/auctionDate';
@@ -13,8 +14,8 @@ import {
   resolveHomeAuctionVerified,
 } from '../../utils/homepageAuctions';
 import verifiedIcon from '../../assets/Verified_Icon.png';
-import CreatorPreviewModal from './CreatorPreviewModal';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import CreatorPreviewModal from './CreatorPreviewModal';
 
 function useCountdown(endTime) {
   const [timeLeft, setTimeLeft] = useState('—');
@@ -78,16 +79,16 @@ const PRICE_BOX_GRADIENT = {
 
 const BADGE_TONE_CLASS = {
   domain: {
-    primary: 'bg-amber-50 text-amber-800 border border-amber-100',
-    secondary: 'bg-orange-50 text-orange-700 border border-orange-100',
+    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
+    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
   },
   technology: {
     primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
     secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
   },
   community: {
-    primary: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-    secondary: 'bg-teal-50 text-teal-700 border border-teal-100',
+    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
+    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
   },
 };
 
@@ -95,6 +96,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [imgFailed, setImgFailed] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const title = resolveHomeAuctionTitle(auction);
   const image = resolveHomeAuctionImage(auction);
   const verified = resolveHomeAuctionVerified(auction);
@@ -118,30 +120,98 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const badgeToneClass = BADGE_TONE_CLASS[category] || BADGE_TONE_CLASS.domain;
   const isFeatured = Boolean(auction?.featured);
   const categoryLabel = t(categoryMeta.labelKey);
-  const [showPreview, setShowPreview] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = useRef(null);
   const cardRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
 
-  const handleView = (e) => {
-    e?.stopPropagation?.();
-    onView?.();
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
+    };
+    const handleClose = () => setShareOpen(false);
+    document.addEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleClose, { passive: true });
+    window.addEventListener('resize', handleClose);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleClose);
+      window.removeEventListener('resize', handleClose);
+    };
+  }, []);
+
+  const toggleShare = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Auction: ${title}`,
+          text: `Check out this Auction listed on CoBrother!`,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    if (!shareOpen && shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect();
+      let left = rect.right + window.scrollX - 200;
+      if (left < 10) left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY;
+      if (rect.bottom + 270 > window.innerHeight) {
+        top = rect.top + window.scrollY - 270;
+      }
+      setCoords({ top, left });
+    }
+    setShareOpen(!shareOpen);
   };
 
-  const openPreview = (event) => {
-    cardRef.current = event?.currentTarget || cardRef.current;
-    setShowPreview(true);
+  const shareUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/auctions?id=${auction?.id}`
+      : ``;
+  const shareSubject = `Check out this Auction on CoBrother`;
+  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: Auction\n📝 Name: ${title}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+
+  const handleShare = (platform) => {
+    window.open(platform, '_blank', 'width=600,height=400');
+    setShareOpen(false);
+  };
+
+  const stop = (e) => e.stopPropagation();
+
+  const handleView = (e) => {
+    if (e && e.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView?.();
   };
 
   return (
     <article
       ref={cardRef}
       className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white`}
-      onClick={openPreview}
+      onClick={handleView}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
-          openPreview();
+          handleView();
         }
       }}
     >
@@ -177,14 +247,73 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
           </span>
         ) : null}
-        {verified ? (
-          <img
-            src={verifiedIcon}
-            alt=""
-            className="domain-listing-card__verified-icon"
-            aria-hidden
-          />
-        ) : null}
+        <div className="domain-listing-card__share-container" ref={shareRef}>
+          <button
+            type="button"
+            className="domain-listing-card__share-btn"
+            onClick={toggleShare}
+            title={t('listingCardShare')}
+          >
+            <Share2 size={18} strokeWidth={2} />
+          </button>
+          {shareOpen && createPortal(
+            <div
+              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+              style={{
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+              }}
+              onClick={stop}
+            >
+              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(linkedinShare)}
+              >
+                {t('listingCardLinkedIn')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(facebookShare)}
+              >
+                {t('listingCardFacebook')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(twitterShare)}
+              >
+                Twitter / X
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(whatsappShare)}
+              >
+                {t('listingCardWhatsApp')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(gmailShare)}
+              >
+                Gmail
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(emailShare)}
+              >
+                Email
+              </button>
+            </div>,
+            document.body
+          )}
+        </div>
       </div>
 
       <CreatorPreviewModal
@@ -199,33 +328,41 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       />
 
       <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-2.5 p-3">
-        <div className="home-auction-preview-card__content flex flex-col gap-2.5">
-          <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
-            <h3
-              className="venture-listing-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
-              title={title}
-              style={{
-                overflowWrap: 'anywhere',
-                wordBreak: 'break-word',
-              }}
-            >
-              <OverflowMarqueeText text={title} />
-            </h3>
-            <span
-              className="domain-listing-card__status-dot listing-availability-badge__dot listing-availability-badge__dot--available shrink-0"
-              title={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
-              aria-hidden
-            />
+        <div className="home-auction-preview-card__content flex flex-col flex-1 gap-2.5">
+          <div className="home-auction-preview-card__title-row">
+            <div className="home-auction-preview-card__title-line">
+              <h3
+                className="home-auction-preview-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
+                title={title}
+                style={{
+                  overflowWrap: 'anywhere',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {title}
+              </h3>
+              <span
+                className="home-auction-preview-card__live shrink-0"
+                title={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
+                aria-label={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
+              >
+                <span>{t('auctionsPageStatusLive', { defaultValue: 'Live' })}</span>
+              </span>
+            </div>
           </div>
 
-          {listerName ? (
-            <p className="home-auction-preview-card__creator" title={listerName}>
-              {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
-              <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom">
-                <OverflowMarqueeText text={listerName} />
-              </span>
-            </p>
-          ) : null}
+          <p className="home-auction-preview-card__creator" title={listerName || ''}>
+            {listerName ? (
+              <>
+                {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
+                <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom">
+                  <OverflowMarqueeText text={listerName} />
+                </span>
+              </>
+            ) : (
+              <span className="invisible" aria-hidden="true">&nbsp;</span>
+            )}
+          </p>
 
           <div
             className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1${badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
@@ -235,7 +372,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             {badges.map((badge) => (
               <span
                 key={badge.label}
-                className={`venture-listing-card__badge venture-listing-card__badge--compact px-1.5 py-0 rounded-full ${badgeToneClass[badge.tone] || badgeToneClass.primary
+                className={`venture-listing-card__badge venture-listing-card__badge--compact ${badgeToneClass[badge.tone] || badgeToneClass.primary
                   }`}
               >
                 {badge.label}
@@ -243,14 +380,12 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             ))}
           </div>
 
-          {descriptionFromData ? (
-            <p
-              className="home-auction-preview-card__detail"
-              title={descriptionFromData}
-            >
-              {descriptionFromData}
-            </p>
-          ) : null}
+          <p
+            className="home-auction-preview-card__detail"
+            title={descriptionFromData || ''}
+          >
+            {descriptionFromData || <span className="invisible" aria-hidden="true">&nbsp;</span>}
+          </p>
 
           <div className="home-auction-preview-card__metrics">
             <div className="home-auction-preview-card__metric home-auction-preview-card__metric--bid">
@@ -289,6 +424,8 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
           </div>
         </div>
+
+        <div className="flex-grow min-h-0" aria-hidden="true" />
 
         <div className="home-auction-preview-card__footer flex flex-col gap-2 mt-auto">
           <div

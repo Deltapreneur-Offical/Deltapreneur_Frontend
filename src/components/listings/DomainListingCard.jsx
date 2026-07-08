@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
@@ -22,36 +23,18 @@ function resolveStatusDotClass(status) {
 }
 
 function DomainListingCover({
-  logo,
-  logoAlt,
   fullDomain,
-  verified,
-  onCoverError,
+  logoText,
+  children,
 }) {
   return (
     <div className="domain-listing-card__cover">
-      {logo ? (
-        <img
-          src={logo}
-          alt={logoAlt}
-          className="domain-listing-card__cover-img"
-          loading="lazy"
-          decoding="async"
-          onError={onCoverError}
-        />
-      ) : (
-        <div className="domain-listing-card__cover-fallback" aria-hidden>
-          <span className="domain-listing-card__cover-fallback-domain">{fullDomain}</span>
-        </div>
-      )}
-      {verified ? (
-        <img
-          src={verifiedIcon}
-          alt=""
-          className="domain-listing-card__verified-icon"
-          aria-hidden
-        />
-      ) : null}
+      <div className="domain-listing-card__cover-fallback" aria-hidden>
+        <span className="domain-listing-card__cover-fallback-domain">
+          {logoText || ''}
+        </span>
+      </div>
+      {children}
     </div>
   );
 }
@@ -90,14 +73,16 @@ export default function DomainListingCard({
   onEnquire,
   onViewAuction,
   onDelete,
+  onPutForAuction,
   likeState,
   onLike,
 }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
-  const [imgFailed, setImgFailed] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
   const isAuction = domain.saleType === 'AUCTION';
   const isHighValue = isPremiumDomain(domain);
   const auction = domain.auction;
@@ -105,7 +90,6 @@ export default function DomainListingCard({
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
   const auctionCurrentBid = Number(auction?.currentHighestBid ?? 0);
   const display = resolveDomainDisplay(domain);
-  const domainLogo = domain.logo && !imgFailed ? domain.logo : null;
 
   const statusKey = (domain.domainStatus || 'AVAILABLE').toUpperCase();
   const needsVerification = false;
@@ -117,25 +101,67 @@ export default function DomainListingCard({
   const priceAmount = basePrice;
 
   useEffect(() => {
-    setImgFailed(false);
-  }, [domain.logo, domain.id]);
-
-  useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
     };
+    const handleClose = () => setShareOpen(false);
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleClose, { passive: true });
+    window.addEventListener('resize', handleClose);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleClose);
+      window.removeEventListener('resize', handleClose);
+    };
   }, []);
+
+  const toggleShare = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Domain: ${display.fullDomain}`,
+          text: `Check out this premium Domain listed on CoBrother!`,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    if (!shareOpen && shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect();
+      let left = rect.right + window.scrollX - 200;
+      if (left < 10) left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY;
+      if (rect.bottom + 270 > window.innerHeight) {
+        top = rect.top + window.scrollY - 270;
+      }
+      setCoords({ top, left });
+    }
+    setShareOpen(!shareOpen);
+  };
 
   const shareUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/domains?id=${domain.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains?id=${domain.id}`;
-  const shareText = t('listingCardShareDomain', { domain: display.fullDomain });
+  const shareSubject = `Check out this premium Domain listed on CoBrother`;
+  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: Domain\n📝 Name: ${display.fullDomain}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 
   const handleShare = (platform) => {
     window.open(platform, '_blank', 'width=600,height=400');
@@ -144,7 +170,7 @@ export default function DomainListingCard({
 
   const stop = (e) => e.stopPropagation();
 
-  const interactive = !browseMode && onView;
+  const interactive = Boolean(onView);
 
   const handleViewDetails = onView
     ? (e) => {
@@ -152,6 +178,18 @@ export default function DomainListingCard({
       onView();
     }
     : undefined;
+
+  const handleCardClick = (e) => {
+    if (!onView) return;
+    if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView();
+  };
+
+  const handleCardKeyDown = (e) => {
+    if (!onView) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
+  };
 
   const renderPrimaryAction = () => {
     if (browseMode) {
@@ -183,48 +221,27 @@ export default function DomainListingCard({
               <Trash2 size={12} /> {t('remove')}
             </button>
           </div>
-          <div className="relative shrink-0" ref={shareRef}>
-            <button
-              type="button"
-              className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-600 hover:bg-slate-100"
-              onClick={(e) => {
-                stop(e);
-                setShareOpen(!shareOpen);
-              }}
-              title={t('listingCardShare')}
-            >
-              <Share2 size={12} />
-            </button>
-            {shareOpen && (
-              <div
-                className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px] text-gray-900"
-                onClick={stop}
+          <div className="flex items-center shrink-0 gap-1">
+            {!isAuction && onPutForAuction && (
+              <button
+                type="button"
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                onClick={(e) => {
+                  stop(e);
+                  onPutForAuction();
+                }}
+                title="Put for Auction"
               >
-                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                  <span className="text-[10px] font-semibold text-gray-600">Share via</span>
-                </div>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={() => handleShare(linkedinShare)}
-                >
-                  {t('listingCardLinkedIn')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  onClick={() => handleShare(facebookShare)}
-                >
-                  {t('listingCardFacebook')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  onClick={() => handleShare(whatsappShare)}
-                >
-                  {t('listingCardWhatsApp')}
-                </button>
-              </div>
+                <Gavel size={12} />
+              </button>
+            )}
+            {isAuction && (
+              <span
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-400 cursor-default"
+                title="In Auction"
+              >
+                <Gavel size={12} />
+              </span>
             )}
           </div>
         </div>
@@ -306,10 +323,10 @@ export default function DomainListingCard({
   return (
     <article
       className={`domain-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
-      onClick={interactive ? onView : undefined}
+      onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onView?.(); } : undefined}
+      onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       {domain.takenDown && (
         <span className="absolute top-3 right-3 z-20 rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
@@ -318,23 +335,90 @@ export default function DomainListingCard({
       )}
 
       <DomainListingCover
-        logo={domainLogo}
-        logoAlt={display.fullDomain}
         fullDomain={display.fullDomain}
-        verified={domain.verified}
-        onCoverError={() => setImgFailed(true)}
-      />
+        logoText={domain.logo_text ?? domain.logoText}
+      >
+        <div className="domain-listing-card__share-container" ref={shareRef}>
+          <button
+            type="button"
+            className="domain-listing-card__share-btn"
+            onClick={toggleShare}
+            title={t('listingCardShare')}
+          >
+            <Share2 size={18} strokeWidth={2} />
+          </button>
+          {shareOpen && createPortal(
+            <div
+              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+              style={{
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+              }}
+              onClick={stop}
+            >
+              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(linkedinShare)}
+              >
+                {t('listingCardLinkedIn')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(facebookShare)}
+              >
+                {t('listingCardFacebook')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(twitterShare)}
+              >
+                Twitter / X
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(whatsappShare)}
+              >
+                {t('listingCardWhatsApp')}
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(gmailShare)}
+              >
+                Gmail
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                onClick={() => handleShare(emailShare)}
+              >
+                Email
+              </button>
+            </div>,
+            document.body
+          )}
+        </div>
+      </DomainListingCover>
 
       <div className="domain-listing-card__body">
         <div className="domain-listing-card__domain-row">
           <p className="domain-listing-card__domain" title={display.fullDomain}>
             <OverflowMarqueeText text={display.fullDomain} />
           </p>
-          <span
-            className={`domain-listing-card__status-dot listing-availability-badge__dot ${resolveStatusDotClass(statusKey)}`}
-            title={statusKey}
-            aria-hidden
-          />
+          {domain.verified ? (
+            <img
+              src={verifiedIcon}
+              alt="Verified"
+              className="domain-listing-card__verified-badge"
+            />
+          ) : null}
         </div>
 
         {(Number(priceAmount) > 0 || handleViewDetails) && (

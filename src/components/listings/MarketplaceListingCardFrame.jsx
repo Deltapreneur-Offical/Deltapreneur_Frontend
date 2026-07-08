@@ -22,15 +22,23 @@ export default function MarketplaceListingCardFrame({
   children,
   footer,
 }) {
-  const interactive = !browseMode && onClick;
+  const interactive = Boolean(onClick);
 
   return (
     <div
       className={listingCardBaseClass(cardClassName)}
-      onClick={interactive ? onClick : undefined}
+      onClick={interactive ? (e) => {
+        if (!onClick) return;
+        if (e?.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+        onClick();
+      } : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={interactive ? (e) => { if (e.key === 'Enter') onClick?.(); } : undefined}
+      onKeyDown={interactive ? (e) => {
+        if (!onClick) return;
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onClick(); }
+      } : undefined}
     >
       <div className={LISTING_CARD_HEADER_CLASS}>
         {image ? (

@@ -59,7 +59,7 @@ export default function FilterBar({
         : 'bg-white/[0.03] border border-white/[0.08]'
     }`}>
       <div className="flex gap-2 md:gap-3 flex-wrap">
-        <div className="flex-[1_1_200px] md:flex-[1_1_220px] relative">
+        <div className="flex-1 min-w-[200px] relative">
           <span className="absolute left-2.5 md:left-3 top-1/2 -translate-y-1/2 text-gray-700 inline-flex items-center justify-center pointer-events-none">
             <Search size={14} strokeWidth={2.4} className="md:w-[15px] md:h-[15px]" />
           </span>
@@ -75,7 +75,7 @@ export default function FilterBar({
           />
         </div>
 
-        <div className="relative flex-[0_1_140px] md:flex-[0_1_180px] min-w-[120px]">
+        <div className="relative flex-shrink-0 min-w-[180px] md:min-w-[210px]">
           <select
             value={sortBy}
             onChange={(e) => onSort(e.target.value)}
@@ -105,8 +105,8 @@ export default function FilterBar({
               className={`filter-category-select ${selectClass}`}
             >
               <option value="">{t('filterAllCategories')}</option>
-              {categoryOptions.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+              {categoryOptions.map((c, idx) => (
+                <option key={`${c.value}-${idx}`} value={c.value}>{c.label}</option>
               ))}
             </select>
             <ChevronDown

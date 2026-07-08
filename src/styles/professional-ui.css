@@ -62,6 +62,8 @@
 /* Card hover — teal left / blue right via soft shadows (no ::before stripes) */
 .card-glow-hover {
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
   transition: box-shadow 0.35s ease, border-color 0.35s ease, background-color 0.35s ease;
 }
 
@@ -70,12 +72,43 @@
   display: none;
 }
 
+.card-glow-hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(241, 245, 255, 0.5) 56%,
+      rgba(224, 231, 255, 0.78) 100%),
+    linear-gradient(135deg,
+      rgba(56, 189, 248, 0.12) 0%,
+      rgba(99, 102, 241, 0.08) 48%,
+      rgba(168, 85, 247, 0.12) 100%);
+}
+
+.card-glow-hover > * {
+  position: relative;
+  z-index: 1;
+}
+
 .card-glow-hover:hover:not(.creator-profile-card) {
   border-color: rgba(20, 184, 166, 0.32);
+  background-color: #ffffff;
   box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
     0 0 28px rgba(20, 184, 166, 0.16),
     0 0 36px rgba(59, 130, 246, 0.14),
-    0 14px 32px rgba(15, 23, 42, 0.1);
+    0 22px 50px rgba(15, 23, 42, 0.14);
+}
+
+.card-glow-hover:hover::after {
+  opacity: 1;
 }
 
 .creator-profile-card.card-glow-hover:hover {
@@ -87,9 +120,12 @@
 .venture-card.card-glow-hover:hover,
 .community-card.card-glow-hover:hover,
 .dash-card.card-glow-hover:hover {
+  background-color: #ffffff;
   box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
     0 0 28px rgba(20, 184, 166, 0.16),
     0 0 36px rgba(59, 130, 246, 0.14),
-    0 14px 32px rgba(15, 23, 42, 0.1);
+    0 22px 50px rgba(15, 23, 42, 0.14);
   border-color: rgba(20, 184, 166, 0.32);
 }

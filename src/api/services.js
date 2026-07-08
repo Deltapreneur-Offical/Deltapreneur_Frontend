@@ -192,6 +192,7 @@ export const technologyAPI = {
   getAll:          (params)   => api.get('/api/v1/technology/all', { params }),
   getMyListings:   ()         => api.get('/api/v1/technology/my-listings'),
   getMyPurchases:  ()         => api.get('/api/v1/technology/my-purchases'),
+  getMySales:      ()         => api.get('/api/v1/technology/my-sales'),
   get:             (id)       => api.get(`/api/v1/technology/${id}`),
   create:          (data)     => api.post('/api/v1/technology', data),
   update:          (id, data) => api.put(`/api/v1/technology/${id}`, data),
@@ -287,6 +288,9 @@ export const adminAPI = {
   getPendingSoftwareAuctions:()         => api.get('/api/v1/software-auction/admin/pending'),
   approveSoftwareAuction:    (id)       => api.post(`/api/v1/software-auction/admin/${id}/approve`),
   rejectSoftwareAuction:     (id, r)    => api.post(`/api/v1/software-auction/admin/${id}/reject`, { reason: r }),
+  takeDownSoftwareAuction:   (id, r, d) => api.post(`/api/v1/software-auction/admin/${id}/take-down`, { reason: r, description: d }),
+  getTakenDownSoftwareAuctions: ()      => api.get('/api/v1/software-auction/admin/taken-down'),
+  approveAgainSoftwareAuction: (id)     => api.post(`/api/v1/software-auction/admin/${id}/approve-again`),
   getPendingVentures:        ()         => api.get('/api/v1/admin/ventures/pending'),
   approveVenture:            (id)       => api.post(`/api/v1/admin/ventures/${id}/approve`),
   rejectVenture:             (id, r)    => api.post(`/api/v1/admin/ventures/${id}/reject`, { reason: r }),
@@ -315,6 +319,8 @@ export const feeAPI = {
 
 export const domainEnquiryAPI = {
   submit: (domainId, data) => api.post(`/api/v1/domain-enquiry/${domainId}`, data),
+  updateStatus: (enquiryId, data) => api.put(`/api/v1/domain-enquiry/${enquiryId}/status`, data),
+  remove: (enquiryId, data = {}) => api.post(`/api/v1/domain-enquiry/${enquiryId}/remove`, data),
 };
 
 export const auctionAPI = {

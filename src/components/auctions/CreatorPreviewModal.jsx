@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel } from 'lucide-react';
+import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel, ChevronRight, User2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
+import { getVisibleCreatorFields } from '../../utils/creatorRoleFields';
 import { formatCountdown } from '../../utils/auctionDate';
 
 function LinkedInIcon({ size = 18, className = '', fill = 'none' }) {
@@ -35,17 +36,27 @@ function formatLabel(value) {
   return value.replace(/_/g, ' ').trim();
 }
 
-function InfoCard({ label, value, icon: Icon, isLink, linkUrl }) {
+function getCleanDisplayLink(url) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname + parsed.pathname.slice(0, 15) + (parsed.pathname.length > 15 ? '...' : '');
+  } catch {
+    return url.slice(0, 30) + (url.length > 30 ? '...' : '');
+  }
+}
+
+function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) {
   return (
-    <div className="flex items-start gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.03)] transition-all duration-300 hover:shadow-md hover:border-slate-200/60">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 border border-slate-100 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-        <Icon size={20} className="text-slate-650" />
+    <div className={`flex items-center gap-4 px-4 py-4 md:py-5 ${border ? 'border-b border-slate-100' : ''}`}>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
+        <Icon size={22} strokeWidth={1.75} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-400">
+        <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500">
           {label}
         </div>
-        <div className="mt-1.5 text-sm font-semibold text-slate-800 break-words leading-relaxed">
+        <div className="mt-1 text-[0.95rem] font-medium text-slate-800 break-words leading-relaxed">
           {isLink && linkUrl ? (
             <a
               href={linkUrl}
@@ -54,12 +65,15 @@ function InfoCard({ label, value, icon: Icon, isLink, linkUrl }) {
               className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 hover:underline break-all"
             >
               {value}
-              <ExternalLink size={13} className="shrink-0" />
+              <ExternalLink size={14} className="shrink-0" />
             </a>
           ) : (
-            value || '—'
+            value || 'Not provided'
           )}
         </div>
+      </div>
+      <div className="flex-shrink-0 text-slate-400 pr-2">
+        <ChevronRight size={20} />
       </div>
     </div>
   );
@@ -86,9 +100,18 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
   const roleLabel = formatLabel(community.role);
   const industryLabel = formatLabel(community.industry);
   const location = cleanText(community.location || '');
+  const visibleFields = getVisibleCreatorFields(community.role);
+  const isFieldVisible = (fieldName) => visibleFields.includes(fieldName);
 
   const skills = community.skills
-    ? community.skills.split(',').map((s) => s.trim()).filter(Boolean)
+    ? (typeof community.skills[0] === 'object'
+       ? community.skills.map((s) => s.skill || s).filter(Boolean)
+       : community.skills.split(',').map((s) => s.trim()).filter(Boolean))
+    : [];
+  const skillLevels = community.skills
+    ? (typeof community.skills[0] === 'object'
+       ? community.skills.map((s) => s.level || 'INTERMEDIATE')
+       : community.skills.split(',').map(() => 'INTERMEDIATE'))
     : [];
 
   const about = cleanText(community.about || community.bio || community.why_im_here || community.whyImHere || '');
@@ -97,15 +120,60 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
   const verified = Boolean(community.isApproved ?? community.is_approved ?? false);
   const featured = Boolean(community.featured ?? auction?.featured ?? false);
 
-  const expectedRate = cleanText(community.expectedRate || community.expected_rate || '');
+  const expectedPrice = cleanText(community.expectedPrice || community.expected_price || community.expectedRate || community.expected_rate || '');
   const preferredWorkType = cleanText(community.preferredWorkType || community.preferred_work_type || '');
   const industryExpertise = cleanText(community.industryExpertise || community.industry_expertise || '');
   const languagesKnown = cleanText(community.languagesKnown || community.languages_known || '');
+  const headline = cleanText(community.headline || '');
+  const education = cleanText(community.education || '');
+  const graduationYear = cleanText(community.graduationYear || community.graduation_year || '');
+  const experience = cleanText(community.experience || community.years_experience || '');
+  const currentCompany = cleanText(community.currentCompany || community.current_company || '');
+  const designation = cleanText(community.designation || '');
+  const companyName = cleanText(community.companyName || community.company_name || '');
+  const companyWebsite = cleanText(community.companyWebsite || community.company_website || '');
+  const availability = cleanText(community.availability || '');
+  const hiringFor = cleanText(community.hiringFor || community.hiring_for || '');
+  const mentorshipTopics = cleanText(community.mentorshipTopics || community.mentorship_topics || '');
+  const investmentFocus = cleanText(community.investmentFocus || community.investment_focus || '');
+  const investmentStage = cleanText(community.investmentStage || community.investment_stage || '');
+  const ticketSize = cleanText(community.ticketSize || community.ticket_size || '');
+  const startupStage = cleanText(community.startupStage || community.startup_stage || '');
+  const coFounderNeeds = cleanText(community.coFounderNeeds || community.co_founder_needs || '');
+  const incubationPrograms = cleanText(community.incubationPrograms || community.incubation_programs || '');
+  const supportOffered = cleanText(community.supportOffered || community.support_offered || '');
 
   const linkedInUrl = getLinkedInProfileUrl(community);
   const introductionVideoLink = cleanText(community.introductionVideoLink || community.introduction_video_link || '');
   const resumeDriveLink = cleanText(community.resumeDriveLink || community.resume_drive_link || '');
   const portfolioWebsiteLink = cleanText(community.portfolioWebsiteLink || community.portfolio_website_link || '');
+  const extraInfoCards = [
+    { name: 'headline', label: 'Professional Headline', value: headline, icon: Star },
+    { name: 'education', label: 'Education', value: education, icon: User2 },
+    { name: 'graduationYear', label: 'Graduation Year', value: graduationYear, icon: Clock },
+    { name: 'experience', label: 'Experience', value: experience, icon: Briefcase },
+    { name: 'currentCompany', label: 'Current Company', value: currentCompany, icon: Building2 },
+    { name: 'designation', label: 'Designation', value: designation, icon: BadgeCheck },
+    { name: 'companyName', label: 'Company / Organization', value: companyName, icon: Building2 },
+    {
+      name: 'companyWebsite',
+      label: 'Company Website',
+      value: getCleanDisplayLink(companyWebsite),
+      icon: Globe,
+      isLink: Boolean(companyWebsite),
+      linkUrl: companyWebsite,
+    },
+    { name: 'availability', label: 'Availability', value: availability, icon: Clock },
+    { name: 'hiringFor', label: 'Hiring / Collaboration Need', value: hiringFor, icon: Briefcase },
+    { name: 'mentorshipTopics', label: 'Mentorship Topics', value: mentorshipTopics, icon: Target },
+    { name: 'investmentFocus', label: 'Investment Focus', value: investmentFocus, icon: Sparkles },
+    { name: 'investmentStage', label: 'Preferred Investment Stage', value: investmentStage, icon: Gavel },
+    { name: 'ticketSize', label: 'Typical Ticket Size', value: ticketSize, icon: Tag },
+    { name: 'startupStage', label: 'Startup Stage', value: startupStage, icon: Sparkles },
+    { name: 'coFounderNeeds', label: 'Co-founder / Team Need', value: coFounderNeeds, icon: Target },
+    { name: 'incubationPrograms', label: 'Incubation Programs', value: incubationPrograms, icon: Building2 },
+    { name: 'supportOffered', label: 'Support Offered', value: supportOffered, icon: Star },
+  ];
 
   useEffect(() => {
     if (!open) return undefined;
@@ -151,19 +219,9 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
     }
   };
 
-  const getCleanDisplayLink = (url) => {
-    if (!url) return '';
-    try {
-      const parsed = new URL(url);
-      return parsed.hostname + parsed.pathname.slice(0, 15) + (parsed.pathname.length > 15 ? '...' : '');
-    } catch {
-      return url.slice(0, 30) + (url.length > 30 ? '...' : '');
-    }
-  };
-
   return createPortal(
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn"
       onClick={(e) => {
         e.stopPropagation();
         if (e.target === e.currentTarget) close();
@@ -178,9 +236,9 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-6 border-b border-slate-100 p-6 md:p-8 bg-white shrink-0">
+        <div className="flex items-start justify-between gap-6 p-6 md:p-8 bg-white shrink-0">
           <div className="flex min-w-0 items-center gap-5">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 shadow-[0_1px_3px_rgba(15,23,42,0.04)] ring-4 ring-slate-50">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 shadow-sm">
               {cleanText(community.imageUrl || community.image_url) ? (
                 <img
                   src={community.imageUrl || community.image_url}
@@ -193,39 +251,39 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                 </span>
               )}
             </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h3 className="truncate text-xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-tight">
                   {name}
                 </h3>
                 {verified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                     <BadgeCheck size={13} />
                     Verified
                   </span>
                 ) : null}
                 {featured ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50/50 px-2.5 py-0.5 text-xs font-bold text-amber-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.65rem] font-bold text-amber-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                     <Sparkles size={13} className="text-amber-500 fill-amber-500" />
                     Featured
                   </span>
                 ) : null}
               </div>
 
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
                 {roleLabel ? (
-                  <span className="inline-block rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 text-[0.68rem] font-bold uppercase tracking-wider px-2.5 py-1">
+                  <span className="inline-block rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 text-[0.68rem] font-bold uppercase tracking-wider px-3 py-1">
                     {roleLabel}
                   </span>
                 ) : null}
                 {industryLabel ? (
-                  <span className="rounded-lg bg-slate-50 text-slate-600 border border-slate-200/80 text-[0.68rem] font-bold uppercase tracking-wider px-2.5 py-1">
+                  <span className="rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-[0.68rem] font-bold uppercase tracking-wider px-3 py-1">
                     {industryLabel}
                   </span>
                 ) : null}
                 {location ? (
-                  <div className="flex items-center gap-1 text-xs md:text-sm font-semibold text-slate-500 ml-1">
-                    <MapPin size={14} className="text-slate-400" />
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 ml-1">
+                    <MapPin size={15} className="text-slate-400" />
                     {location}
                   </div>
                 ) : null}
@@ -235,101 +293,127 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
           <button
             type="button"
             onClick={close}
-            className="rounded-full p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+            className="rounded-full p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
             aria-label="Close creator preview"
           >
-            <X size={20} />
+            <X size={24} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="overflow-y-auto p-6 md:p-8 space-y-6 flex-1 bg-slate-50/30">
-          {/* About Section */}
-          {about ? (
-            <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
-              <div className="mb-2.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-400">
-                About
-              </div>
-              <p className="text-sm leading-relaxed text-slate-600 font-medium whitespace-pre-line">
-                {about}
-              </p>
-            </section>
-          ) : null}
-
-          {/* Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Left Column (Details) */}
-            <div className="space-y-4">
+        <div className="overflow-y-auto px-6 md:px-8 pb-6 md:pb-8 flex-1 bg-white">
+          <div className="rounded-[1.25rem] border border-slate-150 p-1 shadow-[0_1px_4px_rgba(15,23,42,0.02)]">
+             {isFieldVisible('about') ? (
+              <InfoCard
+                label="About"
+                value={about}
+                icon={User2}
+              />
+             ) : null}
+             {extraInfoCards
+              .filter((field) => isFieldVisible(field.name))
+              .map((field) => (
+                <InfoCard
+                  key={field.name}
+                  label={field.label}
+                  value={field.value}
+                  icon={field.icon}
+                  isLink={field.isLink}
+                  linkUrl={field.linkUrl}
+                />
+              ))}
+             {isFieldVisible('whyImHere') ? (
               <InfoCard
                 label="Why I'm Here"
                 value={whyImHere}
                 icon={Target}
               />
+             ) : null}
+             {isFieldVisible('introductionVideoLink') ? (
               <InfoCard
-                label="Expected Rate"
-                value={expectedRate}
-                icon={Tag}
+                label="Introduction Video"
+                value={getCleanDisplayLink(introductionVideoLink)}
+                icon={Video}
+                isLink={Boolean(introductionVideoLink)}
+                linkUrl={introductionVideoLink}
               />
+             ) : null}
+ {isFieldVisible('expectedPriceAmount') ? (
+                 <InfoCard
+                  label={(community.role === 'JOB_SEEKER' || community.role === 'EMPLOYEE') ? 'Expected Compensation' : 'Expected Price'}
+                  value={expectedPrice}
+                  icon={Tag}
+                />
+               ) : null}
+             {isFieldVisible('resumeDriveLink') ? (
+              <InfoCard
+                label="Resume (PDF)"
+                value={getCleanDisplayLink(resumeDriveLink)}
+                icon={FileText}
+                isLink={Boolean(resumeDriveLink)}
+                linkUrl={resumeDriveLink}
+                border={true}
+              />
+             ) : null}
+             {isFieldVisible('preferredWorkType') ? (
               <InfoCard
                 label="Preferred Work Type"
                 value={preferredWorkType ? preferredWorkType.replace(/_/g, ' ') : ''}
                 icon={Briefcase}
               />
+             ) : null}
+             {isFieldVisible('portfolioWebsiteLink') ? (
+              <InfoCard
+                label="Portfolio Website"
+                value={getCleanDisplayLink(portfolioWebsiteLink)}
+                icon={Globe}
+                isLink={Boolean(portfolioWebsiteLink)}
+                linkUrl={portfolioWebsiteLink}
+              />
+             ) : null}
+             {isFieldVisible('industryExpertise') ? (
               <InfoCard
                 label="Industry Expertise"
                 value={industryExpertise}
                 icon={Building2}
               />
+             ) : null}
+             {isFieldVisible('languagesKnown') ? (
               <InfoCard
                 label="Languages Known"
                 value={languagesKnown}
                 icon={Globe}
+                border={false}
               />
-            </div>
-
-            {/* Right Column (Links) */}
-            <div className="space-y-4">
-              <InfoCard
-                label="Introduction Video"
-                value={getCleanDisplayLink(introductionVideoLink) || 'Not provided'}
-                icon={Video}
-                isLink={Boolean(introductionVideoLink)}
-                linkUrl={introductionVideoLink}
-              />
-              <InfoCard
-                label="Resume (PDF)"
-                value={getCleanDisplayLink(resumeDriveLink) || 'Not provided'}
-                icon={FileText}
-                isLink={Boolean(resumeDriveLink)}
-                linkUrl={resumeDriveLink}
-              />
-              <InfoCard
-                label="Portfolio Website"
-                value={getCleanDisplayLink(portfolioWebsiteLink) || 'Not provided'}
-                icon={Globe}
-                isLink={Boolean(portfolioWebsiteLink)}
-                linkUrl={portfolioWebsiteLink}
-              />
-            </div>
+             ) : null}
           </div>
 
-          {skills.length > 0 ? (
-            <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
-              <div className="mb-3.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-400">
-                Skills
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full border border-slate-200 bg-slate-50/50 px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-default"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </section>
-          ) : null}
+{isFieldVisible('skills') && skills.length > 0 && (
+             <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">
+               <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500 mb-3.5">
+                 Skills
+               </div>
+               <div className="flex flex-wrap gap-2">
+                 {skills.map((skill, idx) => {
+                   const level = skillLevels[idx] || 'INTERMEDIATE';
+                   const levelColors = {
+                     BEGINNER: 'bg-slate-50 border-slate-200 text-slate-600',
+                     INTERMEDIATE: 'bg-blue-50 border-blue-200 text-blue-600',
+                     ADVANCED: 'bg-indigo-50 border-indigo-200 text-indigo-600',
+                     EXPERT: 'bg-purple-50 border-purple-200 text-purple-600',
+                   };
+                   return (
+                     <span
+                       key={`${skill}-${idx}`}
+                       className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-default ${levelColors[level] || 'bg-slate-50/50'}`}
+                     >
+                       {skill}
+                     </span>
+                   );
+                 })}
+               </div>
+             </div>
+           )}
         </div>
 
         {/* Footer Section */}

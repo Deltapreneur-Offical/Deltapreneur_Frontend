@@ -29,7 +29,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI } from '../api/services';
+import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI, domainEnquiryAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import useCurrency from '../context/CurrencyContext';
 import { formatInr } from '../utils/money';
@@ -41,8 +41,10 @@ import PurchaseIcon from '../assets/purchase.png';
 import RequestIcon from '../assets/Request.png';
 import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
+import DomainsAdminTab from './DomainsAdminTab';
 import VentureDealsAdminTab from './VentureDealsAdminTab';
 import OperationsAdminTab from './OperationsAdminTab';
 import DomainVerificationModal from './DomainVerificationModal';
@@ -557,6 +559,9 @@ export default function AdminDashboardPage() {
       adminAPI.getCoBrotherRequests()
         .then(({ data }) => setRequests(asArray(data)));
       refreshPendingCounts();
+      if (tab === 'domain-enquiries') {
+        loadTab(tab, { silent: true });
+      }
     } catch (e) {
       toast.error(e.response?.data?.error || t('adminForwardFailed'));
     }
@@ -845,6 +850,7 @@ export default function AdminDashboardPage() {
               <DomainEnquiriesTable
                 enquiries={data}
                 onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                onRefresh={() => loadTab(tab, { silent: true })}
               />
             ) : tab === 'auctions' ? (
               <AuctionsAdminTable auctions={data} />
@@ -853,7 +859,12 @@ export default function AdminDashboardPage() {
             ) : tab === 'software-auctions' ? (
               <SoftwareAuctionAdminTab auctions={data} onRefresh={() => loadTab(tab)} />
             ) : tab === 'community-auctions' ? (
-              <CommunityAuctionsAdminTable auctions={data} />
+              <CommunityAuctionsAdminTable
+                auctions={data}
+                onRefresh={() => loadTab(tab)}
+                onTakeDown={handleTakeDown}
+                onRestore={handleRestore}
+              />
             ) : tab === 'meetings' ? (
               <MeetingsAdminTab meetings={data} />
             ) : tab === 'operations' ? (
@@ -869,6 +880,26 @@ export default function AdminDashboardPage() {
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />
+            ) : tab === 'domains' ? (
+              <DomainsAdminTab
+                data={data}
+                renderItem={(item) => (
+                  <AdminRow
+                    key={`domains-${item.id}-${item.purchaseId || ''}`}
+                    item={item}
+                    tabType="domains"
+                    onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                    onTakeDown={handleTakeDown}
+                    onRestore={handleRestore}
+                    onVerifyDomain={setVerifyDomain}
+                    onVerifyVenture={setVerifyVenture}
+                    onRefresh={() => {
+                      loadTab('domains', { silent: true });
+                      refreshPendingCounts();
+                    }}
+                  />
+                )}
+              />
             ) : tab === 'requests' ? (
               <RequestsTable requests={requests} />
             ) : tab === 'cocreations' && cocreationsSubTab === 'payouts' ? (
@@ -1893,8 +1924,10 @@ function AuctionAdminRow({ auction, bids }) {
   );
 }
 
-function CommunityAuctionsAdminTable({ auctions }) {
+function CommunityAuctionsAdminTable({ auctions, onRefresh, onTakeDown, onRestore }) {
   const { t } = useTranslation();
+  const [filter, setFilter] = useState('ALL');
+
   if (!auctions.length) {
     return (
       <div className="text-center py-20">
@@ -1902,27 +1935,65 @@ function CommunityAuctionsAdminTable({ auctions }) {
       </div>
     );
   }
+
+  const filteredAuctions = auctions.filter((item) => {
+    if (filter === 'ALL') return true;
+    const auction = item.auction ?? item;
+    return auction.status === filter;
+  });
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      {auctions.map((item) => {
-        const auction = item.auction ?? item;
-        const community = item.community ?? auction.community ?? {};
-        return (
-          <CommunityAuctionAdminRow
-            key={auction.id}
-            auction={auction}
-            community={community}
-          />
-        );
-      })}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <span className="text-sm font-semibold text-gray-700">Filter Creator Auctions:</span>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="form-select text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          <option value="ALL">All Auctions</option>
+          <option value="ACTIVE">Active</option>
+          <option value="EXTENDED">Extended</option>
+          <option value="UNSOLD">Unsold</option>
+          <option value="ENDED">Ended</option>
+          <option value="CLOSED">Closed</option>
+          <option value="PAYMENT_PENDING">Draft / Payment Pending</option>
+        </select>
+      </div>
+
+      {!filteredAuctions.length ? (
+        <div className="text-center py-10 text-gray-500">No creator auctions found matching this status.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {filteredAuctions.map((item) => {
+            const auction = item.auction ?? item;
+            const bids = item.bids ?? [];
+            const community = item.community ?? auction.community ?? {};
+            return (
+              <CommunityAuctionAdminRow
+                key={auction.id}
+                auction={auction}
+                bids={bids}
+                community={community}
+                onRefresh={onRefresh}
+                onTakeDown={onTakeDown}
+                onRestore={onRestore}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-function CommunityAuctionAdminRow({ auction, community }) {
+function CommunityAuctionAdminRow({ auction, bids, community, onRefresh, onTakeDown, onRestore }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
+  const [featured, setFeatured] = useState(auction.featured || false);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   const title = auction.auctionTitle || community.name || `${t('adminTabCreatorAuctions')} #${auction.id}`;
   const totalBids = auction.totalBids ?? auction.total_bids ?? 0;
   const currentHighestBid = Number(auction.currentHighestBid ?? auction.current_highest_bid ?? 0);
@@ -1931,11 +2002,54 @@ function CommunityAuctionAdminRow({ auction, community }) {
     ? `${winner.firstname || ''} ${winner.lastname || ''}`.trim() || winner.email
     : null;
 
+  const getRemainingDays = () => {
+    const end = auction.endTime ?? auction.end_time;
+    if (!end) return 0;
+    const diffTime = new Date(end).getTime() - Date.now();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const getWinnerText = () => {
+    if (winnerName) return winnerName;
+    if (auction.status === 'ACTIVE' || auction.status === 'EXTENDED') {
+      return `Auction Active — ${getRemainingDays()} days remaining`;
+    }
+    if (auction.status === 'UNSOLD') {
+      return 'No bids received — Reserve price not met';
+    }
+    return '—';
+  };
+
+  const handleToggleFeatured = async (e) => {
+    e.stopPropagation();
+    if (toggleLoading) return;
+    setToggleLoading(true);
+    const nextFeatured = !featured;
+    try {
+      await adminAPI.toggleFeatured('COMMUNITY_AUCTION', auction.id, nextFeatured);
+      setFeatured(nextFeatured);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to toggle featured status.');
+    } finally {
+      setToggleLoading(false);
+    }
+  };
+
+  const isClosed = auction.status === 'CLOSED';
+
   return (
     <div className="admin-record-card">
       <div className="admin-record-row" onClick={() => setExpanded(v => !v)}>
         <div style={{ flex: 1 }}>
-          <div className="admin-record-title">{title}</div>
+          <div className="admin-record-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>{title}</span>
+            {featured && (
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#b45309', background: '#fffbeb', border: '1px solid #fcd34d', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
+                ★ Featured
+              </span>
+            )}
+          </div>
           <div className="admin-record-id">
             {t('adminBidsStatus', { count: totalBids, status: auction.status })}
             {community.role ? ` · ${String(community.role).replace(/_/g, ' ')}` : ''}
@@ -1945,23 +2059,24 @@ function CommunityAuctionAdminRow({ auction, community }) {
           <div className={`admin-price-amount ${currentHighestBid > 0 ? 'admin-price-amount--bid' : 'admin-price-amount--empty'}`}>
             {currentHighestBid > 0 ? `${formatPrice(currentHighestBid)}` : t('adminNoBids')}
           </div>
-          {winnerName && (
-            <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>{winnerName}</div>
-          )}
+          <div className="admin-field-meta" style={{ fontSize: '0.72rem' }}>
+            {getWinnerText()}
+          </div>
         </div>
         <span className="admin-expand-chevron">{expanded ? '▲' : '▼'}</span>
       </div>
       {expanded && (
         <div className="admin-record-body">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
             <div>
               <div className="admin-field-label">{t('adminCreatorProfile')}</div>
               <div className="admin-field-value">{community.name || '—'}</div>
               <div className="admin-field-meta">{community.email || '—'}</div>
+              {community.industry && <div className="admin-field-meta">Industry: {community.industry}</div>}
             </div>
             <div>
               <div className="admin-field-label">{t('adminWinner')}</div>
-              <div className="admin-field-value">{winnerName || '—'}</div>
+              <div className="admin-field-value">{getWinnerText()}</div>
               <div className="admin-field-meta">{winner?.email || ''}</div>
             </div>
             <div>
@@ -1970,6 +2085,78 @@ function CommunityAuctionAdminRow({ auction, community }) {
                 {formatPrice(auction.minBidPrice ?? auction.min_bid_price ?? 0)}
               </div>
             </div>
+            <div>
+              <div className="admin-field-label">Timeline</div>
+              <div style={{ fontSize: '0.82rem', color: '#374151' }}>
+                Started: {auction.startTime ? formatAuctionDate(auction.startTime) : 'Not started'}
+              </div>
+              {auction.endTime && (
+                <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+                  Ends: {formatAuctionDateTime(auction.endTime)}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {bids?.length > 0 && (
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div className="admin-field-label">All Bids ({bids.length})</div>
+              <div className="admin-bids-panel">
+                {bids.map((bid, i) => (
+                  <div key={bid.id || i} style={{ display: 'flex', justifyContent: 'space-between',
+                                        padding: '0.4rem 0.5rem', fontSize: '0.8rem',
+                                        borderBottom: i < bids.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
+                    <span style={{ color: '#111827', fontWeight: 500 }}>
+                      {bid.bidderName || bid.bidder_name}
+                    </span>
+                    <span style={{ color: (bid.winningBid || bid.winning_bid) ? '#059669' : '#7c3aed',
+                                   fontWeight: 600 }}>
+                      {formatPrice(bid.amount)}
+                      {(bid.winningBid || bid.winning_bid) && ' 🏆'}
+                    </span>
+                    <span className="admin-field-meta" style={{ fontSize: '0.75rem' }}>
+                      {formatAuctionDateTime(bid.bidTime ?? bid.bid_time ?? bid.createdAt, {
+                        hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short',
+                      }, '')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
+            <button
+              onClick={handleToggleFeatured}
+              disabled={toggleLoading}
+              className="btn-secondary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+            >
+              ★ {featured ? 'Unfeature' : 'Feature on Homepage'}
+            </button>
+
+            {!isClosed ? (
+              <button
+                className="btn-danger btn-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTakeDown(auction.id, 'COMMUNITY_AUCTION', title);
+                }}
+              >
+                Close Auction
+              </button>
+            ) : (
+              <button
+                className="btn-secondary btn-sm"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  await onRestore(auction.id, 'COMMUNITY_AUCTION');
+                  onRefresh?.();
+                }}
+              >
+                Restore Auction (Make Active)
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -1977,71 +2164,473 @@ function CommunityAuctionAdminRow({ auction, community }) {
   );
 }
 
-function DomainEnquiriesTable({ enquiries, onForward }) {
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  if (enquiries.length === 0) return (
-    <div className="text-center py-20">
-      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('adminNoDomainEnquiries')}</h3>
-      <p className="text-gray-600">{t('adminDomainEnquiriesHint')}</p>
-    </div>
-  );
+const DOMAIN_ENQUIRY_STATUS_COLORS = {
+  PENDING: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' },
+  IN_PROGRESS: { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' },
+  COMPLETED: { bg: '#d1fae5', text: '#059669', border: '#6ee7b7' },
+  DECLINED: { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
+  FORWARDED: { bg: '#ede9fe', text: '#7c3aed', border: '#c4b5fd' },
+};
 
-  const ENQUIRY_STATUS = { PENDING: '#b45309', FORWARDED: '#7c3aed', CLOSED: '#059669' };
+const DOMAIN_ENQUIRY_FILTER_TABS = [
+  { id: 'all', label: 'All' },
+  { id: 'PENDING', label: 'Pending' },
+  { id: 'IN_PROGRESS', label: 'In Progress' },
+  { id: 'COMPLETED', label: 'Completed' },
+  { id: 'DECLINED', label: 'Declined' },
+  { id: 'FORWARDED', label: 'Forwarded' },
+];
+
+const DOMAIN_ENQUIRY_STATUS_ACTIONS = {
+  IN_PROGRESS: {
+    title: 'Move to In Progress',
+    confirmLabel: 'Confirm',
+    variant: 'blue',
+    newStatus: 'IN_PROGRESS',
+  },
+  COMPLETED: {
+    title: 'Mark as Completed',
+    confirmLabel: 'Confirm',
+    variant: 'green',
+    newStatus: 'COMPLETED',
+  },
+  DECLINED: {
+    title: 'Decline Enquiry',
+    confirmLabel: 'Confirm',
+    variant: 'red',
+    newStatus: 'DECLINED',
+  },
+  PENDING: {
+    title: 'Reopen Enquiry',
+    confirmLabel: 'Confirm',
+    variant: 'blue',
+    newStatus: 'PENDING',
+  },
+  REMOVE: {
+    title: 'Remove Enquiry',
+    confirmLabel: 'Confirm',
+    variant: 'red',
+    action: 'remove',
+  },
+};
+
+function getDomainEnquiryCardActions(status) {
+  switch (status) {
+    case 'PENDING':
+      return {
+        forward: true,
+        inProgress: true,
+        completed: true,
+        decline: true,
+        remove: true,
+      };
+    case 'IN_PROGRESS':
+      return {
+        completed: true,
+        decline: true,
+        remove: true,
+      };
+    case 'COMPLETED':
+      return {
+        reopen: true,
+        remove: true,
+      };
+    case 'DECLINED':
+      return {
+        reopen: true,
+        remove: true,
+      };
+    case 'FORWARDED':
+      return { forwardDisabled: true };
+    default:
+      return {};
+  }
+}
+
+function formatEnquiryDate(value) {
+  if (!value) return null;
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+}
+
+function DomainEnquiryStatusBadge({ status }) {
+  const normalized = String(status || '').toUpperCase();
+  const colors = DOMAIN_ENQUIRY_STATUS_COLORS[normalized] || { bg: '#f3f4f6', text: '#6b7280', border: '#d1d5db' };
+  const label = normalized.replace(/_/g, ' ');
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '0.2rem 0.55rem',
+        borderRadius: '999px',
+        fontSize: '0.72rem',
+        fontWeight: 700,
+        letterSpacing: '0.02em',
+        background: colors.bg,
+        color: colors.text,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm, onNotesChange }) {
+  if (!modal || !enquiry) return null;
+  const isRemove = modal.action === 'remove';
+  const action = isRemove
+    ? DOMAIN_ENQUIRY_STATUS_ACTIONS.REMOVE
+    : DOMAIN_ENQUIRY_STATUS_ACTIONS[modal.newStatus];
+  const domainLabel = `${enquiry.domain?.domainName || ''}${enquiry.domain?.domainExtension || ''}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      {enquiries.map(e => (
-        <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between',
-                        flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <div>
-              <div className="admin-record-title">
-                {e.domain?.domainName}{e.domain?.domainExtension}
-              </div>
-              <div className="admin-record-id">
-                {formatPrice(e.domain?.askingPrice || 0)}
-              </div>
-            </div>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700,
-                           color: ENQUIRY_STATUS[e.status] || '#6b7280' }}>
-              {e.status}
-            </span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
-                        gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <div>
-              <div className="admin-field-label">{t('adminEnquirer')}</div>
-              <div className="admin-field-value">{e.fullName}</div>
-              <div className="admin-field-meta">{e.email}</div>
-              <div className="admin-field-meta">{e.phone}</div>
-            </div>
-            <div>
-              <div className="admin-field-label">{t('adminDomainLister')}</div>
-              <div className="admin-field-value">
-                {e.domain?.listedBy?.firstname} {e.domain?.listedBy?.lastname}
-              </div>
-              <div className="admin-field-meta">{e.domain?.listedBy?.email}</div>
-            </div>
-          </div>
-
-          {e.message && (
-            <div className="admin-quote">
-              "{e.message}"
-            </div>
-          )}
-
-          {e.status === 'PENDING' && (
-            <button className="btn-secondary btn-sm"
-              onClick={() => onForward(e.id, 'DOMAIN_ENQUIRY')}
-              style={{ fontSize: '0.8rem' }}>
-              {t('adminForwardToCoBrother')}
-            </button>
-          )}
+    <ConfirmationModal
+      open
+      title={action?.title || (isRemove ? 'Remove Enquiry' : 'Update Enquiry Status')}
+      message={isRemove ? 'This enquiry will be hidden from the admin list. History is preserved in the database.' : ''}
+      confirmLabel={action?.confirmLabel || 'Confirm'}
+      cancelLabel="Cancel"
+      variant={action?.variant || 'blue'}
+      loading={loading}
+      loadingLabel={isRemove ? 'Removing...' : 'Updating...'}
+      size="lg"
+      onCancel={onClose}
+      onConfirm={onConfirm}
+    >
+      <div style={{ display: 'grid', gap: '0.85rem' }}>
+        <div>
+          <div className="admin-field-label">Domain Name</div>
+          <div className="admin-field-value">{domainLabel || '—'}</div>
         </div>
-      ))}
-    </div>
+        {!isRemove && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div>
+              <div className="admin-field-label">Current Status</div>
+              <DomainEnquiryStatusBadge status={enquiry.status} />
+            </div>
+            <div>
+              <div className="admin-field-label">New Status</div>
+              <DomainEnquiryStatusBadge status={modal.newStatus} />
+            </div>
+          </div>
+        )}
+        {isRemove && (
+          <div>
+            <div className="admin-field-label">Current Status</div>
+            <DomainEnquiryStatusBadge status={enquiry.status} />
+          </div>
+        )}
+        <div>
+          <label className="admin-field-label" htmlFor="domain-enquiry-admin-notes">
+            Admin Notes
+          </label>
+          <textarea
+            id="domain-enquiry-admin-notes"
+            className="admin-textarea"
+            rows={4}
+            value={modal.adminNotes}
+            onChange={(event) => onNotesChange(event.target.value)}
+            placeholder="Add optional notes..."
+            disabled={loading}
+            style={{ width: '100%', marginTop: '0.35rem' }}
+          />
+        </div>
+      </div>
+    </ConfirmationModal>
+  );
+}
+
+function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
+  const toast = useAdminToast();
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusModal, setStatusModal] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(false);
+
+  const filteredEnquiries = useMemo(() => {
+    if (statusFilter === 'all') return enquiries;
+    return enquiries.filter((item) => String(item?.status || '').toUpperCase() === statusFilter);
+  }, [enquiries, statusFilter]);
+
+  const openStatusModal = (enquiry, newStatus) => {
+    setStatusModal({
+      enquiryId: enquiry.id,
+      action: 'status',
+      newStatus,
+      adminNotes: enquiry.adminNotes || '',
+    });
+  };
+
+  const openRemoveModal = (enquiry) => {
+    setStatusModal({
+      enquiryId: enquiry.id,
+      action: 'remove',
+      adminNotes: enquiry.adminNotes || '',
+    });
+  };
+
+  const closeStatusModal = () => {
+    if (statusLoading) return;
+    setStatusModal(null);
+  };
+
+  const handleStatusConfirm = async () => {
+    if (!statusModal) return;
+    setStatusLoading(true);
+    try {
+      if (statusModal.action === 'remove') {
+        const { data } = await domainEnquiryAPI.remove(statusModal.enquiryId, {
+          adminNotes: statusModal.adminNotes,
+        });
+        if (data?.success === false) {
+          throw new Error(data?.error || data?.message || 'Remove failed.');
+        }
+        toast.success('Enquiry removed from admin list.');
+      } else {
+        const { data } = await domainEnquiryAPI.updateStatus(statusModal.enquiryId, {
+          status: statusModal.newStatus,
+          adminNotes: statusModal.adminNotes,
+        });
+        if (data?.success === false) {
+          throw new Error(data?.error || data?.message || 'Update failed.');
+        }
+        const action = DOMAIN_ENQUIRY_STATUS_ACTIONS[statusModal.newStatus];
+        toast.success(
+          action?.title
+            ? `${action.title} successful.`
+            : 'Enquiry status updated.',
+        );
+      }
+      setStatusModal(null);
+      onRefresh?.();
+    } catch (error) {
+      const reason = error.response?.data?.error
+        || error.response?.data?.message
+        || error.message
+        || 'Unknown error';
+      toast.error(`Unable to update enquiry.\n\nReason:\n${reason}`);
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
+  const activeModalEnquiry = statusModal
+    ? enquiries.find((item) => String(item.id) === String(statusModal.enquiryId))
+    : null;
+
+  if (enquiries.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('adminNoDomainEnquiries')}</h3>
+        <p className="text-gray-600">{t('adminDomainEnquiriesHint')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+        {DOMAIN_ENQUIRY_FILTER_TABS.map((tab) => {
+          const count = tab.id === 'all'
+            ? enquiries.length
+            : enquiries.filter((item) => String(item?.status || '').toUpperCase() === tab.id).length;
+          const active = statusFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setStatusFilter(tab.id)}
+              className={active ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+              style={{ fontSize: '0.78rem' }}
+            >
+              {tab.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {filteredEnquiries.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-gray-600">No enquiries match this filter.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {filteredEnquiries.map((e) => {
+            const status = String(e.status || '').toUpperCase();
+            const actions = getDomainEnquiryCardActions(status);
+
+            return (
+              <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                              flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <div>
+                    <div className="admin-record-title">
+                      {e.domain?.domainName}{e.domain?.domainExtension}
+                    </div>
+                    <div className="admin-record-id">
+                      {formatPrice(e.domain?.askingPrice || 0)}
+                    </div>
+                  </div>
+                  <DomainEnquiryStatusBadge status={e.status} />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                              gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div>
+                    <div className="admin-field-label">{t('adminEnquirer')}</div>
+                    <div className="admin-field-value">{e.fullName}</div>
+                    <div className="admin-field-meta">{e.email}</div>
+                    <div className="admin-field-meta">{e.phone}</div>
+                  </div>
+                  <div>
+                    <div className="admin-field-label">{t('adminDomainLister')}</div>
+                    <div className="admin-field-value">
+                      {e.domain?.listedBy?.firstname} {e.domain?.listedBy?.lastname}
+                    </div>
+                    <div className="admin-field-meta">{e.domain?.listedBy?.email}</div>
+                  </div>
+                </div>
+
+                {e.message && (
+                  <div className="admin-quote">
+                    "{e.message}"
+                  </div>
+                )}
+
+                {e.adminNotes && (
+                  <div style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div className="admin-field-label">Admin Notes</div>
+                    <div className="admin-field-value" style={{ whiteSpace: 'pre-wrap' }}>
+                      {e.adminNotes}
+                    </div>
+                  </div>
+                )}
+
+                {(e.inProgressAt || e.completedAt || e.declinedAt) && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                      gap: '0.65rem',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    {e.inProgressAt && (
+                      <div>
+                        <div className="admin-field-label">In Progress Date</div>
+                        <div className="admin-field-meta">{formatEnquiryDate(e.inProgressAt)}</div>
+                      </div>
+                    )}
+                    {e.completedAt && (
+                      <div>
+                        <div className="admin-field-label">Completed Date</div>
+                        <div className="admin-field-meta">{formatEnquiryDate(e.completedAt)}</div>
+                      </div>
+                    )}
+                    {e.declinedAt && (
+                      <div>
+                        <div className="admin-field-label">Declined Date</div>
+                        <div className="admin-field-meta">{formatEnquiryDate(e.declinedAt)}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {actions.forward && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => onForward(e.id, 'DOMAIN_ENQUIRY')}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      {t('adminForwardToCoBrother')}
+                    </button>
+                  )}
+                  {actions.forwardDisabled && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      disabled
+                      style={{ fontSize: '0.8rem', opacity: 0.6, cursor: 'not-allowed' }}
+                    >
+                      {t('adminForwardToCoBrother')}
+                    </button>
+                  )}
+                  {actions.inProgress && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'IN_PROGRESS')}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Mark In Progress
+                    </button>
+                  )}
+                  {actions.completed && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'COMPLETED')}
+                      style={{ fontSize: '0.8rem', color: '#059669' }}
+                    >
+                      Mark Completed
+                    </button>
+                  )}
+                  {actions.decline && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'DECLINED')}
+                      style={{ fontSize: '0.8rem', color: '#dc2626' }}
+                    >
+                      Decline
+                    </button>
+                  )}
+                  {actions.reopen && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openStatusModal(e, 'PENDING')}
+                      style={{ fontSize: '0.8rem', color: '#1d4ed8' }}
+                    >
+                      Reopen
+                    </button>
+                  )}
+                  {actions.remove && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openRemoveModal(e)}
+                      style={{ fontSize: '0.8rem', color: '#6b7280' }}
+                    >
+                      Remove Enquiry
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <DomainEnquiryStatusModal
+        modal={statusModal}
+        enquiry={activeModalEnquiry}
+        loading={statusLoading}
+        onClose={closeStatusModal}
+        onConfirm={handleStatusConfirm}
+        onNotesChange={(value) => setStatusModal((current) => (
+          current ? { ...current, adminNotes: value } : current
+        ))}
+      />
+    </>
   );
 }
 
@@ -2119,69 +2708,94 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-card" style={{ maxWidth: 440 }}>
-        <div className="modal-glow" />
-        <button className="modal-close" onClick={onClose}>✕</button>
-        <div className="modal-header">
-          <div className="modal-badge">{t('adminForwardModalBadge')}</div>
-          <h2>{t('adminAssignCoBrother')}</h2>
-          <p>{t('adminForwardSelectDesc', { type: formatAdminRequestType(type, t).toLowerCase() })}</p>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full max-w-[460px] bg-[#fdfcff] border border-gray-200 rounded-[20px] shadow-[0_24px_50px_rgba(0,0,0,0.1)] p-8 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-72 h-72 bg-purple-100/50 rounded-full blur-3xl pointer-events-none" />
+        
+        <button className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors" onClick={onClose} aria-label="Close">
+          <X size={24} strokeWidth={1.5} />
+        </button>
+        
+        <div className="relative z-10 mb-6">
+          <div className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-600 text-[10px] font-bold tracking-wider uppercase rounded-lg mb-4">
+            {t('adminForwardModalBadge', 'Forward to CoBrother')}
+          </div>
+          <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignCoBrother')}</h2>
+          <p className="text-[15px] text-gray-500">
+            {t('adminForwardSelectDesc', { type: formatAdminRequestType(type, t).toLowerCase() })}
+          </p>
         </div>
 
-        {noCoBrothers && (
-          <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.08)',
-                        border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
-                        marginBottom: '1rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-            {t('adminNoCoBrotherAccounts')}
+        <div className="relative z-10">
+          {noCoBrothers && (
+            <div className="px-4 py-3 bg-[#fdf5f5] border border-[#f3d9d9] text-[#c95b5b] text-[13px] rounded-xl mb-6">
+              {t('adminNoCoBrotherAccounts', 'No CoBrother accounts found. Create or promote a user to the CoBrother role before forwarding.')}
+            </div>
+          )}
+
+          {!noCoBrothers && alreadyAccepted && (
+            <div className="px-4 py-3 bg-[#fdf5f5] border border-[#f3d9d9] text-[#c95b5b] text-[13px] rounded-xl mb-6">
+              {t('adminAlreadyAccepted')}
+            </div>
+          )}
+
+          {!noCoBrothers && !alreadyAccepted && pendingPayment && (
+            <div className="px-4 py-3 bg-amber-50 border border-amber-200 text-amber-700 text-[13px] rounded-xl mb-6">
+              {t('adminPendingPayment')}
+            </div>
+          )}
+
+          <div className="mb-6">
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2.5">
+              {t('adminSelectCoBrother', 'Select CoBrother')}
+            </label>
+            <select 
+              value={selectedCoBrother} 
+              onChange={e => setSelectedCoBrother(e.target.value)} 
+              disabled={noCoBrothers}
+              className="w-full px-4 py-3.5 bg-white border border-gray-200 text-gray-700 text-[15px] rounded-xl outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{t('adminChooseCoBrother', 'Choose a CoBrother...')}</option>
+              {coBrothers.map(cb => {
+                const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
+                return (
+                  <option key={cb.id} value={cb.id} disabled={alreadyAssigned}>
+                    {cb.firstname} {cb.lastname} ({cb.email})
+                    {alreadyAssigned ? ` - ${t('adminAlreadyAssigned')}` : ''}
+                  </option>
+                );
+              })}
+            </select>
           </div>
-        )}
 
-        {!noCoBrothers && alreadyAccepted && (
-          <div style={{ padding: '0.875rem', background: 'rgba(200,110,110,0.08)',
-                        border: '1px solid rgba(200,110,110,0.25)', borderRadius: 8,
-                        marginBottom: '1rem', fontSize: '0.83rem', color: '#c86e6e' }}>
-            {t('adminAlreadyAccepted')}
+          <div className="mb-6 flex flex-col gap-1 text-[14px]">
+            <div className="flex gap-2 text-slate-500 font-medium leading-snug">
+              <span>
+                {t('adminPaymentRequestNote', { amount: formatPrice(1000) }).replace(/CoBrother/g, 'CoBrother')}
+              </span>
+            </div>
+            <div className="pl-6">
+              <LearnMoreTooltip>
+                <span className="text-indigo-600 underline text-sm cursor-pointer">{t('Learn More', 'Learn More')}</span>
+              </LearnMoreTooltip>
+            </div>
           </div>
-        )}
 
-        {!noCoBrothers && !alreadyAccepted && pendingPayment && (
-          <div className="admin-alert-banner admin-alert-banner--warning">
-            {t('adminPendingPayment')}
+          <div className="flex gap-3">
+            <button 
+              className="flex-1 py-3.5 px-4 bg-[#a78bfa] hover:bg-[#8b5cf6] text-white text-[15px] font-semibold rounded-[12px] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={handleSubmit}
+              disabled={loading || noCoBrothers || !selectedCoBrother || alreadyAccepted || pendingPayment}
+            >
+              {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" /> : t('adminSendPaymentRequest', 'Send Payment Request →')}
+            </button>
+            <button 
+              className="py-3.5 px-6 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 text-[15px] font-medium rounded-[12px] transition-colors shadow-sm"
+              onClick={onClose}
+            >
+              {t('cancel', 'Cancel')}
+            </button>
           </div>
-        )}
-
-        <div className="form-group" style={{ margin: '1rem 0' }}>
-          <label className="admin-form-label">{t('adminSelectCoBrother')}</label>
-          <select value={selectedCoBrother} onChange={e => setSelectedCoBrother(e.target.value)} disabled={noCoBrothers}>
-            <option value="">{t('adminChooseCoBrother')}</option>
-            {coBrothers.map(cb => {
-              const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
-              return (
-                <option key={cb.id} value={cb.id} disabled={alreadyAssigned}>
-                  {cb.firstname} {cb.lastname} ({cb.email})
-                  {alreadyAssigned ? t('adminAlreadyAssigned') : ''}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div className="admin-alert-banner admin-alert-banner--warning" style={{ marginBottom: '1.25rem' }}>
-          <span>{t('adminPaymentRequestNote', { amount: formatPrice(1000) })}</span>
-          {' '}
-          <LearnMoreTooltip>
-            {t('adminPaymentLearnMore', { amount: formatPrice(1000) })}
-          </LearnMoreTooltip>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn-primary" onClick={handleSubmit}
-            disabled={loading || noCoBrothers || !selectedCoBrother || alreadyAccepted || pendingPayment}
-            style={{ flex: 1 }}>
-            {loading ? <span className="btn-spinner" /> : t('adminSendPaymentRequest')}
-          </button>
-          <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
         </div>
       </div>
     </div>
@@ -2264,20 +2878,26 @@ function MeetingsAdminTab({ meetings }) {
   };
 
   const filtered = meetings.filter(m => {
-    if (filter === 'all')     return true;
-    if (filter === 'upcoming') return categorise(m) === 'upcoming';
-    if (filter === 'ongoing')  return categorise(m) === 'ongoing';
+    if (filter === 'all')       return true;
+    if (filter === 'pending')   return m.status === 'PENDING';
+    if (filter === 'ongoing')   return m.status === 'CONFIRMED' && categorise(m) === 'ongoing';
+    if (filter === 'upcoming')  return m.status === 'CONFIRMED' && categorise(m) === 'upcoming';
+    if (filter === 'completed') return m.status === 'COMPLETED';
+    if (filter === 'cancelled') return m.status === 'CANCELLED';
     return true;
   });
 
-  const countUpcoming = meetings.filter(m => categorise(m) === 'upcoming').length;
-  const countOngoing  = meetings.filter(m => categorise(m) === 'ongoing').length;
+  const countPending   = meetings.filter(m => m.status === 'PENDING').length;
+  const countOngoing   = meetings.filter(m => m.status === 'CONFIRMED' && categorise(m) === 'ongoing').length;
+  const countUpcoming  = meetings.filter(m => m.status === 'CONFIRMED' && categorise(m) === 'upcoming').length;
+  const countCompleted = meetings.filter(m => m.status === 'COMPLETED').length;
+  const countCancelled = meetings.filter(m => m.status === 'CANCELLED').length;
 
   const MEETING_STATUS = {
-    PENDING:   { color: '#b45309', label: t('adminMeetingPending')   },
-    CONFIRMED: { color: '#059669', label: t('adminMeetingConfirmed')  },
-    CANCELLED: { color: '#dc2626', label: t('adminMeetingCancelled')  },
-    COMPLETED: { color: '#4b5563', label: t('adminMeetingCompleted')  },
+    PENDING:   { color: '#b45309', label: t('adminMeetingPending', 'Pending')   },
+    CONFIRMED: { color: '#059669', label: t('adminMeetingConfirmed', 'Confirmed')  },
+    CANCELLED: { color: '#dc2626', label: t('adminMeetingCancelled', 'Cancelled')  },
+    COMPLETED: { color: '#4b5563', label: t('adminMeetingCompleted', 'Completed')  },
   };
 
   if (meetings.length === 0) return (
@@ -2292,9 +2912,12 @@ function MeetingsAdminTab({ meetings }) {
       {/* Sub-filter bar */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         {[
-          { id: 'all',      label: t('adminMeetingsAll', { count: meetings.length }) },
-          { id: 'ongoing',  label: t('adminMeetingsOngoing', { count: countOngoing }) },
-          { id: 'upcoming', label: t('adminMeetingsUpcoming', { count: countUpcoming }) },
+          { id: 'all',       label: t('adminMeetingsAll', { count: meetings.length, defaultValue: `All (${meetings.length})` }) },
+          { id: 'pending',   label: `Pending (${countPending})` },
+          { id: 'ongoing',   label: t('adminMeetingsOngoing', { count: countOngoing, defaultValue: `Ongoing (${countOngoing})` }) },
+          { id: 'upcoming',  label: t('adminMeetingsUpcoming', { count: countUpcoming, defaultValue: `Upcoming (${countUpcoming})` }) },
+          { id: 'completed', label: `Completed (${countCompleted})` },
+          { id: 'cancelled', label: `Cancelled (${countCancelled})` },
         ].map(f => (
           <button key={f.id}
             className={`filter-tab ${filter === f.id ? 'active' : ''}`}
@@ -2315,12 +2938,15 @@ function MeetingsAdminTab({ meetings }) {
             const lister    = m.lister    || {};
             const requester = m.requester || {};
 
+            const cardClass = m.status === 'PENDING' ? 'admin-record-card--pending'
+              : m.status === 'COMPLETED' ? 'admin-meeting-card--past'
+              : m.status === 'CONFIRMED' && cat === 'ongoing' ? 'admin-meeting-card--ongoing'
+              : m.status === 'CONFIRMED' && cat === 'upcoming' ? 'admin-meeting-card--upcoming'
+              : 'admin-record-card';
+            const borderStyle = m.status === 'CANCELLED' ? { borderLeft: '4px solid #dc2626' } : {};
+
             return (
-              <div key={m.id} className={`admin-record-card ${
-                cat === 'ongoing' ? 'admin-meeting-card--ongoing'
-                : cat === 'upcoming' ? 'admin-meeting-card--upcoming'
-                : 'admin-meeting-card--past'
-              }`} style={{ padding: '1rem 1.25rem' }}>
+              <div key={m.id} className={`admin-record-card ${cardClass}`} style={{ padding: '1rem 1.25rem', ...borderStyle }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                   {/* Left: topic + participants */}
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -2333,7 +2959,7 @@ function MeetingsAdminTab({ meetings }) {
                                      padding: '0.15rem 0.5rem', borderRadius: 4 }}>
                         {sc.label}
                       </span>
-                      {cat === 'ongoing' && (
+                      {m.status === 'CONFIRMED' && cat === 'ongoing' && (
                         <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c86e6e',
                                        background: 'rgba(200,110,110,0.1)', border: '1px solid rgba(200,110,110,0.3)',
                                        padding: '0.15rem 0.5rem', borderRadius: 4, animation: 'pulse 1.5s infinite' }}>
@@ -2360,6 +2986,42 @@ function MeetingsAdminTab({ meetings }) {
                         "{m.message}"
                       </div>
                     )}
+
+                    {/* Timeline & detailed status info */}
+                    <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed #e5e7eb' }}>
+                      {m.status === 'PENDING' && (
+                        <div style={{ fontSize: '0.82rem', color: '#b45309', fontWeight: 500 }}>
+                          ⏳ <strong>Pending action from:</strong> Profile Owner — {lister.firstname || lister.firstName || '—'} {lister.lastname || lister.lastName || ''} ({lister.email || '—'})
+                        </div>
+                      )}
+                      {m.status === 'CANCELLED' && (
+                        <div style={{ fontSize: '0.82rem', color: '#dc2626' }}>
+                          <div>
+                            🚫 <strong>Cancelled by:</strong>{' '}
+                            {m.cancelledBy === 'LISTER'
+                              ? `Profile Owner — ${lister.firstname || lister.firstName || '—'} ${lister.lastname || lister.lastName || ''} (${lister.email || '—'})`
+                              : m.cancelledBy === 'REQUESTER'
+                              ? `Requester — ${requester.firstname || requester.firstName || '—'} ${requester.lastname || requester.lastName || ''} (${requester.email || '—'})`
+                              : m.cancelledBy || '—'}
+                          </div>
+                          {m.cancelReason && (
+                            <div style={{ marginTop: '0.2rem', color: '#4b5563', paddingLeft: '1.25rem', fontStyle: 'italic' }}>
+                              Reason: "{m.cancelReason}"
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {m.status === 'COMPLETED' && (
+                        <div style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 500 }}>
+                          ✅ <strong>Completed</strong>
+                        </div>
+                      )}
+                      {m.status === 'CONFIRMED' && (
+                        <div style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 500 }}>
+                          🤝 <strong>Confirmed & Scheduled</strong>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Right: time info + meet link */}

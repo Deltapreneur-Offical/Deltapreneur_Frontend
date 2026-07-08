@@ -62,7 +62,7 @@ export default function PlatformAnalyticsHubPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+  const isAdmin = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'].includes(roleUpper);
 
   const [statsLoading, setStatsLoading] = useState(false);
   const [stats, setStats] = useState({

@@ -5,12 +5,13 @@ import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import BackToHomeButton from './BackToHomeButton';
-import BrandNavLogo from './BrandNavLogo';
 import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
 import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
 import { ventureListChooseUrl } from '../../constants/ventureListingTypeContent';
+import rollingLogoMobile from '../../assets/Rolling Logo center to outwards GIF.mp4';
+import BrandNavLogo from './BrandNavLogo';
 
 function NavDropdown({ label, open, onToggle, children }) {
   const triggerRef = useRef(null);
@@ -101,6 +102,77 @@ function MobileAccordion({ title, open, onToggle, children }) {
   );
 }
 
+function AnimatedNavLogo({ onClick }) {
+  const videoRef = useRef(null);
+  const playCountRef = useRef(0);
+  const [showStatic, setShowStatic] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    playCountRef.current = 0;
+
+    const handleEnded = () => {
+      playCountRef.current += 1;
+      if (playCountRef.current === 1) {
+        setShowStatic(true);
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            setShowStatic(false);
+            videoRef.current.play().catch((err) => console.log('Replay error:', err));
+          }
+        }, 5000);
+      } else if (playCountRef.current >= 2) {
+        setShowStatic(true);
+      }
+    };
+
+    video.addEventListener('ended', handleEnded);
+    return () => {
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
+  return (
+    <button
+      type="button"
+      className="home-nav-logo-btn home-nav-logo-btn--animated brand-logo-interactive shrink-0"
+      onClick={onClick}
+      aria-label="CoBrother home"
+    >
+      <div className="relative w-full h-full flex items-center">
+        <div
+          className="absolute inset-0 flex items-center"
+          style={{
+            opacity: showStatic ? 1 : 0,
+            pointerEvents: showStatic ? 'auto' : 'none',
+            transition: 'opacity 0.15s ease',
+          }}
+        >
+          <BrandNavLogo />
+        </div>
+        <video
+          ref={videoRef}
+          className="home-nav-logo-video"
+          src={rollingLogoMobile}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          style={{
+            opacity: showStatic ? 0 : 1,
+            pointerEvents: showStatic ? 'none' : 'auto',
+            transition: 'opacity 0.15s ease',
+          }}
+        />
+      </div>
+    </button>
+  );
+}
+
 export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false }) {
   const { t } = useTranslation();
   const location = useLocation();
@@ -182,67 +254,60 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
       >
         <div className="home-main-nav-inner">
           <div className="home-main-nav-start">
-          <button
-            type="button"
-            className="home-nav-logo-btn brand-logo-interactive shrink-0"
-            onClick={handleLogoClick}
-            aria-label="CoBrother home"
-          >
-            <BrandNavLogo />
-          </button>
+            <AnimatedNavLogo onClick={handleLogoClick} />
 
-          <div className="home-nav-desktop-menu">
-            <div className="flex items-center flex-wrap gap-1">
-              <NavDropdown
-                label={t('domains')}
-                open={openDropdown === 'domains'}
-                onToggle={() => toggleDesktopDropdown('domains')}
-              >
-                <DropdownLink onClick={() => go('/domains')}>{t('exploreDomains')}</DropdownLink>
-                <DropdownLink onClick={() => go('/domains', { openListDomainForm: true })}>{t('listDomains')}</DropdownLink>
-              </NavDropdown>
+            <div className="home-nav-desktop-menu">
+              <div className="flex items-center flex-wrap gap-1">
+                <NavDropdown
+                  label={t('domains')}
+                  open={openDropdown === 'domains'}
+                  onToggle={() => toggleDesktopDropdown('domains')}
+                >
+                  <DropdownLink onClick={() => go('/domains')}>{t('exploreDomains')}</DropdownLink>
+                  <DropdownLink onClick={() => go('/domains', { openListDomainForm: true })}>{t('listDomains')}</DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('ventures')}
-                open={openDropdown === 'venture'}
-                onToggle={() => toggleDesktopDropdown('venture')}
-              >
-                <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
-                <DropdownLink onClick={() => go(ventureListChooseUrl('co-venture'))}>List Co-Venture</DropdownLink>
-                <DropdownLink onClick={() => go(ventureListChooseUrl('venture'))}>{t('listVenture')}</DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('ventures')}
+                  open={openDropdown === 'venture'}
+                  onToggle={() => toggleDesktopDropdown('venture')}
+                >
+                  <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
+                  <DropdownLink onClick={() => go(ventureListChooseUrl('co-venture'))}>List Co-Venture</DropdownLink>
+                  <DropdownLink onClick={() => go(ventureListChooseUrl('venture'))}>{t('listVenture')}</DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('auctions')}
-                open={openDropdown === 'auctions'}
-                onToggle={() => toggleDesktopDropdown('auctions')}
-              >
-                <DropdownLink onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</DropdownLink>
-                <DropdownLink onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('auctions')}
+                  open={openDropdown === 'auctions'}
+                  onToggle={() => toggleDesktopDropdown('auctions')}
+                >
+                  <DropdownLink onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions?section=community')}>{t('auctionDisruptor')}</DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('technologies')}
-                open={openDropdown === 'technology'}
-                onToggle={() => toggleDesktopDropdown('technology')}
-              >
-                <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
-                <DropdownLink onClick={() => go('/technology', { openListTechnologyForm: true })}>
-                  {t('listTechnology')}
-                </DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('technologies')}
+                  open={openDropdown === 'technology'}
+                  onToggle={() => toggleDesktopDropdown('technology')}
+                >
+                  <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
+                  <DropdownLink onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                    {t('listTechnology')}
+                  </DropdownLink>
+                </NavDropdown>
 
-              <NavDropdown
-                label={t('disruptors')}
-                open={openDropdown === 'creators'}
-                onToggle={() => toggleDesktopDropdown('creators')}
-              >
-                <DropdownLink onClick={() => go('/creator')}>{t('exploreDisruptors')}</DropdownLink>
-              </NavDropdown>
+                <NavDropdown
+                  label={t('disruptors')}
+                  open={openDropdown === 'creators'}
+                  onToggle={() => toggleDesktopDropdown('creators')}
+                >
+                  <DropdownLink onClick={() => go('/creator')}>{t('exploreDisruptors')}</DropdownLink>
+                </NavDropdown>
+              </div>
             </div>
-          </div>
           </div>
 
           <div className="home-main-nav-toolbar">

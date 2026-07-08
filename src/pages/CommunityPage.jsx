@@ -25,7 +25,11 @@ import {
   getLinkedInProfileUrl,
   hasLinkedInAccount,
   isCreatorProfileComplete,
+  isCreatorProfileVisible,
 } from '../utils/creatorProfile';
+import { getVisibleCreatorFields } from '../utils/creatorRoleFields';
+import SkillsInput from '../components/common/SkillsInput';
+import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import { isListingOwner } from '../utils/listingVisibility';
 import CreatorProfileCompletionBanner from '../components/profile/CreatorProfileCompletionBanner';
 import { useCreatorAuctionProfileSync } from '../hooks/useCreatorAuctionProfileSync';
@@ -37,23 +41,61 @@ import {
 } from '../utils/creatorAuctionSummary';
 import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpectedRate, buildCreatorExpectedRate, CREATOR_RATE_PERIODS } from '../utils/creatorExpectedRate';
 import { readApiError } from '../utils/apiError';
+import { CURRENCY_LABELS } from '../constants/currencies';
+import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 
 const ROLES = [
-  'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
-  'OPERATOR','FREELANCER','STUDENT','OTHER'
+  { value: 'STUDENT', label: 'STUDENT' },
+  { value: 'FREELANCER', label: 'FREELANCER' },
+  { value: 'JOB_SEEKER', label: 'JOB SEEKER' },
+  { value: 'EMPLOYEE', label: 'EMPLOYEE' },
+  { value: 'EMPLOYER', label: 'EMPLOYER' },
+  { value: 'MENTOR', label: 'MENTOR' },
+  { value: 'INVESTOR', label: 'INVESTOR' },
+  { value: 'FOUNDER_CO_FOUNDER', label: 'FOUNDER / CO-FOUNDER' },
+  { value: 'INCUBATORS', label: 'INCUBATORS' }
 ];
 const WORK_TYPES = [
-  { value: 'FREELANCE',   label: 'Freelance' },
-  { value: 'FULL_TIME',   label: 'Full Time' },
-  { value: 'PART_TIME',   label: 'Part Time' },
-  { value: 'CONTRACT',    label: 'Contract'  },
+  { value: 'FREELANCE', label: 'Freelance' },
+  { value: 'FULL_TIME', label: 'Full Time' },
+  { value: 'PART_TIME', label: 'Part Time' },
+  { value: 'CONTRACT', label: 'Contract' },
   { value: 'OPEN_TO_ALL', label: 'Open to All' },
 ];
+const STUDENT_WORK_TYPES = [
+  { value: 'INTERNSHIP', label: 'Internship' },
+  { value: 'CERTIFICATIONS', label: 'Certifications' },
+  { value: 'COURSES', label: 'Courses' },
+];
+const CREATOR_PROFILE_EXTRA_FIELDS = [
+  { name: 'headline', label: 'Professional Headline', placeholder: 'e.g. Full-stack developer building AI tools' },
+  { name: 'education', label: 'Education', placeholder: 'e.g. B.Tech CSE, PES University' },
+  { name: 'graduationYear', label: 'Graduation Year', placeholder: 'e.g. 2027' },
+  { name: 'githubProfile', label: 'GitHub Profile', placeholder: 'https://github.com/your-username' },
+  { name: 'socialMediaProfile', label: 'Social Media Profile', placeholder: 'https://twitter.com/your-username' },
+  { name: 'currentCompany', label: 'Current Company', placeholder: 'e.g. Infosys, Google, Self-employed' },
+  { name: 'designation', label: 'Designation', placeholder: 'e.g. HR, CEO, Manager' },
+  { name: 'roleDescription', label: 'Role Description', placeholder: 'e.g. Looking for a software engineer with 5+ years experience in React and Node.js', multiline: true },
+  { name: 'companyName', label: 'Company / Organization Name', placeholder: 'e.g. Acme Ventures Pvt Ltd' },
+  { name: 'companyWebsite', label: 'Company Website', placeholder: 'https://company.com', type: 'url' },
+  { name: 'availability', label: 'Notice Period', placeholder: 'e.g. Immediately, 30 days' },
+  { name: 'hiringFor', label: 'Hiring / Collaboration Need', placeholder: 'e.g. React interns, marketing partners, sales consultants', multiline: true },
+  { name: 'mentorshipTopics', label: 'Mentorship Topics', placeholder: 'e.g. Career guidance, fundraising, product strategy', multiline: true },
+  { name: 'investmentFocus', label: 'Investment Focus', placeholder: 'e.g. AI SaaS, HealthTech, early-stage B2B', multiline: true },
+  { name: 'investmentStage', label: 'Preferred Investment Stage', placeholder: 'e.g. Idea, MVP, Seed, Series A' },
+  { name: 'ticketSize', label: 'Typical Ticket Size', placeholder: 'e.g. ₹5L - ₹25L or strategic advisory' },
+  { name: 'startupStage', label: 'Startup Stage', placeholder: 'e.g. Idea, MVP, Revenue, Scaling' },
+  { name: 'coFounderNeeds', label: 'Co-founder / Team Need', placeholder: 'e.g. Looking for a technical co-founder and GTM partner', multiline: true },
+  { name: 'pitchDeckLink', label: 'Pitch Deck', placeholder: 'https://drive.google.com/file/d/...' },
+  { name: 'youtubeVideoLink', label: 'YouTube Video Link', placeholder: 'https://youtube.com/watch?v=...' },
+  { name: 'incubationPrograms', label: 'Incubation Programs', placeholder: 'e.g. 12-week accelerator, grants, workspace, demo day', multiline: true },
+  { name: 'supportOffered', label: 'Support Offered', placeholder: 'e.g. Mentorship, funding access, legal, product, cloud credits', multiline: true },
+];
 const DURATIONS = [
-  { value: 'ONE_DAY',      label: '1 Day'    },
-  { value: 'SEVEN_DAYS',   label: '7 Days'   },
-  { value: 'FIFTEEN_DAYS', label: '15 Days'  },
-  { value: 'THIRTY_DAYS',  label: '30 Days'  },
+  { value: 'ONE_DAY', label: '1 Day' },
+  { value: 'SEVEN_DAYS', label: '7 Days' },
+  { value: 'FIFTEEN_DAYS', label: '15 Days' },
+  { value: 'THIRTY_DAYS', label: '30 Days' },
 ];
 
 function apiErrorMessage(err, fallback) {
@@ -102,22 +144,22 @@ export default function CommunityPage() {
   const { user, loading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [profiles, setProfiles]             = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const { toggle: toggleFollow, get: getFollow } = useCreatorFollows(profiles);
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', profiles);
-  const [loading, setLoading]               = useState(true);
-  const [showForm, setShowForm]             = useState(false);
-  const [myProfile, setMyProfile]           = useState(null);
-  const [myAuction, setMyAuction]           = useState(null);
-  const [detailProfile, setDetailProfile]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [myProfile, setMyProfile] = useState(null);
+  const [myAuction, setMyAuction] = useState(null);
+  const [detailProfile, setDetailProfile] = useState(null);
 
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInRedirecting, setLinkedInRedirecting] = useState(false);
-  const [linkedInError, setLinkedInError]     = useState('');
+  const [linkedInError, setLinkedInError] = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
-  const [profileNotice, setProfileNotice]     = useState('');
+  const [profileNotice, setProfileNotice] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteLoading, setDeleteLoading]         = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -229,7 +271,7 @@ export default function CommunityPage() {
   const effectiveMyProfile = myProfile ?? ownedProfileInList;
 
   const profilesForDisplay = useMemo(() => {
-    const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileComplete(profile));
+    const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileVisible(profile));
     if (!effectiveMyProfile) return publicProfiles;
     if (publicProfiles.some((p) => String(p.id) === String(effectiveMyProfile.id))) {
       return publicProfiles;
@@ -259,7 +301,7 @@ export default function CommunityPage() {
     communityIds: profileCommunityIds,
     onUpdate: handleAuctionProfileUpdate,
     onReconnect: () => {
-      reloadProfiles().catch(() => {});
+      reloadProfiles().catch(() => { });
     },
   });
 
@@ -303,13 +345,13 @@ export default function CommunityPage() {
           setLinkedInSuccess(
             hasUrl
               ? t(
-                  'communityPageLinkedInImported',
-                  'LinkedIn connected! Your profile link was imported — complete the details below.',
-                )
+                'communityPageLinkedInImported',
+                'LinkedIn connected! Your profile link was imported — complete the details below.',
+              )
               : t(
-                  'communityPageLinkedInImportedNoUrl',
-                  'LinkedIn connected! We imported your name and photo. Paste your public LinkedIn profile URL below and save.',
-                ),
+                'communityPageLinkedInImportedNoUrl',
+                'LinkedIn connected! We imported your name and photo. Paste your public LinkedIn profile URL below and save.',
+              ),
           );
           try {
             await reloadProfiles({ preferProfile: profile });
@@ -328,7 +370,7 @@ export default function CommunityPage() {
   useEffect(() => {
     if (authLoading) return;
     reloadProfiles()
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [user, authLoading]);
 
@@ -364,7 +406,7 @@ export default function CommunityPage() {
     try {
       const { data } = await communityAPI.linkedInAuthUrl();
       const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      const url    = parsed?.url ?? parsed?.authUrl ?? parsed;
+      const url = parsed?.url ?? parsed?.authUrl ?? parsed;
       if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
       window.location.assign(url);
     } catch {
@@ -451,6 +493,15 @@ export default function CommunityPage() {
   return (
     <AppLayout>
       <div>
+        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 text-sm font-medium mb-6 leading-relaxed flex items-start gap-3 shadow-sm">
+          <span className="text-lg leading-none select-none" aria-hidden>✨</span>
+          <div className="flex-1">
+            {myProfileCompletion?.isComplete
+              ? 'You have completed your profile and earned the verified badge.'
+              : 'Complete your profile today to unlock your verified badge, instantly establish credibility, maximize your visibility, and attract top-tier opportunities.'}
+          </div>
+        </div>
+
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
@@ -477,145 +528,144 @@ export default function CommunityPage() {
           </>
         ) : (
           <>
-        {/* ── Header ── */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
-            <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
-          </div>
-          <div className="flex gap-3 flex-wrap items-center">
-            {effectiveMyProfile ? (
+            {/* ── Header ── */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
+                <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
+              </div>
               <div className="flex gap-3 flex-wrap items-center">
-                {/* Auction status / button */}
-                {auctionBadge ? (
-                  <div className="flex gap-2 items-center">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                      auctionBadge.color === 'green'  ? 'bg-green-50 text-green-700 border-green-300'  :
-                      auctionBadge.color === 'amber'  ? 'bg-amber-50 text-amber-700 border-amber-300'  :
-                      auctionBadge.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-300' :
-                      'bg-red-50 text-red-600 border-red-300'
-                    }`}>{auctionBadge.text}</span>
-                    <button className="btn-glow btn-glow-sm"
-                      onClick={() => {
-                        const targetId = resolveCreatorAuctionId(myAuction);
-                        if (targetId) navigate(`/creator-auction/${targetId}`);
-                      }}>
-                      View Auction →
+                {effectiveMyProfile ? (
+                  <div className="flex gap-3 flex-wrap items-center">
+                    {/* Auction status / button */}
+                    {auctionBadge ? (
+                      <div className="flex gap-2 items-center">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${auctionBadge.color === 'green' ? 'bg-green-50 text-green-700 border-green-300' :
+                            auctionBadge.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                              auctionBadge.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-300' :
+                                'bg-red-50 text-red-600 border-red-300'
+                          }`}>{auctionBadge.text}</span>
+                        <button className="btn-glow btn-glow-sm"
+                          onClick={() => {
+                            const targetId = resolveCreatorAuctionId(myAuction);
+                            if (targetId) navigate(`/creator-auction/${targetId}`);
+                          }}>
+                          View Auction →
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn-glow btn-glow-sm"
+                        onClick={() => {
+                          if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
+                            const targetId = resolveCreatorAuctionId(myAuction);
+                            if (targetId) navigate(`/creator-auction/${targetId}`);
+                            return;
+                          }
+                          if (!readCreatorExpectedRate(effectiveMyProfile)) {
+                            setAccessNotice('Add your Expected Rate in Edit Profile before putting your profile to auction.');
+                            setShowForm(true);
+                            return;
+                          }
+                          setShowAuctionModal(true);
+                        }}
+                      >
+                        🔨 Put Profile to Auction
+                      </button>
+                    )}
+                    <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
+                      📈 Analytics
+                    </button>
+                    <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
+                      <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-glow btn-glow-sm btn-glow-danger"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      disabled={deleteLoading}
+                    >
+                      Delete Profile
                     </button>
                   </div>
                 ) : (
-                  <button
-                    className="inline-block outline-none text-[16px] box-border rounded-[5px] py-[13px] px-[25px] uppercase shadow-[0_3px_6px_rgba(0,0,0,0.16),0_3px_6px_rgba(110,80,20,0.4),inset_0_-2px_5px_1px_rgba(139,66,8,1),inset_0_-1px_1px_3px_rgba(250,227,133,1)] bg-[linear-gradient(160deg,#a54e07,#b47e11,#fef1a2,#bc881b,#a54e07)] border border-[#a55d07] text-[rgb(120,50,5)] [text-shadow:0_2px_2px_rgba(250,227,133,1)] cursor-pointer transition-all duration-200 ease-in-out bg-[length:100%_100%] bg-center select-none font-bold hover:bg-[length:150%_150%] focus:bg-[length:150%_150%] hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23),inset_0_-2px_5px_1px_#b17d10,inset_0_-1px_1px_3px_rgba(250,227,133,1)] focus:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23),inset_0_-2px_5px_1px_#b17d10,inset_0_-1px_1px_3px_rgba(250,227,133,1)] hover:border-[rgba(165,93,7,0.6)] focus:border-[rgba(165,93,7,0.6)] hover:text-[rgba(120,50,5,0.8)] focus:text-[rgba(120,50,5,0.8)] active:shadow-[0_3px_6px_rgba(0,0,0,0.16),0_3px_6px_rgba(110,80,20,0.4),inset_0_-2px_5px_1px_#b17d10,inset_0_-1px_1px_3px_rgba(250,227,133,1)] disabled:pointer-events-none disabled:opacity-65 disabled:text-[#7e7e7e] disabled:bg-[#dcdcdc] disabled:bg-none disabled:shadow-none disabled:[text-shadow:none] disabled:border-[#c2c2c2]"
-                    onClick={() => {
-                      if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
-                        const targetId = resolveCreatorAuctionId(myAuction);
-                        if (targetId) navigate(`/creator-auction/${targetId}`);
-                        return;
-                      }
-                      if (!readCreatorExpectedRate(effectiveMyProfile)) {
-                        setAccessNotice('Add your Expected Rate in Edit Profile before putting your profile to auction.');
-                        setShowForm(true);
-                        return;
-                      }
-                      setShowAuctionModal(true);
-                    }}
-                  >
-                    🔨 Put Profile to Auction
-                  </button>
+                  <div className="inline-flex items-center gap-2">
+                    <LinkedInConnectInfoTooltip />
+                    <button
+                      className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
+                      onClick={handleConnectLinkedIn}
+                      disabled={linkedInBusy}
+                    >
+                      {linkedInBusy
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
+                        : <><LinkedInIcon /> Connect with LinkedIn</>}
+                    </button>
+                  </div>
                 )}
-                <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
-                  📈 Analytics
-                </button>
-                <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
-                  <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
-                </button>
-                <button
-                  type="button"
-                  className="btn-glow btn-glow-sm border-red-300 text-red-600 hover:bg-red-50"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={deleteLoading}
-                >
-                  Delete Profile
-                </button>
               </div>
-            ) : (
-              <div className="inline-flex items-center gap-2">
-                <LinkedInConnectInfoTooltip />
-                <button
-                  className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
-                  onClick={handleConnectLinkedIn}
-                  disabled={linkedInBusy}
-                >
-                  {linkedInBusy
-                    ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
-                    : <><LinkedInIcon /> Connect with LinkedIn</>}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder={t('searchCreatorsPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
-            />
-          </div>
-        </div>
-
-        {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
-          <CreatorProfileCompletionBanner
-            profile={effectiveMyProfile}
-            onEdit={() => setShowForm(true)}
-          />
-        ) : null}
-
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-          </div>
-        ) : showEmptyCreators ? (
-          <div className="text-center py-20">
-            <div className="mb-4 flex justify-center">
-              <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
             </div>
-            <h3
-              className={
-                searchQuery
-                  ? 'font-display text-2xl font-bold text-gray-900 mb-2'
-                  : 'font-display text-sm font-medium text-gray-400 mb-2'
-              }
-            >
-              {searchQuery ? t('noCreatorsFound') : t('noCreatorsYet')}
-            </h3>
-            {searchQuery ? (
-              <p className="text-gray-600">Try adjusting your search terms.</p>
-            ) : null}
-          </div>
-        ) : profilesForDisplay.length > 0 ? (
-          <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start gap-3 md:gap-4">
-            {profilesForDisplay.map(p => (
-              <ListingCardShell key={p.id} className="community-listing-card-shell">
-              <CommunityListingCard
-                profile={p}
-                isMe={isListingOwner(p, user, 'community')}
-                likeState={getLike(p.id)}
-                onLike={() => toggleLike(p.id)}
-                followState={getFollow(p.id)}
-                onFollow={() => toggleFollow(p.id)}
-                onView={() => openDetailIfAllowed(p)}
-                onEdit={() => { setMyProfile(p); setShowForm(true); }}
+
+            {/* Search Bar */}
+            <div className="mb-6">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder={t('searchCreatorsPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+            </div>
+
+            {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
+              <CreatorProfileCompletionBanner
+                profile={effectiveMyProfile}
+                onEdit={() => setShowForm(true)}
               />
-              </ListingCardShell>
-            ))}
-          </div>
-        ) : null}
+            ) : null}
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+              </div>
+            ) : showEmptyCreators ? (
+              <div className="text-center py-20">
+                <div className="mb-4 flex justify-center">
+                  <img src={CreatorIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
+                </div>
+                <h3
+                  className={
+                    searchQuery
+                      ? 'font-display text-2xl font-bold text-gray-900 mb-2'
+                      : 'font-display text-sm font-medium text-gray-400 mb-2'
+                  }
+                >
+                  {searchQuery ? t('noCreatorsFound') : t('noCreatorsYet')}
+                </h3>
+                {searchQuery ? (
+                  <p className="text-gray-600">Try adjusting your search terms.</p>
+                ) : null}
+              </div>
+            ) : profilesForDisplay.length > 0 ? (
+              <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
+                {profilesForDisplay.map(p => (
+                  <ListingCardShell key={p.id} className="community-listing-card-shell">
+                    <CommunityListingCard
+                      profile={p}
+                      isMe={isListingOwner(p, user, 'community')}
+                      likeState={getLike(p.id)}
+                      onLike={() => toggleLike(p.id)}
+                      followState={getFollow(p.id)}
+                      onFollow={() => toggleFollow(p.id)}
+                      onView={() => openDetailIfAllowed(p)}
+                      onEdit={() => { setMyProfile(p); setShowForm(true); }}
+                    />
+                  </ListingCardShell>
+                ))}
+              </div>
+            ) : null}
           </>
         )}
       </div>
@@ -657,8 +707,8 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
   const { currency, formatPrice, getSymbol } = useCurrency();
   const [creationFeeInr, setCreationFeeInr] = useState(118);
   const creationFeeDisplay = formatPrice(creationFeeInr);
-  const [step, setStep]       = useState('form'); // form | done
-  const [form, setForm]       = useState({
+  const [step, setStep] = useState('form'); // form | done
+  const [form, setForm] = useState({
     auctionTitle: '',
     auctionSkills: '',
     workType: 'OPEN_TO_ALL',
@@ -667,9 +717,9 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
     minBidPrice: '',
     duration: 'SEVEN_DAYS',
   });
-  const [auctionId, setAuctionId]   = useState(null);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState('');
+  const [auctionId, setAuctionId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -677,7 +727,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
       fetchListingFeesAndCharges()
         .then((fees) => setCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118)))
-        .catch(() => {});
+        .catch(() => { });
     });
   }, []);
 
@@ -832,29 +882,85 @@ function CommunityProfileForm({
   onDelete,
 }) {
   const { t } = useTranslation();
+  const {
+    currency: navCurrency,
+    supportedCurrencies,
+    convertToInr,
+    ratesMeta,
+  } = useCurrency();
+  const formatExpectedRateInputValue = (inrAmount, currencyCode) => {
+    const converted = convertInrToCurrency(inrAmount, currencyCode, ratesMeta);
+    if (!Number.isFinite(converted)) return '';
+    if (currencyCode === 'INR') return String(Math.round(converted));
+    return String(Number(converted.toFixed(2)));
+  };
+  const parseSkills = (skillsStr) => {
+    if (!skillsStr) return [];
+    if (Array.isArray(skillsStr)) {
+      return skillsStr.map((s) => (typeof s === 'string' ? { skill: s, level: 'INTERMEDIATE' } : s));
+    }
+    return skillsStr
+      .split(',')
+      .map((s) => ({ skill: s.trim(), level: 'INTERMEDIATE' }))
+      .filter((s) => s.skill);
+  };
+
   const buildForm = (profile) => {
     const { amount, period } = parseCreatorExpectedRate(readCreatorExpectedRate(profile));
+    const expectedRateCurrency = navCurrency || 'INR';
     return {
       about: profile?.about || '',
       role: profile?.role || '',
-      skills: profile?.skills || '',
+      skills: parseSkills(profile?.skills),
       industry: profile?.industry || '',
       location: profile?.location || '',
       whyImHere: profile?.whyImHere || profile?.why_im_here || '',
-      expectedRateAmount: amount,
+      expectedRateAmount: amount ? formatExpectedRateInputValue(Number(amount), expectedRateCurrency) : '',
+      expectedRateAmountInr: amount,
+      expectedRateCurrency,
       expectedRatePeriod: period,
       linkedInProfileUrl: getLinkedInProfileUrl(profile),
       introductionVideoLink: profile?.introductionVideoLink || profile?.introduction_video_link || '',
       resumeDriveLink: profile?.resumeDriveLink || profile?.resume_drive_link || '',
       portfolioWebsiteLink: profile?.portfolioWebsiteLink || profile?.portfolio_website_link || '',
+      pitchDeckLink: profile?.pitchDeckLink || profile?.pitch_deck_link || '',
+      youtubeVideoLink: profile?.youtubeVideoLink || profile?.youtube_video_link || '',
       preferredWorkType: profile?.preferredWorkType || profile?.preferred_work_type || '',
       industryExpertise: profile?.industryExpertise || profile?.industry_expertise || '',
       languagesKnown: profile?.languagesKnown || profile?.languages_known || '',
+      headline: profile?.headline || '',
+      education: profile?.education || '',
+      graduationYear: profile?.graduationYear || profile?.graduation_year || '',
+      experience: profile?.experience || profile?.years_experience || '',
+      githubProfile: profile?.githubProfile || profile?.github_profile || '',
+      socialMediaProfile: profile?.socialMediaProfile || profile?.social_media_profile || '',
+      currentCompany: profile?.currentCompany || profile?.current_company || '',
+      designation: profile?.designation || '',
+      roleDescription: profile?.roleDescription || profile?.role_description || '',
+      companyName: profile?.companyName || profile?.company_name || '',
+      companyWebsite: profile?.companyWebsite || profile?.company_website || '',
+      availability: profile?.availability || '',
+      hiringFor: profile?.hiringFor || profile?.hiring_for || '',
+      mentorshipTopics: profile?.mentorshipTopics || profile?.mentorship_topics || '',
+      investmentFocus: profile?.investmentFocus || profile?.investment_focus || '',
+      investmentStage: profile?.investmentStage || profile?.investment_stage || '',
+      ticketSize: profile?.ticketSize || profile?.ticket_size || '',
+      startupStage: profile?.startupStage || profile?.startup_stage || '',
+      coFounderNeeds: profile?.coFounderNeeds || profile?.co_founder_needs || '',
+      incubationPrograms: profile?.incubationPrograms || profile?.incubation_programs || '',
+      supportOffered: profile?.supportOffered || profile?.support_offered || '',
     };
   };
   const [form, setForm] = useState(() => buildForm(initial));
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
+
+  const visibleFields = getVisibleCreatorFields(form.role);
+  const isFieldVisible = (fieldName) => visibleFields.includes(fieldName);
+  const isFieldRequired = isFieldVisible;
+  const requiredMark = (fieldName) => (
+    isFieldRequired(fieldName) ? <span className="text-red-500">*</span> : null
+  );
 
   useEffect(() => {
     setForm(buildForm(initial));
@@ -868,7 +974,29 @@ function CommunityProfileForm({
     initial?.imageUrl,
     initial?.expectedRate,
     initial?.expected_rate,
+    initial?.expectedPrice,
+    initial?.expected_price,
+    initial?.designation,
+    initial?.roleDescription,
+    initial?.role_description,
+    initial?.pitchDeckLink,
+    initial?.pitch_deck_link,
+    initial?.youtubeVideoLink,
+    initial?.youtube_video_link,
   ]);
+
+  useEffect(() => {
+    if (!form.role || form.role === initial?.role) return;
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (key !== 'role') {
+          next[key] = '';
+        }
+      }
+      return next;
+    });
+  }, [form.role, initial?.id, initial?.role]);
 
   const linkedInUrl = useMemo(
     () => getLinkedInProfileUrl(form) || getLinkedInProfileUrl(initial),
@@ -878,47 +1006,184 @@ function CommunityProfileForm({
   const linkedInImported = hasLinkedInAccount(initial);
   const linkedInUrlMissing = linkedInImported && !linkedInUrl;
 
+  const isFounderRole = form.role === 'FOUNDER_CO_FOUNDER';
+
   const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'expectedRateAmount') {
+      const numeric = Number(value);
+      setForm((prev) => ({
+        ...prev,
+        expectedRateAmount: value,
+        expectedRateAmountInr: Number.isFinite(numeric) && numeric > 0
+          ? String(convertToInr(numeric, prev.expectedRateCurrency || 'INR'))
+          : '',
+      }));
+      return;
+    }
+    if (name === 'expectedRateCurrency') {
+      setForm((prev) => ({
+        ...prev,
+        expectedRateCurrency: value,
+        expectedRateAmount: prev.expectedRateAmountInr
+          ? formatExpectedRateInputValue(Number(prev.expectedRateAmountInr), value)
+          : '',
+      }));
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'role' && value !== 'FOUNDER_CO_FOUNDER'
+        ? { pitchDeckLink: '', youtubeVideoLink: '' }
+        : {}),
+    }));
   };
 
-  const handleSubmit = async e => {
+  const renderExtraField = (field) => {
+    if (!isFieldVisible(field.name)) return null;
+    const commonProps = {
+      name: field.name,
+      value: form[field.name] || '',
+      onChange: handleChange,
+      placeholder: field.placeholder,
+      required: isFieldRequired(field.name),
+      className: 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all',
+    };
+
+    return (
+      <div key={field.name} className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          {field.label} {requiredMark(field.name)}
+        </label>
+        {field.multiline ? (
+          <textarea
+            {...commonProps}
+            rows={3}
+            className={`${commonProps.className} resize-vertical`}
+          />
+        ) : (
+          <input
+            {...commonProps}
+            type={field.type || 'text'}
+          />
+        )}
+      </div>
+    );
+  };
+
+const handleSubmit = async e => {
     e.preventDefault();
-    if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
+    if (!initial?.id) {
+      setError('Profile ID missing — please refresh.');
+      return;
+    }
+
     const expectedRate = buildCreatorExpectedRate(
-      form.expectedRateAmount,
+      form.expectedRateAmountInr,
       form.expectedRatePeriod,
     );
     if (!expectedRate) {
       setError('Enter a valid Expected Rate amount and select a period.');
       return;
     }
-    setLoading(true); setError('');
+
+    if (isFieldVisible('expectedPriceAmount')) {
+      const expectedPrice = buildCreatorExpectedRate(
+        form.expectedPriceAmount,
+        form.expectedPricePeriod,
+      );
+      if (!expectedPrice) {
+        setError(
+          form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE'
+            ? 'Enter a valid Expected Compensation amount and select a period.'
+            : 'Enter a valid Expected Price amount and select a period.'
+        );
+        return;
+      }
+    }
+
+    setLoading(true);
+    setError('');
+
     try {
-      const payload = {
-        about: form.about,
-        role: form.role,
-        skills: form.skills,
-        industry: form.industry,
-        location: form.location,
-        whyImHere: form.whyImHere,
-        expectedRate,
-        introductionVideoLink: form.introductionVideoLink,
-        resumeDriveLink: form.resumeDriveLink,
-        portfolioWebsiteLink: form.portfolioWebsiteLink,
-        preferredWorkType: form.preferredWorkType,
-        industryExpertise: form.industryExpertise,
-        languagesKnown: form.languagesKnown,
-      };
+      const skillsString = form.skills && form.skills.length > 0
+        ? form.skills.map((s) => (typeof s === 'string' ? s : s.skill)).join(', ')
+        : '';
+
+      const fieldPayloadMap = [
+        ['about', 'about'],
+        ['role', 'role'],
+        ['skills', 'skills'],
+        ['industry', 'industry'],
+        ['location', 'location'],
+        ['whyImHere', 'whyImHere'],
+        ['introductionVideoLink', 'introductionVideoLink'],
+        ['resumeDriveLink', 'resumeDriveLink'],
+        ['portfolioWebsiteLink', 'portfolioWebsiteLink'],
+        ['preferredWorkType', 'preferredWorkType'],
+        ['industryExpertise', 'industryExpertise'],
+        ['languagesKnown', 'languagesKnown'],
+        ['headline', 'headline'],
+        ['education', 'education'],
+        ['graduationYear', 'graduationYear'],
+        ['experience', 'experience'],
+        ['githubProfile', 'githubProfile'],
+        ['socialMediaProfile', 'socialMediaProfile'],
+        ['currentCompany', 'currentCompany'],
+        ['designation', 'designation'],
+        ['roleDescription', 'roleDescription'],
+        ['companyName', 'companyName'],
+        ['companyWebsite', 'companyWebsite'],
+        ['availability', 'availability'],
+        ['hiringFor', 'hiringFor'],
+        ['mentorshipTopics', 'mentorshipTopics'],
+        ['investmentFocus', 'investmentFocus'],
+        ['investmentStage', 'investmentStage'],
+        ['ticketSize', 'ticketSize'],
+        ['startupStage', 'startupStage'],
+        ['coFounderNeeds', 'coFounderNeeds'],
+        ['pitchDeckLink', 'pitchDeckLink'],
+        ['youtubeVideoLink', 'youtubeVideoLink'],
+        ['incubationPrograms', 'incubationPrograms'],
+        ['supportOffered', 'supportOffered'],
+      ];
+
+      const payload = Object.fromEntries(
+        fieldPayloadMap
+          .filter(([fieldName]) => isFieldVisible(fieldName))
+          .map(([fieldName, payloadKey]) => [
+            payloadKey,
+            fieldName === 'skills' ? skillsString : form[fieldName],
+          ]),
+      );
+
+      payload.expectedRate = expectedRate;
+
+      if (isFieldVisible('expectedPriceAmount')) {
+        payload.expectedPrice = buildCreatorExpectedRate(
+          form.expectedPriceAmount,
+          form.expectedPricePeriod,
+        );
+      }
+
+      if (isFounderRole) {
+        payload.pitchDeckLink = form.pitchDeckLink;
+        payload.youtubeVideoLink = form.youtubeVideoLink;
+      }
+
       const linkedInProfileUrl = (form.linkedInProfileUrl || '').trim();
-      if (linkedInImported && linkedInProfileUrl) {
+      if (linkedInImported && linkedInProfileUrl && isFieldVisible('linkedInProfileUrl')) {
         payload.linkedInProfileUrl = linkedInProfileUrl;
       }
+
       const { data } = await communityAPI.update(initial.id, payload);
       onSaved(data?.data ?? data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save. Please try again.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -966,7 +1231,7 @@ function CommunityProfileForm({
             {onDelete && (
               <button
                 type="button"
-                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
                 onClick={onDelete}
               >
                 Delete profile
@@ -982,55 +1247,85 @@ function CommunityProfileForm({
       ) : null}
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
 
-  {/* About - full width */}
-  <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-medium text-gray-700">
-      About <span className="text-red-500">*</span>
-    </label>
-    <textarea
-      name="about"
-      value={form.about}
-      onChange={handleChange}
-      placeholder="Tell others about yourself..."
-      rows={3}
-      required
-      className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
-    />
-  </div>
+        {/* About - full width */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">
+            About {requiredMark('about')}
+          </label>
+          <textarea
+            name="about"
+            value={form.about}
+            onChange={handleChange}
+            placeholder="Tell others about yourself..."
+            rows={3}
+            required={isFieldRequired('about')}
+            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical"
+          />
+        </div>
 
-  {/* Role + Industry */}
-  <div className="grid grid-cols-2 gap-4">
+        {/* Role + Industry */}
+        <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500">*</span></label>
-            <select name="role" value={form.role} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Your Role {requiredMark('role')}</label>
+            <select name="role" value={form.role} onChange={handleChange} required={isFieldRequired('role')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select role</option>
-              {ROLES.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+              {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500">*</span></label>
-            <select name="industry" value={form.industry} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Industry {requiredMark('industry')}</label>
+            <select name="industry" value={form.industry} onChange={handleChange} required={isFieldRequired('industry')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select industry</option>
               {COMMUNITY_INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
-            </select>
+</select>
           </div>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Skills <span className="text-red-500">*</span></label>
-          <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Location <span className="text-red-500">*</span></label>
-          <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
+
+        {isFieldVisible('skills') && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkillsInput
+              skills={form.skills}
+              onChange={(skills) => setForm({ ...form, skills })}
+              placeholder="Search skills..."
+            />
+            {isFieldVisible('experience') && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Experience {requiredMark('experience')}</label>
+                <input
+                  name="experience"
+                  value={form.experience}
+                  onChange={handleChange}
+                  placeholder="e.g. 3 years at Google, or companies..."
+                  required={isFieldRequired('experience')}
+                  className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {CREATOR_PROFILE_EXTRA_FIELDS.map(renderExtraField)}
+        {isFieldVisible('location') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Location {requiredMark('location')}</label>
+            <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" required={isFieldRequired('location')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Expected Rate <span className="text-red-500">*</span></label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-[8rem_minmax(0,1fr)_minmax(9rem,1fr)] gap-3">
+            <SearchableCurrencySelect
+              value={form.expectedRateCurrency}
+              onChange={(code) => handleChange({ target: { name: 'expectedRateCurrency', value: code } })}
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
+              wrapperClassName="shrink-0 w-full"
+              showFlag={false}
+            />
             <input
               name="expectedRateAmount"
               type="number"
               min="1"
-              step="1"
+              step="any"
               value={form.expectedRateAmount}
               onChange={handleChange}
               placeholder="e.g. 4000"
@@ -1050,10 +1345,10 @@ function CommunityProfileForm({
             </select>
           </div>
         </div>
-        {linkedInImported && (
+        {linkedInImported && isFieldVisible('linkedInProfileUrl') && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              LinkedIn URL
+              LinkedIn URL {requiredMark('linkedInProfileUrl')}
               <span className="text-gray-400 font-normal text-xs ml-1">
                 {linkedInUrlMissing
                   ? '(paste your profile link)'
@@ -1063,6 +1358,7 @@ function CommunityProfileForm({
             <input
               name="linkedInProfileUrl"
               type="url"
+              required={isFieldRequired('linkedInProfileUrl')}
               value={form.linkedInProfileUrl}
               onChange={handleChange}
               placeholder={t(
@@ -1085,41 +1381,73 @@ function CommunityProfileForm({
             ) : null}
           </div>
         )}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-red-500">*</span></label>
-          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700"> Introduction Video Link (Google Drive / YouTube / Loom)</label>
-          <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF)</label>
-          <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Portfolio Website Link</label>
-          <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Preferred Work Type</label>
-          <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-            <option value="">Select work type</option>
-            <option value="FREELANCE">Freelance</option>
-            <option value="FULL_TIME">Full-Time</option>
-            <option value="CONTRACT">Contract</option>
-            <option value="CO_FOUNDER">Co-Founder</option>
-            <option value="OPEN_TO_ALL">Open to All</option>
-          </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Industry Expertise</label>
-          <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Languages Known</label>
-          <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-        </div>
+        {isFieldVisible('whyImHere') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Why I'm Here {requiredMark('whyImHere')}</label>
+            <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} required={isFieldRequired('whyImHere')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
+          </div>
+        )}
+        {isFieldVisible('introductionVideoLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Introduction Video Link (Google Drive / YouTube / Loom) {requiredMark('introductionVideoLink')}</label>
+            <input name="introductionVideoLink" value={form.introductionVideoLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." required={isFieldRequired('introductionVideoLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('resumeDriveLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Resume Drive Link (Google Drive PDF) {requiredMark('resumeDriveLink')}</label>
+            <input name="resumeDriveLink" value={form.resumeDriveLink} onChange={handleChange} placeholder="https://drive.google.com/file/d/..." required={isFieldRequired('resumeDriveLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('portfolioWebsiteLink') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Portfolio Website Link {requiredMark('portfolioWebsiteLink')}</label>
+            <input name="portfolioWebsiteLink" value={form.portfolioWebsiteLink} onChange={handleChange} placeholder="https://yourportfolio.com" required={isFieldRequired('portfolioWebsiteLink')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+{isFieldVisible('preferredWorkType') && (
+           <div className="flex flex-col gap-1.5">
+             <label className="text-sm font-medium text-gray-700">Preferred Work Type {requiredMark('preferredWorkType')}</label>
+             <select name="preferredWorkType" value={form.preferredWorkType} onChange={handleChange} required={isFieldRequired('preferredWorkType')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+               <option value="">Select work type</option>
+               {form.role === 'STUDENT' ? (
+                 <>
+                   <option value="INTERNSHIP">Internship</option>
+                   <option value="CERTIFICATIONS">Certifications</option>
+                   <option value="COURSES">Courses</option>
+                 </>
+                ) : form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE' ? (
+                  <>
+                    <option value="FULL_TIME">Full-Time</option>
+                    <option value="PART_TIME">Part-Time</option>
+                    <option value="CONTRACT">Contract</option>
+                    <option value="OPEN_TO_ALL">Open to All</option>
+                  </>
+               ) : (
+                 <>
+                   <option value="FREELANCE">Freelance</option>
+                   <option value="FULL_TIME">Full-Time</option>
+                   <option value="PART_TIME">Part-Time</option>
+                   <option value="CONTRACT">Contract</option>
+                   <option value="CO_FOUNDER">Co-Founder</option>
+                   <option value="OPEN_TO_ALL">Open to All</option>
+                 </>
+               )}
+             </select>
+           </div>
+         )}
+        {isFieldVisible('industryExpertise') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Industry Expertise {requiredMark('industryExpertise')}</label>
+            <input name="industryExpertise" value={form.industryExpertise} onChange={handleChange} placeholder="e.g. AI, IT, Healthcare, FinTech, SaaS" required={isFieldRequired('industryExpertise')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
+        {isFieldVisible('languagesKnown') && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Languages Known {requiredMark('languagesKnown')}</label>
+            <input name="languagesKnown" value={form.languagesKnown} onChange={handleChange} placeholder="e.g. English, Hindi, Kannada" required={isFieldRequired('languagesKnown')} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          </div>
+        )}
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">
           <button type="submit" className="btn-glow" disabled={loading}>

@@ -47,6 +47,19 @@ export function computeInrCommission(amount, percent) {
   };
 }
 
+/** Commission on an amount that preserves 2 decimal places (cents/paisa). */
+export function computeCurrencyCommission(amount, percent) {
+  const base = roundMoney(amount);
+  const pct = toNumber(percent, 0);
+  const commission = roundMoney((base * pct) / 100);
+  return {
+    amount: base,
+    commission,
+    net: roundMoney(base - commission),
+    percent: pct,
+  };
+}
+
 /** Format INR with grouping; never shows decimal paisa. */
 export function formatInr(value, { symbol = '₹' } = {}) {
   const amount = normalizeInrDisplay(value);

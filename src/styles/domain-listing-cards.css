@@ -57,16 +57,22 @@
 
 .domain-listing-card__cover-fallback-domain {
   max-width: 100%;
-  font-size: 0.95rem;
+  font-family: 'Saira Stencil', sans-serif !important;
+  font-size: 2.15rem;
+  /* slightly smaller */
   font-weight: 500;
-  letter-spacing: 0.01em;
-  color: #8b95a5;
+  /* less heavy */
+  letter-spacing: 0.6px;
+  /* cleaner spacing */
+  line-height: 1.2;
+  /* text-transform: uppercase; */
+  color: #4b00a8;
   overflow: hidden;
   text-overflow: clip;
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
-  display: -webkit-box;
+  display: flex;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -77,11 +83,39 @@
   right: 1rem;
   left: auto;
   z-index: 3;
-  width: 2.65rem;
-  height: 2.65rem;
+  width: 1.55rem;
+  height: 1.55rem;
   object-fit: contain;
   pointer-events: none;
 }
+
+.domain-listing-card__share-container {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 10;
+}
+
+.domain-listing-card__share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent !important;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background-color 250ms ease, color 250ms ease;
+}
+
+.domain-listing-card__share-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #0f172a;
+}
+
 
 .domain-listing-card__body {
   display: flex;
@@ -103,10 +137,18 @@
 
 .domain-listing-card__domain-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   min-width: 0;
+}
+
+.domain-listing-card__verified-badge {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .domain-listing-card__status-dot {
@@ -158,14 +200,9 @@
   margin-top: 0;
   padding: 0.32rem 0.45rem 0.32rem 0.6rem;
   border-radius: 1rem;
-  border: 2px solid transparent;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
-  box-shadow:
-    -8px 0 16px -8px rgba(0, 195, 255, 0.22),
-    8px 0 16px -8px rgba(255, 48, 108, 0.18),
-    0 0 10px -4px rgba(120, 80, 220, 0.18);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: none;
   transition: box-shadow 0.3s ease;
 }
 
@@ -368,6 +405,7 @@
   min-width: 0;
   flex: 1 1 auto;
 }
+
 
 .domain-listing-card__availability {
   margin-top: 0.12rem;
@@ -591,12 +629,12 @@
 }
 
 .listing-like-btn__icon--idle {
-  color: #94a3b8;
+  color: #111827;
 }
 
 .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #94a3b8;
+  color: #111827;
 }
 
 .listing-like-btn__icon--active {
@@ -902,6 +940,7 @@
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1157,7 +1196,8 @@
 }
 
 .venture-listing-card .domain-listing-card__cover {
-  height: 7.5rem !important; /* Taller cover for a bigger, more premium card */
+  height: 7.5rem !important;
+  /* Taller cover for a bigger, more premium card */
 }
 
 .venture-listing-card .domain-listing-card__price-value {
@@ -1215,7 +1255,8 @@
 
 /* Compact Card Overrides for Split Columns */
 .venture-listing-card--compact .domain-listing-card__cover {
-  height: 5.5rem !important; /* Shorter cover for compact split panel view */
+  height: 5.5rem !important;
+  /* Shorter cover for compact split panel view */
 }
 
 .venture-listing-card--compact .domain-listing-card__price-value {

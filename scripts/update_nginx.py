@@ -5,6 +5,8 @@ def main():
     try:
         with open(config_path, "r") as f:
             content = f.read()
+            # Normalize line endings to avoid matching failures due to CRLF/LF mismatch
+            content = content.replace("\r\n", "\n")
     except Exception as e:
         print(f"Error reading config: {e}")
         sys.exit(1)

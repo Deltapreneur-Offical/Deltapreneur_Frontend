@@ -1,10 +1,17 @@
 import re
 import sys
+import os
 
 def main():
     config_path = "/etc/nginx/sites-available/cobrother"
+    backup_path = "/etc/nginx/sites-available/cobrother.save"
+    
+    # Always read from the clean backup if it exists, to ensure we have a clean source configuration
+    source_path = backup_path if os.path.exists(backup_path) else config_path
+    
+    print(f"Reading configuration source from: {source_path}")
     try:
-        with open(config_path, "r") as f:
+        with open(source_path, "r") as f:
             content = f.read()
     except Exception as e:
         print(f"Error reading config: {e}")
@@ -14,6 +21,10 @@ def main():
     content = content.replace("\r\n", "\n")
 
     replacement = """    location / {
+        try_files $uri $uri/ @react;
+    }
+
+    location @react {
         # Check if bot
         set $is_bot "";
         if ($http_user_agent ~* "facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot") {
@@ -48,7 +59,7 @@ def main():
             rewrite ^/software-auction/([0-9a-f-]+)$ /api/v1/public/share-preview/technology-auction/$1 last;
         }
 
-        try_files $uri $uri/ /index.html;
+        rewrite ^ /index.html break;
     }
 
     location /api/v1/public/share-preview/ {
@@ -70,7 +81,7 @@ def main():
         if "facebookexternalhit" in content:
             print("Config already contains bot rules.")
         else:
-            print("Config does not contain target block. Writing backup info.")
+            print("Config does not contain target block. Writing unmodified backup.")
 
     with open(config_path, "w") as f:
         f.write(content)

@@ -50,7 +50,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={rejectNonEssential}
-                className="rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 hover:text-white"
+                className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100"
               >
                 {t('cookieConsentReject')}
               </button>

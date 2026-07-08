@@ -1,4 +1,3 @@
-// Dummy change to force Vite recompile and verify pipeline status
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';

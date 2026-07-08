@@ -7,6 +7,10 @@ DEST="/opt/cobrother/frontend/dist"
 
 echo "=== START NGINX DEPLOYMENT ==="
 
+# Find nginx binary path
+NGINX_BIN=$(which nginx 2>/dev/null || echo "/usr/sbin/nginx")
+echo "Using Nginx binary: ${NGINX_BIN}"
+
 # 1. Back up active configuration
 if [ -f "${CONFIG_PATH}" ] && [ ! -f "${BACKUP_PATH}" ]; then
     echo "Creating secure backup of cobrother config..."
@@ -22,6 +26,7 @@ if [ -f "${CONFIG_PATH}" ]; then
     echo "Running Python updater on cobrother config..."
     python3 /tmp/scripts/update_nginx.py > /tmp/python_updater.log 2>&1
     python_status=$?
+    echo "Python updater output:"
     cat /tmp/python_updater.log
     if [ $python_status -ne 0 ]; then
         echo "PYTHON UPDATER FAILED!"
@@ -32,8 +37,11 @@ if [ -f "${CONFIG_PATH}" ]; then
     fi
 fi
 
-# 4. Test configuration
-if ! /usr/sbin/nginx -t > /tmp/nginx_error.log 2>&1; then
+# 4. Clean old error log to avoid stale reads
+rm -f /tmp/nginx_error.log
+
+# 5. Test configuration
+if ! "${NGINX_BIN}" -t > /tmp/nginx_error.log 2>&1; then
     echo "NGINX CONFIG TEST FAILED! ROLLING BACK..."
     cat /tmp/nginx_error.log
     

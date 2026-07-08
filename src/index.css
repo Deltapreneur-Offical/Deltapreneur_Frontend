@@ -5938,7 +5938,7 @@ select { cursor: pointer; color-scheme: light; background-image: url("data:image
 body.home-page-body {
   background: #ffffff !important;
   color: #111827 !important;
-  overflow-x: hidden;
+  overflow-x: clip;
   --home-topbar-height: 2.5rem;
   --home-main-nav-height: 3.5rem;
   --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
@@ -5970,6 +5970,24 @@ body.home-page-body {
   height: var(--home-main-nav-height);
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
   transition: box-shadow 0.2s ease;
+  left: 0;
+  right: 0;
+  overflow: visible;
+}
+
+/* ─── Sticky search bar wrapper (persists across all page sections) ─────────
+   Position at page level so it remains visible while scrolling through all
+   sections (Domains, Ventures, etc.). */
+.hero-search-sticky-wrapper {
+  position: sticky;
+  top: var(--home-nav-stack-height, 6rem);
+  z-index: 95;
+  width: 100%;
+  display: block;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  margin: 0;
   left: 0;
   right: 0;
   overflow: visible;

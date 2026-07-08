@@ -13,6 +13,7 @@ import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 
 import HeroGlow from '../components/common/HeroGlow';
+import DomainSearchBar from '../components/common/DomainSearchBar';
 import ListingCardShell from '../components/listings/ListingCardShell';
 
 import ExploreSection from '../components/common/ExploreSection';
@@ -138,6 +139,8 @@ export default function Home() {
 
 
 
+
+
   useEffect(() => {
 
     const handleClickOutside = (e) => {
@@ -181,7 +184,7 @@ export default function Home() {
 
   return (
 
-    <div className="relative min-w-0 bg-white">
+    <div className="relative min-w-0 bg-white overflow-visible">
 
       <TopNavbar homeMobileMenu hideContactUs />
 
@@ -203,6 +206,15 @@ export default function Home() {
 
       <div className="home-hero-search-stack relative z-10 overflow-visible">
         <HeroGlow />
+      </div>
+
+      {/* Sticky search bar — persists across all page sections while scrolling */}
+      <div className="hero-search-sticky-wrapper pl-4 pr-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8">
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-[760px]">
+            <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />
+          </div>
+        </div>
       </div>
 
       <div className="home-hero-align-outer">

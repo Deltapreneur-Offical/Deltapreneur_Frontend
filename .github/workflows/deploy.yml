@@ -89,6 +89,12 @@ jobs:
             test -f "${DEST}/assets/${CSS_FILE}"
             grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
 
+            # Create backup of cobrother before patching
+            if [ -f "/etc/nginx/sites-available/cobrother" ] && [ ! -f "/etc/nginx/sites-available/cobrother.save" ]; then
+                echo "Creating backup of cobrother config..."
+                sudo cp /etc/nginx/sites-available/cobrother /etc/nginx/sites-available/cobrother.save
+            fi
+
             # Copy and enable updated Nginx configuration (port 80 fallback)
             sudo cp /tmp/nginx-frontend.conf /etc/nginx/sites-available/cobrother-frontend
             sudo ln -sf /etc/nginx/sites-available/cobrother-frontend /etc/nginx/sites-enabled/
@@ -117,5 +123,24 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            sudo nginx -t
-            sudo systemctl restart nginx
+            if ! sudo nginx -t > /tmp/nginx_error.log 2>&1; then
+                echo "NGINX CONFIG ERROR:"
+                cat /tmp/nginx_error.log
+                
+                # Restore backup
+                if [ -f "/etc/nginx/sites-available/cobrother.save" ]; then
+                    echo "Restoring Nginx backup..."
+                    sudo cp /etc/nginx/sites-available/cobrother.save /etc/nginx/sites-available/cobrother
+                fi
+                
+                # Write error to web directory so we can read it
+                sudo mkdir -p /opt/cobrother/frontend/dist
+                sudo cp /tmp/nginx_error.log /opt/cobrother/frontend/dist/debug-nginx.txt
+                
+                # Restart with the restored configuration
+                sudo systemctl restart nginx
+                exit 1
+            else
+                sudo systemctl restart nginx
+                echo "Nginx restarted successfully."
+            fi

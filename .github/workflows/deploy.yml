@@ -92,6 +92,16 @@ jobs:
             # Copy and enable updated Nginx configuration
             sudo cp /tmp/nginx-frontend.conf /etc/nginx/sites-available/cobrother-frontend
             sudo ln -sf /etc/nginx/sites-available/cobrother-frontend /etc/nginx/sites-enabled/
+
+            # Overwrite other potential frontend Nginx configuration files to prevent stale conflicts
+            for name in cobrother default; do
+                if [ -f "/etc/nginx/sites-available/$name" ]; then
+                    echo "Overwriting config: $name"
+                    sudo cp /tmp/nginx-frontend.conf "/etc/nginx/sites-available/$name"
+                    sudo ln -sf "/etc/nginx/sites-available/$name" /etc/nginx/sites-enabled/
+                fi
+            done
+
             sudo rm -f /tmp/nginx-frontend.conf
 
             # Debug active Nginx configurations and dump list to web folder
@@ -99,11 +109,6 @@ jobs:
             sudo ls -la /etc/nginx/sites-enabled/ | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
             echo "--- SITES AVAILABLE ---" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
             sudo ls -la /etc/nginx/sites-available/ | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-            echo "--- ACTIVE NGINX CONFS ---" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-            for f in /etc/nginx/sites-enabled/*; do
-                echo "FILE: $f" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-                sudo cat "$f" | sudo tee -a "${DEST}/debug-nginx.txt" > /dev/null
-            done
 
       - name: Restart Nginx Web Server
         uses: appleboy/ssh-action@v1.0.3

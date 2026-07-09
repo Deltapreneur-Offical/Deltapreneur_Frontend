@@ -434,7 +434,7 @@ function formatMoney(amount, currencyCode = 'INR') {
           [City, State – PIN]<br/>
           India<br/>
           GSTIN: ${sellerGstin}<br/>
-          contact@cobrother.com
+          support@cobrother.com
         </p>
       </div>
       <div class="address-block">
@@ -501,7 +501,7 @@ function formatMoney(amount, currencyCode = 'INR') {
       <div class="footer-left">
         ${gst === 0 ? '* GST details will appear once GSTIN configuration is complete.<br/>' : ''}
         This is a computer-generated invoice and does not require a signature.<br/>
-        For queries, write to contact@cobrother.com
+        For queries, write to support@cobrother.com
       </div>
       <div class="footer-right">
         <img class="footer-logo" src="${logoUrl}" alt="CoBrother" />

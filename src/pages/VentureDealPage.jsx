@@ -24,7 +24,7 @@ import {
   ventureDealShowPaymentSection,
 } from '../utils/ventureDeal';
 
-const COBROTHER_EMAIL = 'contact@cobrother.com';
+const COBROTHER_EMAIL = 'support@cobrother.com';
 
 const ESCROW_STATUS_LABELS = {
   HELD: 'Funds held in escrow',

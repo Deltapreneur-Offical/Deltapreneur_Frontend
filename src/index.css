@@ -45,7 +45,7 @@
   --brand-soft: #f5f3ff;
   --brand-border: #c4b5fd;
   --blue: #6e9ec8;
-  --text: #e8e0d0;
+  --text: #000000;
   --text-dim: #8a8099;
   --text-faint: #4a4460;
   --danger: #c86e6e;
@@ -12594,4 +12594,44 @@ body.home-menu-open {
   vertical-align: -0.16em !important;
   margin-left: 0.15em !important;
   margin-right: 0.15em !important;
+}
+
+/* ── TLD Price Marquee (Hero domain search bar) ─────────────────────────── */
+.tld-price-marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+}
+
+.tld-price-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  min-width: max-content;
+  gap: 1.5rem;
+  animation: tld-marquee-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.tld-price-marquee-mask:hover .tld-price-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes tld-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Invisible scrollbar utility ─────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }

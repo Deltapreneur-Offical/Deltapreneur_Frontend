@@ -883,7 +883,11 @@ export default function AdminDashboardPage() {
             ) : tab === 'domains' ? (
               <DomainsAdminTab
                 data={data}
-                renderItem={(item) => (
+                onRefresh={() => {
+                  loadTab('domains', { silent: true });
+                  refreshPendingCounts();
+                }}
+                renderItem={(item, helpers = {}) => (
                   <AdminRow
                     key={`domains-${item.id}-${item.purchaseId || ''}`}
                     item={item}
@@ -891,6 +895,7 @@ export default function AdminDashboardPage() {
                     onForward={(entityId, type) => setForwardModal({ entityId, type })}
                     onTakeDown={handleTakeDown}
                     onRestore={handleRestore}
+                    onDeletePermanently={helpers.onDeletePermanently}
                     onVerifyDomain={setVerifyDomain}
                     onVerifyVenture={setVerifyVenture}
                     onRefresh={() => {
@@ -1509,11 +1514,13 @@ function VentureAdminRow({
   );
 }
 
-function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDomain, onVerifyVenture, onRefresh }) {
+function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePermanently, onVerifyDomain, onVerifyVenture, onRefresh }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const adminToast = useAdminToast();
   const [expanded, setExpanded] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const getTitle = () => {
     if (tabType === 'domains')    return (item.domainName || '') + (item.domainExtension || '');
@@ -1527,6 +1534,20 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
 
   const lister    = item.listedBy;
   const applicant = item.purchasedBy;
+
+  const handlePermanentDeleteFallback = async () => {
+    setDeleting(true);
+    try {
+      await adminAPI.permanentDeleteDomains([String(item.id)]);
+      adminToast.success('Domain permanently deleted.');
+      setShowConfirmDelete(false);
+      onRefresh?.();
+    } catch (e) {
+      adminToast.error(e?.response?.data?.error || 'Failed to delete domain permanently.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className={`admin-record-card ${item.takenDown ? '!border-red-200' : ''}`}>
@@ -1666,8 +1687,6 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                     style={{ fontSize: '0.8rem', border: '1px solid gray' }}
                     onClick={async () => {
                       try {
-                        // Assuming you might need an API endpoint for this, we use a placeholder or handle it if it exists.
-                        // I will assume adminAPI.markTechnologyUnverified doesn't exist yet, but I can add it to services.js
                         if (adminAPI.markTechnologyUnverified) {
                           await adminAPI.markTechnologyUnverified(item.id);
                           adminToast.success("Technology marked as unverified.");
@@ -1748,14 +1767,43 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onVerifyDom
                 {t('adminTakeDown')}
               </button>
             ) : (
-              <button className="btn-secondary btn-sm"
-                onClick={() => onRestore(item.id, getType())}
-                style={{ fontSize: '0.75rem' }}>
-                {t('adminRestore')}
-              </button>
+              <>
+                <button className="btn-secondary btn-sm"
+                  onClick={() => onRestore(item.id, getType())}
+                  style={{ fontSize: '0.75rem' }}>
+                  {t('adminRestore')}
+                </button>
+                {onDeletePermanently && (
+                  <button
+                    type="button"
+                    className="btn-danger btn-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeletePermanently();
+                    }}
+                    style={{ fontSize: '0.75rem', backgroundColor: '#dc2626', color: '#fff' }}
+                  >
+                    Delete Permanently
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
+      )}
+
+      {showConfirmDelete && (
+        <ConfirmationModal
+          isOpen={showConfirmDelete}
+          title="Delete Domain Permanently?"
+          message="This action is irreversible. The selected domain(s) will be permanently deleted from the system and cannot be recovered."
+          confirmText="Delete Permanently"
+          cancelText="Cancel"
+          variant="danger"
+          isLoading={deleting}
+          onConfirm={handlePermanentDeleteFallback}
+          onCancel={() => setShowConfirmDelete(false)}
+        />
       )}
     </div>
   );

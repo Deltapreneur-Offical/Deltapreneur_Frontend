@@ -211,7 +211,7 @@ export default function Home() {
       {/* Sticky search bar — persists across all page sections while scrolling */}
       <div className="hero-search-sticky-wrapper pl-4 pr-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="w-full max-w-[760px]">
+          <div className="w-full">
             <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />
           </div>
         </div>

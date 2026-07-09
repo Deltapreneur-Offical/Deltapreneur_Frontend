@@ -153,12 +153,13 @@ export default function DomainListingCard({
     typeof window !== 'undefined'
       ? `${window.location.origin}/domains/${domain.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains/${domain.id}`;
-  const shareSubject = `Check out this premium Domain on CoBrother!`;
-  const shareBody = `Hi,\n\nI found this premium domain on CoBrother and thought you might be interested.\n\n🌐 Domain: ${display.fullDomain}\nCheck out this premium Domain listed on CoBrother!\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
+  const domainName = display.fullDomain;
+  const shareSubject = `Premium Domain Listing Available on CoBrother: ${domainName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on CoBrother.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on CoBrother, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via CoBrother]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Domain listed on CoBrother!\n\n' + shareUrl)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;

@@ -249,14 +249,15 @@ export default function VentureListingCard({
       : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}`;
 
   const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
-  const shareSubject = `Check out this exciting ${typeLabel} on CoBrother!`;
-  const shareBody = `Hi,\n\nI found this exciting ${typeLabel} opportunity on CoBrother and thought you might be interested.\n\n🌐 ${typeLabel}: ${brandName}\nCheck out this exciting ${typeLabel} opportunity on CoBrother!\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
+  const desc = b.description || b.tagline || 'No description provided.';
+  const shareSubject = `Exciting ${typeLabel} Opportunity on CoBrother: ${brandName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share an exciting business opportunity currently listed on CoBrother.\n\n🌐 Venture: ${brandName} (${typeLabel})\n📝 Description: ${desc}\n🔗 View Listing:\n${shareUrl}\n\nCoBrother is a professional marketplace and community for business partnerships, co-venturing, and acquisitions.\n\nBest regards,\n[Shared via CoBrother]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
 
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
-  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
 
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this exciting ' + typeLabel + ' opportunity on CoBrother!\n\n' + shareUrl)}`;
 

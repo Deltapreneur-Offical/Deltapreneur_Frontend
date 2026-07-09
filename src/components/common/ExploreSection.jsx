@@ -8,6 +8,7 @@ import CommunitySection from '../home/CommunitySection';
 import AuctionsSection from '../home/AuctionsSection';
 import FeedbackSection from '../home/FeedbackSection';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
+import ServicesSection from './ServicesSection';
 
 function LazySection({ title, to, variant = 'browse', compact = false, children }) {
   return (
@@ -53,6 +54,8 @@ export default function ExploreSection() {
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
       </LazySection>
+
+      <ServicesSection isDashboard={false} />
 
       <LazyWhenVisible>
         <FeedbackSection />

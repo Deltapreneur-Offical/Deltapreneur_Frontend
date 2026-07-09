@@ -125,12 +125,24 @@ export async function openRazorpayCheckout({
   themeColor = '#c8a96e',
 }) {
   try {
-    await loadRazorpayScript();
-
     const order = normalizeOrderData(orderData);
     const amount = getRazorpayAmount(order);
     const keyId = getRazorpayKeyId(order);
     const orderId = getRazorpayOrderId(order);
+
+    if (keyId && keyId.startsWith('rzp_test_')) {
+      console.log('[Razorpay checkout] Test/Demo mode. Blocking payment.');
+      setTimeout(() => {
+        if (onFailure) {
+          onFailure({
+            error: { description: 'Razorpay demo: Live payments cannot be processed in demo mode.' },
+          });
+        }
+      }, 500);
+      return null;
+    }
+
+    await loadRazorpayScript();
 
     if (!keyId || !orderId) {
       throw new Error('Invalid payment order from server.');

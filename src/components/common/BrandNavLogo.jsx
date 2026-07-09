@@ -1,9 +1,7 @@
 import logoBlack from '../../assets/Cobrother_logo.gif';
-import logoGreen from '../../assets/Cobrother_Green.svg';
 
 /**
- * Black CoBrother wordmark with green swap on parent hover/focus
- * (home main nav + dashboard sidebar / mobile header).
+ * CoBrother wordmark — GIF only (no hover swap).
  */
 export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav-logo' }) {
   return (
@@ -12,12 +10,6 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
         src={logoBlack}
         alt="CoBrother"
         className={`${imgClassName} home-nav-logo-img home-nav-logo-img--default`.trim()}
-      />
-      <img
-        src={logoGreen}
-        alt=""
-        aria-hidden
-        className={`${imgClassName} home-nav-logo-img home-nav-logo-img--hover`.trim()}
       />
     </span>
   );

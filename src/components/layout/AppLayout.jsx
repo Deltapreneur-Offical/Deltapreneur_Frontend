@@ -559,7 +559,9 @@ export default function AppLayout({ children }) {
 
             <Link
               to="/"
-              className="app-layout-mobile-brand brand-logo-interactive lg:hidden flex items-center shrink-0"
+              className={`brand-logo-interactive flex items-center shrink-0 ${
+                sidebarCollapsed ? 'lg:flex' : 'lg:hidden'
+              } ${sidebarCollapsed ? 'app-layout-collapsed-brand' : 'app-layout-mobile-brand'}`}
             >
               <BrandNavLogo />
             </Link>

@@ -138,12 +138,14 @@ export default function TechnologyListingCard({
     typeof window !== 'undefined'
       ? `${window.location.origin}/technology/${item.id}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/technology/${item.id}`;
-  const shareSubject = `Check out this premium Technology on CoBrother!`;
-  const shareBody = `Hi,\n\nI found this premium technology on CoBrother and thought you might be interested.\n\n🌐 Technology: ${item.name || 'Technology'}\nCheck out this premium Technology listed on CoBrother!\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
+  const shareTechName = item.name || 'Technology Listing';
+  const shareTechDesc = item.description || 'A premium software/technology listing on CoBrother.';
+  const shareSubject = `Premium Technology Listing Available on CoBrother: ${shareTechName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium technology listing currently available on CoBrother.\n\n🌐 Technology: ${shareTechName}\n📝 Description: ${shareTechDesc}\n🔗 View Listing:\n${shareUrl}\n\nCoBrother is a professional marketplace for digital assets, intellectual property, and software transactions.\n\nBest regards,\n[Shared via CoBrother]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Technology listed on CoBrother!\n\n' + shareUrl)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;

@@ -189,12 +189,13 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       ? `${window.location.origin}${relativePath}`
       : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}`;
 
-  const shareSubject = shareCaption;
-  const shareBody = `Hi,\n\nI found this auction on CoBrother and thought you might be interested.\n\n🌐 Auction: ${title}\n${shareCaption}\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
+  const auctionTitle = title || 'Auction';
+  const shareSubject = `Active Auction Listing on CoBrother: ${auctionTitle}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share an active auction listing currently open on CoBrother.\n\n🌐 Auction: ${auctionTitle}\n📝 Description: ${shareCaption}\n🔗 View Listing:\n${shareUrl}\n\nCoBrother is a premium marketplace offering secure acquisitions and partnerships through active bidding and auctions.\n\nBest regards,\n[Shared via CoBrother]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareCaption + '\n\n' + shareUrl)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;

@@ -104,7 +104,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false, isScrolled = false }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { user, hasAccessToken, loading: authLoading } = useAuth();
@@ -179,7 +179,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
   return (
     <>
       <nav
-        className="home-main-nav w-full min-w-0 bg-white border-b border-gray-100 md:sticky z-[1000]"
+        className={`home-main-nav w-full min-w-0 bg-white border-b border-gray-100 md:sticky z-[1000]${isScrolled ? ' is-nav-hidden-scrolled' : ''}`}
         style={{ top: 'var(--home-topbar-height, 40px)' }}
         ref={navRef}
       >

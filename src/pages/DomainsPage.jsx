@@ -291,7 +291,7 @@ export default function DomainsPage() {
           </>
         ) : (
           <>
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
               <div>
                 <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
                   {t('domains')}
@@ -301,21 +301,21 @@ export default function DomainsPage() {
                 </h1>
                 <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
               </div>
-              <div className="flex gap-2 md:gap-3">
-                <Link className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" to="/settings/payouts">
-                  <CreditCard size={14} className="md:w-4 md:h-4" /> <span className="truncate">Payout Settings</span>
+              <div className="flex flex-row w-full md:w-auto gap-1 sm:gap-2 md:gap-3 justify-between items-center">
+                <Link className="btn-glow btn-glow-sm flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-3 min-w-0 whitespace-nowrap" to="/settings/payouts">
+                  <CreditCard className="shrink-0 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" /> <span>Payout Settings</span>
                 </Link>
-                <button className="btn-glow btn-glow-sm relative flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
-                  <LayoutDashboard size={14} className="md:w-4 md:h-4" />
-                  <span className="truncate">{t('dashboard')}</span>
+                <button className="btn-glow btn-glow-sm flex-1 md:flex-none relative flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-3 min-w-0 whitespace-nowrap" onClick={() => navigate('/domains/dashboard')}>
+                  <LayoutDashboard className="shrink-0 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                  <span>{t('dashboard')}</span>
                   {pendingVerificationCount > 0 ? (
                     <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
                       <PendingVerificationDot className="h-2.5 w-2.5" />
                     </span>
                   ) : null}
                 </button>
-                <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
-                  <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
+                <button className="btn-glow btn-glow-sm flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-3 min-w-0 whitespace-nowrap" onClick={() => { setShowForm(true); setEditTarget(null); }}>
+                  <Plus className="shrink-0 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" /> <span>{t('listDomain')}</span>
                 </button>
               </div>
             </div>

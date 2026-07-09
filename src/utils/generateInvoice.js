@@ -6,7 +6,7 @@
  * No external dependencies required.
  */
 
-import coBrotherLogo from '../assets/Cobrother_logo.svg';
+import coBrotherLogo from '../assets/Cobrother_logo.gif';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 
@@ -62,98 +62,98 @@ function formatMoney(amount, currencyCode = 'INR') {
     maximumFractionDigits: 2,
   });
 }
-  
-  function today() {
-    return new Date().toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'long', year: 'numeric',
-    });
-  }
-  
-  function invoiceNumber(id) {
-    const num = String(id || Math.floor(Math.random() * 90000) + 10000).slice(-6).padStart(6, '0');
-    return `CB-INV-${num}`;
-  }
-  
-  /**
-   * @param {object} opts
-   * @param {'domain'|'domain_registration'|'software'} opts.type
-   * @param {object} opts.item   — the raw purchase object from the API
-   * @param {object} opts.user   — { name, email } of the logged-in user (pass what you have)
-   */
-  export function generateInvoice({ type, item, user = {} }) {
-    /* ── Derive fields ─────────────────────────────────────── */
-    const invNo   = invoiceNumber(item.id);
-    const invDate = item.createdAt
-      ? formatAuctionDate(item.createdAt, { day: '2-digit', month: 'long', year: 'numeric' }, today())
-      : today();
-  
-    let productName, productDesc, baseAmount, extraLines = [];
-    let paymentRef = '';
-  
-    if (type === 'domain_registration') {
-      productName = item.domain || `${item.domainName || ''}${item.domainExtension || ''}`;
-      productDesc = 'New domain registration (CoBrother storefront)';
-      baseAmount = Number(item.subtotalInr ?? item.priceInr ?? item.price ?? 0);
-      paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
-    } else if (type === 'domain') {
-      productName = `${item.domainName}${item.domainExtension}`;
-      productDesc = item.pricingDemand || 'Domain Name Purchase';
-      baseAmount  = Number(item.askingPrice || 0);
-      paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
-    } else {
-      const sw     = item.software || {};
-      productName  = sw.name || 'Software License';
-      productDesc  = sw.description || 'Software Purchase';
-      baseAmount   = Number(sw.price || 0);
-      if (item.coBrotherHelpPaid) {
-        extraLines.push({ label: 'CoBrother Helper Service', amount: 1000 });
-      }
+
+function today() {
+  return new Date().toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  });
+}
+
+function invoiceNumber(id) {
+  const num = String(id || Math.floor(Math.random() * 90000) + 10000).slice(-6).padStart(6, '0');
+  return `CB-INV-${num}`;
+}
+
+/**
+ * @param {object} opts
+ * @param {'domain'|'domain_registration'|'software'} opts.type
+ * @param {object} opts.item   — the raw purchase object from the API
+ * @param {object} opts.user   — { name, email } of the logged-in user (pass what you have)
+ */
+export function generateInvoice({ type, item, user = {} }) {
+  /* ── Derive fields ─────────────────────────────────────── */
+  const invNo = invoiceNumber(item.id);
+  const invDate = item.createdAt
+    ? formatAuctionDate(item.createdAt, { day: '2-digit', month: 'long', year: 'numeric' }, today())
+    : today();
+
+  let productName, productDesc, baseAmount, extraLines = [];
+  let paymentRef = '';
+
+  if (type === 'domain_registration') {
+    productName = item.domain || `${item.domainName || ''}${item.domainExtension || ''}`;
+    productDesc = 'New domain registration (CoBrother storefront)';
+    baseAmount = Number(item.subtotalInr ?? item.priceInr ?? item.price ?? 0);
+    paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
+  } else if (type === 'domain') {
+    productName = `${item.domainName}${item.domainExtension}`;
+    productDesc = item.pricingDemand || 'Domain Name Purchase';
+    baseAmount = Number(item.askingPrice || 0);
+    paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
+  } else {
+    const sw = item.software || {};
+    productName = sw.name || 'Software License';
+    productDesc = sw.description || 'Software Purchase';
+    baseAmount = Number(sw.price || 0);
+    if (item.coBrotherHelpPaid) {
+      extraLines.push({ label: 'CoBrother Helper Service', amount: 1000 });
     }
-  
-    const chargeCurrency = item.chargeCurrency || 'INR';
-    const formatLine = (amt) =>
-      item.amountCharged != null && chargeCurrency !== 'INR'
-        ? formatMoney(item.amountCharged, chargeCurrency)
-        : formatINR(amt);
+  }
 
-    const subtotal = baseAmount + extraLines.reduce((s, l) => s + l.amount, 0);
-    const gst =
-      type === 'domain_registration'
-        ? Number(item.gstInr ?? 0)
-        : 0;
-    const total =
-      type === 'domain_registration'
-        ? Number(item.priceInr ?? item.price ?? subtotal + gst)
-        : subtotal + gst;
-    const displayTotal =
-      item.amountCharged != null ? formatMoney(item.amountCharged, chargeCurrency) : formatLine(total);
+  const chargeCurrency = item.chargeCurrency || 'INR';
+  const formatLine = (amt) =>
+    item.amountCharged != null && chargeCurrency !== 'INR'
+      ? formatMoney(item.amountCharged, chargeCurrency)
+      : formatINR(amt);
 
-    const sellerGstin =
-      type === 'domain_registration' && item.cobrotherGstin
-        ? item.cobrotherGstin
-        : '[Your GSTIN]';
-    const logoUrl = invoiceLogoUrl();
+  const subtotal = baseAmount + extraLines.reduce((s, l) => s + l.amount, 0);
+  const gst =
+    type === 'domain_registration'
+      ? Number(item.gstInr ?? 0)
+      : 0;
+  const total =
+    type === 'domain_registration'
+      ? Number(item.priceInr ?? item.price ?? subtotal + gst)
+      : subtotal + gst;
+  const displayTotal =
+    item.amountCharged != null ? formatMoney(item.amountCharged, chargeCurrency) : formatLine(total);
 
-    const typeLabel =
-      type === 'domain_registration'
-        ? '◇ Domain Registration'
-        : type === 'domain'
-          ? '◇ Domain Purchase'
-          : '⟁ Software License';
-    const typeBadgeBg =
-      type === 'software' ? '#ede9fe' : type === 'domain_registration' ? '#ecfdf5' : '#e0f2fe';
-    const typeBadgeColor =
-      type === 'software' ? '#6d28d9' : type === 'domain_registration' ? '#047857' : '#0369a1';
-  
-    const extraRows = extraLines.map(l => `
+  const sellerGstin =
+    type === 'domain_registration' && item.cobrotherGstin
+      ? item.cobrotherGstin
+      : '[Your GSTIN]';
+  const logoUrl = invoiceLogoUrl();
+
+  const typeLabel =
+    type === 'domain_registration'
+      ? '◇ Domain Registration'
+      : type === 'domain'
+        ? '◇ Domain Purchase'
+        : '⟁ Software License';
+  const typeBadgeBg =
+    type === 'software' ? '#ede9fe' : type === 'domain_registration' ? '#ecfdf5' : '#e0f2fe';
+  const typeBadgeColor =
+    type === 'software' ? '#6d28d9' : type === 'domain_registration' ? '#047857' : '#0369a1';
+
+  const extraRows = extraLines.map(l => `
       <tr>
         <td>${l.label}</td>
         <td class="text-right">${formatINR(l.amount)}</td>
       </tr>
     `).join('');
-  
-    /* ── HTML Template ─────────────────────────────────────── */
-    const html = `<!DOCTYPE html>
+
+  /* ── HTML Template ─────────────────────────────────────── */
+  const html = `<!DOCTYPE html>
   <html lang="en">
   <head>
   <meta charset="UTF-8"/>
@@ -512,15 +512,15 @@ function formatMoney(amount, currencyCode = 'INR') {
   </div>
   </body>
   </html>`;
-  
-    /* ── Open in new window and trigger print ──────────────── */
-    const win = window.open('', '_blank', 'width=900,height=700');
-    if (!win) {
-      alert('Please allow pop-ups for this site to download invoices.');
-      return;
-    }
-    win.document.write(html);
-    win.document.close();
-  
-    win.onload = () => printInvoiceWindow(win);
+
+  /* ── Open in new window and trigger print ──────────────── */
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if (!win) {
+    alert('Please allow pop-ups for this site to download invoices.');
+    return;
   }
+  win.document.write(html);
+  win.document.close();
+
+  win.onload = () => printInvoiceWindow(win);
+}

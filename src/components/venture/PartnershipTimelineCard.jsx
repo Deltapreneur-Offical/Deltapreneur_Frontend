@@ -13,9 +13,9 @@ export default function PartnershipTimelineCard({ ventureName, partnerName }) {
             {' '}CoBrother will assist both parties with next steps.
           </p>
           <div className="text-sm bg-white/80 border border-teal-100 rounded-lg px-4 py-3">
-            <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">CoBrother contact</div>
-            <a href="mailto:contact@cobrother.com" className="text-teal-900 font-medium hover:underline">
-              contact@cobrother.com
+            <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">CoBrother support</div>
+            <a href="mailto:support@cobrother.com" className="text-teal-900 font-medium hover:underline">
+              support@cobrother.com
             </a>
           </div>
         </div>

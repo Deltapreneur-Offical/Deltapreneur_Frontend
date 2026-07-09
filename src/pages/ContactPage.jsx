@@ -3,7 +3,7 @@ import { Mail, Phone, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import coBrotherLogo from '../assets/Cobrother_logo.svg';
+import coBrotherLogo from '../assets/Cobrother_logo.gif';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import {
@@ -67,9 +67,9 @@ export default function ContactPage() {
   const ctaButtonProps = reduceMotion
     ? {}
     : {
-        whileHover: { y: -2, scale: 1.02, transition: { duration: 0.22, ease: HOME_EASE_OUT } },
-        whileTap: { scale: 0.98 },
-      };
+      whileHover: { y: -2, scale: 1.02, transition: { duration: 0.22, ease: HOME_EASE_OUT } },
+      whileTap: { scale: 0.98 },
+    };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">

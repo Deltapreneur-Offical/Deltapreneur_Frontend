@@ -205,129 +205,127 @@ export default function HomeFooter() {
 
   const footerBody = (
 
-      <div className="relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
+    <div className="relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
 
-        <div className="home-footer-grid grid w-full grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 md:gap-y-10">
+      <div className="home-footer-grid grid w-full grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 md:gap-y-10">
 
-          <div className="home-footer-logo-col flex flex-col items-start justify-start sm:col-span-2 md:col-span-4">
+        <div className="home-footer-logo-col flex flex-col items-start justify-start sm:col-span-2 md:col-span-4">
 
-            <Link to="/" className="group mb-4 inline-block">
+          <Link to="/" className="group mb-4 inline-block">
 
-              <img
+            <img
 
-                src={coBrotherLogo}
+              src={coBrotherLogo}
 
-                alt="CoBrother"
+              alt="CoBrother"
 
-                className="h-9 w-auto max-w-full opacity-95 transition-opacity group-hover:opacity-100 sm:h-10 md:h-11"
+              className="h-12 w-auto max-w-full opacity-95 transition-opacity group-hover:opacity-100 sm:h-12 md:h-14"
 
-              />
+            />
 
-            </Link>
+          </Link>
 
-          </div>
-
-
-
-          <div className="home-footer-nav-col md:col-span-1">
-            <h3 className={headingClass}>{t('explore')}</h3>
-            <nav className="flex flex-col">
-
-              <ScrollLink to="/" className={linkClass}>
-
-                {t('Home')}
-
-              </ScrollLink>
-
-            </nav>
-
-          </div>
+        </div>
 
 
 
-          <div className="home-footer-nav-col md:col-span-1">
-            <h3 className={headingClass}>{t('Company')}</h3>
+        <div className="home-footer-nav-col md:col-span-1">
+          <h3 className={headingClass}>{t('explore')}</h3>
+          <nav className="flex flex-col">
 
-            <nav className="flex flex-col">
+            <ScrollLink to="/" className={linkClass}>
 
-              <ScrollLink to="/about" className={linkClass}>
+              {t('Home')}
 
-                {t('About Us')}
+            </ScrollLink>
 
-              </ScrollLink>
+          </nav>
 
-              <ScrollLink to="/contact" className={linkClass}>
-
-                {t('Contact Us')}
-
-              </ScrollLink>
-
-              <ScrollLink to="/join-form" className={linkClass}>
-
-                {t('joinCoBrother')}
-
-              </ScrollLink>
-
-            </nav>
-
-          </div>
+        </div>
 
 
 
-          <div className="home-footer-nav-col md:col-span-1">
-            <h3 className={headingClass}>{t('legal')}</h3>
+        <div className="home-footer-nav-col md:col-span-1">
+          <h3 className={headingClass}>{t('Company')}</h3>
 
-            <nav className="flex flex-col">
+          <nav className="flex flex-col">
 
-              <ScrollLink to="/privacy-policy" className={linkClass}>
+            <ScrollLink to="/about" className={linkClass}>
 
-                {t('Privacy Policy')}
+              {t('About Us')}
 
-              </ScrollLink>
+            </ScrollLink>
 
-              <ScrollLink to="/terms-and-conditions" className={linkClass}>
+            <ScrollLink to="/contact" className={linkClass}>
 
-                {t('Terms & Conditions')}
+              {t('Contact Us')}
 
-              </ScrollLink>
+            </ScrollLink>
 
-              <button type="button" onClick={openPreferences} className={`${linkClass} text-left`}>
+            <ScrollLink to="/join-form" className={linkClass}>
 
-                {t('cookieConsentFooterLink')}
+              {t('joinCoBrother')}
 
-              </button>
+            </ScrollLink>
 
-            </nav>
+          </nav>
 
-          </div>
+        </div>
 
 
 
-          <div className="home-footer-social-col flex flex-col sm:col-span-2 md:col-span-1">
+        <div className="home-footer-nav-col md:col-span-1">
+          <h3 className={headingClass}>{t('legal')}</h3>
 
-            <h3 className={headingClass}>{t('Show us some love')}</h3>
+          <nav className="flex flex-col">
 
-            <div className="home-footer-social">
+            <ScrollLink to="/privacy-policy" className={linkClass}>
 
-              <div className="home-footer-social-row">
+              {t('Privacy Policy')}
 
-                {socialRowOne.map((social) => (
+            </ScrollLink>
 
-                  <SocialLink key={social.id} {...social} />
+            <ScrollLink to="/terms-and-conditions" className={linkClass}>
 
-                ))}
+              {t('Terms & Conditions')}
 
-              </div>
+            </ScrollLink>
 
-              <div className="home-footer-social-row">
+            <button type="button" onClick={openPreferences} className={`${linkClass} text-left`}>
 
-                {socialRowTwo.map((social) => (
+              {t('cookieConsentFooterLink')}
 
-                  <SocialLink key={social.id} {...social} />
+            </button>
 
-                ))}
+          </nav>
 
-              </div>
+        </div>
+
+
+
+        <div className="home-footer-social-col flex flex-col sm:col-span-2 md:col-span-1">
+
+          <h3 className={headingClass}>{t('Show us some love')}</h3>
+
+          <div className="home-footer-social">
+
+            <div className="home-footer-social-row">
+
+              {socialRowOne.map((social) => (
+
+                <SocialLink key={social.id} {...social} />
+
+              ))}
+
+            </div>
+
+            <div className="home-footer-social-row">
+
+              {socialRowTwo.map((social) => (
+
+                <SocialLink key={social.id} {...social} />
+
+              ))}
 
             </div>
 
@@ -335,23 +333,25 @@ export default function HomeFooter() {
 
         </div>
 
+      </div>
 
 
-        <div className="home-footer-copyright mt-10 border-t border-slate-200/45 pt-5 text-left sm:mt-12 sm:pt-6">
 
-          <p className="text-xs text-slate-600 sm:text-sm">
+      <div className="home-footer-copyright mt-10 border-t border-slate-200/45 pt-5 text-left sm:mt-12 sm:pt-6">
 
-            {t('footerCopyright', {
+        <p className="text-xs text-slate-600 sm:text-sm">
 
-              year: new Date().getFullYear(),
+          {t('footerCopyright', {
 
-            })}
+            year: new Date().getFullYear(),
 
-          </p>
+          })}
 
-        </div>
+        </p>
 
       </div>
+
+    </div>
   );
 
   return (

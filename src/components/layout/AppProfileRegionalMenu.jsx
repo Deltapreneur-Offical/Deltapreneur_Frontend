@@ -8,15 +8,15 @@ import { CURRENCY_LABELS } from '../../constants/currencies';
 import { getCurrencySymbol, getCurrencyFlag } from '../../utils/currencyDisplay';
 
 const LANGUAGES = [
-  { code: 'en-IN', name: 'English (IND)' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'es', name: 'Español' },
-  { code: 'ar', name: 'العربية' },
+  { code: 'en-IN', name: 'English' },
+  { code: 'zh', name: '中文 (Chinese)' },
+  { code: 'es', name: 'Español (Spanish)' },
+  { code: 'ar', name: 'العربية (Arabic)' },
   { code: 'ur', name: 'Urdu' },
-  { code: 'zh', name: '中文' },
-  { code: 'fr', name: 'Français' },
-  { code: 'pt', name: 'Português' },
-  { code: 'de', name: 'Deutsch' },
+  { code: 'fr', name: 'Français (French)' },
+  { code: 'pt', name: 'Português (Portuguese)' },
+  { code: 'de', name: 'Deutsch (German)' },
+  { code: 'hi', name: 'Hindi' },
 ];
 
 const LANG_SHORT = {

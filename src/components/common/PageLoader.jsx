@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import logoBlack from '../../assets/Cobrother_logo.svg';
+import logoBlack from '../../assets/Cobrother_logo.gif';
 import '../../styles/page-loader.css';
 
 function LoadingDots() {

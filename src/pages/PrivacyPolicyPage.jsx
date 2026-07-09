@@ -170,7 +170,7 @@ export default function PrivacyPolicyPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                       <div className="flex items-center gap-2 mb-2"><Mail className="h-4 w-4 text-indigo-600" /><h3 className="text-sm font-semibold text-slate-900">{t('privacyPageTeam')}</h3></div>
-                      <p className="text-sm text-slate-600">{t('privacyPageEmail')} <span className="font-medium text-slate-900">contact@cobrother.com</span></p>
+                      <p className="text-sm text-slate-600">{t('privacyPageEmail')} <span className="font-medium text-slate-900">support@cobrother.com</span></p>
                       <p className="text-sm text-slate-600 mt-1">{t('privacyPagePhone')} <span className="font-medium text-slate-900">+91 80 8575 8575</span></p>
                     </div>
                   </div>

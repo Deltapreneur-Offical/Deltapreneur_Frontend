@@ -27,7 +27,10 @@ def main():
     location @react {
         # Check if bot
         set $is_bot "";
-        if ($http_user_agent ~* "facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot") {
+        if ($http_user_agent ~* "facebookexternalhit|WhatsApp|twitterbot|linkedinbot|telegrambot|slackbot|discordbot|googlebot|bingbot|opengraph|OpenGraphXYZBot") {
+            set $is_bot "Y";
+        }
+        if ($http_accept !~* "html") {
             set $is_bot "Y";
         }
         

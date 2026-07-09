@@ -6,7 +6,7 @@ import { useCookieConsent } from '../../context/CookieConsentContext';
 
 import { FaWhatsapp } from 'react-icons/fa';
 
-import coBrotherLogo from '../../assets/Cobrother_Green.svg';
+import coBrotherLogo from '../../assets/Cobrother_logo.gif';
 import { EXTERNAL_LINK_PROPS, WHATSAPP_URL } from '../../config/contactLinks';
 
 

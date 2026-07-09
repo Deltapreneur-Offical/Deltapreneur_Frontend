@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -91,51 +91,49 @@ export default function Home() {
   const { t } = useTranslation();
 
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const navRef = useRef(null);
   const reduceMotion = useReducedMotion();
 
 
 
+  const handleScroll = useCallback(() => {
+    const scrolled = window.scrollY > 1;
+
+    if (scrolled) {
+      document.body.classList.add('scrolled');
+    } else {
+      document.body.classList.remove('scrolled');
+    }
+
+    if (navRef.current) {
+      if (scrolled) {
+        navRef.current.classList.add('scrolled');
+      } else {
+        navRef.current.classList.remove('scrolled');
+      }
+    }
+
+    setIsScrolled(scrolled);
+  }, []);
+
   useEffect(() => {
 
     document.body.classList.add('home-page-body');
 
-
-
-    const handleScroll = () => {
-
-      if (navRef.current) {
-
-        if (window.scrollY > 0) {
-
-          navRef.current.classList.add('scrolled');
-
-        } else {
-
-          navRef.current.classList.remove('scrolled');
-
-        }
-
-      }
-
-    };
-
-
-
-    window.addEventListener('scroll', handleScroll);
-
-
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
 
       document.body.classList.remove('home-page-body');
+      document.body.classList.remove('scrolled');
 
       window.removeEventListener('scroll', handleScroll);
 
     };
 
-  }, []);
+  }, [handleScroll]);
 
 
 
@@ -186,7 +184,7 @@ export default function Home() {
 
     <div className="relative min-w-0 bg-white overflow-visible">
 
-      <TopNavbar homeMobileMenu hideContactUs />
+      <TopNavbar homeMobileMenu hideContactUs isScrolled={isScrolled} />
 
       <HomeNavbar
 
@@ -199,6 +197,8 @@ export default function Home() {
         navigate={navigate}
 
         hideJoinCta
+
+        isScrolled={isScrolled}
 
       />
 

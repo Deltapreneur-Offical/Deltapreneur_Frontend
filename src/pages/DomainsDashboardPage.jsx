@@ -325,10 +325,17 @@ export default function DomainsDashboardPage() {
                         <span className="text-sm text-red-600">
                           Expiring {expiresAt.toLocaleDateString('en-IN', {
                             month: 'numeric', day: 'numeric', year: 'numeric',
-                          })}. Renew to avoid a service interruption.
+                          })}. {daysLeft !== null && daysLeft > 7 ? `Renewal opens 7 days before expiry.` : `Renew to avoid a service interruption.`}
                         </span>
                         {/* Renew → OpenProvider panel if available, else order detail */}
-                        {panelUrl ? (
+                        {daysLeft !== null && daysLeft > 7 ? (
+                          <span
+                            className="shrink-0 text-sm font-bold text-gray-500 bg-gray-200 px-4 py-1.5 rounded-md cursor-not-allowed select-none"
+                            title="Domain renewal is only available within 7 days of expiration."
+                          >
+                            Renew (Unavailable)
+                          </span>
+                        ) : panelUrl ? (
                           <a
                             href={panelUrl}
                             target="_blank"

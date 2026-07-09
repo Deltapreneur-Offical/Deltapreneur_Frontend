@@ -328,12 +328,21 @@ export default function DomainRegistrationOrderPage() {
               <div className="space-y-1">
                 <h4 className="text-sm font-bold text-amber-900">Domain Expiring Soon</h4>
                 <p className="text-xs text-amber-700">
-                  Your domain will expire in {daysLeft} days ({fmtDateShort(order.expiresAt)}). Renew now to prevent service disruption.
+                  {daysLeft > 7 ? (
+                    `Your domain will expire in ${daysLeft} days (${fmtDateShort(order.expiresAt)}). Renewal opens 7 days before expiry.`
+                  ) : (
+                    `Your domain will expire in ${daysLeft} days (${fmtDateShort(order.expiresAt)}). Renew now to prevent service disruption.`
+                  )}
                 </p>
               </div>
-              <button type="button" onClick={handleRenew} disabled={syncing}
-                className="w-full sm:w-auto shrink-0 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50">
-                Renew Domain
+              <button
+                type="button"
+                onClick={handleRenew}
+                disabled={syncing || daysLeft > 7}
+                className="w-full sm:w-auto shrink-0 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                title={daysLeft > 7 ? "Domain renewal is only available within 7 days of expiration." : undefined}
+              >
+                {daysLeft > 7 ? "Renew (Unavailable)" : "Renew Domain"}
               </button>
             </div>
           )}
@@ -443,10 +452,22 @@ export default function DomainRegistrationOrderPage() {
                     </button>
 
                     {isActive && (
-                      <button type="button" onClick={handleRenew} disabled={syncing}
-                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-all rounded-xl shadow-sm">
-                        Renew Domain
-                      </button>
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleRenew}
+                          disabled={syncing || (daysLeft !== null && daysLeft > 7)}
+                          className="w-full inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed transition-all rounded-xl shadow-sm"
+                          title={daysLeft !== null && daysLeft > 7 ? "Domain renewal is only available within 7 days of expiration." : undefined}
+                        >
+                          {daysLeft !== null && daysLeft > 7 ? "Renew (Unavailable)" : "Renew Domain"}
+                        </button>
+                        {daysLeft !== null && daysLeft > 7 && (
+                          <span className="text-[10px] text-gray-500 text-center font-medium">
+                            Available {daysLeft - 7} days from now
+                          </span>
+                        )}
+                      </div>
                     )}
 
                     {order.canRetry && (

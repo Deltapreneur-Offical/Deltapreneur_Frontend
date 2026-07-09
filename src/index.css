@@ -6620,15 +6620,20 @@ body.home-page-body {
     align-items: center;
     flex-shrink: 0;
     min-width: 0;
-    max-width: none;
-    overflow: visible;
+    max-width: 7.2rem; /* ~115px — matches reference mobile design */
+    overflow: hidden; /* clip video/image overflow to remove black line artifact */
+  }
+
+  .home-nav-logo-video {
+    max-width: 7.2rem; /* constrain animated logo video on mobile */
+    width: 100%;       /* fill the button container, don't overflow */
   }
 
   .brand-nav-logo,
   .home-nav-logo-img {
     height: 1.875rem;
     width: auto;
-    max-width: none;
+    max-width: 7.2rem; /* ~115px — matches reference mobile design */
     min-width: 0;
     object-fit: contain;
     object-position: left center;
@@ -6636,7 +6641,7 @@ body.home-page-body {
 
   .home-main-nav-start .home-nav-logo-swap {
     flex-shrink: 0;
-    max-width: none;
+    max-width: 7.2rem; /* ~115px — matches reference mobile design */
     min-width: 0;
   }
 
@@ -6725,7 +6730,7 @@ body.home-page-body {
   .brand-nav-logo,
   .home-nav-logo-img {
     height: 1.625rem;
-    max-width: none;
+    max-width: 7.2rem; /* ~115px — small mobile, matches reference design */
   }
 
   .home-nav-hamburger {
@@ -6847,6 +6852,26 @@ body.home-page-body {
     gap: 0.25rem;
   }
 }
+
+/* Position language/currency dropdowns upwards inside mobile drawer footer */
+.home-nav-drawer-footer .home-nav-util-language .absolute {
+  top: auto !important;
+  bottom: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  left: -10px !important;
+  right: auto !important;
+}
+
+.home-nav-drawer-footer .home-nav-util-currency .absolute {
+  top: auto !important;
+  bottom: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  right: -10px !important;
+  left: auto !important;
+}
+
 
 .home-nav-pill {
   display: inline-flex;

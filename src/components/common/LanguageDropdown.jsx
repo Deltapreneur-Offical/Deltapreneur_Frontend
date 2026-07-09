@@ -4,22 +4,22 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 
 const LANGUAGES = [
-  { code: 'en-IN', name: 'English (IND)' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'en-US', name: 'English (US)' },
-  { code: 'en-GB', name: 'English (UK)' },
+  { code: 'en-IN', name: 'English' },
+  { code: 'zh', name: '中文 (Chinese)' },
+  { code: 'es', name: 'Español (Spanish)' },
+  { code: 'ar', name: 'العربية (Arabic)' },
   { code: 'ur', name: 'Urdu' },
-  { code: 'zh', name: '中文' },
-  { code: 'fr', name: 'Français' },
-  { code: 'pt', name: 'Português' },
-  { code: 'de', name: 'Deutsch' },
+  { code: 'fr', name: 'Français (French)' },
+  { code: 'pt', name: 'Português (Portuguese)' },
+  { code: 'de', name: 'Deutsch (German)' },
+  { code: 'hi', name: 'Hindi' },
 ];
 
 const LANG_SHORT = {
   'en-IN': 'EN',
   hi: 'HI',
-  'en-US': 'US',
-  'en-GB': 'UK',
+  es: 'ES',
+  ar: 'AR',
   ur: 'UR',
   zh: 'ZH',
   fr: 'FR',
@@ -32,7 +32,7 @@ function languageLabel(i18nLanguage) {
   const exact = LANGUAGES.find((l) => l.code === normalized);
   if (exact) return exact.name;
   const base = (normalized || '').split('-')[0];
-  return LANGUAGES.find((l) => l.code === base)?.name || 'English (IND)';
+  return LANGUAGES.find((l) => l.code === base)?.name || 'English';
 }
 
 function languageShortCode(i18nLanguage) {

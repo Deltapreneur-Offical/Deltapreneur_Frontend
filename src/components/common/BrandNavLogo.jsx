@@ -1,4 +1,4 @@
-import logoBlack from '../../assets/Cobrother_logo.svg';
+import logoBlack from '../../assets/Cobrother_logo.gif';
 import logoGreen from '../../assets/Cobrother_Green.svg';
 
 /**

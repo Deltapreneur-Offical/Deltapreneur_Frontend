@@ -8,6 +8,7 @@ import { HOME_RESET_EVENT } from '../../utils/homeReset';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
+import { useCurrency } from '../../context/CurrencyContext';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
@@ -222,25 +223,9 @@ function damerauLevenshteinDistance(a, b) {
   return dist[sourceLen][targetLen];
 }
 
-function registrarPriceSymbol(currency) {
-  const code = toSafeText(currency || 'INR').toUpperCase();
-  const map = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
-  return map[code] || `${code} `;
-}
-
-function formatRegistrarPrice(amount, currency) {
-  const sym = registrarPriceSymbol(currency);
-  const n = Number(amount);
-  if (!Number.isFinite(n)) return '';
-  const formatted = n.toLocaleString('en-IN', {
-    minimumFractionDigits: n % 1 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  });
-  return `${sym}${formatted}`;
-}
-
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
+  const { formatPrice, convertToInr } = useCurrency();
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const animateHero = embedded && !reduceMotion;
@@ -573,11 +558,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const currency = result.priceCurrency || 'INR';
     const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
     const total = years > 1 ? unit * years : unit;
+    const inrTotal = convertToInr(total, currency);
     const periodLabel = years > 1 ? `/${years} yrs` : '/yr';
     return (
       <div className="mb-4">
         <p className={`font-extrabold text-gray-900 ${large ? 'text-3xl' : 'text-xl'}`}>
-          {formatRegistrarPrice(total, currency)}
+          {formatPrice(inrTotal)}
           <span className={`font-normal text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>
             {periodLabel}
           </span>
@@ -776,7 +762,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
                   {item.status === 'marketplace' && item.listing && (
                     <p className="text-indigo-600 text-sm font-semibold mb-3">
-                      ₹{Number(item.listing.askingPrice).toLocaleString('en-IN')} · Marketplace
+                      {formatPrice(item.listing.askingPrice || 0)} · Marketplace
                     </p>
                   )}
 
@@ -818,7 +804,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     {item.domainName}<span className="text-purple-500">{item.domainExtension}</span>
                   </h2>
                   <p className="text-indigo-600 text-sm font-semibold mb-4">
-                    Asking ₹{Number(item.askingPrice || 0).toLocaleString('en-IN')}
+                    Asking {formatPrice(item.askingPrice || 0)}
                   </p>
                   <button
                     type="button"
@@ -863,7 +849,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                       {currentBid > 0 ? 'Current highest bid' : 'Starting bid'}
                     </p>
                     <p className="font-extrabold text-xl text-amber-600 mb-3">
-                      ₹{amount.toLocaleString('en-IN')}
+                      {formatPrice(amount)}
                     </p>
                     <p className="text-sm text-gray-600 mb-4">{totalBids} bids placed</p>
                     <button

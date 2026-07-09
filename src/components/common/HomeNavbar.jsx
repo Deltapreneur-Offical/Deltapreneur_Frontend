@@ -10,7 +10,7 @@ import HomeTopNavActions from './HomeTopNavActions';
 import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
 import { ventureListChooseUrl } from '../../constants/ventureListingTypeContent';
-import rollingLogoMobile from '../../assets/Rolling Logo center to outwards GIF.mp4';
+
 import BrandNavLogo from './BrandNavLogo';
 
 function NavDropdown({ label, open, onToggle, children }) {
@@ -102,76 +102,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
   );
 }
 
-function AnimatedNavLogo({ onClick }) {
-  const videoRef = useRef(null);
-  const playCountRef = useRef(0);
-  const [showStatic, setShowStatic] = useState(false);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    playCountRef.current = 0;
-
-    const handleEnded = () => {
-      playCountRef.current += 1;
-      if (playCountRef.current === 1) {
-        setShowStatic(true);
-        setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.currentTime = 0;
-            setShowStatic(false);
-            videoRef.current.play().catch((err) => console.log('Replay error:', err));
-          }
-        }, 5000);
-      } else if (playCountRef.current >= 2) {
-        setShowStatic(true);
-      }
-    };
-
-    video.addEventListener('ended', handleEnded);
-    return () => {
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, []);
-
-  return (
-    <button
-      type="button"
-      className="home-nav-logo-btn home-nav-logo-btn--animated brand-logo-interactive shrink-0"
-      onClick={onClick}
-      aria-label="CoBrother home"
-    >
-      <div className="relative w-full h-full flex items-center">
-        <div
-          className="absolute inset-0 flex items-center"
-          style={{
-            opacity: showStatic ? 1 : 0,
-            pointerEvents: showStatic ? 'auto' : 'none',
-            transition: 'opacity 0.15s ease',
-          }}
-        >
-          <BrandNavLogo />
-        </div>
-        <video
-          ref={videoRef}
-          className="home-nav-logo-video"
-          src={rollingLogoMobile}
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          style={{
-            opacity: showStatic ? 0 : 1,
-            pointerEvents: showStatic ? 'none' : 'auto',
-            transition: 'opacity 0.15s ease',
-          }}
-        />
-      </div>
-    </button>
-  );
-}
 
 export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false }) {
   const { t } = useTranslation();
@@ -248,13 +179,20 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
   return (
     <>
       <nav
-        className="home-main-nav w-full min-w-0 bg-white border-b border-gray-100 sticky z-[1000]"
+        className="home-main-nav w-full min-w-0 bg-white border-b border-gray-100 md:sticky z-[1000]"
         style={{ top: 'var(--home-topbar-height, 40px)' }}
         ref={navRef}
       >
         <div className="home-main-nav-inner">
           <div className="home-main-nav-start">
-            <AnimatedNavLogo onClick={handleLogoClick} />
+            <button
+              type="button"
+              className="home-nav-logo-btn shrink-0"
+              onClick={handleLogoClick}
+              aria-label="CoBrother home"
+            >
+              <BrandNavLogo />
+            </button>
 
             <div className="home-nav-desktop-menu">
               <div className="flex items-center flex-wrap gap-1">

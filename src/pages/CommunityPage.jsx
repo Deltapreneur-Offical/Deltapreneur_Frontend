@@ -991,12 +991,18 @@ function CommunityProfileForm({
       const next = { ...prev };
       for (const key of Object.keys(next)) {
         if (key !== 'role') {
-          next[key] = '';
+          if (key === 'expectedRateCurrency') {
+            next[key] = navCurrency || 'INR';
+          } else if (key === 'expectedRatePeriod') {
+            next[key] = '/month';
+          } else {
+            next[key] = '';
+          }
         }
       }
       return next;
     });
-  }, [form.role, initial?.id, initial?.role]);
+  }, [form.role, initial?.id, initial?.role, navCurrency]);
 
   const linkedInUrl = useMemo(
     () => getLinkedInProfileUrl(form) || getLinkedInProfileUrl(initial),
@@ -1088,21 +1094,6 @@ const handleSubmit = async e => {
       return;
     }
 
-    if (isFieldVisible('expectedPriceAmount')) {
-      const expectedPrice = buildCreatorExpectedRate(
-        form.expectedPriceAmount,
-        form.expectedPricePeriod,
-      );
-      if (!expectedPrice) {
-        setError(
-          form.role === 'JOB_SEEKER' || form.role === 'EMPLOYEE'
-            ? 'Enter a valid Expected Compensation amount and select a period.'
-            : 'Enter a valid Expected Price amount and select a period.'
-        );
-        return;
-      }
-    }
-
     setLoading(true);
     setError('');
 
@@ -1159,13 +1150,6 @@ const handleSubmit = async e => {
       );
 
       payload.expectedRate = expectedRate;
-
-      if (isFieldVisible('expectedPriceAmount')) {
-        payload.expectedPrice = buildCreatorExpectedRate(
-          form.expectedPriceAmount,
-          form.expectedPricePeriod,
-        );
-      }
 
       if (isFounderRole) {
         payload.pitchDeckLink = form.pitchDeckLink;
@@ -1339,6 +1323,7 @@ const handleSubmit = async e => {
               required
               className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
             >
+              <option value="" disabled hidden>Select Period</option>
               {CREATOR_RATE_PERIODS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}

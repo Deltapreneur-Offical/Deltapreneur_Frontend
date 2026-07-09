@@ -157,7 +157,7 @@ export default function TermsAndConditionsPage() {
                         <h3 className="text-sm font-semibold text-slate-900">{t('termsPageSupportContact')}</h3>
                       </div>
                       <p className="text-sm text-slate-600">
-                        {t('termsPageEmail')} <span className="font-medium text-slate-900">contact@cobrother.com</span>
+                        {t('termsPageEmail')} <span className="font-medium text-slate-900">support@cobrother.com</span>
                       </p>
                       <p className="text-sm text-slate-600 mt-1">
                         {t('termsPagePhone')} <span className="font-medium text-slate-900">+91 80 8575 8575</span>

@@ -136,15 +136,15 @@ export default function TechnologyListingCard({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/technology?id=${item.id}`
-      : `${APP_BASE_URL.replace(/\/$/, '')}/technology?id=${item.id}`;
-  const shareSubject = `Check out this Technology listed on CoBrother`;
-  const shareBody = `Hi,\n\nI found this listing on CoBrother and thought you might be interested.\n\n🌐 Listing Type: Technology\n📝 Name: ${item.name || 'Technology'}\n\nView Listing:\n${shareUrl}\n\nExplore more on CoBrother.`;
+      ? `${window.location.origin}/technology/${item.id}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/technology/${item.id}`;
+  const shareSubject = `Check out this premium Technology on CoBrother!`;
+  const shareBody = `Hi,\n\nI found this premium technology on CoBrother and thought you might be interested.\n\n🌐 Technology: ${item.name || 'Technology'}\nCheck out this premium Technology listed on CoBrother!\n\nView Listing:\n${shareUrl}\n\nBest regards,\nCoBrother Team`;
 
-  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const twitterShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Technology listed on CoBrother!\n\n' + shareUrl)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 

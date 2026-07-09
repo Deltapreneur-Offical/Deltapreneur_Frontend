@@ -43,6 +43,24 @@ describe('creatorProfile', () => {
     expect(evaluateCreatorProfileCompletion(profile).percent).toBe(100);
   });
 
+  it('debugs creator expected rate parsing and building', () => {
+    const { parseCreatorExpectedRate, buildCreatorExpectedRate } = require('./creatorExpectedRate');
+    
+    // Test parsing
+    const parsed1 = parseCreatorExpectedRate("456/day");
+    expect(parsed1).toEqual({ amount: '456', period: '/day' });
+
+    // Test building
+    const built1 = buildCreatorExpectedRate(parsed1.amount, parsed1.period);
+    expect(built1).toBe('456/day');
+
+    const builtEmptyPeriod = buildCreatorExpectedRate("456", "");
+    expect(builtEmptyPeriod).toBe('');
+
+    const builtUndefinedAmount = buildCreatorExpectedRate(undefined, "/day");
+    expect(builtUndefinedAmount).toBe('');
+  });
+
   it('changes required fields by creator role', () => {
     const investorProfile = {
       name: 'Jane',

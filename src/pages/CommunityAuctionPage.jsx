@@ -431,7 +431,8 @@ export default function CommunityAuctionPage() {
                 ) : (
                   bids.map((bid, i) => (
                     <BidRow key={i} bid={bid} isLatest={i === 0}
-                            isWinner={(isEnded || isCompleted || isClosed) && (bid.isWinningBid || bid.winningBid)} />
+                            isWinner={(isEnded || isCompleted || isClosed) && (bid.isWinningBid || bid.winningBid)}
+                            formatPrice={formatPrice} />
                   ))
                 )}
               </div>
@@ -1309,7 +1310,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
 }
 
 // ─── Helper Components ────────────────────────────────────────────────────────
-function BidRow({ bid, isLatest, isWinner }) {
+function BidRow({ bid, isLatest, isWinner, formatPrice }) {
   const bidTimeStr = formatAuctionTime(bid.bidTime, {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   }, '');

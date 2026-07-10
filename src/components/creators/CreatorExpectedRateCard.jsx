@@ -24,10 +24,10 @@ export default function CreatorExpectedRateCard({ profile, onView }) {
   return (
     <div
       className="creator-expected-rate"
-      aria-label="Compensate"
+      aria-label="Compensation"
     >
       <div className="creator-expected-rate__text">
-        <span className="creator-expected-rate__label">Compensate</span>
+        <span className="creator-expected-rate__label">Compensation</span>
         <div className="creator-expected-rate__amount-row">
           <span className="creator-expected-rate__value">{displayAmount}</span>
           {displayPeriod && (

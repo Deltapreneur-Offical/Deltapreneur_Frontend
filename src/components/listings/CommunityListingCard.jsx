@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { 
-  ArrowRight, 
   Briefcase, 
   Code, 
   MapPin, 
@@ -158,9 +157,6 @@ export default function CommunityListingCard({
                 </div>
              </div>
              
-             <div className="creator-profile-card__rate-wrapper">
-                <CreatorExpectedRateCard profile={profile} />
-             </div>
           </div>
         </div>
 
@@ -241,6 +237,11 @@ export default function CommunityListingCard({
            </div>
         </div>
 
+        <CreatorExpectedRateCard
+          profile={profile}
+          onView={interactive ? () => onView() : undefined}
+        />
+
         <hr className="creator-profile-card__divider" />
 
         <div className="creator-profile-card__footer">
@@ -250,25 +251,6 @@ export default function CommunityListingCard({
                <span>{viewCount}</span>
              </span>
           </div>
-          
-          <div className="footer-center">
-            {interactive ? (
-              <button
-                type="button"
-                className="creator-profile-card__cta"
-                aria-label={t('listingCardViewDetails', 'View details')}
-                onClick={(e) => {
-                  stop(e);
-                  onView();
-                }}
-              >
-                <ArrowRight size={17} strokeWidth={2.25} aria-hidden />
-              </button>
-            ) : (
-              <div className="creator-profile-card__cta-placeholder" />
-            )}
-          </div>
-
           <div className="footer-right">
             {onLike ? (
               <LikeButton

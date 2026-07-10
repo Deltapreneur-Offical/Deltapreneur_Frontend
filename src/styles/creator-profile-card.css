@@ -203,20 +203,28 @@
   text-transform: uppercase;
 }
 
-.creator-profile-card__rate-wrapper {
-  flex-shrink: 0; 
+.creator-expected-rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0.45rem 0 0.8rem;
+  padding: 0.5rem 0.55rem 0.5rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(#fafaff, #fafaff) padding-box,
+    linear-gradient(90deg, #a78bfa 0%, #818cf8 50%, #6d28d9 100%) border-box;
+  box-shadow: -6px 0 14px -10px rgba(129, 140, 248, 0.55), 6px 0 14px -10px rgba(109, 40, 217, 0.45);
+  text-align: left;
 }
 
-.creator-expected-rate {
-  display: inline-flex;
+.creator-expected-rate__text {
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.15rem;
-  padding: 0.5rem 0.65rem;
-  border-radius: 10px;
-  background: #F5F3FF; 
-  text-align: left;
+  min-width: 0;
+  gap: 0.12rem;
 }
 
 .creator-expected-rate__label {
@@ -227,14 +235,17 @@
   text-transform: uppercase;
   color: #8B5CF6;
   line-height: 1;
-  margin-bottom: 0.1rem;
+}
+
+.creator-expected-rate__amount-row {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 0.3rem;
 }
 
 .creator-expected-rate__value {
-  display: flex;
-  align-items: baseline;
-  gap: 0.2rem;
-  font-size: 1.15rem; /* Increased font size */
+  font-size: 1.1rem;
   font-weight: 800;
   color: #6D28D9;
   line-height: 1.1;
@@ -242,10 +253,39 @@
 }
 
 .creator-expected-rate__period {
-  font-size: 0.8rem; /* Increased font size */
+  font-size: 0.8rem;
   font-weight: 700;
   color: #334155;
   line-height: 1;
+  white-space: nowrap;
+}
+
+.creator-expected-rate__cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  min-width: 1.85rem;
+  min-height: 1.85rem;
+  border: 1px solid #000000;
+  border-radius: 999px;
+  background: #000000;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.creator-expected-rate__cta:hover,
+.creator-expected-rate__cta:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+.creator-expected-rate__cta:active {
+  transform: translateY(0);
 }
 
 /* DETAILS ROW */

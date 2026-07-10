@@ -1,9 +1,8 @@
-import { useTranslation } from 'react-i18next';
+import { ArrowRight } from 'lucide-react';
 import useCurrency from '../../context/CurrencyContext';
 import { readCreatorExpectedRate, parseCreatorExpectedRate } from '../../utils/creatorExpectedRate';
 
-export default function CreatorExpectedRateCard({ profile }) {
-  const { t } = useTranslation();
+export default function CreatorExpectedRateCard({ profile, onView }) {
   const { formatPrice } = useCurrency();
   const expectedRate = readCreatorExpectedRate(profile);
 
@@ -25,14 +24,26 @@ export default function CreatorExpectedRateCard({ profile }) {
   return (
     <div
       className="creator-expected-rate"
-      aria-label={t('creatorExpectedRateLabel', 'Expected Rate')}
+      aria-label="Compensate"
     >
-      <span className="creator-expected-rate__label">
-        {t('creatorExpectedRateLabel', 'Expected Rate')}
-      </span>
-      <span className="creator-expected-rate__value">{displayAmount}</span>
-      {displayPeriod && (
-        <span className="creator-expected-rate__period">{displayPeriod}</span>
+      <div className="creator-expected-rate__text">
+        <span className="creator-expected-rate__label">Compensate</span>
+        <div className="creator-expected-rate__amount-row">
+          <span className="creator-expected-rate__value">{displayAmount}</span>
+          {displayPeriod && (
+            <span className="creator-expected-rate__period">{displayPeriod}</span>
+          )}
+        </div>
+      </div>
+      {onView && (
+        <button
+          type="button"
+          className="creator-expected-rate__cta"
+          aria-label="View creator details"
+          onClick={onView}
+        >
+          <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+        </button>
       )}
     </div>
   );

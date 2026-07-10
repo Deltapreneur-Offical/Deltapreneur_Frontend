@@ -302,6 +302,7 @@ export const adminAPI = {
   getTechnologyTransferDetail: (id) => api.get(`/api/v1/admin/technology-transfers/${id}`),
   approveTechnologyPayout: (id) => api.post(`/api/v1/admin/technology-transfers/${id}/approve-payout`),
   releaseTechnologyPayout: (id, data) => api.post(`/api/v1/admin/technology-transfers/${id}/release-payout`, data),
+  permanentDeleteDomains: (ids) => api.post('/api/v1/admin/domains/permanent-delete', { ids }),
 };
 
 export const coBrotherAPI = {

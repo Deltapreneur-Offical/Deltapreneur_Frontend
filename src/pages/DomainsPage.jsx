@@ -8,10 +8,12 @@ import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import useReferralTracker from '../hooks/useReferralTracker';
 import { roundInr, roundMoney } from '../utils/money';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
@@ -112,6 +114,7 @@ export default function DomainsPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol } = useCurrency();
+
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,6 +134,8 @@ export default function DomainsPage() {
   const [globalNotice, setGlobalNotice] = useState('');
   const [auctionTarget, setAuctionTarget] = useState(null);
   const { pendingVerificationCount } = useDomainPendingVerification();
+
+  useReferralTracker(detailTarget?.id, 'domain');
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
@@ -1092,6 +1097,13 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
   const gstAmount = subTotal * 0.18;
   const totalPrice = subTotal + gstAmount;
 
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(totalPrice);
+
+  useEffect(() => {
+    setFinalPayable(totalPrice);
+  }, [totalPrice]);
+
   const handlePhoneChange = (e) => {
     setBuyer(b => ({ ...b, buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }));
   };
@@ -1107,7 +1119,7 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
         services: [...addons, ...vaAddons],
         ...buyer,
         ...buildOrderCurrencyPayload(currency),
-      });
+      }, redeemPoints);
       if (orderData?.contactOnly) {
         onSuccess({
           ...domain,
@@ -1267,13 +1279,21 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
           </div>
         </div>
 
+        <EdgePointsRedeemToggle
+          originalAmount={totalPrice}
+          onChange={(redeem, discount, final) => {
+            setRedeemPoints(redeem);
+            setFinalPayable(final);
+          }}
+        />
+
         {error && <div className="text-sm text-red-500 mt-4 mb-2">{error}</div>}
 
         <div className="flex gap-3 mt-5">
           <button type="button" className="btn-glow flex-1" onClick={handleBuy} disabled={loading}>
             {loading
               ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-              : t('domainsPagePayButton', { amount: formatPrice(totalPrice) })}
+              : t('domainsPagePayButton', { amount: formatPrice(finalPayable) })}
           </button>
           <button type="button" className="btn-glow" onClick={onClose}>{t('cancel')}</button>
         </div>

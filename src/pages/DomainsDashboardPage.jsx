@@ -6,6 +6,7 @@ import { domainAPI, domainStorefrontAPI, domainTransferAPI } from '../api/servic
 import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import useCurrency from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainsIcon from '../assets/CoBranding.png';
 import DomainVerificationModal from './DomainVerificationModal';
@@ -301,6 +302,7 @@ const SHARE_MENU_VIEWPORT_PAD = 12;
 function DomainRow({ domain, type, onVerify }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
   const [shareMenuStyle, setShareMenuStyle] = useState(null);
@@ -374,7 +376,7 @@ function DomainRow({ domain, type, onVerify }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [shareOpen]);
   const shareBase = APP_BASE_URL.replace(/\/$/, '');
-  const shareUrl = `${shareBase}/domains/${domain.id}`;
+  const shareUrl = `${shareBase}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = `${domain.domainName}${domain.domainExtension}`;
   const shareSubject = `Premium Domain Listing Available on CoBrother: ${domainName}`;
   const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on CoBrother.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on CoBrother, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via CoBrother]`;

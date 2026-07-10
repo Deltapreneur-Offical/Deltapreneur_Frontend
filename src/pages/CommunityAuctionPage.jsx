@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import useReferralTracker from '../hooks/useReferralTracker';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { useCommunityAuction, isCreatorAuctionId } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
@@ -52,6 +54,9 @@ export default function CommunityAuctionPage() {
   const { t } = useTranslation();
   const { auctionId } = useParams();
   const { user }      = useAuth();
+
+  useReferralTracker(auctionId, 'auction');
+
   const navigate      = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice, bidFee, wsState, loading, lastUpdate, placeBid, refresh }
                       = useCommunityAuction(auctionId);
@@ -71,6 +76,15 @@ export default function CommunityAuctionPage() {
   const [participationError, setParticipationError] = useState('');
   const [payingWinnerBid, setPayingWinnerBid] = useState(false);
   const [winnerPaymentError, setWinnerPaymentError] = useState('');
+
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(0);
+
+  useEffect(() => {
+    if (auction) {
+      setFinalPayable(Number(auction.currentHighestBid ?? 0));
+    }
+  }, [auction]);
 
   // Meetings state
   const [meetings, setMeetings]           = useState([]);
@@ -241,7 +255,7 @@ export default function CommunityAuctionPage() {
     setPayingWinnerBid(true);
     setWinnerPaymentError('');
     try {
-      const { data: res } = await communityAuctionAPI.winnerPaymentCreateOrder(auction.id);
+      const { data: res } = await communityAuctionAPI.winnerPaymentCreateOrder(auction.id, redeemPoints);
       const orderData = res?.data ?? res;
       openRazorpayCheckout({
         orderData,
@@ -487,13 +501,20 @@ export default function CommunityAuctionPage() {
                     <div className="text-sm text-gray-700 mb-3">
                       You won this auction. Pay your winning bid amount to finalize.
                     </div>
+                    <EdgePointsRedeemToggle
+                      originalAmount={Number(auction.currentHighestBid ?? 0)}
+                      onChange={(redeem, discount, final) => {
+                        setRedeemPoints(redeem);
+                        setFinalPayable(final);
+                      }}
+                    />
                     <button
                       className="btn-glow w-full"
                       onClick={handlePayWinningBid}
                       disabled={payingWinnerBid}>
                       {payingWinnerBid
                         ? 'Processing…'
-                        : `Pay Winning Bid — ${formatPrice(auction.currentHighestBid)}`}
+                        : `Pay Winning Bid — ₹${finalPayable}`}
                     </button>
                     {winnerPaymentError && (
                       <div className="text-xs text-red-600 mt-2">{winnerPaymentError}</div>

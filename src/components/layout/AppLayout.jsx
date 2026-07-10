@@ -133,6 +133,7 @@ export default function AppLayout({ children }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [referralPopup, setReferralPopup] = useState(null);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -210,6 +211,9 @@ export default function AppLayout({ children }) {
     });
     if (!notification.read) {
       setUnreadCount((count) => count + 1);
+    }
+    if (notification.type === 'REFERRAL_REWARD') {
+      setReferralPopup(notification);
     }
   }, []);
 
@@ -781,6 +785,25 @@ export default function AppLayout({ children }) {
                 {t('logout')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Referral Reward Congratulations Overlay */}
+      {referralPopup && (
+        <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-emerald-400 via-indigo-500 to-emerald-400" />
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <h3 className="text-2xl font-black tracking-tight text-white mb-2">Congratulations!</h3>
+            <p className="text-[13px] text-slate-300 leading-relaxed mb-6 whitespace-pre-line">
+              {referralPopup.message || "You have successfully earned 20 Edge Points!\n\nYour wallet has been updated."}
+            </p>
+            <button
+              onClick={() => setReferralPopup(null)}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black tracking-wider uppercase rounded-xl transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-400/30"
+            >
+              Great!
+            </button>
           </div>
         </div>
       )}

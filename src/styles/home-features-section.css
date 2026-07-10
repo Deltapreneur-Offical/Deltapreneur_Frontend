@@ -115,7 +115,8 @@
   animation: none;
 }
 
-.home-feature-card-border:hover .home-feature-card-beam-spinner {
+.home-feature-card-border:hover .home-feature-card-beam-spinner,
+.home-preview-card-border:hover .home-feature-card-beam-spinner {
   opacity: 1;
   animation: home-feature-beam-spin-card1 18s linear infinite;
 }

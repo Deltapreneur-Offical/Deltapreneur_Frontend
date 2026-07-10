@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import CreatorDashboardIcon from '../components/common/CreatorDashboardIcon';
 import InlineStatLoader from '../components/common/InlineStatLoader';
+import EdgePointsWalletCard from '../components/profile/EdgePointsWalletCard';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { adminAPI, communityAPI } from '../api/services';
@@ -414,6 +415,12 @@ export default function DashboardPage() {
         {user?.id ? <PayoutProfileBanner context="default" /> : null}
 
         {!isAdmin ? <DashboardWelcomeBanner user={user} t={t} /> : null}
+
+        {user?.id && !isAdmin ? (
+          <div className="mb-4">
+            <EdgePointsWalletCard />
+          </div>
+        ) : null}
 
         <section className="dashboard-section">
           <h2 className="dashboard-section__title">{t('dashboardPlatformModules')}</h2>

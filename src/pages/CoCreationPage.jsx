@@ -6,6 +6,8 @@ import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft } from 'luci
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
+import useReferralTracker from '../hooks/useReferralTracker';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload, convertForeignToInr, convertPrice as convertInrToForeign } from '../utils/currencyDisplay';
@@ -53,6 +55,7 @@ export default function CoCreationPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol, formatPrice, supportedCurrencies, ratesMeta } = useCurrency();
+
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,9 +73,10 @@ export default function CoCreationPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [accessNotice, setAccessNotice] = useState('');
   const [technologyType, setTechnologyType] = useState('');
-
-  const [auctionTarget, setAuctionTarget] = useState(null);  // software to auction
+  const [auctionTarget, setAuctionTarget] = useState(null);
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
+
+  useReferralTracker(detailTarget?.id, 'technology');
 
   const filteredByType = useMemo(() => {
     if (!technologyType) return allSoftware;
@@ -1226,6 +1230,13 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
   const gstAmount = subTotal * 0.18;
   const totalPrice = subTotal + gstAmount;
 
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(totalPrice);
+
+  useEffect(() => {
+    setFinalPayable(totalPrice);
+  }, [totalPrice]);
+
   const handlePhoneChange = (e) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
     setForm(f => ({ ...f, buyerPhone: digits }));
@@ -1253,7 +1264,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
         services: [...addons, ...vaAddons],
         selectedPlan: currentPlanKey,
         ...buildOrderCurrencyPayload(currency),
-      });
+      }, redeemPoints);
 
       openRazorpayCheckout({
         orderData,
@@ -1486,12 +1497,20 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
                 </span>
               </div>
 
+              <EdgePointsRedeemToggle
+                originalAmount={totalPrice}
+                onChange={(redeem, discount, final) => {
+                  setRedeemPoints(redeem);
+                  setFinalPayable(final);
+                }}
+              />
+
               {error && <div className="text-sm text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-100">{error}</div>}
 
               <div className="flex flex-col gap-3">
                 <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={handlePay} disabled={loading}>
                   {loading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" /> :
-                    `Pay Securely →`}
+                    `Pay ₹${finalPayable ?? totalPrice} Securely →`}
                 </button>
                 <button className="w-full py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors" onClick={onClose}>Cancel</button>
               </div>

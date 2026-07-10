@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuction } from '../hooks/useAuction';
+import useReferralTracker from '../hooks/useReferralTracker';
 import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
@@ -11,6 +12,7 @@ import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctio
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 import useCurrency from '../context/CurrencyContext';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
@@ -39,6 +41,9 @@ export default function AuctionPage() {
   const { t } = useTranslation();
   const { auctionId }  = useParams();
   const { user }       = useAuth();
+  
+  useReferralTracker(auctionId, 'auction');
+
   const navigate       = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid, refresh }
                        = useAuction(auctionId);
@@ -59,8 +64,17 @@ export default function AuctionPage() {
   const [bidFee, setBidFee] = useState(null);
   const bidListRef = useRef(null);
 
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(0);
+
   // FIX #13: access domain.listedBy safely — it comes through because
   // @JsonIgnoreProperties on domain only strips {"auction","hibernateLazyInitializer"}
+  useEffect(() => {
+    if (auction) {
+      setFinalPayable(Number(auction.currentHighestBid ?? 0));
+    }
+  }, [auction]);
+
   const isOwner = resolveAuctionLister(
     isDomainAuctionLister(auction, user?.id),
     participation,
@@ -198,7 +212,7 @@ export default function AuctionPage() {
     setPayingWinnerBid(true);
     setWinnerPaymentError('');
     try {
-      const { data: res } = await auctionAPI.winnerPaymentCreateOrder(auction.id);
+      const { data: res } = await auctionAPI.winnerPaymentCreateOrder(auction.id, redeemPoints);
       const orderData = res?.data ?? res;
       openRazorpayCheckout({
         orderData,
@@ -501,6 +515,13 @@ export default function AuctionPage() {
                     <div className="text-sm text-gray-700 mb-3">
                       {t('auctionDetailWonPayPrompt')}
                     </div>
+                    <EdgePointsRedeemToggle
+                      originalAmount={Number(auction.currentHighestBid ?? 0)}
+                      onChange={(redeem, discount, final) => {
+                        setRedeemPoints(redeem);
+                        setFinalPayable(final);
+                      }}
+                    />
                     <button
                       className="btn-glow w-full"
                       onClick={handlePayWinningBid}
@@ -508,9 +529,7 @@ export default function AuctionPage() {
                     >
                       {payingWinnerBid
                         ? t('auctionDetailProcessing')
-                        : t('auctionDetailPayWinningBid', {
-                          amount: formatPrice(auction.currentHighestBid),
-                        })}
+                        : `Pay ₹${finalPayable} and Claim Domain`}
                     </button>
                     {winnerPaymentError && (
                       <div className="text-xs text-red-600 mt-2">{winnerPaymentError}</div>

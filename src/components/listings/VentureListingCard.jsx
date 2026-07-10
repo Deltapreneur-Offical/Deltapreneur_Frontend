@@ -10,7 +10,7 @@ import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase } from 'lucide
 import { EditIcon } from '../common/EditActionLabel';
 
 import { useCurrency } from '../../context/CurrencyContext';
-
+import { useAuth } from '../../context/AuthContext';
 import { APP_BASE_URL } from '../../config/urls';
 
 import ListingCardStatsFooter from './ListingCardStatsFooter';
@@ -116,6 +116,7 @@ export default function VentureListingCard({
   const { formatPrice } = useCurrency();
 
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [shareOpen, setShareOpen] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
@@ -241,12 +242,9 @@ export default function VentureListingCard({
 
 
   const shareUrl =
-
     typeof window !== 'undefined'
-
-      ? `${window.location.origin}/ventures/${venture.id}`
-
-      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}`;
+      ? `${window.location.origin}/ventures/${venture.id}${user?.id ? `?ref=${user.id}` : ''}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures/${venture.id}${user?.id ? `?ref=${user.id}` : ''}`;
 
   const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
   const desc = b.description || b.tagline || 'No description provided.';

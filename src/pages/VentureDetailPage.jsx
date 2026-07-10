@@ -16,6 +16,7 @@ import { formatEquityOfferedPct } from '../constants/ventureLabels';
 import { unwrapApiData } from '../utils/apiResponse';
 import { canViewListingDetail, isListingOwner } from '../utils/listingVisibility';
 import { resolveVenturePublicContact } from '../utils/ventureProfileUtils';
+import useReferralTracker from '../hooks/useReferralTracker';
 import {
   isCoVentureListing,
   isFullAcquisitionListing,
@@ -52,6 +53,8 @@ export default function VentureDetailPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { formatPrice } = useCurrency();
+
+  useReferralTracker(id, 'venture');
 
   const [venture, setVenture] = useState(null);
   const [loading, setLoading] = useState(true);

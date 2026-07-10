@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCompactCountdown } from '../../utils/auctionDate';
 import { resolveAuctionListerName } from '../../utils/auctionLister';
@@ -95,6 +96,7 @@ const BADGE_TONE_CLASS = {
 export default function HomeAuctionPreviewCard({ auction, onView }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const [imgFailed, setImgFailed] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const title = resolveHomeAuctionTitle(auction);
@@ -186,8 +188,8 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}${relativePath}`
-      : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}`;
+      ? `${window.location.origin}${relativePath}${user?.id ? `?ref=${user.id}` : ''}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}${user?.id ? `?ref=${user.id}` : ''}`;
 
   const auctionTitle = title || 'Auction';
   const shareSubject = `Active Auction Listing on CoBrother: ${auctionTitle}`;

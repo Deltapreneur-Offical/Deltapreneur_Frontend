@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSoftwareAuction } from '../hooks/useSoftwareAuction';
 import { useAuth } from '../context/AuthContext';
+import useReferralTracker from '../hooks/useReferralTracker';
 import { softwareAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
@@ -60,6 +61,9 @@ export default function SoftwareAuctionPage() {
   const { t } = useTranslation();
   const { auctionId }                       = useParams();
   const { user }                            = useAuth();
+
+  useReferralTracker(auctionId, 'auction');
+
   const navigate                            = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice,
           wsState, loading, loadError, placeBid } = useSoftwareAuction(auctionId);

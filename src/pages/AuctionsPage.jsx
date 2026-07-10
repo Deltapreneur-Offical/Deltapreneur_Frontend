@@ -417,7 +417,7 @@ export default function AuctionsPage() {
                     {shownDomains.length} live
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownDomains.map(auction => (
                     <DomainAuctionCard
                       key={auction.id}
@@ -441,7 +441,7 @@ export default function AuctionsPage() {
                     {shownSoftware.length} live
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownSoftware.map(auction => (
                     <SoftwareAuctionCard
                       key={auction.id}
@@ -465,7 +465,7 @@ export default function AuctionsPage() {
                     {shownCommunity.length} live
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownCommunity.map(auction => (
                     <CommunityAuctionCard
                       key={auction.id}
@@ -510,11 +510,14 @@ function DomainAuctionCard({ auction, onClick }) {
 
   return (
     <div
-      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col"
+      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-auto sm:h-[355px] sm:max-h-[355px] min-h-[355px] overflow-hidden flex flex-col"
       onClick={onClick}
     >
       {/* Status pill */}
       <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold" style={{
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
         color: isExtended ? '#c8a96e' : '#6ec896',
         background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
         border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
@@ -786,11 +789,14 @@ function CommunityAuctionCard({ auction, onClick }) {
     : [];
 
   return (
-    <div className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-[355px] max-h-[355px] overflow-hidden flex flex-col"
+    <div className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-auto sm:h-[355px] sm:max-h-[355px] min-h-[355px] overflow-hidden flex flex-col"
       onClick={onClick}>
 
       {/* Status pill */}
       <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold" style={{
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
         color: isExtended ? '#c8a96e' : '#6ec896',
         background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
         border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,

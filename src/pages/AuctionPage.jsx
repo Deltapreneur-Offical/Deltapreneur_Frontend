@@ -397,10 +397,10 @@ export default function AuctionPage() {
 
             {/* Current bid stats card */}
             <div className={`p-6 border rounded-[14px] transition-all duration-300 ${flashBid ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
-              <div className="grid grid-cols-3 gap-6">
-                <div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div className="col-span-1">
                   <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionDetailCurrentHighestBid')}</div>
-                  <div className={`font-display text-[2rem] font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`font-display text-[1.5rem] lg:text-[2rem] font-bold leading-tight ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                     {auction.currentHighestBid > 0
                       ? `${formatPrice(auction.currentHighestBid)}`
                       : t('auctionDetailNoBidsYet')}
@@ -411,16 +411,18 @@ export default function AuctionPage() {
                     </div>
                   )}
                 </div>
-                <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
-                  <div className="font-display text-[1.5rem] font-bold text-amber-600">
-                    {formatPrice(auction.minBidPrice)}
+                <div className="grid grid-cols-2 lg:contents gap-4 lg:gap-0 col-span-1">
+                  <div>
+                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
+                    <div className="font-display text-[1.2rem] lg:text-[1.5rem] font-bold text-amber-600 leading-tight">
+                      {formatPrice(auction.minBidPrice)}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
-                  <div className="font-display text-[2rem] font-bold text-gray-900">
-                    {auction.totalBids}
+                  <div>
+                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
+                    <div className="font-display text-[1.5rem] lg:text-[2rem] font-bold text-gray-900 leading-tight">
+                      {auction.totalBids}
+                    </div>
                   </div>
                 </div>
               </div>

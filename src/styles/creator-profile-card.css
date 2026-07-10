@@ -505,7 +505,7 @@
     align-items: center;
     text-align: center;
     gap: 0.75rem;
-    margin-top: -3rem;
+    margin-top: 0.5rem;
   }
   
   .creator-profile-card__header-right {
@@ -523,9 +523,10 @@
   }
 
   .creator-profile-card__description-section {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.75rem;
   }
 
   .desc-left {

@@ -497,8 +497,8 @@ export default function CommunityPage() {
           <span className="text-lg leading-none select-none" aria-hidden>✨</span>
           <div className="flex-1">
             {myProfileCompletion?.isComplete
-              ? 'You have completed your profile and earned the verified badge.'
-              : 'Complete your profile today to unlock your verified badge, instantly establish credibility, maximize your visibility, and attract top-tier opportunities.'}
+              ? 'You have completed 100% of your profile and earned the verified badge.'
+              : 'Please complete 100% of your profile until it is completed to unlock your verified badge, establish credibility, and make it publicly visible.'}
           </div>
         </div>
 

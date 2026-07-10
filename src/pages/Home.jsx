@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -91,51 +91,49 @@ export default function Home() {
   const { t } = useTranslation();
 
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const navRef = useRef(null);
   const reduceMotion = useReducedMotion();
 
 
 
+  const handleScroll = useCallback(() => {
+    const scrolled = window.scrollY > 1;
+
+    if (scrolled) {
+      document.body.classList.add('scrolled');
+    } else {
+      document.body.classList.remove('scrolled');
+    }
+
+    if (navRef.current) {
+      if (scrolled) {
+        navRef.current.classList.add('scrolled');
+      } else {
+        navRef.current.classList.remove('scrolled');
+      }
+    }
+
+    setIsScrolled(scrolled);
+  }, []);
+
   useEffect(() => {
 
     document.body.classList.add('home-page-body');
 
-
-
-    const handleScroll = () => {
-
-      if (navRef.current) {
-
-        if (window.scrollY > 0) {
-
-          navRef.current.classList.add('scrolled');
-
-        } else {
-
-          navRef.current.classList.remove('scrolled');
-
-        }
-
-      }
-
-    };
-
-
-
-    window.addEventListener('scroll', handleScroll);
-
-
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
 
       document.body.classList.remove('home-page-body');
+      document.body.classList.remove('scrolled');
 
       window.removeEventListener('scroll', handleScroll);
 
     };
 
-  }, []);
+  }, [handleScroll]);
 
 
 
@@ -186,7 +184,7 @@ export default function Home() {
 
     <div className="relative min-w-0 bg-white overflow-visible">
 
-      <TopNavbar homeMobileMenu hideContactUs />
+      <TopNavbar homeMobileMenu hideContactUs isScrolled={isScrolled} />
 
       <HomeNavbar
 
@@ -200,6 +198,8 @@ export default function Home() {
 
         hideJoinCta
 
+        isScrolled={isScrolled}
+
       />
 
 
@@ -211,7 +211,7 @@ export default function Home() {
       {/* Sticky search bar — persists across all page sections while scrolling */}
       <div className="hero-search-sticky-wrapper pl-4 pr-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="w-full max-w-[760px]">
+          <div className="w-full">
             <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />
           </div>
         </div>

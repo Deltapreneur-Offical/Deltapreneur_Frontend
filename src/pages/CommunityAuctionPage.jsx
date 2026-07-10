@@ -445,7 +445,8 @@ export default function CommunityAuctionPage() {
                 ) : (
                   bids.map((bid, i) => (
                     <BidRow key={i} bid={bid} isLatest={i === 0}
-                            isWinner={(isEnded || isCompleted || isClosed) && (bid.isWinningBid || bid.winningBid)} />
+                            isWinner={(isEnded || isCompleted || isClosed) && (bid.isWinningBid || bid.winningBid)}
+                            formatPrice={formatPrice} />
                   ))
                 )}
               </div>
@@ -556,6 +557,7 @@ export default function CommunityAuctionPage() {
               onMeetingRequested={loadMeetings}
               showMeetingForm={showMeetingForm}
               setShowMeetingForm={setShowMeetingForm}
+              formatPrice={formatPrice}
             />
           </div>
 
@@ -849,6 +851,7 @@ function MeetingsSection({
   participationPaid, participationLoading, participationFee,
   payingParticipation, participationError, onPayParticipation,
   onAction, onMeetingRequested, showMeetingForm, setShowMeetingForm,
+  formatPrice
 }) {
   const userId = user?.id != null ? String(user.id) : null;
   const hasPlacedBid = hasPlacedCommunityAuctionBid(bids, userId);
@@ -1330,7 +1333,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
 }
 
 // ─── Helper Components ────────────────────────────────────────────────────────
-function BidRow({ bid, isLatest, isWinner }) {
+function BidRow({ bid, isLatest, isWinner, formatPrice }) {
   const bidTimeStr = formatAuctionTime(bid.bidTime, {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   }, '');

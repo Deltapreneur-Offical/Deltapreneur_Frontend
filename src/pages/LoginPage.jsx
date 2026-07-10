@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { resolveAfterAuthNavigation } from '../utils/authSession';
-import { startGoogleOAuth } from '../utils/googleOAuth';
+import {
+  startGoogleOAuth,
+  startLinkedInOAuth,
+  startFacebookOAuth,
+  startInstagramOAuth,
+} from '../utils/socialOAuth';
 import { checkBackendDatabaseReady, DATABASE_UNAVAILABLE_HINT } from '../utils/backendReady';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
@@ -13,6 +18,9 @@ import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';
 import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import GoogleIcon from '../components/auth/GoogleIcon';
+import LinkedInIcon from '../components/auth/LinkedInIcon';
+import FacebookIcon from '../components/auth/FacebookIcon';
+import InstagramIcon from '../components/auth/InstagramIcon';
 import { readApiError } from '../utils/apiError';
 
 export default function LoginPage() {
@@ -300,6 +308,39 @@ export default function LoginPage() {
     startGoogleOAuth(localStorage.getItem('redirectAfterLogin') || from);
   };
 
+  const handleLinkedInLogin = async () => {
+    if (import.meta.env.DEV) {
+      const ready = await checkBackendDatabaseReady();
+      if (!ready) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
+    }
+    startLinkedInOAuth(localStorage.getItem('redirectAfterLogin') || from);
+  };
+
+  const handleFacebookLogin = async () => {
+    if (import.meta.env.DEV) {
+      const ready = await checkBackendDatabaseReady();
+      if (!ready) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
+    }
+    startFacebookOAuth(localStorage.getItem('redirectAfterLogin') || from);
+  };
+
+  const handleInstagramLogin = async () => {
+    if (import.meta.env.DEV) {
+      const ready = await checkBackendDatabaseReady();
+      if (!ready) {
+        setError(databaseUnavailableMessage);
+        return;
+      }
+    }
+    startInstagramOAuth(localStorage.getItem('redirectAfterLogin') || from);
+  };
+
   const handleResendVerification = async () => {
     if (!form.email) {
       setError('Enter your email first to resend verification link.');
@@ -349,7 +390,7 @@ export default function LoginPage() {
       <AuthMethodToggle
         value={authMethod}
         onChange={setAuthMethod}
-        googleLabel={t('authMethodGoogle')}
+        googleLabel={t('authMethodSocial', 'Social')}
         emailLabel={t('authMethodEmail')}
       />
 
@@ -358,11 +399,23 @@ export default function LoginPage() {
 
       {authMethod === 'google' && (
         <div className="flex flex-col gap-3">
-          <button type="button" className="btn-oauth" onClick={handleGoogleLogin}>
+          <button type="button" className="btn-oauth btn-oauth--google" onClick={handleGoogleLogin}>
             <GoogleIcon />
             {t('continueWithGoogle')}
           </button>
-          <p className="auth-google-hint">{t('loginGoogleHint')}</p>
+          <button type="button" className="btn-oauth btn-oauth--linkedin" onClick={handleLinkedInLogin}>
+            <LinkedInIcon />
+            {t('continueWithLinkedIn', 'Continue with LinkedIn')}
+          </button>
+          <button type="button" className="btn-oauth btn-oauth--facebook" onClick={handleFacebookLogin}>
+            <FacebookIcon />
+            {t('continueWithFacebook', 'Continue with Facebook')}
+          </button>
+          <button type="button" className="btn-oauth btn-oauth--instagram" onClick={handleInstagramLogin}>
+            <InstagramIcon />
+            {t('continueWithInstagram', 'Continue with Instagram')}
+          </button>
+          <p className="auth-google-hint">{t('loginSocialHint', 'Use a social account for a fast, secure sign-in.')}</p>
         </div>
       )}
 

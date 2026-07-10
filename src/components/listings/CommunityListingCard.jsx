@@ -66,13 +66,14 @@ export default function CommunityListingCard({
     || profile.cover_image_url
     || imageUrl;
     
-  const skills = profile.skills?.split(',').map((s) => s.trim()).filter(Boolean) || [];
+  const skills = profile.skills ? profile.skills.split(',').map((s) => s.trim()).filter(Boolean) : [];
   const roleLabel = formatLabel(profile.role);
   const industryLabel = formatLabel(profile.industry);
   const locationLabel = formatLabel(profile.location);
   const primarySkill = skills[0] || '';
   const viewCount = Number(profile.views ?? profile.view_count ?? 0);
-  const expLabel = profile.experience || profile.years_experience || '5+ Years';
+  const rawExp = profile.experience || profile.years_experience || '5+ Years';
+  const expLabel = /^\d+$/.test(String(rawExp).trim()) ? `${String(rawExp).trim()}+ Years` : rawExp;
   const workTypeLabel = formatLabel(profile.workType || profile.work_type || 'Full-time');
   const description = profile.about || profile.description || profile.about_me || 'Building scalable tech products and solving real world problems.';
 

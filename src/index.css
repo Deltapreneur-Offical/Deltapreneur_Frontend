@@ -45,7 +45,7 @@
   --brand-soft: #f5f3ff;
   --brand-border: #c4b5fd;
   --blue: #6e9ec8;
-  --text: #e8e0d0;
+  --text: #000000;
   --text-dim: #8a8099;
   --text-faint: #4a4460;
   --danger: #c86e6e;
@@ -4540,9 +4540,15 @@ select:focus {
   display: flex;
   align-items: center;
   min-width: 0;
+  max-width: 8.5rem;
   flex: 1;
   opacity: 1;
   transition: opacity 0.2s ease;
+}
+
+.app-sidebar-logo-link .brand-nav-logo,
+.app-sidebar-logo-link .home-nav-logo-img {
+  height: 2.25rem !important;
 }
 
 .app-sidebar-toggle {
@@ -4957,6 +4963,19 @@ select:focus {
 
 [data-app-layout-scroll] select {
   color-scheme: light;
+}
+
+.app-layout-collapsed-brand {
+  flex-shrink: 0;
+  max-width: 10rem;
+}
+
+.app-layout-collapsed-brand .brand-nav-logo {
+  height: 3rem;
+  width: auto;
+  max-width: 10rem;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .app-layout-main-column {
@@ -7108,6 +7127,7 @@ select:focus {
   /* 40px — matches dashboard sidebar logo (h-10) */
 }
 
+
 body.home-page-body {
   background: #ffffff !important;
   color: #111827 !important;
@@ -7133,68 +7153,65 @@ body.home-page-body {
   box-sizing: border-box;
 }
 
+/* ── Top nav: smooth height change in both directions ────────────────────────
+   Symmetrical transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1) */
 .home-top-nav {
   height: var(--home-topbar-height);
   left: 0;
   right: 0;
+  overflow: visible;
+  transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* When scrolled: expand top nav to full logo height */
+body.home-page-body.scrolled .home-top-nav {
+  height: var(--home-main-nav-height);
+}
+
+/* ── Main nav: smooth height-based show/hide ──────────────────────────────────
+   Symmetrical transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1) */
 .home-main-nav {
   height: var(--home-main-nav-height);
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
-  transition: box-shadow 0.2s ease;
   left: 0;
   right: 0;
   overflow: visible;
+  transition:
+    height     0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity    0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s  ease;
+  will-change: height, opacity;
 }
 
-/* ─── Sticky search bar wrapper (persists across all page sections) ─────────
-   Position at page level so it remains visible while scrolling through all
-   sections (Domains, Ventures, etc.). */
-.hero-search-sticky-wrapper {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  display: block;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  padding: 0;
-  margin: 0;
-  left: 0;
-  right: 0;
-  overflow: visible;
-}
-
-.menu-item-gradient {
-  position: relative;
+body.home-page-body.scrolled .home-main-nav {
+  height: 0;
   overflow: hidden;
-}
-
-.menu-item-gradient::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
   opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: -1;
+  pointer-events: none;
 }
 
-.menu-item-gradient:hover::before {
-  opacity: 0.08;
+/* ── Scroll-in logo: smooth fade in both directions ──────────────────────────
+   Symmetrical transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1) */
+.home-top-nav-scroll-logo {
+  opacity: 0;
+  pointer-events: none;
+  overflow: visible;
+  height: var(--home-main-nav-height, 3.5rem);
+  margin-right: auto;
+  flex-shrink: 0;
+  transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 
-.menu-item-gradient:hover {
-  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-weight: 600;
+body.home-page-body.scrolled .home-top-nav-scroll-logo {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.home-main-nav.scrolled {
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-}
+/* The scroll-logo button uses overflow:visible so the logo image is never clipped.
+   Logo height is NOT overridden here — it inherits the natural --brand-nav-logo-height
+   (3.5rem) so it appears exactly the same size as in the main navbar. */
 
 .home-nav-logo-btn {
   display: flex;
@@ -7245,24 +7262,6 @@ body.home-page-body {
   opacity: 1;
 }
 
-.home-nav-logo-img--hover {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.brand-logo-interactive:hover .home-nav-logo-img--default,
-.brand-logo-interactive:focus-visible .home-nav-logo-img--default {
-  opacity: 0;
-}
-
-.brand-logo-interactive:hover .home-nav-logo-img--hover,
-.brand-logo-interactive:focus-visible .home-nav-logo-img--hover {
-  opacity: 1;
-}
 
 /* Uiverse thin-duck-22 — animated logout (vinodjangid07), themed for CoBrother */
 .uiverse-logout-btn {
@@ -7796,15 +7795,20 @@ body.home-page-body {
     align-items: center;
     flex-shrink: 0;
     min-width: 0;
-    max-width: none;
-    overflow: visible;
+    max-width: 7.2rem; /* ~115px — matches reference mobile design */
+    overflow: hidden; /* clip video/image overflow to remove black line artifact */
+  }
+
+  .home-nav-logo-video {
+    max-width: 7.2rem; /* constrain animated logo video on mobile */
+    width: 100%;       /* fill the button container, don't overflow */
   }
 
   .brand-nav-logo,
   .home-nav-logo-img {
     height: 1.875rem;
     width: auto;
-    max-width: none;
+    max-width: 7.2rem; /* ~115px — matches reference mobile design */
     min-width: 0;
     object-fit: contain;
     object-position: left center;
@@ -7812,7 +7816,7 @@ body.home-page-body {
 
   .home-main-nav-start .home-nav-logo-swap {
     flex-shrink: 0;
-    max-width: none;
+    max-width: 7.2rem; /* ~115px — matches reference mobile design */
     min-width: 0;
   }
 
@@ -7901,7 +7905,7 @@ body.home-page-body {
   .brand-nav-logo,
   .home-nav-logo-img {
     height: 1.625rem;
-    max-width: none;
+    max-width: 7.2rem; /* ~115px — small mobile, matches reference design */
   }
 
   .home-nav-hamburger {
@@ -8024,6 +8028,26 @@ body.home-page-body {
     gap: 0.25rem;
   }
 }
+
+/* Position language/currency dropdowns upwards inside mobile drawer footer */
+.home-nav-drawer-footer .home-nav-util-language .absolute {
+  top: auto !important;
+  bottom: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  left: -10px !important;
+  right: auto !important;
+}
+
+.home-nav-drawer-footer .home-nav-util-currency .absolute {
+  top: auto !important;
+  bottom: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  right: -10px !important;
+  left: auto !important;
+}
+
 
 .home-nav-pill {
   display: inline-flex;
@@ -12595,4 +12619,44 @@ body.home-menu-open {
   vertical-align: -0.16em !important;
   margin-left: 0.15em !important;
   margin-right: 0.15em !important;
+}
+
+/* ── TLD Price Marquee (Hero domain search bar) ─────────────────────────── */
+.tld-price-marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+}
+
+.tld-price-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  min-width: max-content;
+  gap: 1.5rem;
+  animation: tld-marquee-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.tld-price-marquee-mask:hover .tld-price-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes tld-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Invisible scrollbar utility ─────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }

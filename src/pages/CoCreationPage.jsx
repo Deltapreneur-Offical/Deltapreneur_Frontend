@@ -891,9 +891,9 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
             </div>
             <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
               {form.pricingPlans.map((plan) => (
-                <div key={plan.key} className="flex items-center gap-4 px-4 py-3 bg-white">
+                <div key={plan.key} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 py-3 bg-white">
                   {/* Checkbox */}
-                  <label className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 min-w-[180px]">
+                  <label className="flex items-center gap-2.5 cursor-pointer w-full sm:w-[180px] sm:flex-shrink-0">
                     <span
                       onClick={() => setPlanField(plan.key, 'enabled', !plan.enabled)}
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${plan.enabled
@@ -912,7 +912,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
                   {/* Price input — only visible when enabled */}
                   {plan.enabled ? (
-                    <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center gap-2 w-full sm:flex-1">
                       <SearchableCurrencySelect
                         className="shrink-0 w-[6rem] sm:w-[7.25rem] px-2 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white text-sm outline-none focus:border-indigo-500 transition-all cursor-pointer"
                         wrapperClassName="shrink-0 w-[6rem] sm:w-[7.25rem]"
@@ -924,14 +924,14 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                         type="number"
                         min="0"
                         step="any"
-                        className={`${inputCls} max-w-[180px]`}
+                        className={`${inputCls} flex-1 sm:max-w-[180px]`}
                         placeholder="Enter price"
                         value={plan.price}
                         onChange={e => setPlanField(plan.key, 'price', e.target.value)}
                       />
                     </div>
                   ) : (
-                    <div className="flex-1 text-xs text-gray-300 italic">Not offered</div>
+                    <div className="w-full sm:flex-1 text-xs text-gray-300 italic">Not offered</div>
                   )}
                 </div>
               ))}

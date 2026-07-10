@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
@@ -29,6 +29,114 @@ const SEARCH_MODE_CONFIG = {
   premium: { labelKey: 'searchTabPremium', placeholderKey: 'searchPlaceholderPremium' },
   auction: { labelKey: 'searchTabAuction', placeholderKey: 'searchPlaceholderAuction' },
 };
+
+// Easily editable initial TLD prices for the marquee strip shown under 'Domain Names' tab
+export const INITIAL_TLD_PRICES = [
+  { tld: '.com', price: '1,049.53' },
+  { tld: '.in', price: '500' },
+  { tld: '.net', price: '1,190.01' },
+  { tld: '.org', price: '753' },
+  { tld: '.co', price: '1,505' },
+  { tld: '.io', price: '5,017' },
+  { tld: '.ai', price: '8,027' },
+];
+
+function TldPriceMarquee() {
+  // Quadruple items so there's plenty of scroll width for infinite wrapping
+  const items = useMemo(
+    () => [
+      ...INITIAL_TLD_PRICES,
+      ...INITIAL_TLD_PRICES,
+      ...INITIAL_TLD_PRICES,
+      ...INITIAL_TLD_PRICES,
+    ],
+    []
+  );
+
+  const scrollRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftPos = useRef(0);
+
+  // Smooth requestAnimationFrame continuous scroll when not dragging or paused
+  useEffect(() => {
+    let animationFrameId;
+
+    const scrollStep = () => {
+      const el = scrollRef.current;
+      if (el && !isPaused && !isDragging.current) {
+        el.scrollLeft += 0.65;
+        // Seamless infinite loop wrap
+        if (el.scrollLeft >= el.scrollWidth / 2) {
+          el.scrollLeft = 0;
+        }
+      }
+      animationFrameId = requestAnimationFrame(scrollStep);
+    };
+
+    animationFrameId = requestAnimationFrame(scrollStep);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPaused]);
+
+  // Click & drag handlers for mouse dragging
+  const handleMouseDown = (e) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    isDragging.current = true;
+    startX.current = e.pageX - el.offsetLeft;
+    scrollLeftPos.current = el.scrollLeft;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return;
+    e.preventDefault();
+    const el = scrollRef.current;
+    if (!el) return;
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - startX.current) * 1.6;
+    el.scrollLeft = scrollLeftPos.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDragging.current = false;
+  };
+
+  return (
+    <div
+      className="tld-price-marquee-mask relative w-full overflow-hidden py-2 select-none"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => {
+        setIsPaused(false);
+        handleMouseUpOrLeave();
+      }}
+    >
+      <div
+        ref={scrollRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="flex items-center gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"
+      >
+        {items.map((item, index) => (
+          <div
+            key={`${item.tld}-${index}`}
+            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-purple-50/95 border border-purple-200/90 shadow-sm hover:border-purple-400 hover:bg-purple-100/90 hover:shadow-md transition-all duration-200 shrink-0 select-none"
+          >
+            <span className="font-black text-purple-950 text-[16px] tracking-tight">{item.tld}</span>
+            <span className="text-[15px] font-extrabold text-purple-700">
+              ₹{item.price}
+              <span className="text-[12px] font-semibold text-purple-500 ml-0.5">/yr</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function toSafeText(value) {
   if (typeof value === 'string') return value;
@@ -649,22 +757,27 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     >
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
-        {/* Desktop: compact search and mode tabs */}
-        <div className="hidden lg:flex lg:flex-row lg:items-start lg:justify-start">
-          <HeroSearchStack
-            animateHero={animateHero}
-            className="w-full max-w-[760px] flex-[1_1_700px]"
-          >
-            {desktopSearchForm}
-
-            <div className="mt-3 flex justify-center">
-              <BrandSearchTabs
-                searchMode={searchMode}
-                onTabChange={handleTabChange}
-                layoutId="brand-search-active-pill-desktop"
-              />
+        {/* Desktop: search input perfectly aligned with TLD Price Marquee row, tabs below */}
+        <div className="hidden lg:block">
+          <div className="flex items-center gap-6 w-full">
+            <div className="w-full max-w-[660px] shrink-0">
+              {desktopSearchForm}
             </div>
-          </HeroSearchStack>
+
+            {searchMode === 'new' && (
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <TldPriceMarquee />
+              </div>
+            )}
+          </div>
+
+          <div className="mt-3 flex justify-start pl-2">
+            <BrandSearchTabs
+              searchMode={searchMode}
+              onTabChange={handleTabChange}
+              layoutId="brand-search-active-pill-desktop"
+            />
+          </div>
         </div>
 
         {/* Mobile / tablet — search + tabs share one entrance so spacing never collapses */}
@@ -681,6 +794,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               layoutId="brand-search-active-pill-mobile"
             />
           </div>
+
+          {searchMode === 'new' && (
+            <div className="mt-2 w-full overflow-hidden">
+              <TldPriceMarquee />
+            </div>
+          )}
         </HeroSearchStack>
 
         {/* Results */}

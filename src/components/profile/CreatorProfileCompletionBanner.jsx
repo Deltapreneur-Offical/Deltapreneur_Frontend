@@ -42,7 +42,7 @@ export default function CreatorProfileCompletionBanner({ profile, onEdit, editTo
         </p>
         <p className="creator-completion-banner__message">
           {t('creatorProfileCompletionWarning', {
-            defaultValue: 'Complete your profile to make it visible publicly.',
+            defaultValue: "Please complete 100% of your profile until it's completed to make it visible publicly.",
           })}
         </p>
       </div>

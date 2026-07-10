@@ -59,6 +59,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage'));
 const SoftwareAuctionPage = lazy(() => import('./pages/SoftwareAuctionPage'));
 const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const DataDeletionPage = lazy(() => import('./pages/DataDeletionPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
 const loadVenturesPage = () => import('./pages/VenturesPage');
 const VenturesPage = lazy(loadVenturesPage);
@@ -172,6 +173,7 @@ useEffect(() => {
             <Route path="/careers" element={<Navigate to="/contact" replace />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/data-deletion" element={<DataDeletionPage />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
             <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 import { resolveAfterAuthNavigation } from '../utils/authSession';
-import { startGoogleOAuth } from '../utils/googleOAuth';
+import { startGoogleOAuth } from '../utils/socialOAuth';
 import AuthShell from '../components/auth/AuthShell';
 import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';

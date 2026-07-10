@@ -536,6 +536,7 @@ export default function CommunityAuctionPage() {
               onMeetingRequested={loadMeetings}
               showMeetingForm={showMeetingForm}
               setShowMeetingForm={setShowMeetingForm}
+              formatPrice={formatPrice}
             />
           </div>
 
@@ -829,6 +830,7 @@ function MeetingsSection({
   participationPaid, participationLoading, participationFee,
   payingParticipation, participationError, onPayParticipation,
   onAction, onMeetingRequested, showMeetingForm, setShowMeetingForm,
+  formatPrice
 }) {
   const userId = user?.id != null ? String(user.id) : null;
   const hasPlacedBid = hasPlacedCommunityAuctionBid(bids, userId);

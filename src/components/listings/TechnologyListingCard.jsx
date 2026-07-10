@@ -136,8 +136,8 @@ export default function TechnologyListingCard({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/technology/${item.id}`
-      : `${APP_BASE_URL.replace(/\/$/, '')}/technology/${item.id}`;
+      ? `${window.location.origin}/technology/${item.id}${user?.id ? `?ref=${user.id}` : ''}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/technology/${item.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const shareTechName = item.name || 'Technology Listing';
   const shareTechDesc = item.description || 'A premium software/technology listing on CoBrother.';
   const shareSubject = `Premium Technology Listing Available on CoBrother: ${shareTechName}`;

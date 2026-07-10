@@ -76,7 +76,7 @@ export const venturePitchAPI = {
 export const ventureDealAPI = {
   getMy:              ()     => api.get('/api/v1/venture-deals/my'),
   get:                (id)   => api.get(`/api/v1/venture-deals/${id}`),
-  createPaymentOrder: (id)   => api.post(`/api/v1/venture-deals/${id}/payment/create-order`),
+  createPaymentOrder: (id, redeemPoints = false) => api.post(`/api/v1/venture-deals/${id}/payment/create-order`, {}, { params: { redeem_points: redeemPoints } }),
   verifyPayment:      (id, data) => api.post(`/api/v1/venture-deals/${id}/payment/verify`, data),
   adminGetAll:        ()     => api.get('/api/v1/venture-deals/admin/all'),
   adminApproveDeal:   (id)   => api.post(`/api/v1/venture-deals/${id}/admin/approve`),
@@ -151,7 +151,7 @@ export const domainAPI = {
         page_size: pageSize,
       },
     }),
-  createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
+  createOrder: (id, data, redeemPoints = false) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data, { params: { redeem_points: redeemPoints } }),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),
   verifyOptions: () => api.get('/api/v1/domain/verification/options'),
@@ -171,7 +171,7 @@ export const aiDomainsAPI = {
 /** Domain registration storefront (OpenProvider + Razorpay) — new domain checkout */
 export const domainStorefrontAPI = {
   getConfig: () => api.get('/api/v1/domain/storefront/config'),
-  createOrder: (body) => api.post('/api/v1/domain/storefront/order', body),
+  createOrder: (body, redeemPoints = false) => api.post('/api/v1/domain/storefront/order', body, { params: { redeem_points: redeemPoints } }),
   verifyOrder: (body) => api.post('/api/v1/domain/storefront/order/verify', body),
   listOrders: () => api.get('/api/v1/domain/storefront/orders'),
   getOrder: (orderId, { sync = true } = {}) =>
@@ -197,7 +197,7 @@ export const technologyAPI = {
   create:          (data)     => api.post('/api/v1/technology', data),
   update:          (id, data) => api.put(`/api/v1/technology/${id}`, data),
   delete:          (id)       => api.delete(`/api/v1/technology/${id}`),
-  createOrder:     (id, data) => api.post(`/api/v1/technology/${id}/purchase/create-order`, data),
+  createOrder:     (id, data, redeemPoints = false) => api.post(`/api/v1/technology/${id}/purchase/create-order`, data, { params: { redeem_points: redeemPoints } }),
   verifyPayment:   (id, data) => api.post(`/api/v1/technology/${id}/purchase/verify`, data),
   handleFailure:   (id)       => api.post(`/api/v1/technology/${id}/purchase/failure`),
   confirmPurchase: (purchaseId) => api.post(`/api/v1/technology/purchase/${purchaseId}/confirm`),
@@ -312,7 +312,7 @@ export const coBrotherAPI = {
 
 export const feeAPI = {
   getMyRequests:  ()        => api.get('/api/v1/fee/my-requests'),
-  createOrder:    (id, data = {}) => api.post(`/api/v1/fee/requests/${id}/create-order`, data),
+  createOrder:    (id, data = {}, redeemPoints = false) => api.post(`/api/v1/fee/requests/${id}/create-order`, data, { params: { redeem_points: redeemPoints } }),
   verify:         (id, data)=> api.post(`/api/v1/fee/requests/${id}/verify`, data),
   cancel:         (id)      => api.post(`/api/v1/fee/requests/${id}/cancel`),
 };
@@ -333,11 +333,11 @@ export const auctionAPI = {
   adminGetAll:  ()                  => api.get('/api/v1/auction/admin/all'),
   getActive: () => api.get('/api/v1/auction/active'),
   participationStatus: (auctionId) => api.get(`/api/v1/auction/${auctionId}/participation/status`),
-  participationCreateOrder: (auctionId) => api.post(`/api/v1/auction/${auctionId}/participation/create-order`),
+  participationCreateOrder: (auctionId, redeemPoints = false) => api.post(`/api/v1/auction/${auctionId}/participation/create-order`, {}, { params: { redeem_points: redeemPoints } }),
   participationVerify: (auctionId, data) => api.post(`/api/v1/auction/${auctionId}/participation/verify`, data),
   getParticipationFees: () => api.get('/api/v1/auction/participation-fees'),
   updateParticipationFees: (data) => api.put('/api/v1/auction/admin/participation-fees', data),
-  winnerPaymentCreateOrder: (auctionId) => api.post(`/api/v1/payment/create-order/${auctionId}`),
+  winnerPaymentCreateOrder: (auctionId, redeemPoints = false) => api.post(`/api/v1/payment/create-order/${auctionId}`, {}, { params: { redeem_points: redeemPoints } }),
   winnerPaymentVerify: (data) => api.post('/api/v1/payment/verify', data),
 };
 
@@ -354,11 +354,11 @@ export const creatorAuctionAPI = {
   getMyAuctions:       ()                  => api.get('/api/v1/creator-auction/my'),
   placeBid:            (auctionId, payload) => api.post(`/api/v1/creator-auction/${auctionId}/bid`, payload),
   participationStatus: (auctionId)         => api.get(`/api/v1/creator-auctions/${auctionId}/participation/status`),
-  participationCreateOrder: (auctionId)    => api.post(`/api/v1/creator-auctions/${auctionId}/participation/create-order`),
+  participationCreateOrder: (auctionId, redeemPoints = false)    => api.post(`/api/v1/creator-auctions/${auctionId}/participation/create-order`, {}, { params: { redeem_points: redeemPoints } }),
   participationVerify: (auctionId, data)   => api.post(`/api/v1/creator-auctions/${auctionId}/participation/verify`, data),
   reAuction:           (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/re-auction`, data),
   close:               (auctionId)         => api.post(`/api/v1/creator-auction/${auctionId}/close`),
-  winnerPaymentCreateOrder: (auctionId)    => api.post(`/api/v1/creator-auction/${auctionId}/winner-payment/create-order`),
+  winnerPaymentCreateOrder: (auctionId, redeemPoints = false)    => api.post(`/api/v1/creator-auction/${auctionId}/winner-payment/create-order`, {}, { params: { redeem_points: redeemPoints } }),
   winnerPaymentVerify: (auctionId, data)   => api.post(`/api/v1/creator-auction/${auctionId}/winner-payment/verify`, data),
   adminGetAll:         ()                  => api.get('/api/v1/creator-auction/admin/all'),
 };
@@ -372,7 +372,7 @@ export const softwareAuctionAPI = {
   getBySoftware:   (softwareId)         => api.get(`/api/v1/software-auction/software/${softwareId}`),
   placeBid:        (auctionId, payload)  => api.post(`/api/v1/software-auction/${auctionId}/bid`, payload),
   participationStatus: (auctionId)      => api.get(`/api/v1/software-auction/${auctionId}/participation/status`),
-  participationCreateOrder: (auctionId) => api.post(`/api/v1/software-auction/${auctionId}/participation/create-order`),
+  participationCreateOrder: (auctionId, redeemPoints = false) => api.post(`/api/v1/software-auction/${auctionId}/participation/create-order`, {}, { params: { redeem_points: redeemPoints } }),
   participationVerify: (auctionId, data)=> api.post(`/api/v1/software-auction/${auctionId}/participation/verify`, data),
   reAuction:       (auctionId, data)    => api.post(`/api/v1/software-auction/${auctionId}/re-auction`, data),
   close:           (auctionId)          => api.post(`/api/v1/software-auction/${auctionId}/close`),

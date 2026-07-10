@@ -4,6 +4,7 @@ import { feeAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 
@@ -125,12 +126,15 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(FEE_INR);
+
   const handlePay = async () => {
     setLoading(true); setError('');
     try {
       const { data: orderData } = await feeAPI.createOrder(request.id, {
         ...buildOrderCurrencyPayload(currency),
-      });
+      }, redeemPoints);
 
       openRazorpayCheckout({
         orderData,
@@ -186,12 +190,22 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
           {t('feeRequestsAfterPayment')}
         </div>
 
+        <div className="mx-8 mb-4 relative z-10">
+          <EdgePointsRedeemToggle
+            originalAmount={FEE_INR}
+            onChange={(redeem, discount, final) => {
+              setRedeemPoints(redeem);
+              setFinalPayable(final);
+            }}
+          />
+        </div>
+
         {error && <div className="relative z-10 mx-8 mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-400 text-sm">{error}</div>}
 
         <div className="relative z-10 px-8 pb-8 flex gap-3">
           <button onClick={handlePay} disabled={loading}
             className="btn-glow flex-1 flex items-center justify-center gap-2">
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : t('feeRequestsPayAmount', { amount: formatPrice(FEE_INR) })}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : t('feeRequestsPayAmount', { amount: formatPrice(finalPayable) })}
           </button>
           <button onClick={onClose}
             className="btn-glow">{t('cancel')}</button>

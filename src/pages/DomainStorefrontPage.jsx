@@ -7,6 +7,7 @@ import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import { resolveRegistrationPricing } from '../utils/domainRegistrationPricing';
 import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
@@ -179,6 +180,13 @@ export default function DomainStorefrontPage() {
 
   const displayTotal = pricing?.total ?? null;
 
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(displayTotal);
+
+  useEffect(() => {
+    setFinalPayable(displayTotal);
+  }, [displayTotal]);
+
   const updateContact = (field, value) => {
     setContact((prev) => ({ ...prev, [field]: value }));
   };
@@ -195,7 +203,7 @@ export default function DomainStorefrontPage() {
         domain: checkResult.domain,
         period,
         contact,
-      });
+      }, redeemPoints);
       const orderData = orderPayload?.data ?? orderPayload;
 
       openRazorpayCheckout({
@@ -413,6 +421,16 @@ export default function DomainStorefrontPage() {
               <DomainRegistrationPriceBreakdown pricing={pricing} className="mt-2" />
             )}
 
+            {pricing && (
+              <EdgePointsRedeemToggle
+                originalAmount={displayTotal}
+                onChange={(redeem, discount, final) => {
+                  setRedeemPoints(redeem);
+                  setFinalPayable(final);
+                }}
+              />
+            )}
+
             {payError && (
               <div className="text-sm text-red-600 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -426,7 +444,7 @@ export default function DomainStorefrontPage() {
               onClick={handlePay}
               disabled={payLoading || checkoutUnavailable}
             >
-              {payLoading ? t('storefrontPayOpening') : t('storefrontPayNow')}
+              {payLoading ? t('storefrontPayOpening') : `Pay ₹${finalPayable ?? displayTotal}`}
             </button>
           </section>
         )}

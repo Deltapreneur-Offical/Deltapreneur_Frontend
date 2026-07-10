@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useAuth } from '../../context/AuthContext';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
@@ -79,6 +80,7 @@ export default function DomainListingCard({
 }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -151,8 +153,8 @@ export default function DomainListingCard({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/domains/${domain.id}`
-      : `${APP_BASE_URL.replace(/\/$/, '')}/domains/${domain.id}`;
+      ? `${window.location.origin}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = display.fullDomain;
   const shareSubject = `Premium Domain Listing Available on CoBrother: ${domainName}`;
   const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on CoBrother.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on CoBrother, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via CoBrother]`;

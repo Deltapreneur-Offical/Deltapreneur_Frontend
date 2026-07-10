@@ -13,6 +13,7 @@ import { ventureDealAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { unwrapApiData } from '../utils/apiResponse';
 import { formatEquityPercent } from '../constants/ventureLabels';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
@@ -151,6 +152,9 @@ export default function VentureDealPage() {
   const [message, setMessage] = useState('');
   const [paying, setPaying] = useState(false);
 
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(0);
+
   const load = useCallback(async () => {
     if (!dealId) return;
     setError('');
@@ -167,6 +171,12 @@ export default function VentureDealPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (deal) {
+      setFinalPayable(getVentureDealAmount(deal));
+    }
+  }, [deal]);
 
   useEffect(() => {
     if (!dealId) return undefined;
@@ -187,7 +197,7 @@ export default function VentureDealPage() {
     setPaying(true);
     setError('');
     try {
-      const { data: orderResp } = await ventureDealAPI.createPaymentOrder(dealId);
+      const { data: orderResp } = await ventureDealAPI.createPaymentOrder(dealId, redeemPoints);
       const order = unwrapApiData(orderResp) || orderResp;
       if (order?.contactOnly) {
         setMessage('No payment required. CoBrother will contact you shortly.');
@@ -379,6 +389,15 @@ export default function VentureDealPage() {
                   {!paymentWaitingOnBuyer && deal.dealStatus === 'CANCELLED' && 'This deal was cancelled.'}
                   {!paymentWaitingOnBuyer && !isBuyer && deal?.dealStatus === 'PENDING_ADMIN_APPROVAL' && 'This deal is awaiting admin approval before the partner/buyer can pay.'}
                 </p>
+                {canPay && (
+                  <EdgePointsRedeemToggle
+                    originalAmount={dealAmount}
+                    onChange={(redeem, discount, final) => {
+                      setRedeemPoints(redeem);
+                      setFinalPayable(final);
+                    }}
+                  />
+                )}
                 <div className="mt-4 flex flex-wrap items-center gap-4">
                   <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Amount due</p>
@@ -397,7 +416,7 @@ export default function VentureDealPage() {
                           Opening payment…
                         </>
                       ) : (
-                        'Pay Now'
+                        `Pay ₹${finalPayable} Now`
                       )}
                     </button>
                   ) : (

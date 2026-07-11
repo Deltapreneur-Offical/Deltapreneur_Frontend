@@ -64,27 +64,6 @@ export default function DataDeletionPage() {
               
               <section>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">How to remove CoBrother App permissions:</h2>
-                </div>
-                <p className="text-slate-600 text-sm sm:text-base mb-4">
-                  According to Facebook Platform Rules, we provide a way for you to delete your login integration info. You can remove your CoBrother app activities by following these steps:
-                </p>
-                <ol className="text-slate-600 text-sm sm:text-base list-decimal pl-6 space-y-3">
-                  <li>Go to your Facebook Profile's <strong>Settings & Privacy</strong> &gt; <strong>Settings</strong>.</li>
-                  <li>In the left sidebar menu, scroll down and click on <strong>Apps and Websites</strong>.</li>
-                  <li>Find and select <strong>CoBrother</strong>.</li>
-                  <li>Click the <strong>Remove</strong> button.</li>
-                  <li>Confirm by checking the option and clicking <strong>Remove</strong> again. Congratulations! You have successfully removed your CoBrother app login authorization.</li>
-                </ol>
-              </section>
-
-              <div className="border-t border-slate-200 my-6" />
-
-              <section>
-                <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-red-50 rounded-lg text-red-600">
                     <ShieldAlert className="h-5 w-5" />
                   </div>

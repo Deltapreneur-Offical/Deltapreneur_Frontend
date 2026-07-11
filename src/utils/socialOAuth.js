@@ -16,11 +16,3 @@ export function startGoogleOAuth(from) {
 export function startLinkedInOAuth(from) {
   initiateOAuth('linkedin', from);
 }
-
-export function startFacebookOAuth(from) {
-  initiateOAuth('facebook', from);
-}
-
-export function startInstagramOAuth(from) {
-  initiateOAuth('instagram', from);
-}

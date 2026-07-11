@@ -6,13 +6,14 @@ import { useAuth } from '../context/AuthContext';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 import { resolveAfterAuthNavigation } from '../utils/authSession';
-import { startGoogleOAuth } from '../utils/socialOAuth';
+import { startGoogleOAuth, startLinkedInOAuth } from '../utils/socialOAuth';
 import AuthShell from '../components/auth/AuthShell';
 import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';
 import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import AuthRecoverActions from '../components/auth/AuthRecoverActions';
 import GoogleIcon from '../components/auth/GoogleIcon';
+import LinkedInIcon from '../components/auth/LinkedInIcon';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -153,6 +154,10 @@ export default function RegisterPage() {
 
   const showMethodToggle = step === 1;
 
+  const handleLinkedInLogin = async () => {
+    startLinkedInOAuth();
+  };
+
   return (
     <AuthShell
       title={t('registerTitle')}
@@ -187,6 +192,10 @@ export default function RegisterPage() {
           <button type="button" className="btn-oauth" onClick={() => startGoogleOAuth()}>
             <GoogleIcon />
             {t('continueWithGoogle')}
+          </button>
+          <button type="button" className="btn-oauth btn-oauth--linkedin" onClick={handleLinkedInLogin}>
+            <LinkedInIcon />
+            {t('continueWithLinkedIn', 'Continue with LinkedIn')}
           </button>
           <p className="auth-google-hint">{t('registerGoogleHint')}</p>
         </div>

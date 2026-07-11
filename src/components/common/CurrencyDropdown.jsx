@@ -43,7 +43,7 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
         <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
           Currency
         </p>
-        <div className="space-y-0.5" role="listbox" aria-label="Currency">
+        <div className="max-h-40 overflow-y-auto space-y-0.5 pr-1" role="listbox" aria-label="Currency">
           {supportedCurrencies.map((code) => (
             <button
               key={code}
@@ -79,7 +79,7 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
     return code.toLowerCase().includes(term) || label.includes(term);
   });
 
-  const panelCls = 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg w-64 overflow-hidden z-[2000] flex flex-col';
+  const panelCls = 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg w-56 max-w-[calc(100vw-2rem)] max-h-60 overflow-y-auto z-[2000] flex flex-col';
 
   const fullLabel = CURRENCY_LABELS[currency] || currency;
   const shortLabel = CURRENCY_SHORT[currency] || currency;

@@ -423,6 +423,14 @@
   color: #1E293B;
 }
 
+.creator-profile-card__stats-grid .stat-col:first-child .stat-value {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
 .stat-label {
   font-size: 0.65rem;
   font-weight: 500;

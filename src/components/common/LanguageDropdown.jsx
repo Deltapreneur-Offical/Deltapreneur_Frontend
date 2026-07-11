@@ -72,7 +72,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
         <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
           {t('language')}
         </p>
-        <div className="space-y-0.5" role="listbox" aria-label={t('language')}>
+        <div className="max-h-40 overflow-y-auto space-y-0.5 pr-1" role="listbox" aria-label={t('language')}>
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
@@ -100,7 +100,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
       : 'inline-flex max-w-[min(100%,11rem)] cursor-pointer items-center gap-1.5 rounded-md border border-slate-300/90 bg-white px-3 py-1.5 text-xs font-medium tracking-wide text-slate-700 shadow-sm transition-all duration-300 hover:border-[var(--cobrother-hover-color)] hover:text-[var(--cobrother-hover-color)] hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-200/80';
 
   const panelCls = isMinimal
-    ? 'home-nav-util-panel absolute top-full right-0 z-[1002] mt-1.5 min-w-[9.5rem] overflow-hidden rounded-xl border border-slate-100 bg-white/95 py-1 shadow-[0_12px_40px_rgba(15,23,42,0.1)] backdrop-blur-md'
+    ? 'home-nav-util-panel absolute top-full right-0 z-[1002] mt-1.5 min-w-[9.5rem] max-w-[calc(100vw-2rem)] max-h-48 overflow-y-auto rounded-xl border border-slate-100 bg-white/95 py-1 shadow-[0_12px_40px_rgba(15,23,42,0.1)] backdrop-blur-md'
     : 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1002]';
 
   const isNavUtil = className.includes('home-nav-util-language');

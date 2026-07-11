@@ -17,6 +17,7 @@ import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import '../../styles/domain-listing-cards.css';
 
@@ -222,7 +223,9 @@ export default function CommunityListingCard({
         <div className="creator-profile-card__stats-grid">
            <div className="stat-col">
               <Briefcase size={15} className="stat-icon" />
-              <span className="stat-value">{expLabel}</span>
+              <TruncatedTextTooltip text={expLabel}>
+                <span className="stat-value">{expLabel}</span>
+              </TruncatedTextTooltip>
               <span className="stat-label">Experience</span>
            </div>
            <div className="stat-col stat-col--center">

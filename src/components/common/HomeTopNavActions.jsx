@@ -323,14 +323,6 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 >
                   {SUPPORT_PHONE_DISPLAY}
                 </a>
-                <div className="home-profile-mobile-only home-profile-mobile-select-row px-3 py-1.5">
-                  <span className="home-profile-mobile-select-label">Language</span>
-                  <LanguageDropdown variant="minimal" className="home-profile-menu-language" />
-                </div>
-                <div className="home-profile-mobile-only home-profile-mobile-select-row px-3 py-1.5 border-b border-gray-100">
-                  <span className="home-profile-mobile-select-label">Currency</span>
-                  <CurrencyDropdown variant="minimal" className="home-profile-menu-currency" />
-                </div>
                 <button
                   type="button"
                   className="menu-item-gradient block w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"

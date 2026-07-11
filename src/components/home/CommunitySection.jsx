@@ -6,6 +6,7 @@ import { resolveHomepageSectionItems } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { asArray } from '../../utils/asArray';
 import { useLikes } from '../../hooks/useLikes';
+import { isCreatorProfileVisible } from '../../utils/creatorProfile';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -38,7 +39,11 @@ export default function CommunitySection() {
   }, []);
 
   const previewCommunities = useMemo(
-    () => resolveHomepageSectionItems(communities, 'community'),
+    () => {
+      const items = resolveHomepageSectionItems(communities, 'community');
+      // Filter out profiles that are not visible to prevent blank cards
+      return items.filter((item) => isCreatorProfileVisible(item));
+    },
     [communities],
   );
 

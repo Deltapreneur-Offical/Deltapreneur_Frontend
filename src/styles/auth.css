@@ -452,3 +452,9 @@
   background: #f4fafe;
   box-shadow: 0 4px 12px rgba(10, 102, 194, 0.08);
 }
+
+.btn-oauth--facebook:hover {
+  border-color: rgba(24, 119, 242, 0.45);
+  background: #f4f8fe;
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.08);
+}

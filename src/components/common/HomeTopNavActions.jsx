@@ -116,7 +116,9 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState(null);
   const profileRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const userKey = user?.id ?? user?.email ?? null;
 
@@ -126,6 +128,39 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   );
 
   const displayName = useMemo(() => getDisplayNameFromUser(user), [user]);
+
+  const updateDropdownPosition = useCallback(() => {
+    if (!profileRef.current) return;
+    const rect = profileRef.current.getBoundingClientRect();
+    const dropdownWidth = Math.min(320, window.innerWidth - 16);
+    let left = rect.right - dropdownWidth;
+    left = Math.max(8, Math.min(left, window.innerWidth - dropdownWidth - 8));
+    let top = rect.bottom + 8;
+    const estimatedHeight = 320;
+    if (top + estimatedHeight > window.innerHeight - 8) {
+      top = rect.top - estimatedHeight - 8;
+    }
+    setDropdownStyle({
+      position: 'fixed',
+      top,
+      left,
+      width: dropdownWidth,
+      zIndex: 10050,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!profileDropdownOpen) return;
+    updateDropdownPosition();
+    const handleScroll = () => updateDropdownPosition();
+    const handleResize = () => updateDropdownPosition();
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [profileDropdownOpen, updateDropdownPosition]);
 
   useEffect(() => {
     if (!showLogoutConfirm) return undefined;
@@ -138,7 +173,12 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
         setProfileDropdownOpen(false);
       }
     };
@@ -182,8 +222,13 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   }, [navigate]);
 
   const toggleProfileDropdown = useCallback(() => {
-    setProfileDropdownOpen((prev) => !prev);
-  }, []);
+    setProfileDropdownOpen((prev) => {
+      if (!prev) {
+        setTimeout(updateDropdownPosition, 0);
+      }
+      return !prev;
+    });
+  }, [updateDropdownPosition]);
 
   return (
     <>
@@ -239,8 +284,13 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
           )}
         </button>
 
-        {profileDropdownOpen && (
-          <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[11rem] overflow-visible z-[1001]">
+        {profileDropdownOpen && dropdownStyle &&
+          createPortal(
+            <div
+              ref={dropdownRef}
+              className="fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[11rem] overflow-hidden"
+              style={dropdownStyle}
+            >
             {user ? (
               <>
                 <div className="px-4 py-3 border-b border-gray-100">
@@ -315,7 +365,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </div>
               </>
             ) : authLoading ? (
-              <div className="px-4 py-2.5 text-sm text-gray-400">â€¦</div>
+              <div className="px-4 py-2.5 text-sm text-gray-400">…</div>
             ) : (
               <>
                 <button
@@ -354,7 +404,8 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </div>
               </>
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 

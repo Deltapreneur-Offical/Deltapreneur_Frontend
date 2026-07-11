@@ -137,11 +137,33 @@ export default function AppLayout({ children }) {
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [profileMenuStyle, setProfileMenuStyle] = useState(null);
   const [showInitial, setShowInitial] = useState(false);
   const bellRef = useRef(null);
   const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
+  const profileMenuRef = useRef(null);
   const notifFetchRef = useRef(0);
+
+  const updateProfileMenuPosition = useCallback(() => {
+    if (!profileRef.current) return;
+    const rect = profileRef.current.getBoundingClientRect();
+    const width = Math.min(280, window.innerWidth - 16);
+    let left = rect.right - width;
+    left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+    let top = rect.bottom + 8;
+    const estimatedHeight = 360;
+    if (top + estimatedHeight > window.innerHeight - 8) {
+      top = rect.top - estimatedHeight - 8;
+    }
+    setProfileMenuStyle({
+      position: 'fixed',
+      top,
+      left,
+      width,
+      zIndex: 10050,
+    });
+  }, []);
 
   useEffect(() => {
     const userKey = user?.id ?? user?.userId;
@@ -243,13 +265,31 @@ export default function AppLayout({ children }) {
       if (!insideBell && !insideNotifPanel) {
         setBellOpen(false);
       }
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target) &&
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target)
+      ) {
         setProfileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    updateProfileMenuPosition();
+    const handleScroll = () => updateProfileMenuPosition();
+    const handleResize = () => updateProfileMenuPosition();
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [profileMenuOpen, updateProfileMenuPosition]);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -696,7 +736,12 @@ export default function AppLayout({ children }) {
                 type="button"
                 onClick={() => {
                   setBellOpen(false);
-                  setProfileMenuOpen((open) => !open);
+                  setProfileMenuOpen((open) => {
+                    if (!open) {
+                      setTimeout(updateProfileMenuPosition, 0);
+                    }
+                    return !open;
+                  });
                 }}
                 className="app-profile-avatar-btn relative block h-10 w-10 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 aspect-square shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-indigo-500 hover:bg-white hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
                 aria-label="Account and regional settings"
@@ -719,18 +764,22 @@ export default function AppLayout({ children }) {
                   </div>
                 </div>
               </button>
-              {profileMenuOpen && (
-                <div
-                  className="app-profile-menu absolute right-0 top-full z-[1001] mt-2 w-[min(17.5rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
-                  role="menu"
-                >
-                  <AppProfileRegionalMenu
-                    key="profile-regional"
-                    displayName={displayName}
-                    email={user?.email}
-                  />
-                </div>
-              )}
+              {profileMenuOpen && profileMenuStyle &&
+                createPortal(
+                  <div
+                    ref={profileMenuRef}
+                    className="fixed bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
+                    style={profileMenuStyle}
+                    role="menu"
+                  >
+                    <AppProfileRegionalMenu
+                      key="profile-regional"
+                      displayName={displayName}
+                      email={user?.email}
+                    />
+                  </div>,
+                  document.body
+                )}
             </div>
 
             {/* Desktop (xl+): language/currency in header + profile label */}

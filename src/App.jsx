@@ -76,6 +76,7 @@ const OperationsPage = lazy(() => import('./pages/OperationsPage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
 const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSellerPage'));
 const DomainTransferBuyerPage = lazy(() => import('./pages/DomainTransferBuyerPage'));
+const EdgePointsPage = lazy(() => import('./pages/EdgePointsPage'));
 
 function preloadPostLoginRoutes() {
   void loadDashboardPage();
@@ -498,6 +499,16 @@ useEffect(() => {
                 <ProfileGuard>
                   <NotificationsPage />
                 </ProfileGuard>
+              }
+            />
+
+            {/* Edge Points */}
+            <Route
+              path="/edge-points"
+              element={
+                <ProtectedRoute>
+                  <EdgePointsPage />
+                </ProtectedRoute>
               }
             />
 

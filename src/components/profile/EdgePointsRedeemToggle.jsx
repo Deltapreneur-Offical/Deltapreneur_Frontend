@@ -62,7 +62,7 @@ export default function EdgePointsRedeemToggle({ originalAmount, onChange }) {
           type="checkbox"
           checked={redeem}
           onChange={handleToggle}
-          className="h-4.5 w-4.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+          className="h-5 w-5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
         />
         <div className="flex-1">
           <span className="text-[13px] font-bold text-slate-800">Redeem Edge Points</span>

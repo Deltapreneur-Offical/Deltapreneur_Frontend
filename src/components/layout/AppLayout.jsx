@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset } from 'lucide-react';
+import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
 import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
 import { useNotificationSocket } from '../../hooks/useNotificationSocket';
+import api from '../../api/axios';
 import TechnologyIcon from '../../assets/CoCreation.png';
 import BrandNavLogo from '../common/BrandNavLogo';
 import DomainsIcon from '../../assets/CoBranding.png';
@@ -139,6 +140,8 @@ export default function AppLayout({ children }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileMenuStyle, setProfileMenuStyle] = useState(null);
   const [showInitial, setShowInitial] = useState(false);
+  const [edgePoints, setEdgePoints] = useState(0);
+  const [edgePointsWorthInr, setEdgePointsWorthInr] = useState(0);
   const bellRef = useRef(null);
   const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
@@ -236,6 +239,7 @@ export default function AppLayout({ children }) {
     }
     if (notification.type === 'REFERRAL_REWARD') {
       setReferralPopup(notification);
+      fetchEdgePoints(); // refresh balance on reward
     }
   }, []);
 
@@ -246,6 +250,18 @@ export default function AppLayout({ children }) {
     navigate('/login');
   };
 
+  const fetchEdgePoints = useCallback(() => {
+    if (!userId) return;
+    api.get('/api/v1/edge-points/summary')
+      .then(({ data }) => {
+        if (data?.success) {
+          setEdgePoints(data.data.current_points || 0);
+          setEdgePointsWorthInr(data.data.worth_inr || 0);
+        }
+      })
+      .catch((err) => console.error('Failed to load edge points summary:', err));
+  }, [userId]);
+
   useEffect(() => {
     if (!userId) {
       setUnreadCount(0);
@@ -253,9 +269,13 @@ export default function AppLayout({ children }) {
       return undefined;
     }
     refreshUnreadCount();
-    const interval = setInterval(refreshUnreadCount, 30000);
+    fetchEdgePoints();
+    const interval = setInterval(() => {
+      refreshUnreadCount();
+      fetchEdgePoints();
+    }, 30000);
     return () => clearInterval(interval);
-  }, [userId, refreshUnreadCount]);
+  }, [userId, refreshUnreadCount, fetchEdgePoints]);
 
   // Close bell / profile menus on outside click (panel is portaled — include notifPanelRef)
   useEffect(() => {
@@ -448,6 +468,27 @@ export default function AppLayout({ children }) {
               )}
             </button>
             <Link
+              to="/edge-points"
+              className={[
+                'app-sidebar-link app-sidebar-link--footer',
+                isActive('/edge-points') && 'is-active',
+                sidebarCollapsed && 'is-collapsed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={sidebarCollapsed ? 'Edge Points' : ''}
+            >
+              <span className="app-sidebar-icon-slot">
+                <Award size={20} strokeWidth={2} />
+              </span>
+              {!sidebarCollapsed && (
+                <span className="app-sidebar-link-label flex flex-col items-start leading-tight">
+                  <span>Edge Points</span>
+                  <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points • Worth ₹{edgePointsWorthInr}</span>
+                </span>
+              )}
+            </Link>
+            <Link
               to="/complete-profile"
               className={[
                 'app-sidebar-link app-sidebar-link--footer',
@@ -555,6 +596,19 @@ export default function AppLayout({ children }) {
                     </span>
                   )}
                 </button>
+                <Link
+                  to="/edge-points"
+                  onClick={() => setMobileOpen(false)}
+                  className="app-sidebar-link app-sidebar-link--footer"
+                >
+                  <span className="app-sidebar-icon-slot">
+                    <Award size={20} strokeWidth={2} />
+                  </span>
+                  <span className="app-sidebar-link-label flex flex-col items-start leading-tight">
+                    <span>Edge Points</span>
+                    <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points • Worth ₹{edgePointsWorthInr}</span>
+                  </span>
+                </Link>
                 <Link
                   to="/complete-profile"
                   onClick={() => setMobileOpen(false)}

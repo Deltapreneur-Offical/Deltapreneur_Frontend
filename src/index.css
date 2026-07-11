@@ -357,12 +357,16 @@ select:focus {
   color: var(--text-dim);
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type="checkbox"],
+input[type="checkbox"] {
   width: 18px;
   height: 18px;
   margin-top: 2px;
   flex-shrink: 0;
   accent-color: var(--brand);
+  appearance: auto;
+  padding: 0;
+  background: transparent;
 }
 
 .required {

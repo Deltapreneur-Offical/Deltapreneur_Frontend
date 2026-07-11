@@ -132,11 +132,11 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const updateDropdownPosition = useCallback(() => {
     if (!profileRef.current) return;
     const rect = profileRef.current.getBoundingClientRect();
-    const dropdownWidth = Math.min(320, window.innerWidth - 16);
+    const dropdownWidth = Math.min(220, window.innerWidth - 16);
     let left = rect.right - dropdownWidth;
     left = Math.max(8, Math.min(left, window.innerWidth - dropdownWidth - 8));
     let top = rect.bottom + 8;
-    const estimatedHeight = 320;
+    const estimatedHeight = 280;
     if (top + estimatedHeight > window.innerHeight - 8) {
       top = rect.top - estimatedHeight - 8;
     }
@@ -288,12 +288,12 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
           createPortal(
             <div
               ref={dropdownRef}
-              className="fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[11rem] overflow-hidden"
+              className="fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[10rem] overflow-hidden"
               style={dropdownStyle}
             >
             {user ? (
               <>
-                <div className="px-4 py-3 border-b border-gray-100">
+                <div className="px-3 py-2 border-b border-gray-100">
                   <p className="text-sm font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent truncate">
                     {displayName}
                   </p>
@@ -301,39 +301,39 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </div>
                 <a
                   href="/dashboard"
-                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
+                  className="menu-item-gradient block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {t('dashboard')}
                 </a>
                 <a
                   href="/contact"
-                  className="home-profile-mobile-only menu-item-gradient px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
+                  className="home-profile-mobile-only menu-item-gradient px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {t('contactUs')}
                 </a>
-                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium">
+                <div className="home-profile-mobile-only px-3 py-1.5 text-sm font-medium">
                   <SupportLabel />
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-gray-50 transition-colors no-underline"
+                  className="home-profile-mobile-only px-3 py-1.5 text-sm font-semibold text-slate-500 hover:bg-gray-50 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {SUPPORT_PHONE_DISPLAY}
                 </a>
-                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5">
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-3 py-1.5">
                   <span className="home-profile-mobile-select-label">Language</span>
                   <LanguageDropdown variant="minimal" className="home-profile-menu-language" />
                 </div>
-                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5 border-b border-gray-100">
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-3 py-1.5 border-b border-gray-100">
                   <span className="home-profile-mobile-select-label">Currency</span>
                   <CurrencyDropdown variant="minimal" className="home-profile-menu-currency" />
                 </div>
                 <button
                   type="button"
-                  className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  className="menu-item-gradient block w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                   onClick={() => {
                     setProfileDropdownOpen(false);
                     navigate('/complete-profile');
@@ -343,7 +343,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </button>
                 <button
                   type="button"
-                  className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  className="menu-item-gradient block w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                   onClick={() => {
                     setProfileDropdownOpen(false);
                     navigate('/security/password');
@@ -354,7 +354,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 <div className="border-t border-gray-100">
                   <button
                     type="button"
-                    className="menu-item-gradient block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-0 bg-transparent"
+                    className="menu-item-gradient block w-full px-3 py-1.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-0 bg-transparent"
                     onClick={() => {
                       setProfileDropdownOpen(false);
                       setShowLogoutConfirm(true);
@@ -365,12 +365,12 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </div>
               </>
             ) : authLoading ? (
-              <div className="px-4 py-2.5 text-sm text-gray-400">…</div>
+              <div className="px-3 py-1.5 text-sm text-gray-400">…</div>
             ) : (
               <>
                 <button
                   type="button"
-                  className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="block w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   onClick={goToLogin}
                 >
                   {t('signIn')}
@@ -378,27 +378,27 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 {!hideContactUs ? (
                   <a
                     href="/contact"
-                    className="home-profile-mobile-only px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                    className="home-profile-mobile-only px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
                     onClick={() => setProfileDropdownOpen(false)}
                   >
                     {t('contactUs')}
                   </a>
                 ) : null}
-                <div className="home-profile-mobile-only px-4 py-2.5 text-sm font-medium">
+                <div className="home-profile-mobile-only px-3 py-1.5 text-sm font-medium">
                   <SupportLabel />
                 </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
-                  className="home-profile-mobile-only px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-gray-100 transition-colors no-underline"
+                  className="home-profile-mobile-only px-3 py-1.5 text-sm font-semibold text-slate-500 hover:bg-gray-100 transition-colors no-underline"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {SUPPORT_PHONE_DISPLAY}
                 </a>
-                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5">
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-3 py-1.5">
                   <span className="home-profile-mobile-select-label">Language</span>
                   <LanguageDropdown variant="minimal" className="home-profile-menu-language" />
                 </div>
-                <div className="home-profile-mobile-only home-profile-mobile-select-row px-4 py-2.5">
+                <div className="home-profile-mobile-only home-profile-mobile-select-row px-3 py-1.5">
                   <span className="home-profile-mobile-select-label">Currency</span>
                   <CurrencyDropdown variant="minimal" className="home-profile-menu-currency" />
                 </div>

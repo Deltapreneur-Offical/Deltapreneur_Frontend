@@ -151,11 +151,11 @@ export default function AppLayout({ children }) {
   const updateProfileMenuPosition = useCallback(() => {
     if (!profileRef.current) return;
     const rect = profileRef.current.getBoundingClientRect();
-    const width = Math.min(280, window.innerWidth - 16);
+    const width = Math.min(200, window.innerWidth - 16);
     let left = rect.right - width;
     left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
     let top = rect.bottom + 8;
-    const estimatedHeight = 360;
+    const estimatedHeight = 280;
     if (top + estimatedHeight > window.innerHeight - 8) {
       top = rect.top - estimatedHeight - 8;
     }

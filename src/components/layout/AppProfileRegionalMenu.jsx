@@ -64,23 +64,23 @@ function AccordionRow({ id, expanded, onToggle, icon: Icon, label, summary, chil
     <div className="border-b border-gray-100 last:border-b-0">
       <button
         type="button"
-        className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-gray-50"
+        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-50"
         onClick={() => onToggle(id)}
         aria-expanded={isOpen}
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-          <Icon size={16} strokeWidth={2} />
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+          <Icon size={14} strokeWidth={2} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-semibold text-gray-900">{label}</span>
           <span className="block text-xs text-gray-500">{summary}</span>
         </span>
         <ChevronDown
-          size={18}
+          size={16}
           className={`shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
-      {isOpen ? <div className="border-t border-gray-50 bg-slate-50/80 px-2 pb-2 pt-1">{children}</div> : null}
+      {isOpen ? <div className="border-t border-gray-50 bg-slate-50/80 px-2 pb-1.5 pt-1">{children}</div> : null}
     </div>
   );
 }
@@ -89,7 +89,7 @@ function OptionButton({ active, onClick, primary, secondary }) {
   return (
     <button
       type="button"
-      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors border-none cursor-pointer ${
+      className={`flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors border-none cursor-pointer ${
         active ? 'bg-indigo-100 font-semibold text-indigo-800' : 'bg-white text-gray-700 hover:bg-white/90'
       }`}
       onClick={onClick}
@@ -122,7 +122,7 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
   return (
     <div className="app-profile-regional-menu">
       {(displayName || email) && (
-        <div className="border-b border-gray-100 px-4 py-3">
+        <div className="border-b border-gray-100 px-3 py-2">
           {displayName ? (
             <p className="truncate text-sm font-semibold text-gray-900">{displayName}</p>
           ) : null}
@@ -132,11 +132,11 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
 
       <Link
         to="/settings/payouts"
-        className="flex w-full items-center gap-3 border-b border-gray-100 px-4 py-3.5 text-left transition-colors hover:bg-gray-50"
+        className="flex w-full items-center gap-3 border-b border-gray-100 px-3 py-2 text-left transition-colors hover:bg-gray-50"
         role="menuitem"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-          <CreditCard size={16} strokeWidth={2} />
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+          <CreditCard size={14} strokeWidth={2} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-semibold text-gray-900">{t('payoutSettingsNavTitle')}</span>
@@ -173,13 +173,13 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
         label={t('currency', { defaultValue: 'Currency' })}
         summary={`${getCurrencySymbol(currency)} ${currency}`}
       >
-        <div className="px-2 py-1 bg-white rounded-lg border border-gray-100 mb-2">
+        <div className="px-2 py-1 bg-white rounded-lg border border-gray-100 mb-1.5">
           <input
             type="text"
             placeholder="Search currency..."
             value={currencySearch}
             onChange={(e) => setCurrencySearch(e.target.value)}
-            className="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+            className="w-full px-2 py-1 text-xs bg-gray-50 border border-gray-200 rounded-md outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           />
         </div>
         <div className="max-h-60 space-y-1 overflow-y-auto pr-1" role="listbox" aria-label="Currency">
@@ -192,13 +192,13 @@ export default function AppProfileRegionalMenu({ displayName, email }) {
               <button
                 key={code}
                 type="button"
-                className={`flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors border-none cursor-pointer ${
+                className={`flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1 text-left text-xs transition-colors border-none cursor-pointer ${
                   currency === code ? 'bg-indigo-50 font-semibold text-indigo-800' : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
                 onClick={() => setCurrency(code)}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <img src={flag} alt="" className="w-5 h-3.5 object-cover rounded-[3px] shrink-0 border border-gray-200/60 shadow-sm" />
+                <div className="flex items-center gap-2 min-w-0">
+                  <img src={flag} alt="" className="w-4 h-3 object-cover rounded-[3px] shrink-0 border border-gray-200/60 shadow-sm" />
                   <div className="min-w-0">
                     <span className="block font-medium text-gray-900 leading-tight">{code}</span>
                     <span className="block text-[10px] text-gray-400 truncate leading-tight mt-0.5">{cleanLabel}</span>

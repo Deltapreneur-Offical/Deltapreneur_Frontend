@@ -183,6 +183,7 @@
   display: block;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .creator-profile-card__badge-slot {
@@ -550,20 +551,26 @@
 @media (max-width: 640px) {
   .creator-profile-card__top-section {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     text-align: center;
     gap: 0.75rem;
     margin-top: 0.5rem;
   }
   
+  .creator-profile-card__avatar-container {
+    margin: 0 auto;
+  }
+  
   .creator-profile-card__header-right {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 0.75rem;
+    width: 100%;
   }
   
   .creator-profile-card__name-section {
     align-items: center;
+    width: 100%;
   }
   
   .creator-profile-card__details-row {

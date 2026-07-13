@@ -1451,6 +1451,7 @@ function LinkedInConnectInfoTooltip() {
   const [style, setStyle] = useState(null);
   const triggerRef = useRef(null);
   const tooltipRef = useRef(null);
+  const touchOpenedRef = useRef(false);
 
   const message = t(
     'communityPageLinkedInConnectHint',
@@ -1460,12 +1461,10 @@ function LinkedInConnectInfoTooltip() {
   const updatePosition = useCallback(() => {
     const el = triggerRef.current;
     if (!el) return;
-
     const rect = el.getBoundingClientRect();
     const maxWidth = Math.min(320, window.innerWidth - 24);
     let left = rect.right - maxWidth;
     left = Math.max(12, Math.min(left, window.innerWidth - maxWidth - 12));
-
     setStyle({
       position: 'fixed',
       top: rect.bottom + 8,
@@ -1475,6 +1474,23 @@ function LinkedInConnectInfoTooltip() {
       zIndex: 10050,
     });
   }, []);
+
+  const openTooltip = useCallback(() => {
+    updatePosition();
+    setOpen(true);
+  }, [updatePosition]);
+
+  const closeTooltip = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const onGlobalOpen = () => {
+      if (open) closeTooltip();
+    };
+    window.addEventListener('tooltip:open', onGlobalOpen);
+    return () => window.removeEventListener('tooltip:open', onGlobalOpen);
+  }, [open, closeTooltip]);
 
   useLayoutEffect(() => {
     if (!open) return undefined;
@@ -1492,10 +1508,19 @@ function LinkedInConnectInfoTooltip() {
     const onDoc = (e) => {
       const target = e.target;
       if (triggerRef.current?.contains(target) || tooltipRef.current?.contains(target)) return;
-      setOpen(false);
+      closeTooltip();
     };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
+    document.addEventListener('pointerdown', onDoc);
+    return () => document.removeEventListener('pointerdown', onDoc);
+  }, [open, closeTooltip]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onTouchStart = () => {
+      touchOpenedRef.current = true;
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    return () => document.removeEventListener('touchstart', onTouchStart);
   }, [open]);
 
   const tooltip = open && style && createPortal(
@@ -1518,7 +1543,27 @@ function LinkedInConnectInfoTooltip() {
         className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-[#0077b5] hover:text-[#0077b5] hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5]/30"
         aria-label={t('communityPageLinkedInConnectHelpAria', 'How LinkedIn connect works')}
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (touchOpenedRef.current) {
+            touchOpenedRef.current = false;
+            return;
+          }
+          setOpen((prev) => !prev);
+        }}
+        onMouseEnter={openTooltip}
+        onMouseLeave={closeTooltip}
+        onFocus={openTooltip}
+        onBlur={closeTooltip}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          if (!open) {
+            openTooltip();
+            window.dispatchEvent(new Event('tooltip:open'));
+          } else {
+            closeTooltip();
+          }
+        }}
       >
         <CircleHelp size={16} aria-hidden />
       </button>

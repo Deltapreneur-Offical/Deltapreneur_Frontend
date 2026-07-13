@@ -44,8 +44,19 @@ export default function OAuthCallbackPage() {
     const refreshToken = params.get('refreshToken');
     const cookieSession = params.get('success') === '1';
     const error = params.get('error');
+    const provider = params.get('provider');
+
+    console.log('[OAuth] Callback params:', {
+      error,
+      token: !!token,
+      refreshToken: !!refreshToken,
+      cookieSession,
+      provider,
+      search: window.location.search,
+    });
 
     if (error) {
+      console.error('[OAuth] Backend returned error:', error);
       navigate('/login?error=oauth_failed', { replace: true });
       return;
     }
@@ -55,24 +66,28 @@ export default function OAuthCallbackPage() {
         error,
         token: !!token,
         refreshToken: !!refreshToken,
+        cookieSession,
       });
       navigate('/login?error=oauth_failed', { replace: true });
       return;
     }
 
     if (token && refreshToken) {
+      console.log('[OAuth] Storing tokens from URL');
       login({ accessToken: token, refreshToken }, null);
     }
 
-    refreshUser()
-      .then((fetchedUser) => {
+    const fetchUser = async () => {
+      try {
+        const fetchedUser = await refreshUser();
+        console.log('[OAuth] refreshUser result:', fetchedUser);
         if (!fetchedUser) {
+          console.error('[OAuth] No user returned from refreshUser');
           navigate('/login?error=oauth_profile', { replace: true });
           return;
         }
         const redirectPath = consumeRedirectAfterLogin();
         let destination = resolveOAuthCallbackNavigation(fetchedUser, redirectPath);
-        const provider = params.get('provider');
         if (provider === 'linkedin') {
           destination = { pathname: '/' };
         }
@@ -94,11 +109,13 @@ export default function OAuthCallbackPage() {
             window.history.replaceState({}, document.title, destination.pathname);
           }
         }, 0);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('[OAuth] refreshUser failed:', err);
         navigate('/login?error=oauth_profile', { replace: true });
-      });
+      }
+    };
+
+    fetchUser();
   }, [login, navigate, params, refreshUser]);
 
   return (

@@ -4,6 +4,12 @@ import { createPortal } from 'react-dom';
 const TOOLTIP_MAX_WIDTH = 260;
 const VIEWPORT_PAD = 12;
 const GAP = 8;
+const TOOLTIP_OPEN_EVENT = 'tooltip:open';
+
+function isMobile() {
+  if (typeof window === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent || '') || window.innerWidth <= 768;
+}
 
 export default function TruncatedTextTooltip({ text, className = '', children }) {
   const tooltipId = useId();
@@ -14,6 +20,7 @@ export default function TruncatedTextTooltip({ text, className = '', children })
   const triggerRef = useRef(null);
   const tooltipRef = useRef(null);
   const hideTimerRef = useRef(null);
+  const touchOpenedRef = useRef(false);
 
   const checkTruncation = useCallback(() => {
     const trigger = triggerRef.current;
@@ -35,12 +42,9 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const maxWidth = Math.min(TOOLTIP_MAX_WIDTH, window.innerWidth - VIEWPORT_PAD * 2);
-
     let left = rect.left + rect.width / 2 - maxWidth / 2;
     left = Math.max(VIEWPORT_PAD, Math.min(left, window.innerWidth - maxWidth - VIEWPORT_PAD));
-
     const top = rect.top - GAP;
-
     setStyle({
       position: 'fixed',
       top,
@@ -52,7 +56,7 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     });
   }, []);
 
-  const show = useCallback(() => {
+  const openTooltip = useCallback(() => {
     if (!isTruncated) return;
     clearHideTimer();
     updatePosition();
@@ -60,13 +64,30 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
   }, [isTruncated, updatePosition, clearHideTimer]);
 
-  const hide = useCallback(() => {
+  const closeTooltip = useCallback(() => {
     clearHideTimer();
     hideTimerRef.current = setTimeout(() => {
       setVisible(false);
       setTimeout(() => setOpen(false), 150);
     }, 100);
   }, [clearHideTimer]);
+
+  const toggleTooltip = useCallback(() => {
+    if (!isTruncated) return;
+    if (open) {
+      closeTooltip();
+    } else {
+      openTooltip();
+    }
+  }, [isTruncated, open, closeTooltip, openTooltip]);
+
+  useEffect(() => {
+    const onGlobalOpen = () => {
+      if (open) closeTooltip();
+    };
+    window.addEventListener(TOOLTIP_OPEN_EVENT, onGlobalOpen);
+    return () => window.removeEventListener(TOOLTIP_OPEN_EVENT, onGlobalOpen);
+  }, [open, closeTooltip]);
 
   useLayoutEffect(() => {
     if (!open) return undefined;
@@ -84,11 +105,11 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     const onDoc = (e) => {
       const t = e.target;
       if (triggerRef.current?.contains(t) || tooltipRef.current?.contains(t)) return;
-      hide();
+      closeTooltip();
     };
     document.addEventListener('pointerdown', onDoc);
     return () => document.removeEventListener('pointerdown', onDoc);
-  }, [open, hide]);
+  }, [open, closeTooltip]);
 
   useEffect(() => {
     const el = triggerRef.current;
@@ -98,6 +119,15 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     observer.observe(el);
     return () => observer.disconnect();
   }, [checkTruncation, text, children]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onTouchStart = () => {
+      touchOpenedRef.current = true;
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    return () => document.removeEventListener('touchstart', onTouchStart);
+  }, [open]);
 
   const tooltip =
     open &&
@@ -109,8 +139,8 @@ export default function TruncatedTextTooltip({ text, className = '', children })
         role="tooltip"
         style={style}
         className="pointer-events-auto"
-        onMouseEnter={show}
-        onMouseLeave={hide}
+        onMouseEnter={clearHideTimer}
+        onMouseLeave={closeTooltip}
       >
         <div
           className={`rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-xs leading-relaxed text-gray-700 shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-150 ease-out ${
@@ -133,12 +163,29 @@ export default function TruncatedTextTooltip({ text, className = '', children })
         ref={triggerRef}
         className={`relative inline-block ${className}`}
         tabIndex={isTruncated ? 0 : undefined}
-        onMouseEnter={isTruncated ? show : undefined}
-        onMouseLeave={isTruncated ? hide : undefined}
-        onFocus={isTruncated ? show : undefined}
-        onBlur={isTruncated ? hide : undefined}
-        onClick={isTruncated ? (e) => { e.stopPropagation(); setOpen((v) => !v); } : undefined}
-        onTouchStart={isTruncated ? (e) => { e.stopPropagation(); setOpen((v) => !v); } : undefined}
+        onMouseEnter={isTruncated && !isMobile() ? openTooltip : undefined}
+        onMouseLeave={isTruncated && !isMobile() ? closeTooltip : undefined}
+        onFocus={isTruncated ? openTooltip : undefined}
+        onBlur={isTruncated ? closeTooltip : undefined}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (touchOpenedRef.current) {
+            touchOpenedRef.current = false;
+            return;
+          }
+          toggleTooltip();
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          if (!isTruncated) return;
+          touchOpenedRef.current = true;
+          if (!open) {
+            openTooltip();
+            window.dispatchEvent(new Event(TOOLTIP_OPEN_EVENT));
+          } else {
+            closeTooltip();
+          }
+        }}
         aria-describedby={open ? tooltipId : undefined}
       >
         {children}

@@ -76,6 +76,7 @@ export default function LoginPage() {
       oauth_failed: t('googleSignInFailed'),
       oauth_profile: t('googleSignInFailed'),
       google_authentication_failed: t('googleSignInFailed'),
+      linkedin_authentication_failed: t('linkedinAuthFailed', 'LinkedIn sign-in failed. Please try again.'),
       oauth_token_exchange_failed: t(
         'googleTokenExchangeFailed',
         'Google sign-in could not complete. Please check the server configuration and try again.',
@@ -113,8 +114,12 @@ export default function LoginPage() {
     if (oauthErrorMessages[err]) {
       setError(oauthErrorMessages[err]);
       navigate('/login', { replace: true, state: location.state });
-    } else if (err?.startsWith('google_') || err?.startsWith('oauth_')) {
+    } else if (err?.startsWith('google_') || err?.startsWith('oauth_') || err?.startsWith('linkedin_')) {
       setError(t('googleSignInFailed'));
+      navigate('/login', { replace: true, state: location.state });
+    } else if (err?.includes('Exception') || err?.includes('Error')) {
+      console.error('[LinkedIn OAuth] Backend error:', err);
+      setError(t('linkedinAuthFailed', 'LinkedIn sign-in failed. Please try again.'));
       navigate('/login', { replace: true, state: location.state });
     } else if (err === 'verification_failed') {
       setError(t('verificationLinkInvalid'));

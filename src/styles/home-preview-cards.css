@@ -412,6 +412,20 @@
   --home-card-shadow-accent: rgba(251, 191, 36, 0.32);
 }
 
+/* Operations — Virtual Assistance (indigo) */
+.home-preview-card-border--operations {
+  --home-card-border: #818cf8;
+  --home-card-border-hover: #6366f1;
+  --home-card-shadow-accent: rgba(129, 132, 248, 0.3);
+}
+
+/* Operations — Compliance (emerald) */
+.home-preview-card-border--compliance {
+  --home-card-border: #34d399;
+  --home-card-border-hover: #10b981;
+  --home-card-shadow-accent: rgba(52, 211, 153, 0.3);
+}
+
 /* Price box border matches outer card accent */
 .home-preview-card-border .domain-listing-card__price-box,
 .home-preview-card-border .home-auction-preview-card__price-box {
@@ -1040,8 +1054,263 @@
 .home-preview-card-border__inner .technology-listing-card,
 .home-preview-card-border__inner .community-listing-card,
 .home-preview-card-border__inner .home-creator-listing-card,
-.home-preview-card-border__inner .home-auction-preview-card {
+.home-preview-card-border__inner .home-auction-preview-card,
+.home-preview-card-border__inner .home-operations-preview-card {
   border: none !important;
+}
+
+/* Operations carousel cards — slightly larger service cards (~+15% height) */
+.home-preview-row .home-preview-card-shell .home-operations-preview-card,
+.home-auto-scroll-row .home-preview-card-shell .home-operations-preview-card {
+  width: 100%;
+  height: 100%;
+  min-height: 22rem;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Wider Operations cards (Home only) — ~12% larger width at multi-card
+   breakpoints, scoped with :has() so Technologies / Creators carousels are
+   unaffected. !important is required to override the base row item widths. */
+.home-preview-row__item:has(.home-operations-preview-card) {
+  width: calc(100vw - 2rem) !important;
+}
+@media (min-width: 640px) {
+  .home-preview-row__item:has(.home-operations-preview-card) {
+    width: calc(100vw - 2.5rem) !important;
+  }
+}
+@media (min-width: 768px) {
+  .home-preview-row__item:has(.home-operations-preview-card) {
+    width: calc((100% - 1.25rem) / 2 * 1.12) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .home-preview-row__item:has(.home-operations-preview-card) {
+    width: calc((100% - 2.5rem) / 3 * 1.12) !important;
+  }
+}
+@media (min-width: 1200px) {
+  .home-preview-row__item:has(.home-operations-preview-card) {
+    width: calc((100% - 3.75rem) / 4 * 1.12) !important;
+  }
+}
+
+.home-auto-scroll-row__item:has(.home-operations-preview-card) {
+  width: calc(100vw - 1.75rem) !important;
+}
+@media (min-width: 768px) {
+  .home-auto-scroll-row__item:has(.home-operations-preview-card) {
+    width: calc((50vw - 1.875rem) * 1.12) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .home-auto-scroll-row__item:has(.home-operations-preview-card) {
+    width: min(24.6vw, 314px) !important;
+  }
+}
+
+/* ─── Home Operations preview cards — service version of the Creators card ─── */
+.home-operations-preview-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  padding: 2.5rem 1.4rem 1.2rem;
+  overflow: hidden;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease,
+    background-color 0.28s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.home-operations-preview-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.home-operations-preview-card__avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 3;
+}
+
+.home-operations-preview-card__avatar {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 4px solid #fff;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.home-operations-preview-card__avatar--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4f46e5;
+  background: #eef2ff;
+}
+
+.home-operations-preview-card__title {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.28;
+  color: #0f172a;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Category badge: small, top-right of the header, aligned with the avatar.
+   Reuses Creator's .creator-profile-card__badge color scheme + rounded shape,
+   but tightened (smaller font, height, padding) to match the compact badges
+   used across the CoBrother UI. Home page only. */
+.home-operations-preview-card__category-badge {
+  flex-shrink: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.5625rem;
+  line-height: 1;
+  padding: 0.1rem 0.4rem;
+}
+
+.home-operations-preview-card__desc {
+  margin: 0.9rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #475569;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 5rem;
+  flex: 1 1 auto;
+}
+
+.home-operations-preview-card__skills {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.home-operations-preview-card__skill-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+/* Compensation box — mirrors the Creators card expected-rate box */
+.home-operations-preview-card__price-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.55rem 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(#fafaff, #fafaff) padding-box,
+    linear-gradient(90deg, #a78bfa 0%, #818cf8 50%, #6d28d9 100%) border-box;
+  box-shadow: -6px 0 14px -10px rgba(129, 140, 248, 0.55), 6px 0 14px -10px rgba(109, 40, 217, 0.45);
+  text-align: left;
+}
+
+.home-operations-preview-card__price-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.home-operations-preview-card__price-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8b5cf6;
+  line-height: 1;
+}
+
+.home-operations-preview-card__price-amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #6d28d9;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.home-operations-preview-card__price-suffix {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #334155;
+  margin-left: 0.15rem;
+}
+
+.home-operations-preview-card__price-amount--muted {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.home-operations-preview-card__cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  min-width: 1.9rem;
+  min-height: 1.9rem;
+  border: 1px solid #000000;
+  border-radius: 999px;
+  background: #000000;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.home-operations-preview-card__cta:hover,
+.home-operations-preview-card__cta:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+/* Tighten the gap between the price box and the footer so the footer sits
+   closer to the price section, matching the Creator card spacing (Home only). */
+.home-operations-preview-card .creator-profile-card__divider {
+  margin-top: 0.4rem;
 }
 
 .home-preview-card-border__inner .venture-listing-card {
@@ -1088,6 +1357,7 @@
 .home-preview-card-border:hover .home-auction-preview-card,
 .home-preview-card-border:hover .community-profile-card,
 .home-preview-card-border:hover .creator-profile-card,
+.home-preview-card-border:hover .home-operations-preview-card,
 .home-preview-card-border__inner .venture-listing-card:hover,
 .home-preview-card-border__inner .venture-listing-card--venture:hover,
 .home-preview-card-border__inner .venture-listing-card--coventure:hover,
@@ -1097,7 +1367,8 @@
 .home-preview-card-border__inner .home-auction-preview-card:hover,
 .home-preview-card-border__inner .home-preview-browse-card:hover,
 .home-preview-row .home-preview-card-border__inner .card-glow-hover:hover,
-.home-auto-scroll-row .home-preview-card-border__inner .card-glow-hover:hover {
+.home-auto-scroll-row .home-preview-card-border__inner .card-glow-hover:hover,
+.home-preview-card-border__inner .home-operations-preview-card:hover {
   transform: none !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),

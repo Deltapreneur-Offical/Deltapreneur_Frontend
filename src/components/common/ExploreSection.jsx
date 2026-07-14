@@ -7,6 +7,8 @@ import TechnologySection from '../home/TechnologySection';
 import CommunitySection from '../home/CommunitySection';
 import AuctionsSection from '../home/AuctionsSection';
 import FeedbackSection from '../home/FeedbackSection';
+import HomeOperationsCarouselSection from '../home/HomeOperationsCarouselSection';
+import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
 
 function LazySection({ title, to, variant = 'browse', compact = false, children }) {
@@ -53,6 +55,17 @@ export default function ExploreSection() {
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
       </LazySection>
+
+      {OPERATIONS_SECTIONS.map((section) => (
+        <LazySection
+          key={section.id}
+          title={t(section.labelKey, { defaultValue: section.defaultLabel })}
+          to={operationsPathForSection(section.id)}
+          compact
+        >
+          <HomeOperationsCarouselSection sectionId={section.id} />
+        </LazySection>
+      ))}
 
       <LazyWhenVisible>
         <FeedbackSection />

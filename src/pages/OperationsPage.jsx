@@ -6,6 +6,8 @@ import AppLayout from '../components/layout/AppLayout';
 import FilterBar from '../components/common/FilterBar';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import OperationsRequestModal from '../components/operations/OperationsRequestModal';
+import OperationsRequestSuccess from '../components/operations/OperationsRequestSuccess';
+import OperationsServiceCard from '../components/operations/OperationsServiceCard';
 import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -283,63 +285,13 @@ export default function OperationsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 min-w-0">
-              {filtered.map((service) => {
-                const Icon = resolveOperationsIcon(service);
-                const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
-                const cardCompliance = isComplianceService(service);
-                const priceInfo = formatOperationsPrice(service, { t, formatPrice });
-                return (
-                  <article
-                    key={service.id}
-                    className="group flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-indigo-200 hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-2.5 mb-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:bg-indigo-100 transition-colors">
-                        <Icon size={18} strokeWidth={2} aria-hidden />
-                      </div>
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
-                        {catLabel}
-                      </span>
-                    </div>
-                    <h3 className="font-display text-[15px] font-semibold text-gray-900 leading-snug mb-1.5">
-                      {service.name}
-                    </h3>
-                    <p className="text-xs text-gray-500 flex-1 leading-relaxed">
-                      {service.description || t('operationsCardDesc', {
-                        defaultValue: 'Dedicated remote professional for your MSME — flexible monthly engagement.',
-                      })}
-                    </p>
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-end justify-between gap-2">
-                      {cardCompliance && !priceInfo.showPrice ? (
-                        <div className="min-h-[2.5rem]" />
-                      ) : priceInfo.showPrice ? (
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">
-                            {t('operationsFrom', { defaultValue: 'Starting at' })}
-                          </p>
-                          <p className="text-base font-bold text-gray-900">
-                            {priceInfo.amount}
-                            {priceInfo.suffix && (
-                              <span className="text-xs font-medium text-gray-400">{priceInfo.suffix}</span>
-                            )}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="min-h-[2.5rem]" />
-                      )}
-                      <button
-                        type="button"
-                        className="btn-glow shrink-0 text-xs px-3.5 py-1.5"
-                        onClick={() => setRequestTarget(service)}
-                      >
-                        {cardCompliance
-                          ? t('operationsBookSlot', { defaultValue: 'Book Your Slot' })
-                          : t('operationsHire', { defaultValue: 'Hire' })} →
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
+              {filtered.map((service) => (
+                <OperationsServiceCard
+                  key={service.id}
+                  service={service}
+                  onHire={() => setRequestTarget(service)}
+                />
+              ))}
             </div>
           )}
         </section>
@@ -402,42 +354,10 @@ export default function OperationsPage() {
       )}
 
       {requestSuccess && (
-        <div
-          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={() => setRequestSuccess(null)}
-        >
-          <div
-            className="relative w-full max-w-[420px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-            <div className="text-green-600 flex justify-center mb-4">
-              <CheckCircle size={46} />
-            </div>
-            <h2 className="font-display text-[1.75rem] text-gray-900 mb-2">
-              {requestSuccess.type === 'booking'
-                ? t('operationsBookSuccessTitle', { defaultValue: 'Slot Booked!' })
-                : t('operationsHireSuccessTitle', { defaultValue: 'Hire Request Confirmed!' })}
-            </h2>
-            <p className="text-gray-500 mb-2">
-              {requestSuccess.type === 'booking'
-                ? t('operationsBookSuccessBody', {
-                    defaultValue:
-                      "You'll be notified soon. Our team will contact you regarding this one-time service and next steps.",
-                  })
-                : t('operationsHireSuccessBody', {
-                    defaultValue:
-                      "You'll be notified soon. Our team will contact you to confirm your monthly engagement and onboarding.",
-                  })}
-            </p>
-            {requestSuccess.serviceName && (
-              <p className="text-sm font-semibold text-gray-800 mb-4">{requestSuccess.serviceName}</p>
-            )}
-            <button type="button" className="btn-glow w-full" onClick={() => setRequestSuccess(null)}>
-              {t('close', { defaultValue: 'Close' })}
-            </button>
-          </div>
-        </div>
+        <OperationsRequestSuccess
+          payload={requestSuccess}
+          onClose={() => setRequestSuccess(null)}
+        />
       )}
     </AppLayout>
   );

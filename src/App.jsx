@@ -134,8 +134,20 @@ function LanguageAwareRoutes({ children }) {
   );
 }
 
+// CLOUDFLARE FIX: Dynamic country folder detector
+const getCountryBasename = () => {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const firstSegment = segments[0];
+  if (firstSegment && firstSegment.length === 2) {
+    return `/${firstSegment}`;
+  }
+  return '';
+};
+
+const currentCountryBase = getCountryBasename();
+
 export default function App() {
-useEffect(() => {
+  useEffect(() => {
     const lightModeMatcher = window.matchMedia('(prefers-color-scheme: light)');
     
     const handleThemeChange = (e) => {
@@ -151,7 +163,10 @@ useEffect(() => {
   }, []);
 
   return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter 
+      basename={currentCountryBase} 
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ScrollToTop />
       <CookieConsentProvider>
         <AuthProvider>
@@ -163,422 +178,422 @@ useEffect(() => {
             <LanguageAwareRoutes>
               <Routes>
 
-            {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/join-form" element={<JoinForm />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/careers" element={<Navigate to="/contact" replace />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="/data-deletion" element={<DataDeletionPage />} />
-            <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
-            <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+                {/* Public */}
+                <Route path="/" element={<Home />} />
+                <Route path="/join-form" element={<JoinForm />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/about" element={<AboutUsPage />} />
+                <Route path="/careers" element={<Navigate to="/contact" replace />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/data-deletion" element={<DataDeletionPage />} />
+                <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+                <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
-            {/* Auctions */}
-            <Route
-              path="/auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <AuctionPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Auctions */}
+                <Route
+                  path="/auction/:auctionId"
+                  element={
+                    <ProfileGuard>
+                      <AuctionPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/venture-auction/:auctionId"
-              element={<Navigate to="/ventures" replace />}
-            />
+                <Route
+                  path="/venture-auction/:auctionId"
+                  element={<Navigate to="/ventures" replace />}
+                />
 
-            <Route
-              path="/creator-auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <CommunityAuctionPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/creator-auction/:auctionId"
+                  element={
+                    <ProfileGuard>
+                      <CommunityAuctionPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/community-auction/:auctionId"
-              element={<RedirectLegacyCommunityAuction />}
-            />
+                <Route
+                  path="/community-auction/:auctionId"
+                  element={<RedirectLegacyCommunityAuction />}
+                />
 
-            <Route
-              path="/meetings"
-              element={
-                <ProfileGuard>
-                  <MeetingsPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/meetings"
+                  element={
+                    <ProfileGuard>
+                      <MeetingsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Complete Profile */}
-            <Route
-              path="/complete-profile"
-              element={
-                <ProtectedRoute>
-                  <CompleteProfilePage />
-                </ProtectedRoute>
-              }
-            />
+                {/* Complete Profile */}
+                <Route
+                  path="/complete-profile"
+                  element={
+                    <ProtectedRoute>
+                      <CompleteProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* Analytics */}
-            <Route
-              path="/analytics"
-              element={
-                <ProfileGuard>
-                  <PlatformAnalyticsHubPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Analytics */}
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProfileGuard>
+                      <PlatformAnalyticsHubPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/analytics/:category"
-              element={
-                <ProfileGuard>
-                  <PlatformAnalyticsCategoryPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/analytics/:category"
+                  element={
+                    <ProfileGuard>
+                      <PlatformAnalyticsCategoryPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/analytics"
-              element={
-                <ProfileGuard>
-                  <VentureAnalyticsPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/analytics"
+                  element={
+                    <ProfileGuard>
+                      <VentureAnalyticsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/profile/analytics"
-              element={
-                <ProfileGuard>
-                  <ProfileAnalyticsPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/profile/analytics"
+                  element={
+                    <ProfileGuard>
+                      <ProfileAnalyticsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Dashboard */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
+                {/* Dashboard */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            <Route
-              path="/operations"
-              element={
-                <ProfileGuard>
-                  <OperationsPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/operations"
+                  element={
+                    <ProfileGuard>
+                      <OperationsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Ventures */}
-            <Route
-              path="/ventures"
-              element={
-                <ProfileGuard>
-                  <VenturesPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Ventures */}
+                <Route
+                  path="/ventures"
+                  element={
+                    <ProfileGuard>
+                      <VenturesPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route path="/co-ventures" element={<Navigate to="/ventures" replace />} />
+                <Route path="/co-ventures" element={<Navigate to="/ventures" replace />} />
 
-            <Route
-              path="/co-ventures/new"
-              element={
-                <ProfileGuard>
-                  <NewCoVenturePage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/co-ventures/new"
+                  element={
+                    <ProfileGuard>
+                      <NewCoVenturePage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/deals/:dealId"
-              element={
-                <ProfileGuard>
-                  <VentureDealPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/deals/:dealId"
+                  element={
+                    <ProfileGuard>
+                      <VentureDealPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/list"
-              element={
-                <ProfileGuard>
-                  <VentureListingChoosePage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/list"
+                  element={
+                    <ProfileGuard>
+                      <VentureListingChoosePage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/new"
-              element={
-                <ProfileGuard>
-                  <NewVenturePage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/new"
+                  element={
+                    <ProfileGuard>
+                      <NewVenturePage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/:id/edit"
-              element={
-                <ProfileGuard>
-                  <EditVenturePage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/:id/edit"
+                  element={
+                    <ProfileGuard>
+                      <EditVenturePage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/dashboard"
-              element={
-                <ProfileGuard>
-                  <VentureDashboardPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/dashboard"
+                  element={
+                    <ProfileGuard>
+                      <VentureDashboardPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/ventures/:id"
-              element={
-                <ProfileGuard>
-                  <VentureDetailPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/ventures/:id"
+                  element={
+                    <ProfileGuard>
+                      <VentureDetailPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Creator */}
-            <Route
-              path="/creator"
-              element={
-                <ProfileGuard>
-                  <CommunityPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Creator */}
+                <Route
+                  path="/creator"
+                  element={
+                    <ProfileGuard>
+                      <CommunityPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Legacy Community / Disruptor URLs → Creator */}
-            <Route path="/community" element={<LegacyCommunityRedirect />} />
-            <Route path="/disruptors" element={<Navigate to="/auctions" replace />} />
+                {/* Legacy Community / Disruptor URLs → Creator */}
+                <Route path="/community" element={<LegacyCommunityRedirect />} />
+                <Route path="/disruptors" element={<Navigate to="/auctions" replace />} />
 
-            {/* Domains */}
-            <Route
-              path="/domains"
-              element={
-                <ProfileGuard>
-                  <DomainsPage />
-                </ProfileGuard>
-              }
-            />
-            <Route
-              path="/domains/:id"
-              element={
-                <ProfileGuard>
-                  <DomainsPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Domains */}
+                <Route
+                  path="/domains"
+                  element={
+                    <ProfileGuard>
+                      <DomainsPage />
+                    </ProfileGuard>
+                  }
+                />
+                <Route
+                  path="/domains/:id"
+                  element={
+                    <ProfileGuard>
+                      <DomainsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/domains/dashboard"
-              element={
-                <ProfileGuard>
-                  <DomainsDashboardPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/domains/dashboard"
+                  element={
+                    <ProfileGuard>
+                      <DomainsDashboardPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/domains/transfers/:transactionId"
-              element={
-                <ProfileGuard>
-                  <DomainTransferSellerPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/domains/transfers/:transactionId"
+                  element={
+                    <ProfileGuard>
+                      <DomainTransferSellerPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/purchases/transfers/:transactionId"
-              element={
-                <ProfileGuard>
-                  <DomainTransferBuyerPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/purchases/transfers/:transactionId"
+                  element={
+                    <ProfileGuard>
+                      <DomainTransferBuyerPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/storefront"
-              element={
-                <ProfileGuard>
-                  <DomainStorefrontPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/storefront"
+                  element={
+                    <ProfileGuard>
+                      <DomainStorefrontPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/storefront/orders/:orderId"
-              element={
-                <ProfileGuard>
-                  <DomainRegistrationOrderPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/storefront/orders/:orderId"
+                  element={
+                    <ProfileGuard>
+                      <DomainRegistrationOrderPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Technology (software marketplace) */}
-            <Route path="/cocreation/*" element={<CocreationLegacyRedirect />} />
+                {/* Technology (software marketplace) */}
+                <Route path="/cocreation/*" element={<CocreationLegacyRedirect />} />
 
-            <Route
-              path="/technology"
-              element={
-                <ProfileGuard>
-                  <CoCreationPage />
-                </ProfileGuard>
-              }
-            />
-            <Route
-              path="/technology/:id"
-              element={
-                <ProfileGuard>
-                  <CoCreationPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/technology"
+                  element={
+                    <ProfileGuard>
+                      <CoCreationPage />
+                    </ProfileGuard>
+                  }
+                />
+                <Route
+                  path="/technology/:id"
+                  element={
+                    <ProfileGuard>
+                      <CoCreationPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/technology/auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <SoftwareAuctionPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/technology/auction/:auctionId"
+                  element={
+                    <ProfileGuard>
+                      <SoftwareAuctionPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/software-auction/:auctionId"
-              element={<RedirectLegacySoftwareAuction />}
-            />
+                <Route
+                  path="/software-auction/:auctionId"
+                  element={<RedirectLegacySoftwareAuction />}
+                />
 
-            <Route
-              path="/technology/dashboard"
-              element={
-                <ProfileGuard>
-                  <CoCreationDashboardPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/technology/dashboard"
+                  element={
+                    <ProfileGuard>
+                      <CoCreationDashboardPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            <Route
-              path="/technology/:id/analytics"
-              element={
-                <ProfileGuard>
-                  <CoCreationAnalyticsPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/technology/:id/analytics"
+                  element={
+                    <ProfileGuard>
+                      <CoCreationAnalyticsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Legacy CoCreation URLs → Technology */}
-            <Route path="/cocreation" element={<Navigate to="/technology" replace />} />
-            <Route path="/cocreation/dashboard" element={<Navigate to="/technology/dashboard" replace />} />
-            <Route path="/cocreation/auction/:auctionId" element={<RedirectLegacyCocreationAuction />} />
-            <Route path="/cocreation/:id/analytics" element={<RedirectLegacyCocreationAnalytics />} />
+                {/* Legacy CoCreation URLs → Technology */}
+                <Route path="/cocreation" element={<Navigate to="/technology" replace />} />
+                <Route path="/cocreation/dashboard" element={<Navigate to="/technology/dashboard" replace />} />
+                <Route path="/cocreation/auction/:auctionId" element={<RedirectLegacyCocreationAuction />} />
+                <Route path="/cocreation/:id/analytics" element={<RedirectLegacyCocreationAnalytics />} />
 
-            {/* Notifications */}
-            <Route
-              path="/notifications"
-              element={
-                <ProfileGuard>
-                  <NotificationsPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Notifications */}
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProfileGuard>
+                      <NotificationsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Edge Points */}
-            <Route
-              path="/edge-points"
-              element={
-                <ProtectedRoute>
-                  <EdgePointsPage />
-                </ProtectedRoute>
-              }
-            />
+                {/* Edge Points */}
+                <Route
+                  path="/edge-points"
+                  element={
+                    <ProtectedRoute>
+                      <EdgePointsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* Auctions */}
-            <Route
-              path="/auctions"
-              element={
-                <ProfileGuard>
-                  <AuctionsPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Auctions */}
+                <Route
+                  path="/auctions"
+                  element={
+                    <ProfileGuard>
+                      <AuctionsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Purchases */}
-            <Route
-              path="/purchases"
-              element={
-                <ProfileGuard>
-                  <PurchasesPage />
-                </ProfileGuard>
-              }
-            />
+                {/* Purchases */}
+                <Route
+                  path="/purchases"
+                  element={
+                    <ProfileGuard>
+                      <PurchasesPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Admin */}
-            <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
-            <Route
-              path="/admin"
-              element={
-                <AdminGuard>
-                  <AdminDashboardPage />
-                </AdminGuard>
-              }
-            />
+                {/* Admin */}
+                <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminGuard>
+                      <AdminDashboardPage />
+                    </AdminGuard>
+                  }
+                />
 
-            <Route
-              path="/cobrother"
-              element={
-                <CoBrotherGuard>
-                  <CoBrotherDashboardPage />
-                </CoBrotherGuard>
-              }
-            />
+                <Route
+                  path="/cobrother"
+                  element={
+                    <CoBrotherGuard>
+                      <CoBrotherDashboardPage />
+                    </CoBrotherGuard>
+                  }
+                />
 
-            <Route
-              path="/fee-requests"
-              element={
-                <ProtectedRoute>
-                  <FeeRequestsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/security/password"
-              element={
-                <ProtectedRoute>
-                  <PasswordSecurityPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings/payouts"
-              element={
-                <ProfileGuard>
-                  <PayoutSettingsPage />
-                </ProfileGuard>
-              }
-            />
+                <Route
+                  path="/fee-requests"
+                  element={
+                    <ProtectedRoute>
+                      <FeeRequestsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/security/password"
+                  element={
+                    <ProtectedRoute>
+                      <PasswordSecurityPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings/payouts"
+                  element={
+                    <ProfileGuard>
+                      <PayoutSettingsPage />
+                    </ProfileGuard>
+                  }
+                />
 
-            {/* Fallback — unknown URLs go home, not login */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Fallback — unknown URLs go home, not login */}
+                <Route path="*" element={<Navigate to="/" replace />} />
 
               </Routes>
             </LanguageAwareRoutes>

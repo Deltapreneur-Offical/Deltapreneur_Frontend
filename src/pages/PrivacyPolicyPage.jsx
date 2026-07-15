@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
-  const lastUpdated = '20th May 2026';
+  const lastUpdated = '15th July 2026';
 
   const sections = [
     { id: 'scope', title: t('privacySection1Title') },

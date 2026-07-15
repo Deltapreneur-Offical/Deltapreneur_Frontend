@@ -122,6 +122,7 @@ function formatRequestPhone(phone) {
 
 export default function OperationsAdminTab({ services = [], onRefresh }) {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [activePartitionId, setActivePartitionId] = useState('assistance');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

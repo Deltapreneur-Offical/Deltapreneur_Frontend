@@ -2166,7 +2166,7 @@
   "privacySection3Item4": "Process transactions and provide customer support.",
   "privacySection3Item5": "Ensure security and prevent fraud.",
   "privacySection3Item6": "Send updates, notifications, and marketing communications.",
-  "privacySection3Item7": "Analyze performance and improve user experience.",
+  "privacySection3Item7": "Analyze performance and improve user experience, while keeping Google Calendar/Meet data, OAuth tokens, attendee details, and other Google API-derived information isolated from OpenRouter or other third-party AI providers.",
   "privacySection4Title": "4. Legal basis for processing",
   "privacySection4Body": "We process your data based on your consent, contractual necessity, legal obligations, and legitimate business interests.",
   "privacySection5Title": "5. Sharing of personal data",

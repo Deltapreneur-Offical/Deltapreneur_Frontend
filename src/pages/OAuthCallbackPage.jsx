@@ -29,11 +29,15 @@ export default function OAuthCallbackPage() {
     const error = qs.get('error');
     const token = qs.get('token');
     const refreshToken = qs.get('refreshToken');
-    if (error) return;
-    if (token && refreshToken) {
-      localStorage.setItem('accessToken', token);
-      localStorage.setItem('refreshToken', refreshToken);
-    }
+    const hasSensitiveQuery = Boolean(token || refreshToken);
+    if (error || !hasSensitiveQuery) return;
+
+    const nextParams = new URLSearchParams(qs);
+    nextParams.delete('token');
+    nextParams.delete('refreshToken');
+    const nextSearch = nextParams.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, document.title, nextUrl);
   }, []);
 
   useEffect(() => {
@@ -46,15 +50,6 @@ export default function OAuthCallbackPage() {
     const error = params.get('error');
     const provider = params.get('provider');
 
-    console.log('[OAuth] Callback params:', {
-      error,
-      token: !!token,
-      refreshToken: !!refreshToken,
-      cookieSession,
-      provider,
-      search: window.location.search,
-    });
-
     if (error) {
       console.error('[OAuth] Backend returned error:', error);
       navigate('/login?error=oauth_failed', { replace: true });
@@ -64,23 +59,20 @@ export default function OAuthCallbackPage() {
     if (!cookieSession && (!token || !refreshToken)) {
       console.error('[OAuth] Missing tokens or error:', {
         error,
-        token: !!token,
-        refreshToken: !!refreshToken,
         cookieSession,
+        provider,
       });
       navigate('/login?error=oauth_failed', { replace: true });
       return;
     }
 
     if (token && refreshToken) {
-      console.log('[OAuth] Storing tokens from URL');
       login({ accessToken: token, refreshToken }, null);
     }
 
     const fetchUser = async () => {
       try {
         const fetchedUser = await refreshUser();
-        console.log('[OAuth] refreshUser result:', fetchedUser);
         if (!fetchedUser) {
           console.error('[OAuth] No user returned from refreshUser');
           navigate('/login?error=oauth_profile', { replace: true });

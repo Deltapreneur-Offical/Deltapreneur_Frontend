@@ -266,8 +266,6 @@ export default function DomainsDashboardPage() {
                 // Show expiry warning if within 90 days OR if expiresAt is set and order is active
                 const isActive  = order.status === 'ACTIVE' || order.lifecycleStatus === 'registration_confirmed';
                 const expiring  = expiresAt !== null && daysLeft !== null && daysLeft < 90;
-                // Panel URL may be in the list response
-                const panelUrl  = order.customerPanelUrl || order.domainManagement?.customerPanelUrl;
 
                 return (
                   <div key={`reg-${order.id}`} className={idx > 0 ? 'border-t border-gray-200' : ''}>
@@ -327,7 +325,7 @@ export default function DomainsDashboardPage() {
                             month: 'numeric', day: 'numeric', year: 'numeric',
                           })}. {daysLeft !== null && daysLeft > 7 ? `Renewal opens 7 days before expiry.` : `Renew to avoid a service interruption.`}
                         </span>
-                        {/* Renew → OpenProvider panel if available, else order detail */}
+                        {/* Renew → internal order detail page (CoBrother-managed renewal) */}
                         {daysLeft !== null && daysLeft > 7 ? (
                           <span
                             className="shrink-0 text-sm font-bold text-gray-500 bg-gray-200 px-4 py-1.5 rounded-md cursor-not-allowed select-none"
@@ -335,18 +333,9 @@ export default function DomainsDashboardPage() {
                           >
                             Renew (Unavailable)
                           </span>
-                        ) : panelUrl ? (
-                          <a
-                            href={panelUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0 text-sm font-bold text-white bg-gray-900 hover:bg-gray-700 px-4 py-1.5 rounded-md transition-colors"
-                          >
-                            Renew
-                          </a>
                         ) : (
                           <Link
-                            to={registrationOrderDetailPath(order.id)}
+                            to={`${registrationOrderDetailPath(order.id)}#overview`}
                             className="shrink-0 text-sm font-bold text-white bg-gray-900 hover:bg-gray-700 px-4 py-1.5 rounded-md transition-colors"
                           >
                             Renew

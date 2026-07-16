@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Copy, Check, Globe, Server, ChevronRight, Shield, Mail } from 'lucide-react';
+import { Copy, Check, Globe, Server, ChevronRight, Shield, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 function CopyButton({ text, label = 'Copy' }) {
@@ -44,7 +44,6 @@ export default function DomainManagementCard({ domainManagement, compact = false
   }
 
   const nameservers = Array.isArray(mgmt.nameservers) ? mgmt.nameservers : [];
-  const panelUrl    = mgmt.customerPanelUrl;
   const steps       = Array.isArray(mgmt.dnsSteps) ? mgmt.dnsSteps : [];
   const nsText      = nameservers.join('\n');
 
@@ -63,18 +62,6 @@ export default function DomainManagementCard({ domainManagement, compact = false
             </p>
           </div>
         </div>
-        {panelUrl && (
-          <div className="px-5 py-3 flex flex-wrap items-center gap-3">
-            <a href={panelUrl} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-md transition-colors">
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open domain management panel
-            </a>
-            {mgmt.loginEmail && (
-              <p className="text-xs text-gray-500">Sign in with <span className="font-mono">{mgmt.loginEmail}</span></p>
-            )}
-          </div>
-        )}
         {nameservers.length > 0 && (
           <div className="px-5 py-3 border-t border-gray-100">
             <div className="flex items-center justify-between mb-2">
@@ -147,12 +134,6 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
               Domain Settings
             </button>
-            {panelUrl && (
-              <a href={panelUrl} target="_blank" rel="noopener noreferrer"
-                className="text-xs font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 px-3 py-1 rounded-md transition-colors">
-                Select a different domain
-              </a>
-            )}
           </div>
         </div>
 
@@ -211,14 +192,8 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <div className="text-center py-10">
               <Server className="w-10 h-10 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-500 mb-4">
-                DNS records are managed through the OpenProvider control panel.
+                DNS records are managed in the DNS & Nameservers section of your order detail page.
               </p>
-              {panelUrl && (
-                <a href={panelUrl} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-                  <ExternalLink className="w-4 h-4" /> Manage DNS Records
-                </a>
-              )}
             </div>
           )}
 
@@ -228,30 +203,20 @@ export default function DomainManagementCard({ domainManagement, compact = false
               <p className="text-sm text-gray-500 mb-4">
                 Domain forwarding can be configured in the CoBrother domain control panel.
               </p>
-              {panelUrl && (
-                <a href={panelUrl} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-                  <ExternalLink className="w-4 h-4" /> Open Control Panel
-                </a>
-              )}
             </div>
           )}
         </div>
 
-        {/* Open panel footer */}
-        {panelUrl && subTab === 'Nameservers' && (
-          <div className="px-6 py-4 border-t border-gray-100 flex flex-wrap items-center gap-4">
-            <a href={panelUrl} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-              <ExternalLink className="w-4 h-4" /> Open DNS Management Panel
-            </a>
-            {mgmt.loginEmail && (
-              <p className="text-xs text-gray-400">
-                Sign in with <span className="font-mono text-gray-600">{mgmt.loginEmail}</span>
-              </p>
-            )}
-          </div>
-        )}
+      {/* Open panel footer */}
+      {subTab === 'Nameservers' && (
+        <div className="px-6 py-4 border-t border-gray-100 flex flex-wrap items-center gap-4">
+          {mgmt.loginEmail && (
+            <p className="text-xs text-gray-400">
+              Sign in with <span className="font-mono text-gray-600">{mgmt.loginEmail}</span>
+            </p>
+          )}
+        </div>
+      )}
 
       </div>
 

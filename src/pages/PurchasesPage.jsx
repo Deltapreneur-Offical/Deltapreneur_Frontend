@@ -305,9 +305,18 @@ function DomainPurchaseRow({ domain, user }) {
 }
 
 function RegistrationPurchaseRow({ order, user, t }) {
-  const amount = Number(order.priceInr || 0);
+  const { formatPrice } = useCurrency();
+  const rawAmount = order.priceInr;
+  const amount = Number(rawAmount ?? 0);
   const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
   const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);
+
+  let displayAmount = 'N/A';
+  try {
+    displayAmount = formatPrice(amount);
+  } catch {
+    displayAmount = rawAmount != null ? `₹${Number(rawAmount).toLocaleString('en-IN')}` : '₹0.00';
+  }
 
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -326,17 +335,15 @@ function RegistrationPurchaseRow({ order, user, t }) {
         </div>
         <div className="text-right flex flex-col items-end gap-2">
           <div className="font-display text-xl font-bold text-emerald-700">
-            {formatPrice(amount)}
+            {displayAmount}
           </div>
           {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
-            <a
-              href={domainManagementHref(order)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to={domainManagementHref(order)}
               className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
             >
               Manage DNS →
-            </a>
+            </Link>
           ) : null}
           <Link
             to={registrationOrderDetailPath(order.id)}

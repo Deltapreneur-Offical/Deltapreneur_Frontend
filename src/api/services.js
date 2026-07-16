@@ -151,6 +151,14 @@ export const domainAPI = {
         page_size: pageSize,
       },
     }),
+  searchTlds: ({ name, page = 1, pageSize = 50 }) =>
+    api.get('/api/v1/domain/search-tlds', {
+      params: {
+        name,
+        page,
+        page_size: pageSize,
+      },
+    }),
   createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),

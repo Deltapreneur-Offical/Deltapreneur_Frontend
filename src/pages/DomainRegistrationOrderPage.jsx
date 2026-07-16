@@ -142,6 +142,26 @@ export default function DomainRegistrationOrderPage() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  /* ─ Auto-scroll to DNS Management section once the DNS tab is active and the order is loaded ─ */
+  useEffect(() => {
+    if (loading || !order || activeTab !== 'dns') return;
+    // Wait for the DNS section to render, then bring it into view.
+    const timer = setTimeout(() => {
+      document.getElementById('dns-management')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [loading, order, activeTab]);
+
+  /* ─ Switch tab and keep it in the URL hash so the Back button restores the previous tab ─ */
+  const selectTab = useCallback((tabId) => {
+    setActiveTab(tabId);
+    const nextHash = `#${tabId}`;
+    if (window.location.hash !== nextHash) {
+      // pushState keeps a browser-history entry so Back navigates between tabs.
+      window.history.pushState(null, '', nextHash);
+    }
+  }, []);
+
   /* ─ Load order ─ */
   const loadOrder = useCallback(async (sync = true) => {
     if (!orderId) return;
@@ -270,8 +290,8 @@ export default function DomainRegistrationOrderPage() {
 
   const isActive     = order.status === 'ACTIVE' || order.lifecycleStatus === 'registration_confirmed';
   const nameservers  = Array.isArray(order.domainManagement?.nameservers) ? order.domainManagement.nameservers : [];
-  const panelUrl     = order.domainManagement?.customerPanelUrl;
   const loginEmail   = order.domainManagement?.loginEmail;
+  const canManageDns = Boolean(order.domainManagement?.canManageDns);
   const expiresAt    = order.expiresAt ? new Date(order.expiresAt) : null;
   const daysLeft     = expiresAt ? Math.floor((expiresAt - Date.now()) / 86400000) : null;
   const expiringSoon = daysLeft !== null && daysLeft < 90;
@@ -404,7 +424,7 @@ export default function DomainRegistrationOrderPage() {
               <button
                 key={t.id}
                 type="button"
-                onClick={() => setActiveTab(t.id)}
+                onClick={() => selectTab(t.id)}
                 className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap select-none ${
                   activeTab === t.id
                     ? 'bg-white text-gray-900 shadow-sm'
@@ -506,7 +526,7 @@ export default function DomainRegistrationOrderPage() {
                   <p className="text-xs text-gray-500 leading-relaxed">
                     Make sure to keep your nameservers updated. Any DNS updates will automatically propagate globally within 24-48 hours.
                   </p>
-                  <button type="button" onClick={() => setActiveTab('dns')}
+                  <button type="button" onClick={() => selectTab('dns')}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
                     Manage DNS Setup <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -520,9 +540,10 @@ export default function DomainRegistrationOrderPage() {
           {activeTab === 'dns' && (
             <DnsManagementSection
               orderId={orderId}
+              domain={order.domain}
               nameservers={nameservers}
-              panelUrl={panelUrl}
               loginEmail={loginEmail}
+              canManageDns={canManageDns}
               onUpdateSuccess={() => loadOrder(false)}
             />
           )}
@@ -621,7 +642,8 @@ function TimelineNode({ label, date, active }) {
 }
 
 /* ─── DNS SECTION COMPONENT WITH NAMESERVER UPDATE FORM & VISUAL RECORDS EDITOR ─── */
-function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUpdateSuccess }) {
+function DnsManagementSection({ orderId, domain, nameservers, loginEmail, canManageDns = true, onUpdateSuccess }) {
+  const navigate = useNavigate();
   const [ns1, setNs1] = useState('');
   const [ns2, setNs2] = useState('');
   const [loading, setLoading] = useState(false);
@@ -658,8 +680,10 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
       setNs1(nameservers[0] || '');
       setNs2(nameservers[1] || '');
     }
-    fetchDnsRecords();
-  }, [nameservers, fetchDnsRecords]);
+    if (canManageDns) {
+      fetchDnsRecords();
+    }
+  }, [nameservers, fetchDnsRecords, canManageDns]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -718,7 +742,7 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div id="dns-management" className="grid grid-cols-1 lg:grid-cols-3 gap-6 scroll-mt-24">
       <div className="lg:col-span-2 space-y-6">
         
         {/* Form Card (Nameservers) */}
@@ -799,7 +823,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
             <button
               onClick={fetchDnsRecords}
               type="button"
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+              disabled={!canManageDns}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Refresh Records
             </button>
@@ -849,7 +874,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
                           <button
                             onClick={() => handleDeleteRecord(r.id)}
                             type="button"
-                            className="text-gray-400 hover:text-rose-600 transition-colors p-1"
+                            disabled={!canManageDns}
+                            className="text-gray-400 hover:text-rose-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Delete Record"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -863,7 +889,12 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
             )}
 
             {/* Add Record Form */}
-            <form onSubmit={handleAddRecord} className="border-t border-gray-100 pt-5 space-y-4">
+            {!canManageDns && (
+              <div className="text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                DNS records can only be managed when the domain uses our default nameservers. Update your nameservers above to enable DNS management.
+              </div>
+            )}
+            <form onSubmit={handleAddRecord} className={`border-t border-gray-100 pt-5 space-y-4 ${!canManageDns ? 'opacity-60 pointer-events-none' : ''}`}>
               <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide">Add Custom Record</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="space-y-1">
@@ -871,7 +902,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
                   <select
                     value={recType}
                     onChange={(e) => setRecType(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                    disabled={!canManageDns}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400 disabled:opacity-50"
                   >
                     {['A', 'CNAME', 'TXT', 'MX'].map((t) => (
                       <option key={t} value={t}>{t}</option>
@@ -886,7 +918,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
                     value={recName}
                     onChange={(e) => setRecName(e.target.value)}
                     placeholder="@, www"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                    disabled={!canManageDns}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400 disabled:opacity-50"
                     required
                   />
                 </div>
@@ -898,7 +931,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
                     value={recValue}
                     onChange={(e) => setRecValue(e.target.value)}
                     placeholder="IP address or host target"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                    disabled={!canManageDns}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400 disabled:opacity-50"
                     required
                   />
                 </div>
@@ -910,7 +944,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
                       type="number"
                       value={recPriority}
                       onChange={(e) => setRecPriority(Number(e.target.value))}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      disabled={!canManageDns}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400 disabled:opacity-50"
                       required
                     />
                   </div>
@@ -921,7 +956,8 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
                       type="number"
                       value={recTtl}
                       onChange={(e) => setRecTtl(Number(e.target.value))}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      disabled={!canManageDns}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400 disabled:opacity-50"
                       required
                     />
                   </div>
@@ -931,7 +967,7 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={addingRecord}
+                  disabled={addingRecord || !canManageDns}
                   className="inline-flex h-9 items-center justify-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-4 rounded-lg shadow-sm"
                 >
                   {addingRecord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
@@ -946,23 +982,30 @@ function DnsManagementSection({ orderId, nameservers, panelUrl, loginEmail, onUp
 
       {/* DNS Sidebar Info */}
       <div className="space-y-6">
-        {panelUrl && (
-          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Advanced DNS records</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              If your nameservers are set to our defaults, you can manage individual A, MX, CNAME or TXT records via the control panel.
+        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Advanced DNS records</h3>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Manage your domain from the CoBrother Domain Storefront — look up the domain, review availability, and handle DNS entirely inside CoBrother.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              if (domain) {
+                navigate(`/storefront?domain=${encodeURIComponent(domain)}`);
+              } else {
+                navigate('/storefront');
+              }
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+          >
+            Open DNS Panel <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+          {loginEmail && (
+            <p className="text-[0.7rem] text-gray-400">
+              Registrant email: <span className="font-mono font-semibold text-gray-600">{loginEmail}</span>
             </p>
-            <a href={panelUrl} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
-              Open DNS Panel <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-            {loginEmail && (
-              <p className="text-[0.7rem] text-gray-400">
-                Log in using: <span className="font-mono font-semibold text-gray-600">{loginEmail}</span>
-              </p>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1025,8 +1068,13 @@ function AddonProductsSection({ order, onUpdateSuccess }) {
     } finally { setLoadingSSL(false); }
   };
 
+  const supportsDnssec = Boolean(order.supportsDnssec);
+
   const handleToggleDnssec = async () => {
     setError(''); setSuccess('');
+    if (!supportsDnssec) {
+      return;
+    }
     setLoadingDnssec(true);
     try {
       const { data } = await domainStorefrontAPI.toggleDnssec(order.id, !dnssecEnabled);
@@ -1135,18 +1183,23 @@ function AddonProductsSection({ order, onUpdateSuccess }) {
                 }`}>
                   {dnssecEnabled ? 'DNSSEC Enabled' : 'DNSSEC Disabled'}
                 </span>
+                {!supportsDnssec && (
+                  <span className="text-[0.65rem] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                    DNSSEC management is not available for this domain.
+                  </span>
+                )}
               </div>
             </div>
           </div>
           <div className="shrink-0">
             <button
               onClick={handleToggleDnssec}
-              disabled={loadingDnssec}
+              disabled={loadingDnssec || !supportsDnssec}
               className={`inline-flex h-10 items-center justify-center gap-2 text-xs font-bold rounded-xl px-5 border transition-all shadow-sm ${
                 dnssecEnabled
                   ? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
                   : 'bg-indigo-600 hover:bg-indigo-700 text-white border-transparent'
-              }`}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loadingDnssec && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {dnssecEnabled ? 'Disable DNSSEC' : 'Enable DNSSEC'}

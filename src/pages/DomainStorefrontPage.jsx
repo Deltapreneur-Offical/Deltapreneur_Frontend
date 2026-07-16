@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, RefreshCw, CheckCircle2, AlertCircle, Globe, ArrowRight, Loader2, Lock, ShieldAlert, Key, Plus, Sparkles, CreditCard, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -12,16 +12,7 @@ import { resolveRegistrationPricing } from '../utils/domainRegistrationPricing';
 import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
 import { readApiError } from '../utils/apiError';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
-
-const DEFAULT_TLD = 'com';
-
-function parseDomainInput(raw, fallbackTld) {
-  const q = raw.trim().toLowerCase();
-  if (!q) return null;
-  const dot = q.indexOf('.');
-  if (dot !== -1) return q;
-  return `${q}.${fallbackTld}`;
-}
+import DomainServices from '../components/storefront/DomainServices';
 
 function statusBadgeClass(status, lifecycleStatus) {
   const life = (lifecycleStatus || '').toLowerCase();
@@ -101,13 +92,23 @@ export default function DomainStorefrontPage() {
 
   const initialDomain = searchParams.get('domain') || '';
 
+  const searchSectionRef = useRef(null);
+
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'register'); // 'register' or 'transfer'
   const [transferSubMode, setTransferSubMode] = useState('in'); // 'in' or 'out'
   
   const [query, setQuery] = useState(initialDomain);
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState(null);
-  const [checkError, setCheckError] = useState('');
+
+  /* ─ Multi-TLD search (every OpenProvider extension) ─ */
+  const [tldResults, setTldResults] = useState([]);
+  const [tldLoading, setTldLoading] = useState(false);
+  const [tldError, setTldError] = useState('');
+  const [tldPage, setTldPage] = useState(1);
+  const [tldTotalPages, setTldTotalPages] = useState(1);
+  const [tldTotal, setTldTotal] = useState(0);
+  const [tldLabel, setTldLabel] = useState('');
 
   const [config, setConfig] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -166,44 +167,55 @@ export default function DomainStorefrontPage() {
     loadOrders();
   }, [loadConfig, loadOrders]);
 
-  const runCheck = useCallback(
-    async (raw) => {
-      const fqdn = parseDomainInput(raw, DEFAULT_TLD);
-      if (!fqdn) return;
+  const runTldSearch = useCallback(
+    async (raw, page = 1) => {
+      const label = (raw || '').trim().toLowerCase().split('.')[0];
+      if (!label) return;
 
-      setChecking(true);
-      setCheckError('');
-      setCheckResult(null);
-      setSuccessMessage('');
-      setPayError('');
+      setTldLoading(true);
+      setTldError('');
+      setTldLabel(label);
+      setTldPage(page);
 
       try {
-        const { data } = await domainAPI.check(encodeURIComponent(fqdn));
-        const result = data?.data ?? data;
-        setCheckResult(result);
-        setSearchParams({ domain: fqdn }, { replace: true });
-        if (result?.minPeriodYears && result.minPeriodYears > period) {
-          setPeriod(result.minPeriodYears);
+        const { data } = await domainAPI.searchTlds({ name: label, page, pageSize: 50 });
+        const payload = data?.data ?? data;
+        setTldResults(Array.isArray(payload?.items) ? payload.items : []);
+        setTldTotal(payload?.total ?? 0);
+        setTldTotalPages(payload?.totalPages ?? 1);
+        setSearchParams({ domain: label }, { replace: true });
+        if (page === 1) {
+          // Scroll the search/results section into view once loaded.
+          setTimeout(() => {
+            searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
         }
       } catch (err) {
-        setCheckError(readApiError(err, t('storefrontCheckFailed')));
+        setTldError(readApiError(err, 'Could not fetch available extensions.'));
+        setTldResults([]);
       } finally {
-        setChecking(false);
+        setTldLoading(false);
       }
     },
-    [period, setSearchParams, t],
+    [setSearchParams],
   );
 
   useEffect(() => {
-    if (initialDomain) {
-      runCheck(initialDomain);
-    }
+    if (!initialDomain) return;
+    // Keep the search box populated with the requested domain...
+    setQuery(initialDomain);
+    // ...ensure we're on the register tab so results are visible...
+    setActiveTab('register');
+    // ...and automatically run the multi-TLD lookup (scrolls into view on load).
+    runTldSearch(initialDomain);
+    // Re-run whenever the ?domain= query parameter changes (e.g. navigating
+    // from another page or an order detail page), not just on first mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialDomain]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    runCheck(query);
+    runTldSearch(query);
   };
 
   const handleTransferSubmit = async (e) => {
@@ -387,7 +399,7 @@ export default function DomainStorefrontPage() {
               )}
 
               {/* Domain Search Card */}
-              <section className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+              <section ref={searchSectionRef} className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-indigo-50/50 via-violet-50/10 to-transparent" aria-hidden="true" />
                 <div className="relative">
                   <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Find your domain name</h2>
@@ -420,47 +432,135 @@ export default function DomainStorefrontPage() {
                   </form>
                 </div>
 
-                {checkError && (
+                {tldError && (
                   <div className="mt-4 flex items-start gap-2.5 text-xs text-rose-800 bg-rose-50 border border-rose-200 rounded-xl p-4">
                     <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-                    <span>{checkError}</span>
+                    <span>{tldError}</span>
                   </div>
                 )}
 
-                {checkResult && !checkError && (
-                  <div className="mt-6 rounded-xl border border-gray-150 p-5 bg-gray-50/50">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-gray-950">{checkResult.domain}</span>
-                        {checkResult.status === 'available' ? (
-                          <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wide">
-                            Available
-                          </span>
-                        ) : (
-                          <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700 uppercase tracking-wide">
-                            Taken
-                          </span>
-                        )}
-                      </div>
-                      
-                      {checkResult.status === 'available' && displayTotal != null && (
-                        <div className="text-right">
-                          <p className="text-2xl font-extrabold text-gray-950">
-                            {formatPrice(displayTotal)}
-                            <span className="text-xs font-normal text-gray-400 ml-1">
-                              / {period} {period === 1 ? 'Year' : 'Years'}
-                            </span>
-                          </p>
-                        </div>
-                      )}
+                {tldLoading && (
+                  <div className="mt-6 flex items-center justify-center py-10">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                  </div>
+                )}
+
+                {!tldLoading && !tldError && tldResults.length > 0 && (
+                  <div className="mt-6 space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                        Available Extensions for “{tldLabel}”
+                      </h2>
+                      <span className="text-xs text-gray-400 font-medium">
+                        {tldTotal} extensions · sorted by price
+                      </span>
                     </div>
+
+                    <div className="overflow-x-auto border border-gray-150 rounded-xl bg-white">
+                      <table className="min-w-full text-xs text-left">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-150 uppercase tracking-wider text-gray-400 font-bold">
+                            <th className="px-4 py-3">Domain</th>
+                            <th className="px-4 py-3">TLD</th>
+                            <th className="px-4 py-3">Availability</th>
+                            <th className="px-4 py-3">Registration</th>
+                            <th className="px-4 py-3">Renewal</th>
+                            <th className="px-4 py-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 font-medium">
+                          {tldResults.map((it) => {
+                            const available = it.available || it.status === 'available';
+                            const regPrice = it.registrationPrice != null ? formatPrice(it.registrationPrice) : '—';
+                            const renPrice = it.renewalPrice != null ? formatPrice(it.renewalPrice) : '—';
+                            return (
+                              <tr key={it.domain} className="hover:bg-gray-50/50">
+                                <td className="px-4 py-3 font-bold text-gray-950">{it.name}</td>
+                                <td className="px-4 py-3">
+                                  <span className="inline-block text-[0.7rem] font-bold px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 uppercase">
+                                    {it.tld}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  {available ? (
+                                    <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wide">
+                                      Available
+                                    </span>
+                                  ) : (
+                                    <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700 uppercase tracking-wide">
+                                      Taken
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 font-mono text-gray-800">{regPrice}</td>
+                                <td className="px-4 py-3 font-mono text-gray-500">{renPrice}</td>
+                                <td className="px-4 py-3 text-right">
+                                  <button
+                                    type="button"
+                                    disabled={!available}
+                                    onClick={() => {
+                                      setCheckResult({
+                                        domain: it.domain,
+                                        status: 'available',
+                                        unitPrice: it.registrationPrice,
+                                        priceCurrency: it.currency || 'INR',
+                                        minPeriodYears: 1,
+                                        source: it.source,
+                                      });
+                                      setActiveTab('register');
+                                      document.getElementById('registrant-details')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }}
+                                    className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded-md transition-colors"
+                                  >
+                                    Register
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {tldTotalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 pt-2">
+                        <button
+                          type="button"
+                          disabled={tldPage <= 1}
+                          onClick={() => runTldSearch(tldLabel, tldPage - 1)}
+                          className="text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 px-3 py-1.5 rounded-md transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-xs text-gray-500 font-medium">
+                          Page {tldPage} of {tldTotalPages}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={tldPage >= tldTotalPages}
+                          onClick={() => runTldSearch(tldLabel, tldPage + 1)}
+                          className="text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 px-3 py-1.5 rounded-md transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!tldLoading && !tldError && tldResults.length === 0 && tldLabel && (
+                  <div className="mt-6 text-center text-sm text-gray-400 font-medium py-8">
+                    No extensions found for “{tldLabel}”.
                   </div>
                 )}
               </section>
 
+              {/* Domain Services */}
+              <DomainServices orders={orders} />
+
               {/* Checkout Contact Card */}
               {canRegister && (
-                <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
+                <section id="registrant-details" className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
                     <Sparkles className="w-5 h-5 text-indigo-600" />
                     <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">Registrant Details</h2>

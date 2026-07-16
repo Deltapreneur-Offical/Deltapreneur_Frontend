@@ -140,11 +140,6 @@ export default function useAIDomains() {
       if (requestIdRef.current !== currentRequestId) return;
 
       const nextResults = Array.isArray(data?.results) ? data.results : [];
-      if (import.meta.env.DEV) {
-        console.info('[AI Domains] idea:', cleanIdea);
-        console.info('[AI Domains] response names:', nextResults.map((item) => item.name));
-        console.info('[AI Domains] cached:', Boolean(data?.cached));
-      }
 
       setCategory(data?.category || '');
       setCached(Boolean(data?.cached));

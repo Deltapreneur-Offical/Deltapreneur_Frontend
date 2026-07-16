@@ -9,6 +9,7 @@ import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiA
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
+import AddToCartButton from '../cart/AddToCartButton';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
@@ -20,6 +21,41 @@ import {
   heroTabSpring,
   HOME_EASE_OUT,
 } from '../home/motion/homeMotion';
+
+function domainToUuid(domain) {
+  let hash = 0;
+  const str = domain.toLowerCase().trim();
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  return `00000000-0000-4000-8000-${hex.padStart(12, '0')}`;
+}
+
+function domainRegistrationPrice(result) {
+  const unit = Number(result.unitPrice ?? result.price);
+  const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
+  return Number.isFinite(unit) ? unit * years : 0;
+}
+
+function DomainCartCorner({ result, className = 'absolute top-3 right-3 z-10' }) {
+  if (result?.status !== 'available') return null;
+  const domain = `${result.name}.${result.ext}`;
+  return (
+    <AddToCartButton
+      variant="corner"
+      className={className}
+      productType="DOMAIN_REGISTRATION"
+      productId={domainToUuid(domain)}
+      metadata={{
+        domainName: domain,
+        price: domainRegistrationPrice(result),
+        tld: result.ext,
+        period: result.minPeriodYears || 1,
+      }}
+    />
+  );
+}
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const SEARCH_MODE_IDS = ['ai', 'new', 'premium', 'auction'];
@@ -834,12 +870,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
           {/* New Domains */}
           {hasSearchQuery && searchMode === 'new' && visibleNewBest && (
-            <div className={`domain-search-card domain-search-card--featured mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
+            <div className={`domain-search-card domain-search-card--featured relative mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
               visibleNewBest.status === 'available' ? 'border-[var(--cobrother-brand-green)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.16)]' :
                                                       'border-gray-200'
             }`}>
+              <DomainCartCorner result={visibleNewBest} className="absolute top-4 right-4 z-10" />
               <Badge status={visibleNewBest.status} />
-              <h2 className={`text-4xl font-extrabold mb-4 ${
+              <h2 className={`text-4xl font-extrabold mb-4 pr-12 ${
                 visibleNewBest.status === 'taken' || visibleNewBest.status === 'error'
                   ? 'text-gray-300 line-through' : 'text-gray-900'
               }`}>
@@ -860,15 +897,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           {hasSearchQuery && searchMode === 'new' && visibleNewOthers.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {visibleNewOthers.map((item, i) => (
-                <div key={i} className={`domain-search-card bg-white border rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 ${
+                <div key={i} className={`domain-search-card relative bg-white border rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 ${
                   item.status === 'taken'       ? 'border-gray-100 opacity-60' :
                   item.status === 'error'       ? 'border-gray-100 opacity-60' :
                   item.status === 'marketplace' ? 'border-indigo-200 ring-1 ring-indigo-50' :
                   item.status === 'available'   ? 'border-[rgba(var(--cobrother-brand-green-rgb),0.42)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.14)]' :
                                                   'border-gray-200'
                 }`}>
+                  <DomainCartCorner result={item} />
                   <Badge status={item.status} />
-                  <h2 className={`text-xl font-extrabold mb-3 ${
+                  <h2 className={`text-xl font-extrabold mb-3 pr-10 ${
                     item.status === 'taken' || item.status === 'error'
                       ? 'text-gray-300 line-through' : 'text-gray-900'
                   }`}>

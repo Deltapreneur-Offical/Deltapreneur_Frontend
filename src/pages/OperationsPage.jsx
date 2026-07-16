@@ -180,7 +180,7 @@ export default function OperationsPage() {
         {
           count: services.length,
           defaultValue: isCompliance
-            ? '{{count}} Compliance Services Available'
+            ? '{{count}} Services Available'
             : '{{count}} Virtual Roles Available',
         },
       );
@@ -206,7 +206,7 @@ export default function OperationsPage() {
                 <p className="mt-1.5 text-sm text-white/75 max-w-xl leading-relaxed">
                   {isCompliance
                     ? t('operationsComplianceSubtitle', {
-                        defaultValue: 'Business compliance, registration support, and regulatory guidance for your venture.',
+                        defaultValue: 'Registration, filings, and business services for your venture.',
                       })
                     : t('operationsSubtitle', {
                         defaultValue: 'Hire skilled virtual professionals to run HR, finance, marketing, tech, and day-to-day operations.',
@@ -230,12 +230,12 @@ export default function OperationsPage() {
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {isCompliance
-                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Compliance Support' })
+                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Services' })
                   : t('operationsFindHeading', { defaultValue: 'Find Your Virtual Expert' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
                 {isCompliance
-                  ? t('operationsComplianceFindSubtitle', { defaultValue: 'Stay compliant with expert registration and regulatory support.' })
+                  ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and business support for your venture.' })
                   : t('operationsFindSubtitle', { defaultValue: 'Hire experienced professionals without full-time overhead.' })}
               </p>
             </div>
@@ -269,12 +269,12 @@ export default function OperationsPage() {
             <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
               <p className="text-base font-semibold text-gray-900 mb-1">
                 {isCompliance
-                  ? t('operationsComplianceEmptyTitle', { defaultValue: 'No compliance services available yet' })
+                  ? t('operationsComplianceEmptyTitle', { defaultValue: 'No services available yet' })
                   : t('operationsEmptyTitle', { defaultValue: 'No roles match your search' })}
               </p>
               <p className="text-sm text-gray-500 mb-4">
                 {isCompliance
-                  ? t('operationsComplianceEmptyBody', { defaultValue: 'Compliance services will appear here once added by the admin team.' })
+                  ? t('operationsComplianceEmptyBody', { defaultValue: 'Services will appear here once added by the admin team.' })
                   : t('operationsEmptyBody', { defaultValue: 'Try a different keyword or clear your filters.' })}
               </p>
               {!isCompliance && (
@@ -304,7 +304,7 @@ export default function OperationsPage() {
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
                 {t('operationsMyRequestsSubtitle', {
-                  defaultValue: 'Track whether you submitted a hire request or booked a compliance slot.',
+                  defaultValue: 'Track whether you submitted a hire request or booked a service slot.',
                 })}
               </p>
             </div>

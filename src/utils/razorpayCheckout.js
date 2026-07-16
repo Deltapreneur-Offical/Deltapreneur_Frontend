@@ -37,7 +37,7 @@ export function normalizeOrderData(payload) {
   return cur;
 }
 
-/** Razorpay amount in smallest currency unit (paise for INR). */
+/** Razorpay amount in smallest currency unit (paise for INR, cents for USD, etc). */
 export function getRazorpayAmount(order) {
   if (!order) return 0;
 
@@ -56,13 +56,21 @@ export function getRazorpayAmount(order) {
   if (!Number.isFinite(amount) || amount <= 0) return 0;
 
   const currency = (order.currency || 'INR').toString().toUpperCase();
+  const factor = getSmallestUnitFactor(currency);
+  return Math.round(amount * factor);
+}
 
-  // Legacy INR-only backend returns major units (e.g. 1000 = ₹1000)
-  if (currency === 'INR') {
-    return Math.round(amount * 100);
-  }
+const ZERO_DECIMAL_CURRENCIES = new Set([
+  'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW',
+  'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+]);
 
-  return Math.round(amount);
+const THREE_DECIMAL_CURRENCIES = new Set(['BHD', 'JOD', 'KWD', 'OMR', 'TND']);
+
+function getSmallestUnitFactor(currency) {
+  if (ZERO_DECIMAL_CURRENCIES.has(currency)) return 1;
+  if (THREE_DECIMAL_CURRENCIES.has(currency)) return 1000;
+  return 100;
 }
 
 export function getRazorpayCurrency(order) {

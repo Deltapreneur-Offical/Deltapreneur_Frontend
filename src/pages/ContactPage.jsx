@@ -3,7 +3,7 @@ import { Mail, Phone, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import coBrotherLogo from '../assets/Cobrother_logo.gif';
+import coBrotherLogo from '../assets/Cobrother_logo.png';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import {

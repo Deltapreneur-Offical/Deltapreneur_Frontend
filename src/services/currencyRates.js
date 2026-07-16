@@ -8,7 +8,6 @@ const LEGACY_STORAGE_KEYS = ['cobrother_exchange_rates_v1', 'cobrother_exchange_
 
 const PROVIDERS = {
   openErApi: 'https://open.er-api.com/v6/latest/INR',
-  floatRates: 'https://www.floatrates.com/daily/inr.json',
   exchangeRateApiV4: 'https://api.exchangerate-api.com/v4/latest/INR',
 };
 
@@ -168,33 +167,11 @@ async function fetchExchangeRateApiV4Rates() {
   };
 }
 
-async function fetchFloatRates() {
-  const res = await fetch(PROVIDERS.floatRates, {
-    method: 'GET',
-    cache: 'no-store',
-    headers: { Accept: 'application/json' },
-  });
-  if (!res.ok) throw new Error(`floatrates HTTP ${res.status}`);
-  const json = await res.json();
-  const raw = {};
-  for (const code of SUPPORTED_CURRENCIES) {
-    if (code === 'INR') continue;
-    const entry = json[code.toLowerCase()];
-    if (entry?.rate) raw[code] = entry.rate;
-  }
-  return {
-    rates: normalizeRatesObject(raw),
-    updatedAt: null,
-    name: 'floatrates',
-  };
-}
-
 /** Aggregate live INR-base rates from multiple public providers (mid-market blend). */
 export async function fetchLiveRatesFromProviders() {
   const results = await Promise.allSettled([
     fetchOpenErApiRates(),
     fetchExchangeRateApiV4Rates(),
-    fetchFloatRates(),
   ]);
 
   const ok = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);

@@ -399,6 +399,18 @@ export const meetingAPI = {
   adminGetAll:   ()                 => api.get('/api/v1/meetings/admin/all'),
 };
 
+export const cartAPI = {
+  get:          ()           => api.get('/api/v1/cart'),
+  getCount:     ()           => api.get('/api/v1/cart/count'),
+  addItem:      (body)       => api.post('/api/v1/cart/items', body),
+  updateItem:   (itemId, body) => api.patch(`/api/v1/cart/items/${itemId}`, body),
+  removeItem:   (itemId)     => api.delete(`/api/v1/cart/items/${itemId}`),
+  clear:        ()           => api.delete('/api/v1/cart'),
+  checkout:     (body = {})  => api.post('/api/v1/cart/checkout', body),
+  verifyCheckout: (body)     => api.post('/api/v1/cart/checkout/verify', body),
+  cancelCheckout: (body)     => api.post('/api/v1/cart/checkout/cancel', body),
+};
+
 export const joinUsAPI = {
   submit: (data) => api.post('/api/v1/becobrother', data),
 };

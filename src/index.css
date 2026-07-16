@@ -7266,6 +7266,29 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   opacity: 1;
 }
 
+.home-nav-logo-img--hover {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home-nav-logo-swap:hover .home-nav-logo-img--default,
+.home-nav-logo-btn:hover .home-nav-logo-img--default,
+.app-sidebar-logo-link:hover .home-nav-logo-img--default,
+.brand-logo-interactive:hover .home-nav-logo-img--default {
+  opacity: 0;
+}
+
+.home-nav-logo-swap:hover .home-nav-logo-img--hover,
+.home-nav-logo-btn:hover .home-nav-logo-img--hover,
+.app-sidebar-logo-link:hover .home-nav-logo-img--hover,
+.brand-logo-interactive:hover .home-nav-logo-img--hover {
+  opacity: 1;
+}
+
 
 /* Uiverse thin-duck-22 — animated logout (vinodjangid07), themed for CoBrother */
 .uiverse-logout-btn {

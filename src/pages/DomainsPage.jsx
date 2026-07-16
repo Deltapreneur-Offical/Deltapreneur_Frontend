@@ -12,6 +12,7 @@ import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle
 import ListingCardShell from '../components/listings/ListingCardShell';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
+import AddToCartButton from '../components/cart/AddToCartButton';
 import { useAuth } from '../context/AuthContext';
 import useReferralTracker from '../hooks/useReferralTracker';
 import { roundInr, roundMoney } from '../utils/money';
@@ -1295,6 +1296,12 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
               ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
               : t('domainsPagePayButton', { amount: formatPrice(finalPayable) })}
           </button>
+          <AddToCartButton
+            productType="DOMAIN_LISTING"
+            productId={domain.id}
+            addonServices={[...addons, ...vaAddons].map(a => typeof a === 'string' ? a : a.key)}
+            size="md"
+          />
           <button type="button" className="btn-glow" onClick={onClose}>{t('cancel')}</button>
         </div>
       </div>

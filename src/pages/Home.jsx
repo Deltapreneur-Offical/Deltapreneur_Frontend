@@ -169,12 +169,12 @@ export default function Home() {
     {
       icon: <Headset className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
       title: t('homeVirtualAssistancesTitle', { defaultValue: 'Virtual Assistants' }),
-      onClick: () => goToOperations('assistances'),
+      onClick: () => goToOperations('assistance'),
     },
     {
       icon: <ShieldCheck className="w-10 h-10 text-gray-900" strokeWidth={1.75} aria-hidden />,
-      title: t('homeComplianceTitle', { defaultValue: 'Compliance' }),
-      onClick: () => goToOperations('compliances'),
+      title: t('homeComplianceTitle', { defaultValue: 'Services' }),
+      onClick: () => goToOperations('compliance'),
     },
   ];
 

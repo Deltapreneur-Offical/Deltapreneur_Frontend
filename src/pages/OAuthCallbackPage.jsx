@@ -79,10 +79,7 @@ export default function OAuthCallbackPage() {
           return;
         }
         const redirectPath = consumeRedirectAfterLogin();
-        let destination = resolveOAuthCallbackNavigation(fetchedUser, redirectPath);
-        if (provider === 'linkedin') {
-          destination = { pathname: '/' };
-        }
+        const destination = resolveOAuthCallbackNavigation(fetchedUser, redirectPath);
 
         flushSync(() => {
           if (token && refreshToken) {

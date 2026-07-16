@@ -19,7 +19,7 @@ const SECTION_MODAL_META = {
   },
   compliance: {
     titleKey: 'adminOperationsModalTitleCompliance',
-    defaultTitle: 'Add / Edit Compliance Service',
+    defaultTitle: 'Add / Edit Service',
     namePlaceholderKey: 'adminOperationsFieldComplianceNamePlaceholder',
     defaultNamePlaceholder: 'GST Registration',
     priceHintKey: 'adminOperationsPriceHintCompliance',

@@ -7,7 +7,7 @@ const REQUESTS_PARTITION = {
   labelKey: 'adminOperationsRequestsTitle',
   defaultLabel: 'Requests',
   hintKey: 'adminOperationsRequestsTabHint',
-  defaultHint: 'Hire requests & compliance bookings',
+  defaultHint: 'Hire requests & service bookings',
   theme: 'requests',
   icon: ClipboardList,
 };

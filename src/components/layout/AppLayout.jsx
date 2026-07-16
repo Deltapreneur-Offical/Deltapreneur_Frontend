@@ -12,6 +12,7 @@ import TechnologyIcon from '../../assets/CoCreation.png';
 import BrandNavLogo from '../common/BrandNavLogo';
 import DomainsIcon from '../../assets/CoBranding.png';
 import CreatorIcon from '../../assets/Cobrother_Profile.png';
+import CartButton from '../common/CartButton';
 import CurrencyDropdown from '../common/CurrencyDropdown';
 import LanguageDropdown from '../common/LanguageDropdown';
 import AppProfileRegionalMenu from './AppProfileRegionalMenu';
@@ -783,6 +784,9 @@ export default function AppLayout({ children }) {
                   document.body,
                 )}
             </div>
+
+            {/* Cart — visible when logged in, right of bell */}
+            {user && <CartButton />}
 
             {/* Mobile / tablet: round profile → accordion language & currency */}
             <div className="relative shrink-0 xl:hidden" ref={profileRef}>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FaPhoneAlt, FaWhatsapp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/cobrother_community_profil.png';
+import CartButton from './CartButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
 import {
@@ -400,6 +401,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
           document.body
         )}
       </div>
+      {user && <CartButton />}
 
       {showLogoutConfirm &&
         typeof document !== 'undefined' &&

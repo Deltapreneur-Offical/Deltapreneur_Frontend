@@ -321,18 +321,6 @@ export default function TechnologyListingCard({
       return renderOwnerListingChip();
     }
 
-    if (['ADMIN', 'SUPER_ADMIN', 'AUCTION_MODERATOR'].includes(user?.role)) {
-      if (isDirectPurchase(item, auctionStatus)) {
-        return (
-          <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onView?.(); }}>
-            <span>View Details</span>
-            <ArrowRight size={13} aria-hidden />
-          </button>
-        );
-      }
-      return null;
-    }
-
     if (isTechnologyAuctionLive(item, auctionStatus)) {
       if (isAuctionBlockedByVerification(item)) {
         return (
@@ -357,9 +345,24 @@ export default function TechnologyListingCard({
     }
 
     if (isDirectPurchase(item, auctionStatus)) {
+      if (onBuy) {
+        return (
+          <button
+            type="button"
+            className={primaryBtn}
+            onClick={(e) => {
+              stop(e);
+              onBuy();
+            }}
+          >
+            <ShoppingCart size={13} aria-hidden />
+            <span>{t('listingCardBuyNowArrow', 'Buy Now →')}</span>
+          </button>
+        );
+      }
       return (
         <button type="button" className={primaryBtn} onClick={(e) => { stop(e); onView?.(); }}>
-          <span>View Details</span>
+          <span>{t('listingCardViewDetails', 'View Details')}</span>
           <ArrowRight size={13} aria-hidden />
         </button>
       );

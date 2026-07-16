@@ -11,16 +11,22 @@ export const OPERATIONS_SECTIONS = [
   {
     id: 'compliance',
     labelKey: 'operationsSectionCompliances',
-    defaultLabel: 'Compliance',
+    defaultLabel: 'Services',
     hintKey: 'operationsSectionComplianceHint',
-    defaultHint: 'Registration, filings & compliance services',
+    defaultHint: 'Registration, filings & business services',
     serviceType: 'compliance',
     theme: 'compliance',
   },
 ];
 
+const SECTION_ALIASES = {
+  compliances: 'compliance',
+  assistances: 'assistance',
+};
+
 export function resolveOperationsSection(sectionId) {
-  return OPERATIONS_SECTIONS.find((s) => s.id === sectionId) || OPERATIONS_SECTIONS[0];
+  const normalized = SECTION_ALIASES[sectionId] || sectionId;
+  return OPERATIONS_SECTIONS.find((s) => s.id === normalized) || OPERATIONS_SECTIONS[0];
 }
 
 export function operationsPathForSection(sectionId) {

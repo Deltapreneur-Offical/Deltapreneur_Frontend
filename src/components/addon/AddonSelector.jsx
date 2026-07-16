@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useCurrency from '../../context/CurrencyContext';
 import AddonAccordionCard from './AddonAccordionCard';
-import { ADDON_SERVICES_FROM_CATALOG } from '../../utils/complianceServicesCatalog';
+import { ADDON_SERVICES_FROM_CATALOG } from '../../utils/operationsServicesCatalog';
 
 export const ADDON_SERVICES = ADDON_SERVICES_FROM_CATALOG;
 

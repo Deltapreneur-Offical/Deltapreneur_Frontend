@@ -1,4 +1,4 @@
-import logoBlack from '../../assets/Cobrother_logo.gif';
+import logoBlack from '../../assets/Cobrother_logo.png';
 import '../../styles/auth.css';
 
 function BackIcon() {

@@ -1,7 +1,7 @@
 /**
- * Compliance services catalog — prices aligned with AddonSelector / addon_services.py
+ * Operations services catalog (registration, filings, etc.) — prices aligned with AddonSelector / addon_services.py
  */
-export const COMPLIANCE_SERVICES_CATALOG = [
+export const OPERATIONS_SERVICES_CATALOG = [
   {
     key: 'GST_REGISTRATION',
     labelKey: 'addonGstRegistration',
@@ -103,8 +103,11 @@ export const COMPLIANCE_SERVICES_CATALOG = [
   },
 ];
 
+/** @deprecated Use OPERATIONS_SERVICES_CATALOG */
+export const COMPLIANCE_SERVICES_CATALOG = OPERATIONS_SERVICES_CATALOG;
+
 /** Shape used by AddonSelector checkout */
-export const ADDON_SERVICES_FROM_CATALOG = COMPLIANCE_SERVICES_CATALOG.map((item) => ({
+export const ADDON_SERVICES_FROM_CATALOG = OPERATIONS_SERVICES_CATALOG.map((item) => ({
   key: item.key,
   labelKey: item.labelKey,
   price: item.price,

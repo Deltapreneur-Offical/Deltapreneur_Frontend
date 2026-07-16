@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft } from 'lucide-react';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
+import AddToCartButton from '../components/cart/AddToCartButton';
+import TechnologyPlanPicker from '../components/cart/TechnologyPlanPicker';
+import { normalizePricingPlans, getEnabledPricingPlans } from '../utils/technologyPricingPlans';
 import { useAuth } from '../context/AuthContext';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import useReferralTracker from '../hooks/useReferralTracker';
@@ -433,41 +436,7 @@ export default function CoCreationPage() {
 
 
 // ─── Pricing plan definitions ─────────────────────────────────────────────────
-const PRICING_PLAN_DEFS = [
-  { key: 'ONE_TIME', label: 'One-Time Purchase' },
-  { key: '1_MONTH', label: '1 Month Subscription' },
-  { key: '3_MONTHS', label: '3 Months Subscription' },
-  { key: '6_MONTHS', label: '6 Months Subscription' },
-  { key: '12_MONTHS', label: '12 Months Subscription' },
-];
-
-function normalizePricingPlans(savedPlans) {
-  // Normalize saved pricingPlans (from API) back into the local state shape
-  const savedMap = {};
-  if (Array.isArray(savedPlans)) {
-    savedPlans.forEach((p) => {
-      const key = p.key || p.planDuration || p.plan_duration;
-      const keyMapping = {
-        'ONE_MONTH': '1_MONTH',
-        'THREE_MONTHS': '3_MONTHS',
-        'SIX_MONTHS': '6_MONTHS',
-        'TWELVE_MONTHS': '12_MONTHS',
-      };
-      const normalizedKey = keyMapping[key] || key;
-      savedMap[normalizedKey] = p;
-    });
-  }
-  return PRICING_PLAN_DEFS.map((def) => {
-    const matched = savedMap[def.key];
-    const isPlanEnabled = matched ? (matched.enabled ?? matched.isActive ?? matched.is_active ?? false) : false;
-    return {
-      key: def.key,
-      label: def.label,
-      enabled: Boolean(isPlanEnabled),
-      price: matched?.price != null ? String(matched.price) : '',
-    };
-  });
-}
+// normalizePricingPlans + getEnabledPricingPlans live in utils/technologyPricingPlans.js
 
 function softwareToFormFields(item, navCurrency) {
   return {
@@ -1210,11 +1179,22 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
     buyerPhone: cleanPhone(user?.phoneNumber),
   });
 
-  const enabledPlans = normalizePricingPlans(item.pricingPlans || item.pricing_plans || []).filter(p => p.enabled);
+  const enabledPlans = getEnabledPricingPlans(item.pricingPlans || item.pricing_plans || []);
   const hasPlans = enabledPlans.length > 0;
+  const multiplePlans = enabledPlans.length > 1;
   const [currentPlanKey, setCurrentPlanKey] = useState(
-    selectedPlan?.key || (hasPlans ? enabledPlans[0].key : null)
+    selectedPlan?.key || (enabledPlans.length === 1 ? enabledPlans[0].key : null),
   );
+  const [planTouched, setPlanTouched] = useState(
+    Boolean(selectedPlan?.key) || enabledPlans.length <= 1,
+  );
+
+  const handlePlanSelect = (key) => {
+    setCurrentPlanKey(key);
+    setPlanTouched(true);
+  };
+
+  const canAddToCart = !hasPlans || (currentPlanKey && planTouched);
 
   const [coBrotherOptIn, setCoBrotherOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -1222,8 +1202,12 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
   const [addons, setAddons] = useState([]);
   const [vaAddons, setVaAddons] = useState([]);
 
-  const activePlan = hasPlans ? enabledPlans.find(p => p.key === currentPlanKey) : null;
-  const basePrice = activePlan ? parseFloat(activePlan.price) : (item.price || 0);
+  const activePlan = hasPlans && currentPlanKey
+    ? enabledPlans.find((p) => p.key === currentPlanKey)
+    : null;
+  const basePrice = activePlan
+    ? parseFloat(activePlan.price)
+    : (hasPlans ? 0 : (item.price || 0));
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
   const addonExtra = addonTotal(addons);
   const subTotal = basePrice + coBrotherFee + addonExtra;
@@ -1243,6 +1227,10 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
   };
 
   const handlePay = async () => {
+    if (hasPlans && !canAddToCart) {
+      setError('Please select a pricing plan before checkout.');
+      return;
+    }
     if (!form.buyerFullName.trim()) {
       setError('Full name is required.');
       return;
@@ -1311,7 +1299,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[900px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-6 md:p-8">
+      <div className="relative w-full max-w-[920px] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-4 sm:p-6 md:p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
@@ -1321,7 +1309,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
           <p className="text-sm text-gray-500 font-medium">{item.category?.replace(/_/g, ' ')}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] gap-6 lg:gap-8 items-start">
           {/* Left Column: Form and Selection */}
           <div className="flex flex-col gap-6">
             {/* Buyer details */}
@@ -1358,47 +1346,20 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
             </div>
 
             {/* Plan Selection */}
-            {hasPlans && enabledPlans.length > 1 && (
-              <div className="flex flex-col gap-4">
-                <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Pricing Plan</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {enabledPlans.map(plan => {
-                    const isSelected = currentPlanKey === plan.key;
-                    const subtitle = plan.key === 'ONE_TIME'
-                      ? 'Pay once, own forever'
-                      : 'Billed securely today';
-
-                    return (
-                      <div
-                        key={plan.key}
-                        onClick={() => setCurrentPlanKey(plan.key)}
-                        className={`relative flex flex-col p-5 min-h-[160px] justify-between border-2 rounded-2xl cursor-pointer transition-all duration-200 ${isSelected ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-indigo-300'}`}
-                      >
-                        {isSelected && (
-                          <div className="absolute -top-2.5 left-4 bg-indigo-600 text-white font-extrabold text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
-                            Selected
-                          </div>
-                        )}
-
-                        <div className="flex items-start gap-3 mb-2">
-                          <span className={`text-[0.88rem] font-extrabold leading-snug ${isSelected ? 'text-indigo-950' : 'text-gray-800'}`}>
-                            {plan.label}
-                          </span>
-                        </div>
-
-                        <div className="mt-auto">
-                          <div className={`text-xl font-black mb-1 ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
-                            {formatPrice(plan.price)}
-                          </div>
-
-                          <div className="text-[0.74rem] text-gray-400 font-medium leading-normal">
-                            {subtitle}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+            {hasPlans && (
+              <div className="flex flex-col gap-3">
+                <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">
+                  Pricing Plan
+                  {multiplePlans && !planTouched && (
+                    <span className="ml-2 text-[11px] font-semibold normal-case text-amber-600">Select a plan to continue</span>
+                  )}
                 </div>
+                <TechnologyPlanPicker
+                  plans={enabledPlans}
+                  selectedKey={currentPlanKey}
+                  onSelect={handlePlanSelect}
+                  formatPrice={formatPrice}
+                />
               </div>
             )}
 
@@ -1443,8 +1404,8 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
           </div>
 
           {/* Right Column: Sticky Summary */}
-          <div className="sticky top-0">
-            <div className="bg-gray-50 border border-gray-200 rounded-[14px] p-5 shadow-sm">
+          <div className="lg:sticky lg:top-0">
+            <div className="bg-gray-50 border border-gray-200 rounded-[14px] p-4 sm:p-5 shadow-sm">
               <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider mb-4">
                 Order Summary
               </div>
@@ -1507,12 +1468,38 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
 
               {error && <div className="text-sm text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-100">{error}</div>}
 
-              <div className="flex flex-col gap-3">
-                <button className="btn-glow w-full py-3.5 text-base shadow-md hover:shadow-lg transition-all" onClick={handlePay} disabled={loading}>
-                  {loading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" /> :
-                    `Pay ₹${finalPayable ?? totalPrice} Securely →`}
+              <div className="flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  className="btn-glow w-full py-3 sm:py-3.5 text-sm sm:text-base shadow-md hover:shadow-lg transition-all"
+                  onClick={handlePay}
+                  disabled={loading || !canAddToCart}
+                >
+                  {loading ? (
+                    <span className="w-5 h-5 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" />
+                  ) : (
+                    `Pay ₹${finalPayable ?? totalPrice} Securely →`
+                  )}
                 </button>
-                <button className="w-full py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors" onClick={onClose}>Cancel</button>
+                <AddToCartButton
+                  productType="TECHNOLOGY"
+                  productId={item.id}
+                  selectedPlan={currentPlanKey}
+                  addonServices={[...addons, ...vaAddons]}
+                  coBrotherOptIn={coBrotherOptIn}
+                  size="md"
+                  label="Add to Cart"
+                  disabled={!canAddToCart}
+                  updateWhenInCart
+                  className="w-full justify-center"
+                />
+                <button
+                  type="button"
+                  className="w-full py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+                  onClick={onClose}
+                >
+                  Cancel
+                </button>
               </div>
 
               <div className="mt-4 flex items-center justify-center gap-1.5 text-[0.7rem] text-gray-400 font-medium uppercase tracking-wider">
@@ -1889,7 +1876,10 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                           Verification pending — available for purchase after admin approval
                         </span>
                       ) : (
-                        <button className="btn-glow flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={() => setShowPricing(true)}>Buy Now →</button>
+                        <>
+                          <button className="btn-glow flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={() => setShowPricing(true)}>Buy Now →</button>
+                          <AddToCartButton productType="TECHNOLOGY" productId={d.id} size="md" />
+                        </>
                       )
                     )}
                   {!isOwner && isTechnologyAuctionLive(d, auctionStatus) && (

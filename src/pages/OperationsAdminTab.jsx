@@ -47,19 +47,19 @@ const SECTION_META = {
   compliance: {
     icon: ShieldCheck,
     titleKey: 'adminOperationsComplianceTitle',
-    defaultTitle: 'Compliance',
+    defaultTitle: 'Services',
     subtitleKey: 'adminOperationsComplianceSubtitle',
-    defaultSubtitle: 'Manage one-time compliance and registration services.',
+    defaultSubtitle: 'Manage one-time registration and business services.',
     addKey: 'adminOperationsAddComplianceService',
-    defaultAdd: '+ Add Compliance Service',
+    defaultAdd: '+ Add Service',
     searchKey: 'adminOperationsSearchCompliancePlaceholder',
-    defaultSearch: 'Search compliance services…',
+    defaultSearch: 'Search services…',
     nameColKey: 'adminOperationsColServiceName',
     defaultNameCol: 'Service Name',
     emptyKey: 'adminOperationsEmptyCompliance',
-    defaultEmpty: 'No compliance services match your filters.',
+    defaultEmpty: 'No services match your filters.',
     modalTitleKey: 'adminOperationsModalTitleCompliance',
-    defaultModalTitle: 'Add / Edit Compliance Service',
+    defaultModalTitle: 'Add / Edit Service',
     namePlaceholderKey: 'adminOperationsFieldComplianceNamePlaceholder',
     defaultNamePlaceholder: 'GST Registration',
     priceHintKey: 'adminOperationsPriceHintCompliance',
@@ -70,7 +70,7 @@ const SECTION_META = {
     titleKey: 'adminOperationsRequestsTitle',
     defaultTitle: 'Requests',
     subtitleKey: 'adminOperationsRequestsSubtitle',
-    defaultSubtitle: 'Monthly hire requests and one-time compliance bookings from the storefront.',
+    defaultSubtitle: 'Monthly hire requests and one-time service bookings from the storefront.',
     searchKey: 'adminOperationsSearchRequestsPlaceholder',
     defaultSearch: 'Search by name, email, or service…',
     emptyKey: 'adminOperationsEmptyRequests',
@@ -258,7 +258,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     onRefresh?.();
     const isComplianceSection = meta.sectionId === 'compliance';
     const sectionLabel = isComplianceSection
-      ? t('operationsSectionCompliances', { defaultValue: 'Compliance service' })
+      ? t('operationsSectionCompliances', { defaultValue: 'Service' })
       : t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance role' });
     const name = meta.name ? `"${meta.name}"` : '';
 
@@ -400,7 +400,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
           </h2>
           <p className="operations-admin-subtitle">
             {t('adminOperationsSubtitle', {
-              defaultValue: 'Manage virtual assistance roles and compliance services for the storefront.',
+              defaultValue: 'Manage virtual assistance roles and business services for the storefront.',
             })}
           </p>
         </div>

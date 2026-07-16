@@ -10,6 +10,7 @@ import PageLoader from './components/common/PageLoader';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
@@ -77,6 +78,7 @@ const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistratio
 const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSellerPage'));
 const DomainTransferBuyerPage = lazy(() => import('./pages/DomainTransferBuyerPage'));
 const EdgePointsPage = lazy(() => import('./pages/EdgePointsPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
 
 function preloadPostLoginRoutes() {
   void loadDashboardPage();
@@ -170,6 +172,7 @@ export default function App() {
       <ScrollToTop />
       <CookieConsentProvider>
         <AuthProvider>
+          <CartProvider>
           <RoutePreloader />
           <SiteGradientBorder />
           <CookieConsentBanner />
@@ -537,6 +540,16 @@ export default function App() {
                   }
                 />
 
+                {/* Cart */}
+                <Route
+                  path="/cart"
+                  element={
+                    <ProtectedRoute>
+                      <CartPage />
+                    </ProtectedRoute>
+                  }
+                />
+
                 {/* Purchases */}
                 <Route
                   path="/purchases"
@@ -598,6 +611,7 @@ export default function App() {
               </Routes>
             </LanguageAwareRoutes>
           </AppErrorBoundary>
+          </CartProvider>
         </AuthProvider>
       </CookieConsentProvider>
     </BrowserRouter>

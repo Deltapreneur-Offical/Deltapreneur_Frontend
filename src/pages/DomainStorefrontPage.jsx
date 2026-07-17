@@ -101,7 +101,7 @@ export default function DomainStorefrontPage() {
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState(null);
 
-  /* ─ Multi-TLD search (every OpenProvider extension) ─ */
+  /* ─ Multi-TLD search ─ */
   const [tldResults, setTldResults] = useState([]);
   const [tldLoading, setTldLoading] = useState(false);
   const [tldError, setTldError] = useState('');
@@ -109,6 +109,7 @@ export default function DomainStorefrontPage() {
   const [tldTotalPages, setTldTotalPages] = useState(1);
   const [tldTotal, setTldTotal] = useState(0);
   const [tldLabel, setTldLabel] = useState('');
+  const allTldsCacheRef = useRef({});
 
   const [config, setConfig] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -178,14 +179,40 @@ export default function DomainStorefrontPage() {
       setTldPage(page);
 
       try {
-        const { data } = await domainAPI.searchTlds({ name: label, page, pageSize: 50 });
-        const payload = data?.data ?? data;
-        setTldResults(Array.isArray(payload?.items) ? payload.items : []);
-        setTldTotal(payload?.total ?? 0);
-        setTldTotalPages(payload?.totalPages ?? 1);
+        let availableItems = allTldsCacheRef.current[label];
+        
+        if (!availableItems) {
+          const { data } = await domainAPI.searchTlds({ name: label, page: 1, pageSize: 1000 });
+          const payload = data?.data ?? data;
+          let items = Array.isArray(payload?.items) ? payload.items : [];
+          
+          // Filter out unavailable domains
+          availableItems = items.filter(
+            (it) => it.available === true || (it.status && it.status.toLowerCase() === 'available')
+          );
+          
+          // Sort by registration price ascending (lowest first)
+          availableItems.sort((a, b) => {
+            const priceA = a.registrationPrice != null ? Number(a.registrationPrice) : Infinity;
+            const priceB = b.registrationPrice != null ? Number(b.registrationPrice) : Infinity;
+            return priceA - priceB;
+          });
+          
+          allTldsCacheRef.current[label] = availableItems;
+        }
+        
+        const PAGE_SIZE = 50;
+        const totalFiltered = availableItems.length;
+        const totalPages = Math.ceil(totalFiltered / PAGE_SIZE) || 1;
+        
+        const start = (page - 1) * PAGE_SIZE;
+        const paginatedItems = availableItems.slice(start, start + PAGE_SIZE);
+
+        setTldResults(paginatedItems);
+        setTldTotal(totalFiltered);
+        setTldTotalPages(totalPages);
         setSearchParams({ domain: label }, { replace: true });
         if (page === 1) {
-          // Scroll the search/results section into view once loaded.
           setTimeout(() => {
             searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 300);
@@ -449,12 +476,22 @@ export default function DomainStorefrontPage() {
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center justify-between gap-3">
                       <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                        Available Extensions for “{tldLabel}”
+                        Available Extensions for &ldquo;{tldLabel}&rdquo;
                       </h2>
                       <span className="text-xs text-gray-400 font-medium">
-                        {tldTotal} extensions · sorted by price
+                        {tldTotal} extensions &middot; sorted by price
                       </span>
                     </div>
+
+                    {(() => {
+                      const start = (tldPage - 1) * 50 + 1;
+                      const end = Math.min(tldPage * 50, tldTotal);
+                      return tldTotal > 50 ? (
+                        <p className="text-[0.7rem] text-gray-400 font-medium">
+                          Showing {start}&ndash;{end} of {tldTotal}
+                        </p>
+                      ) : null;
+                    })()}
 
                     <div className="overflow-x-auto border border-gray-150 rounded-xl bg-white">
                       <table className="min-w-full text-xs text-left">
@@ -469,13 +506,28 @@ export default function DomainStorefrontPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 font-medium">
-                          {tldResults.map((it) => {
-                            const available = it.available || it.status === 'available';
+                          {tldResults.map((it, index) => {
+                            const available = true; // Pre-filtered to only available
                             const regPrice = it.registrationPrice != null ? formatPrice(it.registrationPrice) : '—';
                             const renPrice = it.renewalPrice != null ? formatPrice(it.renewalPrice) : '—';
+                            const isCheapestAvailable = index === 0;
                             return (
-                              <tr key={it.domain} className="hover:bg-gray-50/50">
-                                <td className="px-4 py-3 font-bold text-gray-950">{it.name}</td>
+                              <tr
+                                key={it.domain}
+                                className={`${
+                                  isCheapestAvailable
+                                    ? 'bg-emerald-50/60 hover:bg-emerald-50'
+                                    : 'hover:bg-gray-50/50'
+                                }`}
+                              >
+                                <td className="px-4 py-3 font-bold text-gray-950 flex items-center gap-2">
+                                  {isCheapestAvailable && (
+                                    <span className="text-[0.6rem] font-black uppercase tracking-wider bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm">
+                                      Best Value
+                                    </span>
+                                  )}
+                                  {it.name}
+                                </td>
                                 <td className="px-4 py-3">
                                   <span className="inline-block text-[0.7rem] font-bold px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 uppercase">
                                     {it.tld}
@@ -505,7 +557,6 @@ export default function DomainStorefrontPage() {
                                         unitPrice: it.registrationPrice,
                                         priceCurrency: it.currency || 'INR',
                                         minPeriodYears: 1,
-                                        source: it.source,
                                       });
                                       setActiveTab('register');
                                       document.getElementById('registrant-details')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -550,7 +601,7 @@ export default function DomainStorefrontPage() {
 
                 {!tldLoading && !tldError && tldResults.length === 0 && tldLabel && (
                   <div className="mt-6 text-center text-sm text-gray-400 font-medium py-8">
-                    No extensions found for “{tldLabel}”.
+                    No available domains found for this search. Please try another domain name.
                   </div>
                 )}
               </section>

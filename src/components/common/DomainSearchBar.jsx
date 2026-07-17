@@ -21,7 +21,6 @@ import {
   HOME_EASE_OUT,
 } from '../home/motion/homeMotion';
 
-const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const SEARCH_MODE_IDS = ['ai', 'new', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
   ai: { labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
@@ -286,11 +285,93 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     if (!q) return null;
     const dot = q.indexOf('.');
     if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    return TLDS.map((ext) => ({ name: q, ext }));
+    return null;
+  };
+
+  const searchAllTlds = async (label, force = false, currentRequestId) => {
+    const cacheKey = `all-tlds:${label}`;
+    if (!force && newSearchCacheRef.current.has(cacheKey)) {
+      setResults(newSearchCacheRef.current.get(cacheKey));
+      setLoading(false);
+      return;
+    }
+
+    const seededResults = Array.from({ length: 7 }, () => ({
+      domain: `${label}.tld`,
+      name: label,
+      ext: 'tld',
+      status: 'loading',
+      price: null,
+      unitPrice: null,
+      priceCurrency: null,
+      minPeriodYears: 1,
+      listing: null,
+    }));
+    setResults(seededResults);
+    const nextResults = seededResults.map((item) => ({ ...item }));
+
+    try {
+      const { data } = await domainAPI.searchTlds({ name: label, page: 1, pageSize: 200 });
+      const items = data?.items || data?.data?.items || [];
+
+      const mapped = items.map((item) => {
+        const tld = (item.tld || '').replace('.', '');
+        return {
+          domain: item.domain || `${item.name || label}.${tld}`,
+          name: item.name || label,
+          ext: tld,
+          status: item.status,
+          available: item.available,
+          unitPrice: item.registrationPrice ?? null,
+          renewalPrice: item.renewalPrice ?? null,
+          price: item.registrationPrice ?? null,
+          priceCurrency: item.currency || 'INR',
+          minPeriodYears: 1,
+          listing: null,
+        };
+      });
+
+      if (requestIdRef.current !== currentRequestId) return;
+      newSearchCacheRef.current.set(cacheKey, mapped);
+      setResults(mapped);
+    } catch (err) {
+      if (requestIdRef.current !== currentRequestId) return;
+      const registrarMessage =
+        err?.response?.data?.message
+        || err?.response?.data?.error
+        || err?.message
+        || 'Could not fetch available extensions.';
+      setResults(
+        nextResults.map((item) => ({
+          ...item,
+          status: 'error',
+          registrarMessage,
+        })),
+      );
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setLoading(false);
+      }
+    }
   };
 
   const doSearch = async (raw, options = {}) => {
     const { force = false } = options;
+    const q = toSafeLower(raw).trim();
+    if (!q) return;
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
+    setLoading(true);
+
+    if (searchMode === 'new') {
+      const dot = q.indexOf('.');
+      if (dot === -1) {
+        await searchAllTlds(q, force, currentRequestId);
+        return;
+      }
+    }
+
     const pairs = parseQuery(raw);
     if (!pairs) return;
     const cacheKey = buildSearchKey(raw);
@@ -299,10 +380,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       setLoading(false);
       return;
     }
-
-    const currentRequestId = requestIdRef.current + 1;
-    requestIdRef.current = currentRequestId;
-    setLoading(true);
 
     // Seed skeleton rows immediately
     const seededResults = pairs.map(({ name, ext }) => ({
@@ -313,9 +390,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       price:   null,
       unitPrice: null,
       priceCurrency: null,
-      priceSource: null,
-      registrarSandbox: null,
-      registrarEnv: null,
       minPeriodYears: 1,
       listing: null,
     }));
@@ -338,9 +412,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             price: data.price ?? null,
             unitPrice: data.unitPrice ?? data.price ?? null,
             priceCurrency: data.priceCurrency ?? null,
-            priceSource: data.priceSource ?? null,
-            registrarSandbox: data.registrarSandbox ?? null,
-            registrarEnv: data.registrarEnv ?? null,
             minPeriodYears: data.minPeriodYears ?? 1,
             registrarMessage: data.message ?? null,
             listing: onPublicMarketplace ? listing : null,
@@ -506,13 +577,15 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const completedNewResults = results.filter((item) => item.status !== 'loading');
-  const visibleNewBest =
-    completedNewResults.find((item) => item.status === 'available')
-    || completedNewResults.find((item) => item.status === 'marketplace')
-    || completedNewResults.find((item) => item.status === 'taken')
-    || completedNewResults[0]
-    || null;
-  const visibleNewOthers = completedNewResults.filter((item) => item !== visibleNewBest);
+  const availableNewResults = completedNewResults
+    .filter((item) => item.status === 'available' || item.available === true)
+    .sort((a, b) => {
+      const priceA = a.unitPrice != null ? Number(a.unitPrice) : (a.price != null ? Number(a.price) : Infinity);
+      const priceB = b.unitPrice != null ? Number(b.unitPrice) : (b.price != null ? Number(b.price) : Infinity);
+      return priceA - priceB;
+    });
+  const visibleNewBest = availableNewResults[0] || null;
+  const visibleNewOthers = availableNewResults.slice(1);
   const registrarErrorMessage = completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
     || (completedNewResults.length > 0 && completedNewResults.every((item) => item.status === 'error')
       ? completedNewResults[0]?.registrarMessage
@@ -554,11 +627,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
   const Price = ({ result, large }) => {
     const unit = Number(result.unitPrice ?? result.price);
+    const renewal = Number(result.renewalPrice);
     if (!Number.isFinite(unit) || unit <= 0) return null;
     const currency = result.priceCurrency || 'INR';
     const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
     const total = years > 1 ? unit * years : unit;
     const inrTotal = convertToInr(total, currency);
+    const inrRenewal = Number.isFinite(renewal) && renewal > 0 ? convertToInr(renewal, currency) : null;
     const periodLabel = years > 1 ? `/${years} yrs` : '/yr';
     return (
       <div className="mb-4">
@@ -568,6 +643,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             {periodLabel}
           </span>
         </p>
+        {inrRenewal !== null && (
+          <p className={`text-gray-500 mt-1 ${large ? 'text-sm' : 'text-xs'}`}>
+            Renews at {formatPrice(inrRenewal)}/yr
+          </p>
+        )}
         {result.status === 'available' && years > 1 && (
           <p className={`text-gray-500 mt-1 ${large ? 'text-xs' : 'text-[11px]'}`}>
             {years}-year minimum registration
@@ -780,9 +860,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </p>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && !loading && completedNewResults.length === 0 && (
+          {hasSearchQuery && searchMode === 'new' && !loading && availableNewResults.length === 0 && (!registrarErrorMessage || !completedNewResults.every((item) => item.status === 'error')) && (
             <p className="text-center text-gray-500 text-sm py-6">
-              {t('searchNoRegistrarDomains')}
+              No available domains found for this search. Please try another domain name.
             </p>
           )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { adminAPI } from '../../api/services';
+import { adminAPI, domainAPI } from '../../api/services';
 
 const SUPPORTED_TLDS = ['.com', '.in', '.net', '.org', '.co', '.io', '.ai'];
 
@@ -133,8 +133,10 @@ function ProductCard({ emoji, title, subtitle, accentColor, children }) {
 export default function AdminOpenProviderCommissionTab() {
   const { t } = useTranslation();
   const [config, setConfig] = useState(null);
+  const [allTlds, setAllTlds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [tldsLoading, setTldsLoading] = useState(true);
 
   // Live calculator states
   const [calcBase, setCalcBase] = useState('1000');
@@ -192,9 +194,23 @@ export default function AdminOpenProviderCommissionTab() {
     }
   }, []);
 
+  const loadTlds = useCallback(async () => {
+    setTldsLoading(true);
+    try {
+      const { data } = await domainAPI.listTlds();
+      const tlds = Array.isArray(data?.tlds) ? data.tlds : [];
+      setAllTlds(tlds);
+    } catch {
+      setAllTlds([]);
+    } finally {
+      setTldsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadConfig();
-  }, [loadConfig]);
+    loadTlds();
+  }, [loadConfig, loadTlds]);
 
   const handleGlobalRateChange = (service, value) => {
     setConfig((prev) => ({
@@ -275,7 +291,7 @@ export default function AdminOpenProviderCommissionTab() {
     }
   };
 
-  if (loading) {
+  if (loading || tldsLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
         <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #ede9fe', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} />
@@ -450,7 +466,7 @@ export default function AdminOpenProviderCommissionTab() {
               </tr>
             </thead>
             <tbody>
-              {SUPPORTED_TLDS.map((tld) => (
+              {(allTlds.length > 0 ? allTlds : SUPPORTED_TLDS).map((tld) => (
                 <tr key={tld} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.1s' }}>
                   <td style={{ padding: '12px 16px', fontWeight: 800, color: '#0f172a' }}>{tld}</td>
                   <td style={{ padding: '8px 16px' }}>

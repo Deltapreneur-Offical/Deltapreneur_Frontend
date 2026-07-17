@@ -159,6 +159,7 @@ export const domainAPI = {
         page_size: pageSize,
       },
     }),
+  listTlds: () => api.get('/api/v1/domain/tlds'),
   createOrder: (id, data) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/listings/${id}/purchase/failure`),
@@ -176,7 +177,7 @@ export const aiDomainsAPI = {
     api.post('/api/ai-domains/generate', { idea }, options),
 };
 
-/** Domain registration storefront (OpenProvider + Razorpay) — new domain checkout */
+/** Domain registration storefront (new domain checkout) */
 export const domainStorefrontAPI = {
   getConfig: () => api.get('/api/v1/domain/storefront/config'),
   createOrder: (body) => api.post('/api/v1/domain/storefront/order', body),

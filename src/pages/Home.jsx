@@ -50,7 +50,7 @@ export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') =>
 
 
 
-  const fullDomainRegex = /^[a-z0-9-]+(\.(com|in|ai|io))?$/;
+  const fullDomainRegex = /^[a-z0-9-]+(\.[a-z]+)?$/;
 
   let finalDomain = '';
 

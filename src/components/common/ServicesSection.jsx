@@ -31,7 +31,7 @@ export default function ServicesSection({ isDashboard = false }) {
       })
       .catch(() => {});
 
-    // Load live prices from OpenProvider
+    // Load live service prices
     domainStorefrontAPI.getPrices()
       .then(({ data }) => setPrices(data?.data ?? data))
       .catch(() => setPrices(null))
@@ -200,7 +200,7 @@ export default function ServicesSection({ isDashboard = false }) {
           <div className="flex items-center gap-1.5 mb-4 mt-1">
             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100">
               <CheckCircle2 size={9} />
-              Live prices from {prices.source === 'openprovider' ? 'OpenProvider' : 'default config'}
+              Live prices
             </span>
           </div>
         )}
@@ -353,7 +353,7 @@ export default function ServicesSection({ isDashboard = false }) {
           })}
         </motion.div>
 
-        {prices?.source === 'openprovider' && prices?.gstRate > 0 && (
+        {prices?.gstRate > 0 && (
           <p className="text-center text-[10px] text-gray-400 mt-4">
             * All prices are exclusive of {(prices.gstRate * 100).toFixed(0)}% GST
           </p>

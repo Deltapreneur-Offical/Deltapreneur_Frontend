@@ -11,6 +11,7 @@ export default function AddonSections({
   onVaChange,
   vaServices = null,
   vaLoading = false,
+  showVirtualAssistant = true,
   className = 'mt-4',
 }) {
   return (
@@ -20,13 +21,15 @@ export default function AddonSections({
         onChange={onBusinessChange}
         className="mt-0 min-w-0"
       />
-      <VirtualAssistantSelector
-        selected={vaSelected}
-        onChange={onVaChange}
-        services={vaServices}
-        loading={vaLoading}
-        className="mt-0 min-w-0"
-      />
+      {showVirtualAssistant && (
+        <VirtualAssistantSelector
+          selected={vaSelected}
+          onChange={onVaChange}
+          services={vaServices}
+          loading={vaLoading}
+          className="mt-0 min-w-0"
+        />
+      )}
     </div>
   );
 }

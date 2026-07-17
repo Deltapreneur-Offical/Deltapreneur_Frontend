@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2 } from 'lucide-react';
+import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2, MoreVertical } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
@@ -9,12 +9,17 @@ import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
+import AddToCartButton from '../cart/AddToCartButton';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
   'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+const BUY_NOW_BTN =
+  'domain-listing-card__cta-btn min-w-0 flex-[1_1_82%] rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+const CART_ICON_BTN =
+  'domain-listing-card__cart-icon-btn !h-10 !w-10 !min-h-[2.5rem] !min-w-[2.5rem] shrink-0';
 
 function resolveStatusDotClass(status) {
   const key = (status || 'AVAILABLE').toUpperCase();
@@ -84,6 +89,10 @@ export default function DomainListingCard({
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
+  const ownerMenuRef = useRef(null);
+  const ownerMenuPortalRef = useRef(null);
+  const [ownerMenuCoords, setOwnerMenuCoords] = useState({ top: 0, left: 0 });
 
   const isAuction = domain.saleType === 'AUCTION';
   const isHighValue = isPremiumDomain(domain);
@@ -105,8 +114,14 @@ export default function DomainListingCard({
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
+      const outsideOwnerTrigger = ownerMenuRef.current && !ownerMenuRef.current.contains(e.target);
+      const outsideOwnerMenu = !ownerMenuPortalRef.current?.contains(e.target);
+      if (outsideOwnerTrigger && outsideOwnerMenu) setOwnerMenuOpen(false);
     };
-    const handleClose = () => setShareOpen(false);
+    const handleClose = () => {
+      setShareOpen(false);
+      setOwnerMenuOpen(false);
+    };
     document.addEventListener('mousedown', handleClick);
     window.addEventListener('scroll', handleClose, { passive: true });
     window.addEventListener('resize', handleClose);
@@ -173,6 +188,21 @@ export default function DomainListingCard({
 
   const stop = (e) => e.stopPropagation();
 
+  const toggleOwnerMenu = (e) => {
+    stop(e);
+    if (!ownerMenuOpen && ownerMenuRef.current) {
+      const rect = ownerMenuRef.current.getBoundingClientRect();
+      const menuWidth = 176;
+      const menuHeight = 104;
+      const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
+      const top = rect.bottom + menuHeight + 8 > window.innerHeight
+        ? rect.top - menuHeight - 6
+        : rect.bottom + 6;
+      setOwnerMenuCoords({ top, left });
+    }
+    setOwnerMenuOpen((open) => !open);
+  };
+
   const interactive = Boolean(onView);
 
   const handleViewDetails = onView
@@ -201,49 +231,84 @@ export default function DomainListingCard({
 
     if (isOwner) {
       return (
-        <div className="flex w-full items-center gap-2" onClick={stop} onMouseDown={stop} role="presentation">
-          <div className="flex min-w-0 flex-1 gap-2">
+        <div className="flex w-full min-w-0 items-center gap-2" onClick={stop} onMouseDown={stop} role="presentation">
+          <div className="relative shrink-0" ref={ownerMenuRef}>
             <button
               type="button"
-              className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 inline-flex items-center justify-center gap-1"
-              onClick={(e) => {
-                stop(e);
-                onEdit?.();
-              }}
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white p-0 text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+              onClick={toggleOwnerMenu}
+              aria-label="Listing actions"
+              aria-haspopup="menu"
+              aria-expanded={ownerMenuOpen}
+              title="Listing actions"
             >
-              <EditIcon size={14} /> {t('edit')}
+              <MoreVertical size={16} strokeWidth={2} />
             </button>
-            <button
-              type="button"
-              className="flex-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1"
-              onClick={(e) => {
-                stop(e);
-                onDelete?.();
-              }}
-            >
-              <Trash2 size={12} /> {t('remove')}
-            </button>
+            {ownerMenuOpen && createPortal(
+              <div
+                ref={ownerMenuPortalRef}
+                role="menu"
+                className="fixed z-[9999] w-44 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
+                style={{ top: ownerMenuCoords.top, left: ownerMenuCoords.left }}
+                onClick={stop}
+                onMouseDown={stop}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.8125rem] font-semibold text-slate-700 transition-colors hover:bg-slate-50 active:bg-slate-100"
+                  onClick={(e) => {
+                    stop(e);
+                    setOwnerMenuOpen(false);
+                    onEdit?.();
+                  }}
+                >
+                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors group-hover:bg-white group-hover:text-slate-800">
+                    <EditIcon size={14} />
+                  </span>
+                  {t('edit')}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.8125rem] font-semibold text-rose-600 transition-colors hover:bg-rose-50 active:bg-rose-100"
+                  onClick={(e) => {
+                    stop(e);
+                    setOwnerMenuOpen(false);
+                    onDelete?.();
+                  }}
+                >
+                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 transition-colors group-hover:bg-white">
+                    <Trash2 size={14} />
+                  </span>
+                  {t('remove')}
+                </button>
+              </div>,
+              document.body
+            )}
           </div>
-          <div className="flex items-center shrink-0 gap-1">
+          <div className="flex min-w-0 flex-1 items-center">
             {!isAuction && onPutForAuction && (
               <button
                 type="button"
-                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                className={`${PRIMARY_BTN} min-w-0 bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:bg-blue-800 inline-flex items-center justify-center gap-1.5`}
                 onClick={(e) => {
                   stop(e);
                   onPutForAuction();
                 }}
-                title="Put for Auction"
+                title="Start Auction"
               >
-                <Gavel size={12} />
+                <Gavel size={13} className="shrink-0" />
+                <span className="truncate">Start Auction</span>
               </button>
             )}
             {isAuction && (
               <span
-                className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-2 text-indigo-400 cursor-default"
+                className={`${PRIMARY_BTN} min-w-0 cursor-default border border-indigo-200 bg-indigo-50 text-indigo-500 inline-flex items-center justify-center gap-1.5`}
                 title="In Auction"
               >
-                <Gavel size={12} />
+                <Gavel size={13} className="shrink-0" />
+                <span className="truncate">In Auction</span>
               </span>
             )}
           </div>
@@ -298,17 +363,30 @@ export default function DomainListingCard({
         );
       }
       return (
-        <button
-          type="button"
-          className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center justify-center gap-1.5`}
-          onClick={(e) => {
-            stop(e);
-            onBuy?.();
-          }}
+        <div
+          className="flex w-full min-w-0 items-center gap-2"
+          onClick={stop}
+          onMouseDown={stop}
+          role="presentation"
         >
-          <ShoppingCart size={13} />
-          {t('listingCardBuyNowArrow', 'Buy Now →')}
-        </button>
+          <button
+            type="button"
+            className={`${BUY_NOW_BTN} bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center justify-center gap-1.5`}
+            onClick={(e) => {
+              stop(e);
+              onBuy?.();
+            }}
+          >
+            <ShoppingCart size={13} className="shrink-0" />
+            <span className="truncate">{t('listingCardBuyNowArrow', 'Buy Now →')}</span>
+          </button>
+          <AddToCartButton
+            productType="DOMAIN_LISTING"
+            productId={domain.id}
+            variant="corner"
+            className={CART_ICON_BTN}
+          />
+        </div>
       );
     }
 
@@ -332,7 +410,7 @@ export default function DomainListingCard({
       onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       {domain.takenDown && (
-        <span className="absolute top-3 right-3 z-20 rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+        <span className="domain-listing-card__taken-down-badge">
           {t('listingCardTakenDown')}
         </span>
       )}

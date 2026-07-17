@@ -116,6 +116,27 @@
   color: #0f172a;
 }
 
+.domain-listing-card__taken-down-badge {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  max-width: calc(100% - 1.3rem);
+  border-radius: 9999px;
+  background: #dc2626;
+  padding: 0.22rem 0.55rem;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(185, 28, 28, 0.18);
+}
+
 
 .domain-listing-card__body {
   display: flex;
@@ -806,8 +827,15 @@
 .domain-listing-card__actions {
   display: flex;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  box-sizing: border-box;
+}
+
+.domain-listing-card__cart-icon-btn {
+  box-sizing: border-box;
 }
 
 .domain-listing-card__actions-bar {

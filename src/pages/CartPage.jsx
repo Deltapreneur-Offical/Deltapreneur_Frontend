@@ -197,7 +197,7 @@ export default function CartPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto px-4 pb-8 lg:pb-10 -mt-4 sm:-mt-5 lg:-mt-6 xl:-mt-8">
+      <div className="max-w-6xl mx-auto px-4 pt-5 sm:pt-6 pb-12 sm:pb-14 lg:pb-16">
         <div className="relative mb-8 rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 px-5 py-5 sm:px-6 sm:py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">

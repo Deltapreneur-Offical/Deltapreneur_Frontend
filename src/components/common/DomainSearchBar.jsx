@@ -58,7 +58,7 @@ function DomainCartCorner({ result, className = 'absolute top-3 right-3 z-10' })
 }
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
-const SEARCH_MODE_IDS = ['ai', 'new', 'premium', 'auction'];
+const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
   ai: { labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
   new: { labelKey: 'searchTabNew', placeholderKey: 'searchPlaceholderNew' },
@@ -376,7 +376,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchMode, setSearchMode] = useState('ai');
+  const [searchMode, setSearchMode] = useState('new');
   const [auctionResults, setAuctionResults] = useState([]);
   const [auctionsLoading, setAuctionsLoading] = useState(false);
   const [premiumDomains, setPremiumDomains] = useState([]);

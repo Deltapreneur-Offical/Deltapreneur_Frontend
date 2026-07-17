@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award } from 'lucide-react';
+import { Home, Handshake, Gavel, ShoppingBag, ShoppingCart, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import { notificationAPI } from '../../api/services';
 import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
 import { useNotificationSocket } from '../../hooks/useNotificationSocket';
@@ -119,6 +120,7 @@ function SidebarNavItem({
 export default function AppLayout({ children }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const { count: cartCount } = useCart();
   const navItems = getNavItems(user);
   const location = useLocation();
   const navigate = useNavigate();
@@ -445,6 +447,29 @@ export default function AppLayout({ children }) {
               </span>
               {!sidebarCollapsed && <span className="app-sidebar-link-label">{t('Home')}</span>}
             </Link>
+            <Link
+              to="/cart"
+              className={[
+                'app-sidebar-link app-sidebar-link--footer',
+                isActive('/cart') && 'is-active',
+                sidebarCollapsed && 'is-collapsed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={sidebarCollapsed ? t('cart', { defaultValue: 'Cart' }) : ''}
+            >
+              <span className="app-sidebar-icon-slot">
+                <ShoppingCart size={20} strokeWidth={2} />
+              </span>
+              {!sidebarCollapsed && (
+                <span className="app-sidebar-link-label">{t('cart', { defaultValue: 'Cart' })}</span>
+              )}
+              {cartCount > 0 && (
+                <span className={`app-sidebar-badge${sidebarCollapsed ? '' : ' ml-auto'}`}>
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </Link>
             <button
               type="button"
               onClick={handleBellOpen}
@@ -506,6 +531,7 @@ export default function AppLayout({ children }) {
                 <span className="app-sidebar-link-label">{t('updateProfile')}</span>
               )}
             </Link>
+            <div className="app-sidebar-account-divider" aria-hidden="true" />
             <button
               type="button"
               onClick={() => setShowLogoutConfirm(true)}
@@ -582,6 +608,26 @@ export default function AppLayout({ children }) {
                   </span>
                   <span className="app-sidebar-link-label">{t('Home')}</span>
                 </Link>
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileOpen(false)}
+                  className={[
+                    'app-sidebar-link app-sidebar-link--footer',
+                    isActive('/cart') && 'is-active',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  <span className="app-sidebar-icon-slot">
+                    <ShoppingCart size={20} strokeWidth={2} />
+                  </span>
+                  <span className="app-sidebar-link-label">{t('cart', { defaultValue: 'Cart' })}</span>
+                  {cartCount > 0 && (
+                    <span className="app-sidebar-badge ml-auto">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
+                </Link>
                 <button
                   type="button"
                   onClick={handleBellOpen}
@@ -620,6 +666,7 @@ export default function AppLayout({ children }) {
                   </span>
                   <span className="app-sidebar-link-label">{t('updateProfile')}</span>
                 </Link>
+                <div className="app-sidebar-account-divider" aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => {

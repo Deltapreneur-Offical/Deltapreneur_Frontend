@@ -10,6 +10,8 @@ import TechnologyPlanPicker from './TechnologyPlanPicker';
 
 const BUSINESS_KEYS = new Set(ADDON_SERVICES.map((s) => s.key));
 const SAVE_DELAY_MS = 450;
+// Set to true to show Virtual Assistant options in cart again
+const SHOW_VA_IN_CART = false;
 
 function splitAddonServices(all = [], vaCatalog = []) {
   const vaIds = new Set(vaCatalog.map((s) => String(s.id)));
@@ -191,6 +193,7 @@ export default function CartItemExtras({ item, onUpdated }) {
         onVaChange={handleVaChange}
         vaServices={vaServices}
         vaLoading={vaLoading}
+        showVirtualAssistant={SHOW_VA_IN_CART}
         className="mt-0"
       />
 

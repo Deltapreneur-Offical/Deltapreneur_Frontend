@@ -7,7 +7,6 @@ import {
   Lock,
   Package,
   Receipt,
-  Sparkles,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -274,54 +273,58 @@ function RequestCard({
 
   return (
     <div className="rounded-xl border border-gray-100 bg-gray-50/30 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="w-full flex gap-3 p-3 text-left hover:bg-white/80 transition-colors"
-        aria-expanded={expanded}
-      >
-        <IconBadge
-          iconKey={iconKey}
-          accent={accent}
-          tint={tint}
-          useVaIcon={useVaIcon}
-        />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-1 min-w-0">
-              <p className="text-[13px] font-semibold text-gray-900 leading-snug">{label}</p>
-              <CartInfoTooltip text={tooltip} ariaLabel={`About ${label}`} maxWidth={320} />
+      <div className="w-full flex gap-3 p-3 hover:bg-white/80 transition-colors">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex-1 flex gap-3 text-left min-w-0"
+          aria-expanded={expanded}
+        >
+          <IconBadge
+            iconKey={iconKey}
+            accent={accent}
+            tint={tint}
+            useVaIcon={useVaIcon}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-[13px] font-semibold text-gray-900 leading-snug pr-1">{label}</p>
+              <div className="text-right shrink-0">
+                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Est.</p>
+                <p className="text-[13px] font-semibold text-gray-900 tabular-nums leading-tight">
+                  {pricePrefix}{priceLabel}
+                </p>
+              </div>
             </div>
-            <div className="text-right shrink-0">
-              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Est.</p>
-              <p className="text-[13px] font-semibold text-gray-900 tabular-nums leading-tight">
-                {pricePrefix}{priceLabel}
-              </p>
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                <span className="inline-flex items-center gap-1 max-w-full rounded-full bg-white border border-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
+                  <Link2 size={10} className="shrink-0 text-gray-400" />
+                  <span className="truncate">{productName}</span>
+                </span>
+                <span
+                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  style={{ backgroundColor: `${accent}10`, color: accent }}
+                >
+                  Follow-up required
+                </span>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 shrink-0">
+                {expanded ? 'Hide details' : 'View details'}
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+                />
+              </span>
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-            <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-              <span className="inline-flex items-center gap-1 max-w-full rounded-full bg-white border border-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
-                <Link2 size={10} className="shrink-0 text-gray-400" />
-                <span className="truncate">{productName}</span>
-              </span>
-              <span
-                className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                style={{ backgroundColor: `${accent}10`, color: accent }}
-              >
-                Follow-up required
-              </span>
-            </div>
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 shrink-0">
-              {expanded ? 'Hide details' : 'View details'}
-              <ChevronDown
-                size={13}
-                className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-              />
-            </span>
+        </button>
+        {tooltip && (
+          <div className="pt-0.5 shrink-0 self-start">
+            <CartInfoTooltip text={tooltip} ariaLabel={`About ${label}`} maxWidth={320} />
           </div>
-        </div>
-      </button>
+        )}
+      </div>
 
       <AnimatePresence initial={false}>
         {expanded && (
@@ -462,10 +465,10 @@ export default function CartSummary({
               </p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-600">
-            <Sparkles size={11} />
-            Secure checkout
-          </div>
+          <span className="inline-flex items-center gap-1.5 shrink-0 rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800 sm:px-2.5 sm:py-1 sm:text-[11px]">
+            <Lock size={10} className="shrink-0 sm:w-[11px] sm:h-[11px]" strokeWidth={2} aria-hidden />
+            <span className="whitespace-nowrap">Secure checkout</span>
+          </span>
         </div>
       </div>
 

@@ -107,7 +107,7 @@ export default function CommunityListingCard({
       <div className="creator-profile-card__banner">
         {coverImageUrl ? (
           <>
-            <img src={coverImageUrl} alt="" className="creator-profile-card__banner-image" aria-hidden />
+            <img src={coverImageUrl} alt="" className="creator-profile-card__banner-image" loading="lazy" decoding="async" aria-hidden />
             <div className="creator-profile-card__banner-overlay" aria-hidden />
           </>
         ) : (

@@ -92,6 +92,20 @@ export default function HeroGlow() {
           }
         }
 
+        /* iOS Safari: animated @property + large gradients are a known WebKit crash class */
+        @supports (-webkit-touch-callout: none) {
+          .glow-layer {
+            animation: none;
+            background: radial-gradient(
+              ellipse 90% 80% at 22% 0%,
+              hsl(200, 70%, 66%, 0.42) 0%,
+              hsl(200, 62%, 64%, 0.22) 40%,
+              hsl(200, 58%, 62%, 0.1) 65%,
+              transparent 82%
+            );
+          }
+        }
+
         .hero-text-stack {
           display: grid;
           grid-template-columns: auto 1fr;

@@ -77,12 +77,26 @@ export const INITIAL_TLD_PRICES = [
   { tld: '.ai', price: '8,027' },
 ];
 
+function useMinWidthLg() {
+  const [isLg, setIsLg] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : true,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsLg(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  return isLg;
+}
+
 function TldPriceMarquee() {
-  // Quadruple items so there's plenty of scroll width for infinite wrapping
+  // Double items — enough for seamless wrap without excessive DOM
   const items = useMemo(
     () => [
-      ...INITIAL_TLD_PRICES,
-      ...INITIAL_TLD_PRICES,
       ...INITIAL_TLD_PRICES,
       ...INITIAL_TLD_PRICES,
     ],
@@ -91,19 +105,28 @@ function TldPriceMarquee() {
 
   const scrollRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [isPageHidden, setIsPageHidden] = useState(
+    () => typeof document !== 'undefined' && document.visibilityState === 'hidden',
+  );
   const isDragging = useRef(false);
   const startX = useRef(0);
   const scrollLeftPos = useRef(0);
 
-  // Smooth requestAnimationFrame continuous scroll when not dragging or paused
   useEffect(() => {
-    let animationFrameId;
+    const onVisibility = () => setIsPageHidden(document.visibilityState === 'hidden');
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
+  // Single rAF loop; pause when tab hidden, hovered, or dragging (iOS Safari safety)
+  useEffect(() => {
+    if (isPaused || isPageHidden) return undefined;
+
+    let animationFrameId;
     const scrollStep = () => {
       const el = scrollRef.current;
-      if (el && !isPaused && !isDragging.current) {
+      if (el && !isDragging.current) {
         el.scrollLeft += 0.65;
-        // Seamless infinite loop wrap
         if (el.scrollLeft >= el.scrollWidth / 2) {
           el.scrollLeft = 0;
         }
@@ -113,7 +136,7 @@ function TldPriceMarquee() {
 
     animationFrameId = requestAnimationFrame(scrollStep);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [isPaused]);
+  }, [isPaused, isPageHidden]);
 
   // Click & drag handlers for mouse dragging
   const handleMouseDown = (e) => {
@@ -373,6 +396,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const animateHero = embedded && !reduceMotion;
+  const isDesktopLayout = useMinWidthLg();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -800,7 +824,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               {desktopSearchForm}
             </div>
 
-            {searchMode === 'new' && (
+            {searchMode === 'new' && isDesktopLayout && (
               <div className="flex-1 min-w-0 overflow-hidden">
                 <TldPriceMarquee />
               </div>
@@ -831,7 +855,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             />
           </div>
 
-          {searchMode === 'new' && (
+          {searchMode === 'new' && !isDesktopLayout && (
             <div className="mt-2 w-full overflow-hidden">
               <TldPriceMarquee />
             </div>

@@ -12603,6 +12603,21 @@ body.home-menu-open {
   animation-delay: 1.2s;
 }
 
+/* iOS Safari: animated filter:blur is a known GPU jetsam trigger */
+@supports (-webkit-touch-callout: none) {
+  .whatsapp-floating-btn__glow {
+    filter: none;
+    animation: none;
+    opacity: 0.9;
+  }
+
+  .whatsapp-floating-btn__pulse,
+  .whatsapp-floating-btn__pulse--2 {
+    animation: none;
+    display: none;
+  }
+}
+
 .whatsapp-floating-btn:hover,
 .whatsapp-floating-btn:focus-visible {
   color: #fff;

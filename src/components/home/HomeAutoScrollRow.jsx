@@ -32,9 +32,14 @@ export default function HomeAutoScrollRow({
   const [reduceMotion, setReduceMotion] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(!onlyWhenOverflow);
   const [isPaused, setIsPaused] = useState(false);
+  const [isOffscreen, setIsOffscreen] = useState(false);
+  const [isPageHidden, setIsPageHidden] = useState(
+    () => typeof document !== 'undefined' && document.visibilityState === 'hidden',
+  );
 
   const viewportRef = useRef(null);
   const trackRef = useRef(null);
+  const rootRef = useRef(null);
 
   // Touch drag state
   const touchStartX = useRef(null);
@@ -53,6 +58,25 @@ export default function HomeAutoScrollRow({
     update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
+  }, []);
+
+  // ── Pause auto-scroll when off-screen or tab hidden (iOS Safari) ──────────
+  useEffect(() => {
+    const onVisibility = () => setIsPageHidden(document.visibilityState === 'hidden');
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || typeof IntersectionObserver === 'undefined') return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsOffscreen(!entry.isIntersecting),
+      { root: null, rootMargin: '80px 0px', threshold: 0 },
+    );
+    observer.observe(root);
+    return () => observer.disconnect();
   }, []);
 
   // ── Overflow detection ───────────────────────────────────────────────────
@@ -200,20 +224,25 @@ export default function HomeAutoScrollRow({
   const shouldAnimate = hasOverflow && !reduceMotion;
   const fitsInViewport = onlyWhenOverflow && !hasOverflow;
 
-  // Render helper — 3 copies needed for infinite manual scroll
+  // Render helper — 3 copies needed for infinite manual scroll.
+  // Duplicate sets get aria-hidden + data-home-carousel-clone so cards can skip timers/images.
   const renderSet = (prefix = '') =>
     items.map((child, index) => {
       if (!isValidElement(child)) return child;
       const baseKey = child.key ?? `item-${index}`;
+      const isClone = Boolean(prefix);
       return cloneElement(child, {
         key: prefix ? `${prefix}-${baseKey}` : baseKey,
-        'aria-hidden': prefix ? true : undefined,
+        'aria-hidden': isClone ? true : undefined,
+        'data-home-carousel-clone': isClone ? 'true' : undefined,
       });
     });
 
   const style = {
     '--home-auto-scroll-duration': `${durationSec}s`,
   };
+
+  const animPaused = isPaused || isOffscreen || isPageHidden;
 
   const rootClassName = [
     'home-auto-scroll-row',
@@ -233,7 +262,7 @@ export default function HomeAutoScrollRow({
   const trackClassName = [
     'home-auto-scroll-row__track',
     !shouldAnimate ? 'home-auto-scroll-row__track--static' : '',
-    shouldAnimate && isPaused ? 'home-auto-scroll-row__track--paused' : '',
+    shouldAnimate && animPaused ? 'home-auto-scroll-row__track--paused' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -250,6 +279,7 @@ export default function HomeAutoScrollRow({
 
   return (
     <RootTag
+      ref={rootRef}
       className={rootClassName}
       style={style}
       aria-label={ariaLabel}

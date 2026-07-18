@@ -446,6 +446,8 @@ export default function TechnologyListingCard({
             src={techImage}
             alt={techName}
             className="domain-listing-card__cover-img"
+            loading="lazy"
+            decoding="async"
             onError={() => setImgFailed(true)}
           />
         ) : (

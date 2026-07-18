@@ -18,10 +18,14 @@ import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import CreatorPreviewModal from './CreatorPreviewModal';
 
-function useCountdown(endTime) {
+function useCountdown(endTime, enabled = true) {
   const [timeLeft, setTimeLeft] = useState('—');
 
   useEffect(() => {
+    if (!enabled || !endTime) {
+      setTimeLeft('—');
+      return undefined;
+    }
     const tick = () => {
       const { timeLeft: next } = formatCompactCountdown(endTime);
       setTimeLeft(next);
@@ -29,7 +33,7 @@ function useCountdown(endTime) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [endTime]);
+  }, [endTime, enabled]);
 
   return timeLeft;
 }
@@ -93,12 +97,18 @@ const BADGE_TONE_CLASS = {
   },
 };
 
-export default function HomeAuctionPreviewCard({ auction, onView }) {
+export default function HomeAuctionPreviewCard({
+  auction,
+  onView,
+  'aria-hidden': ariaHidden,
+  'data-home-carousel-clone': carouselClone,
+}) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [imgFailed, setImgFailed] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const isCarouselClone = ariaHidden === true || ariaHidden === 'true' || carouselClone === 'true';
   const title = resolveHomeAuctionTitle(auction);
   const image = resolveHomeAuctionImage(auction);
   const verified = resolveHomeAuctionVerified(auction);
@@ -111,7 +121,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     ? formatPrice(hasCurrentBid ? currentBid : startingBid)
     : t('homeAuctionNoBidYet', { defaultValue: 'NIL' });
   const compactStartingBid = formatCompactBid(startingBid, formatPrice);
-  const timeLeft = useCountdown(auction?.endTime);
+  const timeLeft = useCountdown(auction?.endTime, !isCarouselClone);
   const categoryMeta = resolveHomeAuctionCategoryMeta(auction);
   const category = auction?.category || 'domain';
   const categoryClass = CATEGORY_CLASS[category] || CATEGORY_CLASS.domain;
@@ -230,11 +240,13 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       }}
     >
       <div className="domain-listing-card__cover">
-        {coverImage ? (
+        {coverImage && !isCarouselClone ? (
           <img
             src={coverImage}
             alt={title}
             className="domain-listing-card__cover-img"
+            loading="lazy"
+            decoding="async"
             onError={() => setImgFailed(true)}
           />
         ) : (

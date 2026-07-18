@@ -496,6 +496,10 @@ return (
 
             className="domain-listing-card__cover-img"
 
+            loading="lazy"
+
+            decoding="async"
+
             onError={() => setImgFailed(true)}
 
           />

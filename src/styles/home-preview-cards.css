@@ -2180,13 +2180,16 @@
   align-items: stretch;
   gap: 1rem;
   width: max-content;
-  will-change: transform;
   padding-block: 0.9rem;
   margin-block: -0.5rem;
 }
 
 .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
   animation: home-auto-scroll-row-marquee var(--home-auto-scroll-duration, 45s) linear infinite;
+}
+
+.home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static):not(.home-auto-scroll-row__track--paused) {
+  will-change: transform;
 }
 
 /* JS-driven pause — applied on hover/touch via React state */

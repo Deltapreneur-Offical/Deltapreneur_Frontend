@@ -1,7 +1,10 @@
-/** Internal path to order detail DNS section. */
+/** Link to order detail DNS management section or external panel. */
 export function domainManagementHref(order) {
-  if (order?.id) {
-    return `/storefront/orders/${order.id}#dns`;
+  if (order?.customerPanelUrl) {
+    return order.customerPanelUrl;
+  }
+  if (order?.domainManagement?.customerPanelUrl) {
+    return order.domainManagement.customerPanelUrl;
   }
   return null;
 }
@@ -13,5 +16,5 @@ export function canManageRegisteredDomain(order) {
 }
 
 export function isExternalManagementLink(order) {
-  return false;
+  return Boolean(domainManagementHref(order));
 }

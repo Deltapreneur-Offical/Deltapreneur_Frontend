@@ -9,6 +9,7 @@ import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiA
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
+import { fetchAvailableTlds } from '../../utils/availableTlds';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
@@ -311,8 +312,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const nextResults = seededResults.map((item) => ({ ...item }));
 
     try {
-      const { data } = await domainAPI.searchTlds({ name: label, page: 1, pageSize: 200 });
-      const items = data?.items || data?.data?.items || [];
+      // Reuse the shared TLD search (same API request + filter + sort as the
+      // Domain Management /storefront page) so both pages return identical
+      // available TLDs in the same TLD-ascending order.
+      const items = await fetchAvailableTlds(label, { force });
 
       const mapped = items.map((item) => {
         const tld = (item.tld || '').replace('.', '');

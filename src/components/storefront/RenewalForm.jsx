@@ -7,9 +7,14 @@ export default function RenewalForm({ onClose, onSubmit, orders }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  const selectedOrder = orders.find(o => String(o.id) === String(domainId));
+  const provider = (selectedOrder?.provider || selectedOrder?.registrar || '').toLowerCase();
+  const isOpenProvider = !selectedOrder || !provider || provider === 'openprovider' || provider === 'open provider';
+  const isDisabled = !isOpenProvider;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!domainId) return;
+    if (isDisabled || !domainId) return;
     setLoading(true);
     setResult(null);
     try {
@@ -53,6 +58,9 @@ export default function RenewalForm({ onClose, onSubmit, orders }) {
             </option>
           ))}
         </select>
+        {domainId && !isOpenProvider && (
+           <p className="text-xs text-rose-500 mt-1">This domain is not managed by OpenProvider. Services cannot be configured.</p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -60,7 +68,8 @@ export default function RenewalForm({ onClose, onSubmit, orders }) {
         <select
           value={period}
           onChange={(e) => setPeriod(e.target.value)}
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          disabled={isDisabled}
+          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
         >
           <option value="1">1 Year</option>
           <option value="2">2 Years</option>
@@ -78,7 +87,7 @@ export default function RenewalForm({ onClose, onSubmit, orders }) {
       <div className="flex justify-end pt-1">
         <button
           type="submit"
-          disabled={loading || !domainId}
+          disabled={isDisabled || loading || !domainId}
           className="inline-flex h-10 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
         >
           {loading ? (

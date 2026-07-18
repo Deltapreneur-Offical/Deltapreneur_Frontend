@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Loader2 } from 'lucide-react';
 
-export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
+export default function EmailForm({ onClose, onSubmit, orders }) {
   const [domainId, setDomainId] = useState('');
   const [email, setEmail] = useState('');
   const [mailboxSize, setMailboxSize] = useState('5');
@@ -9,9 +9,14 @@ export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  const selectedOrder = orders.find(o => String(o.id) === String(domainId));
+  const provider = (selectedOrder?.provider || selectedOrder?.registrar || '').toLowerCase();
+  const isOpenProvider = !selectedOrder || !provider || provider === 'openprovider' || provider === 'open provider';
+  const isDisabled = !isOpenProvider;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!domainId || !email) return;
+    if (isDisabled || !domainId || !email) return;
     setLoading(true);
     setResult(null);
     try {
@@ -55,6 +60,9 @@ export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
             </option>
           ))}
         </select>
+        {domainId && !isOpenProvider && (
+           <p className="text-xs text-rose-500 mt-1">This domain is not managed by OpenProvider. Services cannot be configured.</p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -63,8 +71,9 @@ export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={isDisabled}
           placeholder="e.g. hello@yourdomain.com"
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
           required
         />
       </div>
@@ -75,7 +84,8 @@ export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
           <select
             value={mailboxSize}
             onChange={(e) => setMailboxSize(e.target.value)}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+            disabled={isDisabled}
+            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
           >
             <option value="1">1 GB</option>
             <option value="5">5 GB</option>
@@ -88,7 +98,8 @@ export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
           <select
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+            disabled={isDisabled}
+            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
           >
             <option value="1">1 Month</option>
             <option value="6">6 Months</option>
@@ -107,7 +118,7 @@ export default function EmailForm({ onClose, onSubmit, orders, formatPrice }) {
       <div className="flex justify-end pt-1">
         <button
           type="submit"
-          disabled={loading || !domainId || !email}
+          disabled={isDisabled || loading || !domainId || !email}
           className="inline-flex h-10 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
         >
           {loading ? (

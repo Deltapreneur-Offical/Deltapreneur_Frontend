@@ -22,7 +22,7 @@ import { domainAPI } from '../api/services';
 // validation limit while we still collect the complete result set.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEARCH_TLDS_PAGE_SIZE = 200;
+const SEARCH_TLDS_PAGE_SIZE = 1500;
 const SEARCH_TLDS_MAX_PAGES = 25;
 
 // Separate cache from the Home page so storefront results never collide with or

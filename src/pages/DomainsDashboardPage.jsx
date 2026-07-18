@@ -477,16 +477,14 @@ function DomainRow({ domain, type, onVerify }) {
   const domainName = `${domain.domainName}${domain.domainExtension}`;
   const shareSubject = `Premium Domain Listing Available on CoBrother: ${domainName}`;
   const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on CoBrother.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on CoBrother, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via CoBrother]`;
-  const shareUrl = `${shareBase}/domains`;
   const shareText = t('domainsDashboardShareText', { name: `${domain.domainName}${domain.domainExtension}` });
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Domain listed on CoBrother!\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 
   const handleShare = (platform) => {
     window.open(platform, '_blank', 'width=600,height=400');

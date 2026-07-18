@@ -11,6 +11,7 @@ import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
 import { fetchAvailableTlds } from '../../utils/availableTlds';
+import AddToCartButton from '../cart/AddToCartButton';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';

@@ -11,7 +11,7 @@ import { domainAPI } from '../api/services';
 // most 200 per page and paginate (fetching additional pages) until every
 // available extension is retrieved — this stays within the validation limit
 // while still collecting the full, price-sorted result set.
-const SEARCH_TLDS_PAGE_SIZE = 200;
+const SEARCH_TLDS_PAGE_SIZE = 1500;
 
 // Safety bound so a misbehaving/mis-configured backend can never loop forever.
 const SEARCH_TLDS_MAX_PAGES = 25;

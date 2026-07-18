@@ -52,10 +52,6 @@ export default function ExploreSection() {
         <TechnologySection />
       </LazySection>
 
-      <LazySection title={t('disruptors')} to="/community" compact>
-        <CommunitySection />
-      </LazySection>
-
       {OPERATIONS_SECTIONS.map((section) => (
         <LazySection
           key={section.id}
@@ -66,6 +62,10 @@ export default function ExploreSection() {
           <HomeOperationsCarouselSection sectionId={section.id} />
         </LazySection>
       ))}
+
+      <LazySection title={t('disruptors')} to="/community" compact>
+        <CommunitySection />
+      </LazySection>
 
       <LazyWhenVisible>
         <FeedbackSection />

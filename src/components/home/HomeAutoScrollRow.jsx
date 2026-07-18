@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { homeRowReveal, homeViewport } from './motion/homeMotion';
+import { IS_IPHONE } from '../../utils/deviceDetection';
 
 /**
  * True for duplicated (aria-hidden) carousel copies. Cards read this to skip
@@ -234,7 +235,10 @@ export default function HomeAutoScrollRow({
 
   if (items.length === 0) return null;
 
-  const shouldAnimate = hasOverflow && !reduceMotion;
+  // iPhone WebKit kills the tab once several cloned marquee rows are mounted
+  // (3x DOM + compositor layers). Render a plain swipeable row there instead;
+  // all other platforms keep the animated infinite carousel.
+  const shouldAnimate = hasOverflow && !reduceMotion && !IS_IPHONE;
   const fitsInViewport = onlyWhenOverflow && !hasOverflow;
 
   // Render helper — 3 copies needed for infinite manual scroll.
@@ -260,6 +264,7 @@ export default function HomeAutoScrollRow({
   const rootClassName = [
     'home-auto-scroll-row',
     fitsInViewport ? 'home-auto-scroll-row--fits' : '',
+    IS_IPHONE ? 'home-auto-scroll-row--iphone' : '',
     className,
   ]
     .filter(Boolean)

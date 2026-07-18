@@ -1135,6 +1135,20 @@
   backface-visibility: hidden;
 }
 
+/* iOS WebKit: never force card shells into their own compositor layers.
+   translate3d/translateZ(0) + backface-visibility promote every card to a
+   GPU layer; with dozens of cards mounted at once this exhausts iPhone
+   Safari's graphics memory budget and kills the tab ("A problem repeatedly
+   occurred"). @supports (-webkit-touch-callout) matches iOS/iPadOS only, so
+   Windows / Android / macOS rendering is completely unchanged. */
+@supports (-webkit-touch-callout: none) {
+  .home-preview-card-border,
+  .home-operations-preview-card {
+    transform: none;
+    backface-visibility: visible;
+  }
+}
+
 .home-operations-preview-card__top {
   display: flex;
   align-items: flex-start;
@@ -2233,6 +2247,19 @@
 
 .home-auto-scroll-row--fits .home-auto-scroll-row__track--static {
   width: 100%;
+}
+
+/* iPhone-only plain swipeable rows (class set in HomeAutoScrollRow.jsx when
+   the marquee is disabled). Drop the edge-fade mask — masking a scrolling
+   surface keeps an extra offscreen bitmap alive per row on WebKit. */
+.home-auto-scroll-row--iphone .home-auto-scroll-row__viewport {
+  overflow: visible;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.home-auto-scroll-row--iphone .home-auto-scroll-row__track--static {
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (prefers-reduced-motion: reduce) {

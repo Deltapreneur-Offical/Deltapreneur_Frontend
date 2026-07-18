@@ -111,6 +111,20 @@
     0 2px 4px rgba(15, 23, 42, 0.04);
 }
 
+/* iOS WebKit: backface-visibility: hidden promotes each listing card to a
+   compositor layer, which multiplies iPhone Safari's graphics memory use
+   across the homepage carousels. Other platforms are unaffected. */
+@supports (-webkit-touch-callout: none) {
+  .listing-card-glow.card-glow-hover,
+  .technology-listing-card.card-glow-hover,
+  .home-feature-card.card-glow-hover,
+  .domain-listing-card.card-glow-hover,
+  .venture-listing-card.card-glow-hover,
+  .community-listing-card.card-glow-hover {
+    backface-visibility: visible;
+  }
+}
+
 .technology-listing-card.card-glow-hover:not(.technology-listing-card--browse):not(.domain-listing-card),
 .community-listing-card.card-glow-hover:not(.creator-profile-card) {
   border: none !important;

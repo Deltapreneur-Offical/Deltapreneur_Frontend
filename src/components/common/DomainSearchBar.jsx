@@ -5,6 +5,7 @@ import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
+import { IS_IPHONE } from '../../utils/deviceDetection';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
@@ -118,9 +119,12 @@ function TldPriceMarquee() {
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
 
-  // Single rAF loop; pause when tab hidden, hovered, or dragging (iOS Safari safety)
+  // Single rAF loop; pause when tab hidden, hovered, or dragging.
+  // Never runs on iPhone — a permanent rAF loop mutating scrollLeft keeps the
+  // compositor busy for the page's whole lifetime, eating into the WebKit
+  // memory budget that the rest of the homepage needs. Users swipe instead.
   useEffect(() => {
-    if (isPaused || isPageHidden) return undefined;
+    if (IS_IPHONE || isPaused || isPageHidden) return undefined;
 
     let animationFrameId;
     const scrollStep = () => {

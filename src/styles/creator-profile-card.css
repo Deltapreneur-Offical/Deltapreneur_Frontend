@@ -22,6 +22,16 @@
   width: 100%;
 }
 
+/* iOS WebKit: avoid promoting every creator card to its own GPU layer —
+   iPhone Safari's per-tab graphics memory budget can't hold dozens of
+   composited card layers. Other platforms are unaffected. */
+@supports (-webkit-touch-callout: none) {
+  .creator-profile-card {
+    transform: none;
+    backface-visibility: visible;
+  }
+}
+
 .creator-profile-card::after {
   content: '';
   position: absolute;

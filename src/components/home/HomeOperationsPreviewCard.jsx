@@ -7,6 +7,7 @@ import { OPERATIONS_CATEGORY_LABELS } from '../../utils/operationsCategories';
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
 import LikeButton from '../common/LikeButton';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
+import { useIsCarouselClone } from './HomeAutoScrollRow';
 
 function resolveSkills(service) {
   if (Array.isArray(service.skills)) return service.skills;
@@ -35,6 +36,7 @@ function resolveSkills(service) {
 export default function HomeOperationsPreviewCard({ service, onHire }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const isCarouselClone = useIsCarouselClone();
 
   const Icon = resolveOperationsIcon(service);
   const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
@@ -63,11 +65,15 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
     <article className="home-operations-preview-card">
       <div className="home-operations-preview-card__top">
         <div className="home-operations-preview-card__avatar-wrap">
-          {imageUrl ? (
+          {imageUrl && !isCarouselClone ? (
             <img
               src={imageUrl}
               alt={service.name}
               className="home-operations-preview-card__avatar"
+              width={54}
+              height={54}
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div

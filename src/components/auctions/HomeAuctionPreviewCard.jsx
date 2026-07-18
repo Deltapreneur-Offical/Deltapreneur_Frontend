@@ -17,6 +17,7 @@ import {
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import CreatorPreviewModal from './CreatorPreviewModal';
+import { useIsCarouselClone } from '../home/HomeAutoScrollRow';
 
 function useCountdown(endTime, enabled = true) {
   const [timeLeft, setTimeLeft] = useState('—');
@@ -97,18 +98,13 @@ const BADGE_TONE_CLASS = {
   },
 };
 
-export default function HomeAuctionPreviewCard({
-  auction,
-  onView,
-  'aria-hidden': ariaHidden,
-  'data-home-carousel-clone': carouselClone,
-}) {
+export default function HomeAuctionPreviewCard({ auction, onView }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [imgFailed, setImgFailed] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const isCarouselClone = ariaHidden === true || ariaHidden === 'true' || carouselClone === 'true';
+  const isCarouselClone = useIsCarouselClone();
   const title = resolveHomeAuctionTitle(auction);
   const image = resolveHomeAuctionImage(auction);
   const verified = resolveHomeAuctionVerified(auction);

@@ -1,14 +1,27 @@
 import {
   Children,
   cloneElement,
+  createContext,
   isValidElement,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { homeRowReveal, homeViewport } from './motion/homeMotion';
+
+/**
+ * True for duplicated (aria-hidden) carousel copies. Cards read this to skip
+ * expensive per-instance work — image decoding, 1s countdown timers — that
+ * otherwise runs 3× per visible card and can crash iOS Safari.
+ */
+const CarouselCloneContext = createContext(false);
+
+export function useIsCarouselClone() {
+  return useContext(CarouselCloneContext);
+}
 
 /**
  * Horizontally auto-scrolling row with infinite manual scroll.
@@ -225,7 +238,8 @@ export default function HomeAutoScrollRow({
   const fitsInViewport = onlyWhenOverflow && !hasOverflow;
 
   // Render helper — 3 copies needed for infinite manual scroll.
-  // Duplicate sets get aria-hidden + data-home-carousel-clone so cards can skip timers/images.
+  // Duplicate sets are aria-hidden; the clone context lets nested cards skip
+  // per-instance image decoding and timers (see useIsCarouselClone).
   const renderSet = (prefix = '') =>
     items.map((child, index) => {
       if (!isValidElement(child)) return child;
@@ -234,7 +248,6 @@ export default function HomeAutoScrollRow({
       return cloneElement(child, {
         key: prefix ? `${prefix}-${baseKey}` : baseKey,
         'aria-hidden': isClone ? true : undefined,
-        'data-home-carousel-clone': isClone ? 'true' : undefined,
       });
     });
 
@@ -293,19 +306,25 @@ export default function HomeAutoScrollRow({
     >
       <div className={viewportClassName} ref={viewportRef}>
         <div className={trackClassName} ref={trackRef}>
-          {/* 3 identical sets: [A][B][C] — manual scroll starts at B */}
+          {/* 3 identical sets: [A][B][C] — manual scroll starts at B.
+              Copies [B][C] render under the clone context so their cards skip
+              image decoding + timers (iOS Safari memory safety). */}
           {renderSet()}
-          {shouldAnimate ? renderSet('dup1') : null}
-          {shouldAnimate ? renderSet('dup2') : null}
+          {shouldAnimate ? (
+            <CarouselCloneContext.Provider value={true}>
+              {renderSet('dup1')}
+              {renderSet('dup2')}
+            </CarouselCloneContext.Provider>
+          ) : null}
         </div>
       </div>
     </RootTag>
   );
 }
 
-export function HomeAutoScrollRowItem({ children, className = '' }) {
+export function HomeAutoScrollRowItem({ children, className = '', ...rest }) {
   return (
-    <div className={`home-auto-scroll-row__item${className ? ` ${className}` : ''}`}>
+    <div className={`home-auto-scroll-row__item${className ? ` ${className}` : ''}`} {...rest}>
       {children}
     </div>
   );

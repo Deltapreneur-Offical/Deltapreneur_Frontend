@@ -1,5 +1,4 @@
 import api from './axios';
-
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const authAPI = {
   register:           (data)          => api.post('/api/v1/auth/register', data),
@@ -168,7 +167,7 @@ export const aiDomainsAPI = {
     api.post('/api/ai-domains/generate', { idea }, options),
 };
 
-/** Domain registration storefront (OpenProvider + Razorpay) — new domain checkout */
+/** Domain registration storefront (new domain checkout) */
 export const domainStorefrontAPI = {
   getConfig: () => api.get('/api/v1/domain/storefront/config'),
   createOrder: (body, redeemPoints = false) => api.post('/api/v1/domain/storefront/order', body, { params: { redeem_points: redeemPoints } }),
@@ -180,6 +179,30 @@ export const domainStorefrontAPI = {
   resendVerification: (orderId) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/resend-verification`),
   retryProvision: (orderId) => api.post(`/api/v1/domain/storefront/orders/${orderId}/retry`),
+  updateNameservers: (orderId, nameservers) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/nameservers`, { nameservers }),
+  renewDomainDirect: (orderId, period = 1) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/renew`, { period }),
+  renewDomainPaymentOrder: (orderId, period = 1) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/renew/payment`, { period }),
+  initiateTransfer: (body) => api.post('/api/v1/domain/storefront/transfer', body),
+  purchaseEmail: (orderId, mailbox) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email`, { mailbox }),
+  purchaseSSL: (orderId) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/ssl`),
+  initiateTransferOut: (body) =>
+    api.post('/api/v1/domain/storefront/transfer/out', body),
+  getDnsRecords: (orderId) =>
+    api.get(`/api/v1/domain/storefront/orders/${orderId}/dns/records`),
+  createDnsRecord: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/dns/records`, body),
+  deleteDnsRecord: (orderId, recordId) =>
+    api.delete(`/api/v1/domain/storefront/orders/${orderId}/dns/records/${recordId}`),
+  toggleDnssec: (orderId, enabled) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/dnssec`, { enabled }),
+  updateMailboxPassword: (orderId, mailbox, password) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email/password`, { mailbox, password }),
+  getPrices: () => api.get('/api/v1/domain/storefront/prices'),
 };
 
 export const analyticsAPI = {
@@ -298,6 +321,8 @@ export const adminAPI = {
   rejectVentureVerification: (id, r)    => api.post(`/api/v1/admin/ventures/${id}/verification/reject`, { reason: r }),
   getListingFeesAndCharges:  ()         => api.get('/api/v1/auction-fees/listing-fees-and-charges'),
   updateListingFeesAndCharges: (data)   => api.put('/api/v1/auction-fees/admin/listing-fees-and-charges', data),
+  getDomainCommission:       ()         => api.get('/api/v1/admin/domain-registrations/commission'),
+  updateDomainCommission:    (data)     => api.put('/api/v1/admin/domain-registrations/commission', data),
   getTechnologyTransfers: () => api.get('/api/v1/admin/technology-transfers/'),
   getTechnologyTransferDetail: (id) => api.get(`/api/v1/admin/technology-transfers/${id}`),
   approveTechnologyPayout: (id) => api.post(`/api/v1/admin/technology-transfers/${id}/approve-payout`),

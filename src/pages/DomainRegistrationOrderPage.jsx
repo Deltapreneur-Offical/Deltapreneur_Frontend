@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -8,96 +8,231 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  Globe,
+  Server,
+  Copy,
+  Check,
+  ExternalLink,
+  ChevronRight,
+  Calendar,
+  Lock,
+  Unlock,
+  Shield,
+  Plus,
+  ArrowUpRight,
+  Sparkles,
+  Search,
+  Trash2,
+  Key,
+  ShieldAlert,
+  Edit2,
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
+import AppLayout from '../components/layout/AppLayout';
 import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
-import DomainManagementCard from '../components/domain/DomainManagementCard';
-import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
-import { useCurrency } from '../context/CurrencyContext';
-import {
-  readApiError,
-  registrationStatusBadgeClass,
-  registrationStatusLabel,
-} from '../utils/domainRegistrationOrder';
+import { readApiError } from '../utils/domainRegistrationOrder';
 
-function unwrapOrder(data) {
-  return data?.data ?? data;
+function unwrapOrder(data) { return data?.data ?? data; }
+
+/* ─── Premium Copy Button ─── */
+function CopyBtn({ text, label = 'Copy' }) {
+  const [copied, setCopied] = useState(false);
+  const handle = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
+  return (
+    <button
+      type="button"
+      onClick={handle}
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border transition-all duration-200 select-none ${
+        copied
+          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+      }`}
+    >
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? 'Copied' : label}
+    </button>
+  );
 }
 
-export default function DomainRegistrationOrderPage() {
-  const { orderId } = useParams();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  const { user } = useAuth();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [actionError, setActionError] = useState('');
-  const [actionMessage, setActionMessage] = useState('');
+/* ─── Premium Status Badge ─── */
+function StatusBadge({ status, lifecycleStatus }) {
+  const life = (lifecycleStatus || '').toLowerCase();
+  const s    = (status || '').toUpperCase();
 
-  const loadOrder = useCallback(
-    async (sync = true) => {
-      if (!orderId) return;
-      setActionError('');
-      try {
-        const { data } = await domainStorefrontAPI.getOrder(orderId, { sync });
-        setOrder(unwrapOrder(data));
-      } catch (err) {
-        setActionError(readApiError(err, t('regOrderLoadFailed', { defaultValue: 'Could not load order.' })));
-        setOrder(null);
-      } finally {
-        setLoading(false);
-        setSyncing(false);
-      }
-    },
-    [orderId, t],
+  if (life === 'registration_confirmed' || s === 'ACTIVE') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50/70 border border-emerald-200/80 px-3 py-1 rounded-full shadow-sm">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" /> Active
+      </span>
+    );
+  }
+  if (life === 'registration_failed' || s.includes('FAIL')) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-800 bg-rose-50/70 border border-rose-200/80 px-3 py-1 rounded-full shadow-sm">
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block" /> Failed
+      </span>
+    );
+  }
+  if (life === 'refunded') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200/80 px-3 py-1 rounded-full shadow-sm">
+        Refunded
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50/70 border border-amber-200/80 px-3 py-1 rounded-full shadow-sm">
+      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse" />
+      {life ? life.replace(/_/g, ' ').toUpperCase() : (s || 'PENDING')}
+    </span>
   );
+}
+
+const TABS = [
+  { id: 'overview',  label: 'Overview' },
+  { id: 'dns',       label: 'DNS & Nameservers' },
+  { id: 'products',  label: 'Email & Security' },
+  { id: 'details',   label: 'Order Details' },
+];
+
+export default function DomainRegistrationOrderPage() {
+  const { orderId }  = useParams();
+  const navigate     = useNavigate();
+  const { user }     = useAuth();
+
+  const [order,         setOrder]         = useState(null);
+  const [loading,       setLoading]       = useState(true);
+  const [syncing,       setSyncing]       = useState(false);
+  const [actionError,   setActionError]   = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [activeTab,     setActiveTab]     = useState(() => {
+    const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
+    return TABS.some(t => t.id === hash) ? hash : 'overview';
+  });
+
+  const [showRenewCheckout, setShowRenewCheckout] = useState(false);
+  const [renewPeriod, setRenewPeriod] = useState(1);
+  const [renewPayLoading, setRenewPayLoading] = useState(false);
+  const [config, setConfig] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
-    loadOrder(true);
-  }, [loadOrder]);
+    domainStorefrontAPI.getConfig()
+      .then(({ data }) => {
+        setConfig(data?.data ?? data);
+      })
+      .catch(() => {});
+  }, []);
 
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && TABS.some(t => t.id === hash)) {
+        setActiveTab(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Run once on mount / update
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  /* ─ Load order ─ */
+  const loadOrder = useCallback(async (sync = true) => {
+    if (!orderId) return;
+    setActionError('');
+    try {
+      const { data } = await domainStorefrontAPI.getOrder(orderId, { sync });
+      setOrder(unwrapOrder(data));
+    } catch (err) {
+      setActionError(readApiError(err, 'Could not load order.'));
+      setOrder(null);
+    } finally { setLoading(false); setSyncing(false); }
+  }, [orderId]);
+
+  useEffect(() => { setLoading(true); loadOrder(true); }, [loadOrder]);
+
+  /* ─ Actions ─ */
   const handleSync = async () => {
-    setSyncing(true);
-    setActionMessage('');
+    setSyncing(true); setActionMessage(''); setActionError('');
     try {
       const { data } = await domainStorefrontAPI.syncOrder(orderId);
       setOrder(unwrapOrder(data));
-      setActionMessage(t('regOrderSynced', { defaultValue: 'Status updated from registrar.' }));
-    } catch (err) {
-      setActionError(readApiError(err, t('regOrderSyncFailed', { defaultValue: 'Sync failed.' })));
-    } finally {
-      setSyncing(false);
-    }
+      setActionMessage('Status refreshed successfully.');
+    } catch (err) { setActionError(readApiError(err, 'Sync failed.')); }
+    finally { setSyncing(false); }
   };
 
   const handleResend = async () => {
-    setActionError('');
-    setActionMessage('');
+    setActionError(''); setActionMessage('');
     try {
       const { data } = await domainStorefrontAPI.resendVerification(orderId);
       const body = data?.data ?? data;
-      setActionMessage(body?.message || t('regOrderResent', { defaultValue: 'Verification email sent.' }));
-    } catch (err) {
-      setActionError(readApiError(err, t('regOrderResendFailed', { defaultValue: 'Could not resend verification.' })));
-    }
+      setActionMessage(body?.message || 'Verification email sent to your inbox.');
+    } catch (err) { setActionError(readApiError(err, 'Could not resend verification email.')); }
   };
 
   const handleRetry = async () => {
-    setActionError('');
-    setActionMessage('');
+    setActionError(''); setActionMessage('');
     try {
       const { data } = await domainStorefrontAPI.retryProvision(orderId);
       const body = data?.data ?? data;
-      setActionMessage(body?.message || t('regOrderRetryStarted', { defaultValue: 'Registration retry started.' }));
+      setActionMessage(body?.message || 'Registration retry started.');
       await loadOrder(false);
+    } catch (err) { setActionError(readApiError(err, 'Retry failed.')); }
+  };
+
+   const handleRenew = () => {
+    setShowRenewCheckout(true);
+    // Scroll to renewal checkout panel
+    setTimeout(() => {
+      document.getElementById('renew-checkout-panel')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleRenewPayment = async () => {
+    setActionError(''); setActionMessage('');
+    setRenewPayLoading(true);
+    try {
+      const { data: payPayload } = await domainStorefrontAPI.renewDomainPaymentOrder(orderId, renewPeriod);
+      const payData = payPayload?.data ?? payPayload;
+      
+      const { openRazorpayCheckout } = await import('../utils/razorpayCheckout');
+      
+      openRazorpayCheckout({
+        orderData: payData,
+        user,
+        description: `Renew ${order.domain} for ${renewPeriod} Year(s)`,
+        onSuccess: async (response) => {
+          setSyncing(true);
+          try {
+            const { data } = await domainStorefrontAPI.renewDomainDirect(orderId, renewPeriod);
+            setOrder(unwrapOrder(data));
+            setActionMessage(`Domain successfully renewed for ${renewPeriod} year(s)!`);
+            setShowRenewCheckout(false);
+          } catch (err) {
+            setActionError(readApiError(err, 'Renewal verification failed.'));
+          } finally {
+            setSyncing(false);
+            setRenewPayLoading(false);
+          }
+        },
+        onFailure: (err) => {
+          setActionError(err?.error?.description || 'Renewal payment failed.');
+          setRenewPayLoading(false);
+        },
+        onDismiss: () => {
+          setRenewPayLoading(false);
+        }
+      });
     } catch (err) {
-      setActionError(readApiError(err, t('storefrontRetryFailed')));
+      setActionError(readApiError(err, 'Failed to create renewal order.'));
+      setRenewPayLoading(false);
     }
   };
 
@@ -106,202 +241,1072 @@ export default function DomainRegistrationOrderPage() {
     generateInvoice({
       type: 'domain_registration',
       item: order,
-      user: {
-        name: order.buyerEmail || user?.email,
-        email: order.buyerEmail || user?.email,
-      },
+      user: { name: order.buyerEmail || user?.email, email: order.buyerEmail || user?.email },
     });
   };
 
-  if (loading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center py-24">
+  if (loading) return (
+    <AppLayout>
+      <div className="flex items-center justify-center py-32 bg-gray-50/30">
+        <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+          <p className="text-sm font-semibold text-gray-500">Fetching settings...</p>
         </div>
-      </AppLayout>
-    );
-  }
+      </div>
+    </AppLayout>
+  );
 
-  if (!order) {
-    return (
-      <AppLayout>
-        <div className="max-w-lg mx-auto py-16 text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-700 mb-4">{actionError || t('regOrderNotFound', { defaultValue: 'Order not found.' })}</p>
-          <Link to="/storefront" className="btn-glow btn-glow-sm">
-            {t('regOrderBackStorefront', { defaultValue: 'Back to storefront' })}
-          </Link>
-        </div>
-      </AppLayout>
-    );
-  }
+  if (!order) return (
+    <AppLayout>
+      <div className="max-w-lg mx-auto py-20 text-center px-4">
+        <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+        <p className="text-gray-700 font-semibold mb-6">{actionError || 'Order not found.'}</p>
+        <Link to="/storefront" className="inline-flex h-10 items-center justify-center bg-indigo-600 text-white rounded-lg px-6 font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+          Back to Storefront
+        </Link>
+      </div>
+    </AppLayout>
+  );
 
-  const badgeClass = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
-  const statusText = registrationStatusLabel(order.status, order.lifecycleStatus, t);
-  const steps = Array.isArray(order.nextSteps) ? order.nextSteps : [];
-  const orderPricing =
-    order.subtotalInr != null
-      ? {
-          subtotal: Number(order.subtotalInr),
-          gst: Number(order.gstInr ?? 0),
-          total: Number(order.priceInr ?? 0),
-          gstRate: order.gstRate ?? null,
-          gstEnabled: Boolean(order.gstEnabled),
-          years: 1,
-        }
-      : null;
+  const isActive     = order.status === 'ACTIVE' || order.lifecycleStatus === 'registration_confirmed';
+  const nameservers  = Array.isArray(order.domainManagement?.nameservers) ? order.domainManagement.nameservers : [];
+  const panelUrl     = order.domainManagement?.customerPanelUrl;
+  const loginEmail   = order.domainManagement?.loginEmail;
+  const expiresAt    = order.expiresAt ? new Date(order.expiresAt) : null;
+  const daysLeft     = expiresAt ? Math.floor((expiresAt - Date.now()) / 86400000) : null;
+  const expiringSoon = daysLeft !== null && daysLeft < 90;
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+  const fmtDateShort = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
   return (
     <AppLayout>
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('regOrderBack', { defaultValue: 'Back' })}
-        </button>
+      <div className="min-h-screen bg-gray-50/50 pb-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-1">
-              {t('regOrderEyebrow', { defaultValue: 'Domain registration' })}
-            </p>
-            <h1 className="text-2xl font-bold text-gray-900">{order.domain}</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {t('regOrderId', { defaultValue: 'Order' })} {order.id}
-            </p>
-          </div>
-          <span className={`inline-block text-sm font-semibold px-3 py-1 rounded-full ${badgeClass}`}>
-            {statusText}
-          </span>
-        </div>
-
-        {actionMessage && (
-          <div className="flex items-start gap-2 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{actionMessage}</span>
-          </div>
-        )}
-        {actionError && (
-          <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{actionError}</span>
-          </div>
-        )}
-
-        {order.message && (
-          <p className="text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-3">{order.message}</p>
-        )}
-
-        <DomainManagementCard domainManagement={order.domainManagement} />
-
-        {steps.length > 0 && (
-          <section className="bg-white border border-gray-200 rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-3">
-              {t('regOrderNextSteps', { defaultValue: 'Next steps' })}
-            </h2>
-            <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
-              {steps.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <section className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-900">
-            {t('storefrontPriceBreakdownTitle', { defaultValue: 'Payment summary' })}
-          </h2>
-          {orderPricing ? (
-            <DomainRegistrationPriceBreakdown pricing={orderPricing} />
-          ) : (
-            <Detail
-              label={t('storefrontColPrice', { defaultValue: 'Price' })}
-              value={formatPrice(order.priceInr || 0)}
-            />
-          )}
-        </section>
-
-        <section className="bg-white border border-gray-200 rounded-xl p-5 grid sm:grid-cols-2 gap-4 text-sm">
-          <Detail
-            label={t('regOrderCreated', { defaultValue: 'Ordered' })}
-            value={order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN') : '—'}
-          />
-          {order.completedAt && (
-            <Detail
-              label={t('regOrderCompleted', { defaultValue: 'Completed' })}
-              value={new Date(order.completedAt).toLocaleString('en-IN')}
-            />
-          )}
-          {order.expiresAt && (
-            <Detail
-              label={t('regOrderExpiry', { defaultValue: 'Registrar expiry' })}
-              value={new Date(order.expiresAt).toLocaleDateString('en-IN')}
-            />
-          )}
-          {order.razorpayPaymentId && (
-            <Detail label={t('regOrderPaymentId', { defaultValue: 'Payment ID' })} value={order.razorpayPaymentId} mono />
-          )}
-          {order.registrarOrderId && (
-            <Detail label={t('regOrderRegistrarId', { defaultValue: 'Registrar order' })} value={order.registrarOrderId} mono />
-          )}
-          {order.icannVerificationStatus && order.icannVerificationStatus !== 'UNKNOWN' && (
-            <Detail label={t('regOrderIcann', { defaultValue: 'Registrant verification' })} value={order.icannVerificationStatus} />
-          )}
-        </section>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            className="btn-glow btn-glow-sm inline-flex items-center gap-2"
-            onClick={handleSync}
-            disabled={syncing}
-          >
-            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-            {t('regOrderRefreshStatus', { defaultValue: 'Refresh status' })}
+          {/* Back Nav */}
+          <button type="button" onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 mb-6 transition-colors select-none">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </button>
-          {order.canResendVerification && (
-            <button
-              type="button"
-              className="btn-glow btn-glow-sm inline-flex items-center gap-2"
-              onClick={handleResend}
-            >
-              <Mail className="w-4 h-4" />
-              {t('regOrderResendVerify', { defaultValue: 'Resend verification email' })}
-            </button>
+
+          {/* Header Panel */}
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-wrap items-center justify-between gap-4 mb-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <p className="text-[0.7rem] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">
+                  Active Domain
+                </p>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{order.domain}</h1>
+              {order.registrarOrderId && (
+                <p className="text-xs text-gray-400 font-mono">Registrar Order ID: {order.registrarOrderId}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <StatusBadge status={order.status} lifecycleStatus={order.lifecycleStatus} />
+            </div>
+          </div>
+
+          {/* Alerts */}
+          {actionMessage && (
+            <div className="flex items-start gap-2.5 text-sm text-emerald-800 bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 mb-6 shadow-sm">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
+              <span className="font-semibold">{actionMessage}</span>
+            </div>
           )}
-          {order.canRetry && (
-            <button type="button" className="btn-glow btn-glow-sm" onClick={handleRetry}>
-              {t('storefrontRetry')}
-            </button>
+          {actionError && (
+            <div className="flex items-start gap-2.5 text-sm text-rose-800 bg-rose-50/60 border border-rose-200 rounded-xl p-4 mb-6 shadow-sm">
+              <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
+              <span className="font-semibold">{actionError}</span>
+            </div>
           )}
-          {(order.razorpayPaymentId || order.status === 'ACTIVE') && (
-            <button
-              type="button"
-              className="btn-glow btn-glow-sm inline-flex items-center gap-2"
-              onClick={handleInvoice}
-            >
-              <FileText className="w-4 h-4" />
-              {t('regOrderInvoice', { defaultValue: 'Download invoice' })}
-            </button>
+
+          {/* Expiry Banner */}
+          {expiringSoon && daysLeft !== null && isActive && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-amber-50/80 border border-amber-200 rounded-xl p-5 mb-6 shadow-sm">
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-amber-900">Domain Expiring Soon</h4>
+                <p className="text-xs text-amber-700">
+                  {daysLeft > 7 ? (
+                    `Your domain will expire in ${daysLeft} days (${fmtDateShort(order.expiresAt)}). Renewal opens 7 days before expiry.`
+                  ) : (
+                    `Your domain will expire in ${daysLeft} days (${fmtDateShort(order.expiresAt)}). Renew now to prevent service disruption.`
+                  )}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRenew}
+                disabled={syncing || daysLeft > 7}
+                className="w-full sm:w-auto shrink-0 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                title={daysLeft > 7 ? "Domain renewal is only available within 7 days of expiration." : undefined}
+              >
+                {daysLeft > 7 ? "Renew (Unavailable)" : "Renew Domain"}
+              </button>
+            </div>
           )}
-          <Link to="/purchases" className="btn-glow btn-glow-sm text-indigo-700">
-            {t('regOrderAllPurchases', { defaultValue: 'All purchases' })}
-          </Link>
+
+          {showRenewCheckout && (
+            <div id="renew-checkout-panel" className="bg-white border border-indigo-150 rounded-2xl p-6 shadow-sm mb-6 space-y-4">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 className="text-sm font-bold text-gray-950 uppercase tracking-wider">Renew Domain Checkout</h3>
+                <button type="button" onClick={() => setShowRenewCheckout(false)} className="text-xs font-bold text-gray-400 hover:text-gray-600">
+                  Cancel
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Renewal Period</span>
+                  <select
+                    value={renewPeriod}
+                    onChange={(e) => setRenewPeriod(Number(e.target.value))}
+                    className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-950 focus:bg-white focus:border-indigo-400 outline-none transition-all font-semibold"
+                  >
+                    {[1, 2, 3, 5, 10].map((y) => (
+                      <option key={y} value={y}>
+                        {y} {y === 1 ? 'Year' : 'Years'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="bg-gray-50 border border-gray-150 rounded-xl p-4 flex flex-col justify-center">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Base Renewal Price:</span>
+                    <span>₹{(config?.renewalFallbackUnitInr || 799) * renewPeriod}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>GST (18%):</span>
+                    <span>₹{Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 0.18 * 100) / 100}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-extrabold text-gray-950 mt-2 border-t border-gray-200 pt-2">
+                    <span>Total Amount:</span>
+                    <span>₹{Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 1.18 * 100) / 100}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleRenewPayment}
+                  disabled={renewPayLoading}
+                  className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-8 rounded-xl transition-all shadow-sm select-none"
+                >
+                  {renewPayLoading ? 'Loading Secure Checkout...' : 'Make Payment'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tab Selector */}
+          <div className="bg-gray-100 p-1 rounded-xl flex items-center overflow-x-auto gap-1 mb-8 max-w-fit shadow-inner">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap select-none ${
+                  activeTab === t.id
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ══ OVERVIEW TAB ══ */}
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+              {/* Main summary */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                    <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Domain Information</h2>
+                    <Globe className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div className="divide-y divide-gray-100/70">
+                    <InfoRow icon={Globe} label="Domain" value={order.domain} />
+                    <InfoRow icon={Calendar} label="Registered On" value={fmtDateShort(order.completedAt || order.createdAt)} />
+                    {expiresAt && (
+                      <InfoRow icon={Calendar} label="Expires On"
+                        value={<span className={expiringSoon ? 'text-rose-600 font-bold' : ''}>{fmtDateShort(order.expiresAt)}</span>}
+                      />
+                    )}
+                    {order.buyerEmail && (
+                      <InfoRow icon={Mail} label="Registered Email" value={order.buyerEmail} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions Grid */}
+                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                  <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Actions</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" onClick={handleSync} disabled={syncing}
+                      className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm">
+                      <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                      Refresh Domain Status
+                    </button>
+
+                    {isActive && (
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleRenew}
+                          disabled={syncing || (daysLeft !== null && daysLeft > 7)}
+                          className="w-full inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed transition-all rounded-xl shadow-sm"
+                          title={daysLeft !== null && daysLeft > 7 ? "Domain renewal is only available within 7 days of expiration." : undefined}
+                        >
+                          {daysLeft !== null && daysLeft > 7 ? "Renew (Unavailable)" : "Renew Domain"}
+                        </button>
+                        {daysLeft !== null && daysLeft > 7 && (
+                          <span className="text-[10px] text-gray-500 text-center font-medium">
+                            Available {daysLeft - 7} days from now
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {order.canRetry && (
+                      <button type="button" onClick={handleRetry}
+                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all rounded-xl shadow-sm">
+                        Retry Registration
+                      </button>
+                    )}
+
+                    {order.canResendVerification && (
+                      <button type="button" onClick={handleResend}
+                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                        <Mail className="w-4 h-4 text-gray-500" />
+                        Resend Verification Email
+                      </button>
+                    )}
+
+                    {(order.razorpayPaymentId || isActive) && (
+                      <button type="button" onClick={handleInvoice}
+                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                        <FileText className="w-4 h-4 text-gray-500" />
+                        Download Invoice Receipt
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar stats/info */}
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-indigo-600">
+                    <Shield className="w-5 h-5" />
+                    <h3 className="text-sm font-bold uppercase tracking-wider">Security & DNS</h3>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Make sure to keep your nameservers updated. Any DNS updates will automatically propagate globally within 24-48 hours.
+                  </p>
+                  <button type="button" onClick={() => setActiveTab('dns')}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                    Manage DNS Setup <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* ══ DNS TAB ══ */}
+          {activeTab === 'dns' && (
+            <DnsManagementSection
+              orderId={orderId}
+              nameservers={nameservers}
+              panelUrl={panelUrl}
+              loginEmail={loginEmail}
+              onUpdateSuccess={() => loadOrder(false)}
+            />
+          )}
+
+          {/* ══ PRODUCTS TAB ══ */}
+          {activeTab === 'products' && (
+            <AddonProductsSection
+              order={order}
+              onUpdateSuccess={() => loadOrder(false)}
+            />
+          )}
+
+          {/* ══ ORDER DETAILS TAB ══ */}
+          {activeTab === 'details' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Payment Details */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100">
+                    <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Payment Summary</h2>
+                  </div>
+                  <div className="divide-y divide-gray-100/70">
+                    {order.subtotalInr != null && (
+                      <DetailRow label="Subtotal" value={`₹${Number(order.subtotalInr).toLocaleString('en-IN')}`} />
+                    )}
+                    {order.gstInr != null && Number(order.gstInr) > 0 && (
+                      <DetailRow label={`GST${order.gstRate ? ` (${order.gstRate}%)` : ''}`} value={`₹${Number(order.gstInr).toLocaleString('en-IN')}`} />
+                    )}
+                    <DetailRow
+                      label="Total Paid"
+                      value={`₹${Number(order.priceInr || 0).toLocaleString('en-IN')}`}
+                      valueClass="font-bold text-gray-900 text-base"
+                    />
+                  </div>
+                </div>
+
+                {/* Identity Summary */}
+                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100">
+                    <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Order Identifiers</h2>
+                  </div>
+                  <div className="divide-y divide-gray-100/70">
+                    <MonoDetailRow label="Order ID" value={order.id} />
+                    {order.razorpayPaymentId && (
+                      <MonoDetailRow label="Razorpay Payment ID" value={order.razorpayPaymentId} />
+                    )}
+                    {order.registrarOrderId && (
+                      <MonoDetailRow label="Registrar Order ID" value={order.registrarOrderId} />
+                    )}
+                    <DetailRow label="Status" value={<StatusBadge status={order.status} lifecycleStatus={order.lifecycleStatus} />} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar timelines */}
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Registration Timeline</h3>
+                  <div className="space-y-4 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-gray-200">
+                    
+                    <TimelineNode label="Order Created" date={fmtDate(order.createdAt)} active />
+                    
+                    {order.completedAt && (
+                      <TimelineNode label="Completed" date={fmtDate(order.completedAt)} active />
+                    )}
+                    
+                    {expiresAt && (
+                      <TimelineNode label="Expires" date={fmtDateShort(order.expiresAt)} active={false} />
+                    )}
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
         </div>
       </div>
     </AppLayout>
   );
 }
 
-function Detail({ label, value, mono }) {
+/* ─── Timeline Node ─── */
+function TimelineNode({ label, date, active }) {
   return (
-    <div>
-      <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">{label}</div>
-      <div className={`text-gray-900 font-medium ${mono ? 'font-mono text-xs break-all' : ''}`}>{value}</div>
+    <div className="flex items-start gap-4 relative pl-1">
+      <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 relative z-10 ${active ? 'bg-indigo-600 ring-4 ring-indigo-50' : 'bg-gray-300'}`} />
+      <div className="space-y-0.5">
+        <h4 className="text-xs font-bold text-gray-900">{label}</h4>
+        <p className="text-[0.7rem] text-gray-400 font-medium">{date}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── DNS SECTION COMPONENT WITH NAMESERVER UPDATE FORM & VISUAL RECORDS EDITOR ─── */
+function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
+  const [ns1, setNs1] = useState('');
+  const [ns2, setNs2] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // DNS records table states
+  const [records, setRecords] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(true);
+  const [dnsError, setDnsError] = useState('');
+  const [dnsSuccess, setDnsSuccess] = useState('');
+
+  // Form states to add a record
+  const [recType, setRecType] = useState('A');
+  const [recName, setRecName] = useState('');
+  const [recValue, setRecValue] = useState('');
+  const [recTtl, setRecTtl] = useState(3600);
+  const [recPriority, setRecPriority] = useState(10);
+  const [addingRecord, setAddingRecord] = useState(false);
+
+  // Ref + brief highlight for the DNS Zone Records section (Open DNS Panel
+  // now scrolls here instead of opening the external registrar panel).
+  const dnsZoneRef = useRef(null);
+  const [dnsZoneHighlight, setDnsZoneHighlight] = useState(false);
+
+  const scrollToDnsZone = useCallback(() => {
+    const el = dnsZoneRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setDnsZoneHighlight(true);
+    window.setTimeout(() => setDnsZoneHighlight(false), 1800);
+  }, []);
+
+  const fetchDnsRecords = useCallback(async () => {
+    setRecordsLoading(true);
+    setDnsError('');
+    try {
+      const { data } = await domainStorefrontAPI.getDnsRecords(orderId);
+      setRecords(Array.isArray(data) ? data : data?.data ?? []);
+    } catch (err) {
+      setDnsError('Could not fetch DNS records.');
+    } finally { setRecordsLoading(false); }
+  }, [orderId]);
+
+  useEffect(() => {
+    if (nameservers.length > 0) {
+      setNs1(nameservers[0] || '');
+      setNs2(nameservers[1] || '');
+    }
+    fetchDnsRecords();
+  }, [nameservers, fetchDnsRecords]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(''); setSuccess('');
+    if (!ns1.trim() || !ns2.trim()) {
+      setError('Both nameservers are required.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await domainStorefrontAPI.updateNameservers(orderId, [ns1.trim(), ns2.trim()]);
+      setSuccess('Nameservers successfully updated!');
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      setError(readApiError(err, 'Failed to update nameservers.'));
+    } finally { setLoading(false); }
+  };
+
+  const handleAddRecord = async (e) => {
+    e.preventDefault();
+    setDnsError(''); setDnsSuccess('');
+    if (!recName.trim() || !recValue.trim()) {
+      setDnsError('Name and Target/Value fields are required.');
+      return;
+    }
+    setAddingRecord(true);
+    try {
+      const payload = {
+        type: recType,
+        name: recName.trim(),
+        value: recValue.trim(),
+        ttl: Number(recTtl),
+      };
+      if (recType === 'MX') {
+        payload.priority = Number(recPriority);
+      }
+      await domainStorefrontAPI.createDnsRecord(orderId, payload);
+      setDnsSuccess('DNS record successfully added!');
+      setRecName('');
+      setRecValue('');
+      await fetchDnsRecords();
+    } catch (err) {
+      setDnsError(readApiError(err, 'Could not create DNS record. Make sure nameservers are set to default.'));
+    } finally { setAddingRecord(false); }
+  };
+
+  const handleDeleteRecord = async (recordId) => {
+    setDnsError(''); setDnsSuccess('');
+    try {
+      await domainStorefrontAPI.deleteDnsRecord(orderId, recordId);
+      setDnsSuccess('DNS record deleted.');
+      await fetchDnsRecords();
+    } catch (err) {
+      setDnsError(readApiError(err, 'Could not delete DNS record.'));
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+        
+        {/* Form Card (Nameservers) */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-100">
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Configure Nameservers</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Provide primary and secondary DNS hosts to connect your domain with custom hosting providers.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            {error && (
+              <div className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl p-4">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                {success}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  Nameserver 1
+                </label>
+                <input
+                  type="text"
+                  value={ns1}
+                  onChange={(e) => setNs1(e.target.value)}
+                  placeholder="e.g. ns1.cobrother.com"
+                  className="w-full bg-gray-50 border border-gray-200/80 focus:border-indigo-500 focus:bg-white text-sm font-medium px-4 py-2.5 rounded-xl transition-all outline-none"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  Nameserver 2
+                </label>
+                <input
+                  type="text"
+                  value={ns2}
+                  onChange={(e) => setNs2(e.target.value)}
+                  placeholder="e.g. ns2.cobrother.com"
+                  className="w-full bg-gray-50 border border-gray-200/80 focus:border-indigo-500 focus:bg-white text-sm font-medium px-4 py-2.5 rounded-xl transition-all outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Save Custom Nameservers
+              </button>
+            </div>
+          </form>
+
+          {nameservers.length > 0 && (
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-3 justify-between items-center">
+              <span className="text-xs text-gray-500 font-mono">Current Settings: {nameservers.join(', ')}</span>
+              <CopyBtn text={nameservers.join('\n')} label="Copy Settings" />
+            </div>
+          )}
+        </div>
+
+        {/* Visual DNS Records Editor */}
+        <div
+          ref={dnsZoneRef}
+          className={`bg-white border rounded-2xl shadow-sm overflow-hidden transition-all duration-700 ${
+            dnsZoneHighlight
+              ? 'border-indigo-400 ring-4 ring-indigo-100'
+              : 'border-gray-200/80'
+          }`}
+        >
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">DNS Zone Records</h2>
+              <p className="text-xs text-gray-500 mt-1">Configure individual A, CNAME, TXT, or MX records for custom service configurations.</p>
+            </div>
+            <button
+              onClick={fetchDnsRecords}
+              type="button"
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh Records
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {dnsError && (
+              <div className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl p-4">
+                {dnsError}
+              </div>
+            )}
+            {dnsSuccess && (
+              <div className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                {dnsSuccess}
+              </div>
+            )}
+
+            {/* List Table */}
+            {recordsLoading ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+            ) : records.length === 0 ? (
+              <p className="text-xs text-gray-400 font-semibold italic text-center py-4 bg-gray-50/50 rounded-xl">
+                No DNS records configured. Set nameservers to default to manage zone files.
+              </p>
+            ) : (
+              <div className="overflow-x-auto border border-gray-150 rounded-xl">
+                <table className="min-w-full text-xs text-left">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-150 uppercase tracking-wider text-gray-400 font-bold">
+                      <th className="px-4 py-2.5">Type</th>
+                      <th className="px-4 py-2.5">Name / Host</th>
+                      <th className="px-4 py-2.5">Value / Target</th>
+                      <th className="px-4 py-2.5">TTL</th>
+                      <th className="px-4 py-2.5 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 font-medium">
+                    {records.map((r) => (
+                      <tr key={r.id} className="hover:bg-gray-50/50">
+                        <td className="px-4 py-3 font-bold text-indigo-700">{r.type}</td>
+                        <td className="px-4 py-3 font-mono text-gray-800">{r.name}</td>
+                        <td className="px-4 py-3 font-mono text-gray-800 break-all max-w-xs">{r.value} {r.priority != null && `(Priority: ${r.priority})`}</td>
+                        <td className="px-4 py-3 text-gray-400">{r.ttl}s</td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => handleDeleteRecord(r.id)}
+                            type="button"
+                            className="text-gray-400 hover:text-rose-600 transition-colors p-1"
+                            title="Delete Record"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Add Record Form */}
+            <form onSubmit={handleAddRecord} className="border-t border-gray-100 pt-5 space-y-4">
+              <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide">Add Custom Record</h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Type</span>
+                  <select
+                    value={recType}
+                    onChange={(e) => setRecType(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                  >
+                    {['A', 'CNAME', 'TXT', 'MX'].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Name</span>
+                  <input
+                    type="text"
+                    value={recName}
+                    onChange={(e) => setRecName(e.target.value)}
+                    placeholder="@, www"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                    required
+                  />
+                </div>
+
+                <div className="col-span-2 md:col-span-2 space-y-1">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Target / Value</span>
+                  <input
+                    type="text"
+                    value={recValue}
+                    onChange={(e) => setRecValue(e.target.value)}
+                    placeholder="IP address or host target"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                    required
+                  />
+                </div>
+
+                {recType === 'MX' ? (
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">Priority</span>
+                    <input
+                      type="number"
+                      value={recPriority}
+                      onChange={(e) => setRecPriority(Number(e.target.value))}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">TTL</span>
+                    <input
+                      type="number"
+                      value={recTtl}
+                      onChange={(e) => setRecTtl(Number(e.target.value))}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={addingRecord}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-4 rounded-lg shadow-sm"
+                >
+                  {addingRecord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                  Add DNS Record
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Advanced DNS Records — moved below the DNS Zone Records section */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-100">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Advanced DNS records</h3>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+              If your nameservers are set to our defaults, you can manage individual A, MX, CNAME or TXT records directly from the DNS Zone Records section above.
+            </p>
+          </div>
+          <div className="px-6 py-5">
+            <button
+              type="button"
+              onClick={scrollToDnsZone}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              Open DNS Panel <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* DNS Sidebar Info */}
+      <div className="space-y-6" />
+    </div>
+  );
+}
+
+/* ─── ADDONS / PRODUCTS MANAGEMENT SECTION ─── */
+function AddonProductsSection({ order, onUpdateSuccess }) {
+  const [mailboxPrefix, setMailboxPrefix] = useState('');
+  const [loadingEmail, setLoadingEmail] = useState(false);
+  const [loadingSSL, setLoadingSSL] = useState(false);
+  const [loadingDnssec, setLoadingDnssec] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Active mailbox password inputs mapping
+  const [passwords, setPasswords] = useState({});
+  const [loadingPass, setLoadingPass] = useState({});
+
+  const addons = (() => {
+    try {
+      return JSON.parse(order.dnsRecords || '{}');
+    } catch {
+      return {};
+    }
+  })();
+
+  const mailboxes = Array.isArray(addons.mailboxes) ? addons.mailboxes : [];
+  const sslActive = Boolean(addons.ssl_active);
+  const sslExpiry = addons.ssl_expiry ? new Date(addons.ssl_expiry) : null;
+  const dnssecEnabled = Boolean(addons.dnssec_enabled);
+
+  const handleOrderEmail = async (e) => {
+    e.preventDefault();
+    setError(''); setSuccess('');
+    const prefix = mailboxPrefix.trim().toLowerCase();
+    if (!prefix) {
+      setError('Please specify a mailbox prefix.');
+      return;
+    }
+    setLoadingEmail(true);
+    try {
+      await domainStorefrontAPI.purchaseEmail(order.id, prefix);
+      setSuccess(`Mailbox ${prefix}@${order.domain} successfully configured!`);
+      setMailboxPrefix('');
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      setError(readApiError(err, 'Failed to configure mailbox.'));
+    } finally { setLoadingEmail(false); }
+  };
+
+  const handleOrderSSL = async () => {
+    setError(''); setSuccess('');
+    setLoadingSSL(true);
+    try {
+      await domainStorefrontAPI.purchaseSSL(order.id);
+      setSuccess('SSL Certificate successfully ordered and active!');
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      setError(readApiError(err, 'Failed to order SSL.'));
+    } finally { setLoadingSSL(false); }
+  };
+
+  const handleToggleDnssec = async () => {
+    setError(''); setSuccess('');
+    setLoadingDnssec(true);
+    try {
+      const { data } = await domainStorefrontAPI.toggleDnssec(order.id, !dnssecEnabled);
+      const res = unwrapOrder(data);
+      const resAddons = JSON.parse(res.dnsRecords || '{}');
+      setSuccess(
+        resAddons.dnssec_enabled
+          ? 'DNSSEC Security Extension enabled on your domain registry.'
+          : 'DNSSEC Security Extension disabled.'
+      );
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      setError(readApiError(err, 'Failed to update DNSSEC settings.'));
+    } finally { setLoadingDnssec(false); }
+  };
+
+  const handleUpdatePassword = async (mailbox) => {
+    setError(''); setSuccess('');
+    const pass = (passwords[mailbox] || '').trim();
+    if (!pass) {
+      setError(`Specify a password for ${mailbox}.`);
+      return;
+    }
+    setLoadingPass((prev) => ({ ...prev, [mailbox]: true }));
+    try {
+      // mailbox has full email address; backend handles parsing or mapping
+      const prefix = mailbox.split('@')[0];
+      await domainStorefrontAPI.updateMailboxPassword(order.id, prefix, pass);
+      setSuccess(`Password for ${mailbox} updated successfully!`);
+      setPasswords((prev) => ({ ...prev, [mailbox]: '' }));
+    } catch (err) {
+      setError(readApiError(err, 'Failed to update password.'));
+    } finally {
+      setLoadingPass((prev) => ({ ...prev, [mailbox]: false }));
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+
+        {error && (
+          <div className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl p-4 shadow-sm">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+            {success}
+          </div>
+        )}
+
+        {/* SSL Card */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">SSL Security protection</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Add encryption, HTTPS protection, and security validation indicators to establish trust for your site visitor.
+              </p>
+              {sslActive && sslExpiry && (
+                <div className="mt-2.5 flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                    <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block" /> SSL Active
+                  </span>
+                  <span className="text-xs text-gray-400 font-semibold">Expires: {sslExpiry.toLocaleDateString('en-IN')}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="shrink-0 flex items-center">
+            {sslActive ? (
+              <span className="text-xs font-bold text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1.5 select-none">
+                Auto-Renew Enabled
+              </span>
+            ) : (
+              <button
+                onClick={handleOrderSSL}
+                disabled={loadingSSL}
+                className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
+              >
+                {loadingSSL && <Loader2 className="w-4 h-4 animate-spin" />}
+                Add SSL Protection (₹999/yr)
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* DNSSEC Toggle Card */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">DNSSEC Extension</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Protect your DNS records against spoofing or cache poisoning by signing your zone files cryptographically.
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1 text-[0.7rem] font-bold border px-2.5 py-0.5 rounded-full ${
+                  dnssecEnabled ? 'text-emerald-800 bg-emerald-50 border-emerald-200' : 'text-gray-600 bg-gray-50 border-gray-200'
+                }`}>
+                  {dnssecEnabled ? 'DNSSEC Enabled' : 'DNSSEC Disabled'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="shrink-0">
+            <button
+              onClick={handleToggleDnssec}
+              disabled={loadingDnssec}
+              className={`inline-flex h-10 items-center justify-center gap-2 text-xs font-bold rounded-xl px-5 border transition-all shadow-sm ${
+                dnssecEnabled
+                  ? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white border-transparent'
+              }`}
+            >
+              {loadingDnssec && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {dnssecEnabled ? 'Disable DNSSEC' : 'Enable DNSSEC'}
+            </button>
+          </div>
+        </div>
+
+        {/* Email Card */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-6">
+          <div className="flex items-start gap-4 border-b border-gray-100 pb-4">
+            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl">
+              <Mail className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Professional Emails</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Configure branded mailboxes with your custom domain name to run business communications professionally.
+              </p>
+            </div>
+          </div>
+
+          {/* Mailboxes list & password management */}
+          {mailboxes.length > 0 && (
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Active Mailboxes</h4>
+              <div className="space-y-3">
+                {mailboxes.map((email) => (
+                  <div key={email} className="border border-gray-150 rounded-xl p-4 space-y-3 bg-gray-50/30">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-gray-800 font-mono">{email}</span>
+                      <span className="text-[0.65rem] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        Active
+                      </span>
+                    </div>
+
+                    {/* Password reset input */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+                      <div className="relative flex-1 min-w-[200px]">
+                        <input
+                          type="password"
+                          value={passwords[email] || ''}
+                          onChange={(e) => setPasswords((prev) => ({ ...prev, [email]: e.target.value }))}
+                          placeholder="Set new mailbox password"
+                          className="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-xs outline-none focus:border-indigo-400"
+                        />
+                        <Key className="absolute right-2.5 top-2.5 w-3.5 h-3.5 text-gray-300 pointer-events-none" />
+                      </div>
+                      <button
+                        onClick={() => handleUpdatePassword(email)}
+                        disabled={loadingPass[email]}
+                        type="button"
+                        className="inline-flex h-8 items-center justify-center gap-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-4 rounded-lg shadow-sm"
+                      >
+                        {loadingPass[email] && <Loader2 className="w-3 h-3 animate-spin" />}
+                        Save Password
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add Mailbox form */}
+          <form onSubmit={handleOrderEmail} className="pt-4 border-t border-gray-50 flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[220px] space-y-1.5">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
+                Create New Mailbox prefix
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={mailboxPrefix}
+                  onChange={(e) => setMailboxPrefix(e.target.value)}
+                  placeholder="e.g. sales, query"
+                  className="w-full bg-gray-50 border border-gray-200/80 focus:border-indigo-500 focus:bg-white text-sm font-medium pl-4 pr-32 py-2.5 rounded-xl outline-none transition-all"
+                  required
+                />
+                <span className="absolute right-4 text-xs text-gray-400 font-semibold select-none">
+                  @{order.domain}
+                </span>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={loadingEmail}
+              className="inline-flex h-11 items-center justify-center gap-1.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
+            >
+              {loadingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Add Mailbox (₹499/yr)
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      {/* Sidebar tips */}
+      <div className="space-y-6">
+        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-indigo-600">
+            <Sparkles className="w-5 h-5" />
+            <h3 className="text-sm font-bold uppercase tracking-wider">Business suite tips</h3>
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Professional addresses establish domain authority. Setup forwarders or direct mailbox client configurations using standard IMAP/SMTP details.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Helper row components ─── */
+function InfoRow({ icon: Icon, label, value }) {
+  return (
+    <div className="flex items-center justify-between px-6 py-4 gap-4">
+      <span className="text-xs text-gray-500 font-bold uppercase tracking-wider shrink-0 flex items-center gap-2 select-none">
+        {Icon && <Icon className="w-4 h-4 text-gray-400" />}
+        {label}
+      </span>
+      <span className="text-sm text-gray-800 font-semibold text-right">{value}</span>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, valueClass = '' }) {
+  return (
+    <div className="flex items-center justify-between px-6 py-4 gap-4">
+      <span className="text-xs text-gray-500 font-bold uppercase tracking-wider shrink-0 select-none">{label}</span>
+      <span className={`text-sm text-gray-800 font-semibold text-right ${valueClass}`}>{value}</span>
+    </div>
+  );
+}
+
+function MonoDetailRow({ label, value }) {
+  return (
+    <div className="flex items-start justify-between px-6 py-4 gap-4">
+      <span className="text-xs text-gray-500 font-bold uppercase tracking-wider shrink-0 select-none">{label}</span>
+      <span className="text-xs font-mono text-gray-800 text-right break-all max-w-xs">{value}</span>
     </div>
   );
 }

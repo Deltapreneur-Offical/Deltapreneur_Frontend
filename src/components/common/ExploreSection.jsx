@@ -10,6 +10,7 @@ import FeedbackSection from '../home/FeedbackSection';
 import HomeOperationsCarouselSection from '../home/HomeOperationsCarouselSection';
 import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
+import ServicesSection from './ServicesSection';
 
 function LazySection({ title, to, variant = 'browse', compact = false, children }) {
   return (
@@ -66,6 +67,8 @@ export default function ExploreSection() {
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
       </LazySection>
+
+      <ServicesSection isDashboard={false} />
 
       <LazyWhenVisible>
         <FeedbackSection />

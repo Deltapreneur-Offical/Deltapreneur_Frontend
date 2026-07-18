@@ -57,6 +57,7 @@ import LearnMoreTooltip from '../components/common/LearnMoreTooltip';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../utils/auctionDate';
 import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
+import AdminOpenProviderCommissionTab from '../components/admin/AdminOpenProviderCommissionTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -444,7 +445,7 @@ export default function AdminDashboardPage() {
     refreshing: pendingRefreshing,
     lastFetchedAt: pendingLastFetchedAt,
     refresh: refreshPendingCounts,
-  } = useAdminPendingCounts({ enabled: tab !== 'fees-charges' && tab !== 'domain-transfers' && tab !== 'venture-deals' });
+  } = useAdminPendingCounts({ enabled: tab !== 'fees-charges' && tab !== 'domain-transfers' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' });
 
   const loadTab = (currentTab, options = {}) => {
     const { silent = false } = options;
@@ -461,7 +462,7 @@ export default function AdminDashboardPage() {
       'addon-orders':      adminAPI.getAddonOrders,
     };
   
-    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals') {
+    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals' || currentTab === 'openprovider-pricing') {
       setLoading(false);
       setData([]);
       return;
@@ -618,6 +619,7 @@ export default function AdminDashboardPage() {
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
+    { id: 'openprovider-pricing', label: 'OpenProvider Pricing',           icon: DomainsIcon },
     { id: 'domain-transfers',   label: t('adminTabDomainTransfers', { defaultValue: 'Domain transfers' }), icon: DomainsIcon },
   ];
 
@@ -839,11 +841,15 @@ export default function AdminDashboardPage() {
             <AdminFeesAndChargesTab />
           )}
 
+          {tab === 'openprovider-pricing' && (
+            <AdminOpenProviderCommissionTab />
+          )}
+
           {tab === 'venture-deals' && (
             <VentureDealsAdminTab />
           )}
 
-          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'venture-deals' && (
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

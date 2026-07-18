@@ -25,6 +25,7 @@ import CreatorProfileCompletionBanner from '../components/profile/CreatorProfile
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import { resolveUserDisplayName } from '../utils/userDisplayName';
 import { ventureListChooseUrl } from '../constants/ventureListingTypeContent';
+import ServicesSection from '../components/common/ServicesSection';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
 const DASHBOARD_GREETING_COUNT = 8;
@@ -438,19 +439,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="dashboard-section">
-          <h2 className="dashboard-section__title">{t('dashboardQuickActions')}</h2>
-          <div className="dashboard-quick-action-grid">
-            {quickActions.map((action) => (
-              <DashboardQuickAction
-                key={action.key}
-                to={action.to}
-                label={action.label}
-                tone={action.tone}
-              />
-            ))}
-          </div>
-        </section>
+        <ServicesSection isDashboard={true} />
       </div>
     </AppLayout>
   );

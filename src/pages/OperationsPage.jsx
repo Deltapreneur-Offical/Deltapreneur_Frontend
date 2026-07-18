@@ -180,7 +180,7 @@ export default function OperationsPage() {
         {
           count: services.length,
           defaultValue: isCompliance
-            ? '{{count}} Services Available'
+            ? '{{count}} Business Solutions Available'
             : '{{count}} Virtual Roles Available',
         },
       );
@@ -230,7 +230,7 @@ export default function OperationsPage() {
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {isCompliance
-                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Services' })
+                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Business Solutions' })
                   : t('operationsFindHeading', { defaultValue: 'Find Your Virtual Expert' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
@@ -274,7 +274,7 @@ export default function OperationsPage() {
               </p>
               <p className="text-sm text-gray-500 mb-4">
                 {isCompliance
-                  ? t('operationsComplianceEmptyBody', { defaultValue: 'Services will appear here once added by the admin team.' })
+                  ? t('operationsComplianceEmptyBody', { defaultValue: 'Business solutions will appear here once added by the admin team.' })
                   : t('operationsEmptyBody', { defaultValue: 'Try a different keyword or clear your filters.' })}
               </p>
               {!isCompliance && (

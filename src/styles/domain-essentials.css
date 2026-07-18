@@ -1,0 +1,25 @@
+/* Domain Essentials CTA — arrow nudge on button hover only */
+@keyframes domain-essential-cta-arrow-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+.domain-essential-card__cta-arrow {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.domain-essential-card:hover .domain-essential-card__cta-arrow {
+  animation: domain-essential-cta-arrow-nudge 0.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .domain-essential-card:hover .domain-essential-card__cta-arrow {
+    animation: none;
+  }
+}

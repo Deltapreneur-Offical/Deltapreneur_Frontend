@@ -350,6 +350,21 @@
     0 0 0 1px rgba(255, 255, 255, 0.7) inset !important;
 }
 
+/* Domain Essentials — no outer border line (default or hover); lift/shadow still apply */
+.home-preview-card-border--borderless,
+.home-preview-card-border--borderless:hover {
+  border: none !important;
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.08),
+    0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+.home-preview-card-border--borderless:hover {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 16px 36px rgba(15, 23, 42, 0.1);
+}
+
 .home-preview-card-border:hover .home-feature-card-beam-spinner {
   opacity: 1;
   animation: home-feature-beam-spin-card1 18s linear infinite;

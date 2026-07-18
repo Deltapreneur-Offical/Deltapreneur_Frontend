@@ -64,11 +64,11 @@ export default function ExploreSection() {
         </LazySection>
       ))}
 
+      <ServicesSection isDashboard={false} />
+
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
       </LazySection>
-
-      <ServicesSection isDashboard={false} />
 
       <LazyWhenVisible>
         <FeedbackSection />

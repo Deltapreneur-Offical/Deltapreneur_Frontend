@@ -45,6 +45,14 @@
   width: 100%;
 }
 
+/* Kill the AppLayout global input:focus ring (border + box-shadow) inside
+   this bar only — outer .search-glow-focus container stays unchanged. */
+.storefront-search-form .storefront-search-form__input:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
 .storefront-search-form__submit {
   flex: 0 0 auto;
   width: 100%;

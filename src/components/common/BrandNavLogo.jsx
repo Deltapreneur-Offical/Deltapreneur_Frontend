@@ -13,11 +13,14 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
       <BrandLogoImage
         src={logoBlack}
         alt="CoBrother"
+        loading="eager"
+        fetchPriority="high"
         className={`${imgBase} home-nav-logo-img--default`.trim()}
       />
       <BrandLogoImage
         src={logoGreen}
         aria-hidden
+        loading="eager"
         className={`${imgBase} home-nav-logo-img--hover`.trim()}
       />
     </span>

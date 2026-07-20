@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { adminAPI, domainAPI } from '../../api/services';
 
 const SUPPORTED_TLDS = ['.com', '.in', '.net', '.org', '.co', '.io', '.ai'];
+const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /* ─── Reusable commission input ────────────────────────────────────────── */
 function CommissionInput({ id, label, hint, value, onChange, highlight }) {
@@ -64,7 +66,7 @@ function CommissionInput({ id, label, hint, value, onChange, highlight }) {
 }
 
 /* ─── TLD override input ────────────────────────────────────────────────── */
-function TldOverrideInput({ tld, type, defaultValue, value, onChange }) {
+function TldOverrideInput({ defaultValue, value, onChange }) {
   const isUsingDefault = value === '' || value == null;
   const displayValue = isUsingDefault ? '' : value;
 
@@ -130,6 +132,92 @@ function ProductCard({ emoji, title, subtitle, accentColor, children }) {
   );
 }
 
+function SaveActions({ saving, onReset, onSave, compact = false }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+      <button
+        type="button"
+        className="btn-professional-outline-sm"
+        onClick={onReset}
+        disabled={saving}
+      >
+        Reset
+      </button>
+      <button
+        type="button"
+        className="btn-professional-sm"
+        onClick={onSave}
+        disabled={saving}
+        style={compact ? { whiteSpace: 'nowrap' } : undefined}
+      >
+        {saving ? 'Saving…' : compact ? 'Save' : 'Save Commission Settings'}
+      </button>
+    </div>
+  );
+}
+
+function hasTldOverride(config, tld) {
+  if (!config) return false;
+  return ['registration', 'renewal', 'transfer'].some((service) => hasServiceOverride(config, tld, service));
+}
+
+function hasServiceOverride(config, tld, service) {
+  if (!config) return false;
+  const val = config[service]?.by_tld?.[tld];
+  return val !== '' && val != null;
+}
+
+function getTldOverrideServices(config, tld) {
+  return ['registration', 'renewal', 'transfer'].filter((service) => hasServiceOverride(config, tld, service));
+}
+
+function countTldOverrides(config, tlds) {
+  if (!config) return 0;
+  return tlds.filter((tld) => hasTldOverride(config, tld)).length;
+}
+
+const SERVICE_FILTER_OPTIONS = [
+  { value: 'any', label: 'Any commission type' },
+  { value: 'registration-set', label: 'Registration margin set' },
+  { value: 'renewal-set', label: 'Renewal margin set' },
+  { value: 'transfer-set', label: 'Transfer margin set' },
+];
+
+const SORT_OPTIONS = [
+  { value: 'name-asc', label: 'Extension A → Z' },
+  { value: 'name-desc', label: 'Extension Z → A' },
+  { value: 'custom-first', label: 'Margin set first' },
+  { value: 'default-first', label: 'Not set first' },
+];
+
+const SERVICE_BADGE_LABELS = {
+  registration: 'Reg',
+  renewal: 'Ren',
+  transfer: 'Trf',
+};
+
+function FilterChip({ active, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: '5px 12px',
+        borderRadius: 999,
+        border: active ? '1.5px solid #7c3aed' : '1px solid #cbd5e1',
+        background: active ? '#ede9fe' : '#fff',
+        color: active ? '#6d28d9' : '#475569',
+        fontSize: 11,
+        fontWeight: 700,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function AdminOpenProviderCommissionTab() {
   const { t } = useTranslation();
   const [config, setConfig] = useState(null);
@@ -137,6 +225,15 @@ export default function AdminOpenProviderCommissionTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tldsLoading, setTldsLoading] = useState(true);
+
+  const [tldSearch, setTldSearch] = useState('');
+  const [overrideFilter, setOverrideFilter] = useState('all');
+  const [serviceFilter, setServiceFilter] = useState('any');
+  const [sortBy, setSortBy] = useState('name-asc');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+
+  const tldSectionRef = useRef(null);
 
   // Live calculator states
   const [calcBase, setCalcBase] = useState('1000');
@@ -146,7 +243,6 @@ export default function AdminOpenProviderCommissionTab() {
     setLoading(true);
     try {
       const { data } = await adminAPI.getDomainCommission();
-      // Format backend rates (decimals) to UI rates (percentages)
       const raw = data?.data ?? {};
       const uiConfig = {
         registration: {
@@ -154,8 +250,8 @@ export default function AdminOpenProviderCommissionTab() {
           by_tld: Object.fromEntries(
             Object.entries(raw.registration?.by_tld ?? {}).map(([tld, val]) => [
               tld,
-              (val * 100).toFixed(2).replace(/\.00$/, '')
-            ])
+              (val * 100).toFixed(2).replace(/\.00$/, ''),
+            ]),
           ),
         },
         renewal: {
@@ -163,8 +259,8 @@ export default function AdminOpenProviderCommissionTab() {
           by_tld: Object.fromEntries(
             Object.entries(raw.renewal?.by_tld ?? {}).map(([tld, val]) => [
               tld,
-              (val * 100).toFixed(2).replace(/\.00$/, '')
-            ])
+              (val * 100).toFixed(2).replace(/\.00$/, ''),
+            ]),
           ),
         },
         transfer: {
@@ -172,8 +268,8 @@ export default function AdminOpenProviderCommissionTab() {
           by_tld: Object.fromEntries(
             Object.entries(raw.transfer?.by_tld ?? {}).map(([tld, val]) => [
               tld,
-              (val * 100).toFixed(2).replace(/\.00$/, '')
-            ])
+              (val * 100).toFixed(2).replace(/\.00$/, ''),
+            ]),
           ),
         },
         email: {
@@ -188,7 +284,7 @@ export default function AdminOpenProviderCommissionTab() {
       };
       setConfig(uiConfig);
     } catch (err) {
-      console.error("Failed to load domain commission rates:", err);
+      console.error('Failed to load domain commission rates:', err);
     } finally {
       setLoading(false);
     }
@@ -211,6 +307,86 @@ export default function AdminOpenProviderCommissionTab() {
     loadConfig();
     loadTlds();
   }, [loadConfig, loadTlds]);
+
+  const displayTlds = useMemo(
+    () => (allTlds.length > 0 ? allTlds : SUPPORTED_TLDS),
+    [allTlds],
+  );
+
+  const filteredTlds = useMemo(() => {
+    const q = tldSearch.trim().toLowerCase().replace(/^\./, '');
+
+    let list = displayTlds.filter((tld) => {
+      const normalized = tld.toLowerCase().replace(/^\./, '');
+      const matchesSearch = !q || normalized.includes(q) || tld.toLowerCase().includes(q);
+
+      if (!matchesSearch) return false;
+
+      const hasOverride = hasTldOverride(config, tld);
+      if (overrideFilter === 'custom' && !hasOverride) return false;
+      if (overrideFilter === 'default' && hasOverride) return false;
+
+      if (serviceFilter === 'registration-set') return hasServiceOverride(config, tld, 'registration');
+      if (serviceFilter === 'renewal-set') return hasServiceOverride(config, tld, 'renewal');
+      if (serviceFilter === 'transfer-set') return hasServiceOverride(config, tld, 'transfer');
+
+      return true;
+    });
+
+    list = [...list].sort((a, b) => {
+      const aCustom = hasTldOverride(config, a);
+      const bCustom = hasTldOverride(config, b);
+      const nameA = a.toLowerCase();
+      const nameB = b.toLowerCase();
+
+      switch (sortBy) {
+        case 'name-desc':
+          return nameB.localeCompare(nameA);
+        case 'custom-first':
+          return Number(bCustom) - Number(aCustom) || nameA.localeCompare(nameB);
+        case 'default-first':
+          return Number(aCustom) - Number(bCustom) || nameA.localeCompare(nameB);
+        case 'name-asc':
+        default:
+          return nameA.localeCompare(nameB);
+      }
+    });
+
+    return list;
+  }, [displayTlds, tldSearch, overrideFilter, serviceFilter, sortBy, config]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTlds.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tldSearch, overrideFilter, serviceFilter, sortBy, pageSize]);
+
+  const paginatedTlds = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredTlds.slice(start, start + pageSize);
+  }, [filteredTlds, safePage, pageSize]);
+
+  const rangeStart = filteredTlds.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const rangeEnd = Math.min(safePage * pageSize, filteredTlds.length);
+  const overrideCount = useMemo(
+    () => countTldOverrides(config, displayTlds),
+    [config, displayTlds],
+  );
+  const defaultCount = displayTlds.length - overrideCount;
+  const hasActiveFilters = Boolean(tldSearch.trim()) || overrideFilter !== 'all' || serviceFilter !== 'any';
+
+  const clearFilters = () => {
+    setTldSearch('');
+    setOverrideFilter('all');
+    setServiceFilter('any');
+    setSortBy('name-asc');
+    setPage(1);
+  };
 
   const handleGlobalRateChange = (service, value) => {
     setConfig((prev) => ({
@@ -244,7 +420,6 @@ export default function AdminOpenProviderCommissionTab() {
     if (!config) return;
     setSaving(true);
     try {
-      // Convert UI rates (percentages) back to backend rates (decimals)
       const toBackend = (val) => {
         if (val === '' || val == null) return null;
         const parsed = parseFloat(val);
@@ -255,19 +430,19 @@ export default function AdminOpenProviderCommissionTab() {
         registration: {
           default: toBackend(config.registration.default) ?? 0.03,
           by_tld: Object.fromEntries(
-            Object.entries(config.registration.by_tld).map(([tld, val]) => [tld, toBackend(val)])
+            Object.entries(config.registration.by_tld).map(([tld, val]) => [tld, toBackend(val)]),
           ),
         },
         renewal: {
           default: toBackend(config.renewal.default) ?? 0.03,
           by_tld: Object.fromEntries(
-            Object.entries(config.renewal.by_tld).map(([tld, val]) => [tld, toBackend(val)])
+            Object.entries(config.renewal.by_tld).map(([tld, val]) => [tld, toBackend(val)]),
           ),
         },
         transfer: {
           default: toBackend(config.transfer.default) ?? 0.03,
           by_tld: Object.fromEntries(
-            Object.entries(config.transfer.by_tld).map(([tld, val]) => [tld, toBackend(val)])
+            Object.entries(config.transfer.by_tld).map(([tld, val]) => [tld, toBackend(val)]),
           ),
         },
         email: {
@@ -291,6 +466,10 @@ export default function AdminOpenProviderCommissionTab() {
     }
   };
 
+  const scrollToTldSection = () => {
+    tldSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   if (loading || tldsLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
@@ -306,15 +485,18 @@ export default function AdminOpenProviderCommissionTab() {
   const calculatedTotal = basePrice + calculatedCommission;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 88 }}>
       {/* ── Page Header ─────────────────────────────────────────────────── */}
-      <div style={{ paddingBottom: 16, borderBottom: '1px solid #f1f5f9' }}>
-        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>OpenProvider Pricing &amp; Commission Settings</h3>
-        <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6b7280', maxWidth: 700, lineHeight: 1.6 }}>
-          Set markup commission rates for domain registration, renewal, transfer, email, and SSL.
-          Commission rates set here are dynamically added on top of the live OpenProvider wholesale prices
-          and reflected automatically across all storefront service cards and search results.
-        </p>
+      <div style={{ paddingBottom: 16, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>OpenProvider Pricing &amp; Commission Settings</h3>
+          <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6b7280', maxWidth: 700, lineHeight: 1.6 }}>
+            Set markup commission rates for domain registration, renewal, transfer, email, and SSL.
+            Commission rates set here are dynamically added on top of the live OpenProvider wholesale prices
+            and reflected automatically across all storefront service cards and search results.
+          </p>
+        </div>
+        <SaveActions saving={saving} onReset={loadConfig} onSave={handleSave} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
@@ -449,91 +631,438 @@ export default function AdminOpenProviderCommissionTab() {
       </div>
 
       {/* ── 3. PER-TLD COMMISSION OVERRIDES ─────────────────────────────── */}
-      <ProductCard
-        emoji="🌐"
-        title="Per-TLD Commission Overrides"
-        subtitle="Specify precise markup rates for individual domain extensions. Leave blank to use default."
-        accentColor="#0ea5e9"
-      >
-        <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 12 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb', textAlign: 'left' }}>
-                <th style={{ padding: '12px 16px', fontWeight: 700, color: '#374151', width: '100px' }}>Extension</th>
-                <th style={{ padding: '12px 16px', fontWeight: 700, color: '#374151' }}>Registration Markup</th>
-                <th style={{ padding: '12px 16px', fontWeight: 700, color: '#374151' }}>Renewal Markup</th>
-                <th style={{ padding: '12px 16px', fontWeight: 700, color: '#374151' }}>Transfer Markup</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(allTlds.length > 0 ? allTlds : SUPPORTED_TLDS).map((tld) => (
-                <tr key={tld} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.1s' }}>
-                  <td style={{ padding: '12px 16px', fontWeight: 800, color: '#0f172a' }}>{tld}</td>
-                  <td style={{ padding: '8px 16px' }}>
-                    <TldOverrideInput
-                      tld={tld}
-                      type="registration"
-                      defaultValue={config.registration.default}
-                      value={config.registration.by_tld[tld]}
-                      onChange={(val) => handleTldOverrideChange('registration', tld, val)}
-                    />
-                  </td>
-                  <td style={{ padding: '8px 16px' }}>
-                    <TldOverrideInput
-                      tld={tld}
-                      type="renewal"
-                      defaultValue={config.renewal.default}
-                      value={config.renewal.by_tld[tld]}
-                      onChange={(val) => handleTldOverrideChange('renewal', tld, val)}
-                    />
-                  </td>
-                  <td style={{ padding: '8px 16px' }}>
-                    <TldOverrideInput
-                      tld={tld}
-                      type="transfer"
-                      defaultValue={config.transfer.default}
-                      value={config.transfer.by_tld[tld]}
-                      onChange={(val) => handleTldOverrideChange('transfer', tld, val)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </ProductCard>
+      <div ref={tldSectionRef}>
+        <ProductCard
+          emoji="🌐"
+          title="Per-TLD Commission Overrides"
+          subtitle="Specify precise markup rates for individual domain extensions. Leave blank to use default."
+          accentColor="#0ea5e9"
+        >
+          {/* Toolbar: search, filters, quick actions */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 10,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid #e0f2fe',
+            background: '#f0f9ff',
+          }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', flex: 1, minWidth: 240 }}>
+              <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: 320 }}>
+                <Search
+                  size={16}
+                  style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#64748b', pointerEvents: 'none' }}
+                />
+                <input
+                  type="search"
+                  placeholder="Search extension (e.g. com, .in, pro)…"
+                  value={tldSearch}
+                  onChange={(e) => setTldSearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 32px 8px 34px',
+                    borderRadius: 8,
+                    border: '1px solid #bae6fd',
+                    background: '#fff',
+                    fontSize: 13,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {tldSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setTldSearch('')}
+                    aria-label="Clear search"
+                    style={{
+                      position: 'absolute',
+                      right: 6,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      color: '#64748b',
+                      display: 'flex',
+                      padding: 4,
+                    }}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
 
-      {/* ── Save / Reset Footer ────────────────────────────────────────── */}
+              <select
+                value={overrideFilter}
+                onChange={(e) => setOverrideFilter(e.target.value)}
+                aria-label="Margin status filter"
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid #bae6fd',
+                  background: '#fff',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">Margin status: All</option>
+                <option value="custom">Margin status: Set (custom)</option>
+                <option value="default">Margin status: Not set (default)</option>
+              </select>
+
+              <select
+                value={serviceFilter}
+                onChange={(e) => setServiceFilter(e.target.value)}
+                aria-label="Commission type filter"
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid #bae6fd',
+                  background: '#fff',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                {SERVICE_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label="Sort extensions"
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid #bae6fd',
+                  background: '#fff',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                aria-label="Rows per page"
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid #bae6fd',
+                  background: '#fff',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                }}
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>{size} per page</option>
+                ))}
+              </select>
+            </div>
+
+            <SaveActions saving={saving} onReset={loadConfig} onSave={handleSave} compact />
+          </div>
+
+          {/* Quick filter chips */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Quick filters:
+            </span>
+            <FilterChip active={overrideFilter === 'custom'} onClick={() => setOverrideFilter('custom')}>
+              Margin set ({overrideCount})
+            </FilterChip>
+            <FilterChip active={overrideFilter === 'default'} onClick={() => setOverrideFilter('default')}>
+              Not set ({defaultCount})
+            </FilterChip>
+            <FilterChip active={overrideFilter === 'all' && serviceFilter === 'any'} onClick={() => { setOverrideFilter('all'); setServiceFilter('any'); }}>
+              Show all
+            </FilterChip>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                style={{
+                  padding: '5px 10px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#0ea5e9',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          {/* Summary stats */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            fontSize: 12,
+            color: '#475569',
+          }}>
+            <span>
+              <strong style={{ color: '#0f172a' }}>{displayTlds.length}</strong> total extensions
+            </span>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <span>
+              <strong style={{ color: '#7c3aed' }}>{overrideCount}</strong> margin set
+            </span>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <span>
+              <strong style={{ color: '#64748b' }}>{defaultCount}</strong> using global default
+            </span>
+            {hasActiveFilters ? (
+              <>
+                <span style={{ color: '#cbd5e1' }}>|</span>
+                <span>
+                  Showing <strong style={{ color: '#0f172a' }}>{filteredTlds.length}</strong> matching filter
+                </span>
+              </>
+            ) : null}
+          </div>
+
+          {/* Scrollable table with sticky header */}
+          <div style={{
+            overflow: 'auto',
+            maxHeight: 'min(520px, 60vh)',
+            border: '1px solid #e5e7eb',
+            borderRadius: 12,
+          }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb', textAlign: 'left' }}>
+                  <th style={{
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    color: '#374151',
+                    width: '120px',
+                    position: 'sticky',
+                    top: 0,
+                    background: '#f9fafb',
+                    zIndex: 2,
+                    boxShadow: '0 1px 0 #e5e7eb',
+                  }}>
+                    Extension
+                  </th>
+                  <th style={{
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    color: '#374151',
+                    position: 'sticky',
+                    top: 0,
+                    background: '#f9fafb',
+                    zIndex: 2,
+                    boxShadow: '0 1px 0 #e5e7eb',
+                  }}>
+                    Registration Markup
+                  </th>
+                  <th style={{
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    color: '#374151',
+                    position: 'sticky',
+                    top: 0,
+                    background: '#f9fafb',
+                    zIndex: 2,
+                    boxShadow: '0 1px 0 #e5e7eb',
+                  }}>
+                    Renewal Markup
+                  </th>
+                  <th style={{
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    color: '#374151',
+                    position: 'sticky',
+                    top: 0,
+                    background: '#f9fafb',
+                    zIndex: 2,
+                    boxShadow: '0 1px 0 #e5e7eb',
+                  }}>
+                    Transfer Markup
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedTlds.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '32px 16px', textAlign: 'center', color: '#64748b' }}>
+                      No extensions match your filters. Try &quot;Margin set&quot; or &quot;Not set&quot; quick filters, or clear filters.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedTlds.map((tld) => {
+                    const isCustom = hasTldOverride(config, tld);
+                    const overrideServices = getTldOverrideServices(config, tld);
+                    return (
+                      <tr
+                        key={tld}
+                        style={{
+                          borderBottom: '1px solid #f1f5f9',
+                          background: isCustom ? '#faf5ff' : 'transparent',
+                        }}
+                      >
+                        <td style={{ padding: '12px 16px', fontWeight: 800, color: '#0f172a' }}>
+                          <div>{tld}</div>
+                          {isCustom ? (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                              {overrideServices.map((service) => (
+                                <span
+                                  key={service}
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    color: '#7c3aed',
+                                    background: '#ede9fe',
+                                    padding: '2px 6px',
+                                    borderRadius: 4,
+                                  }}
+                                >
+                                  {SERVICE_BADGE_LABELS[service]} set
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>using default</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '8px 16px' }}>
+                          <TldOverrideInput
+                            defaultValue={config.registration.default}
+                            value={config.registration.by_tld[tld]}
+                            onChange={(val) => handleTldOverrideChange('registration', tld, val)}
+                          />
+                        </td>
+                        <td style={{ padding: '8px 16px' }}>
+                          <TldOverrideInput
+                            defaultValue={config.renewal.default}
+                            value={config.renewal.by_tld[tld]}
+                            onChange={(val) => handleTldOverrideChange('renewal', tld, val)}
+                          />
+                        </td>
+                        <td style={{ padding: '8px 16px' }}>
+                          <TldOverrideInput
+                            defaultValue={config.transfer.default}
+                            value={config.transfer.by_tld[tld]}
+                            onChange={(val) => handleTldOverrideChange('transfer', tld, val)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination footer */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            flexWrap: 'wrap',
+            paddingTop: 4,
+          }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>
+              {filteredTlds.length === 0 ? (
+                'No results'
+              ) : (
+                <>
+                  Showing <strong style={{ color: '#111827' }}>{rangeStart}–{rangeEnd}</strong> of{' '}
+                  <strong style={{ color: '#111827' }}>{filteredTlds.length}</strong>
+                  {tldSearch.trim() ? ' matching extensions' : ' extensions'}
+                </>
+              )}
+            </p>
+            <div className="admin-feature-pagination">
+              <button
+                type="button"
+                className="admin-feature-page-btn"
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="admin-feature-page-indicator">
+                Page {safePage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                className="admin-feature-page-btn"
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                aria-label="Next page"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        </ProductCard>
+      </div>
+
+      {/* ── Sticky bottom save bar ─────────────────────────────────────── */}
       <div style={{
-        paddingTop: 16,
-        borderTop: '1px solid #f1f5f9',
+        position: 'sticky',
+        bottom: 0,
+        zIndex: 30,
+        marginTop: -8,
+        padding: '12px 16px',
+        borderRadius: 12,
+        border: '1px solid #e5e7eb',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(8px)',
+        boxShadow: '0 -4px 20px rgba(15, 23, 42, 0.08)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 12,
         flexWrap: 'wrap',
       }}>
-        <p style={{ margin: 0, fontSize: 11, color: '#9ca3af', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          Configures markup rates for {SUPPORTED_TLDS.length} extensions &amp; services
-        </p>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#111827' }}>
+            {displayTlds.length} extensions · {overrideCount} custom overrides
+          </p>
           <button
             type="button"
-            className="btn-professional-outline-sm"
-            onClick={loadConfig}
-            disabled={saving}
+            onClick={scrollToTldSection}
+            style={{
+              margin: 0,
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              fontSize: 11,
+              color: '#0ea5e9',
+              fontWeight: 600,
+              cursor: 'pointer',
+              textAlign: 'left',
+            }}
           >
-            Reset
-          </button>
-          <button
-            type="button"
-            className="btn-professional-sm"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? 'Saving…' : 'Save Commission Settings'}
+            Jump to TLD overrides ↑
           </button>
         </div>
+        <SaveActions saving={saving} onReset={loadConfig} onSave={handleSave} />
       </div>
     </div>
   );

@@ -14,16 +14,18 @@ import { domainAPI } from '../api/services';
 //   • Display ONLY available TLDs (never Taken / Registered / Unavailable /
 //     Reserved / error rows).
 //   • Sort ascending by registration price (cheapest first).
-//   • Return the FULL set (no subset) so the page can show/lazy-load all of them.
+//   • Keep loading more via "View More" (page=2, 3, …) until exhausted.
 //   • Never expose the underlying registrar/provider (`source`) to the UI.
 //
-// The backend caps `page_size` at 200 (pydantic `le=200`), so we paginate in
-// chunks of 200 and concatenate every page. Each request stays within the
-// validation limit while we still collect the complete result set.
+// Incremental / paginated loading (fix for the gateway 504):
+//   • The first request returns the first 50 available TLDs (page=1, pageSize=50)
+//     and arrives in <1s. The caller fetches the next page on demand via a
+//     "View More" control and appends. Pages are contiguous and price-sorted;
+//     previously loaded pages are never re-fetched.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEARCH_TLDS_PAGE_SIZE = 1500;
-const SEARCH_TLDS_MAX_PAGES = 25;
+const PAGE_SIZE = 25;
+const PRIORITY_TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
 // Separate cache from the Home page so storefront results never collide with or
 // evict Home page results.
@@ -52,13 +54,79 @@ function mapItem(item, label) {
   };
 }
 
+function filterMapSort(items, label) {
+  const out = [];
+  for (const it of items) {
+    const isAvailable =
+      it.available === true ||
+      (it.status && String(it.status).toLowerCase() === 'available');
+    if (!isAvailable) continue; // storefront shows available TLDs only
+    
+    const ext = (it.tld || '').replace(/^\./, '').toLowerCase();
+    const isPriority = PRIORITY_TLDS.indexOf(ext) !== -1;
+    
+    const price = it.registrationPrice != null ? Number(it.registrationPrice) : Infinity;
+    if (!isPriority && price >= 3000) continue;
+    
+    out.push(mapItem(it, label));
+  }
+  out.sort((a, b) => {
+    const aExt = (a.tld || '').replace(/^\./, '').toLowerCase();
+    const bExt = (b.tld || '').replace(/^\./, '').toLowerCase();
+    
+    const aPriority = PRIORITY_TLDS.indexOf(aExt);
+    const bPriority = PRIORITY_TLDS.indexOf(bExt);
+    
+    const aIsPriority = aPriority !== -1;
+    const bIsPriority = bPriority !== -1;
+    
+    if (aIsPriority && !bIsPriority) return -1;
+    if (!aIsPriority && bIsPriority) return 1;
+    if (aIsPriority && bIsPriority) return aPriority - bPriority;
+    
+    const pa = a.registrationPrice != null ? Number(a.registrationPrice) : Infinity;
+    const pb = b.registrationPrice != null ? Number(b.registrationPrice) : Infinity;
+    
+    return pa - pb;
+  });
+  return out;
+}
+
 /**
- * Fetch every AVAILABLE TLD for a label from the storefront backend endpoint,
- * price-sorted ascending, with the registrar stripped out.
+ * Fetch one page of available TLDs for the storefront, price-sorted ascending,
+ * with the registrar stripped out. Returns the raw API page so the caller can
+ * append it and drive "View More" pagination.
+ *
+ * @param {string} label bare domain label e.g. "mybrand" (no extension)
+ * @param {number} page 1-based page number
+ * @returns {Promise<{ items: Array<object>, moreAvailable: boolean, total: number }>}
+ */
+export async function fetchStorefrontAvailableTldsPage(label, page = 1) {
+  const safeLabel = normalizeLabel(label);
+  if (!safeLabel) return { items: [], moreAvailable: false, total: 0 };
+
+  const { data } = await domainAPI.searchTlds({
+    name: safeLabel,
+    page,
+    pageSize: PAGE_SIZE,
+  });
+
+  const payload = data?.data ?? data;
+  const pageItems = Array.isArray(payload?.items) ? payload.items : [];
+  const moreAvailable = payload?.moreAvailable === true && pageItems.length > 0;
+  const total = Number.isInteger(payload?.total) ? payload.total : pageItems.length;
+
+  return { items: filterMapSort(pageItems, safeLabel), moreAvailable, total };
+}
+
+/**
+ * Fetch the FIRST page of available storefront TLDs and cache it. Subsequent
+ * pages are loaded via `fetchStorefrontAvailableTldsPage` and appended by the
+ * caller's "View More" control.
  *
  * @param {string} label bare domain label e.g. "mybrand" (no extension)
  * @param {{ force?: boolean }} [options]
- * @returns {Promise<Array<object>>} available TLDs, cheapest first.
+ * @returns {Promise<Array<object>>} first page of price-sorted available TLDs.
  */
 export async function fetchStorefrontAvailableTlds(label, options = {}) {
   const { force = false } = options;
@@ -70,46 +138,7 @@ export async function fetchStorefrontAvailableTlds(label, options = {}) {
     return storefrontTldCache.get(cacheKey);
   }
 
-  const items = [];
-  let page = 1;
-  let totalPages = 1;
-
-  do {
-    // eslint-disable-next-line no-await-in-loop
-    const { data } = await domainAPI.searchTlds({
-      name: safeLabel,
-      page,
-      pageSize: SEARCH_TLDS_PAGE_SIZE,
-    });
-
-    const payload = data?.data ?? data;
-    const pageItems = Array.isArray(payload?.items) ? payload.items : [];
-
-    for (const it of pageItems) {
-      const isAvailable =
-        it.available === true ||
-        (it.status && String(it.status).toLowerCase() === 'available');
-      if (!isAvailable) continue; // storefront shows available TLDs only
-      items.push(mapItem(it, safeLabel));
-    }
-
-    const reportedTotalPages = payload?.totalPages;
-    if (Number.isInteger(reportedTotalPages) && reportedTotalPages > 0) {
-      totalPages = reportedTotalPages;
-    } else if (pageItems.length < SEARCH_TLDS_PAGE_SIZE) {
-      totalPages = page;
-    }
-
-    page += 1;
-  } while (page <= totalPages && page <= SEARCH_TLDS_MAX_PAGES);
-
-  // Cheapest registration price first; unpriced entries sink to the bottom.
-  items.sort((a, b) => {
-    const pa = a.registrationPrice != null ? Number(a.registrationPrice) : Infinity;
-    const pb = b.registrationPrice != null ? Number(b.registrationPrice) : Infinity;
-    return pa - pb;
-  });
-
+  const { items } = await fetchStorefrontAvailableTldsPage(safeLabel, 1, { force });
   storefrontTldCache.set(cacheKey, items);
   return items;
 }

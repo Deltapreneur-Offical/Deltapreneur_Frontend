@@ -103,8 +103,8 @@ export default function AddToCartButton({
           type="button"
           onClick={handleClick}
           disabled={isDisabled}
-          title={showAdded ? 'In cart — view cart' : 'Add to cart'}
-          aria-label={showAdded ? 'In cart — view cart' : 'Add to cart'}
+          title={disabled ? (label || 'Unavailable') : showAdded ? 'In cart — view cart' : 'Add to cart'}
+          aria-label={disabled ? (label || 'Unavailable') : showAdded ? 'In cart — view cart' : 'Add to cart'}
           aria-pressed={showAdded}
           className={`flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition-all duration-300
             ${showAdded

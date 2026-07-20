@@ -6,7 +6,7 @@ import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
-import { fetchStorefrontAvailableTlds } from '../utils/storefrontTlds';
+import { fetchStorefrontAvailableTlds, fetchStorefrontAvailableTldsPage } from '../utils/storefrontTlds';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
@@ -96,6 +96,11 @@ function CopyBtn({ text, label = 'Copy' }) {
 }
 
 /* ─── Storefront TLD cards (independent of Home page search) ─── */
+function hasValidRegistrationPrice(item) {
+  const unit = Number(item?.registrationPrice);
+  return Number.isFinite(unit) && unit > 0;
+}
+
 function formatTldPrice(unitPrice, currency, formatPrice) {
   const unit = Number(unitPrice);
   if (!Number.isFinite(unit) || unit <= 0) return null;
@@ -105,6 +110,7 @@ function formatTldPrice(unitPrice, currency, formatPrice) {
 function StorefrontFeaturedTld({ item, onRegister }) {
   const { formatPrice } = useCurrency();
   const price = formatTldPrice(item.registrationPrice, item.currency, formatPrice);
+  const priceAvailable = hasValidRegistrationPrice(item);
   const renewal = Number(item.renewalPrice);
   const renewalText =
     Number.isFinite(renewal) && renewal > 0 ? formatPrice(renewal) : null;
@@ -125,16 +131,19 @@ function StorefrontFeaturedTld({ item, onRegister }) {
         )}
       </div>
       <div className="text-right sm:text-left">
-        {price != null && (
+        {price != null ? (
           <p className="text-2xl font-extrabold text-gray-950 mb-3">
             {price}
             <span className="text-xs font-normal text-gray-400 ml-1">/yr</span>
           </p>
+        ) : (
+          <p className="text-sm font-semibold text-gray-400 mb-3">Price unavailable</p>
         )}
         <button
           type="button"
           onClick={() => onRegister(item)}
-          className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-6 rounded-xl transition-all shadow-sm select-none"
+          disabled={!priceAvailable}
+          className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-6 rounded-xl transition-all shadow-sm select-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-indigo-600"
         >
           Register <ChevronRight className="w-4 h-4" />
         </button>
@@ -146,6 +155,7 @@ function StorefrontFeaturedTld({ item, onRegister }) {
 function StorefrontTldCard({ item, onRegister }) {
   const { formatPrice } = useCurrency();
   const price = formatTldPrice(item.registrationPrice, item.currency, formatPrice);
+  const priceAvailable = hasValidRegistrationPrice(item);
   const renewal = Number(item.renewalPrice);
   const renewalText =
     Number.isFinite(renewal) && renewal > 0 ? formatPrice(renewal) : null;
@@ -169,12 +179,13 @@ function StorefrontTldCard({ item, onRegister }) {
             <span className="text-[11px] font-normal text-gray-400 ml-1">/yr</span>
           </p>
         ) : (
-          <span />
+          <span className="text-xs font-semibold text-gray-400">Price unavailable</span>
         )}
         <button
           type="button"
           onClick={() => onRegister(item)}
-          className="inline-flex items-center justify-center gap-1 text-xs font-bold text-white bg-gray-900 hover:bg-gray-700 px-4 h-9 rounded-lg transition-all select-none"
+          disabled={!priceAvailable}
+          className="inline-flex items-center justify-center gap-1 text-xs font-bold text-white bg-gray-900 hover:bg-gray-700 px-4 h-9 rounded-lg transition-all select-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-900"
         >
           Register
         </button>
@@ -204,8 +215,9 @@ export default function DomainStorefrontPage() {
   const [tldItems, setTldItems] = useState([]);
   const [tldLoading, setTldLoading] = useState(false);
   const [tldError, setTldError] = useState('');
-  const [tldVisible, setTldVisible] = useState(0);
-  const TLDS_PER_PAGE = 12;
+  const [tldPage, setTldPage] = useState(1);
+  const [tldHasMore, setTldHasMore] = useState(false);
+  const [tldLoadingMore, setTldLoadingMore] = useState(false);
 
   // Ref to scroll to the registration form when a TLD's Register button is
   // clicked (opens the existing form below the results without a new search).
@@ -273,18 +285,21 @@ export default function DomainStorefrontPage() {
     const label = fqdn ? fqdn.split('.')[0] : '';
     if (!label) {
       setTldItems([]);
-      setTldVisible(0);
+      setTldPage(1);
+      setTldHasMore(false);
       return;
     }
 
     setTldLoading(true);
     setTldError('');
     setTldItems([]);
-    setTldVisible(0);
+    setTldPage(1);
+    setTldHasMore(false);
     try {
-      const items = await fetchStorefrontAvailableTlds(label, { force: true });
+      const { items, moreAvailable } = await fetchStorefrontAvailableTldsPage(label, 1);
       setTldItems(items);
-      setTldVisible(Math.min(TLDS_PER_PAGE, items.length));
+      setTldPage(2);
+      setTldHasMore(moreAvailable);
       // A successful TLD search means the domain search worked. Clear any
       // stale error from the independent single-domain check so we never show
       // a false "server error" banner over valid results.
@@ -292,11 +307,35 @@ export default function DomainStorefrontPage() {
     } catch {
       setTldError(t('storefrontTldsFailed', { defaultValue: 'Could not load available extensions. Please try again.' }));
       setTldItems([]);
-      setTldVisible(0);
+      setTldPage(1);
+      setTldHasMore(false);
     } finally {
       setTldLoading(false);
     }
   }, [t]);
+
+  const loadMoreStorefrontTlds = useCallback(async () => {
+    if (tldLoadingMore) return;
+    const fqdn = parseDomainInput(query, DEFAULT_TLD);
+    const label = fqdn ? fqdn.split('.')[0] : '';
+    if (!label) return;
+
+    setTldLoadingMore(true);
+    try {
+      const { items, moreAvailable } = await fetchStorefrontAvailableTldsPage(label, tldPage);
+      if (items.length) {
+        setTldItems((prev) => [...prev, ...items]);
+        setTldPage((p) => p + 1);
+        setTldHasMore(moreAvailable);
+      } else {
+        setTldHasMore(false);
+      }
+    } catch {
+      setTldHasMore(false);
+    } finally {
+      setTldLoadingMore(false);
+    }
+  }, [query, tldPage, tldLoadingMore]);
 
   const runCheck = useCallback(
     async (raw) => {
@@ -344,6 +383,16 @@ export default function DomainStorefrontPage() {
 
   const handleRegisterTld = (item) => {
     if (!item) return;
+    // Never open checkout for a TLD that has no valid registration price —
+    // otherwise the summary/taxes would be computed from ₹0.
+    if (!hasValidRegistrationPrice(item)) {
+      setCheckError(
+        t('storefrontTldPriceUnavailable', {
+          defaultValue: 'Registration price is unavailable for this extension. Please choose another.',
+        }),
+      );
+      return;
+    }
     // Open the existing registration form for the clicked TLD. We do NOT run a
     // new search or overwrite the search box — just populate the form with the
     // selected domain and scroll it into view.
@@ -592,7 +641,7 @@ export default function DomainStorefrontPage() {
                   </div>
                 )}
 
-                {checkResult && !checkError && (
+                {checkResult && !checkError && checkResult.status === 'available' && (
                   <div className="mt-6 rounded-xl border border-gray-150 p-5 bg-gray-50/50">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -652,23 +701,33 @@ export default function DomainStorefrontPage() {
                     <StorefrontFeaturedTld item={tldItems[0]} onRegister={handleRegisterTld} />
 
                     {/* Remaining available extensions, ascending price */}
-                    {tldVisible > 1 && (
+                    {tldItems.length > 1 && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {tldItems.slice(1, tldVisible).map((item) => (
+                        {tldItems.slice(1).map((item) => (
                           <StorefrontTldCard key={item.tld} item={item} onRegister={handleRegisterTld} />
                         ))}
                       </div>
                     )}
 
-                    {tldVisible < tldItems.length && (
+                    {tldHasMore && (
                       <div className="flex justify-center pt-1">
                         <button
                           type="button"
-                          onClick={() => setTldVisible((v) => Math.min(tldItems.length, v + TLDS_PER_PAGE))}
-                          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
+                          onClick={loadMoreStorefrontTlds}
+                          disabled={tldLoadingMore}
+                          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
                         >
-                          Load more extensions
-                          <ChevronRight className="w-4 h-4" />
+                          {tldLoadingMore ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Loading…
+                            </>
+                          ) : (
+                            <>
+                              View More
+                              <ChevronRight className="w-4 h-4" />
+                            </>
+                          )}
                         </button>
                       </div>
                     )}

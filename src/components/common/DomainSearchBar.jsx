@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, Search, Loader2, ChevronRight } from 'lucide-react';
 import { domainAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
 import { IS_IPHONE } from '../../utils/deviceDetection';
@@ -10,7 +10,7 @@ import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiA
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
-import { fetchAvailableTlds } from '../../utils/availableTlds';
+import { fetchAvailableTlds, fetchAvailableTldsPage } from '../../utils/availableTlds';
 import AddToCartButton from '../cart/AddToCartButton';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
@@ -410,6 +410,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const [auctionsLoading, setAuctionsLoading] = useState(false);
   const [premiumDomains, setPremiumDomains] = useState([]);
   const [premiumLoading, setPremiumLoading] = useState(false);
+  const [tldPage, setTldPage] = useState(1);
+  const [tldHasMore, setTldHasMore] = useState(false);
+  const [tldLoadingMore, setTldLoadingMore] = useState(false);
   const debounceRef           = useRef(null);
   const newSearchCacheRef = useRef(new Map());
   const requestIdRef = useRef(0);
@@ -462,10 +465,31 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     return null;
   };
 
+  const mapTldItem = (item, label) => {
+    const tld = (item.tld || '').replace('.', '');
+    return {
+      domain: item.domain || `${item.name || label}.${tld}`,
+      name: item.name || label,
+      ext: tld,
+      status: item.status,
+      available: item.available,
+      unitPrice: item.registrationPrice ?? null,
+      renewalPrice: item.renewalPrice ?? null,
+      price: item.registrationPrice ?? null,
+      priceCurrency: item.currency || 'INR',
+      minPeriodYears: 1,
+      listing: null,
+    };
+  };
+
   const searchAllTlds = async (label, force = false, currentRequestId) => {
     const cacheKey = `all-tlds:${label}`;
     if (!force && newSearchCacheRef.current.has(cacheKey)) {
-      setResults(newSearchCacheRef.current.get(cacheKey));
+      const cached = newSearchCacheRef.current.get(cacheKey);
+      setResults(cached);
+      // Cache hit holds the fully-loaded set; keep "View More" hidden.
+      setTldPage(2);
+      setTldHasMore(false);
       setLoading(false);
       return;
     }
@@ -487,29 +511,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     try {
       // Reuse the shared TLD search (same API request + filter + sort as the
       // Domain Management /storefront page) so both pages return identical
-      // available TLDs in the same TLD-ascending order.
-      const items = await fetchAvailableTlds(label, { force });
+      // available TLDs in the same TLD-ascending order. First page only
+      // (pageSize=50) so the initial response stays within gateway timeouts;
+      // further TLDs are loaded via "View More" (loadMoreTlds).
+      const { items, moreAvailable } = await fetchAvailableTldsPage(label, 1);
 
-      const mapped = items.map((item) => {
-        const tld = (item.tld || '').replace('.', '');
-        return {
-          domain: item.domain || `${item.name || label}.${tld}`,
-          name: item.name || label,
-          ext: tld,
-          status: item.status,
-          available: item.available,
-          unitPrice: item.registrationPrice ?? null,
-          renewalPrice: item.renewalPrice ?? null,
-          price: item.registrationPrice ?? null,
-          priceCurrency: item.currency || 'INR',
-          minPeriodYears: 1,
-          listing: null,
-        };
-      });
+      const mapped = items.map((item) => mapTldItem(item, label));
 
       if (requestIdRef.current !== currentRequestId) return;
       newSearchCacheRef.current.set(cacheKey, mapped);
       setResults(mapped);
+      setTldPage(2);
+      setTldHasMore(moreAvailable);
     } catch (err) {
       if (requestIdRef.current !== currentRequestId) return;
       const registrarMessage =
@@ -528,6 +541,29 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       if (requestIdRef.current === currentRequestId) {
         setLoading(false);
       }
+    }
+  };
+
+  // Append the next page (50) of available TLDs on "View More". Guarded so a
+  // single in-flight click cannot launch duplicate requests, and previously
+  // loaded pages are never re-fetched.
+  const loadMoreTlds = async (label) => {
+    if (tldLoadingMore || !tldHasMore) return;
+    setTldLoadingMore(true);
+    try {
+      const { items, moreAvailable } = await fetchAvailableTldsPage(label, tldPage);
+      if (items.length) {
+        const mapped = items.map((item) => mapTldItem(item, label));
+        setResults((prev) => [...prev, ...mapped]);
+        setTldPage((p) => p + 1);
+        setTldHasMore(moreAvailable);
+      } else {
+        setTldHasMore(false);
+      }
+    } catch {
+      setTldHasMore(false);
+    } finally {
+      setTldLoadingMore(false);
     }
   };
 
@@ -754,10 +790,34 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
   const completedNewResults = results.filter((item) => item.status !== 'loading');
   const availableNewResults = completedNewResults
-    .filter((item) => item.status === 'available' || item.available === true)
+    .filter((item) => {
+      const isAvail = item.status === 'available' || item.available === true;
+      if (!isAvail) return false;
+      
+      const ext = (item.ext || item.tld || '').replace(/^\./, '').toLowerCase();
+      const isPriority = TLDS.indexOf(ext) !== -1;
+      if (isPriority) return true;
+      
+      const price = item.unitPrice != null ? Number(item.unitPrice) : (item.price != null ? Number(item.price) : Infinity);
+      return price < 3000;
+    })
     .sort((a, b) => {
+      const aExt = (a.ext || a.tld || '').replace(/^\./, '').toLowerCase();
+      const bExt = (b.ext || b.tld || '').replace(/^\./, '').toLowerCase();
+      
+      const aPriority = TLDS.indexOf(aExt);
+      const bPriority = TLDS.indexOf(bExt);
+      
+      const aIsPriority = aPriority !== -1;
+      const bIsPriority = bPriority !== -1;
+      
+      if (aIsPriority && !bIsPriority) return -1;
+      if (!aIsPriority && bIsPriority) return 1;
+      if (aIsPriority && bIsPriority) return aPriority - bPriority;
+      
       const priceA = a.unitPrice != null ? Number(a.unitPrice) : (a.price != null ? Number(a.price) : Infinity);
       const priceB = b.unitPrice != null ? Number(b.unitPrice) : (b.price != null ? Number(b.price) : Infinity);
+      
       return priceA - priceB;
     });
   const visibleNewBest = availableNewResults[0] || null;
@@ -1040,6 +1100,29 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   <Action result={item} large={false} />
                 </div>
               ))}
+            </div>
+          )}
+
+          {hasSearchQuery && searchMode === 'new' && !loading && tldHasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => loadMoreTlds(normalizedQuery.split('.')[0])}
+                disabled={tldLoadingMore}
+                className="inline-flex items-center gap-2 text-sm font-bold text-white bg-gray-900 hover:bg-gray-700 disabled:opacity-60 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
+              >
+                {tldLoadingMore ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading…
+                  </>
+                ) : (
+                  <>
+                    View More
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             </div>
           )}
 

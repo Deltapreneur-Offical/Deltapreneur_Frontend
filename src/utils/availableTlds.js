@@ -5,37 +5,96 @@ import { domainAPI } from '../api/services';
 // endpoint with the same request pattern and apply the same available-filter
 // + TLD-ascending sort so they return an identical set of results.
 //
-// The backend (GET /api/v1/domain/search-tlds) caps `page_size` at 200
-// (pydantic `le=200`). Requesting more returns HTTP 422
-// "Input should be less than or equal to 200." We therefore always request at
-// most 200 per page and paginate (fetching additional pages) until every
-// available extension is retrieved — this stays within the validation limit
-// while still collecting the full, price-sorted result set.
-const SEARCH_TLDS_PAGE_SIZE = 1500;
-
-// Safety bound so a misbehaving/mis-configured backend can never loop forever.
-const SEARCH_TLDS_MAX_PAGES = 25;
-
+// Incremental / paginated loading (fix for the gateway 504):
+//   • The backend returns the FIRST PAGE only (page=1, pageSize=50) of the
+//     curated priority TLDs, so the first response arrives in <1s.
+//   • The caller renders those 50 results immediately, then fetches the next
+//     page (page=2, pageSize=50) on demand via a "View More" action and appends
+//     to the existing list. Each subsequent click fetches page=3, page=4, …
+//   • Pages are contiguous and price-sorted; previously loaded pages are never
+    //     re-fetched. When the backend reports `moreAvailable=false` (or an empty
+    //     page) the View More control is hidden / disabled.
+    const PAGE_SIZE = 25;
+    
+    const PRIORITY_TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
+    
 const allTldsCache = new Map();
 
 export function clearAvailableTldsCache() {
   allTldsCache.clear();
 }
 
+function filterAndSort(items) {
+  const availableItems = items.filter((it) => {
+    const isAvail = it.available === true || (it.status && it.status.toLowerCase() === 'available');
+    if (!isAvail) return false;
+    
+    const ext = (it.tld || '').replace(/^\./, '').toLowerCase();
+    const isPriority = PRIORITY_TLDS.indexOf(ext) !== -1;
+    if (isPriority) return true;
+    
+    const price = it.registrationPrice != null ? Number(it.registrationPrice) : Infinity;
+    return price < 3000;
+  });
+
+  availableItems.sort((a, b) => {
+    const aExt = (a.tld || '').replace(/^\./, '').toLowerCase();
+    const bExt = (b.tld || '').replace(/^\./, '').toLowerCase();
+    
+    const aPriority = PRIORITY_TLDS.indexOf(aExt);
+    const bPriority = PRIORITY_TLDS.indexOf(bExt);
+    
+    const aIsPriority = aPriority !== -1;
+    const bIsPriority = bPriority !== -1;
+    
+    if (aIsPriority && !bIsPriority) return -1;
+    if (!aIsPriority && bIsPriority) return 1;
+    if (aIsPriority && bIsPriority) return aPriority - bPriority;
+    
+    const priceA = a.registrationPrice != null ? Number(a.registrationPrice) : Infinity;
+    const priceB = b.registrationPrice != null ? Number(b.registrationPrice) : Infinity;
+    
+    return priceA - priceB;
+  });
+  return availableItems;
+}
+
 /**
- * Fetch every available TLD for a label, filtered to available entries and
- * sorted by TLD ascending.
+ * Fetch one page of available TLDs for a label, filtered to available entries
+ * and sorted by price ascending. Returns the raw API page so the caller can
+ * append it to previously loaded results and drive "View More" pagination.
  *
- * Paginates the backend in chunks of at most 200 (the server-side hard limit),
- * concatenating all pages, so the complete price-sorted result set is returned
- * without ever sending an oversized `page_size`.
- *
- * Returns the raw API items (already filtered + sorted) so each page can map
- * them into its own display shape without changing card/table design.
+ * @param {string} label bare domain label e.g. "drymotorjosjkm" (no extension)
+ * @param {number} page 1-based page number
+ * @param {{ force?: boolean }} [options]
+ * @returns {Promise<{ items: Array<object>, moreAvailable: boolean, total: number }>}
+ */
+export async function fetchAvailableTldsPage(label, page = 1, options = {}) {
+  const safeLabel = (label || '').trim().toLowerCase().split('.')[0];
+  if (!safeLabel) return { items: [], moreAvailable: false, total: 0 };
+
+  const { data } = await domainAPI.searchTlds({
+    name: safeLabel,
+    page,
+    pageSize: PAGE_SIZE,
+  });
+
+  const payload = data?.data ?? data;
+  const pageItems = Array.isArray(payload?.items) ? payload.items : [];
+  const moreAvailable = payload?.moreAvailable === true && pageItems.length > 0;
+  const total = Number.isInteger(payload?.total) ? payload.total : pageItems.length;
+
+  return { items: filterAndSort(pageItems), moreAvailable, total };
+}
+
+/**
+ * Fetch the FIRST page of available TLDs for a label and cache it. Used by the
+ * page loaders so the first 50 results render immediately. Subsequent pages are
+ * loaded via `fetchAvailableTldsPage` and appended by the caller.
  *
  * @param {string} label bare domain label e.g. "drymotorjosjkm" (no extension)
  * @param {{ force?: boolean }} [options]
- * @returns {Promise<Array<object>>}
+ * @returns {Promise<Array<object>>} first page of price-sorted available TLDs.
  */
 export async function fetchAvailableTlds(label, options = {}) {
   const { force = false } = options;
@@ -47,63 +106,7 @@ export async function fetchAvailableTlds(label, options = {}) {
     return allTldsCache.get(cacheKey);
   }
 
-  const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-
-  // Walk every page (≤200 per request) until the backend reports no more
-  // results, accumulating all items across pages.
-  const items = [];
-  let page = 1;
-  let totalPages = 1;
-  do {
-    if (typeof console !== 'undefined') {
-      // eslint-disable-next-line no-console
-      console.info(
-        `[TLD_SEARCH] GET /api/v1/domain/search-tlds name=${safeLabel} page=${page} pageSize=${SEARCH_TLDS_PAGE_SIZE}`,
-      );
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    const { data } = await domainAPI.searchTlds({
-      name: safeLabel,
-      page,
-      pageSize: SEARCH_TLDS_PAGE_SIZE,
-    });
-
-    const payload = data?.data ?? data;
-    const pageItems = Array.isArray(payload?.items) ? payload.items : [];
-    items.push(...pageItems);
-
-    const reportedTotalPages = payload?.totalPages;
-    if (Number.isInteger(reportedTotalPages) && reportedTotalPages > 0) {
-      totalPages = reportedTotalPages;
-    } else if (pageItems.length < SEARCH_TLDS_PAGE_SIZE) {
-      // No explicit total: stop once a page comes back short.
-      totalPages = page;
-    }
-
-    page += 1;
-  } while (page <= totalPages && page <= SEARCH_TLDS_MAX_PAGES);
-
-  const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  if (typeof console !== 'undefined') {
-    // eslint-disable-next-line no-console
-    console.info(
-      `[TLD_SEARCH] /search-tlds returned ${items.length} item(s) across ${page - 1} page(s) in ${Math.round(t1 - t0)}ms for "${safeLabel}"`,
-    );
-  }
-
-  // Filter out unavailable domains.
-  const availableItems = items.filter(
-    (it) => it.available === true || (it.status && it.status.toLowerCase() === 'available'),
-  );
-
-  // Sort by TLD ascending to keep the displayed extension list predictable.
-  availableItems.sort((a, b) => {
-    const tldA = String(a.tld || '').replace(/^\./, '').toLowerCase();
-    const tldB = String(b.tld || '').replace(/^\./, '').toLowerCase();
-    return tldA.localeCompare(tldB);
-  });
-
-  allTldsCache.set(cacheKey, availableItems);
-  return availableItems;
+  const { items } = await fetchAvailableTldsPage(safeLabel, 1, { force });
+  allTldsCache.set(cacheKey, items);
+  return items;
 }

@@ -305,6 +305,7 @@ function DomainPurchaseRow({ domain, user }) {
 }
 
 function RegistrationPurchaseRow({ order, user, t }) {
+  const { formatPrice } = useCurrency();
   const amount = Number(order.priceInr || 0);
   const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
   const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Mail, ShieldCheck, Globe, ArrowRightLeft, RotateCcw, Sparkles } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import EmailForm from './EmailForm';
@@ -65,7 +65,30 @@ const services = [
 
 export default function DomainServices({ orders }) {
   const [selectedService, setSelectedService] = useState(null);
+  const [priceLabels, setPriceLabels] = useState({});
   const { t } = useTranslation();
+
+  useEffect(() => {
+    domainStorefrontAPI.getPrices()
+      .then(({ data }) => {
+        const prices = data?.data ?? data;
+        setPriceLabels({
+          transfer: prices?.transfer?.label,
+          renewal: prices?.renewal?.label,
+          email: prices?.email?.label,
+          ssl: prices?.ssl?.label,
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  const pricedServices = useMemo(
+    () => services.map((service) => ({
+      ...service,
+      price: priceLabels[service.id] || service.price,
+    })),
+    [priceLabels],
+  );
 
   const handleServiceSubmit = async (apiMethod, formData) => {
     const api = domainStorefrontAPI[apiMethod];
@@ -114,7 +137,7 @@ export default function DomainServices({ orders }) {
       case 'dnssec':
         return <DNSSECForm {...commonProps} />;
       case 'transfer':
-        return <TransferForm {...commonProps} />;
+        return <TransferForm {...commonProps} onSubmit={undefined} />;
       case 'renewal':
         return <RenewalForm {...commonProps} onSubmit={undefined} />;
       default:
@@ -138,7 +161,7 @@ export default function DomainServices({ orders }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((service) => (
+          {pricedServices.map((service) => (
             <ServiceCard
               key={service.id}
               icon={service.icon}

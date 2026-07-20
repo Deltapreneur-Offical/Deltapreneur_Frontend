@@ -199,6 +199,9 @@ export const domainStorefrontAPI = {
   verifyRenewDomainPayment: (orderId, body) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/renew/payment/verify`, body),
   initiateTransfer: (body) => api.post('/api/v1/domain/storefront/transfer', body),
+  getTransferQuote: (body) => api.post('/api/v1/domain/storefront/transfer/quote', body),
+  createTransferPaymentOrder: (body) => api.post('/api/v1/domain/storefront/transfer/payment', body),
+  verifyTransferPayment: (body) => api.post('/api/v1/domain/storefront/transfer/payment/verify', body),
   purchaseEmail: (orderId, mailbox) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email`, { mailbox }),
   purchaseSSL: (orderId) =>

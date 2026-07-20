@@ -420,13 +420,19 @@ export default function DomainStorefrontPage() {
       setTransferError('Domain name and EPP/Authorization code are required.');
       return;
     }
+    if (!user) {
+      setTransferError('Please log in to transfer a domain.');
+      return;
+    }
     setTransferLoading(true);
     try {
-      const { data } = await domainStorefrontAPI.initiateTransfer({
+      const { payDomainTransfer } = await import('../utils/domainTransferCheckout');
+      const orderData = await payDomainTransfer({
         domain: transferDomain.trim(),
         authCode: transferAuthCode.trim(),
+        user,
+        description: `Transfer ${transferDomain.trim()}`,
       });
-      const orderData = data?.data ?? data;
       setTransferSuccess(`Domain transfer initiated successfully for ${orderData.domain}!`);
       setTransferDomain('');
       setTransferAuthCode('');

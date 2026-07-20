@@ -35,6 +35,7 @@ const normalizeAuction = (a) => {
     endTime: withUtcIfNeeded(a.endTime ?? a.end_time ?? null),
     originalEndTime: withUtcIfNeeded(a.originalEndTime ?? a.original_end_time ?? null),
     currentWinnerName: a.currentWinnerName ?? a.current_winner_name ?? '',
+    winnerPaymentPaid: Boolean(a.winnerPaymentPaid ?? a.winner_payment_paid ?? false),
     software: a.software ?? null,
   };
   const resolvedEnd = resolveAuctionEndTime(normalized);
@@ -117,7 +118,20 @@ export function useSoftwareAuction(auctionId) {
         setBids((prev) => [normalizeBid(msg.latestBid), ...prev]);
       }
     } else if (msg.type === 'AUCTION_ENDED' || msg.type === 'AUCTION_UNSOLD') {
-      setAuction((prev) => (prev ? { ...prev, status: msg.status } : prev));
+      setAuction((prev) => (prev ? {
+        ...prev,
+        status: msg.status,
+        currentHighestBid: toNum(msg.currentHighestBid, prev.currentHighestBid),
+        currentWinnerName: msg.currentWinnerName ?? prev.currentWinnerName,
+        winnerPaymentPaid: Boolean(msg.winnerPaymentPaid ?? prev.winnerPaymentPaid),
+      } : prev));
+    } else if (msg.type === 'PAYMENT_COMPLETED') {
+      setAuction((prev) => (prev ? {
+        ...prev,
+        status: msg.status ?? 'COMPLETED',
+        winnerPaymentPaid: true,
+        currentHighestBid: toNum(msg.currentHighestBid, prev.currentHighestBid),
+      } : prev));
     } else if (msg.type === 'AUCTION_EXTENDED') {
       if (msg.endTime) {
         setAuction((prev) => (prev ? {

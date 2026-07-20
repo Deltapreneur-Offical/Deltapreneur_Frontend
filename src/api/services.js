@@ -426,6 +426,15 @@ export const softwareAuctionAPI = {
   participationVerify: (auctionId, data)=> api.post(`/api/v1/software-auction/${auctionId}/participation/verify`, data),
   reAuction:       (auctionId, data)    => api.post(`/api/v1/software-auction/${auctionId}/re-auction`, data),
   close:           (auctionId)          => api.post(`/api/v1/software-auction/${auctionId}/close`),
+  winnerPaymentCreateOrder: (auctionId, redeemPoints = false) => api.post(
+    `/api/v1/software-auction/${auctionId}/winner-payment/create-order`,
+    {},
+    { params: { redeem_points: redeemPoints } },
+  ),
+  winnerPaymentVerify: (auctionId, data) => api.post(
+    `/api/v1/software-auction/${auctionId}/winner-payment/verify`,
+    data,
+  ),
   getActive:       ()                   => api.get('/api/v1/software-auction/active'),
   adminGetAll:     ()                   => api.get('/api/v1/software-auction/admin/all'),
   adminGetPending: ()                   => api.get('/api/v1/software-auction/admin/pending'),

@@ -17,6 +17,7 @@ import { fetchListingFeesAndCharges } from '../utils/auctionFees';
 import { CURRENCY_LABELS } from '../constants/currencies';
 import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
+import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 
 function Countdown({ endTime, status }) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -51,6 +52,7 @@ const STATUS_STYLE_BASE = {
   ACTIVE:           { color: '#6ec896', bg: 'rgba(110,200,150,0.12)', labelKey: 'auctionsPageStatusLive' },
   EXTENDED:         { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', labelKey: 'auctionsPageStatusExtended' },
   ENDED:            { color: '#6eadc8', bg: 'rgba(110,173,200,0.12)', labelKey: 'auctionDetailStatusEnded' },
+  COMPLETED:        { color: '#6ec896', bg: 'rgba(110,200,150,0.12)', labelKey: 'auctionDetailComplete' },
   UNSOLD:           { color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', labelKey: 'auctionDetailStatusNoBids' },
   CLOSED:           { color: '#6b7280', bg: 'rgba(107,114,128,0.12)', labelKey: 'auctionDetailStatusClosed' },
   DRAFT:            { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', labelKey: 'auctionDetailStatusPendingApproval' },
@@ -66,7 +68,7 @@ export default function SoftwareAuctionPage() {
 
   const navigate                            = useNavigate();
   const { auction, bids, minNextBid, maxBidPrice,
-          wsState, loading, loadError, placeBid } = useSoftwareAuction(auctionId);
+          wsState, loading, loadError, placeBid, refresh } = useSoftwareAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
   const {
     currency: navCurrency,
@@ -88,8 +90,20 @@ export default function SoftwareAuctionPage() {
   const [payingParticipation, setPayingParticipation] = useState(false);
   const [participationError, setParticipationError] = useState('');
   const [bidFee, setBidFee] = useState(null);
+  const [payingWinnerBid, setPayingWinnerBid] = useState(false);
+  const [winnerPaymentError, setWinnerPaymentError] = useState('');
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [finalPayable, setFinalPayable] = useState(0);
 
   const isActive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+  const isEnded = auction?.status === 'ENDED';
+  const isCompleted = auction?.status === 'COMPLETED';
+  const isWinner = Boolean(
+    user?.id && auction?.currentWinnerId
+    && String(user.id) === String(auction.currentWinnerId),
+  );
+  const hasFinalWinner = (isEnded || isCompleted) && Number(auction?.currentHighestBid) > 0;
+  const awaitingWinnerPayment = isEnded && isWinner && !auction?.winnerPaymentPaid;
   const isOwner = resolveAuctionLister(
     isSoftwareAuctionLister(auction, user?.id),
     participation,
@@ -199,6 +213,59 @@ export default function SoftwareAuctionPage() {
     } catch (err) {
       setParticipationError(err?.response?.data?.error || t('auctionDetailFailedStartPayment'));
       setPayingParticipation(false);
+    }
+  };
+
+  useEffect(() => {
+    if (auction?.currentHighestBid) {
+      setFinalPayable(Number(auction.currentHighestBid));
+    }
+  }, [auction?.currentHighestBid]);
+
+  const handlePayWinningBid = async () => {
+    if (!auction?.id || !user) return;
+    setPayingWinnerBid(true);
+    setWinnerPaymentError('');
+    try {
+      const { data: res } = await softwareAuctionAPI.winnerPaymentCreateOrder(
+        auction.id,
+        redeemPoints,
+      );
+      const orderData = res?.data ?? res;
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: t('auctionDetailBidFee', {
+          defaultValue: `Winning bid for ${auction?.software?.name || 'software auction'}`,
+        }),
+        onSuccess: async (response) => {
+          try {
+            await softwareAuctionAPI.winnerPaymentVerify(auction.id, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            await refresh();
+          } catch {
+            setWinnerPaymentError(t('auctionDetailPaymentVerifyFailedRetry'));
+          } finally {
+            setPayingWinnerBid(false);
+          }
+        },
+        onFailure: async () => {
+          setWinnerPaymentError(t('auctionDetailPaymentFailed'));
+          setPayingWinnerBid(false);
+        },
+        onDismiss: async () => setPayingWinnerBid(false),
+      });
+    } catch (err) {
+      setWinnerPaymentError(
+        err?.response?.data?.error
+        || err?.response?.data?.message
+        || err?.message
+        || t('auctionDetailFailedStartPayment'),
+      );
+      setPayingWinnerBid(false);
     }
   };
 
@@ -561,13 +628,16 @@ export default function SoftwareAuctionPage() {
                   {t('auctionDetailAwaitingApprovalDesc')}
                 </p>
               </div>
-            ) : auction.status === 'ENDED' ? (
+            ) : hasFinalWinner ? (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',
                             borderRadius: 12, padding: '1.5rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🏆</div>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>
+                  {isCompleted ? '✅' : '🏆'}
+                </div>
                 <h3 style={{ fontFamily: 'Inter, system-ui, sans-serif',
-                             fontWeight: 700, color: '#111827', margin: '0 0 0.5rem' }}>
-                  {t('auctionDetailEndedTitle')}
+                             fontWeight: 700, color: isCompleted ? '#059669' : '#111827',
+                             margin: '0 0 0.5rem' }}>
+                  {isCompleted ? t('auctionDetailComplete') : t('auctionDetailEndedTitle')}
                 </h3>
                 {auction.currentWinnerName && (
                   <p style={{ fontSize: '0.88rem', color: '#374151', margin: '0 0 0.5rem' }}>
@@ -575,9 +645,48 @@ export default function SoftwareAuctionPage() {
                   </p>
                 )}
                 <p style={{ fontFamily: 'Inter, system-ui, sans-serif',
-                            fontSize: '1.5rem', fontWeight: 700, color: '#6ec896', margin: 0 }}>
+                            fontSize: '1.5rem', fontWeight: 700, color: '#6ec896', margin: '0 0 0.75rem' }}>
                   {formatPrice(auction.currentHighestBid)}
                 </p>
+                {awaitingWinnerPayment && (
+                  <div style={{ marginTop: '1rem', padding: '1rem',
+                                background: '#f0fdf4', border: '1px solid #bbf7d0',
+                                borderRadius: 8, textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.85rem', color: '#374151', marginBottom: '0.75rem' }}>
+                      {t('auctionDetailWonPayPrompt')}
+                    </div>
+                    <EdgePointsRedeemToggle
+                      originalAmount={Number(auction.currentHighestBid ?? 0)}
+                      onChange={(redeem, _discount, final) => {
+                        setRedeemPoints(redeem);
+                        setFinalPayable(final);
+                      }}
+                    />
+                    <button className="btn-glow w-full"
+                      onClick={handlePayWinningBid}
+                      disabled={payingWinnerBid}
+                      style={{ marginTop: '0.75rem' }}>
+                      {payingWinnerBid
+                        ? t('auctionDetailProcessing')
+                        : `Pay ₹${finalPayable} and Claim Software`}
+                    </button>
+                    {winnerPaymentError && (
+                      <div style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.5rem' }}>
+                        {winnerPaymentError}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isCompleted && isWinner && (
+                  <p style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 600, marginTop: '0.75rem' }}>
+                    {t('auctionDetailPaymentReceivedDomain')}
+                  </p>
+                )}
+                {isEnded && !isWinner && (
+                  <p style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: '0.75rem' }}>
+                    {t('auctionDetailWaitingWinnerPayment')}
+                  </p>
+                )}
               </div>
             ) : auction.status === 'UNSOLD' && isOwner ? (
               <div style={{ background: '#fff', border: '1px solid #e5e7eb',

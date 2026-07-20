@@ -1,27 +1,63 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RotateCcw, Loader2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { fetchDomainRenewalQuote, payDomainRenewal } from '../../utils/domainRenewalCheckout';
+import { readApiError } from '../../utils/apiError';
 
-export default function RenewalForm({ onClose, onSubmit, orders }) {
+export default function RenewalForm({ onClose, orders }) {
+  const { user } = useAuth();
   const [domainId, setDomainId] = useState('');
   const [period, setPeriod] = useState('1');
   const [loading, setLoading] = useState(false);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quote, setQuote] = useState(null);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-  const selectedOrder = orders.find(o => String(o.id) === String(domainId));
+  const selectedOrder = orders.find((o) => String(o.id) === String(domainId));
   const provider = (selectedOrder?.provider || selectedOrder?.registrar || '').toLowerCase();
   const isOpenProvider = !selectedOrder || !provider || provider === 'openprovider' || provider === 'open provider';
   const isDisabled = !isOpenProvider;
 
+  useEffect(() => {
+    if (!domainId || isDisabled) {
+      setQuote(null);
+      return undefined;
+    }
+    let cancelled = false;
+    setQuoteLoading(true);
+    setError('');
+    fetchDomainRenewalQuote(domainId, Number(period))
+      .then((data) => {
+        if (!cancelled) setQuote(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(readApiError(err, 'Could not load renewal price.'));
+      })
+      .finally(() => {
+        if (!cancelled) setQuoteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [domainId, period, isDisabled]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isDisabled || !domainId) return;
+    if (isDisabled || !domainId || !user) return;
     setLoading(true);
     setResult(null);
+    setError('');
     try {
-      await onSubmit?.({ orderId: domainId, period: Number(period) });
-      setResult({ success: true, message: 'Domain renewal initiated successfully.' });
-    } catch {
-      setResult({ success: false, message: 'Failed to renew domain. Please try again.' });
+      await payDomainRenewal({
+        orderId: domainId,
+        period: Number(period),
+        user,
+        description: `Renew ${selectedOrder?.domain || 'domain'} for ${period} year(s)`,
+      });
+      setResult({ success: true, message: 'Domain renewal completed successfully.' });
+    } catch (err) {
+      setError(readApiError(err, 'Failed to renew domain. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -78,28 +114,34 @@ export default function RenewalForm({ onClose, onSubmit, orders }) {
         </select>
       </div>
 
-      {result && (
-        <div className={`text-xs font-semibold rounded-xl p-3 flex items-start gap-2 ${result.success ? 'text-emerald-800 bg-emerald-50 border border-emerald-200' : 'text-rose-800 bg-rose-50 border border-rose-200'}`}>
-          {result.success ? '✓' : '✗'} {result.message}
-        </div>
+      {quoteLoading && (
+        <p className="text-xs text-gray-500">Loading renewal price...</p>
+      )}
+      {quote?.totalInr != null && !quoteLoading && (
+        <p className="text-sm font-semibold text-gray-800">
+          Total due: ₹{Number(quote.totalInr).toLocaleString('en-IN')}
+          {quote.gstInr > 0 ? ` (incl. GST ₹${Number(quote.gstInr).toLocaleString('en-IN')})` : ''}
+        </p>
       )}
 
-      <div className="flex justify-end pt-1">
-        <button
-          type="submit"
-          disabled={isDisabled || loading || !domainId}
-          className="inline-flex h-10 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Renewing...
-            </>
-          ) : (
-            'Renew Domain'
-          )}
-        </button>
-      </div>
+      {error && (
+        <p className="text-xs text-rose-600">{error}</p>
+      )}
+
+      {result && (
+        <p className={`text-xs ${result.success ? 'text-emerald-600' : 'text-rose-600'}`}>
+          {result.message}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading || isDisabled || !domainId || !user}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+        {loading ? 'Processing...' : 'Pay & Renew'}
+      </button>
     </form>
   );
 }

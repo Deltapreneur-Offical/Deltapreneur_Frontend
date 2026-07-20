@@ -199,39 +199,21 @@ export default function DomainRegistrationOrderPage() {
     setActionError(''); setActionMessage('');
     setRenewPayLoading(true);
     try {
-      const { data: payPayload } = await domainStorefrontAPI.renewDomainPaymentOrder(orderId, renewPeriod);
-      const payData = payPayload?.data ?? payPayload;
-      
-      const { openRazorpayCheckout } = await import('../utils/razorpayCheckout');
-      
-      openRazorpayCheckout({
-        orderData: payData,
+      const { payDomainRenewal } = await import('../utils/domainRenewalCheckout');
+      const updated = await payDomainRenewal({
+        orderId,
+        period: renewPeriod,
         user,
         description: `Renew ${order.domain} for ${renewPeriod} Year(s)`,
-        onSuccess: async (response) => {
-          setSyncing(true);
-          try {
-            const { data } = await domainStorefrontAPI.renewDomainDirect(orderId, renewPeriod);
-            setOrder(unwrapOrder(data));
-            setActionMessage(`Domain successfully renewed for ${renewPeriod} year(s)!`);
-            setShowRenewCheckout(false);
-          } catch (err) {
-            setActionError(readApiError(err, 'Renewal verification failed.'));
-          } finally {
-            setSyncing(false);
-            setRenewPayLoading(false);
-          }
-        },
-        onFailure: (err) => {
-          setActionError(err?.error?.description || 'Renewal payment failed.');
-          setRenewPayLoading(false);
-        },
-        onDismiss: () => {
-          setRenewPayLoading(false);
-        }
       });
+      setSyncing(true);
+      setOrder(unwrapOrder(updated));
+      setActionMessage(`Domain successfully renewed for ${renewPeriod} year(s)!`);
+      setShowRenewCheckout(false);
     } catch (err) {
-      setActionError(readApiError(err, 'Failed to create renewal order.'));
+      setActionError(readApiError(err, 'Renewal payment failed.'));
+    } finally {
+      setSyncing(false);
       setRenewPayLoading(false);
     }
   };

@@ -116,7 +116,7 @@ export default function DomainServices({ orders }) {
       case 'transfer':
         return <TransferForm {...commonProps} />;
       case 'renewal':
-        return <RenewalForm {...commonProps} />;
+        return <RenewalForm {...commonProps} onSubmit={undefined} />;
       default:
         return null;
     }

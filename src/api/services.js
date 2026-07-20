@@ -194,6 +194,10 @@ export const domainStorefrontAPI = {
     api.post(`/api/v1/domain/storefront/orders/${orderId}/renew`, { period }),
   renewDomainPaymentOrder: (orderId, period = 1) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/renew/payment`, { period }),
+  getRenewDomainQuote: (orderId, period = 1) =>
+    api.get(`/api/v1/domain/storefront/orders/${orderId}/renew/quote`, { params: { period } }),
+  verifyRenewDomainPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/renew/payment/verify`, body),
   initiateTransfer: (body) => api.post('/api/v1/domain/storefront/transfer', body),
   purchaseEmail: (orderId, mailbox) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email`, { mailbox }),

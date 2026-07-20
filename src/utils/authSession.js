@@ -43,11 +43,11 @@ export function hasAuthSession() {
 export function getPostLoginDestination(user) {
   const role = (user?.role ?? '').toString().toUpperCase().replace(/^ROLE_/, '');
   if (role === 'COBROTHER') return '/cobrother';
-  return '/dashboard';
+  return '/';
 }
 
 /**
- * Prefer a saved return path; otherwise use role-based default (/dashboard for most users).
+ * Prefer a saved return path; otherwise use role-based default (homepage for most users).
  * Treats "/login" as unset; "/" falls through to the role-based default.
  */
 export function resolvePostLoginPath(storedPath, user) {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import logoBlack from '../../assets/Cobrother_logo.png';
+import logoBlack from '../../assets/Cobrother_logo.gif';
+import BrandLogoImage from './BrandLogoImage';
 import '../../styles/page-loader.css';
 
 function LoadingDots() {
@@ -50,7 +51,7 @@ export default function PageLoader({
         transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="page-loader__logo-wrap">
-          <img src={logoBlack} alt="CoBrother" className="page-loader__logo" />
+          <BrandLogoImage src={logoBlack} alt="CoBrother" className="page-loader__logo" />
         </div>
         <div className="page-loader__ring" aria-hidden />
         <p className="page-loader__message">

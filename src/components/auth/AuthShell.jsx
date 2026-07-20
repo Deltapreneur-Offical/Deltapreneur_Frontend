@@ -1,4 +1,5 @@
-import logoBlack from '../../assets/Cobrother_logo.png';
+import logoBlack from '../../assets/Cobrother_logo.gif';
+import BrandLogoImage from '../common/BrandLogoImage';
 import '../../styles/auth.css';
 
 function BackIcon() {
@@ -46,7 +47,7 @@ export default function AuthShell({
             <span aria-hidden />
           )}
 
-          <img
+          <BrandLogoImage
             src={logoBlack}
             alt="CoBrother"
             className="auth-page__logo"

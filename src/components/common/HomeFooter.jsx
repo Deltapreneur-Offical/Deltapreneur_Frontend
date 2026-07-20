@@ -6,7 +6,8 @@ import { useCookieConsent } from '../../context/CookieConsentContext';
 
 import { FaWhatsapp } from 'react-icons/fa';
 
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import coBrotherLogo from '../../assets/Cobrother_logo.gif';
+import BrandLogoImage from './BrandLogoImage';
 import { EXTERNAL_LINK_PROPS, WHATSAPP_URL } from '../../config/contactLinks';
 
 
@@ -213,7 +214,7 @@ export default function HomeFooter() {
 
           <Link to="/" className="group mb-4 inline-block">
 
-            <img
+            <BrandLogoImage
 
               src={coBrotherLogo}
 

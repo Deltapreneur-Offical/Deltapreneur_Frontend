@@ -1,5 +1,6 @@
-import logoBlack from '../../assets/Cobrother_logo.png';
-import logoGreen from '../../assets/Cobrother_logo_G.png';
+import logoBlack from '../../assets/Cobrother_logo.gif';
+import logoGreen from '../../assets/Cobrother_logo_G.gif';
+import BrandLogoImage from './BrandLogoImage';
 
 /**
  * CoBrother wordmark — black by default, green on hover.
@@ -8,19 +9,19 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
   const imgBase = `${imgClassName} home-nav-logo-img`.trim();
 
   return (
-    <span className={`home-nav-logo-swap ${className}`.trim()}>
-      <img
+    <span className={`home-nav-logo-swap group h-full ${className}`.trim()}>
+      <BrandLogoImage
         src={logoBlack}
         alt="CoBrother"
-        className={`${imgBase} home-nav-logo-img--default`.trim()}
-        draggable={false}
+        loading="eager"
+        fetchPriority="high"
+        className={`${imgBase} home-nav-logo-img--default !h-full !w-full !max-w-none !object-contain`.trim()}
       />
-      <img
+      <BrandLogoImage
         src={logoGreen}
-        alt=""
         aria-hidden
-        className={`${imgBase} home-nav-logo-img--hover`.trim()}
-        draggable={false}
+        loading="eager"
+        className={`${imgBase} home-nav-logo-img--hover !h-full !w-full !max-w-none !object-contain`.trim()}
       />
     </span>
   );

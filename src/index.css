@@ -4553,6 +4553,11 @@ input[type="checkbox"] {
 .app-sidebar-logo-link .brand-nav-logo,
 .app-sidebar-logo-link .home-nav-logo-img {
   height: 2.25rem !important;
+  max-width: 8.5rem;
+}
+
+.app-sidebar-logo-link .home-nav-logo-swap {
+  max-width: 8.5rem;
 }
 
 .app-sidebar-toggle {
@@ -4980,12 +4985,14 @@ input[type="checkbox"] {
   max-width: 10rem;
 }
 
-.app-layout-collapsed-brand .brand-nav-logo {
-  height: 3rem;
-  width: auto;
+.app-layout-collapsed-brand .brand-nav-logo,
+.app-layout-collapsed-brand .home-nav-logo-img {
+  height: 2.75rem;
   max-width: 10rem;
-  object-fit: contain;
-  object-position: left center;
+}
+
+.app-layout-collapsed-brand .home-nav-logo-swap {
+  max-width: 10rem;
 }
 
 .app-layout-main-column {
@@ -5003,15 +5010,17 @@ input[type="checkbox"] {
 
   .app-layout-mobile-brand {
     flex-shrink: 0;
-    max-width: 8.75rem;
+    max-width: 9rem;
   }
 
-  .app-layout-mobile-brand .brand-nav-logo {
-    height: 3rem;
-    max-width: 8.75rem;
-    width: auto;
-    object-fit: contain;
-    object-position: left center;
+  .app-layout-mobile-brand .brand-nav-logo,
+  .app-layout-mobile-brand .home-nav-logo-img {
+    height: 2.75rem;
+    max-width: 9rem;
+  }
+
+  .app-layout-mobile-brand .home-nav-logo-swap {
+    max-width: 9rem;
   }
 
   .app-layout-header-actions .home-nav-util-group {
@@ -5028,8 +5037,13 @@ input[type="checkbox"] {
     max-width: 10rem;
   }
 
-  .app-layout-mobile-brand .brand-nav-logo {
+  .app-layout-mobile-brand .brand-nav-logo,
+  .app-layout-mobile-brand .home-nav-logo-img {
     height: 3rem;
+    max-width: 10rem;
+  }
+
+  .app-layout-mobile-brand .home-nav-logo-swap {
     max-width: 10rem;
   }
 }
@@ -7134,7 +7148,7 @@ input[type="checkbox"] {
 
 :root {
   --brand-nav-logo-height: 3.5rem;
-  /* 40px — matches dashboard sidebar logo (h-10) */
+  --brand-nav-logo-max-width: 14rem;
 }
 
 
@@ -7226,7 +7240,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 .home-nav-logo-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex: 0 0 auto;
   padding: 0;
   border: none;
@@ -7234,7 +7248,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   cursor: pointer;
   height: var(--brand-nav-logo-height);
   width: auto;
-  max-width: 14rem;
+  max-width: var(--brand-nav-logo-max-width);
+  overflow: visible;
 }
 
 .home-nav-logo-video {
@@ -7248,36 +7263,44 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 
 .home-nav-logo-swap {
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
   flex: 0 0 auto;
   line-height: 0;
+  vertical-align: middle;
+  overflow: visible;
+  max-width: var(--brand-nav-logo-max-width);
 }
 
 .brand-nav-logo,
 .home-nav-logo-img {
+  display: block;
   height: var(--brand-nav-logo-height);
   width: auto;
-  max-width: 14rem;
+  max-width: var(--brand-nav-logo-max-width);
   object-fit: contain;
   object-position: left center;
 }
 
 .home-nav-logo-img {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.2s ease;
+  backface-visibility: hidden;
 }
 
 .home-nav-logo-img--default {
   position: relative;
+  z-index: 1;
   opacity: 1;
 }
 
 .home-nav-logo-img--hover {
   position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  max-width: none;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
@@ -7293,6 +7316,24 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 .app-sidebar-logo-link:hover .home-nav-logo-img--hover,
 .brand-logo-interactive:hover .home-nav-logo-img--hover {
   opacity: 1;
+  visibility: visible;
+}
+
+@media (hover: none) {
+  .home-nav-logo-swap:hover .home-nav-logo-img--default,
+  .home-nav-logo-btn:hover .home-nav-logo-img--default,
+  .app-sidebar-logo-link:hover .home-nav-logo-img--default,
+  .brand-logo-interactive:hover .home-nav-logo-img--default {
+    opacity: 1;
+  }
+
+  .home-nav-logo-swap:hover .home-nav-logo-img--hover,
+  .home-nav-logo-btn:hover .home-nav-logo-img--hover,
+  .app-sidebar-logo-link:hover .home-nav-logo-img--hover,
+  .brand-logo-interactive:hover .home-nav-logo-img--hover {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 
@@ -7828,28 +7869,18 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
     align-items: center;
     flex-shrink: 0;
     min-width: 0;
-    max-width: 7.2rem; /* ~115px — matches reference mobile design */
-    overflow: hidden; /* clip video/image overflow to remove black line artifact */
+    max-width: var(--brand-nav-logo-max-width);
+    overflow: visible;
   }
 
   .home-nav-logo-video {
-    max-width: 7.2rem; /* constrain animated logo video on mobile */
-    width: 100%;       /* fill the button container, don't overflow */
-  }
-
-  .brand-nav-logo,
-  .home-nav-logo-img {
-    height: 1.875rem;
-    width: auto;
-    max-width: 7.2rem; /* ~115px — matches reference mobile design */
-    min-width: 0;
-    object-fit: contain;
-    object-position: left center;
+    max-width: var(--brand-nav-logo-max-width);
+    width: 100%;
   }
 
   .home-main-nav-start .home-nav-logo-swap {
     flex-shrink: 0;
-    max-width: 7.2rem; /* ~115px — matches reference mobile design */
+    max-width: var(--brand-nav-logo-max-width);
     min-width: 0;
   }
 
@@ -7874,6 +7905,11 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 }
 
 @media (max-width: 1279px) and (min-width: 640px) {
+  :root {
+    --brand-nav-logo-height: 3rem;
+    --brand-nav-logo-max-width: 11rem;
+  }
+
   body.home-page-body {
     --home-main-nav-height: 3.625rem;
   }
@@ -7895,12 +7931,6 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
     font-size: 0.8125rem !important;
     padding: 0 0.25rem !important;
   }
-
-  .brand-nav-logo,
-  .home-nav-logo-img {
-    height: 3rem;
-    max-width: none;
-  }
 }
 
 @media (max-width: 1023px) {
@@ -7910,6 +7940,11 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 }
 
 @media (max-width: 639px) {
+  :root {
+    --brand-nav-logo-height: 1.75rem;
+    --brand-nav-logo-max-width: 7.5rem;
+  }
+
   .home-main-nav-inner {
     gap: 0.5rem;
   }
@@ -7933,12 +7968,6 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   .home-top-nav-actions .home-nav-util-currency .home-nav-currency-compact,
   .home-top-nav-actions .home-nav-util-language .home-nav-util-btn {
     font-size: 0.75rem !important;
-  }
-
-  .brand-nav-logo,
-  .home-nav-logo-img {
-    height: 1.625rem;
-    max-width: 7.2rem; /* ~115px — small mobile, matches reference design */
   }
 
   .home-nav-hamburger {

@@ -1,10 +1,11 @@
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import coBrotherLogo from '../../assets/Cobrother_logo.gif';
+import BrandLogoImage from './BrandLogoImage';
 
 export default function BrandWordmark({ inline = false, className = '', alt = 'CoBrother' }) {
   const displayClass = inline ? 'brand-wordmark-inline' : 'block';
 
   return (
-    <img
+    <BrandLogoImage
       src={coBrotherLogo}
       alt={alt}
       className={`${displayClass} ${className}`.trim()}

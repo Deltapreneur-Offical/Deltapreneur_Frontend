@@ -3,7 +3,8 @@ import { Mail, Phone, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import coBrotherLogo from '../assets/Cobrother_logo.png';
+import coBrotherLogo from '../assets/Cobrother_logo.gif';
+import BrandLogoImage from '../components/common/BrandLogoImage';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import {
@@ -76,7 +77,7 @@ export default function ContactPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <BackToHomeButton />
-          <img
+          <BrandLogoImage
             src={coBrotherLogo}
             alt="CoBrother"
             className="h-10 cursor-pointer"

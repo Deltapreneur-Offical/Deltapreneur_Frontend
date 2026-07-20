@@ -1,28 +1,40 @@
 import { useState } from 'react';
 import { ShieldCheck, Loader2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { paySslAddon } from '../../utils/domainAddonCheckout';
+import { readApiError } from '../../utils/apiError';
 
-export default function SSLForm({ onClose, onSubmit, orders }) {
+export default function SSLForm({ onClose, orders }) {
+  const { user } = useAuth();
   const [domainId, setDomainId] = useState('');
   const [certType, setCertType] = useState('dv');
   const [duration, setDuration] = useState('1');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-  const selectedOrder = orders.find(o => String(o.id) === String(domainId));
+  const selectedOrder = orders.find((o) => String(o.id) === String(domainId));
   const provider = (selectedOrder?.provider || selectedOrder?.registrar || '').toLowerCase();
   const isOpenProvider = !selectedOrder || !provider || provider === 'openprovider' || provider === 'open provider';
   const isDisabled = !isOpenProvider;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isDisabled || !domainId) return;
+    if (isDisabled || !domainId || !user) return;
     setLoading(true);
     setResult(null);
+    setError('');
     try {
-      await onSubmit?.({ orderId: domainId, certType, duration });
-      setResult({ success: true, message: 'SSL certificate purchase initiated successfully.' });
-    } catch {
-      setResult({ success: false, message: 'Failed to purchase SSL certificate. Please try again.' });
+      await paySslAddon({
+        orderId: domainId,
+        certType,
+        duration: Number(duration),
+        user,
+        description: `SSL certificate for ${selectedOrder?.domain || 'domain'}`,
+      });
+      setResult({ success: true, message: 'SSL certificate purchased successfully.' });
+    } catch (err) {
+      setError(readApiError(err, 'Failed to purchase SSL certificate. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -35,11 +47,7 @@ export default function SSLForm({ onClose, onSubmit, orders }) {
           <ShieldCheck className="w-4 h-4 text-indigo-600" />
           SSL Certificate
         </h4>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button type="button" onClick={onClose} className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">
           Close
         </button>
       </div>
@@ -54,66 +62,44 @@ export default function SSLForm({ onClose, onSubmit, orders }) {
         >
           <option value="">Select a registered domain</option>
           {orders.map((order) => (
-            <option key={order.id} value={order.id}>
-              {order.domain}
-            </option>
+            <option key={order.id} value={order.id}>{order.domain}</option>
           ))}
         </select>
-        {domainId && !isOpenProvider && (
-           <p className="text-xs text-rose-500 mt-1">This domain is not managed by OpenProvider. Services cannot be configured.</p>
-        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Certificate Type</label>
-          <select
-            value={certType}
-            onChange={(e) => setCertType(e.target.value)}
-            disabled={isDisabled}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
-          >
+          <select value={certType} onChange={(e) => setCertType(e.target.value)} disabled={isDisabled} className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm">
             <option value="dv">DV (Domain Validated)</option>
             <option value="ov">OV (Organization Validated)</option>
             <option value="ev">EV (Extended Validated)</option>
           </select>
         </div>
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Duration</label>
-          <select
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-            disabled={isDisabled}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
-          >
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Duration (years)</label>
+          <select value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isDisabled} className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm">
             <option value="1">1 Year</option>
             <option value="2">2 Years</option>
           </select>
         </div>
       </div>
 
+      {error && <p className="text-xs text-rose-600">{error}</p>}
       {result && (
-        <div className={`text-xs font-semibold rounded-xl p-3 flex items-start gap-2 ${result.success ? 'text-emerald-800 bg-emerald-50 border border-emerald-200' : 'text-rose-800 bg-rose-50 border border-rose-200'}`}>
-          {result.success ? '✓' : '✗'} {result.message}
+        <div className={`text-xs font-semibold rounded-xl p-3 ${result.success ? 'text-emerald-800 bg-emerald-50' : 'text-rose-800 bg-rose-50'}`}>
+          {result.message}
         </div>
       )}
 
-      <div className="flex justify-end pt-1">
-        <button
-          type="submit"
-          disabled={isDisabled || loading || !domainId}
-          className="inline-flex h-10 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            'Purchase SSL'
-          )}
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={isDisabled || loading || !domainId || !user}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+        {loading ? 'Processing...' : 'Pay & Purchase SSL'}
+      </button>
     </form>
   );
 }

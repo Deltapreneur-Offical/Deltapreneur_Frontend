@@ -131,9 +131,9 @@ export default function DomainServices({ orders }) {
 
     switch (service.id) {
       case 'email':
-        return <EmailForm {...commonProps} />;
+        return <EmailForm {...commonProps} onSubmit={undefined} />;
       case 'ssl':
-        return <SSLForm {...commonProps} />;
+        return <SSLForm {...commonProps} onSubmit={undefined} />;
       case 'dnssec':
         return <DNSSECForm {...commonProps} />;
       case 'transfer':

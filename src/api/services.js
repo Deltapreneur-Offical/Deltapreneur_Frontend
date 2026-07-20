@@ -204,8 +204,16 @@ export const domainStorefrontAPI = {
   verifyTransferPayment: (body) => api.post('/api/v1/domain/storefront/transfer/payment/verify', body),
   purchaseEmail: (orderId, mailbox) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email`, { mailbox }),
+  createEmailAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email/payment`, body),
+  verifyEmailAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email/payment/verify`, body),
   purchaseSSL: (orderId) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/ssl`),
+  createSslAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/ssl/payment`, body),
+  verifySslAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/ssl/payment/verify`, body),
   initiateTransferOut: (body) =>
     api.post('/api/v1/domain/storefront/transfer/out', body),
   getDnsRecords: (orderId) =>

@@ -7300,6 +7300,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   height: 100%;
   max-width: none;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
@@ -7315,6 +7316,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 .app-sidebar-logo-link:hover .home-nav-logo-img--hover,
 .brand-logo-interactive:hover .home-nav-logo-img--hover {
   opacity: 1;
+  visibility: visible;
 }
 
 @media (hover: none) {
@@ -7330,6 +7332,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   .app-sidebar-logo-link:hover .home-nav-logo-img--hover,
   .brand-logo-interactive:hover .home-nav-logo-img--hover {
     opacity: 0;
+    visibility: hidden;
   }
 }
 

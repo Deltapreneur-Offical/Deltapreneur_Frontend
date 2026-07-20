@@ -9,19 +9,19 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
   const imgBase = `${imgClassName} home-nav-logo-img`.trim();
 
   return (
-    <span className={`home-nav-logo-swap ${className}`.trim()}>
+    <span className={`home-nav-logo-swap group h-full ${className}`.trim()}>
       <BrandLogoImage
         src={logoBlack}
         alt="CoBrother"
         loading="eager"
         fetchPriority="high"
-        className={`${imgBase} home-nav-logo-img--default`.trim()}
+        className={`${imgBase} home-nav-logo-img--default !h-full !w-full !max-w-none !object-contain`.trim()}
       />
       <BrandLogoImage
         src={logoGreen}
         aria-hidden
         loading="eager"
-        className={`${imgBase} home-nav-logo-img--hover`.trim()}
+        className={`${imgBase} home-nav-logo-img--hover !h-full !w-full !max-w-none !object-contain`.trim()}
       />
     </span>
   );

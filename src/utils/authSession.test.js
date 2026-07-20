@@ -72,4 +72,9 @@ describe('authSession', () => {
     const nav = resolveOAuthCallbackNavigation({ profileComplete: true }, '/dashboard');
     expect(nav.pathname).toBe('/technology');
   });
+
+  it('defaults post-login navigation to homepage', () => {
+    const nav = resolveAfterAuthNavigation(null, { role: 'USER', profileComplete: true });
+    expect(nav.pathname).toBe('/');
+  });
 });

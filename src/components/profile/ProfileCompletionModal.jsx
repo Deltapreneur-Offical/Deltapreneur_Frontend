@@ -170,7 +170,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
             <button
               type="button"
               className="btn-glow btn-glow-sm flex-1 min-w-0 min-h-[2.75rem] bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-              onClick={() => navigate(forceOpen ? '/dashboard' : -1)}
+              onClick={() => navigate(forceOpen ? '/' : -1)}
               disabled={loading}
             >
               {t('cancel')}

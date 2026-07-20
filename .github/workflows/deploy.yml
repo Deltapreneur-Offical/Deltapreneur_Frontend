@@ -57,23 +57,49 @@ jobs:
       - name: Create deployment archive
         run: tar -czf frontend-dist.tar.gz -C dist .
 
+      - name: Preflight SSH connectivity
+        run: |
+          set -euo pipefail
+          HOST="${EC2_HOST}"
+          PORT="${EC2_SSH_PORT:-22}"
+          echo "Testing TCP connectivity to ${HOST}:${PORT} ..."
+          for attempt in 1 2 3 4 5; do
+            if timeout 25 bash -c "exec 3<>/dev/tcp/${HOST}/${PORT}" 2>/dev/null; then
+              exec 3>&-
+              echo "Port ${PORT} reachable on attempt ${attempt}"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying in 20s..."
+            sleep 20
+          done
+          echo "::error::Cannot reach EC2 on port ${PORT} after 5 attempts."
+          echo "::error::Check (1) instance is running, (2) security group allows SSH from GitHub Actions, (3) EC2_HOST is the public/elastic IP, (4) no firewall/NACL blocks port ${PORT}."
+          exit 1
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_PORT: ${{ secrets.EC2_SSH_PORT }}
+
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
+          port: ${{ secrets.EC2_SSH_PORT || 22 }}
+          timeout: 120s
+          command_timeout: 30m
           source: "frontend-dist.tar.gz,nginx-frontend.conf,scripts/update_nginx.py,scripts/deploy_nginx.sh"
           target: /tmp
 
       - name: Extract build and verify
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
+          port: ${{ secrets.EC2_SSH_PORT || 22 }}
+          timeout: 120s
+          command_timeout: 30m
           script: |
             set -euo pipefail
             DEST=/opt/cobrother/frontend/dist
@@ -90,12 +116,14 @@ jobs:
             grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
 
       - name: Restart Nginx Web Server
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
+          port: ${{ secrets.EC2_SSH_PORT || 22 }}
+          timeout: 120s
+          command_timeout: 10m
           script: |
             sudo bash /tmp/scripts/deploy_nginx.sh
             sudo rm -rf /tmp/nginx-frontend.conf

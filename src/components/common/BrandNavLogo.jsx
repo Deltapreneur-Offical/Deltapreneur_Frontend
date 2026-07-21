@@ -1,9 +1,10 @@
-import logoBlack from '../../assets/Cobrother_logo.gif';
-import logoGreen from '../../assets/Cobrother_logo_G.gif';
+import logoBlack from '../../assets/Cobrother_logo_static.png';
+import logoGreen from '../../assets/Cobrother_logo_hover.png';
 import BrandLogoImage from './BrandLogoImage';
 
 /**
- * CoBrother wordmark — black by default, green on hover.
+ * CoBrother wordmark — static black by default, green only on hover.
+ * Uses static PNG frames (not animated GIFs) so the logo does not auto-animate.
  */
 export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav-logo' }) {
   const imgBase = `${imgClassName} home-nav-logo-img`.trim();

@@ -47,7 +47,7 @@ function printInvoiceWindow(win) {
 }
 
 function formatINR(amount) {
-  return formatInr(amount);
+  return formatInr(amount, { forceDecimals: true });
 }
 
 function formatMoney(amount, currencyCode = 'INR') {

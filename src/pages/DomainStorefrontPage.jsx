@@ -1,20 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, RefreshCw, CheckCircle2, AlertCircle, Globe, ArrowRight, Loader2, Lock, ShieldAlert, Key, Plus, Sparkles, CreditCard, ChevronRight } from 'lucide-react';
+import { Search, RefreshCw, CheckCircle2, AlertCircle, Globe, ArrowRight, Loader2, Lock, ShieldAlert, Key, Plus, ChevronRight, X, ShoppingCart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { domainAPI, domainStorefrontAPI } from '../api/services';
-import { fetchStorefrontAvailableTlds, fetchStorefrontAvailableTldsPage } from '../utils/storefrontTlds';
-import { openRazorpayCheckout } from '../utils/razorpayCheckout';
-import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
+import { fetchStorefrontAvailableTldsPage } from '../utils/storefrontTlds';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
-import { resolveRegistrationPricing } from '../utils/domainRegistrationPricing';
-import DomainRegistrationPriceBreakdown from '../components/domain/DomainRegistrationPriceBreakdown';
 import { readApiError } from '../utils/apiError';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import DomainServices from '../components/storefront/DomainServices';
+import DomainCard, { DomainCardGrid } from '../components/domain/DomainCard';
 
 const DEFAULT_TLD = 'com';
 
@@ -53,22 +50,6 @@ function statusLabel(status, lifecycleStatus, t) {
   return status || life;
 }
 
-function buildContactFromUser(user) {
-  const first = user?.firstname || user?.firstName || user?.name?.split?.(' ')?.[0] || '';
-  const last = user?.lastname || user?.lastName || user?.name?.split?.(' ')?.slice(1).join(' ') || '';
-  return {
-    firstName: first,
-    lastName: last,
-    email: user?.email || '',
-    phone: user?.phoneNumber || user?.phone || '',
-    street: user?.address || user?.street || '',
-    city: user?.city || '',
-    state: user?.state || '',
-    zip: user?.zipCode || user?.zip || user?.pincode || '',
-    country: user?.country || 'IN',
-  };
-}
-
 /* ─── Premium Copy Button ─── */
 function CopyBtn({ text, label = 'Copy' }) {
   const [copied, setCopied] = useState(false);
@@ -95,109 +76,10 @@ function CopyBtn({ text, label = 'Copy' }) {
   );
 }
 
-/* ─── Storefront TLD cards (independent of Home page search) ─── */
-function hasValidRegistrationPrice(item) {
-  const unit = Number(item?.registrationPrice);
-  return Number.isFinite(unit) && unit > 0;
-}
-
-function formatTldPrice(unitPrice, currency, formatPrice) {
-  const unit = Number(unitPrice);
-  if (!Number.isFinite(unit) || unit <= 0) return null;
-  return formatPrice(currency === 'INR' ? unit : unit);
-}
-
-function StorefrontFeaturedTld({ item, onRegister }) {
-  const { formatPrice } = useCurrency();
-  const price = formatTldPrice(item.registrationPrice, item.currency, formatPrice);
-  const priceAvailable = hasValidRegistrationPrice(item);
-  const renewal = Number(item.renewalPrice);
-  const renewalText =
-    Number.isFinite(renewal) && renewal > 0 ? formatPrice(renewal) : null;
-  return (
-    <div className="bg-white border border-emerald-200 ring-1 ring-emerald-50 rounded-2xl shadow-sm p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div className="space-y-1.5">
-        <span className="inline-block text-[0.65rem] font-bold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wide">
-          Cheapest · Best Value
-        </span>
-        <h3 className="text-3xl font-extrabold text-gray-950">
-          {item.name}
-          <span className="text-emerald-600">.{item.tld}</span>
-        </h3>
-        {price != null && (
-          <p className="text-xs text-gray-500">
-            from {price}/yr{renewalText ? ` · renews ${renewalText}/yr` : ''}
-          </p>
-        )}
-      </div>
-      <div className="text-right sm:text-left">
-        {price != null ? (
-          <p className="text-2xl font-extrabold text-gray-950 mb-3">
-            {price}
-            <span className="text-xs font-normal text-gray-400 ml-1">/yr</span>
-          </p>
-        ) : (
-          <p className="text-sm font-semibold text-gray-400 mb-3">Price unavailable</p>
-        )}
-        <button
-          type="button"
-          onClick={() => onRegister(item)}
-          disabled={!priceAvailable}
-          className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-6 rounded-xl transition-all shadow-sm select-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-indigo-600"
-        >
-          Register <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function StorefrontTldCard({ item, onRegister }) {
-  const { formatPrice } = useCurrency();
-  const price = formatTldPrice(item.registrationPrice, item.currency, formatPrice);
-  const priceAvailable = hasValidRegistrationPrice(item);
-  const renewal = Number(item.renewalPrice);
-  const renewalText =
-    Number.isFinite(renewal) && renewal > 0 ? formatPrice(renewal) : null;
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 hover:shadow-[0_8px_28px_rgba(79,70,229,0.10)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between gap-3">
-      <div className="space-y-1">
-        <h4 className="text-xl font-extrabold text-gray-950">
-          {item.name}
-          <span className="text-purple-600">.{item.tld}</span>
-        </h4>
-        {price != null && (
-          <p className="text-xs text-gray-500">
-            from {price}/yr{renewalText ? ` · renews ${renewalText}/yr` : ''}
-          </p>
-        )}
-      </div>
-      <div className="flex items-center justify-between">
-        {price != null ? (
-          <p className="text-lg font-extrabold text-gray-950">
-            {price}
-            <span className="text-[11px] font-normal text-gray-400 ml-1">/yr</span>
-          </p>
-        ) : (
-          <span className="text-xs font-semibold text-gray-400">Price unavailable</span>
-        )}
-        <button
-          type="button"
-          onClick={() => onRegister(item)}
-          disabled={!priceAvailable}
-          className="inline-flex items-center justify-center gap-1 text-xs font-bold text-white bg-gray-900 hover:bg-gray-700 px-4 h-9 rounded-lg transition-all select-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-900"
-        >
-          Register
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function DomainStorefrontPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, formatDomainPrice } = useCurrency();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -219,17 +101,12 @@ export default function DomainStorefrontPage() {
   const [tldHasMore, setTldHasMore] = useState(false);
   const [tldLoadingMore, setTldLoadingMore] = useState(false);
 
-  // Ref to scroll to the registration form when a TLD's Register button is
-  // clicked (opens the existing form below the results without a new search).
-  const registerCardRef = useRef(null);
+  // Aborts the in-flight availability check + TLD load so the user can cancel a
+  // slow search and immediately search again.
+  const checkAbortRef = useRef(null);
 
-  const [config, setConfig] = useState(null);
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
-
-  const [contact, setContact] = useState(() => buildContactFromUser(user));
-  const [period, setPeriod] = useState(1);
-  const [payLoading, setPayLoading] = useState(false);
   const [payError, setPayError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -247,22 +124,6 @@ export default function DomainStorefrontPage() {
   const [outSuccessCode, setOutSuccessCode] = useState('');
   const [outSuccessMsg, setOutSuccessMsg] = useState('');
 
-  useEffect(() => {
-    setContact((prev) => ({
-      ...prev,
-      ...buildContactFromUser(user),
-    }));
-  }, [user]);
-
-  const loadConfig = useCallback(async () => {
-    try {
-      const { data } = await domainStorefrontAPI.getConfig();
-      setConfig(data?.data ?? data);
-    } catch {
-      setConfig(null);
-    }
-  }, []);
-
   const loadOrders = useCallback(async () => {
     setOrdersLoading(true);
     try {
@@ -276,11 +137,10 @@ export default function DomainStorefrontPage() {
   }, []);
 
   useEffect(() => {
-    loadConfig();
     loadOrders();
-  }, [loadConfig, loadOrders]);
+  }, [loadOrders]);
 
-  const loadStorefrontTlds = useCallback(async (raw) => {
+  const loadStorefrontTlds = useCallback(async (raw, signal) => {
     const fqdn = parseDomainInput(raw, DEFAULT_TLD);
     const label = fqdn ? fqdn.split('.')[0] : '';
     if (!label) {
@@ -296,7 +156,8 @@ export default function DomainStorefrontPage() {
     setTldPage(1);
     setTldHasMore(false);
     try {
-      const { items, moreAvailable } = await fetchStorefrontAvailableTldsPage(label, 1);
+      const { items, moreAvailable } = await fetchStorefrontAvailableTldsPage(label, 1, { signal });
+      if (signal?.aborted) return;
       setTldItems(items);
       setTldPage(2);
       setTldHasMore(moreAvailable);
@@ -304,7 +165,10 @@ export default function DomainStorefrontPage() {
       // stale error from the independent single-domain check so we never show
       // a false "server error" banner over valid results.
       setCheckError('');
-    } catch {
+    } catch (err) {
+      if (signal?.aborted || err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
+        return;
+      }
       setTldError(t('storefrontTldsFailed', { defaultValue: 'Could not load available extensions. Please try again.' }));
       setTldItems([]);
       setTldPage(1);
@@ -323,13 +187,14 @@ export default function DomainStorefrontPage() {
     setTldLoadingMore(true);
     try {
       const { items, moreAvailable } = await fetchStorefrontAvailableTldsPage(label, tldPage);
+      // Append whatever this window returned (may be empty) and keep the
+      // "View More" control driven by the backend's paging flag so a sparse
+      // window never ends pagination prematurely.
       if (items.length) {
         setTldItems((prev) => [...prev, ...items]);
-        setTldPage((p) => p + 1);
-        setTldHasMore(moreAvailable);
-      } else {
-        setTldHasMore(false);
       }
+      setTldPage((p) => p + 1);
+      setTldHasMore(moreAvailable);
     } catch {
       setTldHasMore(false);
     } finally {
@@ -342,75 +207,84 @@ export default function DomainStorefrontPage() {
       const fqdn = parseDomainInput(raw, DEFAULT_TLD);
       if (!fqdn) return;
 
+      // Cancel any previously running check so a new/refreshed search always
+      // starts clean and never gets stuck behind a slow prior request.
+      if (checkAbortRef.current) {
+        checkAbortRef.current.abort();
+      }
+      const controller = new AbortController();
+      checkAbortRef.current = controller;
+      const { signal } = controller;
+
       setChecking(true);
       setCheckError('');
       setCheckResult(null);
       setSuccessMessage('');
       setPayError('');
 
+      // Start TLD extensions in parallel with the exact-match check so the list
+      // does not wait on the (often slower) single-domain pricing round-trip.
+      const tldsPromise = loadStorefrontTlds(raw, signal);
+
       try {
-        const { data } = await domainAPI.check(encodeURIComponent(fqdn));
+        const { data } = await domainAPI.check(encodeURIComponent(fqdn), undefined, { signal });
+        if (signal.aborted) return;
         const result = data?.data ?? data;
         setCheckResult(result);
         setSearchParams({ domain: fqdn }, { replace: true });
-        if (result?.minPeriodYears && result.minPeriodYears > period) {
-          setPeriod(result.minPeriodYears);
-        }
       } catch (err) {
+        if (signal.aborted || err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
+          return; // user cancelled — no error UI
+        }
         setCheckError(readApiError(err, t('storefrontCheckFailed')));
       } finally {
-        setChecking(false);
+        // Only clear the spinner if this is still the active request (a newer
+        // search may have replaced it).
+        if (checkAbortRef.current === controller) {
+          setChecking(false);
+        }
       }
 
-      // Independent storefront TLD availability list (does not touch the Home
-      // page search or its shared cache).
-      loadStorefrontTlds(raw);
+      await tldsPromise;
     },
-    [period, setSearchParams, t, loadStorefrontTlds],
+    [setSearchParams, t, loadStorefrontTlds],
   );
 
-  useEffect(() => {
-    if (initialDomain) {
-      runCheck(initialDomain);
+  const handleCancelCheck = useCallback(() => {
+    if (checkAbortRef.current) {
+      checkAbortRef.current.abort();
+      checkAbortRef.current = null;
     }
+    setChecking(false);
+    setTldLoading(false);
+    setTldLoadingMore(false);
+    setCheckError('');
+  }, []);
+
+  useEffect(() => {
+    // On every mount / page refresh, read the domain straight from the URL and
+    // re-run the availability check so the UI always reflects the LATEST API
+    // response for that domain. runCheck() aborts any previous in-flight request
+    // and resets checkResult before fetching, so there is no stale React state,
+    // memoization or cached UI blocking the update. The user can still cancel a
+    // slow check via the Cancel button.
+    const domainFromUrl = searchParams.get('domain') || '';
+    if (domainFromUrl) {
+      runCheck(domainFromUrl);
+    }
+    return () => {
+      // Abort any in-flight check when leaving the page.
+      if (checkAbortRef.current) {
+        checkAbortRef.current.abort();
+        checkAbortRef.current = null;
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
     runCheck(query);
-  };
-
-  const handleRegisterTld = (item) => {
-    if (!item) return;
-    // Never open checkout for a TLD that has no valid registration price —
-    // otherwise the summary/taxes would be computed from ₹0.
-    if (!hasValidRegistrationPrice(item)) {
-      setCheckError(
-        t('storefrontTldPriceUnavailable', {
-          defaultValue: 'Registration price is unavailable for this extension. Please choose another.',
-        }),
-      );
-      return;
-    }
-    // Open the existing registration form for the clicked TLD. We do NOT run a
-    // new search or overwrite the search box — just populate the form with the
-    // selected domain and scroll it into view.
-    const fqdn = `${item.name}.${item.tld}`;
-    setQuery(fqdn);
-    setCheckError('');
-    setCheckResult({
-      domain: fqdn,
-      status: 'available',
-      unitPrice: item.registrationPrice ?? null,
-      price: item.registrationPrice ?? null,
-      priceCurrency: item.currency || 'INR',
-      minPeriodYears: 1,
-    });
-    setActiveTab('register');
-    requestAnimationFrame(() => {
-      registerCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
   };
 
   const handleTransferSubmit = async (e) => {
@@ -461,93 +335,8 @@ export default function DomainStorefrontPage() {
     } finally { setOutLoading(false); }
   };
 
-  const canRegister = checkResult?.status === 'available';
-  const isMarketplace = checkResult?.status === 'marketplace';
-
-  const pricing = useMemo(() => {
-    if (!canRegister || !checkResult?.unitPrice) return null;
-    return resolveRegistrationPricing(checkResult, period, config?.gst);
-  }, [canRegister, checkResult, period, config?.gst]);
-
-  const displayTotal = pricing?.total ?? null;
-
-  const [redeemPoints, setRedeemPoints] = useState(false);
-  const [finalPayable, setFinalPayable] = useState(displayTotal);
-
-  useEffect(() => {
-    setFinalPayable(displayTotal);
-  }, [displayTotal]);
-
-  const updateContact = (field, value) => {
-    setContact((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handlePay = async () => {
-    if (!canRegister || !checkResult?.domain) return;
-
-    setPayLoading(true);
-    setPayError('');
-    setSuccessMessage('');
-
-    try {
-      const { data: orderPayload } = await domainStorefrontAPI.createOrder({
-        domain: checkResult.domain,
-        period,
-        contact,
-      }, redeemPoints);
-      const orderData = orderPayload?.data ?? orderPayload;
-
-      openRazorpayCheckout({
-        orderData,
-        user,
-        description: `Register ${checkResult.domain}`,
-        onSuccess: async (response) => {
-          try {
-            const { data: verifyPayload } = await domainStorefrontAPI.verifyOrder({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            });
-            const verify = verifyPayload?.data ?? verifyPayload;
-            const orderId = verify?.orderId;
-            if (verify?.success) {
-              await loadOrders();
-              if (orderId) {
-                navigate(registrationOrderDetailPath(orderId));
-                return;
-              }
-              setSuccessMessage(
-                verify.message || t('storefrontRegisterSuccess', { domain: checkResult.domain }),
-              );
-              setCheckResult(null);
-              setQuery('');
-              setSearchParams({}, { replace: true });
-            } else {
-              setPayError(verify?.message || t('storefrontProvisionPending'));
-              await loadOrders();
-              if (orderId) {
-                navigate(registrationOrderDetailPath(orderId));
-              }
-            }
-          } catch (err) {
-            setPayError(readApiError(err, t('storefrontVerifyFailed')));
-          } finally {
-            setPayLoading(false);
-          }
-        },
-        onFailure: () => {
-          setPayError(t('storefrontPaymentFailed'));
-          setPayLoading(false);
-        },
-        onDismiss: () => {
-          setPayLoading(false);
-        },
-      });
-    } catch (err) {
-      setPayError(readApiError(err, t('storefrontOrderFailed')));
-      setPayLoading(false);
-    }
-  };
+  const isMarketplace = checkResult?.status === 'marketplace'; // reserved for marketplace CTA if needed
+  void isMarketplace;
 
   const handleRetry = async (orderId) => {
     try {
@@ -637,6 +426,16 @@ export default function DomainStorefrontPage() {
                         'Check Availability'
                       )}
                     </button>
+                    {checking && (
+                      <button
+                        type="button"
+                        onClick={handleCancelCheck}
+                        className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold px-4 text-sm transition-all select-none"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancel
+                      </button>
+                    )}
                   </form>
                 </div>
 
@@ -648,36 +447,43 @@ export default function DomainStorefrontPage() {
                 )}
 
                 {checkResult && !checkError && checkResult.status === 'available' && (
-                  <div className="mt-6 rounded-xl border border-gray-150 p-5 bg-gray-50/50">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-gray-950">{checkResult.domain}</span>
-                        {checkResult.status === 'available' ? (
-                          <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wide">
-                            Available
-                          </span>
-                        ) : (
-                          <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700 uppercase tracking-wide">
-                            Taken
-                          </span>
-                        )}
-                      </div>
-                      
-                      {checkResult.status === 'available' && displayTotal != null && (
-                        <div className="text-right">
-                          <p className="text-2xl font-extrabold text-gray-950">
-                            {formatPrice(displayTotal)}
-                            <span className="text-xs font-normal text-gray-400 ml-1">
-                              / {period} {period === 1 ? 'Year' : 'Years'}
-                            </span>
-                          </p>
-                        </div>
-                      )}
+                  <div className="mt-6">
+                    <DomainCard
+                      featured
+                      item={{
+                        domain: checkResult.domain,
+                        name: String(checkResult.domain || '').split('.')[0],
+                        tld: String(checkResult.domain || '').split('.').slice(1).join('.'),
+                        status: 'available',
+                        available: true,
+                        registrationPrice: checkResult.unitPrice ?? checkResult.price,
+                        renewalPrice: checkResult.renewalPrice,
+                        period: checkResult.minPeriodYears || 1,
+                      }}
+                    />
+                    <p className="mt-3 text-xs text-gray-500 flex items-center gap-1.5">
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      Add domains to cart, then complete registrant details and payment in{' '}
+                      <Link to="/cart" className="font-semibold text-indigo-600 hover:underline">
+                        Cart
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                )}
+
+                {checkResult && !checkError && checkResult.status === 'taken' && (
+                  <div className="mt-6 rounded-xl border border-rose-100 p-5 bg-rose-50/40">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-bold text-gray-950">{checkResult.domain}</span>
+                      <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700 uppercase tracking-wide">
+                        Taken
+                      </span>
                     </div>
                   </div>
                 )}
 
-                {/* Available TLDs (independent of the Home page search) */}
+                {/* Available TLDs — same DomainCard as Homepage */}
                 {tldLoading && (
                   <div className="mt-6 flex items-center gap-2.5 text-sm text-gray-500 bg-gray-50 border border-gray-150 rounded-xl p-4">
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -703,17 +509,7 @@ export default function DomainStorefrontPage() {
                       </span>
                     </div>
 
-                    {/* Featured / cheapest available domain */}
-                    <StorefrontFeaturedTld item={tldItems[0]} onRegister={handleRegisterTld} />
-
-                    {/* Remaining available extensions, ascending price */}
-                    {tldItems.length > 1 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {tldItems.slice(1).map((item) => (
-                          <StorefrontTldCard key={item.tld} item={item} onRegister={handleRegisterTld} />
-                        ))}
-                      </div>
-                    )}
+                    <DomainCardGrid items={tldItems} featuredFirst />
 
                     {tldHasMore && (
                       <div className="flex justify-center pt-1">
@@ -747,108 +543,6 @@ export default function DomainStorefrontPage() {
                   </div>
                 )}
               </section>
-
-              {/* Checkout Contact Card */}
-              {canRegister && (
-                <section ref={registerCardRef} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
-                  {/* Selected domain summary — verifies what is being registered */}
-                  <div className="bg-gradient-to-b from-indigo-50/60 via-violet-50/20 to-transparent rounded-xl border border-indigo-100 p-5">
-                    <p className="text-[0.7rem] font-bold uppercase tracking-wider text-indigo-600">
-                      Registering Domain
-                    </p>
-                    <p className="mt-1.5 text-2xl font-extrabold text-gray-950 tracking-tight">
-                      {checkResult.domain}
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-gray-500">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase tracking-wide">
-                          Available
-                        </span>
-                      </span>
-                      <span>
-                        Registration Period: {period} {period === 1 ? 'Year' : 'Years'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-                    <Sparkles className="w-5 h-5 text-indigo-600" />
-                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">Registrant Details</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      ['firstName', 'First Name'],
-                      ['lastName', 'Last Name'],
-                      ['email', 'Email Address'],
-                      ['phone', 'Phone Number'],
-                      ['street', 'Street Address'],
-                      ['city', 'City'],
-                      ['state', 'State / Region'],
-                      ['zip', 'Zip / Postal Code'],
-                    ].map(([field, label]) => (
-                      <div key={field} className="space-y-1.5">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</span>
-                        <input
-                          type={field === 'email' ? 'email' : 'text'}
-                          value={contact[field] || ''}
-                          onChange={(e) => updateContact(field, e.target.value)}
-                          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
-                          required
-                        />
-                      </div>
-                    ))}
-
-                    <div className="space-y-1.5">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Registration Period</span>
-                      <select
-                        value={period}
-                        onChange={(e) => setPeriod(Number(e.target.value))}
-                        className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
-                      >
-                        {[1, 2, 3, 5, 10].map((y) => (
-                          <option key={y} value={y}>
-                            {y} {y === 1 ? 'Year' : 'Years'}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {pricing && (
-                    <div className="bg-gray-50 border border-gray-150 rounded-xl p-4">
-                      <DomainRegistrationPriceBreakdown pricing={pricing} />
-                    </div>
-                  )}
-
-                  {payError && (
-                    <div className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-                      <span>{payError}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end border-t border-gray-100 pt-4">
-                    <button
-                      type="button"
-                      className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-8 rounded-xl transition-all shadow-sm select-none"
-                      onClick={handlePay}
-                      disabled={payLoading}
-                    >
-                      {payLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Opening Secure Checkout...
-                        </>
-                      ) : (
-                        <>
-                          Proceed to Payment <ChevronRight className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </section>
-              )}
             </div>
           )}
 
@@ -1076,7 +770,7 @@ export default function DomainStorefrontPage() {
                           </Link>
                         </td>
                         <td className="py-4 pr-4 text-gray-600 font-medium">
-                          {formatPrice(order.priceInr || 0)}
+                          {formatDomainPrice(order.priceInr || 0)}
                         </td>
                         <td className="py-4 pr-4">
                           <span

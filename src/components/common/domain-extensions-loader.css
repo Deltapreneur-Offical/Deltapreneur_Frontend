@@ -1,0 +1,139 @@
+/* Domain TLD progressive-load strip — premium SaaS loading pill */
+
+.domain-tld-loader__pill {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+.domain-tld-loader__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.domain-tld-loader__message-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 1.25rem;
+  overflow: hidden;
+}
+
+.domain-tld-loader__message {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  will-change: opacity, transform;
+}
+
+.domain-tld-loader__message--in {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.domain-tld-loader__message--out {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+/* Sequential three-dot pulse (chat/AI style) */
+.domain-tld-dots {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.28rem;
+  padding-left: 0.15rem;
+}
+
+.domain-tld-dots__dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: #a78bfa;
+  opacity: 0.35;
+  transform: scale(0.85);
+  animation: domain-tld-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.domain-tld-dots__dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.domain-tld-dots__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.domain-tld-dots__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes domain-tld-dot-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+    background: #c4b5fd;
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+    background: #7c3aed;
+  }
+}
+
+@media (max-width: 640px) {
+  .domain-tld-loader__pill {
+    gap: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 1.15rem;
+  }
+
+  .domain-tld-loader__message {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .domain-tld-loader__message--in,
+  .domain-tld-loader__message--out {
+    transition: none;
+    transform: none;
+  }
+
+  .domain-tld-dots__dot {
+    animation: none;
+    opacity: 0.7;
+    transform: none;
+  }
+}

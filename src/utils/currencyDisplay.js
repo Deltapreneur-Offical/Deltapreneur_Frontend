@@ -3,7 +3,7 @@ import {
   DEFAULT_LISTING_CURRENCY,
   SUPPORTED_CURRENCIES,
 } from '../constants/currencies';
-import { normalizeInrDisplay, roundInr, roundMoney } from './money';
+import { roundInr, roundMoney } from './money';
 
 const SYMBOLS = {
   "AED": "AED",
@@ -327,6 +327,7 @@ export function convertForeignToInr(amount, fromCurrency, meta = FALLBACK_META) 
 
 /**
  * Convert an INR-stored amount to the target currency (display only).
+ * INR keeps paisa (2 dp); foreign amounts use 2 dp after FX.
  */
 export function convertPrice(inrAmount, currencyCode, meta = FALLBACK_META) {
   return convertInrAmount(inrAmount, currencyCode, meta);
@@ -337,36 +338,50 @@ export function convertInrAmount(inrAmount, currencyCode, meta = FALLBACK_META) 
   const m = meta && typeof meta === 'object' ? meta : buildFallbackMetaFromRates();
   const inr = safeNumber(inrAmount, 0);
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
-  if (code === 'INR') return roundInr(inr);
+  if (code === 'INR') return roundMoney(inr);
   const fallback = buildFallbackMetaFromRates();
   const rate = safeNumber(m[code]?.rateFromInr ?? fallback[code]?.rateFromInr, 0);
-  if (!rate) return roundInr(inr);
+  if (!rate) return roundMoney(inr);
   return roundMoney(inr * rate);
 }
 
-function fractionDigitsFor(amount, code) {
+function fractionDigitsFor(amount, { force = null } = {}) {
+  if (force != null) return force;
   const normalized = roundMoney(amount);
   return Number.isInteger(normalized) ? 0 : 2;
 }
 
 /**
  * Format a converted amount with locale-aware grouping and currency symbols.
+ * @param {number} amount
+ * @param {string} currencyCode
+ * @param {object} meta
+ * @param {{ minimumFractionDigits?: number, maximumFractionDigits?: number }} [options]
  */
-export function formatCurrency(amount, currencyCode, meta = FALLBACK_META) {
+export function formatCurrency(amount, currencyCode, meta = FALLBACK_META, options = {}) {
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
   const safeMeta = meta && typeof meta === 'object' ? meta : buildFallbackMetaFromRates();
-  const amt = code === 'INR' ? normalizeInrDisplay(amount) : roundMoney(safeNumber(amount, 0));
+  // Preserve calculated paisa for INR (domain commission, OP wholesale, GST).
+  // Whole-rupee snap remains available via roundInr() for form storage only.
+  const amt = roundMoney(safeNumber(amount, 0));
   const cfg = CURRENCY_FORMAT[code] || {};
   const locale = cfg.locale || 'en-US';
-  const fractionDigits = fractionDigitsFor(amt, code);
+  const maxFd =
+    options.maximumFractionDigits != null
+      ? options.maximumFractionDigits
+      : fractionDigitsFor(amt);
+  const minFd =
+    options.minimumFractionDigits != null
+      ? options.minimumFractionDigits
+      : maxFd;
 
   if (code === 'INR' && !cfg.prefixWithCode) {
     try {
       return new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits,
+        minimumFractionDigits: minFd,
+        maximumFractionDigits: maxFd,
       }).format(amt);
     } catch {
       /* fall through to manual symbol */
@@ -376,8 +391,8 @@ export function formatCurrency(amount, currencyCode, meta = FALLBACK_META) {
   let formatted;
   try {
     formatted = amt.toLocaleString(locale, {
-      minimumFractionDigits: fractionDigits,
-      maximumFractionDigits: fractionDigits,
+      minimumFractionDigits: minFd,
+      maximumFractionDigits: maxFd,
     });
   } catch {
     formatted = String(amt);
@@ -393,27 +408,48 @@ export function formatCurrency(amount, currencyCode, meta = FALLBACK_META) {
   return `${sym}${formatted}`;
 }
 
-/** Convert INR → selected currency and format for UI. */
-export function formatInrAsCurrency(inrAmount, currencyCode, meta = FALLBACK_META) {
+/**
+ * Convert INR → selected currency and format for UI.
+ * Preserves 2-decimal precision for non-whole amounts (no silent whole-rupee rounding).
+ * @param {number} inrAmount
+ * @param {string} currencyCode
+ * @param {object} meta
+ * @param {{ minimumFractionDigits?: number, maximumFractionDigits?: number }} [options]
+ */
+export function formatInrAsCurrency(inrAmount, currencyCode, meta = FALLBACK_META, options = {}) {
   try {
     const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
     const converted = convertPrice(inrAmount, code, meta);
-    return formatCurrency(converted, code, meta);
+    return formatCurrency(converted, code, meta, options);
   } catch {
+    const amt = roundMoney(safeNumber(inrAmount, 0));
+    const maxFd = options.maximumFractionDigits != null ? options.maximumFractionDigits : fractionDigitsFor(amt);
+    const minFd = options.minimumFractionDigits != null ? options.minimumFractionDigits : maxFd;
     try {
       return new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(normalizeInrDisplay(inrAmount));
+        minimumFractionDigits: minFd,
+        maximumFractionDigits: maxFd,
+      }).format(amt);
     } catch {
-      return `₹${normalizeInrDisplay(inrAmount).toLocaleString('en-IN', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+      return `₹${amt.toLocaleString('en-IN', {
+        minimumFractionDigits: minFd,
+        maximumFractionDigits: maxFd,
       })}`;
     }
   }
+}
+
+/**
+ * Domain registration / OpenProvider-style money: always show 2 decimal places.
+ * Use for Homepage, Storefront, AI, Cart, Checkout domain line items.
+ */
+export function formatDomainMoney(inrAmount, currencyCode, meta = FALLBACK_META) {
+  return formatInrAsCurrency(inrAmount, currencyCode, meta, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 export function getCurrencySymbol(code, meta = FALLBACK_META) {

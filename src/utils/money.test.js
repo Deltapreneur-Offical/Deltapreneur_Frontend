@@ -28,4 +28,9 @@ describe('money', () => {
   it('formats INR with grouping', () => {
     expect(formatInr(12345)).toBe('₹12,345');
   });
+
+  it('preserves paisa for calculated domain prices', () => {
+    expect(formatInr(1165.19)).toBe('₹1,165.19');
+    expect(formatInr(1059.26, { forceDecimals: true })).toBe('₹1,059.26');
+  });
 });

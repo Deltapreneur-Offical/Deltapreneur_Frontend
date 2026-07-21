@@ -10,11 +10,12 @@ import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiA
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
-import { fetchAvailableTlds, fetchAvailableTldsPage } from '../../utils/availableTlds';
-import AddToCartButton from '../cart/AddToCartButton';
+import { fetchAvailableTldsPage, fetchAvailableTldsChunk, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
+import { DomainCardGrid } from '../domain/DomainCard';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
+import DomainExtensionsLoader from './DomainExtensionsLoader';
 import {
   heroSearchStackEnter,
   heroSubmitHover,
@@ -23,41 +24,6 @@ import {
   heroTabSpring,
   HOME_EASE_OUT,
 } from '../home/motion/homeMotion';
-
-function domainToUuid(domain) {
-  let hash = 0;
-  const str = domain.toLowerCase().trim();
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-  }
-  const hex = Math.abs(hash).toString(16).padStart(8, '0');
-  return `00000000-0000-4000-8000-${hex.padStart(12, '0')}`;
-}
-
-function domainRegistrationPrice(result) {
-  const unit = Number(result.unitPrice ?? result.price);
-  const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
-  return Number.isFinite(unit) ? unit * years : 0;
-}
-
-function DomainCartCorner({ result, className = 'absolute top-3 right-3 z-10' }) {
-  if (result?.status !== 'available') return null;
-  const domain = `${result.name}.${result.ext}`;
-  return (
-    <AddToCartButton
-      variant="corner"
-      className={className}
-      productType="DOMAIN_REGISTRATION"
-      productId={domainToUuid(domain)}
-      metadata={{
-        domainName: domain,
-        price: domainRegistrationPrice(result),
-        tld: result.ext,
-        period: result.minPeriodYears || 1,
-      }}
-    />
-  );
-}
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
@@ -397,7 +363,7 @@ function damerauLevenshteinDistance(a, b) {
 
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
-  const { formatPrice, convertToInr } = useCurrency();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const animateHero = embedded && !reduceMotion;
@@ -413,6 +379,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const [tldPage, setTldPage] = useState(1);
   const [tldHasMore, setTldHasMore] = useState(false);
   const [tldLoadingMore, setTldLoadingMore] = useState(false);
+  const [tldLoading, setTldLoading] = useState(false);
+  /** Real backend chunk progress for remaining TLDs (1→100). */
+  const [tldProgress, setTldProgress] = useState(0);
+  const [tldSkeletonCount, setTldSkeletonCount] = useState(0);
   const debounceRef           = useRef(null);
   const newSearchCacheRef = useRef(new Map());
   const requestIdRef = useRef(0);
@@ -440,6 +410,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     setPremiumDomains([]);
     setAuctionResults([]);
     setLoading(false);
+    setTldLoading(false);
+    setTldProgress(0);
+    setTldSkeletonCount(0);
     setPremiumLoading(false);
     setAuctionsLoading(false);
   }, [resetAiDomains]);
@@ -482,69 +455,242 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     };
   };
 
-  const searchAllTlds = async (label, force = false, currentRequestId) => {
+  const mapCheckResult = (fullDomain, data) => {
+    const [name, ...extParts] = fullDomain.split('.');
+    const ext = extParts.join('.');
+    const listing = data.listing ? normalizeDomainRecord(data.listing) : null;
+    const onPublicMarketplace = data.status === 'marketplace'
+      && listing
+      && isPublicMarketplaceListing(listing, 'domain');
+    return {
+      domain: fullDomain,
+      name,
+      ext,
+      status: onPublicMarketplace ? 'marketplace' : (data.status === 'marketplace' ? 'taken' : data.status),
+      available: data.status === 'available',
+      price: data.price ?? null,
+      unitPrice: data.unitPrice ?? data.price ?? null,
+      priceCurrency: data.priceCurrency ?? null,
+      minPeriodYears: data.minPeriodYears ?? 1,
+      registrarMessage: data.message ?? null,
+      listing: onPublicMarketplace ? listing : null,
+    };
+  };
+
+  /**
+   * Homepage Domain Names — primary result paints ASAP; remaining TLDs load
+   * in the background (same APIs as Storefront, progressive UI).
+   */
+  const searchAllTlds = async (raw, force = false, currentRequestId) => {
+    const q = toSafeLower(raw).trim();
+    if (!q) return;
+
+    const hasTld = q.includes('.');
+    const label = hasTld ? q.split('.')[0] : q;
+    const fqdn = hasTld ? q : `${label}.com`;
     const cacheKey = `all-tlds:${label}`;
+
     if (!force && newSearchCacheRef.current.has(cacheKey)) {
       const cached = newSearchCacheRef.current.get(cacheKey);
       setResults(cached);
-      // Cache hit holds the fully-loaded set; keep "View More" hidden.
       setTldPage(2);
       setTldHasMore(false);
       setLoading(false);
+      setTldLoading(false);
+      setTldProgress(0);
+      setTldSkeletonCount(0);
       return;
     }
 
-    const seededResults = Array.from({ length: 7 }, () => ({
-      domain: `${label}.tld`,
+    setTldLoading(true);
+    setTldProgress(1);
+    setTldSkeletonCount(6);
+    setResults([{
+      domain: fqdn,
       name: label,
-      ext: 'tld',
+      ext: fqdn.split('.').slice(1).join('.') || 'com',
       status: 'loading',
       price: null,
       unitPrice: null,
       priceCurrency: null,
       minPeriodYears: 1,
       listing: null,
-    }));
-    setResults(seededResults);
-    const nextResults = seededResults.map((item) => ({ ...item }));
+    }]);
 
-    try {
-      // Reuse the shared TLD search (same API request + filter + sort as the
-      // Domain Management /storefront page) so both pages return identical
-      // available TLDs in the same TLD-ascending order. First page only
-      // (pageSize=50) so the initial response stays within gateway timeouts;
-      // further TLDs are loaded via "View More" (loadMoreTlds).
-      const { items, moreAvailable } = await fetchAvailableTldsPage(label, 1);
+    const mergeMappedIntoResults = (mapped) => {
+      setResults((prev) => {
+        const exact = prev.find(
+          (r) =>
+            r.domain === fqdn
+            && (r.status === 'available' || r.status === 'marketplace')
+            && r.unitPrice != null,
+        );
+        const byDomain = new Map();
+        if (exact) byDomain.set(exact.domain, exact);
+        for (const item of mapped) {
+          if (!item?.domain || item.status === 'loading') continue;
+          if (!byDomain.has(item.domain)) byDomain.set(item.domain, item);
+        }
+        // Keep any other already-painted available rows (from prior chunks).
+        for (const row of prev) {
+          if (
+            row.status === 'available'
+            || row.status === 'marketplace'
+            || (row.available === true && row.unitPrice != null)
+          ) {
+            if (!byDomain.has(row.domain)) byDomain.set(row.domain, row);
+          }
+        }
+        const list = [...byDomain.values()];
+        if (exact) {
+          return [exact, ...list.filter((it) => it.domain !== exact.domain)];
+        }
+        return list;
+      });
+    };
 
-      const mapped = items.map((item) => mapTldItem(item, label));
-
-      if (requestIdRef.current !== currentRequestId) return;
-      newSearchCacheRef.current.set(cacheKey, mapped);
-      setResults(mapped);
-      setTldPage(2);
-      setTldHasMore(moreAvailable);
-    } catch (err) {
-      if (requestIdRef.current !== currentRequestId) return;
-      const registrarMessage =
-        err?.response?.data?.message
-        || err?.response?.data?.error
-        || err?.message
-        || 'Could not fetch available extensions.';
-      setResults(
-        nextResults.map((item) => ({
-          ...item,
-          status: 'error',
-          registrarMessage,
-        })),
-      );
-    } finally {
-      if (requestIdRef.current === currentRequestId) {
+    // Primary / exact-match — paint ASAP so Add to Cart is usable immediately.
+    const checkPromise = (async () => {
+      try {
+        const { data } = await domainAPI.check(fqdn, 'new');
+        if (requestIdRef.current !== currentRequestId) return null;
+        const mapped = mapCheckResult(fqdn, data?.data ?? data);
+        setResults((prev) => {
+          const rest = prev.filter((r) => r.status !== 'loading' && r.domain !== fqdn);
+          if (mapped.status === 'available' || mapped.status === 'marketplace') {
+            return [mapped, ...rest];
+          }
+          return rest.length ? rest : [mapped];
+        });
         setLoading(false);
+        return mapped;
+      } catch {
+        if (requestIdRef.current === currentRequestId) setLoading(false);
+        return null;
       }
-    }
+    })();
+
+    // Remaining TLDs: progressive backend chunks → real progress + card-by-card reveal.
+    void (async () => {
+      const collected = [];
+      try {
+        let chunkIndex = 0;
+        let chunkTotal = null;
+        let moreChunks = true;
+
+        while (moreChunks) {
+          if (requestIdRef.current !== currentRequestId) return;
+
+          const {
+            items,
+            moreAvailable,
+            chunkTotal: totalFromApi,
+            moreChunks: moreFromApi,
+          } = await fetchAvailableTldsChunk(label, chunkIndex, {
+            chunkSize: DOMAIN_SEARCH_CHUNK_SIZE,
+          });
+
+          if (requestIdRef.current !== currentRequestId) return;
+
+          if (Number.isInteger(totalFromApi) && totalFromApi > 0) {
+            chunkTotal = totalFromApi;
+          } else if (chunkTotal == null) {
+            chunkTotal = chunkIndex + 1;
+          }
+
+          const mapped = items.map((item) => mapTldItem(item, label));
+          for (const item of mapped) {
+            if (!collected.some((c) => c.domain === item.domain)) {
+              collected.push(item);
+            }
+          }
+          // Reveal only cards that finished in this (or prior) wave.
+          mergeMappedIntoResults(collected);
+
+          const doneWaves = chunkIndex + 1;
+          const totalWaves = Math.max(doneWaves, chunkTotal || doneWaves);
+          const finishedAll = moreFromApi !== true || doneWaves >= totalWaves;
+          if (finishedAll) {
+            setTldProgress(100);
+            setTldSkeletonCount(0);
+            moreChunks = false;
+          } else {
+            // Cap mid-flight below 100 so we never sit at 99 waiting on a phantom last step.
+            const pct = Math.round((doneWaves / totalWaves) * 100);
+            setTldProgress(Math.max(1, Math.min(95, pct)));
+            const secondaryCount = collected.filter((it) => it.domain !== fqdn).length;
+            setTldSkeletonCount(Math.max(3, 6 - Math.min(secondaryCount, 6)));
+            moreChunks = true;
+          }
+
+          chunkIndex += 1;
+
+          // Storefront-style load-more remains available after first-page waves.
+          setTldHasMore(moreAvailable === true);
+          setTldPage(2);
+
+          if (!moreChunks) break;
+        }
+
+        const exactSettled = await checkPromise;
+        if (requestIdRef.current !== currentRequestId) return;
+
+        let merged = [...collected];
+        if (
+          exactSettled
+          && (exactSettled.status === 'available' || exactSettled.status === 'marketplace')
+          && !merged.some((it) => it.domain === exactSettled.domain)
+        ) {
+          merged = [exactSettled, ...merged];
+        } else if (exactSettled?.status === 'available' || exactSettled?.status === 'marketplace') {
+          const others = merged.filter((it) => it.domain !== exactSettled.domain);
+          const fromList = merged.find((it) => it.domain === exactSettled.domain) || exactSettled;
+          merged = [fromList, ...others];
+        }
+        newSearchCacheRef.current.set(cacheKey, merged);
+        mergeMappedIntoResults(merged);
+        setTldProgress(100);
+        setTldSkeletonCount(0);
+      } catch (err) {
+        if (requestIdRef.current !== currentRequestId) return;
+        const exact = await checkPromise;
+        if (exact && (exact.status === 'available' || exact.status === 'marketplace')) {
+          setResults((prev) => {
+            if (prev.some((r) => r.domain === exact.domain && r.status !== 'loading')) return prev;
+            return [exact];
+          });
+        } else if (!exact) {
+          const registrarMessage =
+            err?.response?.data?.message
+            || err?.response?.data?.error
+            || err?.message
+            || 'Could not fetch available extensions.';
+          setResults([{
+            domain: fqdn,
+            name: label,
+            ext: fqdn.split('.').slice(1).join('.') || 'com',
+            status: 'error',
+            registrarMessage,
+          }]);
+        }
+        setTldProgress(100);
+        setTldSkeletonCount(0);
+      } finally {
+        if (requestIdRef.current === currentRequestId) {
+          setLoading(false);
+          setTldLoading(false);
+          setTldProgress((p) => (p > 0 && p < 100 ? 100 : p));
+          setTldSkeletonCount(0);
+        }
+      }
+    })();
+
+    // Unblock the search pipeline as soon as the primary check settles.
+    await checkPromise;
+    if (requestIdRef.current === currentRequestId) setLoading(false);
   };
 
-  // Append the next page (50) of available TLDs on "View More". Guarded so a
+  // Append the next page of available TLDs on "View More". Guarded so a
   // single in-flight click cannot launch duplicate requests, and previously
   // loaded pages are never re-fetched.
   const loadMoreTlds = async (label) => {
@@ -554,7 +700,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       const { items, moreAvailable } = await fetchAvailableTldsPage(label, tldPage);
       if (items.length) {
         const mapped = items.map((item) => mapTldItem(item, label));
-        setResults((prev) => [...prev, ...mapped]);
+        setResults((prev) => {
+          const seen = new Set(prev.map((r) => r.domain));
+          const fresh = mapped.filter((r) => !seen.has(r.domain));
+          return [...prev, ...fresh];
+        });
         setTldPage((p) => p + 1);
         setTldHasMore(moreAvailable);
       } else {
@@ -577,15 +727,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     setLoading(true);
 
     if (searchMode === 'new') {
-      const dot = q.indexOf('.');
-      if (dot === -1) {
-        await searchAllTlds(q, force, currentRequestId);
-        return;
-      }
+      // Always use the Storefront-aligned TLD search (with parallel exact check).
+      // Previously, queries with a TLD only hit /domain/check and never loaded
+      // extensions — and bare labels blocked the UI until all 60 TLDs finished.
+      await searchAllTlds(q, force, currentRequestId);
+      return;
     }
 
     const pairs = parseQuery(raw);
-    if (!pairs) return;
+    if (!pairs) {
+      setLoading(false);
+      return;
+    }
     const cacheKey = buildSearchKey(raw);
     if (!force && newSearchCacheRef.current.has(cacheKey)) {
       setResults(newSearchCacheRef.current.get(cacheKey));
@@ -593,13 +746,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       return;
     }
 
-    // Seed skeleton rows immediately
     const seededResults = pairs.map(({ name, ext }) => ({
       domain: `${name}.${ext}`,
       name,
       ext,
-      status:  'loading',
-      price:   null,
+      status: 'loading',
+      price: null,
       unitPrice: null,
       priceCurrency: null,
       minPeriodYears: 1,
@@ -612,22 +764,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       const fullDomain = `${name}.${ext}`;
       try {
         const { data } = await domainAPI.check(fullDomain, 'new');
-        const listing = data.listing ? normalizeDomainRecord(data.listing) : null;
-        const onPublicMarketplace = data.status === 'marketplace'
-          && listing
-          && isPublicMarketplaceListing(listing, 'domain');
         const idx = nextResults.findIndex((r) => r.domain === fullDomain);
         if (idx !== -1) {
-          nextResults[idx] = {
-            ...nextResults[idx],
-            status: onPublicMarketplace ? 'marketplace' : (data.status === 'marketplace' ? 'taken' : data.status),
-            price: data.price ?? null,
-            unitPrice: data.unitPrice ?? data.price ?? null,
-            priceCurrency: data.priceCurrency ?? null,
-            minPeriodYears: data.minPeriodYears ?? 1,
-            registrarMessage: data.message ?? null,
-            listing: onPublicMarketplace ? listing : null,
-          };
+          nextResults[idx] = mapCheckResult(fullDomain, data);
         }
       } catch (err) {
         const idx = nextResults.findIndex((r) => r.domain === fullDomain);
@@ -663,7 +802,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       return;
     }
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doSearch(query), 700);
+    debounceRef.current = setTimeout(() => doSearch(query), 250);
     return () => clearTimeout(debounceRef.current);
   }, [query, searchMode]);
 
@@ -780,14 +919,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     setSearchMode(tabId);
   };
 
-  const goToMarketplace = (listing) => {
-    window.location.href = `/domains?highlight=${listing.id}`;
-  };
-
-  const goRegister = (name, ext) => {
-    navigate(`/storefront?domain=${encodeURIComponent(`${name}.${ext}`)}`);
-  };
-
   const completedNewResults = results.filter((item) => item.status !== 'loading');
   const availableNewResults = completedNewResults
     .filter((item) => {
@@ -819,9 +950,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       const priceB = b.unitPrice != null ? Number(b.unitPrice) : (b.price != null ? Number(b.price) : Infinity);
       
       return priceA - priceB;
-    });
-  const visibleNewBest = availableNewResults[0] || null;
-  const visibleNewOthers = availableNewResults.slice(1);
+    })
+    .map((item) => ({
+      domain: item.domain || `${item.name}.${item.ext || item.tld}`,
+      name: item.name,
+      tld: item.ext || item.tld,
+      status: item.status,
+      available: true,
+      registrationPrice: item.unitPrice ?? item.price,
+      renewalPrice: item.renewalPrice,
+      period: item.minPeriodYears || 1,
+    }));
   const registrarErrorMessage = completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
     || (completedNewResults.length > 0 && completedNewResults.every((item) => item.status === 'error')
       ? completedNewResults[0]?.registrarMessage
@@ -843,86 +982,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const fullDomain = toSafeLower(domainTitleFromAuction(auction) || '');
     return fullDomain.includes(normalizedQuery);
   });
-
-  // ── Sub-components ──────────────────────────────────────────────────────────
-  const Badge = ({ status }) => {
-    const map = {
-      loading:     ['bg-gray-100 text-gray-400',     'CHECKING…'],
-      marketplace: ['bg-indigo-100 text-indigo-700', '🏪 ON OUR MARKETPLACE'],
-      available:   ['bg-[var(--cobrother-brand-green-soft)] text-[var(--cobrother-brand-green)]','✓ AVAILABLE'],
-      taken:       ['bg-red-100 text-red-500',        'TAKEN'],
-      error:       ['bg-amber-100 text-amber-700',    'CHECK FAILED'],
-    };
-    const [cls, label] = map[status] ?? map.taken;
-    return (
-      <span className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 ${cls}`}>
-        {label}
-      </span>
-    );
-  };
-
-  const Price = ({ result, large }) => {
-    const unit = Number(result.unitPrice ?? result.price);
-    const renewal = Number(result.renewalPrice);
-    if (!Number.isFinite(unit) || unit <= 0) return null;
-    const currency = result.priceCurrency || 'INR';
-    const years = result.minPeriodYears > 1 ? result.minPeriodYears : 1;
-    const total = years > 1 ? unit * years : unit;
-    const inrTotal = convertToInr(total, currency);
-    const inrRenewal = Number.isFinite(renewal) && renewal > 0 ? convertToInr(renewal, currency) : null;
-    const periodLabel = years > 1 ? `/${years} yrs` : '/yr';
-    return (
-      <div className="mb-4">
-        <p className={`font-extrabold text-gray-900 ${large ? 'text-3xl' : 'text-xl'}`}>
-          {formatPrice(inrTotal)}
-          <span className={`font-normal text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>
-            {periodLabel}
-          </span>
-        </p>
-        {inrRenewal !== null && (
-          <p className={`text-gray-500 mt-1 ${large ? 'text-sm' : 'text-xs'}`}>
-            Renews at {formatPrice(inrRenewal)}/yr
-          </p>
-        )}
-        {result.status === 'available' && years > 1 && (
-          <p className={`text-gray-500 mt-1 ${large ? 'text-xs' : 'text-[11px]'}`}>
-            {years}-year minimum registration
-          </p>
-        )}
-      </div>
-    );
-  };
-
-  const Action = ({ result, large }) => {
-    const base = large
-      ? 'px-8 py-3 rounded-xl font-bold text-base transition-all'
-      : 'px-5 py-2 rounded-lg font-bold text-sm transition-all';
-
-    if (result.status === 'loading')
-      return <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />;
-
-    if (result.status === 'marketplace')
-      return (
-        <button onClick={() => goToMarketplace(result.listing)}
-          className={`bg-indigo-600 text-white hover:bg-indigo-700 ${base}`}>
-          View on Marketplace →
-        </button>
-      );
-
-    if (result.status === 'available')
-      return (
-        <button onClick={() => goRegister(result.name, result.ext)}
-          className={`bg-gray-900 text-white hover:bg-gray-700 ${base}`}>
-          {large ? 'Register Now →' : 'Register'}
-        </button>
-      );
-
-    return (
-      <button disabled className={`bg-gray-100 text-gray-400 cursor-not-allowed ${base}`}>
-        {result.status === 'error' ? 'Could not check' : 'Taken'}
-      </button>
-    );
-  };
 
   // ── Render ──────────────────────────────────────────────────────────────────
   const desktopSearchForm = (
@@ -1040,70 +1099,26 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <RegistrarDomainLoader />
           )}
 
-          {/* New Domains */}
-          {hasSearchQuery && searchMode === 'new' && visibleNewBest && (
-            <div className={`domain-search-card domain-search-card--featured relative mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(15,23,42,0.08)] border transition-all ${
-              visibleNewBest.status === 'available' ? 'border-[var(--cobrother-brand-green)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.16)]' :
-                                                      'border-gray-200'
-            }`}>
-              <DomainCartCorner result={visibleNewBest} className="absolute top-4 right-4 z-10" />
-              <Badge status={visibleNewBest.status} />
-              <h2 className={`text-4xl font-extrabold mb-4 pr-12 ${
-                visibleNewBest.status === 'taken' || visibleNewBest.status === 'error'
-                  ? 'text-gray-300 line-through' : 'text-gray-900'
-              }`}>
-                {visibleNewBest.name}
-                <span className={
-                  visibleNewBest.status === 'taken' || visibleNewBest.status === 'error'
-                    ? 'text-purple-200' : 'text-purple-600'
-                }>.{visibleNewBest.ext}</span>
-              </h2>
-
-              {visibleNewBest.status === 'available' && <Price result={visibleNewBest} large />}
-
-              <Action result={visibleNewBest} large />
+          {/* Primary available: cards first; loading strip sits below the grid */}
+          {hasSearchQuery && searchMode === 'new' && availableNewResults.length > 0 && (
+            <div className="mb-6 space-y-3.5">
+              <DomainCardGrid
+                items={availableNewResults}
+                featuredFirst
+                skeletonCount={tldLoading ? tldSkeletonCount : 0}
+              />
+              {tldLoading ? <DomainExtensionsLoader /> : null}
             </div>
           )}
 
-          {/* New domains: other TLDs */}
-          {hasSearchQuery && searchMode === 'new' && visibleNewOthers.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {visibleNewOthers.map((item, i) => (
-                <div key={i} className={`domain-search-card relative bg-white border rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 ${
-                  item.status === 'taken'       ? 'border-gray-100 opacity-60' :
-                  item.status === 'error'       ? 'border-gray-100 opacity-60' :
-                  item.status === 'marketplace' ? 'border-indigo-200 ring-1 ring-indigo-50' :
-                  item.status === 'available'   ? 'border-[rgba(var(--cobrother-brand-green-rgb),0.42)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.14)]' :
-                                                  'border-gray-200'
-                }`}>
-                  <DomainCartCorner result={item} />
-                  <Badge status={item.status} />
-                  <h2 className={`text-xl font-extrabold mb-3 pr-10 ${
-                    item.status === 'taken' || item.status === 'error'
-                      ? 'text-gray-300 line-through' : 'text-gray-900'
-                  }`}>
-                    {item.name}
-                    <span className={
-                      item.status === 'taken' || item.status === 'error'
-                        ? 'text-purple-200' : 'text-purple-500'
-                    }>.{item.ext}</span>
-                  </h2>
-
-                  {item.status === 'marketplace' && item.listing && (
-                    <p className="text-indigo-600 text-sm font-semibold mb-3">
-                      {formatPrice(item.listing.askingPrice || 0)} · Marketplace
-                    </p>
-                  )}
-
-                  {item.status === 'available' && <Price result={item} large={false} />}
-
-                  <Action result={item} large={false} />
-                </div>
-              ))}
+          {/* Primary taken / not yet available: skeleton grid + loading strip */}
+          {hasSearchQuery && searchMode === 'new' && tldLoading && availableNewResults.length === 0 && completedNewResults.length > 0 && (
+            <div className="mb-6">
+              <DomainExtensionsLoader skeletonCount={tldSkeletonCount || 6} />
             </div>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && !loading && tldHasMore && (
+          {hasSearchQuery && searchMode === 'new' && !tldLoading && tldHasMore && (
             <div className="flex justify-center pt-2">
               <button
                 type="button"
@@ -1126,13 +1141,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </div>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && !loading && registrarErrorMessage && completedNewResults.every((item) => item.status === 'error') && (
+          {hasSearchQuery && searchMode === 'new' && !loading && !tldLoading && registrarErrorMessage && completedNewResults.every((item) => item.status === 'error') && (
             <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {registrarErrorMessage}
             </p>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && !loading && availableNewResults.length === 0 && (!registrarErrorMessage || !completedNewResults.every((item) => item.status === 'error')) && (
+          {hasSearchQuery && searchMode === 'new' && !loading && !tldLoading && availableNewResults.length === 0 && (!registrarErrorMessage || !completedNewResults.every((item) => item.status === 'error')) && (
             <p className="text-center text-gray-500 text-sm py-6">
               No available domains found for this search. Please try another domain name.
             </p>

@@ -27,10 +27,30 @@ const EMPTY_REDEMPTION = {
   pointsUsed: 0,
 };
 
+function buildRegistrantFromUser(user) {
+  return {
+    firstName: user?.firstname || user?.firstName || user?.name?.split?.(' ')?.[0] || '',
+    lastName: user?.lastname || user?.lastName || user?.name?.split?.(' ')?.slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: user?.phoneNumber || user?.phone || '',
+    street: user?.address || user?.street || '',
+    city: user?.city || '',
+    state: user?.state || '',
+    zip: user?.zipCode || user?.zip || user?.pincode || '',
+    country: user?.country || 'IN',
+  };
+}
+
+function registrantComplete(r) {
+  return ['firstName', 'lastName', 'email', 'phone', 'street', 'city', 'state', 'zip'].every(
+    (k) => String(r?.[k] || '').trim(),
+  );
+}
+
 export default function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { cart, fetchCart, removeItem, clearCart } = useCart();
+  const { cart, fetchCart, removeItem, clearCart, updateDomainRegistrationPeriod } = useCart();
   const { currency: selectedCurrency } = useCurrency();
   const [loading, setLoading] = useState(!cart);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -38,7 +58,25 @@ export default function CartPage() {
   const [clearing, setClearing] = useState(false);
   const [error, setError] = useState('');
   const [redemption, setRedemption] = useState(EMPTY_REDEMPTION);
+  const [registrant, setRegistrant] = useState(() => buildRegistrantFromUser(user));
+  const [periodYears, setPeriodYears] = useState(1);
+  const [periodUpdating, setPeriodUpdating] = useState(false);
   const pendingCheckoutOrderId = useRef(null);
+
+  useEffect(() => {
+    setRegistrant((prev) => ({ ...prev, ...buildRegistrantFromUser(user) }));
+  }, [user]);
+
+  // Keep dropdown in sync with cart metadata (period is the source of truth after quotes).
+  useEffect(() => {
+    if (periodUpdating) return;
+    const regItems = (cart?.items || []).filter((it) => it.productType === 'DOMAIN_REGISTRATION');
+    if (!regItems.length) return;
+    const fromMeta = Number(regItems[0]?.metadata?.period || 1);
+    if (Number.isFinite(fromMeta) && fromMeta >= 1) {
+      setPeriodYears(fromMeta);
+    }
+  }, [cart?.items, periodUpdating]);
 
   useEffect(() => {
     if (!user) {
@@ -48,7 +86,6 @@ export default function CartPage() {
     const showSkeleton = !cart;
     if (showSkeleton) setLoading(true);
     fetchCart().finally(() => setLoading(false));
-    // Refresh once when entering the cart page
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -103,6 +140,7 @@ export default function CartPage() {
 
   const items = cart?.items || [];
   const hasItems = items.length > 0;
+  const hasDomainRegistration = items.some((it) => it.productType === 'DOMAIN_REGISTRATION');
   const orderTotal = productOrderTotal;
 
   const finalPayable = useMemo(() => {
@@ -112,18 +150,54 @@ export default function CartPage() {
     return orderTotal;
   }, [redemption, orderTotal]);
 
+  const updateRegistrant = (field, value) => {
+    setRegistrant((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePeriodChange = async (nextYears) => {
+    const years = Math.max(1, Number(nextYears) || 1);
+    const prev = periodYears;
+    setPeriodYears(years);
+    setError('');
+    setPeriodUpdating(true);
+    try {
+      await updateDomainRegistrationPeriod(years);
+      setRedemption(EMPTY_REDEMPTION);
+    } catch (err) {
+      setPeriodYears(prev);
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          'Could not update registration period pricing. Please try again.',
+      );
+    } finally {
+      setPeriodUpdating(false);
+    }
+  };
+
   const handleCheckout = async () => {
     setError('');
+    if (hasDomainRegistration && !registrantComplete(registrant)) {
+      setError('Please complete registrant details before paying for domain registrations.');
+      return;
+    }
+
     setCheckoutLoading(true);
     try {
       const buyerName = `${user?.firstname || ''} ${user?.lastname || ''}`.trim();
-      const { data: orderData } = await cartAPI.checkout({
+      const payload = {
         redeemPoints: redemption.redeem,
         currency: selectedCurrency || 'INR',
         buyerName,
         buyerEmail: user?.email || '',
         buyerPhone: user?.phoneNumber || user?.phone || '',
-      });
+      };
+      if (hasDomainRegistration) {
+        payload.registrant = registrant;
+        payload.periodYears = periodYears;
+      }
+
+      const { data: orderData } = await cartAPI.checkout(payload);
 
       const orderId = orderData?.orderId || orderData?.order_id;
       pendingCheckoutOrderId.current = orderId || null;
@@ -162,7 +236,7 @@ export default function CartPage() {
             if (detail.includes('No cart items found')) {
               setError('This payment session expired. Please checkout again.');
             } else {
-              setError(detail || 'Payment verification failed.');
+              setError(detail || err?.response?.data?.message || 'Payment verification failed.');
             }
           } finally {
             setCheckoutLoading(false);
@@ -190,7 +264,18 @@ export default function CartPage() {
         },
       });
     } catch (err) {
-      setError(err?.response?.data?.detail || 'Could not initiate checkout.');
+      const failed = err?.response?.data?.failedDomains;
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
+        'Could not initiate checkout.';
+      if (Array.isArray(failed) && failed.length) {
+        const names = failed.map((f) => f.domain).filter(Boolean).join(', ');
+        setError(`${msg}${names ? ` (${names})` : ''}`);
+      } else {
+        setError(msg);
+      }
       setCheckoutLoading(false);
     }
   };
@@ -279,6 +364,59 @@ export default function CartPage() {
                 </motion.div>
               ))}
 
+              {hasDomainRegistration && (
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">
+                      Registrant Details
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Required once for all domain registrations in this order. GST is added at checkout.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      ['firstName', 'First Name'],
+                      ['lastName', 'Last Name'],
+                      ['email', 'Email'],
+                      ['phone', 'Phone'],
+                      ['street', 'Address'],
+                      ['city', 'City'],
+                      ['state', 'State'],
+                      ['zip', 'ZIP Code'],
+                    ].map(([field, label]) => (
+                      <label key={field} className="space-y-1">
+                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{label}</span>
+                        <input
+                          type={field === 'email' ? 'email' : 'text'}
+                          value={registrant[field] || ''}
+                          onChange={(e) => updateRegistrant(field, e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none"
+                          required
+                        />
+                      </label>
+                    ))}
+                    <label className="space-y-1">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        Registration Period
+                      </span>
+                      <select
+                        value={periodYears}
+                        onChange={(e) => handlePeriodChange(e.target.value)}
+                        disabled={periodUpdating || checkoutLoading}
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none disabled:opacity-60"
+                      >
+                        {[1, 2, 3, 5, 10].map((y) => (
+                          <option key={y} value={y}>
+                            {y} {y === 1 ? 'Year' : 'Years'}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               <div className="pt-2">
                 {selectedCurrency === 'INR' && (
                   <CartEdgePoints
@@ -301,6 +439,7 @@ export default function CartPage() {
                   finalPayable={finalPayable}
                   redeemActive={redemption.redeem}
                   productTotal={productOrderTotal}
+                  checkoutDisabled={hasDomainRegistration && !registrantComplete(registrant)}
                 />
               </div>
             </div>

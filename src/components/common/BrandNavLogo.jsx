@@ -15,7 +15,7 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
         src={logoBlack}
         alt="CoBrother"
         loading="eager"
-        fetchPriority="high"
+        fetchpriority="high"
         className={`${imgBase} home-nav-logo-img--default !h-full !w-full !max-w-none !object-contain`.trim()}
       />
       <BrandLogoImage

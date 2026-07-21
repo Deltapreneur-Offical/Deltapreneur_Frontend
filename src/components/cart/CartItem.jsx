@@ -30,7 +30,9 @@ const TYPE_META = {
 };
 
 export default function CartItem({ item, onRemove, removingId }) {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, formatDomainPrice } = useCurrency();
+  const formatMoney =
+    item.productType === 'DOMAIN_REGISTRATION' ? formatDomainPrice : formatPrice;
   const meta = TYPE_META[item.productType] || {
     label: item.productType,
     icon: ShoppingBag,
@@ -79,16 +81,23 @@ export default function CartItem({ item, onRemove, removingId }) {
             {item.productType === 'TECHNOLOGY' && item.selectedPlan && (
               <span className="text-indigo-600 font-medium">{planLabelForKey(item.selectedPlan)}</span>
             )}
-            {item.basePrice > 0 && <span>Base {formatPrice(item.basePrice)}</span>}
-            {item.addonAmount > 0 && <span>Add-ons {formatPrice(item.addonAmount)}</span>}
-            {item.coBrotherFee > 0 && <span>CoBrother {formatPrice(item.coBrotherFee)}</span>}
+            {item.basePrice > 0 && (
+              <span>
+                Base {formatMoney(item.basePrice)}
+                {item.productType === 'DOMAIN_REGISTRATION' && item.metadata?.period > 1
+                  ? ` · ${item.metadata.period} years`
+                  : ''}
+              </span>
+            )}
+            {item.addonAmount > 0 && <span>Add-ons {formatMoney(item.addonAmount)}</span>}
+            {item.coBrotherFee > 0 && <span>CoBrother {formatMoney(item.coBrotherFee)}</span>}
           </div>
         )}
       </div>
 
       <div className="flex flex-col items-end gap-2.5 flex-shrink-0">
         <span className="font-display text-base font-bold text-gray-900 tabular-nums">
-          {formatPrice(item.lineTotal)}
+          {formatMoney(item.lineTotal)}
         </span>
         <button
           type="button"

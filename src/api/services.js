@@ -140,7 +140,7 @@ export const domainAPI = {
   create:          (data)    => api.post('/api/v1/domain/listings', data),
   update:          (id, data)=> api.put(`/api/v1/domain/listings/${id}`, data),
   delete:          (id)      => api.delete(`/api/v1/domain/listings/${id}`),
-  check: (name, mode) => api.get('/api/v1/domain/check', { params: { name, ...(mode ? { mode } : {}) } }),
+  check: (name, mode, config = {}) => api.get('/api/v1/domain/check', { params: { name, ...(mode ? { mode } : {}) }, ...config }),
   search: ({ query, mode, page = 1, pageSize = 50 }) =>
     api.get('/api/v1/domain/search', {
       params: {
@@ -150,13 +150,15 @@ export const domainAPI = {
         page_size: pageSize,
       },
     }),
-  searchTlds: ({ name, page = 1, pageSize = 50 }) =>
+  searchTlds: ({ name, page = 1, pageSize = 50, chunk, chunkSize }, config = {}) =>
     api.get('/api/v1/domain/search-tlds', {
       params: {
         name,
         page,
         page_size: pageSize,
+        ...(chunk != null ? { chunk, chunk_size: chunkSize ?? 12 } : {}),
       },
+      ...config,
     }),
   listTlds: () => api.get('/api/v1/domain/tlds'),
   createOrder: (id, data, redeemPoints = false) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data, { params: { redeem_points: redeemPoints } }),
@@ -467,6 +469,8 @@ export const cartAPI = {
   checkout:     (body = {})  => api.post('/api/v1/cart/checkout', body),
   verifyCheckout: (body)     => api.post('/api/v1/cart/checkout/verify', body),
   cancelCheckout: (body)     => api.post('/api/v1/cart/checkout/cancel', body),
+  updateDomainRegistrationPeriod: (periodYears) =>
+    api.patch('/api/v1/cart/domain-registration-period', { periodYears }),
 };
 
 export const joinUsAPI = {

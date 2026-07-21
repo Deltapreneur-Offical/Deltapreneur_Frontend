@@ -32,6 +32,7 @@ import AppLayout from '../components/layout/AppLayout';
 import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
 import { readApiError } from '../utils/domainRegistrationOrder';
+import { formatInr } from '../utils/money';
 
 function unwrapOrder(data) { return data?.data ?? data; }
 
@@ -120,6 +121,8 @@ export default function DomainRegistrationOrderPage() {
   const [showRenewCheckout, setShowRenewCheckout] = useState(false);
   const [renewPeriod, setRenewPeriod] = useState(1);
   const [renewPayLoading, setRenewPayLoading] = useState(false);
+  const [renewQuote, setRenewQuote] = useState(null);
+  const [renewQuoteLoading, setRenewQuoteLoading] = useState(false);
   const [config, setConfig] = useState(null);
 
   useEffect(() => {
@@ -129,6 +132,26 @@ export default function DomainRegistrationOrderPage() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!showRenewCheckout || !orderId) return undefined;
+    let cancelled = false;
+    setRenewQuoteLoading(true);
+    domainStorefrontAPI
+      .getRenewDomainQuote(orderId, renewPeriod)
+      .then(({ data }) => {
+        if (!cancelled) setRenewQuote(data?.data ?? data);
+      })
+      .catch(() => {
+        if (!cancelled) setRenewQuote(null);
+      })
+      .finally(() => {
+        if (!cancelled) setRenewQuoteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showRenewCheckout, orderId, renewPeriod]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -353,18 +376,41 @@ export default function DomainRegistrationOrderPage() {
                   </select>
                 </div>
                 <div className="bg-gray-50 border border-gray-150 rounded-xl p-4 flex flex-col justify-center">
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Base Renewal Price:</span>
-                    <span>₹{(config?.renewalFallbackUnitInr || 799) * renewPeriod}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>GST (18%):</span>
-                    <span>₹{Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 0.18 * 100) / 100}</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-extrabold text-gray-950 mt-2 border-t border-gray-200 pt-2">
-                    <span>Total Amount:</span>
-                    <span>₹{Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 1.18 * 100) / 100}</span>
-                  </div>
+                  {renewQuoteLoading ? (
+                    <p className="text-xs text-gray-500">Loading live renewal price…</p>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Base Renewal Price:</span>
+                        <span>
+                          {formatInr(
+                            renewQuote?.subtotalInr
+                              ?? ((config?.renewalFallbackUnitInr || 799) * renewPeriod),
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>
+                          GST{renewQuote?.gstRate != null ? ` (${renewQuote.gstRate}%)` : ''}:
+                        </span>
+                        <span>
+                          {formatInr(
+                            renewQuote?.gstInr
+                              ?? Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 0.18 * 100) / 100,
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm font-extrabold text-gray-950 mt-2 border-t border-gray-200 pt-2">
+                        <span>Total Amount:</span>
+                        <span>
+                          {formatInr(
+                            renewQuote?.totalInr
+                              ?? Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 1.18 * 100) / 100,
+                          )}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
@@ -513,6 +559,7 @@ export default function DomainRegistrationOrderPage() {
           {activeTab === 'products' && (
             <AddonProductsSection
               order={order}
+              user={user}
               onUpdateSuccess={() => loadOrder(false)}
             />
           )}
@@ -529,14 +576,14 @@ export default function DomainRegistrationOrderPage() {
                   </div>
                   <div className="divide-y divide-gray-100/70">
                     {order.subtotalInr != null && (
-                      <DetailRow label="Subtotal" value={`₹${Number(order.subtotalInr).toLocaleString('en-IN')}`} />
+                      <DetailRow label="Subtotal" value={formatInr(order.subtotalInr, { forceDecimals: true })} />
                     )}
                     {order.gstInr != null && Number(order.gstInr) > 0 && (
-                      <DetailRow label={`GST${order.gstRate ? ` (${order.gstRate}%)` : ''}`} value={`₹${Number(order.gstInr).toLocaleString('en-IN')}`} />
+                      <DetailRow label={`GST${order.gstRate ? ` (${order.gstRate}%)` : ''}`} value={formatInr(order.gstInr, { forceDecimals: true })} />
                     )}
                     <DetailRow
                       label="Total Paid"
-                      value={`₹${Number(order.priceInr || 0).toLocaleString('en-IN')}`}
+                      value={formatInr(order.priceInr || 0, { forceDecimals: true })}
                       valueClass="font-bold text-gray-900 text-base"
                     />
                   </div>
@@ -972,7 +1019,7 @@ function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
 }
 
 /* ─── ADDONS / PRODUCTS MANAGEMENT SECTION ─── */
-function AddonProductsSection({ order, onUpdateSuccess }) {
+function AddonProductsSection({ order, onUpdateSuccess, user }) {
   const [mailboxPrefix, setMailboxPrefix] = useState('');
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [loadingSSL, setLoadingSSL] = useState(false);
@@ -1007,7 +1054,13 @@ function AddonProductsSection({ order, onUpdateSuccess }) {
     }
     setLoadingEmail(true);
     try {
-      await domainStorefrontAPI.purchaseEmail(order.id, prefix);
+      const { payEmailAddon } = await import('../utils/domainAddonCheckout');
+      await payEmailAddon({
+        orderId: order.id,
+        mailbox: prefix,
+        user,
+        description: `Email mailbox ${prefix}@${order.domain}`,
+      });
       setSuccess(`Mailbox ${prefix}@${order.domain} successfully configured!`);
       setMailboxPrefix('');
       if (onUpdateSuccess) onUpdateSuccess();
@@ -1020,7 +1073,14 @@ function AddonProductsSection({ order, onUpdateSuccess }) {
     setError(''); setSuccess('');
     setLoadingSSL(true);
     try {
-      await domainStorefrontAPI.purchaseSSL(order.id);
+      const { paySslAddon } = await import('../utils/domainAddonCheckout');
+      await paySslAddon({
+        orderId: order.id,
+        certType: 'standard',
+        duration: 1,
+        user,
+        description: `SSL certificate for ${order.domain}`,
+      });
       setSuccess('SSL Certificate successfully ordered and active!');
       if (onUpdateSuccess) onUpdateSuccess();
     } catch (err) {

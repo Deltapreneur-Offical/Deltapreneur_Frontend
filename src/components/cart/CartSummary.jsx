@@ -430,8 +430,14 @@ export default function CartSummary({
   finalPayable,
   redeemActive = false,
   productTotal,
+  checkoutDisabled = false,
 }) {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, formatDomainPrice } = useCurrency();
+  const hasDomainRegistration = useMemo(
+    () => (cart?.items || []).some((it) => it.productType === 'DOMAIN_REGISTRATION'),
+    [cart?.items],
+  );
+  const money = hasDomainRegistration ? formatDomainPrice : formatPrice;
   const { services: vaServices } = useVirtualAssistantCatalog();
   const { priceByAddonKey } = useOperationsServicesCatalog();
 
@@ -488,7 +494,7 @@ export default function CartSummary({
               <p className="text-[12px] text-gray-400 p-4 text-center">No products in cart</p>
             ) : (
               orderView.products.map((product) => (
-                <ProductRow key={product.id} product={product} formatPrice={formatPrice} />
+                <ProductRow key={product.id} product={product} formatPrice={money} />
               ))
             )}
           </div>
@@ -509,7 +515,7 @@ export default function CartSummary({
                 key={entry.id}
                 label={entry.label}
                 productName={entry.productName}
-                priceLabel={formatEstimatedPrice(entry.estimatedPrice, formatPrice)}
+                priceLabel={formatEstimatedPrice(entry.estimatedPrice, money)}
                 tooltip={SERVICE_FOLLOW_UP_TOOLTIP}
                 description={entry.description}
                 iconKey={entry.iconKey}
@@ -536,7 +542,7 @@ export default function CartSummary({
                 key={entry.id}
                 label={entry.label}
                 productName={entry.productName}
-                priceLabel={formatEstimatedPrice(entry.estimatedPrice, formatPrice, { monthly: true })}
+                priceLabel={formatEstimatedPrice(entry.estimatedPrice, money, { monthly: true })}
                 tooltip={VA_FOLLOW_UP_TOOLTIP}
                 description={entry.description}
                 accent="#6366f1"
@@ -551,7 +557,7 @@ export default function CartSummary({
         <section>
           <TotalsPanel
             orderView={orderView}
-            formatPrice={formatPrice}
+            formatPrice={money}
             showEdgePointsRow={showEdgePointsRow}
             edgePointsApplying={edgePointsApplying}
             hasEdgePointsDiscount={hasEdgePointsDiscount}
@@ -566,7 +572,7 @@ export default function CartSummary({
         <button
           type="button"
           onClick={onCheckout}
-          disabled={loading || orderView.products.length === 0 || edgePointsApplying}
+          disabled={loading || checkoutDisabled || orderView.products.length === 0 || edgePointsApplying}
           className="w-full inline-flex items-center justify-center gap-2 rounded-full border border-emerald-600 bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-800 hover:bg-emerald-800 hover:shadow-md hover:shadow-emerald-900/20 active:translate-y-0 active:bg-emerald-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-emerald-600 disabled:hover:shadow-sm"
         >
           {loading ? (
@@ -577,7 +583,7 @@ export default function CartSummary({
           ) : (
             <>
               <Lock size={15} />
-              Pay {formatPrice(edgePointsApplying ? orderView.productTotal : payable)}
+              Pay {money(edgePointsApplying ? orderView.productTotal : payable)}
             </>
           )}
         </button>

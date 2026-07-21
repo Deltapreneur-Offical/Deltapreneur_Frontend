@@ -72,7 +72,17 @@ export function CurrencyProvider({ children }) {
   );
 
   const formatPrice = useCallback(
-    (inrAmount) => formatInrAsCurrency(inrAmount, selectedCurrency, meta),
+    (inrAmount, options) => formatInrAsCurrency(inrAmount, selectedCurrency, meta, options),
+    [selectedCurrency, meta],
+  );
+
+  /** Domain registration prices — always 2 decimal places (matches OpenProvider). */
+  const formatDomainPrice = useCallback(
+    (inrAmount) =>
+      formatInrAsCurrency(inrAmount, selectedCurrency, meta, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
     [selectedCurrency, meta],
   );
 
@@ -100,8 +110,9 @@ export function CurrencyProvider({ children }) {
       setSelectedCurrency: setCurrency,
       symbol: getCurrencySymbol(selectedCurrency, meta),
       formatPrice,
-      formatCurrency: (amount, code = selectedCurrency) =>
-        formatCurrency(amount, code, meta),
+      formatDomainPrice,
+      formatCurrency: (amount, code = selectedCurrency, options) =>
+        formatCurrency(amount, code, meta, options),
       formatMajor,
       getSymbol,
       convertFromInr,
@@ -120,6 +131,7 @@ export function CurrencyProvider({ children }) {
       setCurrency,
       meta,
       formatPrice,
+      formatDomainPrice,
       formatMajor,
       getSymbol,
       convertFromInr,

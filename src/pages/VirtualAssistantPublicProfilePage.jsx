@@ -182,8 +182,6 @@ const VirtualAssistantPublicProfilePage = () => {
                 </section>
               );
             })()}
-
-            )}
           </div>
         </div>
       </div>

@@ -1,11 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-<<<<<<< Updated upstream
-import { Home, Handshake, Gavel, ShoppingBag, ShoppingCart, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award } from 'lucide-react';
-=======
-import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award, Briefcase } from 'lucide-react';
->>>>>>> Stashed changes
+import { Home, Handshake, Gavel, ShoppingBag, ShoppingCart, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -201,13 +197,9 @@ function SidebarNavItem({
 export default function AppLayout({ children }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-<<<<<<< Updated upstream
-  const { count: cartCount } = useCart();
-  const navItems = getNavItems(user);
-=======
+  const { count: cartCount = 0 } = useCart() || {};
   const [isVaApplicant, setIsVaApplicant] = useState(false);
   const navItems = getNavItems(user, isVaApplicant);
->>>>>>> Stashed changes
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);

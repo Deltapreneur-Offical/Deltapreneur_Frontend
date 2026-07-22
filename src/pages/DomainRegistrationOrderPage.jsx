@@ -457,6 +457,11 @@ export default function DomainRegistrationOrderPage() {
                   </div>
                   <div className="divide-y divide-gray-100/70">
                     <InfoRow icon={Globe} label="Domain" value={order.domain} />
+                    <InfoRow
+                      icon={Calendar}
+                      label="Registration Period"
+                      value={`${order.periodYears || 1} ${(order.periodYears || 1) === 1 ? 'Year' : 'Years'}`}
+                    />
                     <InfoRow icon={Calendar} label="Registered On" value={fmtDateShort(order.completedAt || order.createdAt)} />
                     {expiresAt && (
                       <InfoRow icon={Calendar} label="Expires On"
@@ -1027,9 +1032,30 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Active mailbox password inputs mapping
+  const [sslProducts, setSslProducts] = useState([]);
+  const [sslProductId, setSslProductId] = useState('');
+  const [sslPeriod, setSslPeriod] = useState('1');
+  const [sslApproverEmail, setSslApproverEmail] = useState(user?.email || '');
+  const [sslValidationMethod, setSslValidationMethod] = useState('email');
+  const [sslPricesLoading, setSslPricesLoading] = useState(true);
+
   const [passwords, setPasswords] = useState({});
   const [loadingPass, setLoadingPass] = useState({});
+
+  useEffect(() => {
+    domainStorefrontAPI.getPrices()
+      .then(({ data }) => {
+        const prices = data?.data ?? data;
+        const list = Array.isArray(prices?.ssl?.products) ? prices.ssl.products : [];
+        setSslProducts(list);
+        if (list.length > 0) {
+          const preferred = list.find((p) => !p.wildcard) || list[0];
+          setSslProductId(String(preferred.id));
+        }
+      })
+      .catch(() => setSslProducts([]))
+      .finally(() => setSslPricesLoading(false));
+  }, []);
 
   const addons = (() => {
     try {
@@ -1040,9 +1066,16 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
   })();
 
   const mailboxes = Array.isArray(addons.mailboxes) ? addons.mailboxes : [];
-  const sslActive = Boolean(addons.ssl_active);
-  const sslExpiry = addons.ssl_expiry ? new Date(addons.ssl_expiry) : null;
+  const sslState = addons.ssl && typeof addons.ssl === 'object' ? addons.ssl : null;
+  const sslActive = Boolean(sslState?.active || addons.ssl_active);
+  const sslExpiry = sslState?.expiresAt
+    ? new Date(sslState.expiresAt)
+    : (addons.ssl_expiry ? new Date(addons.ssl_expiry) : null);
+  const sslStatus = sslState?.status || (sslActive ? 'ACT' : null);
   const dnssecEnabled = Boolean(addons.dnssec_enabled);
+
+  const selectedSslProduct = sslProducts.find((p) => String(p.id) === String(sslProductId));
+  const sslMaxPeriod = Math.max(1, Number(selectedSslProduct?.periodYearsMax) || 1);
 
   const handleOrderEmail = async (e) => {
     e.preventDefault();
@@ -1071,17 +1104,27 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
 
   const handleOrderSSL = async () => {
     setError(''); setSuccess('');
+    if (!sslProductId) {
+      setError('Select an SSL product.');
+      return;
+    }
+    if (!sslApproverEmail.trim()) {
+      setError('Approver email is required.');
+      return;
+    }
     setLoadingSSL(true);
     try {
       const { paySslAddon } = await import('../utils/domainAddonCheckout');
       await paySslAddon({
         orderId: order.id,
-        certType: 'standard',
-        duration: 1,
+        productId: Number(sslProductId),
+        period: Number(sslPeriod),
+        approverEmail: sslApproverEmail.trim(),
+        validationMethod: sslValidationMethod,
         user,
         description: `SSL certificate for ${order.domain}`,
       });
-      setSuccess('SSL Certificate successfully ordered and active!');
+      setSuccess('SSL certificate ordered with the registrar. Status will update after validation.');
       if (onUpdateSuccess) onUpdateSuccess();
     } catch (err) {
       setError(readApiError(err, 'Failed to order SSL.'));
@@ -1115,7 +1158,6 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
     }
     setLoadingPass((prev) => ({ ...prev, [mailbox]: true }));
     try {
-      // mailbox has full email address; backend handles parsing or mapping
       const prefix = mailbox.split('@')[0];
       await domainStorefrontAPI.updateMailboxPassword(order.id, prefix, pass);
       setSuccess(`Password for ${mailbox} updated successfully!`);
@@ -1125,6 +1167,17 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
     } finally {
       setLoadingPass((prev) => ({ ...prev, [mailbox]: false }));
     }
+  };
+
+  const downloadPrivateKey = () => {
+    if (!sslState?.privateKey) return;
+    const blob = new Blob([sslState.privateKey], { type: 'application/x-pem-file' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${order.domain || 'ssl'}-private.key`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -1142,46 +1195,130 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
           </div>
         )}
 
-        {/* SSL Card */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-5">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl">
               <Lock className="w-5 h-5" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 flex-1">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">SSL Security protection</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
-                Add encryption, HTTPS protection, and security validation indicators to establish trust for your site visitor.
+                Order a live OpenProvider SSL certificate. Prices include Admin SSL Certificates commission.
               </p>
-              {sslActive && sslExpiry && (
-                <div className="mt-2.5 flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block" /> SSL Active
+              {sslState && (
+                <div className="mt-2.5 flex flex-wrap items-center gap-3">
+                  <span className={`inline-flex items-center gap-1.5 text-[0.7rem] font-bold px-2.5 py-0.5 rounded-full border ${
+                    sslActive
+                      ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
+                      : 'text-amber-800 bg-amber-50 border-amber-200'
+                  }`}>
+                    <span className={`w-1 h-1 rounded-full inline-block ${sslActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    {sslActive ? 'SSL Active' : `SSL ${sslStatus || 'Pending'}`}
                   </span>
-                  <span className="text-xs text-gray-400 font-semibold">Expires: {sslExpiry.toLocaleDateString('en-IN')}</span>
+                  {sslState.productName && (
+                    <span className="text-xs text-gray-500 font-semibold">{sslState.productName}</span>
+                  )}
+                  {sslExpiry && !Number.isNaN(sslExpiry.getTime()) && (
+                    <span className="text-xs text-gray-400 font-semibold">
+                      Expires: {sslExpiry.toLocaleDateString('en-IN')}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
           </div>
-          <div className="shrink-0 flex items-center">
-            {sslActive ? (
-              <span className="text-xs font-bold text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1.5 select-none">
-                Auto-Renew Enabled
-              </span>
-            ) : (
-              <button
-                onClick={handleOrderSSL}
-                disabled={loadingSSL}
-                className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
-              >
-                {loadingSSL && <Loader2 className="w-4 h-4 animate-spin" />}
-                Add SSL Protection (₹999/yr)
-              </button>
-            )}
-          </div>
+
+          {sslState?.opOrderId ? (
+            <div className="space-y-3 border-t border-gray-100 pt-4">
+              <p className="text-xs text-gray-500">
+                Registrar order #{sslState.opOrderId}
+                {sslState.approverEmail ? ` · Approver ${sslState.approverEmail}` : ''}
+              </p>
+              {sslState.privateKey && (
+                <button
+                  type="button"
+                  onClick={downloadPrivateKey}
+                  className="inline-flex h-9 items-center justify-center gap-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-4 rounded-lg"
+                >
+                  Download private key
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3 border-t border-gray-100 pt-4">
+              {sslPricesLoading ? (
+                <p className="text-xs text-gray-400 flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading live SSL prices…
+                </p>
+              ) : sslProducts.length === 0 ? (
+                <p className="text-xs text-amber-700">SSL products are currently unavailable.</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Product</label>
+                      <select
+                        value={sslProductId}
+                        onChange={(e) => setSslProductId(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      >
+                        {sslProducts.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}{p.wildcard ? ' (Wildcard)' : ''} — {p.label || `₹${p.unitInr}/yr`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Period</label>
+                      <select
+                        value={sslPeriod}
+                        onChange={(e) => setSslPeriod(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      >
+                        {Array.from({ length: sslMaxPeriod }, (_, i) => i + 1).map((y) => (
+                          <option key={y} value={y}>{y} year{y > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Approver email</label>
+                      <input
+                        type="email"
+                        value={sslApproverEmail}
+                        onChange={(e) => setSslApproverEmail(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                        placeholder="admin@yourdomain.com"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Validation</label>
+                      <select
+                        value={sslValidationMethod}
+                        onChange={(e) => setSslValidationMethod(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:bg-white focus:border-indigo-400"
+                      >
+                        <option value="email">Email</option>
+                        <option value="https">HTTPS</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleOrderSSL}
+                    disabled={loadingSSL || !sslProductId}
+                    className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
+                  >
+                    {loadingSSL && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {selectedSslProduct?.label
+                      ? `Order SSL (${selectedSslProduct.label})`
+                      : 'Order SSL Protection'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* DNSSEC Toggle Card */}
         <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl">
@@ -1217,7 +1354,6 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
           </div>
         </div>
 
-        {/* Email Card */}
         <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-6">
           <div className="flex items-start gap-4 border-b border-gray-100 pb-4">
             <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl">
@@ -1231,7 +1367,6 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
             </div>
           </div>
 
-          {/* Mailboxes list & password management */}
           {mailboxes.length > 0 && (
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Active Mailboxes</h4>
@@ -1245,7 +1380,6 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
                       </span>
                     </div>
 
-                    {/* Password reset input */}
                     <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
                       <div className="relative flex-1 min-w-[200px]">
                         <input
@@ -1273,7 +1407,6 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
             </div>
           )}
 
-          {/* Add Mailbox form */}
           <form onSubmit={handleOrderEmail} className="pt-4 border-t border-gray-50 flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[220px] space-y-1.5">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
@@ -1299,14 +1432,13 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
               className="inline-flex h-11 items-center justify-center gap-1.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
             >
               {loadingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              Add Mailbox (₹499/yr)
+              Add Mailbox
             </button>
           </form>
         </div>
 
       </div>
 
-      {/* Sidebar tips */}
       <div className="space-y-6">
         <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2 text-indigo-600">
@@ -1314,7 +1446,7 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
             <h3 className="text-sm font-bold uppercase tracking-wider">Business suite tips</h3>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">
-            Professional addresses establish domain authority. Setup forwarders or direct mailbox client configurations using standard IMAP/SMTP details.
+            SSL prices include your Admin SSL Certificates commission. Download and store the private key securely after purchase — the registrar does not keep it.
           </p>
         </div>
       </div>

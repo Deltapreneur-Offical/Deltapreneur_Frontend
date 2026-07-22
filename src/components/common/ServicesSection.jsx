@@ -262,7 +262,7 @@ export default function ServicesSection({ isDashboard = false }) {
       badge: '#fef3c7',
       title: 'SSL Certificate',
       tag: 'HTTPS',
-      price: prices ? prices.ssl?.label : '₹999',
+      price: prices ? (prices.ssl?.label || '—') : '—',
       unit: 'yr',
       bullets: [
         'Standard & Wildcard SSL',

@@ -16,8 +16,9 @@ export function domainToProductId(domain) {
 }
 
 /**
- * Build cart metadata. Price is always INR (ex-GST selling price with commission baked in).
- * @param {{ domain: string, tld?: string, registrationPriceInr?: number, price?: number, period?: number }} item
+ * Build cart metadata. Price is always INR (ex-GST **1-year** selling price with commission baked in).
+ * Registration period is selected later in Cart/Checkout — do not bake min-period into line price here.
+ * @param {{ domain: string, tld?: string, registrationPriceInr?: number, price?: number, period?: number, minPeriodYears?: number, isPremium?: boolean }} item
  */
 export function domainRegistrationCartMetadata(item) {
   const domain = String(item.domain || '').toLowerCase().trim();
@@ -27,8 +28,12 @@ export function domainRegistrationCartMetadata(item) {
       '',
     );
   const price = Number(item.registrationPriceInr ?? item.price ?? item.registrationPrice ?? 0);
-  const period = Math.max(1, Number(item.period || item.minPeriodYears || 1));
+  const minPeriodYears = Math.max(1, Number(item.minPeriodYears || 1));
+  // Cart line starts at 1-year unit price; period is applied only after the user
+  // selects years in Cart (updateDomainRegistrationPeriod / checkout quote).
+  const period = 1;
   const safePrice = Number.isFinite(price) && price > 0 ? price : 0;
+  const isPremium = item.isPremium === true || item.is_premium === true;
   return {
     domainName: domain,
     // Storefront/search prices are always 1-year selling totals.
@@ -36,6 +41,10 @@ export function domainRegistrationCartMetadata(item) {
     pricePerYear: safePrice,
     tld,
     period,
+    minPeriodYears,
+    // Hint only — checkout revalidates is_premium from OpenProvider.
+    isPremium,
+    registryTier: isPremium ? 'premium' : 'standard',
   };
 }
 

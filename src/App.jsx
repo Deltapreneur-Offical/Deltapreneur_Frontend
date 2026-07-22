@@ -13,7 +13,7 @@ import { useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
-import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
+import { AdminGuard, CoBrotherGuard, VirtualAssistantGuard, VirtualAssistantApplicantGuard, VaApplicationGuard } from './components/auth/ProtectedRoute';
 
 import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
 import Home from './pages/Home';
@@ -48,6 +48,10 @@ const CoCreationDashboardPage = lazy(() => import('./pages/CoCreationDashboardPa
 const CoCreationAnalyticsPage = lazy(() => import('./pages/CoCreationAnalyticsPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const VirtualAssistantApplicationsAdminPage = lazy(() => import('./pages/VirtualAssistantApplicationsAdminPage'));
+const VirtualAssistantApplicationDetailPage = lazy(() => import('./pages/VirtualAssistantApplicationDetailPage'));
+const VirtualAssistantDirectAddAdminPage = lazy(() => import('./pages/VirtualAssistantDirectAddAdminPage'));
+const VirtualAssistantPublishedProfilesPage = lazy(() => import('./pages/VirtualAssistantPublishedProfilesPage'));
 const CoBrotherDashboardPage = lazy(() => import('./pages/CoBrotherDashboardPage'));
 const FeeRequestsPage = lazy(() => import('./pages/FeeRequestsPage'));
 const AuctionPage = lazy(() => import('./pages/AuctionPage'));
@@ -62,6 +66,12 @@ const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const DataDeletionPage = lazy(() => import('./pages/DataDeletionPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
+const VirtualAssistantPage = lazy(() => import('./pages/VirtualAssistantPage'));
+const VirtualAssistantSuccessPage = lazy(() => import('./pages/VirtualAssistantSuccessPage'));
+const VirtualAssistantMarketplacePage = lazy(() => import('./pages/VirtualAssistantMarketplacePage'));
+const VirtualAssistantPublicProfilePage = lazy(() => import('./pages/VirtualAssistantPublicProfilePage'));
+const VirtualAssistantJourneyPage = lazy(() => import('./pages/VirtualAssistantJourneyPage'));
+const VirtualAssistantWorkspacePage = lazy(() => import('./pages/VirtualAssistantWorkspacePage'));
 const loadVenturesPage = () => import('./pages/VenturesPage');
 const VenturesPage = lazy(loadVenturesPage);
 const VentureListingChoosePage = lazy(() => import('./pages/VentureListingChoosePage'));
@@ -195,6 +205,24 @@ export default function App() {
                 <Route path="/data-deletion" element={<DataDeletionPage />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
                 <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+                <Route
+                  path="/virtual-assistant"
+                  element={
+                    <VaApplicationGuard>
+                      <VirtualAssistantPage />
+                    </VaApplicationGuard>
+                  }
+                />
+                <Route
+                  path="/virtual-assistant/success"
+                  element={
+                    <VaApplicationGuard>
+                      <VirtualAssistantSuccessPage />
+                    </VaApplicationGuard>
+                  }
+                />
+                <Route path="/virtual-assistants/marketplace" element={<VirtualAssistantMarketplacePage />} />
+                <Route path="/virtual-assistants/:id" element={<VirtualAssistantPublicProfilePage />} />
 
                 {/* Auctions */}
                 <Route
@@ -560,6 +588,26 @@ export default function App() {
                   }
                 />
 
+                {/* Virtual Assistant — applicant journey */}
+                <Route
+                  path="/virtual-assistant/journey"
+                  element={
+                    <VirtualAssistantApplicantGuard>
+                      <VirtualAssistantJourneyPage />
+                    </VirtualAssistantApplicantGuard>
+                  }
+                />
+
+                {/* Virtual Assistant — unlocked workspace */}
+                <Route
+                  path="/virtual-assistant/workspace"
+                  element={
+                    <VirtualAssistantGuard>
+                      <VirtualAssistantWorkspacePage />
+                    </VirtualAssistantGuard>
+                  }
+                />
+
                 {/* Admin */}
                 <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
                 <Route
@@ -567,6 +615,38 @@ export default function App() {
                   element={
                     <AdminGuard>
                       <AdminDashboardPage />
+                    </AdminGuard>
+                  }
+                />
+                <Route
+                  path="/admin/virtual-assistants/applications"
+                  element={
+                    <AdminGuard>
+                      <VirtualAssistantApplicationsAdminPage />
+                    </AdminGuard>
+                  }
+                />
+                <Route
+                  path="/admin/virtual-assistants/applications/:applicationId"
+                  element={
+                    <AdminGuard>
+                      <VirtualAssistantApplicationDetailPage />
+                    </AdminGuard>
+                  }
+                />
+                <Route
+                  path="/admin/virtual-assistants/direct-add"
+                  element={
+                    <AdminGuard>
+                      <VirtualAssistantDirectAddAdminPage />
+                    </AdminGuard>
+                  }
+                />
+                <Route
+                  path="/admin/virtual-assistants/published"
+                  element={
+                    <AdminGuard>
+                      <VirtualAssistantPublishedProfilesPage />
                     </AdminGuard>
                   }
                 />

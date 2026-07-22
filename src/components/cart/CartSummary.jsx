@@ -207,7 +207,10 @@ function ProductRow({ product, formatPrice }) {
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-medium text-gray-900 truncate">{product.name}</p>
           <p className="text-[10px] font-medium mt-0.5" style={{ color: meta.accent }}>
-            {product.planLabel || meta.label}
+            {product.planLabel
+              || (product.productType === 'DOMAIN_REGISTRATION' && product.periodYears
+                ? `${meta.label} · ${product.periodYears} ${product.periodYears === 1 ? 'yr' : 'yrs'}`
+                : meta.label)}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">

@@ -11,7 +11,7 @@ const INTERNAL_PATTERN =
   /openrouter|sqlalchemy|psycopg|operationalerror|traceback|econnrefused|enotfound|network error|failed to fetch|axioserror|httpx|aiohttp|exception:|\.py["']|line \d+:|api[_ ]?key|secret[_ ]?missing|not configured|database_unavailable|connection refused|could not connect to|postgres|pg_conn|rds tunnel|run_.*\.ps1|port 5433|add credits at|openrouter\.ai|invalid openrouter|internal server error|unexpected error occurred|hostname.*not known|ssl.*certificate|certificate verify failed/i;
 
 const SAFE_MESSAGE_PATTERN =
-  /^(invalid email or password|invalid email or code|please verify|already exists|not found|required|must be|cannot be|too short|too long|invalid otp|incorrect password|unauthorized|forbidden|payout|bank account|upi|ifsc|pan card|gstin|deal not found|listing not found|sign in|log in|verify your email|email already|password must|account unavailable|verification)/i;
+  /(invalid email or password|invalid email or code|please verify|already exists|not found|required|must be|cannot be|too short|too long|invalid otp|incorrect password|unauthorized|forbidden|payout|bank account|upi|ifsc|pan card|gstin|deal not found|listing not found|sign in|log in|verify your email|email already|password must|account unavailable|verification|incomplete|is required|must be configured|must be selected|must be set|must be approved|positive integer|at least)/i;
 
 /** True when the message is safe to show end users (not infra/config/stack details). */
 export function isSafeUserFacingMessage(message) {
@@ -108,6 +108,17 @@ export function readApiError(err, fallback = GENERIC.default, options = {}) {
 function isAiRequest(config) {
   const url = String(config?.url || '');
   return url.includes('/ai/') || url.includes('/domains/ai');
+}
+
+export function isVaPublicRequest(config) {
+  const url = String(config?.url || '');
+  return url === '/api/v1/virtual-assistant';
+}
+
+/** Detect whether a request targets the API layer. */
+export function isApiRequest(config) {
+  const url = String(config?.url || '');
+  return url.includes('/api/');
 }
 
 /** Sanitize axios error payload fields in place so existing `response.data.error` reads stay safe. */

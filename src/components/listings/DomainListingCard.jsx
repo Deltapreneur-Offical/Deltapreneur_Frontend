@@ -490,7 +490,16 @@ export default function DomainListingCard({
 
       <div className="domain-listing-card__body">
         <div className="domain-listing-card__domain-row">
-          <p className="domain-listing-card__domain" title={display.fullDomain}>
+          <p
+            className="domain-listing-card__domain"
+            title={display.fullDomain}
+            style={{
+              whiteSpace: 'nowrap',
+              wordBreak: 'normal',
+              overflowWrap: 'normal',
+              display: 'block',
+            }}
+          >
             <OverflowMarqueeText text={display.fullDomain} />
           </p>
           {domain.verified ? (

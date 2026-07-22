@@ -25,7 +25,6 @@ import CreatorProfileCompletionBanner from '../components/profile/CreatorProfile
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import { resolveUserDisplayName } from '../utils/userDisplayName';
 import { ventureListChooseUrl } from '../constants/ventureListingTypeContent';
-import ServicesSection from '../components/common/ServicesSection';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
 const DASHBOARD_GREETING_COUNT = 8;
@@ -439,7 +438,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <ServicesSection isDashboard={true} />
       </div>
     </AppLayout>
   );

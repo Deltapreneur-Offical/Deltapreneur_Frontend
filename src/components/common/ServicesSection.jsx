@@ -25,36 +25,24 @@ function DomainEssentialCard({
 
   return (
     <div
-      className="domain-essential-card relative flex h-full flex-col rounded-2xl overflow-hidden cursor-default"
-      style={{
-        background: '#fff',
-        border: 'none',
-        boxShadow: `0 2px 16px 0 ${card.bgLight}`,
-      }}
+      className="domain-essential-card relative flex h-full flex-col rounded-[24px] overflow-hidden cursor-default border border-black bg-white shadow-sm"
     >
-      <div
-        className="h-1.5 w-full"
-        style={{ background: `linear-gradient(90deg, ${card.colorFrom}, ${card.colorTo})` }}
-      />
-
       <div className="p-6 flex flex-col flex-1 gap-4">
         <div className="flex items-start justify-between gap-3">
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: `linear-gradient(135deg, ${card.colorFrom}, ${card.colorTo})` }}
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-purple-50 border border-purple-100"
           >
-            <Icon className="w-6 h-6 text-white" strokeWidth={2} />
+            <Icon className="w-6 h-6 text-purple-600" strokeWidth={2} />
           </div>
           <span
-            className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full"
-            style={{ background: card.badge, color: card.textAccent }}
+            className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200"
           >
             {card.tag}
           </span>
         </div>
 
         <div>
-          <h3 className="text-[15px] font-extrabold text-gray-900 leading-snug">
+          <h3 className="text-[15px] font-bold text-gray-900 leading-snug">
             {card.title}
           </h3>
           {!hasDomains && card.id !== 'transfer' && (
@@ -93,10 +81,9 @@ function DomainEssentialCard({
         {card.id !== 'transfer' && card.id !== 'renew' && (
           <ul className="flex-1 space-y-2">
             {card.bullets.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-[12px] text-gray-600">
+              <li key={b} className="flex items-start gap-2 text-[12px] text-gray-650 font-medium">
                 <CheckCircle2
-                  className="w-3.5 h-3.5 mt-0.5 shrink-0"
-                  style={{ color: card.colorFrom }}
+                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-purple-400"
                 />
                 <span>{b}</span>
               </li>
@@ -107,10 +94,9 @@ function DomainEssentialCard({
         {(card.id === 'transfer' || card.id === 'renew') && (
           <ul className="flex-1 space-y-1.5">
             {card.bullets.slice(0, 2).map((b) => (
-              <li key={b} className="flex items-start gap-2 text-[12px] text-gray-600">
+              <li key={b} className="flex items-start gap-2 text-[12px] text-gray-655 font-medium">
                 <CheckCircle2
-                  className="w-3.5 h-3.5 mt-0.5 shrink-0"
-                  style={{ color: card.colorFrom }}
+                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-purple-400"
                 />
                 <span>{b}</span>
               </li>
@@ -126,7 +112,7 @@ function DomainEssentialCard({
               <Loader2 className="w-5 h-5 animate-spin text-gray-300" />
             ) : (
               <>
-                <p className="text-lg font-black text-gray-900 leading-none">{card.price}</p>
+                <p className="text-lg font-bold text-gray-900 leading-none">{card.price}</p>
                 <p className="text-[10px] font-semibold text-gray-400 mt-0.5">per {card.unit}</p>
               </>
             )}
@@ -135,8 +121,7 @@ function DomainEssentialCard({
           <button
             type="button"
             onClick={() => onCta(card.id)}
-            className="domain-essential-card__cta inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl text-white text-xs font-bold transition-all select-none active:scale-95 shadow-sm"
-            style={{ background: `linear-gradient(135deg, ${card.colorFrom}, ${card.colorTo})` }}
+            className="domain-essential-card__cta inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl text-white text-xs font-semibold bg-purple-600 hover:bg-purple-700 transition-all select-none active:scale-95 shadow-sm"
           >
             {card.cta}
             <ArrowRight
@@ -355,7 +340,7 @@ export default function ServicesSection({ isDashboard = false }) {
           )}
           {prices?.gstRate > 0 && (
             <p className="text-center text-[10px] text-gray-400 mt-3 px-4">
-              * All prices are exclusive of {(prices.gstRate * 100).toFixed(0)}% GST
+              * All prices are exclusive of {prices.gstRate >= 1 ? prices.gstRate : (prices.gstRate * 100).toFixed(0)}% GST
             </p>
           )}
         </div>
@@ -417,7 +402,7 @@ export default function ServicesSection({ isDashboard = false }) {
 
         {prices?.gstRate > 0 && (
           <p className="text-center text-[10px] text-gray-400 mt-4">
-            * All prices are exclusive of {(prices.gstRate * 100).toFixed(0)}% GST
+            * All prices are exclusive of {prices.gstRate >= 1 ? prices.gstRate : (prices.gstRate * 100).toFixed(0)}% GST
           </p>
         )}
       </div>

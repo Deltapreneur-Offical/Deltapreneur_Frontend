@@ -675,6 +675,7 @@ export default function CommunityPage() {
           profile={detailProfile}
           open={!!detailProfile}
           onClose={closeListingDetail}
+          showShareIcon={true}
         />
       )}
 

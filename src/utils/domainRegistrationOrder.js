@@ -36,9 +36,10 @@ export function registrationStatusLabel(status, lifecycleStatus, t) {
 export function isRegistrationPurchase(order) {
   if (!order) return false;
   const s = (order.status || '').toUpperCase();
-  if (s === 'CREATED' || s === 'EXPIRED') return false;
+  if (s === 'EXPIRED') return false;
   if (order.razorpayPaymentId || order.razorpay_payment_id) return true;
   return [
+    'CREATED',
     'PAYMENT_COMPLETED',
     'REGISTRATION_PENDING',
     'ACTIVE',

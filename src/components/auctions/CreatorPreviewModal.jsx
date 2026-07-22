@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel, ChevronRight, User2 } from 'lucide-react';
+import { X, MapPin, BadgeCheck, Sparkles, Briefcase, Tag, Target, Building2, Globe, Video, FileText, ExternalLink, ArrowRight, Clock, Star, Gavel, ChevronRight, User2, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
@@ -80,7 +80,7 @@ function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) 
   );
 }
 
-export default function CreatorPreviewModal({ profile, auction, open, onClose, onPlaceBid }) {
+export default function CreatorPreviewModal({ profile, auction, open, onClose, onPlaceBid, showShareIcon = false }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const dialogRef = useRef(null);
@@ -487,25 +487,37 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
               Close
             </button>
 
-            {/* Connect Button */}
-            <button
-              type="button"
-              onClick={handleConnect}
-              disabled={!linkedInUrl}
-              className={`px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 flex items-center gap-3 shadow-sm transition-all duration-300 ${linkedInUrl
-                ? 'hover:bg-slate-50 hover:shadow-md hover:border-slate-450 hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
-                : 'opacity-50 cursor-not-allowed'
-                }`}
-            >
-              {/* LinkedIn Box */}
-              <span className="flex items-center justify-center w-8 h-8 rounded-[6px] bg-[#0A66C2] text-white text-[15px] font-bold transition-all duration-300">
-                in
-              </span>
+            {/* Right side container */}
+            <div className="flex items-center gap-3.5">
+              {/* Static Share Icon (Creators page only) */}
+              {showShareIcon && (
+                <div
+                  className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-[14px] text-slate-600 shadow-sm"
+                >
+                  <Share2 size={18} />
+                </div>
+              )}
 
-              <span className="text-sm font-bold">
-                Connect
-              </span>
-            </button>
+              {/* Connect Button */}
+              <button
+                type="button"
+                onClick={handleConnect}
+                disabled={!linkedInUrl}
+                className={`px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 flex items-center gap-3 shadow-sm transition-all duration-300 ${linkedInUrl
+                  ? 'hover:bg-slate-50 hover:shadow-md hover:border-slate-450 hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
+                  : 'opacity-50 cursor-not-allowed'
+                  }`}
+              >
+                {/* LinkedIn Box */}
+                <span className="flex items-center justify-center w-8 h-8 rounded-[6px] bg-[#0A66C2] text-white text-[15px] font-bold transition-all duration-300">
+                  in
+                </span>
+
+                <span className="text-sm font-bold">
+                  Connect
+                </span>
+              </button>
+            </div>
           </div>
         )}
       </div>

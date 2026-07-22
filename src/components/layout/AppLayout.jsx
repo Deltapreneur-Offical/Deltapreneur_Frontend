@@ -1,11 +1,16 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+<<<<<<< Updated upstream
 import { Home, Handshake, Gavel, ShoppingBag, ShoppingCart, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award } from 'lucide-react';
+=======
+import { Home, Handshake, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award, Briefcase } from 'lucide-react';
+>>>>>>> Stashed changes
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { notificationAPI } from '../../api/services';
+import { virtualAssistantAPI } from '../../api/services';
 import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
 import { useNotificationSocket } from '../../hooks/useNotificationSocket';
 import api from '../../api/axios';
@@ -41,22 +46,70 @@ const sidebarItems = [
   },
   { icon: Gavel, labelKey: 'auctions', to: '/auctions', isImage: false },
   { icon: ShoppingBag, labelKey: 'purchases', to: '/purchases', isImage: false },
+  {
+    icon: Briefcase,
+    labelKey: 'navVirtualAssistant',
+    isImage: false,
+    children: [
+      {
+        labelKey: 'navVaMyJourney',
+        to: '/virtual-assistant/journey',
+      },
+      {
+        labelKey: 'navVaWorkspace',
+        to: '/virtual-assistant/workspace',
+      },
+    ],
+  },
 ];
 
-const adminNavItem = { icon: Shield, labelKey: 'navAdminPanel', to: '/admin', isImage: false, adminAccent: true };
+const adminNavItem = {
+  icon: Shield,
+  labelKey: 'navAdminPanel',
+  isImage: false,
+  adminAccent: true,
+  hideLabel: true,
+  children: [
+    {
+      icon: Shield,
+      isImage: false,
+      labelKey: 'navAdminPanel',
+      to: '/admin',
+    },
+    {
+      labelKey: 'navVirtualAssistants',
+      children: [
+        {
+          labelKey: 'navVaApplications',
+          to: '/admin/virtual-assistants/applications',
+        },
+        {
+          labelKey: 'navVaDirectAdd',
+          to: '/admin/virtual-assistants/direct-add',
+        },
+        {
+          labelKey: 'navVaPublishedProfiles',
+          to: '/admin/virtual-assistants/published',
+        },
+      ],
+    },
+  ],
+};
 
 function isAdminUser(user) {
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
   return ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'].includes(roleUpper);
 }
 
-function getNavItems(user) {
-  if (!isAdminUser(user)) return sidebarItems;
-  const purchasesIdx = sidebarItems.findIndex((item) => item.to === '/purchases');
-  const insertAt = purchasesIdx >= 0 ? purchasesIdx + 1 : sidebarItems.length;
-  return [...sidebarItems.slice(0, insertAt), adminNavItem, ...sidebarItems.slice(insertAt)];
+function getNavItems(user, showVaItems) {
+  const baseItems = showVaItems
+    ? sidebarItems
+    : sidebarItems.filter((item) => item.labelKey !== 'navVirtualAssistant');
+  if (!isAdminUser(user)) return baseItems;
+  const purchasesIdx = baseItems.findIndex((item) => item.to === '/purchases');
+  const insertAt = purchasesIdx >= 0 ? purchasesIdx + 1 : baseItems.length;
+  return [...baseItems.slice(0, insertAt), adminNavItem, ...baseItems.slice(insertAt)];
 }
-
 function SidebarNavItem({
   item,
   active,
@@ -65,9 +118,36 @@ function SidebarNavItem({
   domainPendingCount,
   onClick,
   t,
+  depth = 0,
 }) {
   const Icon = item.icon;
   const showDomainPending = item.to === '/domains' && domainPendingCount > 0;
+
+  // Group nodes (have children but no own route) render a label + nested items.
+  if (item.children && !item.to) {
+    return (
+      <div className={`app-sidebar-group${depth > 0 ? ' app-sidebar-group--nested' : ''}`}>
+        {!collapsed && !item.hideLabel && (
+          <div className="app-sidebar-group-label">{t(item.labelKey)}</div>
+        )}
+        <div className="app-sidebar-group-items">
+          {item.children.map((child) => (
+            <SidebarNavItem
+              key={child.to || child.labelKey}
+              item={child}
+              active={child.to ? active : false}
+              accent={false}
+              collapsed={collapsed}
+              domainPendingCount={domainPendingCount}
+              onClick={onClick}
+              t={t}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Link
@@ -78,13 +158,14 @@ function SidebarNavItem({
         active && 'is-active',
         accent && 'is-admin',
         collapsed && 'is-collapsed',
+        depth > 0 && 'app-sidebar-link--nested',
       ]
         .filter(Boolean)
         .join(' ')}
       title={collapsed ? t(item.labelKey) : undefined}
       aria-label={
         showDomainPending
-          ? `${t(item.labelKey)} — ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
+          ? `${t(item.labelKey)} â€” ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
           : t(item.labelKey)
       }
     >
@@ -96,9 +177,9 @@ function SidebarNavItem({
             className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
             draggable={false}
           />
-        ) : (
+        ) : item.icon ? (
           <Icon size={20} strokeWidth={2} />
-        )}
+        ) : null}
         {showDomainPending && collapsed ? (
           <span className="app-sidebar-pending-dot" aria-hidden />
         ) : null}
@@ -120,8 +201,13 @@ function SidebarNavItem({
 export default function AppLayout({ children }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+<<<<<<< Updated upstream
   const { count: cartCount } = useCart();
   const navItems = getNavItems(user);
+=======
+  const [isVaApplicant, setIsVaApplicant] = useState(false);
+  const navItems = getNavItems(user, isVaApplicant);
+>>>>>>> Stashed changes
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -145,6 +231,8 @@ export default function AppLayout({ children }) {
   const [showInitial, setShowInitial] = useState(false);
   const [edgePoints, setEdgePoints] = useState(0);
   const [edgePointsWorthInr, setEdgePointsWorthInr] = useState(0);
+  const vaCheckDoneRef = useRef(false);
+  const onClick = () => {};
   const bellRef = useRef(null);
   const notifPanelRef = useRef(null);
   const profileRef = useRef(null);
@@ -181,6 +269,24 @@ export default function AppLayout({ children }) {
     const interval = setInterval(() => setShowInitial((prev) => !prev), 3000);
     return () => { clearTimeout(startFlip); clearInterval(interval); };
   }, [user?.id, user?.userId]);
+
+  useEffect(() => {
+    if (vaCheckDoneRef.current) return;
+    if (!user || !user.id) return;
+    const roleUpper = (user?.role ?? '').toString().toUpperCase();
+    if (['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'].includes(roleUpper)) {
+      vaCheckDoneRef.current = true;
+      return;
+    }
+    vaCheckDoneRef.current = true;
+    virtualAssistantAPI
+      .getMy()
+      .then((res) => {
+        const data = unwrapApiData(res);
+        if (data) setIsVaApplicant(true);
+      })
+      .catch(() => {});
+  }, [user]);
 
   const updateNotifPanelPosition = useCallback(() => {
     const anchor = bellRef.current;
@@ -280,7 +386,7 @@ export default function AppLayout({ children }) {
     return () => clearInterval(interval);
   }, [userId, refreshUnreadCount, fetchEdgePoints]);
 
-  // Close bell / profile menus on outside click (panel is portaled — include notifPanelRef)
+  // Close bell / profile menus on outside click (panel is portaled â€” include notifPanelRef)
   useEffect(() => {
     const handler = (e) => {
       const insideBell = bellRef.current?.contains(e.target);
@@ -384,7 +490,7 @@ export default function AppLayout({ children }) {
       data-app-layout-scroll
     >
       <div className="app-layout-workspace flex w-full flex-1 items-stretch">
-      {/* Desktop Left Sidebar — workspace only; ends above full-width footer */}
+      {/* Desktop Left Sidebar â€” workspace only; ends above full-width footer */}
       <aside
         className={`app-chrome-panel app-layout-sidebar app-sidebar hidden lg:flex min-h-full flex-col flex-shrink-0 self-stretch ${
           sidebarCollapsed ? 'is-collapsed w-[4.75rem]' : 'w-[15.5rem]'
@@ -417,12 +523,13 @@ export default function AppLayout({ children }) {
             <div className="app-sidebar-nav-list">
               {navItems.map((item) => (
                 <SidebarNavItem
-                  key={item.to}
+                  key={item.to || item.labelKey}
                   item={item}
                   active={isActive(item.to)}
                   accent={item.adminAccent}
                   collapsed={sidebarCollapsed}
                   domainPendingCount={domainPendingCount}
+                  onClick={onClick}
                   t={t}
                 />
               ))}
@@ -510,7 +617,7 @@ export default function AppLayout({ children }) {
               {!sidebarCollapsed && (
                 <span className="app-sidebar-link-label flex flex-col items-start leading-tight">
                   <span>Edge Points</span>
-                  <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points • Worth ₹{edgePointsWorthInr}</span>
+                  <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points â€¢ Worth â‚¹{edgePointsWorthInr}</span>
                 </span>
               )}
             </Link>
@@ -582,7 +689,7 @@ export default function AppLayout({ children }) {
                 <div className="app-sidebar-nav-list">
                   {navItems.map((item) => (
                     <SidebarNavItem
-                      key={item.to}
+                      key={item.to || item.labelKey}
                       item={item}
                       active={isActive(item.to)}
                       accent={item.adminAccent}
@@ -653,7 +760,7 @@ export default function AppLayout({ children }) {
                   </span>
                   <span className="app-sidebar-link-label flex flex-col items-start leading-tight">
                     <span>Edge Points</span>
-                    <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points • Worth ₹{edgePointsWorthInr}</span>
+                    <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points â€¢ Worth â‚¹{edgePointsWorthInr}</span>
                   </span>
                 </Link>
                 <Link
@@ -731,7 +838,7 @@ export default function AppLayout({ children }) {
               </span>
               <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
             </div>
-            {/* Bell — always visible on mobile/tablet */}
+            {/* Bell â€” always visible on mobile/tablet */}
             <div className="relative" ref={bellRef}>
               <button
                 type="button"
@@ -776,7 +883,7 @@ export default function AppLayout({ children }) {
                     <div className="max-h-[min(380px,calc(100vh-8rem))] overflow-y-auto">
                       {notifLoading && notifications.length === 0 ? (
                         <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                          {t('loading', { defaultValue: 'Loading…' })}
+                          {t('loading', { defaultValue: 'Loadingâ€¦' })}
                         </div>
                       ) : notifications.length === 0 ? (
                         <div className="py-8 px-4 text-center text-gray-500 text-sm">
@@ -792,11 +899,11 @@ export default function AppLayout({ children }) {
                             onClick={() => handleNotificationClick(notification)}
                           >
                             <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
-                              {notification.type?.includes('LIKE') ? '❤️'
-                               : notification.type?.includes('VERIFIED') ? '✓'
-                               : notification.type?.includes('VENTURE') ? '🤝'
-                               : notification.type?.includes('DOMAIN') ? '🌐'
-                               : notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
+                              {notification.type?.includes('LIKE') ? 'â¤ï¸'
+                               : notification.type?.includes('VERIFIED') ? 'âœ“'
+                               : notification.type?.includes('VENTURE') ? 'ðŸ¤'
+                               : notification.type?.includes('DOMAIN') ? 'ðŸŒ'
+                               : notification.type?.includes('AUCTION') ? 'ðŸ”¨' : 'ðŸ””'}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium text-gray-900 mb-0.5">
@@ -832,10 +939,10 @@ export default function AppLayout({ children }) {
                 )}
             </div>
 
-            {/* Cart — visible when logged in, right of bell */}
+            {/* Cart â€” visible when logged in, right of bell */}
             {user && <CartButton />}
 
-            {/* Mobile / tablet: round profile → accordion language & currency */}
+            {/* Mobile / tablet: round profile â†’ accordion language & currency */}
             <div className="relative shrink-0 xl:hidden" ref={profileRef}>
               <button
                 type="button"
@@ -947,7 +1054,7 @@ export default function AppLayout({ children }) {
         <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-emerald-400 via-indigo-500 to-emerald-400" />
-            <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <div className="text-6xl mb-4 animate-bounce">ðŸŽ‰</div>
             <h3 className="text-2xl font-black tracking-tight text-white mb-2">Congratulations!</h3>
             <p className="text-[13px] text-slate-300 leading-relaxed mb-6 whitespace-pre-line">
               {referralPopup.message || "You have successfully earned 20 Edge Points!\n\nYour wallet has been updated."}

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL, API_ORIGIN } from '../config/urls';
 import { isPublicBrowsePath } from '../utils/authSession';
-import { sanitizeAxiosError } from '../utils/apiError';
+import { sanitizeAxiosError, isVaPublicRequest } from '../utils/apiError';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -102,6 +102,9 @@ api.interceptors.request.use((config) => {
   if (method !== 'get' && method !== 'head' && method !== 'options') {
     config.headers = { ...csrfHeader(), ...config.headers };
   }
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
   return config;
 });
 
@@ -145,6 +148,9 @@ api.interceptors.response.use(
           window.location.href = '/login';
         }
       }
+    }
+    if (isVaPublicRequest(original)) {
+      return Promise.reject(error);
     }
     return Promise.reject(sanitizeAxiosError(error));
   }

@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => {
     postMock: vi.fn(),
     isPublicBrowsePathMock: vi.fn(() => false),
     sanitizeAxiosErrorMock: vi.fn((error) => error),
+    isVaPublicRequestMock: vi.fn(() => false),
   };
 });
 
@@ -34,6 +35,7 @@ vi.mock('../utils/authSession', () => ({
 
 vi.mock('../utils/apiError', () => ({
   sanitizeAxiosError: mocks.sanitizeAxiosErrorMock,
+  isVaPublicRequest: mocks.isVaPublicRequestMock,
 }));
 
 let requestHandler;
@@ -114,5 +116,41 @@ describe('api axios client', () => {
         _retry: true,
       }),
     );
+  });
+
+  it('bypasses sanitization for VA public submission errors', async () => {
+    mocks.isVaPublicRequestMock.mockReturnValue(true);
+    const vaError = {
+      config: { url: '/api/v1/virtual-assistant' },
+      response: {
+        status: 409,
+        data: { detail: 'You have already applied for this role.' },
+      },
+    };
+
+    const result = await responseErrorHandler(vaError);
+
+    expect(mocks.sanitizeAxiosErrorMock).not.toHaveBeenCalled();
+    expect(result).toBe(vaError);
+    expect(result.response.data.detail).toBe('You have already applied for this role.');
+  });
+
+  it('sanitizes non-VA errors normally', async () => {
+    mocks.isVaPublicRequestMock.mockReturnValue(false);
+    const otherError = {
+      config: { url: '/api/v1/other' },
+      response: {
+        status: 500,
+        data: { detail: 'internal error' },
+      },
+    };
+    mocks.sanitizeAxiosErrorMock.mockReturnValue({
+      ...otherError,
+      response: { ...otherError.response, data: { detail: 'safe message' } },
+    });
+
+    const result = await responseErrorHandler(otherError);
+
+    expect(mocks.sanitizeAxiosErrorMock).toHaveBeenCalled();
   });
 });

@@ -240,6 +240,12 @@ export default function HomeFooter() {
 
             </ScrollLink>
 
+            <ScrollLink to="/virtual-assistant" className={linkClass}>
+
+              Virtual Assistant
+
+            </ScrollLink>
+
           </nav>
 
         </div>

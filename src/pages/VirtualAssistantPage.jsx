@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { virtualAssistantAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import TopNavbar from '../components/common/TopNavbar';
+import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import Confetti from '../components/common/Confetti';
@@ -70,6 +71,7 @@ const VirtualAssistantPage = () => {
   const [errors, setErrors] = useState({});
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '', data: null });
   const [showConfetti, setShowConfetti] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const [resumePreview, setResumePreview] = useState(null);
   const profilePhotoRef = useRef(null);
@@ -270,19 +272,19 @@ const VirtualAssistantPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-      <TopNavbar />
+      <TopNavbar homeMobileMenu />
+      <HomeNavbar
+        openDropdown={openDropdown}
+        setOpenDropdown={setOpenDropdown}
+        navigate={navigate}
+      />
       <Confetti show={showConfetti} />
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <BackToHomeButton />
-          <div className="flex items-center gap-2 text-purple-600 font-bold text-lg">
-            <Briefcase size={20} />
-            <span>Virtual Assistant Application</span>
-          </div>
-        </div>
-      </header>
 
-      <PageHero className="max-w-4xl mx-auto text-center pt-10 pb-4 px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+        <BackToHomeButton />
+      </div>
+
+      <PageHero className="max-w-4xl mx-auto text-center pt-4 sm:pt-6 pb-4 px-4">
         <PageHeroItem>
           <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-green-100 border border-green-300 rounded-full text-xs sm:text-sm font-semibold text-green-700 mb-5 sm:mb-6">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>

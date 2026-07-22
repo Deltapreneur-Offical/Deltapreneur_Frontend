@@ -318,9 +318,28 @@ function RegistrationPurchaseRow({ order, user, t }) {
             <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
               ◇ {t('purchasesBadgeRegistration', { defaultValue: 'Registration' })}
             </span>
+            {order.isPremium ? (
+              <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                ✦ Premium
+              </span>
+            ) : null}
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge}`}>{label}</span>
           </div>
           <div className="font-bold text-lg text-gray-900">{order.domain}</div>
+          {order.periodYears ? (
+            <div className="text-xs text-gray-500 mt-0.5">
+              Registration period: {order.periodYears} {Number(order.periodYears) === 1 ? 'year' : 'years'}
+            </div>
+          ) : null}
+          <div className="text-xs text-gray-500 mt-0.5">
+            Price source: {order.registryTier === 'premium' || order.isPremium ? 'Premium' : 'Standard'}
+            {order.providerUnitPriceInr != null
+              ? ` · Provider ${formatPrice(order.providerUnitPriceInr)}`
+              : ''}
+            {order.customerUnitPriceInr != null
+              ? ` · Customer ${formatPrice(order.customerUnitPriceInr)}/yr`
+              : ''}
+          </div>
           <div className="text-xs text-gray-600">
             {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : ''}
           </div>

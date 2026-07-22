@@ -158,7 +158,7 @@ function SaveActions({ saving, onReset, onSave, compact = false }) {
 
 function hasTldOverride(config, tld) {
   if (!config) return false;
-  return ['registration', 'renewal', 'transfer'].some((service) => hasServiceOverride(config, tld, service));
+  return ['registration', 'premium_registration', 'renewal', 'transfer'].some((service) => hasServiceOverride(config, tld, service));
 }
 
 function hasServiceOverride(config, tld, service) {
@@ -168,7 +168,7 @@ function hasServiceOverride(config, tld, service) {
 }
 
 function getTldOverrideServices(config, tld) {
-  return ['registration', 'renewal', 'transfer'].filter((service) => hasServiceOverride(config, tld, service));
+  return ['registration', 'premium_registration', 'renewal', 'transfer'].filter((service) => hasServiceOverride(config, tld, service));
 }
 
 function countTldOverrides(config, tlds) {
@@ -192,6 +192,7 @@ const SORT_OPTIONS = [
 
 const SERVICE_BADGE_LABELS = {
   registration: 'Reg',
+  premium_registration: 'Prem',
   renewal: 'Ren',
   transfer: 'Trf',
 };
@@ -249,6 +250,15 @@ export default function AdminOpenProviderCommissionTab() {
           default: ((raw.registration?.default ?? 0.03) * 100).toFixed(2).replace(/\.00$/, ''),
           by_tld: Object.fromEntries(
             Object.entries(raw.registration?.by_tld ?? {}).map(([tld, val]) => [
+              tld,
+              (val * 100).toFixed(2).replace(/\.00$/, ''),
+            ]),
+          ),
+        },
+        premium_registration: {
+          default: ((raw.premium_registration?.default ?? raw.registration?.default ?? 0.03) * 100).toFixed(2).replace(/\.00$/, ''),
+          by_tld: Object.fromEntries(
+            Object.entries(raw.premium_registration?.by_tld ?? {}).map(([tld, val]) => [
               tld,
               (val * 100).toFixed(2).replace(/\.00$/, ''),
             ]),
@@ -392,15 +402,17 @@ export default function AdminOpenProviderCommissionTab() {
     setConfig((prev) => ({
       ...prev,
       [service]: {
-        ...prev[service],
+        ...(prev[service] || { by_tld: {} }),
         default: value,
+        by_tld: prev[service]?.by_tld || {},
       },
     }));
   };
 
   const handleTldOverrideChange = (service, tld, value) => {
     setConfig((prev) => {
-      const byTld = { ...prev[service].by_tld };
+      const current = prev[service] || { default: '', by_tld: {} };
+      const byTld = { ...(current.by_tld || {}) };
       if (value === '' || value == null) {
         delete byTld[tld];
       } else {
@@ -409,7 +421,7 @@ export default function AdminOpenProviderCommissionTab() {
       return {
         ...prev,
         [service]: {
-          ...prev[service],
+          ...current,
           by_tld: byTld,
         },
       };
@@ -431,6 +443,12 @@ export default function AdminOpenProviderCommissionTab() {
           default: toBackend(config.registration.default) ?? 0.03,
           by_tld: Object.fromEntries(
             Object.entries(config.registration.by_tld).map(([tld, val]) => [tld, toBackend(val)]),
+          ),
+        },
+        premium_registration: {
+          default: toBackend(config.premium_registration?.default) ?? toBackend(config.registration.default) ?? 0.03,
+          by_tld: Object.fromEntries(
+            Object.entries(config.premium_registration?.by_tld || {}).map(([tld, val]) => [tld, toBackend(val)]),
           ),
         },
         renewal: {
@@ -510,9 +528,18 @@ export default function AdminOpenProviderCommissionTab() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <CommissionInput
               id="global-registration"
-              label="Registration Default"
+              label="Standard Registration"
+              hint="Markup for normal (non-premium) domain creates"
               value={config.registration.default}
               onChange={(val) => handleGlobalRateChange('registration', val)}
+              highlight
+            />
+            <CommissionInput
+              id="global-premium-registration"
+              label="Premium Registration"
+              hint="Separate markup for OpenProvider registry-premium domains — not mixed with Standard"
+              value={config.premium_registration?.default ?? ''}
+              onChange={(val) => handleGlobalRateChange('premium_registration', val)}
               highlight
             />
             <CommissionInput
@@ -901,12 +928,19 @@ export default function AdminOpenProviderCommissionTab() {
                   }}>
                     Transfer Markup
                   </th>
+                  <th style={{
+                    textAlign: 'left', padding: '12px 16px', fontSize: 11, fontWeight: 700,
+                    color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.04em',
+                    boxShadow: '0 1px 0 #e5e7eb',
+                  }}>
+                    Premium Markup
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedTlds.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ padding: '32px 16px', textAlign: 'center', color: '#64748b' }}>
+                    <td colSpan={5} style={{ padding: '32px 16px', textAlign: 'center', color: '#64748b' }}>
                       No extensions match your filters. Try &quot;Margin set&quot; or &quot;Not set&quot; quick filters, or clear filters.
                     </td>
                   </tr>
@@ -965,6 +999,13 @@ export default function AdminOpenProviderCommissionTab() {
                             defaultValue={config.transfer.default}
                             value={config.transfer.by_tld[tld]}
                             onChange={(val) => handleTldOverrideChange('transfer', tld, val)}
+                          />
+                        </td>
+                        <td style={{ padding: '8px 16px' }}>
+                          <TldOverrideInput
+                            defaultValue={config.premium_registration?.default}
+                            value={config.premium_registration?.by_tld?.[tld]}
+                            onChange={(val) => handleTldOverrideChange('premium_registration', tld, val)}
                           />
                         </td>
                       </tr>

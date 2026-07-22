@@ -160,6 +160,11 @@ export const domainAPI = {
       },
       ...config,
     }),
+  searchPremium: ({ name }, config = {}) =>
+    api.get('/api/v1/domain/search-premium', {
+      params: { name },
+      ...config,
+    }),
   listTlds: () => api.get('/api/v1/domain/tlds'),
   createOrder: (id, data, redeemPoints = false) => api.post(`/api/v1/domain/listings/${id}/purchase/create-order`, data, { params: { redeem_points: redeemPoints } }),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/listings/${id}/purchase/verify`, data),
@@ -488,8 +493,11 @@ export const cartAPI = {
   checkout:     (body = {})  => api.post('/api/v1/cart/checkout', body),
   verifyCheckout: (body)     => api.post('/api/v1/cart/checkout/verify', body),
   cancelCheckout: (body)     => api.post('/api/v1/cart/checkout/cancel', body),
-  updateDomainRegistrationPeriod: (periodYears) =>
-    api.patch('/api/v1/cart/domain-registration-period', { periodYears }),
+  updateDomainRegistrationPeriod: (periodYears, itemId) =>
+    api.patch('/api/v1/cart/domain-registration-period', {
+      periodYears,
+      ...(itemId ? { itemId } : {}),
+    }),
 };
 
 export const joinUsAPI = {

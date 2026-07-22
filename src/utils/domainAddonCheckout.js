@@ -20,15 +20,23 @@ export async function payEmailAddon({
 
 export async function paySslAddon({
   orderId,
-  certType,
+  productId,
+  period,
   duration,
+  certType,
+  approverEmail,
+  validationMethod,
   user,
   description,
 }) {
-  const { data: payPayload } = await domainStorefrontAPI.createSslAddonPayment(orderId, {
-    certType,
-    duration,
-  });
+  const body = {
+    productId,
+    period: period ?? duration ?? 1,
+    approverEmail,
+  };
+  if (validationMethod) body.validationMethod = validationMethod;
+  if (certType) body.certType = certType;
+  const { data: payPayload } = await domainStorefrontAPI.createSslAddonPayment(orderId, body);
   const payData = payPayload?.data ?? payPayload;
   return completeAddonPayment({
     orderId,

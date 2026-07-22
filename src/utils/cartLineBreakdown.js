@@ -92,6 +92,10 @@ export function buildCartItemBreakdown(item, vaCatalog = [], operationsPriceByKe
     available: item.available !== false,
     selectedPlan: item.selectedPlan,
     planLabel: item.selectedPlan ? planLabelForKey(item.selectedPlan) : null,
+    periodYears:
+      item.productType === 'DOMAIN_REGISTRATION'
+        ? Math.max(1, Number(item.metadata?.period || 1))
+        : null,
     basePrice: Number(item.basePrice) || 0,
     addonAmount,
     coBrotherFee: Number(item.coBrotherFee) || 0,
@@ -115,6 +119,7 @@ export function buildCartOrderViewModel(itemBreakdowns) {
       name: breakdown.name,
       planLabel: breakdown.planLabel,
       productType: breakdown.productType,
+      periodYears: breakdown.periodYears,
       amount: breakdown.productPayToday,
       basePrice: breakdown.basePrice,
       addonAmount: breakdown.addonAmount,

@@ -238,8 +238,8 @@ export function CartProvider({ children }) {
     return data;
   }, [fetchCart]);
 
-  const updateDomainRegistrationPeriod = useCallback(async (periodYears) => {
-    const { data } = await cartAPI.updateDomainRegistrationPeriod(periodYears);
+  const updateDomainRegistrationPeriod = useCallback(async (periodYears, itemId) => {
+    const { data } = await cartAPI.updateDomainRegistrationPeriod(periodYears, itemId);
     setCart(data);
     setCount(data?.itemCount ?? data?.items?.length ?? 0);
     notifyCartChanged();

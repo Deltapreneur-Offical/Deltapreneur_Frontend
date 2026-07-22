@@ -450,7 +450,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       renewalPrice: item.renewalPrice ?? null,
       price: item.registrationPrice ?? null,
       priceCurrency: item.currency || 'INR',
-      minPeriodYears: 1,
+      minPeriodYears: item.minPeriodYears || 1,
       listing: null,
     };
   };
@@ -468,8 +468,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       ext,
       status: onPublicMarketplace ? 'marketplace' : (data.status === 'marketplace' ? 'taken' : data.status),
       available: data.status === 'available',
-      price: data.price ?? null,
-      unitPrice: data.unitPrice ?? data.price ?? null,
+      // Never fall back to `price` (GST-inclusive total) for the /yr unit display.
+      price: data.unitPrice ?? null,
+      unitPrice: data.unitPrice ?? null,
       priceCurrency: data.priceCurrency ?? null,
       minPeriodYears: data.minPeriodYears ?? 1,
       registrarMessage: data.message ?? null,
@@ -959,7 +960,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       available: true,
       registrationPrice: item.unitPrice ?? item.price,
       renewalPrice: item.renewalPrice,
-      period: item.minPeriodYears || 1,
+      period: 1,
+      minPeriodYears: item.minPeriodYears || 1,
     }));
   const registrarErrorMessage = completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
     || (completedNewResults.length > 0 && completedNewResults.every((item) => item.status === 'error')

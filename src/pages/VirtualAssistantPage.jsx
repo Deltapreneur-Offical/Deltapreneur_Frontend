@@ -84,6 +84,8 @@ const VirtualAssistantPage = () => {
     }
   }, [user, hasAccessToken]);
 
+  const bioCharCount = formData.bio ? formData.bio.trim().length : 0;
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === 'file') {
@@ -132,6 +134,16 @@ const VirtualAssistantPage = () => {
       }
       return;
     }
+    if (name === 'bio') {
+      if (value.trim().length >= 100 && errors.bio) {
+        setErrors(prev => ({ ...prev, bio: null }));
+      }
+    }
+    if (name === 'availability' && value) {
+      if (errors.availability) {
+        setErrors(prev => ({ ...prev, availability: null }));
+      }
+    }
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
@@ -149,8 +161,11 @@ const VirtualAssistantPage = () => {
     if (!formData.location || formData.location.trim().length < 2) {
       newErrors.location = 'Location is required';
     }
-    if (!formData.bio || formData.bio.trim().length < 10) {
-      newErrors.bio = 'Please provide a short bio (at least 10 characters)';
+    if (!formData.bio || formData.bio.trim().length < 100) {
+      newErrors.bio = 'Please provide a short bio (at least 100 characters)';
+    }
+    if (!formData.availability) {
+      newErrors.availability = 'Please select your availability';
     }
     if (!formData.roles || formData.roles.length === 0) {
       newErrors.roles = 'Please select at least one Virtual Assistant role';
@@ -432,12 +447,19 @@ const VirtualAssistantPage = () => {
                   </h3>
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Short Bio <span className="text-red-500">*</span></label>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-semibold text-gray-700">
+                          Short Bio <span className="text-red-500">*</span>
+                        </label>
+                        <span className={`text-xs ${bioCharCount < 100 ? 'text-gray-500 font-medium' : 'text-green-600 font-semibold'}`}>
+                          {bioCharCount} / 100 characters
+                        </span>
+                      </div>
                       <textarea
                         name="bio"
                         value={formData.bio}
                         onChange={handleChange}
-                        rows="3"
+                        rows="4"
                         placeholder="Tell us about yourself, your background, and what makes you a great Virtual Assistant..."
                         className={`w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${errors.bio ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                       />
@@ -568,23 +590,32 @@ const VirtualAssistantPage = () => {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Availability <span className="text-red-500">*</span></label>
                       <div className="flex flex-wrap gap-3">
-                        {['Full-time', 'Part-time', 'Flexible'].map(option => (
-                          <label
-                            key={option}
-                            className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg cursor-pointer transition-all ${formData.availability === option.toLowerCase().replace('-', '-') ? 'border-purple-500 bg-purple-50' : 'border-gray-300 bg-white hover:border-purple-300'}`}
-                          >
-                            <input
-                              type="radio"
-                              name="availability"
-                              value={option.toLowerCase()}
-                              checked={formData.availability === option.toLowerCase()}
-                              onChange={handleChange}
-                              className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
-                            />
-                            <span className="text-sm font-medium text-gray-700">{option}</span>
-                          </label>
-                        ))}
+                        {['Full-time', 'Part-time', 'Flexible'].map(option => {
+                          const optionVal = option.toLowerCase();
+                          const isSelected = formData.availability === optionVal;
+                          return (
+                            <label
+                              key={option}
+                              className={`flex items-center gap-2.5 px-4 py-3 border rounded-xl cursor-pointer transition-all duration-200 ease-in-out ${
+                                isSelected
+                                  ? 'bg-white border-purple-600 text-purple-700 font-semibold shadow-xs ring-1 ring-purple-600/30'
+                                  : 'bg-white border-gray-300 text-gray-700 font-medium hover:border-purple-300 hover:bg-purple-50/20'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="availability"
+                                value={optionVal}
+                                checked={isSelected}
+                                onChange={handleChange}
+                                className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500 accent-purple-600"
+                              />
+                              <span className="text-sm">{option}</span>
+                            </label>
+                          );
+                        })}
                       </div>
+                      {errors.availability && <span className="text-xs text-red-500 mt-1 block">{errors.availability}</span>}
                     </div>
 
                     <div>

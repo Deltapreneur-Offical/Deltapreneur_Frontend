@@ -98,7 +98,7 @@ const VirtualAssistantDirectAddAdminPage = () => {
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Enter a valid email address';
     if (!formData.phoneNumber || !/^\d{10,15}$/.test(formData.phoneNumber.replace(/[\s\-]/g, ''))) newErrors.phoneNumber = 'Enter a valid phone number';
     if (!formData.location || formData.location.trim().length < 2) newErrors.location = 'Location is required';
-    if (!formData.bio || formData.bio.trim().length < 10) newErrors.bio = 'Bio must be at least 10 characters';
+    if (!formData.bio || formData.bio.trim().length < 100) newErrors.bio = 'Please provide a short bio (at least 100 characters)';
     if (!formData.roles || formData.roles.length === 0) newErrors.roles = 'Please select at least one role';
     if (!formData.skills || formData.skills.trim().length < 2) newErrors.skills = 'Please list your skills';
     if (!formData.yearsOfExperience) newErrors.yearsOfExperience = 'Please select years of experience';

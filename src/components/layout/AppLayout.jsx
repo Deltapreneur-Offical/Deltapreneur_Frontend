@@ -161,7 +161,7 @@ function SidebarNavItem({
       title={collapsed ? t(item.labelKey) : undefined}
       aria-label={
         showDomainPending
-          ? `${t(item.labelKey)} â€” ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
+          ? `${t(item.labelKey)} – ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
           : t(item.labelKey)
       }
     >

@@ -465,7 +465,6 @@ export default function AdminDashboardPage() {
       'software-auctions': softwareAuctionAPI.adminGetAll,
       'community-auctions': communityAuctionAPI.adminGetAll,
       'addon-orders':      adminAPI.getAddonOrders,
-      'virtual-assistants': adminAPI.getVirtualAssistants,
     };
   
     if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals' || currentTab === 'openprovider-pricing') {
@@ -627,7 +626,6 @@ export default function AdminDashboardPage() {
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
     { id: 'openprovider-pricing', label: 'OpenProvider Pricing',           icon: DomainsIcon },
     { id: 'domain-transfers',   label: t('adminTabDomainTransfers', { defaultValue: 'Domain transfers' }), icon: DomainsIcon },
-    { id: 'virtual-assistants', label: t('adminTabVirtualAssistants'),  icon: PurchaseIcon },
   ];
 
   return (
@@ -893,75 +891,6 @@ export default function AdminDashboardPage() {
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />
-            ) : tab === 'virtual-assistants' ? (
-              <div>
-                <div className="operations-section-tabs-wrap mb-6">
-                  <p className="operations-section-tabs-eyebrow">Virtual Assistants</p>
-                  <div className="operations-section-tabs operations-section-tabs--admin" role="tablist">
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={vaSubTab === 'applications'}
-                      className={`operations-section-tab operations-section-tab--assistance ${vaSubTab === 'applications' ? 'is-active' : ''}`}
-                      onClick={() => setVaSubTab('applications')}
-                    >
-                      <span className="operations-section-tab-accent" aria-hidden />
-                      <span className="operations-section-tab-main">
-                        <span className="operations-section-tab-icon-wrap">
-                          <ClipboardList size={18} strokeWidth={2} aria-hidden />
-                        </span>
-                        <span className="operations-section-tab-copy">
-                          <span className="operations-section-tab-label">Applications</span>
-                          <span className="operations-section-tab-hint">Review and manage VA applications</span>
-                        </span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={vaSubTab === 'direct-add'}
-                      className={`operations-section-tab operations-section-tab--compliance ${vaSubTab === 'direct-add' ? 'is-active' : ''}`}
-                      onClick={() => setVaSubTab('direct-add')}
-                    >
-                      <span className="operations-section-tab-accent" aria-hidden />
-                      <span className="operations-section-tab-main">
-                        <span className="operations-section-tab-icon-wrap">
-                          <User size={18} strokeWidth={2} aria-hidden />
-                        </span>
-                        <span className="operations-section-tab-copy">
-                          <span className="operations-section-tab-label">Direct Add VA</span>
-                          <span className="operations-section-tab-hint">Manually create a Virtual Assistant profile</span>
-                        </span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={vaSubTab === 'published'}
-                      className={`operations-section-tab operations-section-tab--requests ${vaSubTab === 'published' ? 'is-active' : ''}`}
-                      onClick={() => setVaSubTab('published')}
-                    >
-                      <span className="operations-section-tab-accent" aria-hidden />
-                      <span className="operations-section-tab-main">
-                        <span className="operations-section-tab-icon-wrap">
-                          <Globe size={18} strokeWidth={2} aria-hidden />
-                        </span>
-                        <span className="operations-section-tab-copy">
-                          <span className="operations-section-tab-label">Published Profiles</span>
-                          <span className="operations-section-tab-hint">View and manage published Virtual Assistants</span>
-                        </span>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-                {vaSubTab === 'applications' ? (
-                  <VirtualAssistantsAdminTab data={data} loading={loading} onRefresh={() => loadTab('virtual-assistants', { silent: true })} />
-                ) : vaSubTab === 'direct-add' ? (
-                  <VirtualAssistantDirectAddAdminPage />
-                ) : (
-                  <VirtualAssistantPublishedProfilesPage />
-                )}
-              </div>
             ) : tab === 'domains' ? (
               <DomainsAdminTab
                 data={data}

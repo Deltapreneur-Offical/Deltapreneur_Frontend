@@ -62,34 +62,9 @@ const sidebarItems = [
 const adminNavItem = {
   icon: Shield,
   labelKey: 'navAdminPanel',
+  to: '/admin',
   isImage: false,
   adminAccent: true,
-  hideLabel: true,
-  children: [
-    {
-      icon: Shield,
-      isImage: false,
-      labelKey: 'navAdminPanel',
-      to: '/admin',
-    },
-    {
-      labelKey: 'navVirtualAssistants',
-      children: [
-        {
-          labelKey: 'navVaApplications',
-          to: '/admin/virtual-assistants/applications',
-        },
-        {
-          labelKey: 'navVaDirectAdd',
-          to: '/admin/virtual-assistants/direct-add',
-        },
-        {
-          labelKey: 'navVaPublishedProfiles',
-          to: '/admin/virtual-assistants/published',
-        },
-      ],
-    },
-  ],
 };
 
 function isAdminUser(user) {
@@ -109,6 +84,7 @@ function getNavItems(user, showVaItems) {
 function SidebarNavItem({
   item,
   active,
+  isActivePath,
   accent,
   collapsed,
   domainPendingCount,
@@ -131,7 +107,8 @@ function SidebarNavItem({
             <SidebarNavItem
               key={child.to || child.labelKey}
               item={child}
-              active={child.to ? active : false}
+              active={child.to && isActivePath ? isActivePath(child.to) : false}
+              isActivePath={isActivePath}
               accent={false}
               collapsed={collapsed}
               domainPendingCount={domainPendingCount}
@@ -517,7 +494,8 @@ export default function AppLayout({ children }) {
                 <SidebarNavItem
                   key={item.to || item.labelKey}
                   item={item}
-                  active={isActive(item.to)}
+                  active={item.to ? isActive(item.to) : false}
+                  isActivePath={isActive}
                   accent={item.adminAccent}
                   collapsed={sidebarCollapsed}
                   domainPendingCount={domainPendingCount}
@@ -683,7 +661,8 @@ export default function AppLayout({ children }) {
                     <SidebarNavItem
                       key={item.to || item.labelKey}
                       item={item}
-                      active={isActive(item.to)}
+                      active={item.to ? isActive(item.to) : false}
+                      isActivePath={isActive}
                       accent={item.adminAccent}
                       collapsed={false}
                       domainPendingCount={domainPendingCount}

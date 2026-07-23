@@ -144,5 +144,6 @@ export function canViewListingDetail(item, user, type = 'domain') {
   if (!item) return false;
   const listingType = normalizeListingType(type);
   if (isListingOwner(item, user, listingType)) return true;
+  if (listingType === 'community') return isActiveListing(item, 'community');
   return isPublicMarketplaceListing(item, listingType);
 }

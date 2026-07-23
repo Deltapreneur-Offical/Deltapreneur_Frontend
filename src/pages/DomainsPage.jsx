@@ -10,6 +10,7 @@ import '../styles/domain-listing-cards.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import ListingCardShell from '../components/listings/ListingCardShell';
+import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import AddToCartButton from '../components/cart/AddToCartButton';
@@ -1181,7 +1182,12 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
 
         <div className="mb-5">
           <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">{t('domainsPagePurchaseBadge')}</div>
-          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{domain.domainName}{domain.domainExtension}</h2>
+          <h2
+            className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1 w-full overflow-hidden"
+            style={{ textOverflow: 'clip', whiteSpace: 'nowrap', display: 'block' }}
+          >
+            <OverflowMarqueeText text={`${domain.domainName}${domain.domainExtension}`} />
+          </h2>
           <p className="text-sm text-gray-500">{domain.pricingDemand}</p>
         </div>
 
@@ -1395,7 +1401,12 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                     {display.ext.label}
                   </span>
                 )}
-                <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 m-0">{display.name}</h2>
+                <h2
+                  className="font-display text-[1.75rem] font-semibold text-gray-900 m-0 min-w-0 flex-1 overflow-hidden"
+                  style={{ textOverflow: 'clip', whiteSpace: 'nowrap', display: 'block' }}
+                >
+                  <OverflowMarqueeText text={display.name} />
+                </h2>
               </div>
               {display.ext && (
                 <p className="text-sm text-slate-500 mb-1">{display.fullDomain}</p>
@@ -1562,7 +1573,12 @@ function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
         <div className="mb-6">
           <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">{t('domainsPageEnquiryBadge')}</div>
-          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{domain.domainName}{domain.domainExtension}</h2>
+          <h2
+            className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1 w-full overflow-hidden"
+            style={{ textOverflow: 'clip', whiteSpace: 'nowrap', display: 'block' }}
+          >
+            <OverflowMarqueeText text={`${domain.domainName}${domain.domainExtension}`} />
+          </h2>
           <p className="text-sm text-gray-500">{formatPrice(domain.askingPrice)} · {domain.pricingDemand}</p>
         </div>
         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg mb-5 text-[0.83rem] text-amber-800">

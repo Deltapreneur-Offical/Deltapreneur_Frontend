@@ -36,8 +36,16 @@ function DomainListingCover({
   return (
     <div className="domain-listing-card__cover">
       <div className="domain-listing-card__cover-fallback" aria-hidden>
-        <span className="domain-listing-card__cover-fallback-domain">
-          {logoText || ''}
+        <span
+          className="domain-listing-card__cover-fallback-domain"
+          style={{
+            whiteSpace: 'nowrap',
+            display: 'block',
+            width: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          <OverflowMarqueeText text={logoText || ''} />
         </span>
       </div>
       {children}

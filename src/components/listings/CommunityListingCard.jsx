@@ -136,7 +136,15 @@ export default function CommunityListingCard({
           <div className="creator-profile-card__header-right">
              <div className="creator-profile-card__name-section">
                 <div className="flex items-center gap-2 w-full">
-                  <h3 className="creator-profile-card__name flex-1 min-w-0" title={profile.name || undefined}>
+                  <h3
+                    className="creator-profile-card__name flex-1 min-w-0"
+                    title={profile.name || undefined}
+                    style={{
+                      textOverflow: 'clip',
+                      whiteSpace: 'nowrap',
+                      display: 'block',
+                    }}
+                  >
                     <OverflowMarqueeText text={profile.name || t('listingCardAnonymous')} />
                   </h3>
                   {isCreatorProfileComplete(profile) ? (

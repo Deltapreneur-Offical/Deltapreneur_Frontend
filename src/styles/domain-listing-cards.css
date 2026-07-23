@@ -416,12 +416,7 @@
   color: #334155;
   overflow: hidden;
   text-overflow: clip;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  white-space: nowrap;
   max-width: 100%;
   min-width: 0;
   flex: 1 1 auto;

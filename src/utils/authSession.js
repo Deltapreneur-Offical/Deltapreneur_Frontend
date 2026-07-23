@@ -87,8 +87,12 @@ export function resolvePostLoginNavigation(from, user) {
     returnLoc?.pathname
     && resolvePostLoginPath(returnLoc.pathname, user) === pathname,
   );
+  const search = usedSavedPath && returnLoc?.search != null ? returnLoc.search : '';
+  const hash = usedSavedPath && returnLoc?.hash != null ? returnLoc.hash : '';
   const state = usedSavedPath && returnLoc?.state ? returnLoc.state : undefined;
-  return state ? { pathname, state } : { pathname };
+  const result = { pathname, search, hash };
+  if (state) result.state = state;
+  return result;
 }
 
 /**

@@ -64,7 +64,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
       const destination = pending?.pathname
         ? resolvePostLoginNavigation(pending, updatedUser)
         : { pathname: '/' };
-      navigate(destination.pathname, { replace: true, state: destination.state });
+      navigate(`${destination.pathname}${destination.search || ''}${destination.hash || ''}`, { replace: true, state: destination.state });
     } catch (err) {
       setError(readApiError(err, t('profileCompletionFailed')));
     } finally {

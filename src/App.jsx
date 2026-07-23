@@ -412,6 +412,14 @@ export default function App() {
                     </ProfileGuard>
                   }
                 />
+                <Route
+                  path="/creator/:id"
+                  element={
+                    <ProfileGuard>
+                      <CommunityPage />
+                    </ProfileGuard>
+                  }
+                />
 
                 {/* Legacy Community / Disruptor URLs → Creator */}
                 <Route path="/community" element={<LegacyCommunityRedirect />} />

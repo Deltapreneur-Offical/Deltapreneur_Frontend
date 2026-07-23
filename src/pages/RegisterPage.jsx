@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -61,8 +61,13 @@ export default function RegisterPage() {
 
     login({ accessToken, refreshToken }, null);
     const fetchedUser = await refreshUser();
-    const destination = resolveAfterAuthNavigation(null, fetchedUser);
-    navigate(destination.pathname, { replace: true, state: destination.state });
+    const destination = resolveAfterAuthNavigation(
+      localStorage.getItem('redirectAfterLogin') || location.state?.from || null,
+      fetchedUser
+    );
+    localStorage.removeItem('redirectAfterLogin');
+
+    navigate(`${destination.pathname}${destination.search || ''}${destination.hash || ''}`, { replace: true, state: destination.state });
   };
 
   const handleSendOtp = async (e) => {
@@ -155,12 +160,15 @@ export default function RegisterPage() {
 
   const showMethodToggle = step === 1;
 
+  const location = useLocation();
+  const from = location.state?.from || localStorage.getItem('redirectAfterLogin') || null;
+
   const handleLinkedInLogin = async () => {
-    startLinkedInOAuth();
+    startLinkedInOAuth(from);
   };
 
   const handleFacebookLogin = async () => {
-    startFacebookOAuth();
+    startFacebookOAuth(from);
   };
 
   return (
@@ -194,7 +202,7 @@ export default function RegisterPage() {
 
       {authMethod === 'google' && step === 1 && (
         <div className="flex flex-col gap-3">
-          <button type="button" className="btn-oauth" onClick={() => startGoogleOAuth()}>
+          <button type="button" className="btn-oauth" onClick={() => startGoogleOAuth(from)}>
             <GoogleIcon />
             {t('continueWithGoogle')}
           </button>

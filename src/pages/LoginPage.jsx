@@ -65,7 +65,7 @@ export default function LoginPage() {
         localStorage.getItem('redirectAfterLogin') || from,
         user,
       );
-      navigate(destination.pathname, { replace: true, state: destination.state });
+      navigate(`${destination.pathname}${destination.search || ''}${destination.hash || ''}`, { replace: true, state: destination.state });
       localStorage.removeItem('redirectAfterLogin');
     }
   }, [user, loading, showLoginForm, navigate, from]);
@@ -183,13 +183,14 @@ export default function LoginPage() {
       setError(t('loginProfileLoadFailed', 'Signed in but could not load your profile. Please refresh and try again.'));
       return;
     }
+    const storedRedirect = localStorage.getItem('redirectAfterLogin') || from;
     const destination = resolveAfterAuthNavigation(
-      localStorage.getItem('redirectAfterLogin') || from,
+      storedRedirect,
       fetchedUser,
     );
     localStorage.removeItem('redirectAfterLogin');
 
-    navigate(destination.pathname, { replace: true, state: destination.state });
+    navigate(`${destination.pathname}${destination.search || ''}${destination.hash || ''}`, { replace: true, state: destination.state });
   };
 
   const handlePasswordLogin = async (e) => {
@@ -375,7 +376,7 @@ export default function LoginPage() {
       footer={(
         <>
           <span>{t('dontHaveAccount')} </span>
-          <Link to="/register">{t('registerTitle', 'Register')}</Link>
+          <Link to="/register" state={location.state}>{t('registerTitle', 'Register')}</Link>
         </>
       )}
     >

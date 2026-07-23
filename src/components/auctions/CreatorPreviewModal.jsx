@@ -6,6 +6,9 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { getLinkedInProfileUrl } from '../../utils/creatorProfile';
 import { getVisibleCreatorFields } from '../../utils/creatorRoleFields';
 import { formatCountdown } from '../../utils/auctionDate';
+import { useAuth } from '../../context/AuthContext';
+import { PRODUCTION_APP_URL, APP_BASE_URL } from '../../config/urls';
+import OverflowMarqueeText from '../common/OverflowMarqueeText';
 
 function LinkedInIcon({ size = 18, className = '', fill = 'none' }) {
   return (
@@ -83,7 +86,11 @@ function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) 
 export default function CreatorPreviewModal({ profile, auction, open, onClose, onPlaceBid, showShareIcon = false }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const dialogRef = useRef(null);
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   const [timeLeft, setTimeLeft] = useState('');
   useEffect(() => {
@@ -221,6 +228,74 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
     }
   };
 
+  const shareBase = PRODUCTION_APP_URL.replace(/\/$/, '');
+  const shareUrl = `${shareBase}/creator/${community.id || ''}${user?.id ? `?ref=${user.id}` : ''}`;
+  const shareSubject = `Check out this creator profile on CoBrother: ${name}`;
+  const shareBody = `Check out this creator profile on CoBrother!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
+
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
+  const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
+  const telegramShare = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareSubject)}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Link copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+    setShareOpen(false);
+  };
+
+  const toggleShare = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareSubject,
+          text: shareSubject,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        } else {
+          return;
+        }
+      }
+    }
+    if (!shareOpen && shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect();
+      let left = rect.right + window.scrollX - 200;
+      if (left < 10) left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY;
+      if (rect.bottom + 270 > window.innerHeight) {
+        top = rect.top + window.scrollY - 270;
+      }
+      setCoords({ top, left });
+    }
+    setShareOpen(!shareOpen);
+  };
+
+  const handleShare = (platform) => {
+    window.open(platform, '_blank', 'width=600,height=400');
+    setShareOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   return createPortal(
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn"
@@ -255,8 +330,15 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h3 className="truncate text-xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-tight">
-                  {name}
+                <h3
+                  className="text-xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-tight w-full overflow-hidden"
+                  style={{
+                    textOverflow: 'clip',
+                    whiteSpace: 'nowrap',
+                    display: 'block',
+                  }}
+                >
+                  <OverflowMarqueeText text={name} />
                 </h3>
                 {verified ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
@@ -489,12 +571,57 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
 
             {/* Right side container */}
             <div className="flex items-center gap-3.5">
-              {/* Static Share Icon (Creators page only) */}
+              {/* Share Icon (Creators page only) */}
               {showShareIcon && (
-                <div
-                  className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-[14px] text-slate-600 shadow-sm"
-                >
-                  <Share2 size={18} />
+                <div className="relative" ref={shareRef}>
+                  <button
+                    type="button"
+                    onClick={toggleShare}
+                    className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-[14px] text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                    title="Share"
+                    aria-expanded={shareOpen}
+                    aria-haspopup="menu"
+                  >
+                    <Share2 size={18} />
+                  </button>
+                  {shareOpen && createPortal(
+                    <div
+                      className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+                      style={{
+                        top: `${coords.top}px`,
+                        left: `${coords.left}px`,
+                      }}
+                    >
+                      <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+                      </div>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(linkedinShare)}>
+                        LinkedIn
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(facebookShare)}>
+                        Facebook
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(twitterShare)}>
+                        Twitter / X
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(whatsappShare)}>
+                        WhatsApp
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(gmailShare)}>
+                        Gmail
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(emailShare)}>
+                        Email
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(telegramShare)}>
+                        Telegram
+                      </button>
+                      <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={handleCopyLink}>
+                        Copy Link
+                      </button>
+                    </div>,
+                    document.body,
+                  )}
                 </div>
               )}
 

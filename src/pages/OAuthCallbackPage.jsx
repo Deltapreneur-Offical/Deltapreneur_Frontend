@@ -90,12 +90,13 @@ export default function OAuthCallbackPage() {
         });
 
         setTimeout(() => {
-          navigate(destination.pathname, {
+          const fullPath = `${destination.pathname}${destination.search || ''}${destination.hash || ''}`;
+          navigate(fullPath, {
             replace: true,
             state: destination.state,
           });
           if (typeof window !== 'undefined' && window.history?.replaceState) {
-            window.history.replaceState({}, document.title, destination.pathname);
+            window.history.replaceState({}, document.title, fullPath);
           }
         }, 0);
       } catch (err) {

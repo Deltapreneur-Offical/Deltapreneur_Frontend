@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
 import { domainAPI, domainStorefrontAPI, domainTransferAPI } from '../api/services';
 import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
-
+import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
 import useCurrency from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
@@ -546,13 +547,15 @@ function DomainRow({ domain, type, onVerify }) {
   return (
     <div className="relative flex items-center justify-between overflow-visible bg-white border border-gray-200 rounded-[10px] px-5 py-4 gap-3 transition-all hover:-translate-y-px hover:shadow-lg">
       <div>
-        <div className="font-bold text-gray-900 text-base flex items-center gap-2">
+        <div className="font-bold text-gray-900 text-base flex items-center gap-2 min-w-0">
           {type === 'listing' && isDomainPendingVerification(domain) ? (
             <PendingVerificationDot title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
           ) : null}
-          {domain.domainName}{domain.domainExtension}
+          <span className="min-w-0 overflow-hidden">
+            <OverflowMarqueeText text={`${domain.domainName}${domain.domainExtension}`} />
+          </span>
           {isAuction && (
-            <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full shrink-0">
               <Gavel size={13} /> {t('domainsDashboardAuction', { defaultValue: 'Auction' })}
             </span>
           )}

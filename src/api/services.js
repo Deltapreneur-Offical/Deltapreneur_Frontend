@@ -323,6 +323,8 @@ export const adminAPI = {
   takeDown:  (type, id, reason) => api.post(`/api/v1/admin/takedown`, { type, entityId: id, reason }),
   restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
+  getOpenProviderManagedAcquisitions: () =>
+    api.get('/api/v1/openprovider-managed-acquisitions/all'),
   markDomainVerified:   (id)    => api.post(`/api/v1/admin/domains/${id}/mark-verified`),
   markDomainUnverified: (id)    => api.post(`/api/v1/admin/domains/${id}/mark-unverified`),
   getDomainVerificationReview: (id) => api.get(`/api/v1/admin/domains/${id}/verification-review`),
@@ -396,6 +398,7 @@ export const feeAPI = {
 export const domainEnquiryAPI = {
   submit: (domainId, data) => api.post(`/api/v1/domain-enquiry/${domainId}`, data),
   updateStatus: (enquiryId, data) => api.put(`/api/v1/domain-enquiry/${enquiryId}/status`, data),
+  markSold: (enquiryId, data = {}) => api.post(`/api/v1/domain-enquiry/${enquiryId}/mark-sold`, data),
   remove: (enquiryId, data = {}) => api.post(`/api/v1/domain-enquiry/${enquiryId}/remove`, data),
 };
 
@@ -493,11 +496,27 @@ export const cartAPI = {
   checkout:     (body = {})  => api.post('/api/v1/cart/checkout', body),
   verifyCheckout: (body)     => api.post('/api/v1/cart/checkout/verify', body),
   cancelCheckout: (body)     => api.post('/api/v1/cart/checkout/cancel', body),
+  confirmPremiumMarketplace: (body = {}) =>
+    api.post('/api/v1/cart/premium-marketplace/confirm', body),
+  confirmOpenProviderManaged: (body = {}) =>
+    api.post('/api/v1/cart/openprovider-managed/confirm', body),
   updateDomainRegistrationPeriod: (periodYears, itemId) =>
     api.patch('/api/v1/cart/domain-registration-period', {
       periodYears,
       ...(itemId ? { itemId } : {}),
     }),
+};
+
+export const managedAcquisitionAPI = {
+  listMine: () => api.get('/api/v1/managed-acquisitions/mine'),
+};
+
+export const openProviderManagedAcquisitionAPI = {
+  listAll: () => api.get('/api/v1/openprovider-managed-acquisitions/all'),
+  updateStatus: (id, data) =>
+    api.put(`/api/v1/openprovider-managed-acquisitions/${id}/status`, data),
+  remove: (id, data = {}) =>
+    api.post(`/api/v1/openprovider-managed-acquisitions/${id}/remove`, data),
 };
 
 export const joinUsAPI = {

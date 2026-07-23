@@ -137,6 +137,25 @@
   box-shadow: 0 1px 4px rgba(185, 28, 28, 0.18);
 }
 
+.domain-listing-card__acquisition-badge {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  max-width: calc(100% - 1.3rem);
+  border-radius: 9999px;
+  background: #b45309;
+  padding: 0.28rem 0.6rem;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  box-shadow: 0 1px 4px rgba(180, 83, 9, 0.22);
+}
+
 
 .domain-listing-card__body {
   display: flex;

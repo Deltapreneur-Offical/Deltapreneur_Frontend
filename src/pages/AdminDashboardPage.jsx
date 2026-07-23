@@ -45,6 +45,7 @@ import PurchaseIcon from '../assets/purchase.png';
 import RequestIcon from '../assets/Request.png';
 import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
+import OpenProviderManagedAcquisitionsTable from '../components/admin/OpenProviderManagedAcquisitionsTable';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
@@ -294,6 +295,7 @@ const EMPTY_ADMIN_PENDING = Object.freeze({
   technologies: 0,
   domains: 0,
   domainEnquiries: 0,
+  opManagedAcquisitions: 0,
   cobrotherPayments: 0,
   operations: 0,
 });
@@ -313,7 +315,18 @@ function isPendingDomainVerification(item) {
 
 function isPendingDomainEnquiry(item) {
   const status = String(item?.status ?? '').toUpperCase();
-  return status === 'PENDING' || status === '' || status === 'NEW';
+  return status === 'PENDING'
+    || status === 'IN_PROGRESS'
+    || status === 'ACCEPTED'
+    || status === ''
+    || status === 'NEW';
+}
+
+function isPendingOpManagedAcquisition(item) {
+  const status = String(item?.status ?? '').toUpperCase();
+  return status === 'PENDING'
+    || status === 'IN_PROGRESS'
+    || status === 'ACCEPTED';
 }
 
 function isPendingCoBrotherPayment(item) {
@@ -366,6 +379,7 @@ function useAdminPendingCounts({ enabled = true, intervalMs = 90000 } = {}) {
       safeAdminCount(adminAPI.getTechnologies(), isUnverifiedTechnology).then((v) => updateOne('technologies', v)),
       safeAdminCount(adminAPI.getDomains(), isPendingDomainVerification).then((v) => updateOne('domains', v)),
       safeAdminCount(adminAPI.getDomainEnquiries(), isPendingDomainEnquiry).then((v) => updateOne('domainEnquiries', v)),
+      safeAdminCount(adminAPI.getOpenProviderManagedAcquisitions(), isPendingOpManagedAcquisition).then((v) => updateOne('opManagedAcquisitions', v)),
       safeAdminCount(adminAPI.getCoBrotherRequests(), isPendingCoBrotherPayment).then((v) => updateOne('cobrotherPayments', v)),
       safeAdminCount(operationsAdminAPI.listRequests(), isPendingOperationsRequest).then((v) => updateOne('operations', v)),
     ]);
@@ -415,6 +429,7 @@ function useAdminPendingCounts({ enabled = true, intervalMs = 90000 } = {}) {
     counts.technologies +
     counts.domains +
     counts.domainEnquiries +
+    counts.opManagedAcquisitions +
     counts.cobrotherPayments +
     counts.operations;
 
@@ -458,6 +473,7 @@ export default function AdminDashboardPage() {
       ventures:            adminAPI.getVentures,
       domains:             adminAPI.getDomains,
       'domain-enquiries':  adminAPI.getDomainEnquiries,
+      'op-managed-acquisitions': adminAPI.getOpenProviderManagedAcquisitions,
       cocreations:         cocreationsSubTab === 'payouts' ? adminAPI.getTechnologyTransfers : adminAPI.getTechnologies,
       auctions:            adminAPI.getAllAuctions,
       meetings:            meetingAPI.adminGetAll,
@@ -536,6 +552,7 @@ export default function AdminDashboardPage() {
       'ventures',
       'domains',
       'domain-enquiries',
+      'op-managed-acquisitions',
       'cocreations',
       'requests',
       'auctions',
@@ -614,6 +631,7 @@ export default function AdminDashboardPage() {
     { id: 'ventures',           label: t('adminTabVentures'),          icon: VentureIcon    },
     { id: 'domains',            label: t('adminTabDomains'),           icon: DomainsIcon    },
     { id: 'domain-enquiries',   label: t('adminTabDomainEnquiries'),   icon: EnquireIcon    },
+    { id: 'op-managed-acquisitions', label: 'OpenProvider Acquisition Requests', icon: DomainsIcon },
     { id: 'cocreations',        label: t('adminTabTechnology'),        icon: TechnologyIcon },
     { id: 'requests',           label: t('adminTabCoBrotherRequests'), icon: RequestIcon    },
     { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
@@ -863,6 +881,11 @@ export default function AdminDashboardPage() {
               <DomainEnquiriesTable
                 enquiries={data}
                 onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                onRefresh={() => loadTab(tab, { silent: true })}
+              />
+            ) : tab === 'op-managed-acquisitions' ? (
+              <OpenProviderManagedAcquisitionsTable
+                rows={data}
                 onRefresh={() => loadTab(tab, { silent: true })}
               />
             ) : tab === 'auctions' ? (
@@ -2297,6 +2320,7 @@ function CommunityAuctionAdminRow({ auction, bids, community, onRefresh, onTakeD
 const DOMAIN_ENQUIRY_STATUS_COLORS = {
   PENDING: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' },
   IN_PROGRESS: { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' },
+  ACCEPTED: { bg: '#dcfce7', text: '#15803d', border: '#86efac' },
   COMPLETED: { bg: '#d1fae5', text: '#059669', border: '#6ee7b7' },
   DECLINED: { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
   FORWARDED: { bg: '#ede9fe', text: '#7c3aed', border: '#c4b5fd' },
@@ -2306,6 +2330,7 @@ const DOMAIN_ENQUIRY_FILTER_TABS = [
   { id: 'all', label: 'All' },
   { id: 'PENDING', label: 'Pending' },
   { id: 'IN_PROGRESS', label: 'In Progress' },
+  { id: 'ACCEPTED', label: 'Accepted' },
   { id: 'COMPLETED', label: 'Completed' },
   { id: 'DECLINED', label: 'Declined' },
   { id: 'FORWARDED', label: 'Forwarded' },
@@ -2318,11 +2343,11 @@ const DOMAIN_ENQUIRY_STATUS_ACTIONS = {
     variant: 'blue',
     newStatus: 'IN_PROGRESS',
   },
-  COMPLETED: {
-    title: 'Mark as Completed',
+  ACCEPTED: {
+    title: 'Accept Enquiry',
     confirmLabel: 'Confirm',
     variant: 'green',
-    newStatus: 'COMPLETED',
+    newStatus: 'ACCEPTED',
   },
   DECLINED: {
     title: 'Decline Enquiry',
@@ -2335,6 +2360,12 @@ const DOMAIN_ENQUIRY_STATUS_ACTIONS = {
     confirmLabel: 'Confirm',
     variant: 'blue',
     newStatus: 'PENDING',
+  },
+  MARK_SOLD: {
+    title: 'Mark Domain as Sold',
+    confirmLabel: 'Confirm Sold',
+    variant: 'green',
+    action: 'markSold',
   },
   REMOVE: {
     title: 'Remove Enquiry',
@@ -2350,13 +2381,19 @@ function getDomainEnquiryCardActions(status) {
       return {
         forward: true,
         inProgress: true,
-        completed: true,
+        accept: true,
         decline: true,
         remove: true,
       };
     case 'IN_PROGRESS':
       return {
-        completed: true,
+        accept: true,
+        decline: true,
+        remove: true,
+      };
+    case 'ACCEPTED':
+      return {
+        markSold: true,
         decline: true,
         remove: true,
       };
@@ -2413,21 +2450,30 @@ function DomainEnquiryStatusBadge({ status }) {
 function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm, onNotesChange }) {
   if (!modal || !enquiry) return null;
   const isRemove = modal.action === 'remove';
+  const isMarkSold = modal.action === 'markSold';
   const action = isRemove
     ? DOMAIN_ENQUIRY_STATUS_ACTIONS.REMOVE
-    : DOMAIN_ENQUIRY_STATUS_ACTIONS[modal.newStatus];
+    : isMarkSold
+      ? DOMAIN_ENQUIRY_STATUS_ACTIONS.MARK_SOLD
+      : DOMAIN_ENQUIRY_STATUS_ACTIONS[modal.newStatus];
   const domainLabel = `${enquiry.domain?.domainName || ''}${enquiry.domain?.domainExtension || ''}`;
 
   return (
     <ConfirmationModal
       open
-      title={action?.title || (isRemove ? 'Remove Enquiry' : 'Update Enquiry Status')}
-      message={isRemove ? 'This enquiry will be hidden from the admin list. History is preserved in the database.' : ''}
+      title={action?.title || (isRemove ? 'Remove Enquiry' : isMarkSold ? 'Mark Domain as Sold' : 'Update Enquiry Status')}
+      message={
+        isRemove
+          ? 'This enquiry will be hidden from the admin list. History is preserved in the database.'
+          : isMarkSold
+            ? 'This will mark the enquiry COMPLETED and the listing as SOLD.'
+            : ''
+      }
       confirmLabel={action?.confirmLabel || 'Confirm'}
       cancelLabel="Cancel"
       variant={action?.variant || 'blue'}
       loading={loading}
-      loadingLabel={isRemove ? 'Removing...' : 'Updating...'}
+      loadingLabel={isRemove ? 'Removing...' : isMarkSold ? 'Marking sold...' : 'Updating...'}
       size="lg"
       onCancel={onClose}
       onConfirm={onConfirm}
@@ -2437,7 +2483,7 @@ function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm,
           <div className="admin-field-label">Domain Name</div>
           <div className="admin-field-value">{domainLabel || '—'}</div>
         </div>
-        {!isRemove && (
+        {!isRemove && !isMarkSold && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <div>
               <div className="admin-field-label">Current Status</div>
@@ -2449,15 +2495,21 @@ function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm,
             </div>
           </div>
         )}
-        {isRemove && (
+        {(isRemove || isMarkSold) && (
           <div>
             <div className="admin-field-label">Current Status</div>
             <DomainEnquiryStatusBadge status={enquiry.status} />
           </div>
         )}
+        {enquiry.domainStatus && (
+          <div>
+            <div className="admin-field-label">Listing Status</div>
+            <div className="admin-field-value">{enquiry.domainStatus}</div>
+          </div>
+        )}
         <div>
           <label className="admin-field-label" htmlFor="domain-enquiry-admin-notes">
-            Admin Notes
+            Message to buyer (emailed + notified)
           </label>
           <textarea
             id="domain-enquiry-admin-notes"
@@ -2465,10 +2517,14 @@ function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm,
             rows={4}
             value={modal.adminNotes}
             onChange={(event) => onNotesChange(event.target.value)}
-            placeholder="Add optional notes..."
+            placeholder="Write an update the buyer will receive by email and in-app notification..."
             disabled={loading}
             style={{ width: '100%', marginTop: '0.35rem' }}
           />
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.75rem', color: '#6b7280' }}>
+            This is no longer internal-only. Buyers receive status changes and this message automatically.
+            They can reply by email to support.
+          </p>
         </div>
       </div>
     </ConfirmationModal>
@@ -2505,6 +2561,14 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
     });
   };
 
+  const openMarkSoldModal = (enquiry) => {
+    setStatusModal({
+      enquiryId: enquiry.id,
+      action: 'markSold',
+      adminNotes: enquiry.adminNotes || '',
+    });
+  };
+
   const closeStatusModal = () => {
     if (statusLoading) return;
     setStatusModal(null);
@@ -2522,6 +2586,15 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
           throw new Error(data?.error || data?.message || 'Remove failed.');
         }
         toast.success('Enquiry removed from admin list.');
+      } else if (statusModal.action === 'markSold') {
+        const { data } = await domainEnquiryAPI.markSold(statusModal.enquiryId, {
+          adminNotes: statusModal.adminNotes,
+          status: 'COMPLETED',
+        });
+        if (data?.success === false) {
+          throw new Error(data?.error || data?.message || 'Mark sold failed.');
+        }
+        toast.success('Domain marked as sold.');
       } else {
         const { data } = await domainEnquiryAPI.updateStatus(statusModal.enquiryId, {
           status: statusModal.newStatus,
@@ -2635,7 +2708,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
 
                 {e.adminNotes && (
                   <div style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}>
-                    <div className="admin-field-label">Admin Notes</div>
+                    <div className="admin-field-label">Latest message to buyer</div>
                     <div className="admin-field-value" style={{ whiteSpace: 'pre-wrap' }}>
                       {e.adminNotes}
                     </div>
@@ -2703,14 +2776,24 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                       Mark In Progress
                     </button>
                   )}
-                  {actions.completed && (
+                  {actions.accept && (
                     <button
                       type="button"
                       className="btn-secondary btn-sm"
-                      onClick={() => openStatusModal(e, 'COMPLETED')}
-                      style={{ fontSize: '0.8rem', color: '#059669' }}
+                      onClick={() => openStatusModal(e, 'ACCEPTED')}
+                      style={{ fontSize: '0.8rem', color: '#15803d' }}
                     >
-                      Mark Completed
+                      Accept
+                    </button>
+                  )}
+                  {actions.markSold && (
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm"
+                      onClick={() => openMarkSoldModal(e)}
+                      style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 700 }}
+                    >
+                      Mark Domain as Sold
                     </button>
                   )}
                   {actions.decline && (
@@ -3333,6 +3416,7 @@ const ADMIN_PENDING_CHIPS = [
   { key: 'technologies',      tab: 'cocreations',       label: 'Technology',       color: 'bg-rose-100 text-rose-700 ring-rose-200' },
   { key: 'domains',           tab: 'domains',           label: 'Domains',          color: 'bg-sky-100 text-sky-700 ring-sky-200' },
   { key: 'domainEnquiries',   tab: 'domain-enquiries',  label: 'Domain enquiries', color: 'bg-sky-100 text-sky-700 ring-sky-200' },
+  { key: 'opManagedAcquisitions', tab: 'op-managed-acquisitions', label: 'OP acquisitions', color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
   { key: 'cobrotherPayments', tab: 'requests',          label: 'CoBrother payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
   { key: 'operations',        tab: 'operations',        label: 'Operations',       color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
 ];
@@ -3489,6 +3573,7 @@ function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, tota
     { key: 'ventures',          Icon: Briefcase,      label: 'Pending ventures',         hint: 'Approve or reject venture submissions',   count: counts?.ventures,          tab: 'ventures',          accent: 'emerald' },
     { key: 'domains',           Icon: Globe,          label: 'Domain verifications',     hint: 'Awaiting verification from owners',       count: counts?.domains,           tab: 'domains',           accent: 'sky'     },
     { key: 'domainEnquiries',   Icon: FileQuestion,   label: 'Domain enquiries',         hint: 'Buyer enquiries pending action',          count: counts?.domainEnquiries,   tab: 'domain-enquiries',  accent: 'sky'     },
+    { key: 'opManagedAcquisitions', Icon: Globe,      label: 'OP acquisition requests', hint: 'OpenProvider managed acquisitions',      count: counts?.opManagedAcquisitions, tab: 'op-managed-acquisitions', accent: 'indigo' },
     { key: 'technologies',      Icon: Cpu,            label: 'Technology verifications', hint: 'Software/technology awaiting verification', count: counts?.technologies,    tab: 'cocreations',       accent: 'rose'    },
     { key: 'softwareAuctions',  Icon: Package,        label: 'Software auctions',        hint: 'Pending approval to go live',             count: counts?.softwareAuctions,  tab: 'software-auctions', accent: 'violet'  },
     { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'CoBrother payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },

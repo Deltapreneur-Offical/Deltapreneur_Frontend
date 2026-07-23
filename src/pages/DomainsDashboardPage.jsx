@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
-import { domainAPI, domainStorefrontAPI, domainTransferAPI } from '../api/services';
+import { domainAPI, domainStorefrontAPI, domainTransferAPI, managedAcquisitionAPI } from '../api/services';
 import { isRegistrationPurchase, registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
 import useCurrency from '../context/CurrencyContext';
@@ -19,6 +19,54 @@ import {
   isDomainPendingVerification,
 } from '../utils/domainVerification';
 import { notifyDomainVerificationChanged } from '../utils/domainVerificationEvents';
+
+const UNDER_PROGRESS_STATUSES = new Set(['PENDING', 'IN_PROGRESS', 'ACCEPTED']);
+
+function AcquisitionOrderCard({ order, formatPrice }) {
+  const status = String(order?.status || '').toUpperCase();
+  const timeline = Array.isArray(order?.timeline) ? order.timeline : [];
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+        <div>
+          <div className="font-bold text-gray-900 text-lg">{order.domainName}</div>
+          <div className="text-sm text-gray-500">
+            {formatPrice(order.payableInr || order.requestedPrice || 0)}
+            {order.createdAt ? ` · ${new Date(order.createdAt).toLocaleDateString()}` : ''}
+          </div>
+        </div>
+        <span className="text-xs font-semibold uppercase tracking-wide rounded-full bg-slate-100 text-slate-700 px-2.5 py-1">
+          {status.replace(/_/g, ' ')}
+        </span>
+      </div>
+      {order.latestAdminMessage ? (
+        <p className="text-sm text-slate-600 mb-3">
+          Latest update: {order.latestAdminMessage}
+        </p>
+      ) : null}
+      {timeline.length > 0 ? (
+        <ol className="space-y-2 border-t border-gray-100 pt-3">
+          {timeline.map((step) => (
+            <li
+              key={step.key || step.label}
+              className={`flex gap-2 text-sm ${step.reached ? 'text-emerald-800' : 'text-gray-400'}`}
+            >
+              <span aria-hidden>{step.reached ? '●' : '○'}</span>
+              <span>
+                {step.label}
+                {step.at ? (
+                  <span className="text-xs text-gray-500 ml-1">
+                    ({new Date(step.at).toLocaleString()})
+                  </span>
+                ) : null}
+              </span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
 
 
 const STATUS_COLORS = {
@@ -47,15 +95,48 @@ export default function DomainsDashboardPage() {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
-  const [tab, setTab]               = useState('listings');
+  const location = useLocation();
+  const initialTab = (() => {
+    const requested = new URLSearchParams(location.search).get('tab');
+    if (requested === 'acquisitions' || requested === 'purchases' || requested === 'sold' || requested === 'listings') {
+      return requested;
+    }
+    return 'listings';
+  })();
+  const [tab, setTab]               = useState(initialTab);
   const [listings, setListings]     = useState([]);
   const [purchases, setPurchases]   = useState([]);
   const [regOrders, setRegOrders]     = useState([]);
+  const [acquisitions, setAcquisitions] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [verifyTarget, setVerifyTarget] = useState(null);
   const [soldTransfers, setSoldTransfers] = useState([]);
 
   const purchaseCount = purchases.length + regOrders.length;
+  const underProgress = acquisitions.filter((a) => UNDER_PROGRESS_STATUSES.has(String(a.status || '').toUpperCase()));
+  const completedAcq = acquisitions.filter((a) => String(a.status || '').toUpperCase() === 'COMPLETED');
+  const declinedAcq = acquisitions.filter((a) => String(a.status || '').toUpperCase() === 'DECLINED');
+
+  const loadAcquisitions = useCallback(() => {
+    return managedAcquisitionAPI.listMine()
+      .then(({ data }) => {
+        const list = Array.isArray(data) ? data : data?.data ?? [];
+        setAcquisitions(list);
+      })
+      .catch(() => setAcquisitions([]));
+  }, []);
+
+  useEffect(() => {
+    const requested = new URLSearchParams(location.search).get('tab');
+    if (
+      requested === 'acquisitions'
+      || requested === 'purchases'
+      || requested === 'sold'
+      || requested === 'listings'
+    ) {
+      setTab(requested);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     Promise.all([
@@ -63,17 +144,28 @@ export default function DomainsDashboardPage() {
       domainAPI.getMyPurchases(),
       domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
       domainTransferAPI.listSeller().catch(() => ({ data: { items: [] } })),
+      managedAcquisitionAPI.listMine().catch(() => ({ data: [] })),
     ])
-      .then(([l, p, reg, transfers]) => {
+      .then(([l, p, reg, transfers, acq]) => {
         setListings(extractDomainList(l.data));
         setPurchases(extractDomainList(p.data));
         const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
         setRegOrders(regList.filter(isRegistrationPurchase));
         setSoldTransfers(transfers.data?.items || []);
+        const acqList = Array.isArray(acq.data) ? acq.data : acq.data?.data ?? [];
+        setAcquisitions(acqList);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (tab !== 'acquisitions') return undefined;
+    loadAcquisitions();
+    const onFocus = () => loadAcquisitions();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [tab, loadAcquisitions]);
 
   const totalRevenue = listings
     .filter(d => d.domainStatus === 'SOLD')
@@ -169,10 +261,58 @@ export default function DomainsDashboardPage() {
           <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('sold')}>
             {t('domainsDashboardTabSoldTransfers', { count: soldTransfers.length, defaultValue: `Sold transfers (${soldTransfers.length})` })}
           </button>
+          <button className={`btn-glow btn-glow-sm ${tab === 'acquisitions' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('acquisitions')}>
+            My Acquisition Orders ({acquisitions.length})
+          </button>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+        ) : tab === 'acquisitions' ? (
+          acquisitions.length === 0 ? (
+            <div className="text-center py-16 text-gray-600">
+              No managed acquisition requests yet. Domains above ₹5,00,000 appear here after you submit a request from cart.
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <section>
+                <h2 className="font-display text-lg font-bold text-gray-900 mb-3">Under Progress ({underProgress.length})</h2>
+                {underProgress.length === 0 ? (
+                  <p className="text-sm text-gray-500">No requests in progress.</p>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {underProgress.map((order) => (
+                      <AcquisitionOrderCard key={order.id} order={order} formatPrice={formatPrice} />
+                    ))}
+                  </div>
+                )}
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-gray-900 mb-3">Completed ({completedAcq.length})</h2>
+                {completedAcq.length === 0 ? (
+                  <p className="text-sm text-gray-500">No completed acquisitions yet.</p>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {completedAcq.map((order) => (
+                      <AcquisitionOrderCard key={order.id} order={order} formatPrice={formatPrice} />
+                    ))}
+                  </div>
+                )}
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-gray-900 mb-3">Declined ({declinedAcq.length})</h2>
+                {declinedAcq.length === 0 ? (
+                  <p className="text-sm text-gray-500">No declined requests.</p>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {declinedAcq.map((order) => (
+                      <AcquisitionOrderCard key={order.id} order={order} formatPrice={formatPrice} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )
         ) : tab === 'sold' ? (
           soldTransfers.length === 0 ? (
             <div className="text-center py-16 text-gray-600">

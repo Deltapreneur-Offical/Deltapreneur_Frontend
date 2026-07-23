@@ -3,7 +3,7 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, LayoutDashboard, Plus, CheckCircle, Gavel } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, Gavel } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
@@ -12,7 +12,7 @@ import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle
 import ListingCardShell from '../components/listings/ListingCardShell';
 import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
-import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
+import { domainAPI, auctionAPI } from '../api/services';
 import AddToCartButton from '../components/cart/AddToCartButton';
 import { useAuth } from '../context/AuthContext';
 import useReferralTracker from '../hooks/useReferralTracker';
@@ -129,8 +129,6 @@ export default function DomainsPage() {
   const [successDomain, setSuccessDomain] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [enquireTarget, setEnquireTarget] = useState(null);
-  const [enquireSuccess, setEnquireSuccess] = useState(false);
   const [filterTab, setFilterTab] = useState('all');
   const [showConfetti, setShowConfetti] = useState(false);
   const [globalNotice, setGlobalNotice] = useState('');
@@ -401,7 +399,6 @@ export default function DomainsPage() {
                         onView={() => openDetailIfAllowed(d)}
                         onEdit={() => { setEditTarget(d); setShowForm(false); }}
                         onBuy={() => setBuyTarget(d)}
-                        onEnquire={() => setEnquireTarget(d)}
                         onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
                         onDelete={() => setDeleteTarget(d.id)}
                         onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
@@ -447,7 +444,6 @@ export default function DomainsPage() {
           }}
           onClose={() => { closeListingDetail(); refreshDomains(); }}
           onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
-          onEnquire={() => { setEnquireTarget(detailTarget); closeListingDetail(); }}
           onViewAuction={() => {
             navigate(detailTarget.auction?.id ? `/auction/${detailTarget.auction.id}` : '/auctions');
             closeListingDetail();
@@ -458,29 +454,6 @@ export default function DomainsPage() {
             closeListingDetail();
           }}
         />
-      )}
-
-      {enquireTarget && (
-        <DomainEnquiryModal
-          domain={enquireTarget}
-          user={user}
-          onClose={() => setEnquireTarget(null)}
-          onSuccess={() => { setEnquireTarget(null); setEnquireSuccess(true); }}
-        />
-      )}
-
-      {enquireSuccess && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setEnquireSuccess(false)}>
-          <div className="relative w-full max-w-[420px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
-            <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-            <div className="text-green-600 flex justify-center mb-4"><CheckCircle size={46} /></div>
-            <h2 className="font-display text-[1.75rem] text-gray-900 mb-2">{t('domainsPageEnquirySuccessTitle')}</h2>
-            <p className="text-gray-500 mb-6">
-              {t('domainsPageEnquirySuccessBody')}
-            </p>
-            <button className="btn-glow w-full" onClick={() => setEnquireSuccess(false)}>{t('domainVerifyDone')}</button>
-          </div>
-        </div>
       )}
 
       <ConfirmDialog
@@ -1339,7 +1312,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
 }
 
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
-function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
+function DomainDetailModal({ domain, isOwner, onClose, onBuy,
   onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -1513,13 +1486,20 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                     className="btn-glow btn-glow-sm">
                     🔨 {auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')} →
                   </button>
+                ) : d.domainStatus === 'UNDER_REVIEW' ? (
+                  <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-3 py-2 text-sm font-semibold text-amber-800">
+                    {t('listingCardPremiumAcquisitionInProgress', 'Premium Acquisition in Progress')}
+                  </span>
                 ) : d.domainStatus === 'AVAILABLE' ? (
                   isHighValue ? (
-                    <button
-                      onClick={onEnquire}
-                      className="btn-glow btn-glow-sm">
-                      {t('domainsPageEnquireNow')} →
-                    </button>
+                    <AddToCartButton
+                      productType="DOMAIN_LISTING"
+                      productId={d.id}
+                      size="md"
+                      tone="dark"
+                      className="btn-glow btn-glow-sm"
+                      label={t('listingCardAddToCart', 'Add to Cart')}
+                    />
                   ) : (
                     <button className="btn-glow btn-glow-sm" onClick={onBuy}>{t('domainsPageBuyNow')} →</button>
                   )
@@ -1537,93 +1517,6 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
 }
 
 // ─── Domain Enquiry Modal ─────────────────────────────────────────────────────
-function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
-  const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  const [form, setForm] = useState({
-    fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
-    email: user?.email || '',
-    phone: user?.phoneNumber || '',
-    message: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true); setError('');
-    try {
-      // Correct signature: (domainId, { fullName, email, phone, message })
-      await domainEnquiryAPI.submit(domain.id, {
-        fullName: form.fullName,
-        email: form.email,
-        phone: form.phone,
-        message: form.message,
-      });
-      onSuccess();
-    } catch (err) {
-      setError(err.response?.data?.error || t('domainsPageEnquiryFailed'));
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
-        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
-        <div className="mb-6">
-          <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">{t('domainsPageEnquiryBadge')}</div>
-          <h2
-            className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1 w-full overflow-hidden"
-            style={{ textOverflow: 'clip', whiteSpace: 'nowrap', display: 'block' }}
-          >
-            <OverflowMarqueeText text={`${domain.domainName}${domain.domainExtension}`} />
-          </h2>
-          <p className="text-sm text-gray-500">{formatPrice(domain.askingPrice)} · {domain.pricingDemand}</p>
-        </div>
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg mb-5 text-[0.83rem] text-amber-800">
-          {t('domainsPageEnquiryNotice')}
-        </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">{t('domainsPageFullNameLabel')} <span className="text-red-500">*</span></label>
-            <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all" value={form.fullName}
-              onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
-              placeholder={t('domainsPageFullNamePlaceholder')} required />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">{t('emailLabel')} <span className="text-red-500">*</span></label>
-              <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all" type="email" value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder={t('domainsPageEmailPlaceholder')} required />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">{t('domainsPagePhoneLabel')} <span className="text-red-500">*</span></label>
-              <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all" value={form.phone}
-                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder={t('domainsPagePhonePlaceholder')} maxLength={10} required />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">{t('domainsPageMessageLabel')} <span className="text-red-500">*</span></label>
-            <textarea className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all resize-vertical" value={form.message}
-              onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-              placeholder={t('domainsPageMessagePlaceholder')}
-              rows={4} required />
-          </div>
-          {error && <div className="text-sm text-red-500">{error}</div>}
-          <div className="flex gap-3 mt-1">
-            <button type="submit" className="btn-glow flex-1" disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('domainsPageSubmitEnquiry')}
-            </button>
-            <button type="button" className="btn-glow" onClick={onClose}>{t('cancel')}</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 function Section({ title, children }) {
   return (

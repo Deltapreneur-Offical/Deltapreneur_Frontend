@@ -434,6 +434,8 @@ export default function CartSummary({
   redeemActive = false,
   productTotal,
   checkoutDisabled = false,
+  checkoutLabel,
+  secureNote,
 }) {
   const { formatPrice, formatDomainPrice } = useCurrency();
   const hasDomainRegistration = useMemo(
@@ -583,6 +585,11 @@ export default function CartSummary({
               <Loader2 size={16} className="animate-spin" />
               Processing…
             </>
+          ) : checkoutLabel ? (
+            <>
+              <FileCheck size={15} />
+              {checkoutLabel}
+            </>
           ) : (
             <>
               <Lock size={15} />
@@ -592,7 +599,7 @@ export default function CartSummary({
         </button>
         <p className="text-[10px] text-gray-400 text-center flex items-center justify-center gap-1">
           <Lock size={10} />
-          Razorpay secure payment
+          {secureNote || 'Razorpay secure payment'}
         </p>
       </div>
     </div>

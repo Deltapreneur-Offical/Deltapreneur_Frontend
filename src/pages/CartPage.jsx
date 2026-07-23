@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { cartAPI } from '../api/services';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { PREMIUM_DOMAIN_MIN_PRICE } from '../utils/domainPricing';
 
 const EMPTY_REDEMPTION = {
   redeem: false,
@@ -27,6 +28,21 @@ const EMPTY_REDEMPTION = {
   applied: false,
   pointsUsed: 0,
 };
+
+function isPremiumMarketplaceCartItem(item) {
+  if (!item || item.productType !== 'DOMAIN_LISTING') return false;
+  if (item.metadata?.isPremiumMarketplace === true) return true;
+  return Number(item.basePrice || item.lineTotal || 0) > PREMIUM_DOMAIN_MIN_PRICE;
+}
+
+function isOpManagedAcquisitionCartItem(item) {
+  if (!item || item.productType !== 'DOMAIN_REGISTRATION') return false;
+  return item.metadata?.isManagedAcquisition === true;
+}
+
+function isManagedAcquisitionCartItem(item) {
+  return isPremiumMarketplaceCartItem(item) || isOpManagedAcquisitionCartItem(item);
+}
 
 function buildRegistrantFromUser(user) {
   return {
@@ -63,6 +79,8 @@ export default function CartPage() {
   const [periodUpdatingId, setPeriodUpdatingId] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(null);
+  const [confirmPremiumOpen, setConfirmPremiumOpen] = useState(false);
+  const [premiumConfirmSuccess, setPremiumConfirmSuccess] = useState(null);
   const pendingCheckoutOrderId = useRef(null);
   const bumpedMinPeriodItems = useRef(new Set());
 
@@ -133,6 +151,19 @@ export default function CartPage() {
   const items = cart?.items || [];
   const hasItems = items.length > 0;
   const hasDomainRegistration = items.some((it) => it.productType === 'DOMAIN_REGISTRATION');
+  const premiumMarketplaceItems = items.filter(isPremiumMarketplaceCartItem);
+  const opManagedItems = items.filter(isOpManagedAcquisitionCartItem);
+  const managedAcquisitionItems = items.filter(isManagedAcquisitionCartItem);
+  const isPremiumMarketplaceOnly =
+    premiumMarketplaceItems.length === 1
+    && items.length === 1
+    && isPremiumMarketplaceCartItem(items[0]);
+  const isOpManagedOnly =
+    opManagedItems.length === 1
+    && items.length === 1
+    && isOpManagedAcquisitionCartItem(items[0]);
+  const isManagedAcquisitionOnly = isPremiumMarketplaceOnly || isOpManagedOnly;
+  const needsRegistrantDetails = hasDomainRegistration && !isOpManagedOnly;
   const orderTotal = productOrderTotal;
 
   const finalPayable = useMemo(() => {
@@ -184,7 +215,17 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     setError('');
-    if (hasDomainRegistration && !registrantComplete(registrant)) {
+    if (isManagedAcquisitionOnly) {
+      setConfirmPremiumOpen(true);
+      return;
+    }
+    if (managedAcquisitionItems.length > 0) {
+      setError(
+        'Managed acquisition domains must be confirmed alone. Remove other items first.',
+      );
+      return;
+    }
+    if (needsRegistrantDetails && !registrantComplete(registrant)) {
       setError('Please complete registrant details before paying for domain registrations.');
       return;
     }
@@ -199,7 +240,7 @@ export default function CartPage() {
         buyerEmail: user?.email || '',
         buyerPhone: user?.phoneNumber || user?.phone || '',
       };
-      if (hasDomainRegistration) {
+      if (needsRegistrantDetails) {
         payload.registrant = registrant;
         // Periods are per cart item — do not send a global periodYears.
       }
@@ -281,6 +322,12 @@ export default function CartPage() {
         },
       });
     } catch (err) {
+      const code = err?.response?.data?.code;
+      if (code === 'MANAGED_ACQUISITION_CONFIRM' || code === 'PREMIUM_CART_ALONE') {
+        setConfirmPremiumOpen(true);
+        setCheckoutLoading(false);
+        return;
+      }
       const failed = err?.response?.data?.failedDomains;
       const msg =
         err?.response?.data?.message ||
@@ -297,6 +344,52 @@ export default function CartPage() {
     }
   };
 
+  const handlePremiumConfirm = async () => {
+    setError('');
+    setCheckoutLoading(true);
+    try {
+      const buyerName = `${user?.firstname || ''} ${user?.lastname || ''}`.trim();
+      let data;
+      if (isOpManagedOnly) {
+        const item = opManagedItems[0];
+        ({ data } = await cartAPI.confirmOpenProviderManaged({
+          fullName: buyerName,
+          email: user?.email || '',
+          phone: user?.phoneNumber || user?.phone || '',
+          itemId: item?.id,
+          message: `Managed domain acquisition request for ${item?.productName || 'domain'}.`,
+        }));
+      } else {
+        const item = premiumMarketplaceItems[0];
+        ({ data } = await cartAPI.confirmPremiumMarketplace({
+          fullName: buyerName,
+          email: user?.email || '',
+          phone: user?.phoneNumber || user?.phone || '',
+          listingId: item?.productId,
+          message: `Managed domain acquisition request for ${item?.productName || 'domain'}.`,
+        }));
+      }
+      setConfirmPremiumOpen(false);
+      await fetchCart();
+      setPremiumConfirmSuccess({
+        domain: data?.domain || managedAcquisitionItems[0]?.productName,
+        enquiryId: data?.enquiryId || data?.acquisitionId,
+      });
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 4500);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        'Could not submit acquisition request.';
+      setError(msg);
+      setConfirmPremiumOpen(false);
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
   const closePaymentSuccess = () => {
     setPaymentSuccess(null);
     setShowConfetti(false);
@@ -306,6 +399,106 @@ export default function CartPage() {
   return (
     <AppLayout>
       <Confetti show={showConfetti} />
+      {confirmPremiumOpen && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !checkoutLoading) setConfirmPremiumOpen(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-[520px] overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.3)]">
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
+            <div className="px-6 pt-7 pb-6 sm:px-8">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-800">
+                CoBrother managed acquisition
+              </div>
+              <h2 className="font-display text-[1.65rem] font-extrabold leading-tight text-slate-900">
+                Confirm your managed domain acquisition request
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                Thank you for trusting CoBrother with{' '}
+                <strong className="text-slate-900">
+                  {managedAcquisitionItems[0]?.productName || 'this domain'}
+                </strong>
+                . Domains above ₹5,00,000 are not sold via instant checkout — our specialists
+                personally coordinate verification, payment guidance, and secure transfer.
+              </p>
+
+              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50/90 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
+                  What happens next
+                </p>
+                <ol className="space-y-2.5 text-sm text-slate-700">
+                  <li className="flex gap-2.5"><span className="font-bold text-emerald-700">1</span> We review your request and open a managed acquisition file.</li>
+                  <li className="flex gap-2.5"><span className="font-bold text-emerald-700">2</span> We coordinate with the owner on readiness and terms.</li>
+                  <li className="flex gap-2.5"><span className="font-bold text-emerald-700">3</span> We guide payment and transfer until ownership is complete.</li>
+                </ol>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500">
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">No payment now</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Dedicated specialist</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Secure transfer support</span>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row">
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  disabled={checkoutLoading}
+                  onClick={() => setConfirmPremiumOpen(false)}
+                >
+                  Not now
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  disabled={checkoutLoading}
+                  onClick={handlePremiumConfirm}
+                >
+                  {checkoutLoading ? 'Submitting your request…' : 'Submit acquisition request'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {premiumConfirmSuccess && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm p-4"
+          onClick={(e) => e.target === e.currentTarget && setPremiumConfirmSuccess(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-[460px] overflow-hidden rounded-2xl border border-emerald-100 bg-white text-center shadow-[0_28px_90px_rgba(15,23,42,0.3)] p-8">
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 text-2xl" aria-hidden>✓</div>
+            <h2 className="font-display text-2xl font-extrabold text-slate-900 mb-2">
+              Request received — we&apos;ve got this
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed mb-2">
+              Your acquisition request for{' '}
+              <strong className="text-slate-900">{premiumConfirmSuccess.domain}</strong> is with our team.
+            </p>
+            <p className="text-sm text-slate-500 leading-relaxed mb-6">
+              A confirmation email is on its way. CoBrother will personally manage this acquisition
+              and contact you with clear next steps — no payment is due right now.
+            </p>
+            <button
+              type="button"
+              className="w-full rounded-full bg-emerald-600 text-white font-semibold py-3 hover:bg-emerald-700"
+              onClick={() => {
+                setPremiumConfirmSuccess(null);
+                navigate('/domains/dashboard?tab=acquisitions');
+              }}
+            >
+              View My Acquisition Orders
+            </button>
+          </div>
+        </div>
+      )}
       {paymentSuccess && (
         <div
           className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
@@ -408,6 +601,19 @@ export default function CartPage() {
           </motion.div>
         )}
 
+        {isManagedAcquisitionOnly && (
+          <div className="mb-5 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-orange-50/40 px-5 py-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-800 mb-1.5">
+              Managed Domain Acquisition
+            </p>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              This domain requires a personalized acquisition process. Our team will guide you through
+              every step, including verification, coordination, payment guidance, and secure transfer
+              of ownership.
+            </p>
+          </div>
+        )}
+
         {loading ? (
           <CartPageSkeleton />
         ) : !hasItems ? (
@@ -445,7 +651,7 @@ export default function CartPage() {
                 </motion.div>
               ))}
 
-              {hasDomainRegistration && (
+              {needsRegistrantDetails && (
                 <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
                   <div>
                     <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">
@@ -505,8 +711,19 @@ export default function CartPage() {
                   redeemActive={redemption.redeem}
                   productTotal={productOrderTotal}
                   checkoutDisabled={
-                    hasDomainRegistration
-                    && (!registrantComplete(registrant) || Boolean(periodUpdatingId))
+                    (needsRegistrantDetails
+                      && (!registrantComplete(registrant) || Boolean(periodUpdatingId)))
+                    || (managedAcquisitionItems.length > 0 && !isManagedAcquisitionOnly)
+                  }
+                  checkoutLabel={
+                    isManagedAcquisitionOnly
+                      ? 'Reserve Order'
+                      : undefined
+                  }
+                  secureNote={
+                    isManagedAcquisitionOnly
+                      ? 'Managed by CoBrother — no payment charged now'
+                      : undefined
                   }
                 />
               </div>

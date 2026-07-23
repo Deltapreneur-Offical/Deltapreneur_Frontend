@@ -161,7 +161,7 @@ function SidebarNavItem({
       title={collapsed ? t(item.labelKey) : undefined}
       aria-label={
         showDomainPending
-          ? `${t(item.labelKey)} â€” ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
+          ? `${t(item.labelKey)} — ${t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })}`
           : t(item.labelKey)
       }
     >
@@ -609,7 +609,7 @@ export default function AppLayout({ children }) {
               {!sidebarCollapsed && (
                 <span className="app-sidebar-link-label flex flex-col items-start leading-tight">
                   <span>Edge Points</span>
-                  <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points â€¢ Worth â‚¹{edgePointsWorthInr}</span>
+                  <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points · Worth ₹{edgePointsWorthInr}</span>
                 </span>
               )}
             </Link>
@@ -752,7 +752,7 @@ export default function AppLayout({ children }) {
                   </span>
                   <span className="app-sidebar-link-label flex flex-col items-start leading-tight">
                     <span>Edge Points</span>
-                    <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points â€¢ Worth â‚¹{edgePointsWorthInr}</span>
+                    <span className="text-[10px] text-gray-500 mt-0.5">{edgePoints} Points · Worth ₹{edgePointsWorthInr}</span>
                   </span>
                 </Link>
                 <Link
@@ -875,7 +875,7 @@ export default function AppLayout({ children }) {
                     <div className="max-h-[min(380px,calc(100vh-8rem))] overflow-y-auto">
                       {notifLoading && notifications.length === 0 ? (
                         <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                          {t('loading', { defaultValue: 'Loadingâ€¦' })}
+                          {t('loading', { defaultValue: 'Loading…' })}
                         </div>
                       ) : notifications.length === 0 ? (
                         <div className="py-8 px-4 text-center text-gray-500 text-sm">
@@ -891,11 +891,11 @@ export default function AppLayout({ children }) {
                             onClick={() => handleNotificationClick(notification)}
                           >
                             <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
-                              {notification.type?.includes('LIKE') ? 'â¤ï¸'
-                               : notification.type?.includes('VERIFIED') ? 'âœ“'
-                               : notification.type?.includes('VENTURE') ? 'ðŸ¤'
-                               : notification.type?.includes('DOMAIN') ? 'ðŸŒ'
-                               : notification.type?.includes('AUCTION') ? 'ðŸ”¨' : 'ðŸ””'}
+                              {notification.type?.includes('LIKE') ? '❤️'
+                               : notification.type?.includes('VERIFIED') ? '✓'
+                               : notification.type?.includes('VENTURE') ? '🤝'
+                               : notification.type?.includes('DOMAIN') ? '🌐'
+                               : notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium text-gray-900 mb-0.5">
@@ -1046,7 +1046,7 @@ export default function AppLayout({ children }) {
         <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-emerald-400 via-indigo-500 to-emerald-400" />
-            <div className="text-6xl mb-4 animate-bounce">ðŸŽ‰</div>
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
             <h3 className="text-2xl font-black tracking-tight text-white mb-2">Congratulations!</h3>
             <p className="text-[13px] text-slate-300 leading-relaxed mb-6 whitespace-pre-line">
               {referralPopup.message || "You have successfully earned 20 Edge Points!\n\nYour wallet has been updated."}

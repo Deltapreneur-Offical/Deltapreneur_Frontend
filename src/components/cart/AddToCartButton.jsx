@@ -4,6 +4,20 @@ import { ShoppingCart, Check, Trash2 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import CartFlyAnimation from './CartFlyAnimation';
+import PremiumCartConflictModal from './PremiumCartConflictModal';
+
+function isPremiumCartAloneError(err) {
+  const code = err?.response?.data?.code;
+  const msg = String(
+    err?.response?.data?.detail
+      || err?.response?.data?.message
+      || err?.response?.data?.error
+      || err?.message
+      || '',
+  ).toLowerCase();
+  return code === 'PREMIUM_CART_ALONE'
+    || (msg.includes('premium') && (msg.includes('alone') || msg.includes('clear') || msg.includes('managed')));
+}
 
 export default function AddToCartButton({
   productType,
@@ -25,12 +39,15 @@ export default function AddToCartButton({
   onAdded,
   onRemoved,
 }) {
-  const { addItem, updateItem, removeItem, isInCart, getCartItem } = useCart();
+  const { addItem, updateItem, removeItem, isInCart, getCartItem, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const [flyRect, setFlyRect] = useState(null);
+  const [conflictOpen, setConflictOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const pendingRetryRef = useRef(null);
   const btnRef = useRef(null);
 
   const inCart = isInCart(productType, productId);
@@ -93,8 +110,6 @@ export default function AddToCartButton({
       return;
     }
 
-    // Optimistic cart update runs inside addItem — UI (button + corner) flips via isInCart
-    // before the network round-trip, so TLD background fetches never block the action.
     setJustAdded(true);
     setLoading(true);
     try {
@@ -105,13 +120,43 @@ export default function AddToCartButton({
       if (rect) setFlyRect(rect);
     } catch (err) {
       setJustAdded(false);
-      console.error('[AddToCart]', err?.response?.data?.detail || err?.response?.data?.message || err?.message);
+      if (isPremiumCartAloneError(err)) {
+        pendingRetryRef.current = { productType, productId, payload };
+        setConflictOpen(true);
+      } else {
+        console.error('[AddToCart]', err?.response?.data?.detail || err?.response?.data?.message || err?.message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleAnimComplete = useCallback(() => setFlyRect(null), []);
+
+  const handleClearAndRetry = async () => {
+    setClearing(true);
+    try {
+      await clearCart();
+      const pending = pendingRetryRef.current;
+      if (pending) {
+        await addItem(pending.productType, pending.productId, pending.payload);
+        setJustAdded(true);
+        onAdded?.();
+        navigate('/cart');
+      }
+      setConflictOpen(false);
+      pendingRetryRef.current = null;
+    } catch (err) {
+      if (isPremiumCartAloneError(err)) {
+        setConflictOpen(true);
+      } else {
+        console.error('[AddToCart] retry failed', err?.response?.data?.detail || err?.message);
+        setConflictOpen(false);
+      }
+    } finally {
+      setClearing(false);
+    }
+  };
 
   const sizeClasses = size === 'sm'
     ? 'px-3 py-1.5 text-xs gap-1.5'
@@ -125,6 +170,24 @@ export default function AddToCartButton({
         : showAdded
           ? 'In Cart'
           : 'Add to Cart');
+
+  const conflictModal = (
+    <PremiumCartConflictModal
+      open={conflictOpen}
+      clearing={clearing}
+      onClose={() => {
+        if (!clearing) {
+          setConflictOpen(false);
+          pendingRetryRef.current = null;
+        }
+      }}
+      onGoToCart={() => {
+        setConflictOpen(false);
+        navigate('/cart');
+      }}
+      onClearAndRetry={handleClearAndRetry}
+    />
+  );
 
   if (variant === 'corner') {
     const title = disabled
@@ -165,6 +228,7 @@ export default function AddToCartButton({
           )}
         </button>
         {flyRect && <CartFlyAnimation fromRect={flyRect} onComplete={handleAnimComplete} />}
+        {conflictModal}
       </>
     );
   }
@@ -189,6 +253,7 @@ export default function AddToCartButton({
           </span>
         </label>
         {flyRect && <CartFlyAnimation fromRect={flyRect} onComplete={handleAnimComplete} />}
+        {conflictModal}
       </>
     );
   }
@@ -226,6 +291,7 @@ export default function AddToCartButton({
         {buttonLabel}
       </button>
       {flyRect && <CartFlyAnimation fromRect={flyRect} onComplete={handleAnimComplete} />}
+      {conflictModal}
     </>
   );
 }

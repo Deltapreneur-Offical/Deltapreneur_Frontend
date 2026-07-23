@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Gavel, ShoppingCart, MessageSquare, Trash2, Share2, MoreVertical } from 'lucide-react';
+import { ArrowRight, Gavel, ShoppingCart, Trash2, Share2, MoreVertical } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
@@ -347,6 +347,14 @@ export default function DomainListingCard({
       );
     }
 
+    if (statusKey === 'UNDER_REVIEW') {
+      return (
+        <button type="button" disabled className={`${PRIMARY_BTN} cursor-not-allowed bg-amber-50 text-amber-800 border border-amber-200`}>
+          {t('listingCardAcquisitionInProgress', 'Acquisition in Progress')}
+        </button>
+      );
+    }
+
     if (statusKey === 'AVAILABLE') {
       if (purchaseBlocked) {
         return (
@@ -357,17 +365,14 @@ export default function DomainListingCard({
       }
       if (isHighValue) {
         return (
-          <button
-            type="button"
-            className={`${PRIMARY_BTN} bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center justify-center gap-1.5`}
-            onClick={(e) => {
-              stop(e);
-              onEnquire?.();
-            }}
-          >
-            <MessageSquare size={13} />
-            {t('listingCardEnquire')}
-          </button>
+          <AddToCartButton
+            productType="DOMAIN_LISTING"
+            productId={domain.id}
+            size="md"
+            tone="dark"
+            className={`${PRIMARY_BTN} !w-full !rounded-full !border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700 hover:!border-blue-700`}
+            label={t('listingCardAddToCart', 'Add to Cart')}
+          />
         );
       }
       return (
@@ -420,6 +425,11 @@ export default function DomainListingCard({
       {domain.takenDown && (
         <span className="domain-listing-card__taken-down-badge">
           {t('listingCardTakenDown')}
+        </span>
+      )}
+      {statusKey === 'UNDER_REVIEW' && (
+        <span className="domain-listing-card__acquisition-badge">
+          {t('listingCardPremiumAcquisitionInProgress', 'Premium Acquisition in Progress')}
         </span>
       )}
 

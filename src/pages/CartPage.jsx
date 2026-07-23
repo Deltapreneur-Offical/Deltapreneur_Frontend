@@ -412,35 +412,56 @@ export default function CartPage() {
             <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
             <div className="px-6 pt-7 pb-6 sm:px-8">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-800">
-                CoBrother managed acquisition
+                CoBrother Priority Managed Acquisition
               </div>
               <h2 className="font-display text-[1.65rem] font-extrabold leading-tight text-slate-900">
-                Confirm your managed domain acquisition request
+                Confirm your Priority Managed Acquisition
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Thank you for trusting CoBrother with{' '}
+                Thank you for trusting CoBrother with your premium acquisition of{' '}
                 <strong className="text-slate-900">
                   {managedAcquisitionItems[0]?.productName || 'this domain'}
                 </strong>
-                . Domains above ₹5,00,000 are not sold via instant checkout — our specialists
-                personally coordinate verification, payment guidance, and secure transfer.
+                . Because this is a high-value transaction, it qualifies for our Priority Managed
+                Service. Rather than a standard instant checkout, you have been assigned a dedicated
+                specialist who will personally oversee this transaction, secure payment, and transfer
+                to ensure a seamless handover.
               </p>
 
               <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50/90 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
-                  What happens next
+                  What Happens Next
                 </p>
                 <ol className="space-y-2.5 text-sm text-slate-700">
-                  <li className="flex gap-2.5"><span className="font-bold text-emerald-700">1</span> We review your request and open a managed acquisition file.</li>
-                  <li className="flex gap-2.5"><span className="font-bold text-emerald-700">2</span> We coordinate with the owner on readiness and terms.</li>
-                  <li className="flex gap-2.5"><span className="font-bold text-emerald-700">3</span> We guide payment and transfer until ownership is complete.</li>
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-emerald-700">1</span>
+                    <span>
+                      <strong>Priority Escalation:</strong> We instantly open your managed
+                      acquisition file and alert your dedicated specialist.
+                    </span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-emerald-700">2</span>
+                    <span>
+                      <strong>White-Glove Coordination:</strong> We contact the current owner on
+                      your behalf to verify readiness and secure the best possible terms.
+                    </span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-emerald-700">3</span>
+                    <span>
+                      <strong>Guided Secure Transfer:</strong> We provide 1-on-1 support through
+                      the payment process and oversee the transfer until complete ownership is in
+                      your hands.
+                    </span>
+                  </li>
                 </ol>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500">
-                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">No payment now</span>
-                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Dedicated specialist</span>
-                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Secure transfer support</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Zero upfront payment</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Dedicated VIP specialist</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Encrypted secure transfer</span>
               </div>
 
               <div className="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row">
@@ -458,7 +479,7 @@ export default function CartPage() {
                   disabled={checkoutLoading}
                   onClick={handlePremiumConfirm}
                 >
-                  {checkoutLoading ? 'Submitting your request…' : 'Submit acquisition request'}
+                  {checkoutLoading ? 'Submitting your request…' : 'Submit Priority Acquisition Request'}
                 </button>
               </div>
             </div>

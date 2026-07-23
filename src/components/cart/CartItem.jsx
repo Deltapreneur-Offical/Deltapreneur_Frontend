@@ -1,4 +1,4 @@
-import { Trash2, AlertCircle, Globe, Cpu, Rocket, ShoppingBag, Loader2 } from 'lucide-react';
+import { Trash2, AlertCircle, Globe, Cpu, Rocket, ShoppingBag, Loader2, Info } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { planLabelForKey } from '../../utils/technologyPricingPlans';
 
@@ -52,6 +52,13 @@ export default function CartItem({
   const isRemoving = removingId === item.id;
   const isDomainReg = item.productType === 'DOMAIN_REGISTRATION';
   const minPeriod = Math.max(1, Number(item.metadata?.minPeriodYears || 1));
+  const registrationTld = (() => {
+    const fromMeta = String(item.metadata?.tld || '').replace(/^\./, '').toLowerCase();
+    if (fromMeta) return fromMeta;
+    const name = String(item.metadata?.domainName || item.productName || '');
+    if (name.includes('.')) return name.split('.').slice(1).join('.').toLowerCase();
+    return '';
+  })();
   const selectedPeriod = Math.max(
     minPeriod,
     Number(item.metadata?.period || minPeriod),
@@ -161,6 +168,19 @@ export default function CartItem({
             <p className="text-[11px] text-gray-400 leading-snug">
               Price updates instantly when you change years.
             </p>
+            {minPeriod > 1 && registrationTld ? (
+              <div className="mt-0.5 flex items-start gap-1.5 text-[11px] leading-snug text-gray-500">
+                <Info
+                  className="mt-0.5 h-3 w-3 shrink-0 text-gray-400"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+                <p>
+                  Note: .{registrationTld} domains require a minimum {minPeriod}-year
+                  registration period as mandated by the registry.
+                </p>
+              </div>
+            ) : null}
           </div>
         )}
       </div>

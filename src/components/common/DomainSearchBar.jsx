@@ -12,6 +12,14 @@ import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
 import { fetchAvailableTldsPage, fetchAvailableTldsChunk, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
 import { DomainCardGrid } from '../domain/DomainCard';
+import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
+import RegistryPremiumLoader from '../domain/RegistryPremiumLoader';
+import { isRegistryPremium, REGISTRY_PREMIUM_SEGMENT } from '../../utils/registryPremium';
+import {
+  getCachedPremiumItems,
+  premiumCacheKey,
+  setCachedPremiumItems,
+} from '../../utils/registryPremiumCache';
 import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
@@ -26,6 +34,7 @@ import {
 } from '../home/motion/homeMotion';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
+const PREMIUM_LOADING_MESSAGES = 3;
 const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
   ai: { labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
@@ -383,6 +392,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   /** Real backend chunk progress for remaining TLDs (1→100). */
   const [tldProgress, setTldProgress] = useState(0);
   const [tldSkeletonCount, setTldSkeletonCount] = useState(0);
+  const [registrySegment, setRegistrySegment] = useState(REGISTRY_PREMIUM_SEGMENT.STANDARD);
+  const [registryPremiumItems, setRegistryPremiumItems] = useState([]);
+  const [registryPremiumLoading, setRegistryPremiumLoading] = useState(false);
+  const [registryPremiumMsgIndex, setRegistryPremiumMsgIndex] = useState(0);
+  const [resultsAnimKey, setResultsAnimKey] = useState(0);
+  const registryPremiumAbortRef = useRef(null);
   const debounceRef           = useRef(null);
   const newSearchCacheRef = useRef(new Map());
   const requestIdRef = useRef(0);
@@ -405,10 +420,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const clearAllSearchResults = useCallback(() => {
     requestIdRef.current += 1;
     clearTimeout(debounceRef.current);
+    if (registryPremiumAbortRef.current) {
+      registryPremiumAbortRef.current.abort();
+      registryPremiumAbortRef.current = null;
+    }
     resetAiDomains();
     setResults([]);
     setPremiumDomains([]);
     setAuctionResults([]);
+    setRegistryPremiumItems([]);
+    setRegistryPremiumLoading(false);
+    setRegistrySegment(REGISTRY_PREMIUM_SEGMENT.STANDARD);
     setLoading(false);
     setTldLoading(false);
     setTldProgress(0);
@@ -440,6 +462,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
   const mapTldItem = (item, label) => {
     const tld = (item.tld || '').replace('.', '');
+    const isPremium = item.isPremium === true || item.is_premium === true;
     return {
       domain: item.domain || `${item.name || label}.${tld}`,
       name: item.name || label,
@@ -451,6 +474,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       price: item.registrationPrice ?? null,
       priceCurrency: item.currency || 'INR',
       minPeriodYears: item.minPeriodYears || 1,
+      isPremium,
+      registryTier: item.registryTier || (isPremium ? 'premium' : 'standard'),
       listing: null,
     };
   };
@@ -462,6 +487,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const onPublicMarketplace = data.status === 'marketplace'
       && listing
       && isPublicMarketplaceListing(listing, 'domain');
+    const isPremium = data.isPremium === true || data.is_premium === true;
     return {
       domain: fullDomain,
       name,
@@ -473,6 +499,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       unitPrice: data.unitPrice ?? null,
       priceCurrency: data.priceCurrency ?? null,
       minPeriodYears: data.minPeriodYears ?? 1,
+      isPremium,
+      registryTier: data.registryTier || (isPremium ? 'premium' : 'standard'),
       registrarMessage: data.message ?? null,
       listing: onPublicMarketplace ? listing : null,
     };
@@ -482,6 +510,57 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
    * Homepage Domain Names — primary result paints ASAP; remaining TLDs load
    * in the background (same APIs as Storefront, progressive UI).
    */
+  const loadRegistryPremiumMarketplace = useCallback(async (label, currentRequestId) => {
+    const key = premiumCacheKey(label);
+    if (!key) {
+      setRegistryPremiumItems([]);
+      setRegistryPremiumLoading(false);
+      return;
+    }
+
+    const cached = getCachedPremiumItems(key);
+    if (cached) {
+      if (requestIdRef.current !== currentRequestId) return;
+      setRegistryPremiumItems(cached);
+      setRegistryPremiumLoading(false);
+      return;
+    }
+
+    if (registryPremiumAbortRef.current) {
+      registryPremiumAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    registryPremiumAbortRef.current = controller;
+
+    setRegistryPremiumLoading(true);
+    setRegistryPremiumMsgIndex(0);
+    setRegistryPremiumItems([]);
+    try {
+      const { data } = await domainAPI.searchPremium(
+        { name: key },
+        { signal: controller.signal },
+      );
+      if (requestIdRef.current !== currentRequestId || controller.signal.aborted) return;
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setCachedPremiumItems(key, items);
+      setRegistryPremiumItems(items);
+    } catch (err) {
+      if (
+        controller.signal.aborted
+        || err?.code === 'ERR_CANCELED'
+        || err?.name === 'CanceledError'
+        || requestIdRef.current !== currentRequestId
+      ) {
+        return;
+      }
+      setRegistryPremiumItems([]);
+    } finally {
+      if (requestIdRef.current === currentRequestId && !controller.signal.aborted) {
+        setRegistryPremiumLoading(false);
+      }
+    }
+  }, []);
+
   const searchAllTlds = async (raw, force = false, currentRequestId) => {
     const q = toSafeLower(raw).trim();
     if (!q) return;
@@ -490,6 +569,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const label = hasTld ? q.split('.')[0] : q;
     const fqdn = hasTld ? q : `${label}.com`;
     const cacheKey = `all-tlds:${label}`;
+
+    setRegistrySegment(REGISTRY_PREMIUM_SEGMENT.STANDARD);
+    void loadRegistryPremiumMarketplace(label, currentRequestId);
 
     if (!force && newSearchCacheRef.current.has(cacheKey)) {
       const cached = newSearchCacheRef.current.get(cacheKey);
@@ -962,7 +1044,55 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       renewalPrice: item.renewalPrice,
       period: 1,
       minPeriodYears: item.minPeriodYears || 1,
+      isPremium: item.isPremium === true,
+      registryTier: item.registryTier || (item.isPremium ? 'premium' : 'standard'),
     }));
+
+  const standardNewResults = useMemo(
+    () => availableNewResults.filter((it) => !isRegistryPremium(it)),
+    [availableNewResults],
+  );
+
+  const premiumNewResults = useMemo(() => {
+    const byDomain = new Map();
+    const add = (it) => {
+      const domain = String(it?.domain || '').toLowerCase();
+      if (!domain || !isRegistryPremium(it)) return;
+      if (!byDomain.has(domain)) byDomain.set(domain, it);
+    };
+    availableNewResults.forEach(add);
+    (registryPremiumItems || []).forEach(add);
+    return Array.from(byDomain.values()).sort(
+      (a, b) => (Number(a.registrationPrice) || Infinity) - (Number(b.registrationPrice) || Infinity),
+    );
+  }, [availableNewResults, registryPremiumItems]);
+
+  const visibleNewResults =
+    registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+      ? premiumNewResults
+      : standardNewResults;
+
+  useEffect(() => {
+    if (!registryPremiumLoading) return undefined;
+    const id = setInterval(() => {
+      setRegistryPremiumMsgIndex((i) => (i + 1) % PREMIUM_LOADING_MESSAGES);
+    }, 2000);
+    return () => clearInterval(id);
+  }, [registryPremiumLoading]);
+
+  useEffect(() => {
+    if (registryPremiumLoading) return;
+    if (premiumNewResults.length > 0 && standardNewResults.length === 0) {
+      setRegistrySegment(REGISTRY_PREMIUM_SEGMENT.PREMIUM);
+      setResultsAnimKey((k) => k + 1);
+    }
+  }, [registryPremiumLoading, premiumNewResults.length, standardNewResults.length]);
+
+  const handleRegistrySegmentChange = (next) => {
+    setRegistrySegment(next);
+    setResultsAnimKey((k) => k + 1);
+  };
+
   const registrarErrorMessage = completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
     || (completedNewResults.length > 0 && completedNewResults.every((item) => item.status === 'error')
       ? completedNewResults[0]?.registrarMessage
@@ -1101,26 +1231,108 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <RegistrarDomainLoader />
           )}
 
-          {/* Primary available: cards first; loading strip sits below the grid */}
-          {hasSearchQuery && searchMode === 'new' && availableNewResults.length > 0 && (
-            <div className="mb-6 space-y-3.5">
-              <DomainCardGrid
-                items={availableNewResults}
-                featuredFirst
-                skeletonCount={tldLoading ? tldSkeletonCount : 0}
-              />
-              {tldLoading ? <DomainExtensionsLoader /> : null}
+          {/* Domain Names — Standard / Premium (same as Storefront) */}
+          {hasSearchQuery && searchMode === 'new' && (
+            availableNewResults.length > 0
+            || registryPremiumLoading
+            || premiumNewResults.length > 0
+            || (tldLoading && completedNewResults.length > 0)
+          ) && (
+            <div className="mb-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                  Available Extensions
+                </h3>
+                <RegistryPremiumSegment
+                  value={registrySegment}
+                  onChange={handleRegistrySegmentChange}
+                  standardCount={standardNewResults.length}
+                  premiumCount={premiumNewResults.length}
+                  premiumLoading={registryPremiumLoading}
+                />
+              </div>
+
+              <div key={`${resultsAnimKey}-${registrySegment}`} className="registry-results-enter">
+                {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+                  && registryPremiumLoading
+                  && premiumNewResults.length === 0 ? (
+                  <RegistryPremiumLoader messageIndex={registryPremiumMsgIndex} />
+                ) : visibleNewResults.length > 0 ? (
+                  <>
+                    <div className="flex justify-end mb-3">
+                      <span className="text-xs font-semibold text-gray-400">
+                        {visibleNewResults.length} shown · sorted by price
+                        {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && registryPremiumLoading
+                          ? ' · updating…'
+                          : ''}
+                      </span>
+                    </div>
+                    <div
+                      className={
+                        registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+                          ? 'premium-results-stagger'
+                          : undefined
+                      }
+                    >
+                      <DomainCardGrid
+                        items={visibleNewResults}
+                        featuredFirst
+                        skeletonCount={
+                          registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading
+                            ? tldSkeletonCount
+                            : 0
+                        }
+                      />
+                    </div>
+                    {registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading ? (
+                      <DomainExtensionsLoader />
+                    ) : null}
+                  </>
+                ) : (
+                  <div
+                    className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
+                      registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+                        ? 'text-amber-900/80 bg-amber-50/50 border-amber-100'
+                        : 'text-gray-500 bg-gray-50 border-gray-150'
+                    }`}
+                  >
+                    {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+                      ? '✨ No premium domains found. Try another keyword.'
+                      : tldLoading
+                        ? 'Loading standard domains…'
+                        : 'No standard domains in these results. Try Premium Domains.'}
+                  </div>
+                )}
+              </div>
+
+              <style>{`
+                @keyframes registryResultsEnter {
+                  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+                  to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                .registry-results-enter {
+                  animation: registryResultsEnter 280ms ease-out;
+                }
+                .premium-results-stagger .domain-search-card {
+                  animation: registryResultsEnter 300ms ease-out both;
+                  box-shadow:
+                    0 0 0 1px rgba(251, 191, 36, 0.2),
+                    0 8px 28px rgba(180, 83, 9, 0.1),
+                    0 0 24px rgba(251, 191, 36, 0.12);
+                }
+                .premium-results-stagger .domain-search-card--featured {
+                  animation-delay: 40ms;
+                }
+                .premium-results-stagger .grid .domain-search-card:nth-child(1) { animation-delay: 90ms; }
+                .premium-results-stagger .grid .domain-search-card:nth-child(2) { animation-delay: 140ms; }
+                .premium-results-stagger .grid .domain-search-card:nth-child(3) { animation-delay: 190ms; }
+                .premium-results-stagger .grid .domain-search-card:nth-child(n+4) { animation-delay: 230ms; }
+              `}</style>
             </div>
           )}
 
-          {/* Primary taken / not yet available: skeleton grid + loading strip */}
-          {hasSearchQuery && searchMode === 'new' && tldLoading && availableNewResults.length === 0 && completedNewResults.length > 0 && (
-            <div className="mb-6">
-              <DomainExtensionsLoader skeletonCount={tldSkeletonCount || 6} />
-            </div>
-          )}
-
-          {hasSearchQuery && searchMode === 'new' && !tldLoading && tldHasMore && (
+          {hasSearchQuery && searchMode === 'new' && !tldLoading && tldHasMore
+            && registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && (
             <div className="flex justify-center pt-2">
               <button
                 type="button"
@@ -1149,13 +1361,15 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </p>
           )}
 
-          {hasSearchQuery && searchMode === 'new' && !loading && !tldLoading && availableNewResults.length === 0 && (!registrarErrorMessage || !completedNewResults.every((item) => item.status === 'error')) && (
+          {hasSearchQuery && searchMode === 'new' && !loading && !tldLoading && !registryPremiumLoading
+            && availableNewResults.length === 0 && premiumNewResults.length === 0
+            && (!registrarErrorMessage || !completedNewResults.every((item) => item.status === 'error')) && (
             <p className="text-center text-gray-500 text-sm py-6">
               No available domains found for this search. Please try another domain name.
             </p>
           )}
 
-          {/* Premium domains */}
+          {/* Pre-owned / listed marketplace domains (separate tab) */}
           {hasSearchQuery && searchMode === 'premium' && premiumLoading && (
             <p className="text-center text-gray-400 text-sm mb-6">{t('searchLoadingListedDomains')}</p>
           )}

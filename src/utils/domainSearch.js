@@ -22,6 +22,7 @@ export function normalizeDomainLabel(raw) {
 
 function mapItem(item, label) {
   const tld = String(item.tld || '').replace(/^\./, '').toLowerCase();
+  const isPremium = item.isPremium === true || item.is_premium === true;
   return {
     domain: item.domain || `${item.name || label}.${tld}`,
     name: item.name || label,
@@ -31,6 +32,9 @@ function mapItem(item, label) {
     registrationPrice: item.registrationPrice ?? null,
     renewalPrice: item.renewalPrice ?? null,
     currency: item.currency || 'INR',
+    isPremium,
+    registryTier: item.registryTier || (isPremium ? 'premium' : 'standard'),
+    minPeriodYears: item.minPeriodYears || 1,
   };
 }
 

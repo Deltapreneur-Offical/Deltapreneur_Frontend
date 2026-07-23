@@ -64,7 +64,7 @@ export default function PremiumCartConflictModal({
             id="premium-cart-conflict-title"
             className="font-display text-[1.55rem] font-extrabold leading-tight text-slate-900 pr-8"
           >
-            Premium domains need a dedicated checkout
+            Premium domains need a dedicated priority checkout
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
             Domains priced above <strong className="text-slate-900">₹5,00,000</strong> are not

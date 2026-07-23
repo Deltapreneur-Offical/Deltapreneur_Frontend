@@ -717,7 +717,7 @@ export default function CartPage() {
                   }
                   checkoutLabel={
                     isManagedAcquisitionOnly
-                      ? 'Reserve Order'
+                      ? 'Reserve Order & Pay Later'
                       : undefined
                   }
                   secureNote={

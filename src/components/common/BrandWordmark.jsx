@@ -1,4 +1,4 @@
-import coBrotherLogo from '../../assets/Cobrother_logo.gif';
+import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import BrandLogoImage from './BrandLogoImage';
 
 export default function BrandWordmark({ inline = false, className = '', alt = 'CoBrother' }) {

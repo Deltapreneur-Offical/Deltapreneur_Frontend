@@ -1,5 +1,5 @@
-import logoBlack from '../../assets/Cobrother_logo_static.png';
-import logoGreen from '../../assets/Cobrother_logo_hover.png';
+import logoBlack from '../../assets/Cobrother_logo.png';
+import logoGreen from '../../assets/Cobrother_logo_G.png';
 import BrandLogoImage from './BrandLogoImage';
 
 /**

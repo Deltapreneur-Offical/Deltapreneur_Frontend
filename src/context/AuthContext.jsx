@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../api/services';
-import { getStoredAccessToken, hasCookieAuthSession } from '../utils/authSession';
+import { clearAuthTokens, getStoredAccessToken, hasCookieAuthSession } from '../utils/authSession';
 
 /** Stable fallback so `useAuth()` never returns null (avoids destructuring errors outside provider). */
 const authContextDefault = {
@@ -16,12 +16,6 @@ const AuthContext = createContext(authContextDefault);
 
 function getAccessToken() {
   return getStoredAccessToken();
-}
-
-function clearAuthTokens() {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
 }
 
 function normalizeUserPayload(data) {

@@ -143,7 +143,8 @@ export function VirtualAssistantApplicantGuard({ children }) {
           if (status === 404) {
             setIsApplicant(false);
           } else {
-            setIsApplicant(true);
+            // Fail closed: network/5xx must not unlock VA applicant routes.
+            setIsApplicant(false);
           }
           setChecking(false);
         }
@@ -218,8 +219,9 @@ export function VirtualAssistantGuard({ children }) {
             setHasApplication(false);
             setUnlocked(false);
           } else {
-            setHasApplication(true);
-            setUnlocked(true);
+            // Fail closed: do not unlock workspace on transient API errors.
+            setHasApplication(false);
+            setUnlocked(false);
           }
           setChecking(false);
         }

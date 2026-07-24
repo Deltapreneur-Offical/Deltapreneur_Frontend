@@ -4,6 +4,14 @@ export function getStoredAccessToken() {
   return localStorage.getItem('accessToken') || localStorage.getItem('token');
 }
 
+/** Clear all client-side auth token keys (legacy + current). */
+export function clearAuthTokens() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+}
+
 /** Readable CSRF cookie is set alongside HttpOnly refresh/access cookies. */
 export function hasCookieAuthSession() {
   if (typeof document === 'undefined') return false;

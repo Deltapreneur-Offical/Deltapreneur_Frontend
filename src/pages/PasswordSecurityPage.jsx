@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { authAPI } from '../api/services';
 import BackButton from '../components/common/BackButton';
+import { clearAuthTokens } from '../utils/authSession';
 
 const TABS = [
   {
@@ -151,8 +152,8 @@ export default function PasswordSecurityPage() {
           'Password changed. Please log in again because all sessions were revoked.',
       );
       setChangeForm({ currentPassword: '', newPassword: '', confirm: '' });
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      clearAuthTokens();
+      window.dispatchEvent(new Event('auth:cleared'));
     } catch (err) {
       const body = err.response?.data;
       setChangeError(body?.error || body?.message || 'Unable to change password.');
@@ -177,8 +178,8 @@ export default function PasswordSecurityPage() {
           'Password set. Please log in again because all sessions were revoked.',
       );
       setSetForm({ newPassword: '', confirm: '' });
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      clearAuthTokens();
+      window.dispatchEvent(new Event('auth:cleared'));
     } catch (err) {
       const body = err.response?.data;
       setSetError(body?.error || body?.message || 'Unable to set password.');

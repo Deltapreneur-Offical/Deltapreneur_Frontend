@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck, CheckCircle2, AlertCircle, ClipboardList, User, Globe } from 'lucide-react';
 import OperationsAdminPartitionTabs from '../components/operations/OperationsAdminPartitionTabs';
 import OperationsContactModal from '../components/operations/OperationsContactModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import { useCurrency } from '../context/CurrencyContext';
-import { operationsAdminAPI } from '../api/services';
+import { adminAPI, operationsAdminAPI } from '../api/services';
+import { unwrapApiData } from '../utils/apiResponse';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
+import VirtualAssistantsAdminTab from '../components/admin/VirtualAssistantsAdminTab';
+import VirtualAssistantDirectAddAdminPage from './VirtualAssistantDirectAddAdminPage';
+import VirtualAssistantPublishedProfilesPage from './VirtualAssistantPublishedProfilesPage';
 import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
 import { formatRequestAdminPrice } from '../utils/operationsPricing';
 import { getRequestActionLabel, getRequestStatusLabel } from '../utils/operationsRequestLabels';
@@ -138,6 +143,48 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [notice, setNotice] = useState(null);
   const noticeTimerRef = useRef(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [vaData, setVaData] = useState([]);
+  const [vaLoading, setVaLoading] = useState(false);
+  const [vaSubTab, setVaSubTab] = useState(() => searchParams.get('vaSubTab') || 'applications');
+
+  useEffect(() => {
+    const param = searchParams.get('vaSubTab');
+    if (param && ['applications', 'direct-add', 'published'].includes(param)) {
+      setVaSubTab(param);
+    }
+  }, [searchParams]);
+
+  const handleVaSubTabChange = (nextTab) => {
+    setVaSubTab(nextTab);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tab', 'operations');
+    newParams.set('section', 'assistance');
+    newParams.set('vaSubTab', nextTab);
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const fetchVaData = useCallback(async () => {
+    setVaLoading(true);
+    try {
+      const res = await adminAPI.getVirtualAssistants();
+      const unwrapped = unwrapApiData(res);
+      const list = Array.isArray(unwrapped) ? unwrapped : (unwrapped?.items || []);
+      setVaData(list);
+    } catch (e) {
+      console.error('Failed to load VA applications', e);
+      setVaData([]);
+    } finally {
+      setVaLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activePartitionId === 'assistance') {
+      fetchVaData();
+    }
+  }, [activePartitionId, fetchVaData]);
 
   const isRequestsPartition = activePartitionId === 'requests';
   const activeSection = isRequestsPartition
@@ -424,325 +471,392 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
             <span>{notice.message}</span>
           </div>
         </div>
-      )}
-
-      <div
-        className={`operations-admin-section-panel operations-admin-section-panel--${activePartitionId}`}
-        role="tabpanel"
-      >
-        <div className="operations-admin-section-header">
-          <div className="operations-admin-section-heading">
-            <span className={`operations-admin-section-icon operations-admin-section-icon--${activePartitionId}`}>
-              <SectionIcon size={18} aria-hidden />
-            </span>
-            <div>
-              <h3 className="operations-admin-section-title">
-                {t(meta.titleKey, { defaultValue: meta.defaultTitle })}
-              </h3>
-              <p className="operations-admin-section-subtitle">
-                {t(meta.subtitleKey, { defaultValue: meta.defaultSubtitle })}
-              </p>
+      )}{activePartitionId === 'assistance' ? (
+        <div>
+          <div className="operations-section-tabs-wrap mb-6">
+            <p className="operations-section-tabs-eyebrow">Virtual Assistants</p>
+            <div className="operations-section-tabs operations-section-tabs--admin" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={vaSubTab === 'applications'}
+                className={`operations-section-tab operations-section-tab--assistance ${vaSubTab === 'applications' ? 'is-active' : ''}`}
+                onClick={() => handleVaSubTabChange('applications')}
+              >
+                <span className="operations-section-tab-accent" aria-hidden />
+                <span className="operations-section-tab-main">
+                  <span className="operations-section-tab-icon-wrap">
+                    <ClipboardList size={18} strokeWidth={2} aria-hidden />
+                  </span>
+                  <span className="operations-section-tab-copy">
+                    <span className="operations-section-tab-label">Applications</span>
+                    <span className="operations-section-tab-hint">Review and manage VA applications</span>
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={vaSubTab === 'direct-add'}
+                className={`operations-section-tab operations-section-tab--compliance ${vaSubTab === 'direct-add' ? 'is-active' : ''}`}
+                onClick={() => handleVaSubTabChange('direct-add')}
+              >
+                <span className="operations-section-tab-accent" aria-hidden />
+                <span className="operations-section-tab-main">
+                  <span className="operations-section-tab-icon-wrap">
+                    <User size={18} strokeWidth={2} aria-hidden />
+                  </span>
+                  <span className="operations-section-tab-copy">
+                    <span className="operations-section-tab-label">Direct Add VA</span>
+                    <span className="operations-section-tab-hint">Manually create a Virtual Assistant profile</span>
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={vaSubTab === 'published'}
+                className={`operations-section-tab operations-section-tab--requests ${vaSubTab === 'published' ? 'is-active' : ''}`}
+                onClick={() => handleVaSubTabChange('published')}
+              >
+                <span className="operations-section-tab-accent" aria-hidden />
+                <span className="operations-section-tab-main">
+                  <span className="operations-section-tab-icon-wrap">
+                    <Globe size={18} strokeWidth={2} aria-hidden />
+                  </span>
+                  <span className="operations-section-tab-copy">
+                    <span className="operations-section-tab-label">Published Profiles</span>
+                    <span className="operations-section-tab-hint">View and manage published Virtual Assistants</span>
+                  </span>
+                </span>
+              </button>
             </div>
           </div>
-          {!isRequestsPartition && (
-            <button
-              type="button"
-              className={`operations-admin-add-btn operations-admin-add-btn--${activePartitionId}`}
-              onClick={openAddModal}
-            >
-              {t(meta.addKey, { defaultValue: meta.defaultAdd })}
-            </button>
+          {vaSubTab === 'applications' ? (
+            <VirtualAssistantsAdminTab data={vaData} loading={vaLoading} onRefresh={fetchVaData} />
+          ) : vaSubTab === 'direct-add' ? (
+            <VirtualAssistantDirectAddAdminPage />
+          ) : (
+            <VirtualAssistantPublishedProfilesPage />
           )}
         </div>
+      ) : (
+        <div
+          className={`operations-admin-section-panel operations-admin-section-panel--${activePartitionId}`}
+          role="tabpanel"
+        >
+          <div className="operations-admin-section-header">
+            <div className="operations-admin-section-heading">
+              <span className={`operations-admin-section-icon operations-admin-section-icon--${activePartitionId}`}>
+                <SectionIcon size={18} aria-hidden />
+              </span>
+              <div>
+                <h3 className="operations-admin-section-title">
+                  {t(meta.titleKey, { defaultValue: meta.defaultTitle })}
+                </h3>
+                <p className="operations-admin-section-subtitle">
+                  {t(meta.subtitleKey, { defaultValue: meta.defaultSubtitle })}
+                </p>
+              </div>
+            </div>
+            {!isRequestsPartition && (
+              <button
+                type="button"
+                className={`operations-admin-add-btn operations-admin-add-btn--${activePartitionId}`}
+                onClick={openAddModal}
+              >
+                {t(meta.addKey, { defaultValue: meta.defaultAdd })}
+              </button>
+            )}
+          </div>
 
-        <div className="operations-admin-toolbar">
-          <input
-            type="search"
-            className="operations-admin-search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t(meta.searchKey, { defaultValue: meta.defaultSearch })}
-          />
-          {isRequestsPartition ? (
-            <>
-              <div className="operations-admin-select-wrap">
-                <select
-                  className="operations-admin-select"
-                  value={requestTypeFilter}
-                  onChange={(e) => setRequestTypeFilter(e.target.value)}
-                >
-                  <option value="all">{t('adminOperationsFilterAllRequestTypes', { defaultValue: 'All Types' })}</option>
-                  <option value="hire">{t('operationsHire', { defaultValue: 'Hire' })}</option>
-                  <option value="booking">{t('operationsBookSlot', { defaultValue: 'Book Your Slot' })}</option>
-                </select>
-                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-              </div>
-              <div className="operations-admin-select-wrap">
-                <select
-                  className="operations-admin-select"
-                  value={requestStatusFilter}
-                  onChange={(e) => setRequestStatusFilter(e.target.value)}
-                >
-                  <option value="all">{t('adminOperationsFilterAllRequestStatus', { defaultValue: 'All Status' })}</option>
-                  <option value="PENDING">{t('adminOperationsRequestStatusPending', { defaultValue: 'Pending' })}</option>
-                  <option value="CONTACTED">{t('adminOperationsRequestStatusContacted', { defaultValue: 'Contacted' })}</option>
-                  <option value="CLOSED">{t('adminOperationsRequestStatusClosed', { defaultValue: 'Closed' })}</option>
-                </select>
-                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="operations-admin-select-wrap">
-                <select
-                  className="operations-admin-select"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  aria-label={t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}
-                >
-                  <option value="all">{t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}</option>
-                  <option value="active">{t('adminOperationsStatusActive', { defaultValue: 'Active' })}</option>
-                  <option value="paused">{t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}</option>
-                </select>
-                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-              </div>
-              {!isCompliance && (
+          <div className="operations-admin-toolbar">
+            <input
+              type="search"
+              className="operations-admin-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t(meta.searchKey, { defaultValue: meta.defaultSearch })}
+            />
+            {isRequestsPartition ? (
+              <>
                 <div className="operations-admin-select-wrap">
                   <select
                     className="operations-admin-select"
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    aria-label={t('adminOperationsFilterAllCategories', { defaultValue: 'All Categories' })}
+                    value={requestTypeFilter}
+                    onChange={(e) => setRequestTypeFilter(e.target.value)}
                   >
-                    <option value="all">{t('adminOperationsFilterAllCategories', { defaultValue: 'All Categories' })}</option>
-                    {VA_CATEGORY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
+                    <option value="all">{t('adminOperationsFilterAllRequestTypes', { defaultValue: 'All Types' })}</option>
+                    <option value="hire">{t('operationsHire', { defaultValue: 'Hire' })}</option>
+                    <option value="booking">{t('operationsBookSlot', { defaultValue: 'Book Your Slot' })}</option>
                   </select>
                   <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
                 </div>
-              )}
-            </>
-          )}
-        </div>
-
-        <div className="operations-admin-table-wrap">
-          {isRequestsPartition ? (
-            <table className="operations-admin-table operations-admin-table--requests">
-              <thead>
-                <tr>
-                  <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
-                  <th>{t('adminOperationsColDate', { defaultValue: 'Date' })}</th>
-                  <th>{t('adminOperationsColServiceName', { defaultValue: 'Service' })}</th>
-                  <th>{t('adminOperationsColContact', { defaultValue: 'Contact' })}</th>
-                  <th>{t('adminOperationsColDescription', { defaultValue: 'Message' })}</th>
-                  <th className="operations-admin-request-status-col">
-                    {t('adminOperationsColStatus', { defaultValue: 'Status' })}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {requestsLoading ? (
-                  <tr>
-                    <td colSpan={6} className="operations-admin-empty">
-                      {t('loading', { defaultValue: 'Loading…' })}
-                    </td>
-                  </tr>
-                ) : filteredRequests.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="operations-admin-empty">
-                      {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRequests.map((row, index) => {
-                    const serial = String(index + 1).padStart(2, '0');
-                    const isHire = row.requestType === 'hire';
-                    return (
-                      <tr key={row.id}>
-                        <td className="operations-admin-serial">{serial}</td>
-                        <td className="operations-admin-request-date">{formatRequestDate(row.createdAt)}</td>
-                        <td className="operations-admin-request-service-cell">
-                          <div className="operations-admin-name">{row.serviceName}</div>
-                          <div className="operations-admin-request-service-meta">
-                            <span className={`operations-admin-request-type operations-admin-request-type--${isHire ? 'hire' : 'booking'}`}>
-                              {getRequestActionLabel(row, t)}
-                            </span>
-                            <span className="operations-admin-price">{formatRequestAdminPrice(row, formatPrice)}</span>
-                          </div>
-                        </td>
-                        <td className="operations-admin-request-contact-cell">
-                          <div className="operations-admin-name">{row.fullName}</div>
-                          <div className="operations-admin-request-contact-meta">{row.email}</div>
-                          <div className="operations-admin-request-contact-meta">{formatRequestPhone(row.phone)}</div>
-                          {row.companyName && (
-                            <div className="operations-admin-request-contact-meta">{row.companyName}</div>
-                          )}
-                        </td>
-                        <td className="operations-admin-request-message">
-                          {row.message ? truncate(row.message, 80) : '—'}
-                        </td>
-                        <td className="operations-admin-request-status-cell">
-                          <div className="operations-admin-request-status-row">
-                            <span className={`operations-admin-request-status ${REQUEST_STATUS_STYLES[row.status] || ''}`}>
-                              {getRequestStatusLabel(row.status, t)}
-                            </span>
-                            <span className="operations-admin-request-status-divider" aria-hidden />
-                            {row.status === 'PENDING' && (
-                              <button
-                                type="button"
-                                className="operations-admin-request-action-btn operations-admin-request-action-btn--primary"
-                                onClick={() => openContactModal(row)}
-                              >
-                                {t('adminOperationsMarkContacted', { defaultValue: 'Contact' })}
-                              </button>
-                            )}
-                            {row.status === 'CONTACTED' && (
-                              <button
-                                type="button"
-                                className="operations-admin-request-action-btn"
-                                onClick={() => handleRequestStatus(row, 'PENDING')}
-                                title={t('adminOperationsRevertToPending', { defaultValue: 'Revert to Pending' })}
-                              >
-                                {t('adminOperationsRevertShort', { defaultValue: 'Revert' })}
-                              </button>
-                            )}
-                            {row.status !== 'CLOSED' && (
-                              <button
-                                type="button"
-                                className="operations-admin-request-action-btn"
-                                onClick={() => handleRequestStatus(row, 'CLOSED')}
-                              >
-                                {t('adminOperationsMarkClosed', { defaultValue: 'Close' })}
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              className="operations-admin-request-action-btn operations-admin-request-action-btn--icon operations-admin-request-action-btn--danger"
-                              onClick={() => setDeleteRequest(row)}
-                              aria-label={t('adminOperationsDeleteRequestAria', {
-                                name: row.fullName,
-                                defaultValue: 'Delete request from {{name}}',
-                              })}
-                              title={t('delete', { defaultValue: 'Delete' })}
-                            >
-                              <Trash2 size={14} aria-hidden />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                <div className="operations-admin-select-wrap">
+                  <select
+                    className="operations-admin-select"
+                    value={requestStatusFilter}
+                    onChange={(e) => setRequestStatusFilter(e.target.value)}
+                  >
+                    <option value="all">{t('adminOperationsFilterAllRequestStatus', { defaultValue: 'All Status' })}</option>
+                    <option value="PENDING">{t('adminOperationsRequestStatusPending', { defaultValue: 'Pending' })}</option>
+                    <option value="CONTACTED">{t('adminOperationsRequestStatusContacted', { defaultValue: 'Contacted' })}</option>
+                    <option value="CLOSED">{t('adminOperationsRequestStatusClosed', { defaultValue: 'Closed' })}</option>
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="operations-admin-select-wrap">
+                  <select
+                    className="operations-admin-select"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    aria-label={t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}
+                  >
+                    <option value="all">{t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}</option>
+                    <option value="active">{t('adminOperationsStatusActive', { defaultValue: 'Active' })}</option>
+                    <option value="paused">{t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}</option>
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+                {!isCompliance && (
+                  <div className="operations-admin-select-wrap">
+                    <select
+                      className="operations-admin-select"
+                      value={categoryFilter}
+                      onChange={(e) => setCategoryFilter(e.target.value)}
+                      aria-label={t('adminOperationsFilterAllCategories', { defaultValue: 'All Categories' })}
+                    >
+                      <option value="all">{t('adminOperationsFilterAllCategories', { defaultValue: 'All Categories' })}</option>
+                      {VA_CATEGORY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                  </div>
                 )}
-              </tbody>
-            </table>
-          ) : (
-            <table className="operations-admin-table">
-              <thead>
-                <tr>
-                  <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
-                  <th>{t(meta.nameColKey, { defaultValue: meta.defaultNameCol })}</th>
-                  {!isCompliance && (
-                    <th>{t('adminOperationsColCategory', { defaultValue: 'Category' })}</th>
-                  )}
-                  <th>{t('adminOperationsColDescription', { defaultValue: 'Description' })}</th>
-                  <th>{t('adminOperationsColPrice', { defaultValue: 'Price' })}</th>
-                  <th>{t('adminOperationsColStatus', { defaultValue: 'Status' })}</th>
-                  <th aria-label={t('adminOperationsColActions', { defaultValue: 'Actions' })} />
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCatalog.length === 0 ? (
+              </>
+            )}
+          </div>
+
+          <div className="operations-admin-table-wrap">
+            {isRequestsPartition ? (
+              <table className="operations-admin-table operations-admin-table--requests">
+                <thead>
                   <tr>
-                    <td colSpan={isCompliance ? 6 : 7} className="operations-admin-empty">
-                      {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
-                    </td>
+                    <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
+                    <th>{t('adminOperationsColDate', { defaultValue: 'Date' })}</th>
+                    <th>{t('adminOperationsColServiceName', { defaultValue: 'Service' })}</th>
+                    <th>{t('adminOperationsColContact', { defaultValue: 'Contact' })}</th>
+                    <th>{t('adminOperationsColDescription', { defaultValue: 'Message' })}</th>
+                    <th className="operations-admin-request-status-col">
+                      {t('adminOperationsColStatus', { defaultValue: 'Status' })}
+                    </th>
                   </tr>
-                ) : (
-                  filteredCatalog.map((row, index) => {
-                    const serial = String(index + 1).padStart(2, '0');
-                    const categoryLabel = OPERATIONS_CATEGORY_LABELS[row.category] || row.category;
-                    const isActive = row.isAvailable !== false;
-                    return (
-                      <tr key={row.id}>
-                        <td className="operations-admin-serial">{serial}</td>
-                        <td className="operations-admin-name">{row.name}</td>
-                        {!isCompliance && (
-                          <td>
-                            <span className={`operations-admin-category operations-admin-category--${row.category}`}>
-                              {categoryLabel}
-                            </span>
+                </thead>
+                <tbody>
+                  {requestsLoading ? (
+                    <tr>
+                      <td colSpan={6} className="operations-admin-empty">
+                        {t('loading', { defaultValue: 'Loading…' })}
+                      </td>
+                    </tr>
+                  ) : filteredRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="operations-admin-empty">
+                        {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredRequests.map((row, index) => {
+                      const serial = String(index + 1).padStart(2, '0');
+                      const actionLabel = getRequestActionLabel(row.requestType);
+                      const statusLabel = getRequestStatusLabel(row.status);
+                      const statusClass = REQUEST_STATUS_STYLES[row.status] || REQUEST_STATUS_STYLES.PENDING;
+                      return (
+                        <tr key={row.id}>
+                          <td className="operations-admin-serial">{serial}</td>
+                          <td className="operations-admin-date">{formatRequestDate(row.createdAt)}</td>
+                          <td className="operations-admin-service-name">
+                            <span className="operations-admin-request-action">{actionLabel}</span>
+                            <span className="operations-admin-request-service">{row.serviceName}</span>
                           </td>
-                        )}
-                        <td className="operations-admin-description">{truncate(row.description)}</td>
-                        <td className="operations-admin-price">{formatAdminPrice(row, isCompliance)}</td>
-                        <td>
-                          {isActive ? (
-                            <span className="operations-admin-status operations-admin-status--active">
-                              <span className="operations-admin-status-dot" aria-hidden />
-                              {t('adminOperationsStatusActive', { defaultValue: 'Active' })}
-                            </span>
-                          ) : (
-                            <span className="operations-admin-status operations-admin-status--paused">
-                              {t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="operations-admin-actions">
-                            <button
-                              type="button"
-                              className="operations-admin-action-btn"
-                              aria-label={t('adminOperationsEdit', { defaultValue: 'Edit role' })}
-                              onClick={() => openEditModal(row)}
-                            >
-                              <Pencil size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              className="operations-admin-action-btn operations-admin-action-btn--danger"
-                              aria-label={t('adminOperationsDelete', { defaultValue: 'Delete role' })}
-                              onClick={() => handleDelete(row)}
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        <div className="operations-admin-footer">
-          <p>
-            {isRequestsPartition
-              ? t('adminOperationsRequestsFooter', {
-                  count: filteredRequests.length,
-                  defaultValue: 'Showing {{count}} requests',
-                })
-              : filteredCatalog.length === 0
-                ? t('adminOperationsNoRoles', { defaultValue: 'No roles to display' })
-                : filteredCatalog.length === sectionServices.length
-                  ? t('adminOperationsSectionTotal', {
-                      count: filteredCatalog.length,
-                      section: t(meta.titleKey, { defaultValue: meta.defaultTitle }),
-                      defaultValue: 'Showing all {{count}} {{section}} entries',
+                          <td className="operations-admin-contact">
+                            <strong>{row.fullName}</strong>
+                            {row.companyName ? ` (${row.companyName})` : ''}
+                            <br />
+                            <a href={`mailto:${row.email}`}>{row.email}</a> • {formatRequestPhone(row.phone)}
+                          </td>
+                          <td className="operations-admin-message">{truncate(row.message, 60)}</td>
+                          <td className="operations-admin-request-status-col">
+                            <div className="operations-admin-request-status-wrap">
+                              <span className={`operations-admin-request-status ${statusClass}`}>{statusLabel}</span>
+                              <div className="operations-admin-actions">
+                                {row.status === 'PENDING' && (
+                                  <button
+                                    type="button"
+                                    className="operations-admin-action-btn"
+                                    title={t('adminOperationsMarkContacted', { defaultValue: 'Mark as Contacted' })}
+                                    onClick={() => openContactModal(row)}
+                                  >
+                                    <CheckCircle2 size={15} />
+                                  </button>
+                                )}
+                                {row.status === 'CONTACTED' && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="operations-admin-action-btn"
+                                      title={t('adminOperationsCloseRequest', { defaultValue: 'Close Request' })}
+                                      onClick={() => handleRequestStatus(row, 'CLOSED')}
+                                    >
+                                      <CheckCircle2 size={15} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="operations-admin-action-btn"
+                                      title={t('adminOperationsRevertPending', { defaultValue: 'Revert to Pending' })}
+                                      onClick={() => handleRequestStatus(row, 'PENDING')}
+                                    >
+                                      <AlertCircle size={15} />
+                                    </button>
+                                  </>
+                                )}
+                                {row.status === 'CLOSED' && (
+                                  <button
+                                    type="button"
+                                    className="operations-admin-action-btn"
+                                    title={t('adminOperationsRevertContacted', { defaultValue: 'Revert to Contacted' })}
+                                    onClick={() => handleRequestStatus(row, 'CONTACTED')}
+                                  >
+                                    <AlertCircle size={15} />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="operations-admin-action-btn operations-admin-action-btn--danger"
+                                  title={t('adminOperationsDeleteRequest', { defaultValue: 'Delete Request' })}
+                                  onClick={() => setDeleteRequest(row)}
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
                     })
-                  : t('adminOperationsSectionFiltered', {
-                      count: filteredCatalog.length,
-                      total: sectionServices.length,
-                      section: t(meta.titleKey, { defaultValue: meta.defaultTitle }),
-                      defaultValue: 'Showing {{count}} of {{total}} {{section}} entries',
-                    })}
-          </p>
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <table className="operations-admin-table">
+                <thead>
+                  <tr>
+                    <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
+                    <th>{t(meta.nameColKey, { defaultValue: meta.defaultNameCol })}</th>
+                    {!isCompliance && <th>{t('adminOperationsColCategory', { defaultValue: 'Category' })}</th>}
+                    <th>{t('adminOperationsColDescription', { defaultValue: 'Description' })}</th>
+                    <th>{t('adminOperationsColPrice', { defaultValue: 'Price' })}</th>
+                    <th>{t('adminOperationsColStatus', { defaultValue: 'Status' })}</th>
+                    <th aria-label={t('adminOperationsColActions', { defaultValue: 'Actions' })} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCatalog.length === 0 ? (
+                    <tr>
+                      <td colSpan={isCompliance ? 6 : 7} className="operations-admin-empty">
+                        {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCatalog.map((row, index) => {
+                      const serial = String(index + 1).padStart(2, '0');
+                      const categoryLabel = OPERATIONS_CATEGORY_LABELS[row.category] || row.category;
+                      const isActive = row.isAvailable !== false;
+                      return (
+                        <tr key={row.id}>
+                          <td className="operations-admin-serial">{serial}</td>
+                          <td className="operations-admin-name">{row.name}</td>
+                          {!isCompliance && (
+                            <td>
+                              <span className={`operations-admin-category operations-admin-category--${row.category}`}>
+                                {categoryLabel}
+                              </span>
+                            </td>
+                          )}
+                          <td className="operations-admin-description">{truncate(row.description)}</td>
+                          <td className="operations-admin-price">{formatAdminPrice(row, isCompliance)}</td>
+                          <td>
+                            {isActive ? (
+                              <span className="operations-admin-status operations-admin-status--active">
+                                <span className="operations-admin-status-dot" aria-hidden />
+                                {t('adminOperationsStatusActive', { defaultValue: 'Active' })}
+                              </span>
+                            ) : (
+                              <span className="operations-admin-status operations-admin-status--paused">
+                                {t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <div className="operations-admin-actions">
+                              <button
+                                type="button"
+                                className="operations-admin-action-btn"
+                                aria-label={t('adminOperationsEdit', { defaultValue: 'Edit role' })}
+                                onClick={() => openEditModal(row)}
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="operations-admin-action-btn operations-admin-action-btn--danger"
+                                aria-label={t('adminOperationsDelete', { defaultValue: 'Delete role' })}
+                                onClick={() => handleDelete(row)}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="operations-admin-footer">
+            <p>
+              {isRequestsPartition
+                ? t('adminOperationsRequestsFooter', {
+                    count: filteredRequests.length,
+                    defaultValue: 'Showing {{count}} requests',
+                  })
+                : filteredCatalog.length === 0
+                  ? t('adminOperationsNoRoles', { defaultValue: 'No roles to display' })
+                  : filteredCatalog.length === sectionServices.length
+                    ? t('adminOperationsSectionTotal', {
+                        count: filteredCatalog.length,
+                        section: t(meta.titleKey, { defaultValue: meta.defaultTitle }),
+                        defaultValue: 'Showing all {{count}} {{section}} entries',
+                      })
+                    : t('adminOperationsSectionFiltered', {
+                        count: filteredCatalog.length,
+                        total: sectionServices.length,
+                        section: t(meta.titleKey, { defaultValue: meta.defaultTitle }),
+                        defaultValue: 'Showing {{count}} of {{total}} {{section}} entries',
+                      })}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {modal && (
         <OperationRoleModal

@@ -42,11 +42,25 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [deleteError, setDeleteError] = useState('');
 
-  useEffect(() => {
-    if (data) {
-      setApplications(data);
+  const fetchInternal = useCallback(async () => {
+    if (data !== undefined && data !== null) return;
+    try {
+      const res = await adminAPI.getVirtualAssistants();
+      const unwrapped = unwrapApiData(res);
+      const list = Array.isArray(unwrapped) ? unwrapped : (unwrapped?.items || []);
+      setApplications(list);
+    } catch (e) {
+      console.error('Failed to load VA applications', e);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (data !== undefined && data !== null) {
+      setApplications(data);
+    } else {
+      fetchInternal();
+    }
+  }, [data, fetchInternal]);
 
   const counts = useMemo(() => {
     const c = { all: applications.length };

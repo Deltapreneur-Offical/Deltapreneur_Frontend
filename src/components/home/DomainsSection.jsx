@@ -14,6 +14,8 @@ import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import '../../styles/domain-listing-cards.css';
 
+// rebuild marker - force frontend redeploy
+
 export default function DomainsSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();

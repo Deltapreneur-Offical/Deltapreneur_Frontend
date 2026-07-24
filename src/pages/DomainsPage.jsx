@@ -1491,18 +1491,14 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                     {t('listingCardPremiumAcquisitionInProgress', 'Premium Acquisition in Progress')}
                   </span>
                 ) : d.domainStatus === 'AVAILABLE' ? (
-                  isHighValue ? (
-                    <AddToCartButton
-                      productType="DOMAIN_LISTING"
-                      productId={d.id}
-                      size="md"
-                      tone="dark"
-                      className="btn-glow btn-glow-sm"
-                      label={t('listingCardAddToCart', 'Add to Cart')}
-                    />
-                  ) : (
-                    <button className="btn-glow btn-glow-sm" onClick={onBuy}>{t('domainsPageBuyNow')} →</button>
-                  )
+                  <AddToCartButton
+                    productType="DOMAIN_LISTING"
+                    productId={d.id}
+                    size="md"
+                    tone="dark"
+                    className="btn-glow btn-glow-sm"
+                    label={t('listingCardAddToCart', 'Add to Cart')}
+                  />
                 ) : null
               )}
               <LikeButton liked={likeState?.liked} count={likeState?.count}

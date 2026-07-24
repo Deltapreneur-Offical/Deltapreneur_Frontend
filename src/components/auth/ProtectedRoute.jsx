@@ -88,8 +88,27 @@ export function AdminGuard({ children }) {
     return <Navigate to="/login" replace />;
   }
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
-  const allowedAdminRoles = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN', 'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR'];
+  // Platform admin only — auction moderators use AdminOrAuctionModeratorGuard.
+  const allowedAdminRoles = ['ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN'];
   if (!loading && !allowedAdminRoles.includes(roleUpper)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <GuardedContent loading={loading}>{children}</GuardedContent>;
+}
+
+/** Full admin SPA entry: platform admins + auction moderators (tabs filtered in UI). */
+export function AdminOrAuctionModeratorGuard({ children }) {
+  const { user, loading, hasAccessToken } = useAuth();
+
+  if (!loading && (!user || !hasAccessToken)) {
+    return <Navigate to="/login" replace />;
+  }
+  const roleUpper = (user?.role ?? '').toString().toUpperCase();
+  const allowed = [
+    'ADMIN', 'ROLE_ADMIN', 'SUPER_ADMIN', 'ROLE_SUPER_ADMIN',
+    'AUCTION_MODERATOR', 'ROLE_AUCTION_MODERATOR',
+  ];
+  if (!loading && !allowed.includes(roleUpper)) {
     return <Navigate to="/dashboard" replace />;
   }
   return <GuardedContent loading={loading}>{children}</GuardedContent>;

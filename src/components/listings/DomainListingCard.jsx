@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Gavel, ShoppingCart, Trash2, Share2, MoreVertical } from 'lucide-react';
+import { ArrowRight, Gavel, Trash2, Share2, MoreVertical } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
-import { isPremiumDomain } from '../../utils/domainPricing';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
@@ -16,10 +15,6 @@ import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
   'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
-const BUY_NOW_BTN =
-  'domain-listing-card__cta-btn min-w-0 flex-[1_1_82%] rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
-const CART_ICON_BTN =
-  'domain-listing-card__cart-icon-btn !h-10 !w-10 !min-h-[2.5rem] !min-w-[2.5rem] shrink-0';
 
 function resolveStatusDotClass(status) {
   const key = (status || 'AVAILABLE').toUpperCase();
@@ -83,7 +78,6 @@ export default function DomainListingCard({
   browseMode = false,
   onView,
   onEdit,
-  onBuy,
   onEnquire,
   onViewAuction,
   onDelete,
@@ -103,7 +97,6 @@ export default function DomainListingCard({
   const [ownerMenuCoords, setOwnerMenuCoords] = useState({ top: 0, left: 0 });
 
   const isAuction = domain.saleType === 'AUCTION';
-  const isHighValue = isPremiumDomain(domain);
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
@@ -363,43 +356,16 @@ export default function DomainListingCard({
           </button>
         );
       }
-      if (isHighValue) {
-        return (
-          <AddToCartButton
-            productType="DOMAIN_LISTING"
-            productId={domain.id}
-            size="md"
-            tone="dark"
-            className={`${PRIMARY_BTN} !w-full !rounded-full !border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700 hover:!border-blue-700`}
-            label={t('listingCardAddToCart', 'Add to Cart')}
-          />
-        );
-      }
+      // Always use cart checkout — no direct Buy Now (avoids Razorpay amount limits on modal pay).
       return (
-        <div
-          className="flex w-full min-w-0 items-center gap-2"
-          onClick={stop}
-          onMouseDown={stop}
-          role="presentation"
-        >
-          <button
-            type="button"
-            className={`${BUY_NOW_BTN} bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center justify-center gap-1.5`}
-            onClick={(e) => {
-              stop(e);
-              onBuy?.();
-            }}
-          >
-            <ShoppingCart size={13} className="shrink-0" />
-            <span className="truncate">{t('listingCardBuyNowArrow', 'Buy Now →')}</span>
-          </button>
-          <AddToCartButton
-            productType="DOMAIN_LISTING"
-            productId={domain.id}
-            variant="corner"
-            className={CART_ICON_BTN}
-          />
-        </div>
+        <AddToCartButton
+          productType="DOMAIN_LISTING"
+          productId={domain.id}
+          size="md"
+          tone="dark"
+          className={`${PRIMARY_BTN} !w-full !rounded-full !border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700 hover:!border-blue-700`}
+          label={t('listingCardAddToCart', 'Add to Cart')}
+        />
       );
     }
 

@@ -55,13 +55,37 @@ export function getPostLoginDestination(user) {
 }
 
 /**
+ * Allow only same-app relative paths (blocks //evil.com, schemes, backslash tricks).
+ * Returns null when the value is missing or unsafe.
+ */
+export function sanitizeSafeAppPath(rawPath) {
+  if (typeof rawPath !== 'string') return null;
+  let path = rawPath.trim();
+  if (!path) return null;
+  try {
+    path = decodeURIComponent(path);
+  } catch {
+    return null;
+  }
+  path = path.trim();
+  if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return null;
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(path)) return null;
+  // Reject encoded separators that decode to protocol-relative / absolute URLs.
+  if (path.toLowerCase().includes('%2f%2f') || path.includes('%5c') || path.includes('%5C')) {
+    return null;
+  }
+  return path;
+}
+
+/**
  * Prefer a saved return path; otherwise use role-based default (homepage for most users).
  * Treats "/login" as unset; "/" falls through to the role-based default.
+ * Only same-origin relative paths are accepted (open-redirect harden).
  */
 export function resolvePostLoginPath(storedPath, user) {
-  const normalized = typeof storedPath === 'string' ? storedPath.trim() : '';
-  if (normalized && normalized !== '/' && normalized !== '/login') {
-    return normalized;
+  const safe = sanitizeSafeAppPath(storedPath);
+  if (safe && safe !== '/' && safe !== '/login') {
+    return safe;
   }
   return getPostLoginDestination(user);
 }
@@ -71,11 +95,23 @@ export function normalizeReturnLocation(from) {
   if (!from) return null;
   if (typeof from === 'string') {
     const trimmed = from.trim();
-    return trimmed ? { pathname: trimmed } : null;
+    if (!trimmed) return null;
+    // Allow "pathname?search#hash" strings from ?redirect=
+    const match = trimmed.match(/^([^?#]*)(\?[^#]*)?(#.*)?$/);
+    const rawPath = match?.[1] || trimmed;
+    const safePath = sanitizeSafeAppPath(rawPath);
+    if (!safePath) return null;
+    return {
+      pathname: safePath,
+      search: match?.[2] || '',
+      hash: match?.[3] || '',
+    };
   }
   if (typeof from === 'object' && from.pathname) {
+    const safePath = sanitizeSafeAppPath(from.pathname);
+    if (!safePath) return null;
     return {
-      pathname: from.pathname,
+      pathname: safePath,
       search: from.search || '',
       hash: from.hash || '',
       state: from.state,

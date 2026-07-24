@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { adminAPI, meetingAPI, auctionAPI, communityAuctionAPI, operationsAdminAPI, domainEnquiryAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import { useAuth } from '../context/AuthContext';
 import useCurrency from '../context/CurrencyContext';
 import { formatInr } from '../utils/money';
 import VentureIcon from '../assets/Coventure_logo.png';
@@ -437,6 +438,9 @@ function useAdminPendingCounts({ enabled = true, intervalMs = 90000 } = {}) {
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const location = useLocation();
+  const { user } = useAuth();
+  const roleUpper = (user?.role ?? '').toString().toUpperCase().replace(/^ROLE_/, '');
+  const isAuctionModeratorOnly = roleUpper === 'AUCTION_MODERATOR';
   const { toasts: toastList, dismiss: dismissToast, api: toast } = useAdminToastInternal();
   const [tab, setTab]                       = useState('overview');
   const [cocreationsSubTab, setCocreationsSubTab] = useState('listings');
@@ -639,7 +643,17 @@ export default function AdminDashboardPage() {
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
     { id: 'openprovider-pricing', label: 'OpenProvider Pricing',           icon: DomainsIcon },
     { id: 'domain-transfers',   label: t('adminTabDomainTransfers', { defaultValue: 'Domain transfers' }), icon: DomainsIcon },
-  ];
+  ].filter((tabItem) => {
+    if (!isAuctionModeratorOnly) return true;
+    return ['auctions', 'software-auctions', 'community-auctions'].includes(tabItem.id);
+  });
+
+  useEffect(() => {
+    if (!isAuctionModeratorOnly) return;
+    if (!['auctions', 'software-auctions', 'community-auctions'].includes(tab)) {
+      setTab('software-auctions');
+    }
+  }, [isAuctionModeratorOnly, tab]);
 
   return (
     <AppLayout>

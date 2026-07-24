@@ -18,6 +18,23 @@
   animation: domain-essential-cta-arrow-nudge 0.9s ease-in-out infinite;
 }
 
+/* Price block — smaller type so it never sits under the CTA */
+.domain-essential-card__price-amount {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.domain-essential-card__price-unit {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.domain-essential-card__footer {
+  min-width: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .domain-essential-card:hover .domain-essential-card__cta-arrow {
     animation: none;

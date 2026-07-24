@@ -47,7 +47,11 @@ export async function middleware(request) {
     
     // UUID pattern matching
     if (listingType && listingId && /^[0-9a-fA-F-]{36}$/.test(listingId)) {
-      const backendUrl = process.env.VITE_API_URL || 'https://cobrother-backend.onrender.com';
+      const backendUrl = process.env.VITE_API_URL;
+      if (!backendUrl) {
+        // Fail closed: never fall back to a hardcoded staging/host URL.
+        return;
+      }
       try {
         const res = await fetch(`${backendUrl}/api/v1/public/share-preview/${listingType}/${listingId}`);
         if (res.ok) {

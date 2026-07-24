@@ -13,6 +13,22 @@ import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import { domainStorefrontAPI } from '../../api/services';
 import '../../styles/domain-essentials.css';
 
+/** Strip period suffix from API labels like "From ₹708 / yr" so the unit shows once. */
+function splitCardPrice(price, unit) {
+  const raw = String(price ?? '').trim();
+  const cleaned = raw.replace(/\s*\/\s*(yr|year|mo|month|setup)\s*$/i, '').trim() || raw;
+
+  if (/^free(\s+setup)?$/i.test(cleaned)) {
+    return { amount: 'Free', unitLabel: 'setup' };
+  }
+
+  const unitWords = { yr: 'year', month: 'month', setup: 'setup' };
+  return {
+    amount: cleaned,
+    unitLabel: `per ${unitWords[unit] || unit}`,
+  };
+}
+
 /** Existing Domain Essentials card UI — unchanged; only the section layout wraps it. */
 function DomainEssentialCard({
   card,
@@ -22,6 +38,7 @@ function DomainEssentialCard({
   onCta,
 }) {
   const Icon = card.icon;
+  const { amount, unitLabel } = splitCardPrice(card.price, card.unit);
 
   return (
     <div
@@ -106,14 +123,18 @@ function DomainEssentialCard({
 
         <div className="border-t border-gray-100" />
 
-        <div className="flex items-center justify-between gap-3">
-          <div>
+        <div className="domain-essential-card__footer flex items-center justify-between gap-2">
+          <div className="domain-essential-card__price min-w-0 flex-1 overflow-hidden">
             {pricesLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin text-gray-300" />
+              <Loader2 className="w-4 h-4 animate-spin text-gray-300" />
             ) : (
               <>
-                <p className="text-lg font-bold text-gray-900 leading-none">{card.price}</p>
-                <p className="text-[10px] font-semibold text-gray-400 mt-0.5">per {card.unit}</p>
+                <p className="domain-essential-card__price-amount text-[13px] font-bold text-gray-900 leading-tight">
+                  {amount}
+                </p>
+                <p className="domain-essential-card__price-unit text-[9px] font-semibold text-gray-400 mt-0.5 tracking-wide uppercase">
+                  {unitLabel}
+                </p>
               </>
             )}
           </div>
@@ -121,12 +142,12 @@ function DomainEssentialCard({
           <button
             type="button"
             onClick={() => onCta(card.id)}
-            className="domain-essential-card__cta inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl text-white text-xs font-semibold bg-purple-600 hover:bg-purple-700 transition-all select-none active:scale-95 shadow-sm"
+            className="domain-essential-card__cta inline-flex items-center justify-center gap-1 h-8 px-3 rounded-xl text-white text-[11px] font-semibold bg-purple-600 hover:bg-purple-700 transition-all select-none active:scale-95 shadow-sm shrink-0"
           >
             {card.cta}
             <ArrowRight
               className="domain-essential-card__cta-arrow"
-              size={13}
+              size={12}
               strokeWidth={2.5}
               aria-hidden="true"
             />

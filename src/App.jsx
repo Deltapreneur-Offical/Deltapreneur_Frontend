@@ -13,7 +13,7 @@ import { useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
-import { AdminGuard, CoBrotherGuard, VirtualAssistantGuard, VirtualAssistantApplicantGuard, VaApplicationGuard } from './components/auth/ProtectedRoute';
+import { AdminGuard, AdminOrAuctionModeratorGuard, CoBrotherGuard, VirtualAssistantGuard, VirtualAssistantApplicantGuard, VaApplicationGuard } from './components/auth/ProtectedRoute';
 
 import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
 import Home from './pages/Home';
@@ -621,9 +621,9 @@ export default function App() {
                 <Route
                   path="/admin"
                   element={
-                    <AdminGuard>
+                    <AdminOrAuctionModeratorGuard>
                       <AdminDashboardPage />
-                    </AdminGuard>
+                    </AdminOrAuctionModeratorGuard>
                   }
                 />
                 <Route

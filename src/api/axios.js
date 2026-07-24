@@ -9,6 +9,9 @@ const api = axios.create({
   withCredentials: true,
 });
 
+/** Single in-flight refresh so parallel 401s share one token rotation. */
+let refreshPromise = null;
+
 function refreshBaseURL() {
   if (api.defaults.baseURL && String(api.defaults.baseURL).length > 0) {
     return api.defaults.baseURL;
@@ -88,9 +91,40 @@ function shouldAttemptRefresh(error, original) {
 
   if (detail.includes('invalid email or password')) return false;
   if (detail.includes('invalid email or code')) return false;
+  if (detail.includes('csrf')) return false;
 
   if (status === 401) return true;
   return detail.includes('not authenticated') || detail.includes('missing');
+}
+
+async function refreshAccessToken() {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const refreshToken = getStoredRefreshToken();
+      const { data } = await axios.post(
+        '/api/v1/auth/refresh',
+        refreshToken ? { refreshToken } : {},
+        {
+          baseURL: refreshBaseURL(),
+          headers: { ...csrfHeader() },
+          withCredentials: true,
+        },
+      );
+      const payload = extractAuthPayload(data);
+      const newToken = payload.accessToken || payload.token;
+      if (!newToken) {
+        throw new Error('Refresh response did not include an access token');
+      }
+      localStorage.setItem('accessToken', newToken);
+      localStorage.setItem('token', newToken);
+      // Prefer HttpOnly cookie refresh; do not persist refresh tokens in localStorage.
+      localStorage.removeItem('refreshToken');
+      return newToken;
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 }
 
 // Attach access token to every request
@@ -114,27 +148,9 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
     if (shouldAttemptRefresh(error, original)) {
-      const refreshToken = getStoredRefreshToken();
       original._retry = true;
       try {
-        const { data } = await axios.post(
-          '/api/v1/auth/refresh',
-          refreshToken ? { refreshToken } : {},
-          {
-            baseURL: refreshBaseURL(),
-            headers: { ...csrfHeader() },
-            withCredentials: true,
-          },
-        );
-        const payload = extractAuthPayload(data);
-        const newToken = payload.accessToken || payload.token;
-        const newRefreshToken = payload.refreshToken;
-        if (!newToken) {
-          throw new Error('Refresh response did not include an access token');
-        }
-        localStorage.setItem('accessToken', newToken);
-        localStorage.setItem('token', newToken);
-        if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
+        const newToken = await refreshAccessToken();
         original.headers = original.headers || {};
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);

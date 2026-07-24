@@ -28,9 +28,11 @@ export default function LoginPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
+  const redirectQuery = searchParams.get('redirect');
   const from =
     location.state?.from ||
     localStorage.getItem('redirectAfterLogin') ||
+    redirectQuery ||
     null;
 
   const showLoginForm = location.state?.showLoginForm === true;

@@ -3,17 +3,17 @@ import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { resolveOAuthCallbackNavigation } from '../utils/authSession';
+import { hasCookieAuthSession, resolveOAuthCallbackNavigation } from '../utils/authSession';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
 import '../styles/auth.css';
 
 /**
  * OAuth success redirects here:
- *   Legacy: /auth/callback?token=JWT&refreshToken=...&profileComplete=...
- *   Cookie session: /auth/callback?success=1&newUser=... (HttpOnly cookies on API origin)
+ *   Preferred: /auth/callback?success=1&newUser=... (HttpOnly cookies on API origin)
+ *   Legacy (dev only): /auth/callback?token=JWT&refreshToken=...
  *
  * Strategy:
- *  1. useLayoutEffect: persist URL tokens when present
+ *  1. useLayoutEffect: strip sensitive query tokens from the URL immediately
  *  2. refreshUser() → GET /api/v1/auth/me (Bearer or session cookies)
  *  3. flushSync(login(..., user)) then navigate on next tick so ProtectedRoute sees user
  */
@@ -23,6 +23,7 @@ export default function OAuthCallbackPage() {
   const { login, refreshUser } = useAuth();
   const navigate = useNavigate();
   const called = useRef(false);
+  const allowLegacyQueryTokens = !import.meta.env.PROD;
 
   useLayoutEffect(() => {
     const qs = new URLSearchParams(window.location.search);
@@ -46,9 +47,10 @@ export default function OAuthCallbackPage() {
 
     const token = params.get('token');
     const refreshToken = params.get('refreshToken');
-    const cookieSession = params.get('success') === '1';
+    const cookieSession = params.get('success') === '1' || hasCookieAuthSession();
     const error = params.get('error');
     const provider = params.get('provider');
+    const legacyTokens = Boolean(token && refreshToken);
 
     if (error) {
       console.error('[OAuth] Backend returned error:', error);
@@ -56,7 +58,14 @@ export default function OAuthCallbackPage() {
       return;
     }
 
-    if (!cookieSession && (!token || !refreshToken)) {
+    // Production: cookie session only — never accept JWTs from the query string.
+    if (!allowLegacyQueryTokens && legacyTokens && params.get('success') !== '1') {
+      console.error('[OAuth] Rejected legacy query-string tokens in production');
+      navigate('/login?error=oauth_failed', { replace: true });
+      return;
+    }
+
+    if (!cookieSession && !(allowLegacyQueryTokens && legacyTokens)) {
       console.error('[OAuth] Missing tokens or error:', {
         error,
         cookieSession,
@@ -66,8 +75,8 @@ export default function OAuthCallbackPage() {
       return;
     }
 
-    if (token && refreshToken) {
-      login({ accessToken: token, refreshToken }, null);
+    if (allowLegacyQueryTokens && legacyTokens) {
+      login({ accessToken: token }, null);
     }
 
     const fetchUser = async () => {
@@ -82,8 +91,8 @@ export default function OAuthCallbackPage() {
         const destination = resolveOAuthCallbackNavigation(fetchedUser, redirectPath);
 
         flushSync(() => {
-          if (token && refreshToken) {
-            login({ accessToken: token, refreshToken }, fetchedUser);
+          if (allowLegacyQueryTokens && legacyTokens) {
+            login({ accessToken: token }, fetchedUser);
           } else {
             login({}, fetchedUser);
           }
@@ -106,7 +115,7 @@ export default function OAuthCallbackPage() {
     };
 
     fetchUser();
-  }, [login, navigate, params, refreshUser]);
+  }, [allowLegacyQueryTokens, login, navigate, params, refreshUser]);
 
   return (
     <div className="auth-page auth-page--loading">

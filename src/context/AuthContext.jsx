@@ -118,14 +118,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ── login: called from OAuthCallbackPage and password/OTP login ──────────
-  // Stores tokens FIRST, then optionally seeds user state
+  // Stores access token for Bearer calls. Refresh stays HttpOnly-cookie based
+  // (never persist refreshToken in localStorage — XSS can exfiltrate it).
   const login = useCallback((tokens, userData) => {
     if (tokens?.accessToken) {
       localStorage.setItem('accessToken', tokens.accessToken);
       localStorage.setItem('token', tokens.accessToken);
       setHasAccessToken(true);
     }
-    if (tokens?.refreshToken) localStorage.setItem('refreshToken', tokens.refreshToken);
+    localStorage.removeItem('refreshToken');
     // Only seed user if we have real data (not empty {})
     if (userData && Object.keys(userData).length > 0) {
       setUser(userData);

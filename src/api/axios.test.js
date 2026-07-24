@@ -91,7 +91,7 @@ describe('api axios client', () => {
       response: {
         status: 401,
         data: { detail: 'Not authenticated' },
-    },
+      },
     };
 
     await responseErrorHandler(error);
@@ -106,7 +106,8 @@ describe('api axios client', () => {
     );
     expect(localStorage.getItem('accessToken')).toBe('new-access');
     expect(localStorage.getItem('token')).toBe('new-access');
-    expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
+    // Refresh tokens are cookie-backed — not persisted in localStorage.
+    expect(localStorage.getItem('refreshToken')).toBeNull();
     expect(mocks.apiInstance).toHaveBeenCalledWith(
       expect.objectContaining({
         url: '/api/v1/protected',
@@ -128,11 +129,8 @@ describe('api axios client', () => {
       },
     };
 
-    const result = await responseErrorHandler(vaError);
-
+    await expect(responseErrorHandler(vaError)).rejects.toBe(vaError);
     expect(mocks.sanitizeAxiosErrorMock).not.toHaveBeenCalled();
-    expect(result).toBe(vaError);
-    expect(result.response.data.detail).toBe('You have already applied for this role.');
   });
 
   it('sanitizes non-VA errors normally', async () => {
@@ -144,13 +142,13 @@ describe('api axios client', () => {
         data: { detail: 'internal error' },
       },
     };
-    mocks.sanitizeAxiosErrorMock.mockReturnValue({
+    const sanitized = {
       ...otherError,
       response: { ...otherError.response, data: { detail: 'safe message' } },
-    });
+    };
+    mocks.sanitizeAxiosErrorMock.mockReturnValue(sanitized);
 
-    const result = await responseErrorHandler(otherError);
-
+    await expect(responseErrorHandler(otherError)).rejects.toEqual(sanitized);
     expect(mocks.sanitizeAxiosErrorMock).toHaveBeenCalled();
   });
 });

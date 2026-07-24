@@ -7,6 +7,8 @@ import {
   resolveAfterAuthNavigation,
   resolveOAuthCallbackNavigation,
   resolvePostLoginNavigation,
+  resolvePostLoginPath,
+  sanitizeSafeAppPath,
   saveReturnLocationBeforeOAuth,
   consumeReturnLocationBeforeOAuth,
 } from './authSession';
@@ -76,5 +78,13 @@ describe('authSession', () => {
   it('defaults post-login navigation to homepage', () => {
     const nav = resolveAfterAuthNavigation(null, { role: 'USER', profileComplete: true });
     expect(nav.pathname).toBe('/');
+  });
+
+  it('rejects open-redirect style post-login paths', () => {
+    expect(sanitizeSafeAppPath('//evil.com')).toBeNull();
+    expect(sanitizeSafeAppPath('https://evil.com')).toBeNull();
+    expect(sanitizeSafeAppPath('/\\evil.com')).toBeNull();
+    expect(sanitizeSafeAppPath('/cart')).toBe('/cart');
+    expect(resolvePostLoginPath('//evil.com', { role: 'USER' })).toBe('/');
   });
 });

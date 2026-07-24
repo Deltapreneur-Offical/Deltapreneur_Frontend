@@ -255,9 +255,19 @@ export default function CartPage() {
 
       if (backendCurrency !== requestedCurrency && requestedCurrency !== 'INR') {
         setError(
-          `Payment will be processed in ${backendCurrency} instead of ${requestedCurrency}. ` +
-          `This may happen when the selected currency is temporarily unavailable.`
+          `Payment currency is ${backendCurrency}, but you selected ${requestedCurrency}. ` +
+          `Checkout was cancelled — switch currency to ${backendCurrency} or INR and try again.`,
         );
+        if (orderId) {
+          try {
+            await cartAPI.cancelCheckout({ razorpayOrderId: orderId });
+          } catch {
+            /* best-effort */
+          }
+        }
+        pendingCheckoutOrderId.current = null;
+        setCheckoutLoading(false);
+        return;
       }
 
       openRazorpayCheckout({

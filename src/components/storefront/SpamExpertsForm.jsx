@@ -34,6 +34,7 @@ export default function SpamExpertsForm({ onClose, orders }) {
       setResult({
         success: true,
         message: `SpamExperts activated for ${selectedOrder?.domain || 'domain'}.`,
+        mxHint: 'Point this domain’s MX records to SpamExperts (or follow the panel setup) so inbound mail is filtered. Use the login link below for the control panel.',
         loginUrl: p.loginUrl || '',
       });
     } catch (err) {
@@ -85,6 +86,7 @@ export default function SpamExpertsForm({ onClose, orders }) {
       {result && (
         <div className={`text-xs font-semibold rounded-xl p-3 space-y-2 ${result.success ? 'text-emerald-800 bg-emerald-50' : 'text-rose-800 bg-rose-50'}`}>
           <p>{result.message}</p>
+          {result.mxHint ? <p className="font-medium text-emerald-700/90">{result.mxHint}</p> : null}
           {result.loginUrl ? (
             <a href={result.loginUrl} target="_blank" rel="noreferrer" className="underline text-rose-700">
               Open SpamExperts panel

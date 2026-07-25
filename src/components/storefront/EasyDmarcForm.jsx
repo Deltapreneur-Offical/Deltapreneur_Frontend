@@ -35,6 +35,7 @@ export default function EasyDmarcForm({ onClose, orders }) {
         message: dnsLine
           ? `EasyDMARC activated. DNS: ${dnsLine}`
           : 'EasyDMARC activated successfully.',
+        dnsHint: 'Add the DNS record above at your DNS host so anyone with the domain can publish DMARC. Changes can take up to 24–48 hours to propagate.',
         ssoUrl: p.ssoUrl || '',
       });
     } catch (err) {
@@ -73,6 +74,7 @@ export default function EasyDmarcForm({ onClose, orders }) {
       {result && (
         <div className={`text-xs font-semibold rounded-xl p-3 space-y-2 ${result.success ? 'text-emerald-800 bg-emerald-50' : 'text-rose-800 bg-rose-50'}`}>
           <p>{result.message}</p>
+          {result.dnsHint ? <p className="font-medium text-emerald-700/90">{result.dnsHint}</p> : null}
           {result.ssoUrl ? (
             <a href={result.ssoUrl} target="_blank" rel="noreferrer" className="underline text-teal-700">
               Open EasyDMARC panel

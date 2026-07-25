@@ -20,6 +20,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { PRODUCTION_APP_URL } from '../../config/urls';
 import { SUPPORT_PHONE_TEL } from '../../config/contactLinks';
+import { getVirtualAssistantDetailPath } from '../../utils/listingNavigation';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import VaProfilePhoto from './VaProfilePhoto';
 
@@ -158,11 +159,25 @@ export default function VirtualAssistantPreviewPanel({
   };
 
   const handleHire = () => {
-    const subject = encodeURIComponent(`Hire Virtual Assistant: ${name}`);
-    const body = encodeURIComponent(
-      `Hello CoBrother team,\n\nI would like to hire ${name} (${primaryRole}).\n\nProfile: ${PRODUCTION_APP_URL.replace(/\/$/, '')}/operations/${profile?.id || ''}\n\nThank you.`,
-    );
-    window.location.href = `mailto:support@cobrother.com?subject=${subject}&body=${body}`;
+    // Prefer Gmail compose in a new tab — mailto: fails in Chrome Network when no
+    // desktop mail client is configured (common on Windows / localhost).
+    const subject = `Hire Virtual Assistant: ${name}`;
+    const profilePath = getVirtualAssistantDetailPath(profile?.id, { intent: 'hire' });
+    const profileUrl = `${PRODUCTION_APP_URL.replace(/\/$/, '')}${profilePath}`;
+    const body =
+      `Hello CoBrother team,\n\nI would like to hire ${name} (${primaryRole}).\n\nProfile: ${profileUrl}\n\nThank you.`;
+    const gmailUrl =
+      `https://mail.google.com/mail/?view=cm&fs=1` +
+      `&to=${encodeURIComponent('support@cobrother.com')}` +
+      `&su=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(body)}`;
+    const opened = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      window.location.href =
+        `mailto:support@cobrother.com` +
+        `?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(body)}`;
+    }
   };
 
   const shareBase = PRODUCTION_APP_URL.replace(/\/$/, '');

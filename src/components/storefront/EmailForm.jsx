@@ -26,13 +26,21 @@ export default function EmailForm({ onClose, orders }) {
     setResult(null);
     setError('');
     try {
-      await payEmailAddon({
+      const detail = await payEmailAddon({
         orderId: domainId,
         mailbox: { email, size: mailboxSize, duration },
         user,
         description: `Professional email for ${selectedOrder?.domain || 'domain'}`,
       });
-      setResult({ success: true, message: 'Mailbox configured successfully after payment.' });
+      const provisioned = detail?.mailboxProvisioned;
+      const address = provisioned?.address || email;
+      const password = provisioned?.password;
+      setResult({
+        success: true,
+        message: password
+          ? `Mailbox ${address} created. Temporary password: ${password} — change it after first login.`
+          : `Mailbox ${address} configured successfully after payment.`,
+      });
     } catch (err) {
       setError(readApiError(err, 'Failed to configure mailbox. Please try again.'));
     } finally {

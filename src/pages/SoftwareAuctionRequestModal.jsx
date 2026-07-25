@@ -31,6 +31,7 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
 
   useEffect(() => {
     fetchListingFeesAndCharges()
@@ -50,12 +51,15 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
     setError('');
     setLoading(true);
     try {
-      const creationFeeOrderId = await payAuctionCreationFee({
-        auctionType: 'SOFTWARE',
-        user,
-        referenceId: String(software.id),
-        description: t('softwareAuctionCreationFee', { defaultValue: 'Software auction creation fee' }),
-      });
+      let creationFeeOrderId = null;
+      if (!isAdmin) {
+        creationFeeOrderId = await payAuctionCreationFee({
+          auctionType: 'SOFTWARE',
+          user,
+          referenceId: String(software.id),
+          description: t('softwareAuctionCreationFee', { defaultValue: 'Software auction creation fee' }),
+        });
+      }
       await softwareAuctionAPI.create(software.id, {
         minBidPrice: parseFloat(form.minBidPrice),
         duration: form.duration,
@@ -86,14 +90,14 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
           <p>{t('softwareAuctionRequestSubtitle')}</p>
         </div>
 
-        <div style={{ padding: '0.875rem', background: 'rgba(110,173,200,0.08)',
+          <div style={{ padding: '0.875rem', background: 'rgba(110,173,200,0.08)',
                       border: '1px solid rgba(110,173,200,0.25)', borderRadius: 8,
                       marginBottom: '1.25rem', fontSize: '0.83rem', color: '#6eadc8' }}>
-          {t('softwareAuctionRequestInfo')}
-          <div style={{ marginTop: '0.5rem' }}>
-            Auction creation fee: <strong>{formatPrice(creationFeeInr)}</strong> (charged before submission).
+            {t('softwareAuctionRequestInfo')}
+            <div style={{ marginTop: '0.5rem' }}>
+              Auction creation fee: <strong>{isAdmin ? 'Free (Admin)' : formatPrice(creationFeeInr)}</strong> (charged before submission).
+            </div>
           </div>
-        </div>
 
         <div className="flex flex-col gap-4 md:gap-5">
 
@@ -171,7 +175,7 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
 
         <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-6">
           <button className="btn-glow flex-1 order-2 sm:order-1" onClick={handleSubmit} disabled={loading}>
-            {loading ? <span className="btn-spinner" /> : `Pay ${formatPrice(creationFeeInr)} & Submit`}
+            {loading ? <span className="btn-spinner" /> : (isAdmin ? 'Create Auction' : `Pay ${formatPrice(creationFeeInr)} & Submit`)}
           </button>
           <button
             className="px-4 py-2.5 md:py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg transition-all hover:bg-gradient-to-r hover:from-red-500 hover:to-pink-500 hover:text-white hover:shadow-lg order-1 sm:order-2"

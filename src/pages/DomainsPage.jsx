@@ -492,6 +492,7 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
   const [auctionFeeInr, setAuctionFeeInr] = useState(118);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
 
   useEffect(() => {
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
@@ -510,16 +511,19 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
     setSubmitting(true);
     setError('');
     try {
-      const { payAuctionCreationFee } = await import('../utils/auctionFees');
-      const creationFeeOrderId = await payAuctionCreationFee({
-        auctionType: 'DOMAIN',
-        user,
-        description: t('domainsPageAuctionFeeDescription', { defaultValue: 'Domain auction listing fee' }),
-      });
-
       const minBidInr = navCurrency === 'INR'
         ? parseFloat(minBidPrice)
         : convertToInr(parseFloat(minBidPrice), navCurrency);
+
+      let creationFeeOrderId = null;
+      if (!isAdmin) {
+        const { payAuctionCreationFee } = await import('../utils/auctionFees');
+        creationFeeOrderId = await payAuctionCreationFee({
+          auctionType: 'DOMAIN',
+          user,
+          description: t('domainsPageAuctionFeeDescription', { defaultValue: 'Domain auction listing fee' }),
+        });
+      }
 
       await auctionAPI.create(domain.id, {
         domain_id: domain.id,
@@ -586,7 +590,7 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
           </div>
 
           <div className="rounded-lg bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-900 leading-relaxed">
-            {t('domainsPageAuctionFeeNotice', {
+            {isAdmin ? t('domainsPageAuctionFeeNoticeAdmin', { defaultValue: 'Auction creation fee: Free (Admin)' }) : t('domainsPageAuctionFeeNotice', {
               defaultValue: 'Auction listing fee: {{fee}} (charged when you submit).',
               fee: formatInr(auctionFeeInr),
             })}
@@ -611,7 +615,7 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
               disabled={submitting}
             >
               <Gavel size={14} />
-              {submitting ? 'Processing…' : 'Start Auction'}
+              {submitting ? 'Processing…' : (isAdmin ? 'Create Auction' : 'Start Auction')}
             </button>
           </div>
         </form>
@@ -628,6 +632,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const [commissionPercent, setCommissionPercent] = useState(15);
   const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
   const isEdit = Boolean(editDomain?.id);
+  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
   const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency, ratesMeta));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -760,14 +765,17 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               ? parseFloat(form.minBidPrice)
               : convertToInr(parseFloat(form.minBidPrice), form.currency);
 
-          const { payAuctionCreationFee } = await import('../utils/auctionFees');
-          const creationFeeOrderId = await payAuctionCreationFee({
-            auctionType: 'DOMAIN',
-            user,
-            description: t('domainsPageAuctionFeeDescription', {
-              defaultValue: 'Domain auction listing fee',
-            }),
-          });
+          let creationFeeOrderId = null;
+          if (!isAdmin) {
+            const { payAuctionCreationFee } = await import('../utils/auctionFees');
+            creationFeeOrderId = await payAuctionCreationFee({
+              auctionType: 'DOMAIN',
+              user,
+              description: t('domainsPageAuctionFeeDescription', {
+                defaultValue: 'Domain auction listing fee',
+              }),
+            });
+          }
 
           let createdId = null;
           try {
@@ -988,7 +996,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
             <div className="p-3.5 bg-amber-100 border border-amber-400 rounded-lg text-[0.82rem] text-amber-900 leading-relaxed">
               {t('domainsPageAuctionDraftNotice')}
               {' '}
-              {t('domainsPageAuctionFeeNotice', {
+              {isAdmin ? t('domainsPageAuctionFeeNoticeAdmin', { defaultValue: 'Auction creation fee: Free (Admin)' }) : t('domainsPageAuctionFeeNotice', {
                 defaultValue: 'Auction listing fee: {{fee}} (charged when you submit).',
                 fee: formatInr(auctionCreationFeeInr),
               })}

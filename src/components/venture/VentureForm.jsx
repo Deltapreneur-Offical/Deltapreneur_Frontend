@@ -618,8 +618,8 @@ export default function VentureForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Website <span className="text-red-400">*</span></label>
-            <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" required className={ventureInputCls} />
+            <label className="text-sm font-medium text-gray-700">Website</label>
+            <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" className={ventureInputCls} />
           </div>
           {isCoVenture && !isAuction && (
             <CurrencyPriceInput

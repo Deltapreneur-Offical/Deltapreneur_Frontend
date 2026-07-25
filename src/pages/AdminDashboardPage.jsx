@@ -104,6 +104,7 @@ function VerificationBadge({ verified, verifiedLabel, unverifiedLabel }) {
 const DOMAIN_LISTING_TYPE_BADGE = {
   domain_auction: { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', labelKey: 'adminDomainBadgeAuction' },
   normal_domain:  { color: '#0369a1', bg: 'rgba(3,105,161,0.1)', labelKey: 'adminDomainBadgeNormal' },
+  premium_domain: { color: '#ffffff', bg: '#dc2626', labelKey: 'adminDomainBadgePremium' },
 };
 
 const DOMAIN_VERIFICATION_STATUS_BADGE = {
@@ -125,7 +126,10 @@ function DomainAdminBadge({ color, bg, children }) {
 }
 
 function domainListingType(item) {
-  return item.listingType ?? (item.saleType === 'AUCTION' ? 'domain_auction' : 'normal_domain');
+  if (item.saleType === 'AUCTION') return 'domain_auction';
+  const price = Number(item.askingPrice ?? 0);
+  if (price > 500000) return 'premium_domain';
+  return 'normal_domain';
 }
 
 function domainNeedsMarkVerified(item) {
@@ -1575,6 +1579,8 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePer
     return 'COCREATION';
   };
 
+  const isPremiumDomain = tabType === 'domains' && Number(item.askingPrice ?? 0) > 500000;
+
   const lister    = item.listedBy;
   const applicant = item.purchasedBy;
 
@@ -1593,7 +1599,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePer
   };
 
   return (
-    <div className={`admin-record-card ${item.takenDown ? '!border-red-200' : ''}`}>
+    <div className={`admin-record-card ${isPremiumDomain ? 'premium-domain' : ''} ${item.takenDown ? '!border-red-200' : ''}`}>
       <div className="flex items-center gap-4 p-4 sm:px-5 sm:py-4 cursor-pointer"
            onClick={() => setExpanded(v => !v)}>
         <div className="flex-1 min-w-0">

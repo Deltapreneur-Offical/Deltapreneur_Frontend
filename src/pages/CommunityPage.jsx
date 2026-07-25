@@ -721,6 +721,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
   const [auctionId, setAuctionId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -742,13 +743,16 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
     }
     setLoading(true); setError('');
     try {
-      const { payAuctionCreationFee } = await import('../utils/auctionFees');
-      const creationFeeOrderId = await payAuctionCreationFee({
-        auctionType: 'COMMUNITY',
-        user,
-        referenceId: communityId,
-        description: 'Creator auction creation fee',
-      });
+      let creationFeeOrderId = null;
+      if (!isAdmin) {
+        const { payAuctionCreationFee } = await import('../utils/auctionFees');
+        creationFeeOrderId = await payAuctionCreationFee({
+          auctionType: 'COMMUNITY',
+          user,
+          referenceId: communityId,
+          description: 'Creator auction creation fee',
+        });
+      }
       const payload = {
         ...form,
         expectedRate: profileExpectedRate,
@@ -779,7 +783,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
                 🔨 Profile Auction
               </div>
               <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Put Your Profile to Auction</h2>
-              <p className="text-sm text-gray-500">Let companies bid to work with you. Auction creation fee: <strong>{creationFeeDisplay}</strong></p>
+              <p className="text-sm text-gray-500">Let companies bid to work with you. Auction creation fee: <strong>{isAdmin ? 'Free (Admin)' : creationFeeDisplay}</strong></p>
             </div>
 
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
@@ -852,7 +856,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
 
               <div className="flex gap-3 mt-1">
                 <button type="submit" className="btn-glow flex-1" disabled={loading}>
-                  {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : `Pay ${creationFeeDisplay} & Create Auction`}
+                  {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : (isAdmin ? 'Create Auction' : `Pay ${creationFeeDisplay} & Create Auction`)}
                 </button>
                 <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
               </div>

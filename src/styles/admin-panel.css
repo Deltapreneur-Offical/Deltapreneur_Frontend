@@ -101,6 +101,16 @@
   border-left: 4px solid #14b8a6;
 }
 
+.admin-page[data-admin-section='domains'] .admin-record-card.premium-domain {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+}
+
+.admin-page[data-admin-section='domains'] .admin-record-card.premium-domain .admin-record-title {
+  color: #991b1b;
+}
+
 .admin-page[data-admin-section='ventures'] .admin-record-card {
   border-left: 4px solid #8b5cf6;
 }

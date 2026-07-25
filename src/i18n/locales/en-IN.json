@@ -2262,6 +2262,7 @@
   "adminVerifyDomain": "Verify domain",
   "adminDomainBadgeAuction": "Auction Domain",
   "adminDomainBadgeNormal": "Normal Domain",
+  "adminDomainBadgePremium": "Premium Domain",
   "adminDomainVerificationPending": "Pending",
   "adminDomainVerificationVerified": "Verified",
   "adminDomainVerificationRejected": "Rejected",

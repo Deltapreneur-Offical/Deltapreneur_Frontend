@@ -3,7 +3,6 @@ import FormCheckbox from '../common/FormCheckbox';
 export const COMPANY_PROFILE_REQUIRED_FIELDS = [
   'companyName',
   'industry',
-  'website',
   'businessDescription',
   'productsServices',
   'targetMarket',
@@ -117,7 +116,7 @@ export default function CompanyProfileSections({
         <Field label="Industry" required>
           <input value={draft.industry} onChange={set('industry')} className={inputCls} placeholder="e.g. SaaS" />
         </Field>
-        <Field label="Website" required>
+        <Field label="Website">
           <input value={draft.website} onChange={set('website')} type="url" className={inputCls} placeholder="https://..." />
         </Field>
       </div>

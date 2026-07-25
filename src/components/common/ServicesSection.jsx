@@ -341,7 +341,7 @@ export default function ServicesSection({ isDashboard = false }) {
     return (
       <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
         <div className="w-full min-w-0">
-          <HomeSectionHeader title={titleText} to="/domains/dashboard" />
+          <HomeSectionHeader title={titleText} to="/storefront" />
           {shouldAutoScroll ? (
             <HomeAutoScrollRow durationSec={50} ariaLabel={titleText}>
               {cards.map((card) => (

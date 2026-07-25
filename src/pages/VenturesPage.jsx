@@ -89,11 +89,14 @@ export default function VenturesPage() {
       ))
       : allVentures;
 
-    return resolveMarketplaceListingRows(source, {
-      tab: filterTab,
-      user,
-      type: 'venture',
-    });
+    if (filterTab === 'mine') {
+      return resolveMarketplaceListingRows(source, {
+        tab: 'mine',
+        user,
+        type: 'venture',
+      });
+    }
+    return source;
   }, [allVentures, filterTab, listingModeFilter, user]);
 
   // ── Filter / sort / paginate ───────────────────────────────────────────────
@@ -164,7 +167,7 @@ export default function VenturesPage() {
     setLoading(true);
     const loadAll = filterTab === 'mine'
       ? ventureAPI.getMyVentures().then(({ data }) => asArray(data))
-      : fetchAllListPages((params) => ventureAPI.getAll(params));
+      : fetchAllListPages((params) => ventureAPI.getAll({ ...params, include_pending: true }));
 
     loadAll
       .then((rows) => {
@@ -240,7 +243,7 @@ export default function VenturesPage() {
       ventureAPI.getMyVentures().then(({ data }) => setAllVentures(asArray(data)));
       return;
     }
-    fetchAllListPages((params) => ventureAPI.getAll(params))
+    fetchAllListPages((params) => ventureAPI.getAll({ ...params, include_pending: true }))
       .then((rows) => setAllVentures(rows));
   };
 

@@ -138,18 +138,6 @@ export async function openRazorpayCheckout({
     const keyId = getRazorpayKeyId(order);
     const orderId = getRazorpayOrderId(order);
 
-    if (keyId && keyId.startsWith('rzp_test_')) {
-      console.log('[Razorpay checkout] Test/Demo mode. Blocking payment.');
-      setTimeout(() => {
-        if (onFailure) {
-          onFailure({
-            error: { description: 'Razorpay demo: Live payments cannot be processed in demo mode.' },
-          });
-        }
-      }, 500);
-      return null;
-    }
-
     await loadRazorpayScript();
 
     if (!keyId || !orderId) {

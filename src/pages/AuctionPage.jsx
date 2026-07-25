@@ -412,9 +412,9 @@ export default function AuctionPage() {
             {/* Current bid stats card */}
             <div className={`p-6 border rounded-[14px] transition-all duration-300 ${flashBid ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                <div className="col-span-1">
+                <div className="min-w-0 overflow-hidden text-center">
                   <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionDetailCurrentHighestBid')}</div>
-                  <div className={`font-display text-[1.5rem] lg:text-[2rem] font-bold leading-tight ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`font-display text-[1.75rem] lg:text-[2rem] font-bold leading-tight break-words ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                     {auction.currentHighestBid > 0
                       ? `${formatPrice(auction.currentHighestBid)}`
                       : t('auctionDetailNoBidsYet')}
@@ -425,18 +425,16 @@ export default function AuctionPage() {
                     </div>
                   )}
                 </div>
-                <div className="grid grid-cols-2 lg:contents gap-4 lg:gap-0 col-span-1">
-                  <div>
-                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
-                    <div className="font-display text-[1.2rem] lg:text-[1.5rem] font-bold text-amber-600 leading-tight">
-                      {formatPrice(auction.minBidPrice)}
-                    </div>
+                <div className="min-w-0 overflow-hidden text-center">
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageStartingBid')}</div>
+                  <div className="font-display text-[1.75rem] lg:text-[2rem] font-bold text-amber-600 leading-tight break-words">
+                    {formatPrice(auction.minBidPrice)}
                   </div>
-                  <div>
-                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
-                    <div className="font-display text-[1.5rem] lg:text-[2rem] font-bold text-gray-900 leading-tight">
-                      {auction.totalBids}
-                    </div>
+                </div>
+                <div className="min-w-0 overflow-hidden text-center">
+                  <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t('auctionsPageTotalBids')}</div>
+                  <div className="font-display text-[1.75rem] lg:text-[2rem] font-bold text-gray-900 leading-tight">
+                    {auction.totalBids}
                   </div>
                 </div>
               </div>
@@ -617,9 +615,9 @@ export default function AuctionPage() {
                   </div>
                 )}
 
-                {bidFee !== null && (
+                {bidAmount && (
                   <div className="mb-4 text-[0.82rem] text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-                    A fee of <strong>{formatPrice(bidFee)}</strong> will be charged for placing this bid.
+                    You will be charged <strong>{formatPrice(parseFloat(bidAmount))}</strong> to place this bid.
                   </div>
                 )}
 
@@ -651,9 +649,9 @@ export default function AuctionPage() {
                   </div>
                 )}
 
-                {bidFee > 0 && (
+                {bidAmount && (
                   <div className="text-[0.75rem] text-gray-500 mb-3 text-center font-medium bg-gray-50 p-2 rounded">
-                    A non-refundable per-bid fee of {formatPrice(bidFee)} will be charged.
+                    This amount will be charged to place your bid.
                   </div>
                 )}
 

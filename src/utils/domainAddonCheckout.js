@@ -7,7 +7,20 @@ export async function payEmailAddon({
   user,
   description,
 }) {
-  const { data: payPayload } = await domainStorefrontAPI.createEmailAddonPayment(orderId, { mailbox });
+  // Accept string prefix, full address, or { email, size, duration } from forms.
+  let mailboxBody = mailbox;
+  if (typeof mailbox === 'string') {
+    mailboxBody = { email: mailbox.trim() };
+  } else if (mailbox && typeof mailbox === 'object') {
+    mailboxBody = {
+      email: String(mailbox.email || mailbox.mailbox || mailbox.prefix || '').trim(),
+      size: mailbox.size,
+      duration: mailbox.duration,
+    };
+  }
+  const { data: payPayload } = await domainStorefrontAPI.createEmailAddonPayment(orderId, {
+    mailbox: mailboxBody,
+  });
   const payData = payPayload?.data ?? payPayload;
   return completeAddonPayment({
     orderId,

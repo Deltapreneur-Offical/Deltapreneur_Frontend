@@ -1065,7 +1065,13 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
     }
   })();
 
-  const mailboxes = Array.isArray(addons.mailboxes) ? addons.mailboxes : [];
+  const mailboxes = Array.isArray(addons.mailboxes)
+    ? addons.mailboxes.map((item) => {
+        if (typeof item === 'string') return item;
+        if (item && typeof item === 'object') return String(item.address || item.email || '').trim();
+        return '';
+      }).filter(Boolean)
+    : [];
   const sslState = addons.ssl && typeof addons.ssl === 'object' ? addons.ssl : null;
   const sslActive = Boolean(sslState?.active || addons.ssl_active);
   const sslExpiry = sslState?.expiresAt

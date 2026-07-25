@@ -138,6 +138,10 @@ export async function openRazorpayCheckout({
     const keyId = getRazorpayKeyId(order);
     const orderId = getRazorpayOrderId(order);
 
+    if (keyId && keyId.startsWith('rzp_test_')) {
+      console.info('[Razorpay checkout] Using test key (rzp_test_). Opening Razorpay test checkout.');
+    }
+
     await loadRazorpayScript();
 
     if (!keyId || !orderId) {

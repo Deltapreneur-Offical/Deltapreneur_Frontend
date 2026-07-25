@@ -60,6 +60,44 @@ export async function paySslAddon({
   });
 }
 
+export async function payRestoreAddon({ orderId, user, description }) {
+  const { data: payPayload } = await domainStorefrontAPI.createRestoreAddonPayment(orderId, {});
+  const payData = payPayload?.data ?? payPayload;
+  return completeAddonPayment({
+    orderId,
+    payData,
+    user,
+    description: description || 'Domain restore',
+    verifyFn: domainStorefrontAPI.verifyRestoreAddonPayment,
+  });
+}
+
+export async function payEasydmarcAddon({ orderId, user, description }) {
+  const { data: payPayload } = await domainStorefrontAPI.createEasydmarcAddonPayment(orderId, {});
+  const payData = payPayload?.data ?? payPayload;
+  return completeAddonPayment({
+    orderId,
+    payData,
+    user,
+    description: description || 'EasyDMARC',
+    verifyFn: domainStorefrontAPI.verifyEasydmarcAddonPayment,
+  });
+}
+
+export async function paySpamexpertsAddon({ orderId, destinationHost, user, description }) {
+  const { data: payPayload } = await domainStorefrontAPI.createSpamexpertsAddonPayment(orderId, {
+    destinationHost: destinationHost || undefined,
+  });
+  const payData = payPayload?.data ?? payPayload;
+  return completeAddonPayment({
+    orderId,
+    payData,
+    user,
+    description: description || 'SpamExperts filter',
+    verifyFn: domainStorefrontAPI.verifySpamexpertsAddonPayment,
+  });
+}
+
 function completeAddonPayment({
   orderId,
   payData,

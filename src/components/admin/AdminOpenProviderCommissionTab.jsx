@@ -291,6 +291,15 @@ export default function AdminOpenProviderCommissionTab() {
         dnssec: {
           default: ((raw.dnssec?.default ?? 0.0) * 100).toFixed(2).replace(/\.00$/, ''),
         },
+        restore: {
+          default: ((raw.restore?.default ?? 0.0) * 100).toFixed(2).replace(/\.00$/, ''),
+        },
+        easydmarc: {
+          default: ((raw.easydmarc?.default ?? 0.0) * 100).toFixed(2).replace(/\.00$/, ''),
+        },
+        spamexperts: {
+          default: ((raw.spamexperts?.default ?? 0.0) * 100).toFixed(2).replace(/\.00$/, ''),
+        },
       };
       setConfig(uiConfig);
     } catch (err) {
@@ -472,6 +481,15 @@ export default function AdminOpenProviderCommissionTab() {
         dnssec: {
           default: toBackend(config.dnssec.default) ?? 0.0,
         },
+        restore: {
+          default: toBackend(config.restore?.default) ?? 0.0,
+        },
+        easydmarc: {
+          default: toBackend(config.easydmarc?.default) ?? 0.0,
+        },
+        spamexperts: {
+          default: toBackend(config.spamexperts?.default) ?? 0.0,
+        },
       };
 
       await adminAPI.updateDomainCommission(payload);
@@ -509,7 +527,8 @@ export default function AdminOpenProviderCommissionTab() {
         <div>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>OpenProvider Pricing &amp; Commission Settings</h3>
           <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6b7280', maxWidth: 700, lineHeight: 1.6 }}>
-            Set markup commission rates for domain registration, renewal, transfer, email, and SSL.
+            Set markup commission rates for domain registration, renewal, transfer, email, SSL,
+            restore, EasyDMARC, and SpamExperts.
             Commission rates set here are dynamically added on top of the live OpenProvider wholesale prices
             and reflected automatically across all storefront service cards and search results.
           </p>
@@ -572,6 +591,24 @@ export default function AdminOpenProviderCommissionTab() {
               label="DNSSEC Setup"
               value={config.dnssec.default}
               onChange={(val) => handleGlobalRateChange('dnssec', val)}
+            />
+            <CommissionInput
+              id="global-restore"
+              label="Domain Restore"
+              value={config.restore?.default ?? ''}
+              onChange={(val) => handleGlobalRateChange('restore', val)}
+            />
+            <CommissionInput
+              id="global-easydmarc"
+              label="EasyDMARC"
+              value={config.easydmarc?.default ?? ''}
+              onChange={(val) => handleGlobalRateChange('easydmarc', val)}
+            />
+            <CommissionInput
+              id="global-spamexperts"
+              label="SpamExperts"
+              value={config.spamexperts?.default ?? ''}
+              onChange={(val) => handleGlobalRateChange('spamexperts', val)}
             />
           </div>
         </ProductCard>

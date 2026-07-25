@@ -9,11 +9,12 @@ export default function HomeSectionCardSkeleton({
   to,
   variant = 'browse',
   compact = false,
+  hideHeader = false,
 }) {
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full">
-        <HomeSectionHeader title={title} to={to} />
+        {!hideHeader && title ? <HomeSectionHeader title={title} to={to} /> : null}
         <HomePreviewRow animate={false}>
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
             <HomePreviewRowItem key={i}>

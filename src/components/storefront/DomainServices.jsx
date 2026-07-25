@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Mail, ShieldCheck, Globe, ArrowRightLeft, RotateCcw, Sparkles } from 'lucide-react';
+import { Mail, ShieldCheck, Globe, ArrowRightLeft, RotateCcw, Sparkles, Shield, Filter } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import EmailForm from './EmailForm';
 import SSLForm from './SSLForm';
 import DNSSECForm from './DNSSECForm';
 import TransferForm from './TransferForm';
 import RenewalForm from './RenewalForm';
+import RestoreForm from './RestoreForm';
+import EasyDmarcForm from './EasyDmarcForm';
+import SpamExpertsForm from './SpamExpertsForm';
 import { domainStorefrontAPI } from '../../api/services';
 import { readApiError } from '../../utils/apiError';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +35,36 @@ const services = [
     apiMethod: 'purchaseSSL',
   },
   {
+    id: 'restore',
+    icon: <RotateCcw className="w-6 h-6" />,
+    name: 'Domain Restore',
+    description: 'Restore a domain in redemption period through OpenProvider before it is permanently deleted.',
+    price: 'Live quote',
+    priceAvailable: true,
+    Component: RestoreForm,
+    apiMethod: null,
+  },
+  {
+    id: 'easydmarc',
+    icon: <Shield className="w-6 h-6" />,
+    name: 'EasyDMARC',
+    description: 'Protect your brand from spoofing with DMARC monitoring and reporting via OpenProvider.',
+    price: '₹499/yr',
+    priceAvailable: true,
+    Component: EasyDmarcForm,
+    apiMethod: null,
+  },
+  {
+    id: 'spamexperts',
+    icon: <Filter className="w-6 h-6" />,
+    name: 'SpamExperts',
+    description: 'Incoming email filtering for your domain with a control-panel login link after activation.',
+    price: '₹299/yr',
+    priceAvailable: true,
+    Component: SpamExpertsForm,
+    apiMethod: null,
+  },
+  {
     id: 'dnssec',
     icon: <Globe className="w-6 h-6" />,
     name: 'DNSSEC',
@@ -53,7 +86,7 @@ const services = [
   },
   {
     id: 'renewal',
-    icon: <RotateCcw className="w-6 h-6" />,
+    icon: <Sparkles className="w-6 h-6" />,
     name: 'Domain Renewal',
     description: 'Renew your domain registration before expiry to avoid downtime and retain ownership.',
     price: '—',
@@ -77,6 +110,9 @@ export default function DomainServices({ orders }) {
           renewal: prices?.renewal?.label,
           email: prices?.email?.label,
           ssl: prices?.ssl?.label,
+          restore: prices?.restore?.label,
+          easydmarc: prices?.easydmarc?.label,
+          spamexperts: prices?.spamexperts?.label,
         });
       })
       .catch(() => {});
@@ -134,6 +170,12 @@ export default function DomainServices({ orders }) {
         return <EmailForm {...commonProps} onSubmit={undefined} />;
       case 'ssl':
         return <SSLForm {...commonProps} onSubmit={undefined} />;
+      case 'restore':
+        return <RestoreForm {...commonProps} onSubmit={undefined} />;
+      case 'easydmarc':
+        return <EasyDmarcForm {...commonProps} onSubmit={undefined} />;
+      case 'spamexperts':
+        return <SpamExpertsForm {...commonProps} onSubmit={undefined} />;
       case 'dnssec':
         return <DNSSECForm {...commonProps} />;
       case 'transfer':

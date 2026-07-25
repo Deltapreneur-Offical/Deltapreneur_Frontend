@@ -221,6 +221,18 @@ export const domainStorefrontAPI = {
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/ssl/payment`, body),
   verifySslAddonPayment: (orderId, body) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/ssl/payment/verify`, body),
+  createRestoreAddonPayment: (orderId, body = {}) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/restore/payment`, body),
+  verifyRestoreAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/restore/payment/verify`, body),
+  createEasydmarcAddonPayment: (orderId, body = {}) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/easydmarc/payment`, body),
+  verifyEasydmarcAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/easydmarc/payment/verify`, body),
+  createSpamexpertsAddonPayment: (orderId, body = {}) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/spamexperts/payment`, body),
+  verifySpamexpertsAddonPayment: (orderId, body) =>
+    api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/spamexperts/payment/verify`, body),
   initiateTransferOut: (body) =>
     api.post('/api/v1/domain/storefront/transfer/out', body),
   getDnsRecords: (orderId) =>

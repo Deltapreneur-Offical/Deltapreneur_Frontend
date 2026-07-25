@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Download, Check, XCircle, Clock, User, Mail, Phone, MapPin,
+  ArrowLeft, Check, XCircle, Clock, User, Mail, Phone, MapPin,
   Briefcase, FileText, Globe, Clock3, IndianRupee, Loader2, Hash, Calendar,
   RefreshCw, Link2, Languages, Sparkles,
 } from 'lucide-react';
@@ -259,23 +259,9 @@ function VirtualAssistantApplicationDetailPage() {
     }
   };
 
-  const handleDownloadResume = async () => {
-    try {
-      const response = await adminAPI.downloadVirtualAssistantResume(applicationId);
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const filename = application?.resumeFilename || `resume-${applicationId}.pdf`;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (e) {
-      console.error('Failed to download resume', e);
-      alert('Failed to download resume. Please try again.');
-    }
+  const handleViewResume = () => {
+    if (!application?.resumeUrl) return;
+    window.open(application.resumeUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handlePricingUpdate = async (e) => {
@@ -572,9 +558,9 @@ function VirtualAssistantApplicationDetailPage() {
                         )}
                       </div>
                     </div>
-                    <button type="button" onClick={handleDownloadResume} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
-                      <Download size={14} />
-                      Download
+                    <button type="button" onClick={handleViewResume} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
+                      <FileText size={14} />
+                      View Resume
                     </button>
                   </div>
                 )}
@@ -988,11 +974,11 @@ function VirtualAssistantApplicationDetailPage() {
               {application.resumeUrl && (
                 <button
                   type="button"
-                  onClick={handleDownloadResume}
+                  onClick={handleViewResume}
                   className="va-detail-btn va-detail-btn--primary"
                 >
-                  <Download size={16} />
-                  Download Resume
+                  <FileText size={16} />
+                  View Resume
                 </button>
               )}
             </div>

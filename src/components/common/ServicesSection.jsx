@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Mail, Globe, RefreshCw, ShieldCheck, ShieldAlert, ArrowRight,
-  CheckCircle2, Loader2,
+  CheckCircle2, Loader2, RotateCcw, Shield, Filter,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import HomeSectionHeader from '../home/HomeSectionHeader';
@@ -194,6 +194,9 @@ export default function ServicesSection({ isDashboard = false }) {
       case 'email':
       case 'ssl':
       case 'dnssec':
+      case 'restore':
+      case 'easydmarc':
+      case 'spamexperts':
         return latestOrderId ? `/storefront/orders/${latestOrderId}#products` : '/storefront';
       case 'renew':
         return latestOrderId ? `/storefront/orders/${latestOrderId}#overview` : '/storefront';
@@ -313,6 +316,69 @@ export default function ServicesSection({ isDashboard = false }) {
         'One-click activation',
       ],
       cta: 'Toggle DNSSEC',
+    },
+    {
+      id: 'restore',
+      icon: RotateCcw,
+      colorFrom: '#b45309',
+      colorTo: '#f59e0b',
+      bgLight: 'rgba(180,83,9,0.06)',
+      border: 'rgba(180,83,9,0.18)',
+      textAccent: '#b45309',
+      badge: '#ffedd5',
+      title: 'Domain Restore',
+      tag: 'Redemption',
+      price: prices ? (prices.restore?.label || 'Live quote') : 'Live quote',
+      unit: 'yr',
+      bullets: [
+        'Recover domains in redemption',
+        'Live OpenProvider restore price',
+        'Secure ownership before delete',
+        'Pay once & restore via registrar',
+      ],
+      cta: 'Restore Domain',
+    },
+    {
+      id: 'easydmarc',
+      icon: Shield,
+      colorFrom: '#0d9488',
+      colorTo: '#14b8a6',
+      bgLight: 'rgba(13,148,136,0.06)',
+      border: 'rgba(13,148,136,0.18)',
+      textAccent: '#0d9488',
+      badge: '#ccfbf1',
+      title: 'EasyDMARC',
+      tag: 'DMARC',
+      price: prices ? (prices.easydmarc?.label || '₹499') : '₹499',
+      unit: 'yr',
+      bullets: [
+        'Stop brand email spoofing',
+        'DMARC DNS record guidance',
+        'OpenProvider EasyDMARC order',
+        'SSO access to DMARC panel',
+      ],
+      cta: 'Activate EasyDMARC',
+    },
+    {
+      id: 'spamexperts',
+      icon: Filter,
+      colorFrom: '#e11d48',
+      colorTo: '#fb7185',
+      bgLight: 'rgba(225,29,72,0.06)',
+      border: 'rgba(225,29,72,0.18)',
+      textAccent: '#e11d48',
+      badge: '#ffe4e6',
+      title: 'SpamExperts',
+      tag: 'Filter',
+      price: prices ? (prices.spamexperts?.label || '₹299') : '₹299',
+      unit: 'yr',
+      bullets: [
+        'Incoming spam & malware filter',
+        'Protect your domain mailbox',
+        'Control-panel login after setup',
+        'Managed via OpenProvider',
+      ],
+      cta: 'Activate Filter',
     },
   ];
 

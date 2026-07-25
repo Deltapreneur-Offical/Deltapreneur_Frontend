@@ -128,7 +128,22 @@ export default function CommunityListingCard({
       onKeyDown={interactive ? handleCardKeyDown : undefined}
     >
       <div className="creator-profile-card__banner">
-        {coverImageUrl ? (
+        {isVirtualAssistantProfile(profile) && (coverImageUrl || profile.profilePhotoUrl || profile.profile_photo_url) ? (
+          <>
+            <VaProfilePhoto
+              source={{ ...profile, profilePhotoUrl: coverImageUrl || profile.profilePhotoUrl }}
+              applicationId={profile.id}
+              refreshScope="public"
+              alt=""
+              className="creator-profile-card__banner-image"
+              fallbackClassName="creator-profile-card__banner-fallback"
+              fallback="icon"
+              fallbackIconSize={0}
+              imgProps={{ loading: 'lazy', decoding: 'async', 'aria-hidden': true }}
+            />
+            <div className="creator-profile-card__banner-overlay" aria-hidden />
+          </>
+        ) : coverImageUrl ? (
           <>
             <img src={coverImageUrl} alt="" className="creator-profile-card__banner-image" loading="lazy" decoding="async" aria-hidden />
             <div className="creator-profile-card__banner-overlay" aria-hidden />
@@ -224,7 +239,7 @@ export default function CommunityListingCard({
              <User2 size={18} className="text-indigo-600" />
           </div>
           <div className="desc-content flex-1 pt-0.5">
-            <p className="desc-text text-sm text-slate-700 leading-relaxed font-medium">{description}</p>
+            <p className="desc-text text-sm text-slate-700 leading-relaxed font-medium line-clamp-3">{description}</p>
           </div>
         </div>
 

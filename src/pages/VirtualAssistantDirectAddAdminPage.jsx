@@ -28,7 +28,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
   const [formData, setFormData] = useState({
     fullName: '', email: '', phoneNumber: '', location: '', bio: '',
     roles: [], skills: '', yearsOfExperience: '', languages: '',
-    linkedinUrl: '', portfolioUrl: '', availability: 'available',
+    linkedinUrl: '', portfolioUrl: '', resumeUrl: '', availability: 'available',
     hoursPerWeek: '', expectedCompensation: '',
     maxClientCapacity: '', currentAssignedClients: '0',
     publicMonthlyPrice: '', pricingCurrency: 'INR',
@@ -38,9 +38,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
-  const [resumePreview, setResumePreview] = useState(null);
   const profilePhotoRef = useRef(null);
-  const resumeRef = useRef(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -59,23 +57,6 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
           }
           setErrors(prev => ({ ...prev, profilePhoto: null }));
           setProfilePhotoPreview(URL.createObjectURL(file));
-        }
-      } else if (name === 'resume') {
-        const file = files[0];
-        if (file) {
-          const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-          const allowedExts = ['.pdf', '.doc', '.docx'];
-          const ext = '.' + file.name.split('.').pop().toLowerCase();
-          if (!allowedTypes.includes(file.type) && !allowedExts.includes(ext)) {
-            setErrors(prev => ({ ...prev, resume: 'Only PDF, DOC, or DOCX files are allowed' }));
-            return;
-          }
-          if (file.size > 10 * 1024 * 1024) {
-            setErrors(prev => ({ ...prev, resume: 'Resume must be under 10MB' }));
-            return;
-          }
-          setErrors(prev => ({ ...prev, resume: null }));
-          setResumePreview(file.name);
         }
       }
       return;
@@ -108,9 +89,10 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
     if (!formData.publicMonthlyPrice || Number(formData.publicMonthlyPrice) < 0) newErrors.publicMonthlyPrice = 'Please enter a valid public monthly price';
     if (!formData.maxClientCapacity || Number(formData.maxClientCapacity) < 1) newErrors.maxClientCapacity = 'Please enter a valid capacity';
     const profilePhotoFile = profilePhotoRef.current?.files?.[0];
-    const resumeFile = resumeRef.current?.files?.[0];
     if (!profilePhotoFile) newErrors.profilePhoto = 'Profile photo is required';
-    if (!resumeFile) newErrors.resume = 'Resume/CV is required';
+    const resumeLink = (formData.resumeUrl || '').trim();
+    if (!resumeLink) newErrors.resumeUrl = 'Resume link is required';
+    else if (!/^https?:\/\//i.test(resumeLink)) newErrors.resumeUrl = 'Enter a valid URL starting with http:// or https://';
     return newErrors;
   };
 
@@ -146,9 +128,8 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       submitData.append('publish_immediately', String(formData.publishImmediately));
 
       const profilePhotoFile = profilePhotoRef.current?.files?.[0];
-      const resumeFile = resumeRef.current?.files?.[0];
       if (profilePhotoFile) submitData.append('profile_photo', profilePhotoFile);
-      if (resumeFile) submitData.append('resume', resumeFile);
+      submitData.append('resume_url', formData.resumeUrl.trim());
 
       const response = await adminAPI.directAddVirtualAssistant(submitData);
       setSuccess('Virtual Assistant profile created successfully.');
@@ -284,13 +265,17 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
                 <div className="relative"><Globe size={18} className="absolute left-3 top-3.5 text-gray-400" /><input type="url" name="portfolioUrl" value={formData.portfolioUrl} onChange={handleChange} placeholder="https://..." className={`${inputClass('portfolioUrl')} pl-10`} /></div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Resume / CV Upload</label>
-                <input type="file" name="resume" ref={resumeRef} onChange={handleChange} accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" />
-                <button type="button" onClick={() => resumeRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  <Upload size={16} /> {resumePreview ? 'Change Resume' : 'Upload Resume'}
-                </button>
-                {resumePreview && <span className="ml-3 text-sm text-gray-600">{resumePreview}</span>}
-                {errors.resume && <span className="text-xs text-red-500 mt-1 block">{errors.resume}</span>}
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Resume Link <span className="text-red-500">*</span></label>
+                <input
+                  type="url"
+                  name="resumeUrl"
+                  value={formData.resumeUrl}
+                  onChange={handleChange}
+                  placeholder="https://drive.google.com/file/d/..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">Please ensure anyone with the link can view your resume.</p>
+                {errors.resumeUrl && <span className="text-xs text-red-500 mt-1 block">{errors.resumeUrl}</span>}
               </div>
             </div>
           </div>

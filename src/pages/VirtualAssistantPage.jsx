@@ -19,7 +19,7 @@ import {
 import {
   User, Mail, MapPin, Camera, ShieldCheck,
   Briefcase, Globe, Clock, IndianRupee,
-  Check, AlertCircle, Loader2, Upload
+  Check, AlertCircle, Loader2
 } from 'lucide-react';
 import '../styles/virtual-assistant-application.css';
 
@@ -64,6 +64,7 @@ const VirtualAssistantPage = () => {
     languages: '',
     linkedinUrl: '',
     portfolioUrl: '',
+    resumeUrl: '',
     availability: '',
     hoursPerWeek: '',
     expectedCompensation: '',
@@ -75,9 +76,7 @@ const VirtualAssistantPage = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
-  const [resumePreview, setResumePreview] = useState(null);
   const profilePhotoRef = useRef(null);
-  const resumeRef = useRef(null);
   const { user, hasAccessToken } = useAuth();
 
   useEffect(() => {
@@ -105,23 +104,6 @@ const VirtualAssistantPage = () => {
           }
           setErrors(prev => ({ ...prev, profilePhoto: null }));
           setProfilePhotoPreview(URL.createObjectURL(file));
-        }
-      } else if (name === 'resume') {
-        const file = files[0];
-        if (file) {
-          const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-          const allowedExts = ['.pdf', '.doc', '.docx'];
-          const ext = '.' + file.name.split('.').pop().toLowerCase();
-          if (!allowedTypes.includes(file.type) && !allowedExts.includes(ext)) {
-            setErrors(prev => ({ ...prev, resume: 'Only PDF, DOC, or DOCX files are allowed' }));
-            return;
-          }
-          if (file.size > 10 * 1024 * 1024) {
-            setErrors(prev => ({ ...prev, resume: 'Resume must be under 10MB' }));
-            return;
-          }
-          setErrors(prev => ({ ...prev, resume: null }));
-          setResumePreview(file.name);
         }
       }
       return;
@@ -197,12 +179,14 @@ const VirtualAssistantPage = () => {
       newErrors.agreeTerms = 'You must agree to the Privacy Policy and Terms of Service';
     }
     const profilePhotoFile = profilePhotoRef.current?.files?.[0];
-    const resumeFile = resumeRef.current?.files?.[0];
     if (!profilePhotoFile) {
       newErrors.profilePhoto = 'Profile photo is required';
     }
-    if (!resumeFile) {
-      newErrors.resume = 'Resume/CV is required';
+    const resumeLink = (formData.resumeUrl || '').trim();
+    if (!resumeLink) {
+      newErrors.resumeUrl = 'Resume link is required';
+    } else if (!/^https?:\/\//i.test(resumeLink)) {
+      newErrors.resumeUrl = 'Enter a valid URL starting with http:// or https://';
     }
     return newErrors;
   };
@@ -250,9 +234,8 @@ const VirtualAssistantPage = () => {
       }
 
       const profilePhotoFile = profilePhotoRef.current?.files?.[0];
-      const resumeFile = resumeRef.current?.files?.[0];
       if (profilePhotoFile) submitData.append('profile_photo', profilePhotoFile);
-      if (resumeFile) submitData.append('resume', resumeFile);
+      submitData.append('resume_url', formData.resumeUrl.trim());
 
       const response = await virtualAssistantAPI.submit(submitData);
       const referenceNumber = response.data?.data?.referenceNumber || response.data?.referenceNumber;
@@ -554,27 +537,19 @@ const VirtualAssistantPage = () => {
                     </div>
 
                     <div className="va-app-field">
-                      <label className="va-app-label">Resume / CV <span className="va-app-required">*</span></label>
+                      <label className="va-app-label">Resume Link <span className="va-app-required">*</span></label>
                       <input
-                        type="file"
-                        name="resume"
-                        ref={resumeRef}
+                        type="url"
+                        name="resumeUrl"
+                        value={formData.resumeUrl}
                         onChange={handleChange}
-                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        className="hidden"
-                        id="resumeInput"
+                        placeholder="https://drive.google.com/file/d/..."
+                        className={`va-app-input${inputErrorClass(errors.resumeUrl)}`}
                       />
-                      <label
-                        htmlFor="resumeInput"
-                        className={`va-app-upload${errors.resume ? ' va-app-upload--error' : ''}`}
-                      >
-                        <Upload size={28} className="va-app-upload__icon" />
-                        <span className="va-app-upload__title">
-                          {resumePreview || 'Click to upload Resume / CV'}
-                        </span>
-                        <span className="va-app-upload__meta">PDF, DOC, DOCX — max 10MB</span>
-                      </label>
-                      {errors.resume && <span className="va-app-error">{errors.resume}</span>}
+                      <p className="va-app-upload__meta" style={{ marginTop: '0.35rem' }}>
+                        Please ensure anyone with the link can view your resume.
+                      </p>
+                      {errors.resumeUrl && <span className="va-app-error">{errors.resumeUrl}</span>}
                     </div>
                   </div>
                 </div>

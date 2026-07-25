@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Eye, Download, X, User, Mail, Phone, MapPin, Briefcase, FileText, Globe, Clock, IndianRupee, Check, XCircle, Loader2, Trash2 } from 'lucide-react';
+import { Search, Eye, X, User, Mail, Phone, MapPin, Briefcase, FileText, Globe, Clock, IndianRupee, Check, XCircle, Loader2, Trash2 } from 'lucide-react';
 import StatusFilterBar from './StatusFilterBar';
 import { adminAPI } from '../../api/services';
 import { unwrapApiData } from '../../utils/apiResponse';
@@ -156,21 +156,9 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
     }
   };
 
-  const handleDownloadResume = async (appId) => {
-    try {
-      const response = await adminAPI.downloadVirtualAssistantResume(appId);
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `resume-${appId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (e) {
-      console.error('Failed to download resume', e);
-    }
+  const handleViewResume = (resumeUrl) => {
+    if (!resumeUrl) return;
+    window.open(resumeUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -455,11 +443,12 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
                 {selectedApp.resumeUrl && (
                   <div className="pt-4 border-t border-gray-200">
                     <button
-                      onClick={() => handleDownloadResume(selectedApp.id)}
+                      type="button"
+                      onClick={() => handleViewResume(selectedApp.resumeUrl)}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
                     >
-                      <Download size={16} />
-                      Download Resume
+                      <FileText size={16} />
+                      View Resume
                     </button>
                   </div>
                 )}

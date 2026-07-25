@@ -71,7 +71,14 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             layout="row"
             pageSize={20}
             ariaLabel={title}
-            loadingFallback={<HomeSectionCardSkeleton title={title} to={operationsPathForSection(sectionId)} />}
+            loadingFallback={(
+              <HomeSectionCardSkeleton
+                title={title}
+                to={operationsPathForSection(sectionId)}
+                hideHeader
+                compact
+              />
+            )}
           />
         </div>
       </section>

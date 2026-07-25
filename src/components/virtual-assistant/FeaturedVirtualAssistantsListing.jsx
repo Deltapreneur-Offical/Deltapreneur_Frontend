@@ -31,8 +31,14 @@ export function useFeaturedVirtualAssistants(pageSize = 20, { enabled = true } =
 
     virtualAssistantAPI
       .getPublicList({ featured_only: true, page_size: pageSize })
-      .then((response) => {
-        if (!cancelled) setProfiles(unwrapApiList(response));
+      .then(async (response) => {
+        let list = unwrapApiList(response);
+        // Homepage should not stay empty when none are marked featured yet.
+        if (!cancelled && asArray(list).length === 0) {
+          const fallback = await virtualAssistantAPI.getPublicList({ page_size: pageSize });
+          list = unwrapApiList(fallback);
+        }
+        if (!cancelled) setProfiles(list);
       })
       .catch(() => {
         if (!cancelled) setProfiles([]);
@@ -115,6 +121,9 @@ export default function FeaturedVirtualAssistantsListing({
     return <p className="text-center text-gray-500 py-8">{resolvedEmptyMessage}</p>;
   }
 
+  const cardKey = (profile, index) =>
+    String(profile?.id || profile?.referenceNumber || profile?.reference_number || `va-${index}`);
+
   const renderCard = (profile) => (
     <FeaturedVirtualAssistantCard
       profile={profile}
@@ -125,8 +134,12 @@ export default function FeaturedVirtualAssistantsListing({
 
   if (layout === 'grid') {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 min-w-0">
-        {cards.map((profile) => renderCard(profile))}
+      <div className="featured-va-grid listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5 min-w-0 items-stretch">
+        {cards.map((profile, index) => (
+          <div key={cardKey(profile, index)} className="featured-va-grid__item min-w-0 h-full flex flex-col">
+            {renderCard(profile)}
+          </div>
+        ))}
       </div>
     );
   }
@@ -134,8 +147,8 @@ export default function FeaturedVirtualAssistantsListing({
   if (shouldAutoScroll) {
     return (
       <HomeAutoScrollRow durationSec={50} ariaLabel={ariaLabel || 'Featured Virtual Assistants'}>
-        {cards.map((profile) => (
-          <HomeAutoScrollRowItem key={profile.id}>
+        {cards.map((profile, index) => (
+          <HomeAutoScrollRowItem key={cardKey(profile, index)}>
             {renderCard(profile)}
           </HomeAutoScrollRowItem>
         ))}
@@ -145,8 +158,8 @@ export default function FeaturedVirtualAssistantsListing({
 
   return (
     <HomePreviewRow>
-      {cards.map((profile) => (
-        <HomePreviewRowItem key={profile.id}>
+      {cards.map((profile, index) => (
+        <HomePreviewRowItem key={cardKey(profile, index)}>
           {renderCard(profile)}
         </HomePreviewRowItem>
       ))}

@@ -7443,10 +7443,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   border-radius: 2.5rem;
   outline: none;
   color: #000000;
-  box-shadow:
-    -18px 0 28px -8px rgba(0, 195, 255, 0.5),
-    18px 0 28px -8px rgba(147, 51, 234, 0.45),
-    0 0 18px -4px rgba(120, 80, 220, 0.3);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
 }
 
 .uiverse-logout-btn:hover .uiverse-logout-sign,
@@ -10657,11 +10654,7 @@ body.home-menu-open {
   color: #000000;
   border-color: #0f172a;
   transform: translateY(-1px);
-  box-shadow:
-    0 6px 16px rgba(15, 23, 42, 0.12),
-    -18px 0 28px -8px rgba(0, 195, 255, 0.5),
-    18px 0 28px -8px rgba(147, 51, 234, 0.45),
-    0 0 18px -4px rgba(120, 80, 220, 0.3);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
 }
 
 .btn-glow:active {
@@ -10681,10 +10674,8 @@ body.home-menu-open {
   color: #4338ca;
   transform: translateY(-2px) scale(1.02);
   box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.25),
-    0 0 0 3px rgba(255, 255, 255, 0.35),
-    -20px 0 32px -8px rgba(0, 195, 255, 0.55),
-    20px 0 32px -8px rgba(147, 51, 234, 0.5);
+    0 12px 28px rgba(15, 23, 42, 0.18),
+    0 0 0 3px rgba(255, 255, 255, 0.35);
   outline: none;
 }
 

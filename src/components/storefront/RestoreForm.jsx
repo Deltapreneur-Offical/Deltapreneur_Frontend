@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { RotateCcw, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { payRestoreAddon } from '../../utils/domainAddonCheckout';
-import { readApiError } from '../../utils/apiError';
+import { domainStorefrontAPI } from '../../api/services';
+import {
+  addonRetryUserMessage,
+  getAddonRetryPayment,
+  isAddonProvisionRetryError,
+  payRestoreAddon,
+  retryAddonProvision,
+} from '../../utils/domainAddonCheckout';
 
 export default function RestoreForm({ onClose, orders }) {
   const { user } = useAuth();
@@ -10,11 +16,21 @@ export default function RestoreForm({ onClose, orders }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [retryPayment, setRetryPayment] = useState(null);
 
   const selectedOrder = orders.find((o) => String(o.id) === String(domainId));
   const provider = (selectedOrder?.provider || selectedOrder?.registrar || '').toLowerCase();
   const isOpenProvider = !selectedOrder || !provider || provider === 'openprovider' || provider === 'open provider';
   const isDisabled = !isOpenProvider;
+
+  const applySuccess = (detail) => {
+    const status = detail?.restoreProvisioned?.status || 'requested';
+    setRetryPayment(null);
+    setResult({
+      success: true,
+      message: `Restore submitted for ${selectedOrder?.domain || 'domain'} (status: ${status}).`,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,19 +38,38 @@ export default function RestoreForm({ onClose, orders }) {
     setLoading(true);
     setResult(null);
     setError('');
+    setRetryPayment(null);
     try {
       const detail = await payRestoreAddon({
         orderId: domainId,
         user,
         description: `Domain restore for ${selectedOrder?.domain || 'domain'}`,
       });
-      const status = detail?.restoreProvisioned?.status || 'requested';
-      setResult({
-        success: true,
-        message: `Restore submitted for ${selectedOrder?.domain || 'domain'} (status: ${status}).`,
-      });
+      applySuccess(detail);
     } catch (err) {
-      setError(readApiError(err, 'Failed to restore domain. Please try again.'));
+      const payment = getAddonRetryPayment(err);
+      if (payment) setRetryPayment(payment);
+      setError(addonRetryUserMessage(err, 'Failed to restore domain. Please try again.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!domainId || !retryPayment) return;
+    setLoading(true);
+    setError('');
+    try {
+      const detail = await retryAddonProvision({
+        orderId: domainId,
+        payment: retryPayment,
+        verifyFn: domainStorefrontAPI.verifyRestoreAddonPayment,
+      });
+      applySuccess(detail);
+    } catch (err) {
+      const payment = getAddonRetryPayment(err) || retryPayment;
+      if (isAddonProvisionRetryError(err) || payment) setRetryPayment(payment);
+      setError(addonRetryUserMessage(err, 'Restore retry failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -74,13 +109,24 @@ export default function RestoreForm({ onClose, orders }) {
           {result.message}
         </div>
       )}
+      {retryPayment ? (
+        <button
+          type="button"
+          onClick={handleRetry}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          {loading ? 'Retrying...' : 'Retry activation (no extra charge)'}
+        </button>
+      ) : null}
       <button
         type="submit"
-        disabled={isDisabled || loading || !domainId || !user}
+        disabled={isDisabled || loading || !domainId || !user || !!retryPayment}
         className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-50"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-        {loading ? 'Processing...' : 'Pay & Restore Domain'}
+        {loading && !retryPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+        {loading && !retryPayment ? 'Processing...' : 'Pay & Restore Domain'}
       </button>
     </form>
   );

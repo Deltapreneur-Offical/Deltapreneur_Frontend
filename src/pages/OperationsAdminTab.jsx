@@ -539,8 +539,8 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   ) : (
                     filteredRequests.map((row, index) => {
                       const serial = String(index + 1).padStart(2, '0');
-                      const actionLabel = getRequestActionLabel(row.requestType);
-                      const statusLabel = getRequestStatusLabel(row.status);
+                      const actionLabel = getRequestActionLabel(row, t);
+                      const statusLabel = getRequestStatusLabel(row.status, t);
                       const statusClass = REQUEST_STATUS_STYLES[row.status] || REQUEST_STATUS_STYLES.PENDING;
                       return (
                         <tr key={row.id}>

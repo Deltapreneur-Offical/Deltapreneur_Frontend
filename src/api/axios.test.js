@@ -69,7 +69,7 @@ describe('api axios client', () => {
     setStoredAccessToken('access-123');
     document.cookie = 'csrf_token=csrf-abc; path=/';
 
-    const config = requestHandler({ method: 'post', headers: {} });
+    const config = await requestHandler({ method: 'post', headers: {} });
 
     expect(config.headers.Authorization).toBe('Bearer access-123');
     expect(config.headers['X-CSRF-Token']).toBe('csrf-abc');
@@ -126,6 +126,65 @@ describe('api axios client', () => {
     );
   });
 
+  it('does not clear the session when refresh fails due to network error', async () => {
+    const { setStoredAccessToken, getStoredAccessToken } = await import('../utils/authSession');
+    setStoredAccessToken('still-valid-access');
+    document.cookie = 'csrf_token=csrf-abc; path=/';
+    mocks.postMock.mockRejectedValue(new Error('Network Error'));
+
+    const hrefDescriptor = Object.getOwnPropertyDescriptor(window, 'location');
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, href: 'http://127.0.0.1:5173/dashboard', pathname: '/dashboard' },
+    });
+
+    const error = {
+      config: {
+        url: '/api/v1/protected',
+        method: 'get',
+        headers: {},
+      },
+      response: {
+        status: 401,
+        data: { detail: 'Invalid token.' },
+      },
+    };
+
+    await expect(responseErrorHandler(error)).rejects.toBeTruthy();
+    expect(getStoredAccessToken()).toBe('still-valid-access');
+    expect(window.location.href).toContain('/dashboard');
+
+    if (hrefDescriptor) {
+      Object.defineProperty(window, 'location', hrefDescriptor);
+    }
+  });
+
+  it('clears the session when refresh returns 401', async () => {
+    const { setStoredAccessToken, getStoredAccessToken } = await import('../utils/authSession');
+    setStoredAccessToken('expired-access');
+    document.cookie = 'csrf_token=csrf-abc; path=/';
+    mocks.postMock.mockRejectedValue({
+      response: {
+        status: 401,
+        data: { error: 'Refresh token expired' },
+      },
+    });
+
+    const error = {
+      config: {
+        url: '/api/v1/protected',
+        method: 'get',
+        headers: {},
+      },
+      response: {
+        status: 401,
+        data: { detail: 'Invalid token.' },
+      },
+    };
+
+    await expect(responseErrorHandler(error)).rejects.toBeTruthy();
+    expect(getStoredAccessToken()).toBeNull();
+  });
   it('bypasses sanitization for VA public submission errors', async () => {
     mocks.isVaPublicRequestMock.mockReturnValue(true);
     const vaError = {

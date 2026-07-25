@@ -1,9 +1,12 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import {
+  accessTokenNeedsRefresh,
   clearAuthTokens,
+  getAccessTokenExpiryMs,
   getStoredAccessToken,
   hasAuthSession,
   hasCookieAuthSession,
+  isAccessTokenFresh,
   isPublicBrowsePath,
   resolveAfterAuthNavigation,
   resolveOAuthCallbackNavigation,
@@ -100,5 +103,24 @@ describe('authSession', () => {
     expect(sanitizeSafeAppPath('/\\evil.com')).toBeNull();
     expect(sanitizeSafeAppPath('/cart')).toBe('/cart');
     expect(resolvePostLoginPath('//evil.com', { role: 'USER' })).toBe('/');
+  });
+
+  it('reads JWT exp and detects near-expiry for proactive refresh', () => {
+    const expSec = Math.floor(Date.now() / 1000) + 30;
+    const payload = btoa(JSON.stringify({ exp: expSec }));
+    const token = `hdr.${payload}.sig`;
+    expect(getAccessTokenExpiryMs(token)).toBe(expSec * 1000);
+    expect(accessTokenNeedsRefresh(token, 90_000)).toBe(true);
+    expect(isAccessTokenFresh(token, 90_000)).toBe(false);
+
+    const farExp = Math.floor(Date.now() / 1000) + 3600;
+    const farPayload = btoa(JSON.stringify({ exp: farExp }));
+    const farToken = `hdr.${farPayload}.sig`;
+    expect(accessTokenNeedsRefresh(farToken, 90_000)).toBe(false);
+    expect(isAccessTokenFresh(farToken, 90_000)).toBe(true);
+
+    // Opaque / non-JWT tokens are not treated as fresh (must still HTTP-refresh).
+    expect(isAccessTokenFresh('expired-access', 90_000)).toBe(false);
+    expect(accessTokenNeedsRefresh('expired-access', 90_000)).toBe(false);
   });
 });

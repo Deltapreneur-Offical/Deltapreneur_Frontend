@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { Shield, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { payEasydmarcAddon } from '../../utils/domainAddonCheckout';
-import { readApiError } from '../../utils/apiError';
+import { domainStorefrontAPI } from '../../api/services';
+import {
+  addonRetryUserMessage,
+  getAddonRetryPayment,
+  isAddonProvisionRetryError,
+  payEasydmarcAddon,
+  retryAddonProvision,
+} from '../../utils/domainAddonCheckout';
 
 export default function EasyDmarcForm({ onClose, orders }) {
   const { user } = useAuth();
@@ -10,11 +16,32 @@ export default function EasyDmarcForm({ onClose, orders }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [retryPayment, setRetryPayment] = useState(null);
 
   const selectedOrder = orders.find((o) => String(o.id) === String(domainId));
   const provider = (selectedOrder?.provider || selectedOrder?.registrar || '').toLowerCase();
   const isOpenProvider = !selectedOrder || !provider || provider === 'openprovider' || provider === 'open provider';
   const isDisabled = !isOpenProvider;
+
+  const applySuccess = (detail) => {
+    const p = detail?.easydmarcProvisioned || {};
+    const dnsParts = [
+      p.recordType && `Type: ${p.recordType}`,
+      p.recordHost && `Host: ${p.recordHost}`,
+      p.recordValue && `Value: ${p.recordValue}`,
+    ].filter(Boolean);
+    setRetryPayment(null);
+    setResult({
+      success: true,
+      message: dnsParts.length
+        ? `EasyDMARC activated. Add this DNS record at your DNS host:`
+        : 'EasyDMARC order created. Open the panel below to copy the DMARC DNS record if it is not listed here.',
+      dnsLines: dnsParts,
+      dnsHint:
+        'Publish the TXT DMARC record for this domain. Remove conflicting _dmarc records first. DNS can take 24–48 hours to propagate. Then monitor reports in the EasyDMARC panel.',
+      ssoUrl: p.ssoUrl || '',
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,24 +49,38 @@ export default function EasyDmarcForm({ onClose, orders }) {
     setLoading(true);
     setResult(null);
     setError('');
+    setRetryPayment(null);
     try {
       const detail = await payEasydmarcAddon({
         orderId: domainId,
         user,
         description: `EasyDMARC for ${selectedOrder?.domain || 'domain'}`,
       });
-      const p = detail?.easydmarcProvisioned || {};
-      const dnsLine = [p.recordType, p.recordHost, p.recordValue].filter(Boolean).join(' · ');
-      setResult({
-        success: true,
-        message: dnsLine
-          ? `EasyDMARC activated. DNS: ${dnsLine}`
-          : 'EasyDMARC activated successfully.',
-        dnsHint: 'Add the DNS record above at your DNS host so anyone with the domain can publish DMARC. Changes can take up to 24–48 hours to propagate.',
-        ssoUrl: p.ssoUrl || '',
-      });
+      applySuccess(detail);
     } catch (err) {
-      setError(readApiError(err, 'Failed to activate EasyDMARC. Please try again.'));
+      const payment = getAddonRetryPayment(err);
+      if (payment) setRetryPayment(payment);
+      setError(addonRetryUserMessage(err, 'Failed to activate EasyDMARC. Please try again.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!domainId || !retryPayment) return;
+    setLoading(true);
+    setError('');
+    try {
+      const detail = await retryAddonProvision({
+        orderId: domainId,
+        payment: retryPayment,
+        verifyFn: domainStorefrontAPI.verifyEasydmarcAddonPayment,
+      });
+      applySuccess(detail);
+    } catch (err) {
+      const payment = getAddonRetryPayment(err) || retryPayment;
+      if (isAddonProvisionRetryError(err) || payment) setRetryPayment(payment);
+      setError(addonRetryUserMessage(err, 'EasyDMARC retry failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -74,6 +115,13 @@ export default function EasyDmarcForm({ onClose, orders }) {
       {result && (
         <div className={`text-xs font-semibold rounded-xl p-3 space-y-2 ${result.success ? 'text-emerald-800 bg-emerald-50' : 'text-rose-800 bg-rose-50'}`}>
           <p>{result.message}</p>
+          {Array.isArray(result.dnsLines) && result.dnsLines.length > 0 ? (
+            <ul className="list-disc pl-4 space-y-1 font-medium text-emerald-900/90">
+              {result.dnsLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : null}
           {result.dnsHint ? <p className="font-medium text-emerald-700/90">{result.dnsHint}</p> : null}
           {result.ssoUrl ? (
             <a href={result.ssoUrl} target="_blank" rel="noreferrer" className="underline text-teal-700">
@@ -82,13 +130,24 @@ export default function EasyDmarcForm({ onClose, orders }) {
           ) : null}
         </div>
       )}
+      {retryPayment ? (
+        <button
+          type="button"
+          onClick={handleRetry}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-teal-300 bg-teal-50 px-4 py-2.5 text-sm font-bold text-teal-900 hover:bg-teal-100 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          {loading ? 'Retrying...' : 'Retry activation (no extra charge)'}
+        </button>
+      ) : null}
       <button
         type="submit"
-        disabled={isDisabled || loading || !domainId || !user}
+        disabled={isDisabled || loading || !domainId || !user || !!retryPayment}
         className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700 disabled:opacity-50"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-        {loading ? 'Processing...' : 'Pay & Activate EasyDMARC'}
+        {loading && !retryPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+        {loading && !retryPayment ? 'Processing...' : 'Pay & Activate EasyDMARC'}
       </button>
     </form>
   );

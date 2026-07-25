@@ -32,6 +32,45 @@ export function clearAuthTokens() {
   localStorage.removeItem('refreshToken');
 }
 
+/**
+ * Read JWT `exp` (seconds → ms) without verifying the signature.
+ * Returns null when the token is missing or not a JWT.
+ */
+export function getAccessTokenExpiryMs(token = memoryAccessToken) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length < 2) return null;
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const json = atob(padded);
+    const payload = JSON.parse(json);
+    const exp = Number(payload?.exp);
+    if (!Number.isFinite(exp) || exp <= 0) return null;
+    return exp * 1000;
+  } catch {
+    return null;
+  }
+}
+
+/** True when JWT `exp` is known and within `skewMs` of expiry (proactive refresh). */
+export function accessTokenNeedsRefresh(token = memoryAccessToken, skewMs = 90_000) {
+  if (!token) return false;
+  const expMs = getAccessTokenExpiryMs(token);
+  if (expMs == null) return false;
+  return Date.now() >= expMs - skewMs;
+}
+
+/**
+ * True only when JWT `exp` is known and not near expiry.
+ * Unparseable tokens are not treated as fresh (avoids skipping HTTP refresh).
+ */
+export function isAccessTokenFresh(token = memoryAccessToken, skewMs = 90_000) {
+  const expMs = getAccessTokenExpiryMs(token);
+  if (expMs == null) return false;
+  return Date.now() < expMs - skewMs;
+}
+
 /** Readable CSRF cookie is set alongside HttpOnly refresh/access cookies. */
 export function hasCookieAuthSession() {
   if (typeof document === 'undefined') return false;

@@ -193,6 +193,31 @@ function toSafeLower(value) {
   return '';
 }
 
+const LIGHTNING_TAIL_MS = 2400;
+const LIGHTNING_TAIL_RETRIGGER_MS = 120;
+
+/** One-shot premium light streak on the clicked/focused host (not a loop). */
+function triggerLightningTail(host) {
+  if (!host || typeof host.classList === 'undefined') return;
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return;
+  }
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  // Coalesce click+focus that fire together on the same interaction.
+  if (host._lightningTailAt && now - host._lightningTailAt < LIGHTNING_TAIL_RETRIGGER_MS) {
+    return;
+  }
+  host._lightningTailAt = now;
+  host.classList.remove('brand-lightning-tail--play');
+  // Force reflow so replaying the same class restarts the animation.
+  void host.offsetWidth;
+  host.classList.add('brand-lightning-tail--play');
+  window.clearTimeout(host._lightningTailTimer);
+  host._lightningTailTimer = window.setTimeout(() => {
+    host.classList.remove('brand-lightning-tail--play');
+  }, LIGHTNING_TAIL_MS);
+}
+
 function BrandSearchIcon() {
   return (
     <Search
@@ -257,6 +282,7 @@ function HeroSearchStack({ animateHero, className = '', children }) {
 function BrandSearchTabs({
   searchMode,
   onTabChange,
+  onTabInteract,
   mobile = false,
   layoutId = 'brand-search-active-pill',
 }) {
@@ -291,8 +317,12 @@ function BrandSearchTabs({
       <TabButtonTag
         key={tabId}
         type="button"
-        onClick={() => onTabChange(tabId)}
-        className={buttonClassName}
+        onClick={(event) => {
+          triggerLightningTail(event.currentTarget);
+          onTabInteract?.(event.currentTarget);
+          onTabChange(tabId);
+        }}
+        className={`brand-lightning-host brand-lightning-host--ring ${buttonClassName}`}
         {...idleMotionProps}
       >
         {useMotionPill && isActive ? (
@@ -303,6 +333,7 @@ function BrandSearchTabs({
             aria-hidden="true"
           />
         ) : null}
+        <span className="brand-lightning-tail" aria-hidden="true" />
         <span className={`relative z-10 ${isActive ? 'text-white' : ''}`}>
           {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
         </span>
@@ -401,6 +432,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const debounceRef           = useRef(null);
   const newSearchCacheRef = useRef(new Map());
   const requestIdRef = useRef(0);
+  const desktopSearchFrameRef = useRef(null);
+  const mobileSearchFrameRef = useRef(null);
+
+  const playSearchBarLightning = useCallback(() => {
+    triggerLightningTail(desktopSearchFrameRef.current);
+    triggerLightningTail(mobileSearchFrameRef.current);
+  }, []);
   const safeQuery = toSafeText(query);
   const normalizedQuery = toSafeLower(query).trim();
   const hasSearchQuery = normalizedQuery.length > 0;
@@ -1116,38 +1154,63 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   });
 
   // ── Render ──────────────────────────────────────────────────────────────────
+  const onSearchFrameInteract = (event) => {
+    triggerLightningTail(event.currentTarget);
+  };
+
+  const onTabInteract = () => {
+    // Also light the search bar when user switches Domain Names / AI / etc.
+    playSearchBarLightning();
+  };
+
   const desktopSearchForm = (
-    <form
-      onSubmit={handleSearch}
-      className="search-glow-focus brand-search-shell flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full"
+    <div
+      ref={desktopSearchFrameRef}
+      className="brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-2xl sm:rounded-full"
+      onClick={onSearchFrameInteract}
+      onFocusCapture={onSearchFrameInteract}
     >
-      <BrandSearchIcon />
-      <input
-        type="text"
-        className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
-        placeholder={placeholder}
-        value={safeQuery}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <BrandSearchSubmitButton label={t('search')} />
-    </form>
+      <span className="brand-lightning-tail" aria-hidden="true" />
+      <form
+        onSubmit={handleSearch}
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full"
+      >
+        <BrandSearchIcon />
+        <input
+          type="text"
+          className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
+          placeholder={placeholder}
+          value={safeQuery}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <BrandSearchSubmitButton label={t('search')} />
+      </form>
+    </div>
   );
 
   const mobileSearchForm = (
-    <form
-      onSubmit={handleSearch}
-      className={`search-glow-focus brand-search-shell w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
+    <div
+      ref={mobileSearchFrameRef}
+      className={`brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-2xl sm:rounded-full ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
+      onClick={onSearchFrameInteract}
+      onFocusCapture={onSearchFrameInteract}
     >
-      <BrandSearchIcon />
-      <input
-        type="text"
-        className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
-        placeholder={placeholder}
-        value={safeQuery}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <BrandSearchSubmitButton label={t('search')} />
-    </form>
+      <span className="brand-lightning-tail" aria-hidden="true" />
+      <form
+        onSubmit={handleSearch}
+        className="search-glow-focus brand-search-shell relative z-[1] w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300"
+      >
+        <BrandSearchIcon />
+        <input
+          type="text"
+          className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
+          placeholder={placeholder}
+          value={safeQuery}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <BrandSearchSubmitButton label={t('search')} />
+      </form>
+    </div>
   );
 
   return (
@@ -1174,6 +1237,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <BrandSearchTabs
               searchMode={searchMode}
               onTabChange={handleTabChange}
+              onTabInteract={onTabInteract}
               layoutId="brand-search-active-pill-desktop"
             />
           </div>
@@ -1189,6 +1253,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <BrandSearchTabs
               searchMode={searchMode}
               onTabChange={handleTabChange}
+              onTabInteract={onTabInteract}
               mobile
               layoutId="brand-search-active-pill-mobile"
             />
@@ -1463,6 +1528,114 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
         }
 
+        /* Thick orange/red border comet — search bar + pills */
+        .brand-lightning-host {
+          position: relative;
+          isolation: isolate;
+        }
+
+        .brand-search-frame {
+          overflow: visible;
+        }
+
+        .brand-lightning-tail {
+          pointer-events: none;
+          position: absolute;
+          inset: 0;
+          z-index: 5;
+          border-radius: inherit;
+          overflow: hidden;
+          opacity: 0;
+        }
+
+        .brand-lightning-host--ring > .brand-lightning-tail {
+          /* Hairline ring — no leftover fill/shade on the control */
+          inset: -1px;
+          padding: 1px;
+          background: transparent;
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+        }
+
+        .brand-lightning-host--ring > .brand-lightning-tail::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 260%;
+          aspect-ratio: 1;
+          transform: translate(-50%, -50%) rotate(0deg);
+          opacity: 0;
+          /* Soft purple comet — no hard white tip that can flash at the end */
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            transparent 200deg,
+            rgba(124, 58, 237, 0.15) 235deg,
+            rgba(147, 51, 234, 0.45) 270deg,
+            rgba(168, 85, 247, 0.75) 300deg,
+            rgba(192, 132, 252, 0.9) 325deg,
+            rgba(167, 139, 250, 0.55) 345deg,
+            transparent 360deg
+          );
+          filter: drop-shadow(0 0 4px rgba(147, 51, 234, 0.55));
+        }
+
+        .brand-lightning-host.brand-lightning-tail--play > .brand-lightning-tail {
+          animation: brand-lightning-veil 2.2s cubic-bezier(0.33, 0, 0.2, 1) forwards;
+        }
+
+        .brand-lightning-host--ring.brand-lightning-tail--play > .brand-lightning-tail::before {
+          animation: brand-lightning-border-orbit 2.2s cubic-bezier(0.33, 0, 0.2, 1) forwards;
+        }
+
+        /* Whole layer eases out so nothing snaps or leaves a tint */
+        @keyframes brand-lightning-veil {
+          0% {
+            opacity: 0;
+          }
+          12% {
+            opacity: 1;
+          }
+          62% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes brand-lightning-border-orbit {
+          0% {
+            transform: translate(-50%, -50%) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          58% {
+            opacity: 0.95;
+          }
+          100% {
+            transform: translate(-50%, -50%) rotate(360deg);
+            opacity: 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .brand-lightning-host.brand-lightning-tail--play > .brand-lightning-tail,
+          .brand-lightning-host.brand-lightning-tail--play > .brand-lightning-tail::before {
+            animation: none !important;
+            opacity: 0 !important;
+          }
+        }
+
         .brand-search-submit {
           background: #000000;
           border-color: #000000;
@@ -1497,6 +1670,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           color: #ffffff;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
           border: 1px solid #000000;
+          overflow: visible;
           transition:
             background 0.48s cubic-bezier(0.22, 1, 0.36, 1),
             color 0.42s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1530,6 +1704,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           color: #000000;
           border: 1px solid rgba(0, 0, 0, 0.12);
           box-shadow: none;
+          overflow: visible;
           transition:
             background 0.48s cubic-bezier(0.22, 1, 0.36, 1),
             color 0.42s cubic-bezier(0.22, 1, 0.36, 1),

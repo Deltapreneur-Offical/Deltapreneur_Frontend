@@ -1,0 +1,633 @@
+/* Virtual Assistant Application — CoBrother premium form UI */
+
+.va-app-page {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #faf5ff 0%, #ffffff 45%, #eef2ff 100%);
+  overflow-x: clip;
+}
+
+.va-app-page__glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.va-app-page__glow--top {
+  top: -6rem;
+  right: -4rem;
+  width: 20rem;
+  height: 20rem;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.va-app-page__glow--bottom {
+  bottom: 8rem;
+  left: -6rem;
+  width: 24rem;
+  height: 24rem;
+  background: rgba(80, 191, 120, 0.08);
+}
+
+.va-app-back-row {
+  position: relative;
+  z-index: 1;
+}
+
+.va-app-hero {
+  position: relative;
+  z-index: 1;
+}
+
+.va-app-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.25rem;
+  background: var(--cobrother-brand-green-soft);
+  border: 1px solid rgba(80, 191, 120, 0.35);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #166534;
+  letter-spacing: 0.01em;
+}
+
+.va-app-badge__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--cobrother-brand-green);
+  animation: va-app-pulse 2s ease-in-out infinite;
+}
+
+@keyframes va-app-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.65;
+    transform: scale(0.92);
+  }
+}
+
+.va-app-hero-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.va-app-hero-subtitle {
+  margin: 0 auto;
+  max-width: 42rem;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  line-height: 1.65;
+  color: #64748b;
+}
+
+.va-app-form-section {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 4rem;
+}
+
+.va-app-form-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 16px 48px rgba(15, 23, 42, 0.08);
+  padding: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .va-app-form-card {
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .va-app-form-card {
+    padding: 2.5rem;
+  }
+}
+
+.va-app-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.va-app-section {
+  padding: 1.25rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.va-app-section:hover {
+  border-color: #cbd5e1;
+}
+
+@media (min-width: 640px) {
+  .va-app-section {
+    padding: 1.5rem;
+  }
+}
+
+.va-app-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.va-app-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 0.875rem;
+  color: var(--brand);
+}
+
+.va-app-section-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+@media (min-width: 640px) {
+  .va-app-section-title {
+    font-size: 1.25rem;
+  }
+}
+
+.va-app-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.va-app-field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .va-app-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.va-app-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.va-app-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.va-app-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.va-app-required {
+  color: #ef4444;
+}
+
+.va-app-char-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.va-app-char-count--valid {
+  color: var(--cobrother-brand-green-dark);
+  font-weight: 600;
+}
+
+.va-app-input,
+.va-app-textarea,
+.va-app-select {
+  width: 100%;
+  padding: 0.7rem 0.875rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  color: #0f172a;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.va-app-input {
+  height: 3.125rem;
+}
+
+.va-app-input::placeholder,
+.va-app-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.va-app-textarea {
+  min-height: 7rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.va-app-select {
+  height: 3.125rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.5rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.va-app-input:focus,
+.va-app-textarea:focus,
+.va-app-select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+.va-app-input--error,
+.va-app-textarea--error,
+.va-app-select--error {
+  border-color: #ef4444;
+}
+
+.va-app-input--error:focus,
+.va-app-textarea--error:focus,
+.va-app-select--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.va-app-input-wrap {
+  position: relative;
+}
+
+.va-app-input-wrap__icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.va-app-input--with-icon {
+  padding-left: 2.5rem;
+}
+
+.va-app-phone-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.va-app-phone-prefix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4rem;
+  height: 3.125rem;
+  padding: 0 0.875rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.va-app-phone-row .va-app-input {
+  flex: 1;
+}
+
+.va-app-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.va-app-error {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #ef4444;
+}
+
+.va-app-roles-select {
+  min-height: 9.5rem;
+  padding: 0.5rem;
+  line-height: 1.5;
+}
+
+.va-app-roles-select option {
+  padding: 0.45rem 0.625rem;
+  border-radius: 0.375rem;
+}
+
+.va-app-roles-select option:checked {
+  background: linear-gradient(0deg, #ede9fe 0%, #ede9fe 100%);
+  color: #5b21b6;
+  font-weight: 600;
+}
+
+.va-app-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1.5rem 1rem;
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.va-app-upload:hover {
+  border-color: var(--brand-border);
+  background: #faf5ff;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+}
+
+.va-app-upload--error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.va-app-upload--error:hover {
+  border-color: #ef4444;
+  background: #fef2f2;
+  box-shadow: none;
+}
+
+.va-app-upload__icon {
+  color: #94a3b8;
+}
+
+.va-app-upload__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  text-align: center;
+}
+
+.va-app-upload__meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.va-app-upload__preview {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid var(--brand);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2);
+}
+
+.va-app-availability {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.va-app-availability__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3.125rem;
+  padding: 0.625rem 1rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.va-app-availability__option:hover {
+  border-color: var(--brand-border);
+  background: #faf5ff;
+}
+
+.va-app-availability__option--selected {
+  border-color: var(--brand);
+  background: #ffffff;
+  color: #5b21b6;
+  font-weight: 600;
+  box-shadow:
+    0 0 0 1px rgba(124, 58, 237, 0.18),
+    0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.va-app-availability__radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.va-app-availability__radio-ring {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+.va-app-availability__option--selected .va-app-availability__radio-ring {
+  border-color: var(--brand);
+}
+
+.va-app-availability__radio-dot {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.va-app-availability__label {
+  font-size: 0.875rem;
+}
+
+.va-app-checkbox-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.va-app-checkbox-card:hover {
+  border-color: var(--brand-border);
+  background: #faf5ff;
+}
+
+.va-app-checkbox-card--error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.va-app-checkbox-card--error:hover {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.va-app-checkbox-card input[type='checkbox'] {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.va-app-checkbox-card__text {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #334155;
+  cursor: pointer;
+}
+
+.va-app-checkbox-card__text strong {
+  color: #0f172a;
+}
+
+.va-app-checkbox-card__text a {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.va-app-checkbox-card__text a:hover {
+  color: var(--brand-hover);
+}
+
+.va-app-submit-wrap {
+  padding-top: 0.25rem;
+}
+
+.va-app-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.875rem;
+}
+
+.va-app-alert__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.va-app-alert__message {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.va-app-alert--success {
+  background: var(--cobrother-brand-green-soft);
+  border: 1px solid rgba(80, 191, 120, 0.35);
+}
+
+.va-app-alert--success .va-app-alert__title {
+  color: #14532d;
+}
+
+.va-app-alert--success .va-app-alert__message {
+  color: #166534;
+}
+
+.va-app-alert--success svg {
+  color: var(--cobrother-brand-green-dark);
+}
+
+.va-app-alert--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.va-app-alert--error .va-app-alert__title {
+  color: #991b1b;
+}
+
+.va-app-alert--error .va-app-alert__message {
+  color: #b91c1c;
+}
+
+.va-app-alert--error svg {
+  color: #dc2626;
+}

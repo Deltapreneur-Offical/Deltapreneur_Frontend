@@ -1,48 +1,99 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, ChevronLeft, ChevronRight, X, Download, User, Mail, Phone, MapPin, Briefcase, FileText, Globe, Clock, IndianRupee, Filter, Check, XCircle, Loader2, Trash2 } from 'lucide-react';
-import StatusFilterBar from '../components/admin/StatusFilterBar';
+import { Search, Eye, ChevronLeft, ChevronRight, X, User, Filter, Check, XCircle, Loader2, Trash2, Users } from 'lucide-react';
 import { adminAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 
-const STATUS_CONFIG = [
-  { id: 'all', label: 'All' },
-  { id: 'pending', label: 'Pending' },
-  { id: 'under_review', label: 'Under Review' },
-  { id: 'partially_approved', label: 'Partially Approved' },
-  { id: 'approved', label: 'Approved' },
-  { id: 'rejected', label: 'Rejected' },
-];
 
-const STATUS_BADGE_CLASSES = {
-  pending: 'bg-gray-100 text-gray-800',
-  under_review: 'bg-yellow-100 text-yellow-800',
-  reviewing: 'bg-yellow-100 text-yellow-800',
-  partially_approved: 'bg-blue-100 text-blue-800',
-  approved: 'bg-green-100 text-green-800',
-  accepted: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+const STATUS_BADGE = {
+  pending:           { bg: 'bg-amber-50',   text: 'text-amber-700',  ring: 'ring-amber-200/60'  },
+  under_review:      { bg: 'bg-blue-50',    text: 'text-blue-700',   ring: 'ring-blue-200/60'   },
+  reviewing:         { bg: 'bg-blue-50',    text: 'text-blue-700',   ring: 'ring-blue-200/60'   },
+  partially_approved:{ bg: 'bg-violet-50',  text: 'text-violet-700', ring: 'ring-violet-200/60' },
+  approved:          { bg: 'bg-emerald-50', text: 'text-emerald-700',ring: 'ring-emerald-200/60'},
+  accepted:          { bg: 'bg-emerald-50', text: 'text-emerald-700',ring: 'ring-emerald-200/60'},
+  rejected:          { bg: 'bg-red-50',     text: 'text-red-700',    ring: 'ring-red-200/60'    },
 };
 
-const ROLE_STATUS_DOT = {
-  pending: '🟡',
-  approved: '🟢',
-  rejected: '🔴',
-};
+/**
+ * Check both camelCase and snake_case photo URL fields returned by the backend.
+ * The multipart upload uses `profile_photo` which the API may return as
+ * `profilePhotoUrl` (camelCase) or `profile_photo_url` (snake_case).
+ */
+function getPhotoUrl(app) {
+  return app?.profilePhotoUrl || app?.profile_photo_url || app?.photoUrl || app?.photo_url || null;
+}
+
+function StatusBadge({ status }) {
+  const s = (status || 'pending').toLowerCase().replace(/-/g, '_');
+  const cfg = STATUS_BADGE[s] || STATUS_BADGE.pending;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1 ${cfg.bg} ${cfg.text} ${cfg.ring} whitespace-nowrap`}>
+      {formatStatusLabel(status)}
+    </span>
+  );
+}
+
+function ApplicantAvatar({ app }) {
+  const [errored, setErrored] = useState(false);
+  const photoUrl = getPhotoUrl(app);
+  const initial = (app?.fullName || app?.name || '?')[0]?.toUpperCase();
+
+  if (photoUrl && !errored) {
+    return (
+      <img
+        src={photoUrl}
+        alt={app?.fullName || 'Applicant'}
+        className="w-11 h-11 rounded-full object-cover ring-2 ring-white shadow-md flex-shrink-0"
+        onError={() => setErrored(true)}
+      />
+    );
+  }
+  return (
+    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-violet-100 to-purple-200 flex items-center justify-center ring-2 ring-white shadow-md flex-shrink-0">
+      <span className="text-sm font-bold text-purple-700">{initial}</span>
+    </div>
+  );
+}
 
 function formatStatusLabel(status) {
   if (!status) return 'Pending';
-  return status.replace('_', ' ').replace('-', ' ');
+  return status.replace(/_/g, ' ').replace(/-/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return 'â€”';
   try {
-    return new Date(dateStr).toLocaleString();
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   } catch {
     return dateStr;
   }
+}
+
+function StatCard({ label, value, colorClass, isActive, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        bg-white rounded-2xl border shadow-sm p-4 flex items-center gap-3 transition-all text-left
+        ${isActive
+          ? 'border-purple-500 ring-2 ring-purple-500/30 shadow-md shadow-purple-200'
+          : 'border-gray-100 hover:border-purple-300 hover:shadow-md'
+        }
+      `}
+      aria-pressed={isActive}
+    >
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+        <Users size={16} className="text-white" />
+      </div>
+      <div>
+        <p className="text-xl font-bold text-gray-900 leading-tight">{value ?? 0}</p>
+        <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{label}</p>
+      </div>
+    </button>
+  );
 }
 
 function VirtualAssistantApplicationsAdminPage() {
@@ -63,13 +114,6 @@ function VirtualAssistantApplicationsAdminPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState({ all: 0, pending: 0, under_review: 0, partially_approved: 0, approved: 0, rejected: 0 });
-  const [profilePhotoError, setProfilePhotoError] = useState({});
-
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [selectedAppRoles, setSelectedAppRoles] = useState([]);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [savingRoleId, setSavingRoleId] = useState(null);
-  const [roleNotes, setRoleNotes] = useState({});
 
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -139,44 +183,20 @@ function VirtualAssistantApplicationsAdminPage() {
     }
   };
 
-  const handleStatusChange = (newStatus) => {
-    setStatusFilter(newStatus);
-    setPage(1);
-  };
-
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-    setPage(1);
-  };
-
-  const handleRoleFilterChange = (e) => {
-    setRoleFilter(e.target.value);
-    setPage(1);
-  };
-
-  const handleDateFromChange = (e) => {
-    setDateFrom(e.target.value);
-    setPage(1);
-  };
-
-  const handleDateToChange = (e) => {
-    setDateTo(e.target.value);
-    setPage(1);
-  };
+  const handleStatusChange = (newStatus) => { setStatusFilter(newStatus); setPage(1); };
+  const handleSearchChange = (e) => { setSearch(e.target.value); setPage(1); };
+  const handleRoleFilterChange = (e) => { setRoleFilter(e.target.value); setPage(1); };
+  const handleDateFromChange = (e) => { setDateFrom(e.target.value); setPage(1); };
+  const handleDateToChange = (e) => { setDateTo(e.target.value); setPage(1); };
 
   const clearFilters = () => {
-    setSearch('');
-    setStatusFilter('all');
-    setRoleFilter('');
-    setDateFrom('');
-    setDateTo('');
-    setPage(1);
+    setSearch(''); setStatusFilter('all'); setRoleFilter(''); setDateFrom(''); setDateTo(''); setPage(1);
   };
 
   const hasActiveFilters = search || statusFilter !== 'all' || roleFilter || dateFrom || dateTo;
 
   const getCounts = () => ({
-    all: counts.all ?? items.length,
+    all: counts.all ?? 0,
     pending: counts.pending ?? 0,
     under_review: counts.under_review ?? 0,
     partially_approved: counts.partially_approved ?? 0,
@@ -198,94 +218,101 @@ function VirtualAssistantApplicationsAdminPage() {
   }
 
   return (
-    <div className="admin-page" data-admin-section="virtual-assistants">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-4">
+    <div className="admin-page w-full min-w-0" data-admin-section="virtual-assistants">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-6">
+
+      {/* Header */}
+      <div className="mb-7">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/admin')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-800"
             title="Back to Admin Dashboard"
           >
-            <ChevronLeft size={20} className="text-gray-600" />
+            <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Virtual Assistant Applications</h1>
-            <p className="text-sm text-gray-500 mt-1">Review and manage all submitted Virtual Assistant applications</p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Virtual Assistant Applications</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Review and manage submitted VA applications</p>
           </div>
         </div>
       </div>
 
-      <StatusFilterBar
-        config={STATUS_CONFIG}
-        activeStatus={statusFilter}
-        counts={getCounts()}
-        onFilterChange={handleStatusChange}
-      />
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <StatCard label="Total" value={getCounts().all} colorClass="bg-gradient-to-br from-violet-500 to-purple-600" isActive={statusFilter === 'all'} onClick={() => handleStatusChange('all')} />
+        <StatCard label="Pending" value={getCounts().pending} colorClass="bg-gradient-to-br from-amber-400 to-orange-500" isActive={statusFilter === 'pending'} onClick={() => handleStatusChange('pending')} />
+        <StatCard label="Under Review" value={getCounts().under_review} colorClass="bg-gradient-to-br from-blue-500 to-indigo-600" isActive={statusFilter === 'under_review'} onClick={() => handleStatusChange('under_review')} />
+        <StatCard label="Partial Approved" value={getCounts().partially_approved} colorClass="bg-gradient-to-br from-indigo-400 to-violet-500" isActive={statusFilter === 'partially_approved'} onClick={() => handleStatusChange('partially_approved')} />
+        <StatCard label="Approved" value={getCounts().approved} colorClass="bg-gradient-to-br from-emerald-500 to-teal-600" isActive={statusFilter === 'approved'} onClick={() => handleStatusChange('approved')} />
+        <StatCard label="Rejected" value={getCounts().rejected} colorClass="bg-gradient-to-br from-red-400 to-rose-500" isActive={statusFilter === 'rejected'} onClick={() => handleStatusChange('rejected')} />
+      </div>
 
-      <div className="mb-4">
+      {/* Search & Filter Bar */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-5">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-3 text-gray-400" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={handleSearchChange}
               placeholder="Search by name, email, or phone..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-colors ${
+            className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border transition-all ${
               showFilters || hasActiveFilters
-                ? 'bg-purple-50 border-purple-300 text-purple-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-200'
+                : 'bg-white border-gray-200 text-gray-700 hover:border-purple-400 hover:text-purple-700'
             }`}
           >
-            <Filter size={16} />
+            <Filter size={15} />
             Filters
-            {hasActiveFilters && <span className="w-2 h-2 bg-purple-600 rounded-full" />}
+            {hasActiveFilters && <span className="w-2 h-2 bg-white rounded-full opacity-80" />}
           </button>
         </div>
 
         {showFilters && (
-          <div className="mt-3 p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+          <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Applied Role</label>
+                <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Applied Role</label>
                 <input
                   type="text"
                   value={roleFilter}
                   onChange={handleRoleFilterChange}
                   placeholder="e.g. customer_support"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">From Date</label>
                 <input
                   type="date"
                   value={dateFrom}
                   onChange={handleDateFromChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">To Date</label>
                 <input
                   type="date"
                   value={dateTo}
                   onChange={handleDateToChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
             </div>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-red-600 font-medium transition-colors"
               >
-                <X size={14} />
+                <X size={13} />
                 Clear all filters
               </button>
             )}
@@ -293,85 +320,92 @@ function VirtualAssistantApplicationsAdminPage() {
         )}
       </div>
 
+      {/* Table / Loading / Empty */}
       {loading && items.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">Loading...</div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center gap-3">
+          <Loader2 size={28} className="text-purple-500 animate-spin" />
+          <p className="text-sm text-gray-400 font-medium">Loading applicationsâ€¦</p>
+        </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">No applications found.</div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+            <Users size={24} className="text-gray-400" />
+          </div>
+          <p className="text-sm text-gray-400 font-medium">No applications found.</p>
+        </div>
       ) : (
-        <>
-          <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Reference</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Profile Photo</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Applicant Name</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Phone Number</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Location</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Applied Roles</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Overall Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Submission Date</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
+                <tr className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-slate-50">
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap min-w-[200px]">Reference</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Photo</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">Applicant</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Email</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">Phone</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Location</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Roles</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="text-left py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">Submitted</th>
+                  <th className="text-center py-4 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-50">
                 {items.map((app) => (
-                  <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-900 font-mono text-xs">{app.referenceNumber || app.id}</td>
-                    <td className="py-3 px-4">
-                      {app.profilePhotoUrl && !profilePhotoError[app.id] ? (
-                        <img
-                          src={app.profilePhotoUrl}
-                          alt=""
-                          className="w-10 h-10 rounded-full object-cover"
-                          onError={() => setProfilePhotoError(prev => ({ ...prev, [app.id]: true }))}
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                          <User size={18} className="text-purple-600" />
-                        </div>
-                      )}
+                  <tr key={app.id} className="hover:bg-violet-50/40 transition-colors duration-100">
+                    <td className="py-4 px-5 whitespace-nowrap min-w-[200px]">
+                      <span
+                        className="inline-block max-w-[280px] font-mono text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 whitespace-nowrap overflow-hidden text-ellipsis align-middle"
+                        title={String(app.referenceNumber || app.id || '')}
+                      >
+                        {app.referenceNumber || app.id || '—'}
+                      </span>
                     </td>
-                    <td className="py-3 px-4 font-semibold text-gray-900">{app.fullName}</td>
-                    <td className="py-3 px-4 text-gray-600">{app.email}</td>
-                    <td className="py-3 px-4 text-gray-600">{app.phoneNumber || '—'}</td>
-                    <td className="py-3 px-4 text-gray-600">{app.location || '—'}</td>
-                    <td className="py-3 px-4 text-gray-600 max-w-[200px]">
+                    <td className="py-4 px-5">
+                      <ApplicantAvatar app={app} />
+                    </td>
+                    <td className="py-4 px-5 font-semibold text-gray-900 whitespace-nowrap">{app.fullName || '—'}</td>
+                    <td className="py-4 px-5 text-gray-500 max-w-[180px] truncate">{app.email || '—'}</td>
+                    <td className="py-4 px-5 text-gray-500 whitespace-nowrap">{app.phoneNumber || '—'}</td>
+                    <td className="py-4 px-5 text-gray-500 whitespace-nowrap">{app.location || '—'}</td>
+                    <td className="py-4 px-5 max-w-[200px]">
                       {app.roles ? (
                         <div className="flex flex-wrap gap-1">
                           {app.roles.split(',').slice(0, 2).map((role, i) => (
-                            <span key={i} className="inline-block px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">{role.trim()}</span>
+                            <span key={i} className="inline-block px-2 py-0.5 bg-violet-50 text-violet-700 rounded-lg text-[11px] font-semibold border border-violet-100">
+                              {role.trim()}
+                            </span>
                           ))}
                           {app.roles.split(',').length > 2 && (
-                            <span className="text-xs text-gray-400">+{app.roles.split(',').length - 2} more</span>
+                            <span className="text-[11px] text-gray-400 font-medium">
+                              +{app.roles.split(',').length - 2}
+                            </span>
                           )}
                         </div>
                       ) : '—'}
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE_CLASSES[app.overallStatus] || STATUS_BADGE_CLASSES[app.status] || 'bg-gray-100 text-gray-800'}`}>
-                        {formatStatusLabel(app.overallStatus || app.status)}
-                      </span>
+                    <td className="py-4 px-5">
+                      <StatusBadge status={app.overallStatus || app.status} />
                     </td>
-                    <td className="py-3 px-4 text-gray-600 whitespace-nowrap">
-                      {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}
+                    <td className="py-4 px-5 text-gray-400 whitespace-nowrap text-[12px]">
+                      {app.createdAt ? formatDate(app.createdAt) : '—'}
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-2">
+                    <td className="py-4 px-5 text-center whitespace-nowrap">
+                      <div className="inline-flex items-center justify-center gap-2">
                         <button
                           onClick={() => navigate(`/admin/virtual-assistants/applications/${app.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] font-semibold text-violet-700 bg-violet-50 rounded-xl hover:bg-violet-100 border border-violet-100 transition-all"
                         >
-                          <Eye size={14} />
+                          <Eye size={13} />
                           View
                         </button>
                         <button
                           onClick={() => { setDeleteConfirmId(app.id); setDeleteError(''); }}
                           disabled={deletingId === app.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] font-semibold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 border border-red-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={13} />
                           Delete
                         </button>
                       </div>
@@ -382,30 +416,33 @@ function VirtualAssistantApplicationsAdminPage() {
             </table>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between mt-4 pt-4 border-t border-gray-200 gap-3">
-            <p className="text-sm text-gray-600">
-              Page {page} of {totalPages} &middot; {total} total records
+          {/* Pagination */}
+          <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-4 border-t border-gray-50 gap-3">
+            <p className="text-xs text-gray-400 font-medium">
+              Page <span className="text-gray-700 font-bold">{page}</span> of{' '}
+              <span className="text-gray-700 font-bold">{totalPages}</span> &middot;{' '}
+              <span className="text-gray-700 font-bold">{total}</span> records
             </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                className="p-2 border border-gray-200 rounded-xl disabled:opacity-40 hover:bg-gray-50 transition-colors"
                 aria-label="Previous page"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={15} />
               </button>
               {pageNumbers.map((p, idx) =>
                 p === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+                  <span key={`ellipsis-${idx}`} className="px-2 text-gray-300 text-sm">â€¦</span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`min-w-[2rem] h-8 px-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`min-w-[2.25rem] h-9 px-2 text-sm font-semibold rounded-xl transition-all ${
                       page === p
-                        ? 'bg-purple-600 text-white'
-                        : 'border border-gray-300 hover:bg-gray-50'
+                        ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
+                        : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {p}
@@ -415,228 +452,48 @@ function VirtualAssistantApplicationsAdminPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                className="p-2 border border-gray-200 rounded-xl disabled:opacity-40 hover:bg-gray-50 transition-colors"
                 aria-label="Next page"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={15} />
               </button>
             </div>
-          </div>
-        </>
-      )}
-
-      {selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Application Details</h3>
-              <button onClick={() => { setSelectedApp(null); setSelectedAppRoles([]); }} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X size={20} />
-              </button>
-            </div>
-
-            {detailLoading ? (
-              <div className="p-12 text-center text-gray-500">Loading...</div>
-            ) : (
-              <div className="p-6 space-y-6">
-                <div className="flex items-start gap-4">
-                  {selectedApp.profilePhotoUrl && !profilePhotoError[selectedApp.id] ? (
-                    <img
-                      src={selectedApp.profilePhotoUrl}
-                      alt=""
-                      className="w-20 h-20 rounded-xl object-cover"
-                      onError={() => setProfilePhotoError(prev => ({ ...prev, [selectedApp.id]: true }))}
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <User size={32} className="text-purple-600" />
-                    </div>
-                  )}
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900">{selectedApp.fullName}</h4>
-                    <p className="text-sm text-gray-500">{selectedApp.referenceNumber}</p>
-                    <span className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      (selectedApp.overallStatus || selectedApp.status) === 'accepted' ? 'bg-green-100 text-green-800' :
-                      (selectedApp.overallStatus || selectedApp.status) === 'rejected' ? 'bg-red-100 text-red-800' :
-                      (selectedApp.overallStatus || selectedApp.status) === 'reviewing' ? 'bg-yellow-100 text-yellow-800' :
-                      (selectedApp.overallStatus || selectedApp.status) === 'partially_approved' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {formatStatusLabel(selectedApp.overallStatus || selectedApp.status)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <h5 className="font-semibold text-gray-900 flex items-center gap-2"><User size={16} /> Personal Information</h5>
-                    <p className="text-sm text-gray-600"><Mail size={14} className="inline mr-2" />{selectedApp.email}</p>
-                    <p className="text-sm text-gray-600"><Phone size={14} className="inline mr-2" />{selectedApp.phoneNumber || '—'}</p>
-                    <p className="text-sm text-gray-600"><MapPin size={14} className="inline mr-2" />{selectedApp.location || '—'}</p>
-                  </div>
-                  <div className="space-y-3">
-                    <h5 className="font-semibold text-gray-900 flex items-center gap-2"><Briefcase size={16} /> Professional Information</h5>
-                    <p className="text-sm text-gray-600"><strong>Bio:</strong> {selectedApp.bio || '—'}</p>
-                    <p className="text-sm text-gray-600"><strong>Skills:</strong> {selectedApp.skills || '—'}</p>
-                    <p className="text-sm text-gray-600"><strong>Experience:</strong> {selectedApp.yearsExperience || '—'}</p>
-                    <p className="text-sm text-gray-600"><strong>Languages:</strong> {selectedApp.languagesKnown || '—'}</p>
-                    {selectedApp.linkedinUrl && <p className="text-sm text-gray-600"><Globe size={14} className="inline mr-2" /><a href={selectedApp.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">LinkedIn</a></p>}
-                    {selectedApp.portfolioUrl && <p className="text-sm text-gray-600"><Globe size={14} className="inline mr-2" /><a href={selectedApp.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">Portfolio</a></p>}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h5 className="font-semibold text-gray-900 flex items-center gap-2"><Clock size={16} /> Work Information</h5>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <p className="text-sm text-gray-600"><strong>Availability:</strong> {selectedApp.availability ? selectedApp.availability.replace('_', ' ').replace('-', ' ') : '—'}</p>
-                    <p className="text-sm text-gray-600"><strong>Hours/Week:</strong> {selectedApp.hoursPerWeek || '—'}</p>
-                    <p className="text-sm text-gray-600"><IndianRupee size={14} className="inline mr-1" /><strong>Compensation:</strong> {selectedApp.expectedCompensation || '—'}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h5 className="font-semibold text-gray-900 flex items-center gap-2"><FileText size={16} /> Applied Roles</h5>
-                  {selectedAppRoles.length === 0 ? (
-                    <p className="text-sm text-gray-500">No roles specified.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {selectedAppRoles.map((role) => (
-                        <div key={role.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span aria-hidden className="text-base leading-none">{ROLE_STATUS_DOT[role.status] || '🟡'}</span>
-                              <p className="text-sm font-semibold text-gray-900">{role.roleName}</p>
-                            </div>
-                            <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                              role.status === 'approved' ? 'bg-green-50 text-green-700' :
-                              role.status === 'rejected' ? 'bg-red-50 text-red-700' :
-                              'bg-yellow-50 text-yellow-800'
-                            }`}>
-                              {formatStatusLabel(role.status)}
-                            </span>
-                            {(role.reviewedBy || role.reviewedAt) && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {role.reviewedBy ? `Reviewed by ${role.reviewedBy}` : 'Reviewed'}
-                                {role.reviewedAt ? ` · ${formatDate(role.reviewedAt)}` : ''}
-                              </p>
-                            )}
-                            {role.rejectionNote && (
-                              <p className="text-xs text-red-600 mt-1">Note: {role.rejectionNote}</p>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              onClick={() => handleRoleUpdate(role.id, 'approved')}
-                              disabled={savingRoleId === role.id || role.status === 'approved'}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 disabled:opacity-50 disabled:cursor-default"
-                              title="Approve this role"
-                            >
-                              {savingRoleId === role.id ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              ) : (
-                                <Check size={12} />
-                              )}
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleRoleUpdate(role.id, 'rejected')}
-                              disabled={savingRoleId === role.id || role.status === 'rejected'}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-default"
-                              title="Reject this role"
-                            >
-                              {savingRoleId === role.id ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              ) : (
-                                <XCircle size={12} />
-                              )}
-                              Reject
-                            </button>
-                            <button
-                              onClick={() => handleRoleUpdate(role.id, 'pending')}
-                              disabled={savingRoleId === role.id || role.status === 'pending'}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-default"
-                              title="Set as pending"
-                            >
-                              {savingRoleId === role.id ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              ) : (
-                                <Clock size={12} />
-                              )}
-                              Pending
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {selectedApp.resumeUrl && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => handleDownloadResume(selectedApp.id)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                    >
-                      <Download size={16} />
-                      Download Resume
-                    </button>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-gray-200">
-                  <h5 className="font-semibold text-gray-900 mb-3">Update Overall Status</h5>
-                  <div className="flex flex-wrap gap-2">
-                    {['pending', 'under_review', 'partially_approved', 'accepted', 'rejected'].map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => handleStatusUpdate(selectedApp.id, s)}
-                        disabled={(selectedApp.overallStatus || selectedApp.status) === s}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
-                          (selectedApp.overallStatus || selectedApp.status) === s
-                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-default'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500 hover:text-purple-600'
-                        }`}
-                      >
-                        {formatStatusLabel(s)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
+
+      {/* Delete Confirm Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Application</h3>
-            <p className="text-sm text-gray-600 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-gray-100">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
+              <Trash2 size={22} className="text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Application</h3>
+            <p className="text-sm text-gray-500 mb-1">
               Are you sure you want to permanently delete this Virtual Assistant application?
             </p>
-            <p className="text-sm text-gray-500 mb-6">
-              This action cannot be undone.
-            </p>
+            <p className="text-sm text-red-500 font-medium mb-5">This action cannot be undone.</p>
             {deleteError && (
-              <p className="text-sm text-red-600 mb-4">{deleteError}</p>
+              <p className="text-sm text-red-600 mb-4 bg-red-50 px-3 py-2 rounded-xl">{deleteError}</p>
             )}
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => { setDeleteConfirmId(null); setDeleteError(''); }}
                 disabled={deletingId === deleteConfirmId}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deletingId === deleteConfirmId}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+                className="px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2 shadow-md shadow-red-200"
               >
                 {deletingId === deleteConfirmId ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    Deleting...
+                    Deletingâ€¦
                   </>
                 ) : (
                   <>
@@ -649,6 +506,7 @@ function VirtualAssistantApplicationsAdminPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

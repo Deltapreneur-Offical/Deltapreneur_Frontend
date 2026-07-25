@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, X, Check, XCircle, Clock, User, Mail, Phone, MapPin, Briefcase, FileText, Globe, Clock3, IndianRupee, Loader2, Bell } from 'lucide-react';
+import {
+  ArrowLeft, Download, Check, XCircle, Clock, User, Mail, Phone, MapPin,
+  Briefcase, FileText, Globe, Clock3, IndianRupee, Loader2, Hash, Calendar,
+  RefreshCw, Link2, Languages, Sparkles,
+} from 'lucide-react';
 import { adminAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
+import '../styles/virtual-assistant-application-detail.css';
 
 const STATUS_BADGE_CLASSES = {
   pending: 'bg-gray-100 text-gray-800',
@@ -41,6 +46,71 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function toChips(value) {
+  if (!value) return [];
+  return String(value)
+    .split(/[,;|]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function SectionCard({ icon: Icon, title, children }) {
+  return (
+    <section className="va-detail-card">
+      <div className="va-detail-card__header">
+        <span className="va-detail-card__icon">
+          <Icon size={18} />
+        </span>
+        <h2 className="va-detail-card__title">{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function InfoItem({ icon: Icon, label, children, className = '' }) {
+  return (
+    <div className={`va-detail-info-item ${className}`.trim()}>
+      <span className="va-detail-info-item__icon">
+        <Icon size={16} />
+      </span>
+      <div className="va-detail-info-item__body">
+        <span className="va-detail-info-item__label">{label}</span>
+        <div className="va-detail-info-item__value">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ icon: Icon, label, children, mono = false }) {
+  return (
+    <div className="va-detail-summary-row">
+      <span className="va-detail-summary-row__icon">
+        <Icon size={15} />
+      </span>
+      <div>
+        <span className="va-detail-summary-row__label">{label}</span>
+        <div className={`va-detail-summary-row__value${mono ? ' va-detail-summary-row__value--mono' : ''}`}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChipList({ items, empty = '—', neutral = false }) {
+  if (!items.length) return <span>{empty}</span>;
+  return (
+    <div className="va-detail-chips">
+      {items.map((item) => (
+        <span key={item} className={`va-detail-chip${neutral ? ' va-detail-chip--neutral' : ''}`}>
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function VirtualAssistantApplicationDetailPage() {
   const { applicationId } = useParams();
   const navigate = useNavigate();
@@ -62,13 +132,6 @@ function VirtualAssistantApplicationDetailPage() {
   const [savingCapacityId, setSavingCapacityId] = useState(null);
   const [capacityMessage, setCapacityMessage] = useState('');
   const [profilePhotoError, setProfilePhotoError] = useState(false);
-  const [adminNotes, setAdminNotes] = useState('');
-  const [savingAdminNotes, setSavingAdminNotes] = useState(false);
-  const [adminNotesMessage, setAdminNotesMessage] = useState('');
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [loadingAuditLogs, setLoadingAuditLogs] = useState(false);
-  const [loadingNotifications, setLoadingNotifications] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -77,18 +140,13 @@ function VirtualAssistantApplicationDetailPage() {
     setPricingMessage('');
     setPublishMessage('');
     setCapacityMessage('');
-    setAdminNotesMessage('');
     try {
-      const [appRes, rolesRes, auditRes, notifRes] = await Promise.all([
+      const [appRes, rolesRes] = await Promise.all([
         adminAPI.getVirtualAssistant(applicationId),
         adminAPI.getVirtualAssistantRoles(applicationId),
-        adminAPI.getVirtualAssistantAuditLogs(applicationId),
-        adminAPI.getVirtualAssistantNotifications(applicationId),
       ]);
       const appData = unwrapApiData(appRes);
       const rolesData = unwrapApiData(rolesRes) || [];
-      const auditData = unwrapApiData(auditRes) || [];
-      const notifData = unwrapApiData(notifRes) || [];
       setApplication(appData);
       setRoles(rolesData);
       setAssignments([]);
@@ -103,10 +161,7 @@ function VirtualAssistantApplicationDetailPage() {
           pricingCurrency: appData.pricingCurrency || 'INR',
           maxClientCapacity: appData.maxClientCapacity ?? '',
         });
-        setAdminNotes(appData.adminNotes || '');
       }
-      setAuditLogs(auditData);
-      setNotifications(notifData);
     } catch (e) {
       console.error('Failed to load application detail', e);
       const status = e?.response?.status;
@@ -119,16 +174,12 @@ function VirtualAssistantApplicationDetailPage() {
 
   const refreshAll = useCallback(async () => {
     try {
-      const [appRes, rolesRes, auditRes, notifRes] = await Promise.all([
+      const [appRes, rolesRes] = await Promise.all([
         adminAPI.getVirtualAssistant(applicationId),
         adminAPI.getVirtualAssistantRoles(applicationId),
-        adminAPI.getVirtualAssistantAuditLogs(applicationId),
-        adminAPI.getVirtualAssistantNotifications(applicationId),
       ]);
       const appData = unwrapApiData(appRes);
       const rolesData = unwrapApiData(rolesRes) || [];
-      const auditData = unwrapApiData(auditRes) || [];
-      const notifData = unwrapApiData(notifRes) || [];
       setApplication(appData);
       setRoles(rolesData);
       setAssignments([]);
@@ -143,10 +194,7 @@ function VirtualAssistantApplicationDetailPage() {
           pricingCurrency: appData.pricingCurrency || 'INR',
           maxClientCapacity: appData.maxClientCapacity ?? '',
         });
-        setAdminNotes(appData.adminNotes || '');
       }
-      setAuditLogs(auditData);
-      setNotifications(notifData);
     } catch (e) {
       console.error('Failed to refresh data', e);
     }
@@ -288,24 +336,6 @@ function VirtualAssistantApplicationDetailPage() {
       await refreshAll();
     } catch (e) {
       console.error('Failed to update status', e);
-      alert('Failed to update status. Please try again.');
-    }
-  };
-
-  const handleSaveAdminNotes = async () => {
-    setSavingAdminNotes(true);
-    setAdminNotesMessage('');
-    try {
-      const response = await adminAPI.updateVirtualAssistantAdminNotes(applicationId, adminNotes);
-      const updated = unwrapApiData(response);
-      setApplication(updated);
-      setAdminNotesMessage('Admin notes saved successfully.');
-    } catch (e) {
-      console.error('Failed to save admin notes', e);
-      const detail = e?.response?.data?.detail || e?.response?.data?.message || e?.response?.data?.error || 'Failed to save admin notes. Please try again.';
-      setAdminNotesMessage(detail);
-    } finally {
-      setSavingAdminNotes(false);
     }
   };
 
@@ -379,6 +409,8 @@ function VirtualAssistantApplicationDetailPage() {
   const overallStatus = application?.overallStatus || application?.status || 'pending';
   const hasApprovedRole = roles.some((r) => r.status === 'approved');
   const canPublish = hasApprovedRole && application?.publicMonthlyPriceInr != null && application?.maxClientCapacity != null;
+  const skillChips = toChips(application?.skills);
+  const languageChips = toChips(application?.languagesKnown);
 
   if (loading) {
     return (
@@ -395,7 +427,8 @@ function VirtualAssistantApplicationDetailPage() {
         <p className="text-red-600 mb-4">{error || 'Application not found.'}</p>
         <button
           onClick={() => navigate('/admin/virtual-assistants/applications')}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          className="va-detail-btn va-detail-btn--primary"
+          style={{ width: 'auto', margin: '0 auto', paddingInline: '1.25rem' }}
         >
           <ArrowLeft size={16} />
           Back to Applications
@@ -405,233 +438,220 @@ function VirtualAssistantApplicationDetailPage() {
   }
 
   return (
-    <div className="admin-page" data-admin-section="virtual-assistants">
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/admin/virtual-assistants/applications')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Back to Applications"
-          >
-            <ArrowLeft size={20} className="text-gray-600" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Application Details</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Reference: <span className="font-mono font-semibold text-gray-700">{application.referenceNumber || application.id}</span>
-            </p>
-          </div>
+    <div className="admin-page va-detail-page" data-admin-section="virtual-assistants">
+      <div className="va-detail-header">
+        <button
+          type="button"
+          onClick={() => navigate('/admin/virtual-assistants/applications')}
+          className="va-detail-back"
+          title="Back to Applications"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <div>
+          <h1 className="va-detail-title">Application Details</h1>
+          <p className="va-detail-subtitle">
+            Reference: <code>{application.referenceNumber || application.id}</code>
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <User size={20} className="text-purple-600" />
-              Applicant Details
-            </h2>
-            <div className="flex items-start gap-4">
+      <div className="va-detail-layout">
+        <div className="va-detail-main">
+          <SectionCard icon={User} title="Applicant Details">
+            <div className="va-detail-applicant">
               {application.profilePhotoUrl && !profilePhotoError ? (
                 <img
                   src={application.profilePhotoUrl}
                   alt=""
-                  className="w-20 h-20 rounded-xl object-cover"
+                  className="va-detail-avatar"
                   onError={() => setProfilePhotoError(true)}
                 />
               ) : (
-                <div className="w-20 h-20 rounded-xl bg-purple-100 flex items-center justify-center">
-                  <User size={32} className="text-purple-600" />
+                <div className="va-detail-avatar va-detail-avatar--fallback">
+                  <User size={36} />
                 </div>
               )}
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900">{application.fullName || '—'}</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Reference: <span className="font-mono font-semibold text-gray-700">{application.referenceNumber || application.id}</span>
-                </p>
-                <span className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
-                  {formatStatusLabel(overallStatus)}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">Submitted: {formatDate(application.createdAt)}</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <User size={20} className="text-purple-600" />
-              Personal Information
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Email</p>
-                <p className="text-sm text-gray-900 flex items-center gap-2">
-                  <Mail size={14} className="text-gray-400" />
-                  {application.email}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Phone Number</p>
-                <p className="text-sm text-gray-900 flex items-center gap-2">
-                  <Phone size={14} className="text-gray-400" />
-                  {application.phoneNumber || '—'}
-                </p>
-              </div>
-              <div className="sm:col-span-2">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Location</p>
-                <p className="text-sm text-gray-900 flex items-center gap-2">
-                  <MapPin size={14} className="text-gray-400" />
-                  {application.location || '—'}
+              <div className="va-detail-applicant__meta">
+                <div className="va-detail-applicant__name-row">
+                  <h3 className="va-detail-applicant__name">{application.fullName || '—'}</h3>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
+                    {formatStatusLabel(overallStatus)}
+                  </span>
+                </div>
+                <p className="va-detail-applicant__date">
+                  Submitted {formatDate(application.createdAt)}
                 </p>
               </div>
             </div>
-          </section>
+          </SectionCard>
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Briefcase size={20} className="text-purple-600" />
-              Professional Information
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Short Bio</p>
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{application.bio || '—'}</p>
+          <SectionCard icon={Mail} title="Personal Information">
+            <div className="va-detail-info-grid">
+              <InfoItem icon={Mail} label="Email">{application.email || '—'}</InfoItem>
+              <InfoItem icon={Phone} label="Phone Number">{application.phoneNumber || '—'}</InfoItem>
+              <InfoItem icon={MapPin} label="Location" className="va-detail-info-item--span-2">
+                {application.location || '—'}
+              </InfoItem>
+            </div>
+          </SectionCard>
+
+          <SectionCard icon={Briefcase} title="Professional Information">
+            <div className="space-y-4">
+              <div className="va-detail-bio">
+                <span className="va-detail-bio__label">Short Bio</span>
+                <p className="va-detail-bio__text">{application.bio || '—'}</p>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Skills</p>
-                <p className="text-sm text-gray-900">{application.skills || '—'}</p>
+
+              <div className="va-detail-info-grid">
+                <InfoItem icon={Sparkles} label="Skills">
+                  <ChipList items={skillChips} />
+                </InfoItem>
+                <InfoItem icon={Clock3} label="Years of Experience">
+                  {application.yearsExperience || '—'}
+                </InfoItem>
+                <InfoItem icon={Languages} label="Languages">
+                  <ChipList items={languageChips} neutral />
+                </InfoItem>
+                <InfoItem icon={Globe} label="LinkedIn Profile">
+                  {application.linkedinUrl ? (
+                    <a href={application.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                      View LinkedIn
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </InfoItem>
+                <InfoItem icon={Link2} label="Portfolio / Website" className="va-detail-info-item--span-2">
+                  {application.portfolioUrl ? (
+                    <a href={application.portfolioUrl} target="_blank" rel="noopener noreferrer">
+                      View Portfolio
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </InfoItem>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Years of Experience</p>
-                <p className="text-sm text-gray-900">{application.yearsExperience || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Languages</p>
-                <p className="text-sm text-gray-900">{application.languagesKnown || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">LinkedIn Profile</p>
-                {application.linkedinUrl ? (
-                  <a href={application.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline flex items-center gap-1">
-                    <Globe size={14} className="text-gray-400" />
-                    View LinkedIn
-                  </a>
-                ) : (
-                  <p className="text-sm text-gray-500">—</p>
+            </div>
+          </SectionCard>
+
+          <SectionCard icon={Clock3} title="Work Information">
+            <div className="va-detail-info-grid va-detail-info-grid--3">
+              <InfoItem icon={Clock} label="Availability">
+                {application.availability
+                  ? application.availability.replace(/_/g, ' ').replace(/-/g, ' ')
+                  : '—'}
+              </InfoItem>
+              <InfoItem icon={Calendar} label="Hours Available Per Week">
+                {application.hoursPerWeek || '—'}
+              </InfoItem>
+              <InfoItem icon={IndianRupee} label="Expected Compensation (Admin Only)">
+                {application.expectedCompensation || '—'}
+              </InfoItem>
+            </div>
+          </SectionCard>
+
+          {(application.resumeUrl || application.profilePhotoUrl) && (
+            <SectionCard icon={FileText} title="Uploaded Documents">
+              <div className="space-y-3">
+                {application.resumeUrl && (
+                  <div className="va-detail-doc">
+                    <div className="va-detail-doc__info">
+                      <span className="va-detail-doc__icon">
+                        <FileText size={18} />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{application.resumeFilename || 'Resume / CV'}</p>
+                        {application.resumeSize != null && (
+                          <p className="text-xs text-gray-500 mt-0.5">{formatFileSize(application.resumeSize)}</p>
+                        )}
+                      </div>
+                    </div>
+                    <button type="button" onClick={handleDownloadResume} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
+                      <Download size={14} />
+                      Download
+                    </button>
+                  </div>
+                )}
+                {application.profilePhotoUrl && !profilePhotoError && (
+                  <div className="va-detail-doc">
+                    <div className="va-detail-doc__info">
+                      <span className="va-detail-doc__icon">
+                        <User size={18} />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Profile Photo</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Uploaded with application</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Portfolio / Website</p>
-                {application.portfolioUrl ? (
-                  <a href={application.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline flex items-center gap-1">
-                    <Globe size={14} className="text-gray-400" />
-                    View Portfolio
-                  </a>
-                ) : (
-                  <p className="text-sm text-gray-500">—</p>
-                )}
-              </div>
-            </div>
-          </section>
+            </SectionCard>
+          )}
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Clock3 size={20} className="text-purple-600" />
-              Work Information
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Availability</p>
-                <p className="text-sm text-gray-900">{application.availability ? application.availability.replace(/_/g, ' ').replace(/-/g, ' ') : '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Hours Available Per Week</p>
-                <p className="text-sm text-gray-900">{application.hoursPerWeek || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Expected Compensation (Admin Only)</p>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <IndianRupee size={14} className="text-gray-400" />
-                  {application.expectedCompensation || '—'}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Check size={20} className="text-purple-600" />
-              Overall Status
-            </h2>
+          <SectionCard icon={Check} title="Overall Status">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
+                <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold capitalize ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
                   {formatStatusLabel(overallStatus)}
                 </span>
                 <p className="text-xs text-gray-500 mt-2">
                   Current lifecycle status for this application.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="va-detail-status-actions">
                 {['pending', 'under_review', 'partially_approved', 'approved', 'rejected'].map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => handleStatusUpdate(application.id, s)}
                     disabled={overallStatus === s}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
-                      overallStatus === s
-                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-default'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-purple-500 hover:text-purple-600'
-                    }`}
+                    className="va-detail-status-chip-btn"
                   >
                     {formatStatusLabel(s)}
                   </button>
                 ))}
               </div>
             </div>
-          </section>
+          </SectionCard>
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <IndianRupee size={20} className="text-purple-600" />
-              Pricing Management
-            </h2>
+          <SectionCard icon={IndianRupee} title="Pricing Management">
             {pricingMessage && (
-              <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${pricingMessage.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              <div className={`va-detail-alert ${pricingMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
                 {pricingMessage}
               </div>
             )}
             <form onSubmit={handlePricingUpdate} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Expected Compensation (Private)</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <IndianRupee size={14} className="text-gray-400" />
+                <label className="va-detail-field-label">Expected Compensation (Private)</label>
+                <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                  <IndianRupee size={14} className="text-purple-600" />
                   {application.expectedCompensation || '—'}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">Visible only to administrators.</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Customer Monthly Price (Public)</label>
+                <label className="va-detail-field-label">Customer Monthly Price (Public)</label>
                 <div className="relative">
-                  <IndianRupee size={14} className="absolute left-3 top-3 text-gray-400" />
+                  <IndianRupee size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input
                     type="number"
                     min="0"
                     step="1"
                     value={pricing.publicMonthlyPriceInr}
-                    onChange={(e) => setPricing(prev => ({ ...prev, publicMonthlyPriceInr: e.target.value }))}
+                    onChange={(e) => setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: e.target.value }))}
                     placeholder="Enter public price in INR"
-                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="va-detail-input pl-9"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Currency</label>
+                <label className="va-detail-field-label">Currency</label>
                 <select
                   value={pricing.pricingCurrency}
-                  onChange={(e) => setPricing(prev => ({ ...prev, pricingCurrency: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setPricing((prev) => ({ ...prev, pricingCurrency: e.target.value }))}
+                  className="va-detail-select"
                 >
                   <option value="INR">INR</option>
                   <option value="USD">USD</option>
@@ -640,48 +660,40 @@ function VirtualAssistantApplicationDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Maximum Client Capacity</label>
+                <label className="va-detail-field-label">Maximum Client Capacity</label>
                 <input
                   type="number"
                   min="1"
                   step="1"
                   value={pricing.maxClientCapacity}
-                  onChange={(e) => setPricing(prev => ({ ...prev, maxClientCapacity: e.target.value }))}
+                  onChange={(e) => setPricing((prev) => ({ ...prev, maxClientCapacity: e.target.value }))}
                   placeholder="Enter max clients"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="va-detail-input"
                 />
               </div>
-              <div className="sm:col-span-3 flex items-center justify-between">
+              <div className="sm:col-span-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="text-xs text-gray-500">
                   {application.pricingUpdatedById && (
                     <span>Last updated: {formatDate(application.pricingUpdatedAt)} by Admin</span>
                   )}
                 </div>
-                <button
-                  type="submit"
-                  disabled={savingPricing}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 disabled:opacity-50"
-                >
+                <button type="submit" disabled={savingPricing} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
                   {savingPricing && <Loader2 size={14} className="animate-spin" />}
                   Save Pricing
                 </button>
               </div>
             </form>
-          </section>
+          </SectionCard>
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Globe size={20} className="text-purple-600" />
-              Publishing
-            </h2>
+          <SectionCard icon={Globe} title="Publishing">
             {publishMessage && (
-              <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${publishMessage.includes('success') || publishMessage.includes('published') || publishMessage.includes('unpublished') || publishMessage.includes('draft') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              <div className={`va-detail-alert ${publishMessage.includes('success') || publishMessage.includes('published') || publishMessage.includes('unpublished') || publishMessage.includes('draft') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
                 {publishMessage}
               </div>
             )}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
                   application.publishStatus === 'published' ? 'bg-green-100 text-green-800' :
                   application.publishStatus === 'unpublished' ? 'bg-red-100 text-red-800' :
                   'bg-yellow-100 text-yellow-800'
@@ -689,12 +701,8 @@ function VirtualAssistantApplicationDetailPage() {
                   {application.publishStatus === 'published' ? '🟢 Published' : application.publishStatus === 'unpublished' ? '🔴 Unpublished' : '🟡 Draft'}
                 </span>
                 <div className="mt-2 text-xs text-gray-500 space-y-1">
-                  {application.publishedAt && (
-                    <p>Published: {formatDate(application.publishedAt)}</p>
-                  )}
-                  {application.publishedByName && (
-                    <p>By: {application.publishedByName}</p>
-                  )}
+                  {application.publishedAt && <p>Published: {formatDate(application.publishedAt)}</p>}
+                  {application.publishedByName && <p>By: {application.publishedByName}</p>}
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -702,7 +710,7 @@ function VirtualAssistantApplicationDetailPage() {
                   type="button"
                   onClick={() => handlePublishAction('publish')}
                   disabled={publishLoading || application.publishStatus === 'published' || !canPublish}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="va-detail-btn va-detail-btn--success va-detail-btn--sm"
                   title={!canPublish ? 'At least one approved role, pricing, and capacity are required to publish.' : ''}
                 >
                   {publishLoading && <Loader2 size={14} className="animate-spin" />}
@@ -712,7 +720,7 @@ function VirtualAssistantApplicationDetailPage() {
                   type="button"
                   onClick={() => handlePublishAction('unpublish')}
                   disabled={publishLoading || application.publishStatus === 'unpublished'}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="va-detail-btn va-detail-btn--danger va-detail-btn--sm"
                 >
                   {publishLoading && <Loader2 size={14} className="animate-spin" />}
                   Unpublish Profile
@@ -721,210 +729,214 @@ function VirtualAssistantApplicationDetailPage() {
                   type="button"
                   onClick={() => handlePublishAction('draft')}
                   disabled={publishLoading || application.publishStatus === 'draft'}
-                  className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="va-detail-btn va-detail-btn--ghost va-detail-btn--sm"
                 >
                   Save as Draft
                 </button>
               </div>
             </div>
-          </section>
+          </SectionCard>
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-purple-600" />
-              Applied Roles
-            </h2>
+          <SectionCard icon={FileText} title="Applied Roles">
+            {roleMessage && (
+              <div className={`va-detail-alert ${roleMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
+                {roleMessage}
+              </div>
+            )}
             {roles.length === 0 ? (
-              <p className="text-sm text-gray-500">No roles specified.</p>
+              <p className="va-detail-empty">No roles specified.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {roles.map((role) => (
-                  <div key={role.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span aria-hidden className="text-base leading-none">{ROLE_STATUS_DOT[role.status] || '🟡'}</span>
-                        <p className="text-sm font-semibold text-gray-900">{role.roleName}</p>
-                      </div>
-                      <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE_CLASSES[role.status] || 'bg-gray-100 text-gray-800'}`}>
-                        {formatStatusLabel(role.status)}
-                      </span>
-                      {(role.reviewedBy || role.reviewedAt) && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {role.reviewedBy ? `Reviewed by ${role.reviewedBy}` : 'Reviewed'}
-                          {role.reviewedAt ? ` · ${formatDate(role.reviewedAt)}` : ''}
-                        </p>
-                      )}
-                      {role.rejectionNote && (
-                        <p className="text-xs text-red-600 mt-1">Note: {role.rejectionNote}</p>
-                      )}
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                        <span>Max Clients: {role.maxClients ?? '—'}</span>
-                        <span>Current Clients: {role.currentClients ?? 0}</span>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${
-                          role.availabilityStatus === 'available' ? 'bg-green-50 text-green-700' :
-                          role.availabilityStatus === 'limited' ? 'bg-yellow-50 text-yellow-700' :
-                          role.availabilityStatus === 'not_available' ? 'bg-red-50 text-red-700' :
-                          'bg-gray-50 text-gray-700'
-                        }`}>
-                          {formatStatusLabel(role.availabilityStatus)}
-                        </span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">Max Clients</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={capacityValues[role.id]?.maxClients ?? ''}
-                            onChange={(e) => setCapacityValues((prev) => ({ ...prev, [role.id]: { ...prev[role.id], maxClients: e.target.value } }))}
-                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                          />
+                  <div key={role.id} className="va-detail-role-card">
+                    <div className="va-detail-role-card__body">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span aria-hidden className="text-base leading-none">{ROLE_STATUS_DOT[role.status] || '🟡'}</span>
+                            <p className="text-sm sm:text-base font-semibold text-gray-900 tracking-tight">{role.roleName}</p>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE_CLASSES[role.status] || 'bg-gray-100 text-gray-800'}`}>
+                              {formatStatusLabel(role.status)}
+                            </span>
+                          </div>
+                          {(role.reviewedBy || role.reviewedAt) && (
+                            <p className="text-xs text-gray-500">
+                              {role.reviewedBy ? `Reviewed by ${role.reviewedBy}` : 'Reviewed'}
+                              {role.reviewedAt ? ` · ${formatDate(role.reviewedAt)}` : ''}
+                            </p>
+                          )}
+                          {role.rejectionNote && (
+                            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                              Note: {role.rejectionNote}
+                            </p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-100">
+                              Max Clients: <span className="ml-1 font-semibold text-gray-800">{role.maxClients ?? '—'}</span>
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-100">
+                              Current Clients: <span className="ml-1 font-semibold text-gray-800">{role.currentClients ?? 0}</span>
+                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full font-medium ${
+                              role.availabilityStatus === 'available' ? 'bg-green-50 text-green-700 border border-green-100' :
+                              role.availabilityStatus === 'limited' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' :
+                              role.availabilityStatus === 'not_available' ? 'bg-red-50 text-red-700 border border-red-100' :
+                              'bg-gray-50 text-gray-700 border border-gray-100'
+                            }`}>
+                              {formatStatusLabel(role.availabilityStatus)}
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">Current Clients</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={capacityValues[role.id]?.currentClients ?? 0}
-                            onChange={(e) => setCapacityValues((prev) => ({ ...prev, [role.id]: { ...prev[role.id], currentClients: e.target.value } }))}
-                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">Active</label>
-                          <select
-                            value={capacityValues[role.id]?.isActive ? 'true' : 'false'}
-                            onChange={(e) => setCapacityValues((prev) => ({ ...prev, [role.id]: { ...prev[role.id], isActive: e.target.value === 'true' } }))}
-                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+
+                        <div className="flex flex-wrap items-center gap-2 sm:justify-end shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleRoleUpdate(role.id, 'approved')}
+                            disabled={savingRoleId === role.id || role.status === 'approved'}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 disabled:opacity-50 disabled:cursor-default transition-colors"
+                            title="Approve this role"
                           >
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
-                          </select>
+                            {savingRoleId === role.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRoleUpdate(role.id, 'rejected')}
+                            disabled={savingRoleId === role.id || role.status === 'rejected'}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 disabled:opacity-50 disabled:cursor-default transition-colors"
+                            title="Reject this role"
+                          >
+                            {savingRoleId === role.id ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+                            Reject
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRoleUpdate(role.id, 'pending')}
+                            disabled={savingRoleId === role.id || role.status === 'pending'}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-default transition-colors"
+                            title="Set as pending"
+                          >
+                            {savingRoleId === role.id ? <Loader2 size={12} className="animate-spin" /> : <Clock size={12} />}
+                            Pending
+                          </button>
                         </div>
                       </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleCapacityUpdate(role.id)}
-                          disabled={savingCapacityId === role.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
-                        >
-                          {savingCapacityId === role.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
-                          Save Capacity
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => handleRoleUpdate(role.id, 'approved')}
-                        disabled={savingRoleId === role.id || role.status === 'approved'}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 disabled:opacity-50 disabled:cursor-default"
-                        title="Approve this role"
-                      >
-                        {savingRoleId === role.id ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <Check size={12} />
-                        )}
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleRoleUpdate(role.id, 'rejected')}
-                        disabled={savingRoleId === role.id || role.status === 'rejected'}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-default"
-                        title="Reject this role"
-                      >
-                        {savingRoleId === role.id ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <XCircle size={12} />
-                        )}
-                        Reject
-                      </button>
-                      <button
-                        onClick={() => handleRoleUpdate(role.id, 'pending')}
-                        disabled={savingRoleId === role.id || role.status === 'pending'}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-default"
-                        title="Set as pending"
-                      >
-                        {savingRoleId === role.id ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <Clock size={12} />
-                        )}
-                        Pending
-                      </button>
+
                       {role.status === 'rejected' && (
-                        <div className="w-full sm:w-auto">
+                        <div>
+                          <label className="va-detail-field-label">Rejection note</label>
                           <textarea
                             value={roleNotes[role.id] || ''}
                             onChange={(e) => setRoleNotes((prev) => ({ ...prev, [role.id]: e.target.value }))}
                             placeholder="Rejection note (optional)"
                             rows={2}
-                            className="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="va-detail-textarea"
                           />
                         </div>
                       )}
+
+                      <div className="pt-3 border-t border-gray-100">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label className="va-detail-field-label">Max Clients</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={capacityValues[role.id]?.maxClients ?? ''}
+                              onChange={(e) => setCapacityValues((prev) => ({ ...prev, [role.id]: { ...prev[role.id], maxClients: e.target.value } }))}
+                              className="va-detail-input"
+                            />
+                          </div>
+                          <div>
+                            <label className="va-detail-field-label">Current Clients</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={capacityValues[role.id]?.currentClients ?? 0}
+                              onChange={(e) => setCapacityValues((prev) => ({ ...prev, [role.id]: { ...prev[role.id], currentClients: e.target.value } }))}
+                              className="va-detail-input"
+                            />
+                          </div>
+                          <div>
+                            <label className="va-detail-field-label">Active</label>
+                            <select
+                              value={capacityValues[role.id]?.isActive ? 'true' : 'false'}
+                              onChange={(e) => setCapacityValues((prev) => ({ ...prev, [role.id]: { ...prev[role.id], isActive: e.target.value === 'true' } }))}
+                              className="va-detail-select"
+                            >
+                              <option value="true">Active</option>
+                              <option value="false">Inactive</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={() => handleCapacityUpdate(role.id)}
+                            disabled={savingCapacityId === role.id}
+                            className="va-detail-btn va-detail-btn--primary va-detail-btn--sm"
+                          >
+                            {savingCapacityId === role.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                            Save Capacity
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </section>
+          </SectionCard>
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Briefcase size={20} className="text-purple-600" />
-              Assignments
-            </h2>
+          <SectionCard icon={Briefcase} title="Assignments">
             {capacityMessage && (
-              <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${capacityMessage.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              <div className={`va-detail-alert ${capacityMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
                 {capacityMessage}
               </div>
             )}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {!hasApprovedRole ? (
-                <p className="text-sm text-gray-500">No approved roles yet. Approve a role to create assignments.</p>
+                <p className="va-detail-empty">No approved roles yet. Approve a role to create assignments.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Company</label>
-                    <input type="text" id="assignmentCompany" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Company name" />
+                    <label className="va-detail-field-label">Company</label>
+                    <input type="text" id="assignmentCompany" className="va-detail-input" placeholder="Company name" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Role</label>
-                    <input type="text" id="assignmentRole" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Role" />
+                    <label className="va-detail-field-label">Role</label>
+                    <input type="text" id="assignmentRole" className="va-detail-input" placeholder="Role" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Start Date</label>
-                    <input type="datetime-local" id="assignmentStart" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                    <label className="va-detail-field-label">Start Date</label>
+                    <input type="datetime-local" id="assignmentStart" className="va-detail-input" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">End Date</label>
-                    <input type="datetime-local" id="assignmentEnd" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                    <label className="va-detail-field-label">End Date</label>
+                    <input type="datetime-local" id="assignmentEnd" className="va-detail-input" />
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-2">
+              <div>
                 <button
                   type="button"
                   onClick={handleCreateAssignment}
                   disabled={!hasApprovedRole}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="va-detail-btn va-detail-btn--primary va-detail-btn--sm"
                 >
                   Create Assignment
                 </button>
               </div>
-              <div className="mt-4 space-y-2">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Existing Assignments</p>
+              <div className="space-y-2">
+                <p className="va-detail-field-label">Existing Assignments</p>
                 {assignments.length === 0 ? (
-                  <p className="text-sm text-gray-500">No assignments yet.</p>
+                  <p className="va-detail-empty">No assignments yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {assignments.map((assignment) => (
-                      <div key={assignment.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{assignment.assignedCompany || '—'}</p>
-                        <p className="text-xs text-gray-500">Role: {assignment.assignedRole || '—'}</p>
+                      <div key={assignment.id} className="va-detail-assignment-card">
+                        <p className="text-sm font-semibold text-gray-900">{assignment.assignedCompany || '—'}</p>
+                        <p className="text-xs text-gray-500 mt-1">Role: {assignment.assignedRole || '—'}</p>
                         <p className="text-xs text-gray-500">Status: {formatStatusLabel(assignment.status)}</p>
                         <p className="text-xs text-gray-500">Start: {formatDate(assignment.startDate)}</p>
                         <p className="text-xs text-gray-500">End: {formatDate(assignment.endDate)}</p>
@@ -934,166 +946,53 @@ function VirtualAssistantApplicationDetailPage() {
                 )}
               </div>
             </div>
-          </section>
-
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-purple-600" />
-              Admin Notes
-            </h2>
-            {adminNotesMessage && (
-              <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${adminNotesMessage.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                {adminNotesMessage}
-              </div>
-            )}
-            <textarea
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="Add admin notes here..."
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-            <div className="mt-3 flex items-center justify-end">
-              <button
-                type="button"
-                onClick={handleSaveAdminNotes}
-                disabled={savingAdminNotes}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 disabled:opacity-50"
-              >
-                {savingAdminNotes && <Loader2 size={14} className="animate-spin" />}
-                Save Notes
-              </button>
-            </div>
-          </section>
-
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Clock size={20} className="text-purple-600" />
-              Activity Timeline
-            </h2>
-            {auditLogs.length === 0 ? (
-              <p className="text-sm text-gray-500">No activity recorded yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {auditLogs.map((log) => (
-                  <div key={log.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                      {log.adminName && (
-                        <p className="text-xs text-gray-500">By {log.adminName}</p>
-                      )}
-                      {log.reason && (
-                        <p className="text-xs text-gray-600 mt-1">{log.reason}</p>
-                      )}
-                      {log.details && (
-                        <p className="text-xs text-gray-500 mt-1">{log.details}</p>
-                      )}
-                      <p className="text-xs text-gray-400 mt-1">{formatDate(log.createdAt)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Bell size={20} className="text-purple-600" />
-              Notifications
-            </h2>
-            {notifications.length === 0 ? (
-              <p className="text-sm text-gray-500">No notifications yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {notifications.map((notif) => (
-                  <div key={notif.id} className={`p-3 rounded-lg border ${notif.isRead ? 'bg-gray-50 border-gray-100' : 'bg-purple-50 border-purple-200'}`}>
-                    <p className="text-sm font-medium text-gray-900">{notif.title || notif.type}</p>
-                    {notif.message && (
-                      <p className="text-xs text-gray-600 mt-1">{notif.message}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">{formatDate(notif.createdAt)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {application.resumeUrl && (
-            <section className="bg-white border border-gray-200 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <FileText size={20} className="text-purple-600" />
-                Resume / CV
-              </h2>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{application.resumeFilename || 'Resume'}</p>
-                  {application.resumeSize && (
-                    <p className="text-xs text-gray-500">{formatFileSize(application.resumeSize)}</p>
-                  )}
-                </div>
-                <button
-                  onClick={handleDownloadResume}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  <Download size={16} />
-                  Download
-                </button>
-              </div>
-            </section>
-          )}
+          </SectionCard>
         </div>
 
-        <div className="space-y-6">
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Application Summary</h2>
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Application ID</p>
-                <p className="text-sm text-gray-900 font-mono">{application.id}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Reference Number</p>
-                <p className="text-sm text-gray-900 font-mono">{application.referenceNumber || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Submission Date & Time</p>
-                <p className="text-sm text-gray-900">{formatDate(application.createdAt)}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Last Updated</p>
-                <p className="text-sm text-gray-900">{formatDate(application.updatedAt)}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Current Overall Status</p>
-                <span className={`inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
-                  {formatStatusLabel(overallStatus)}
-                </span>
-              </div>
-            </div>
-          </section>
+        <aside className="va-detail-aside">
+          <SectionCard icon={Hash} title="Application Summary">
+            <SummaryRow icon={Hash} label="Application ID" mono>
+              {application.id}
+            </SummaryRow>
+            <SummaryRow icon={FileText} label="Reference" mono>
+              {application.referenceNumber || '—'}
+            </SummaryRow>
+            <SummaryRow icon={Calendar} label="Submitted">
+              {formatDate(application.createdAt)}
+            </SummaryRow>
+            <SummaryRow icon={RefreshCw} label="Updated">
+              {formatDate(application.updatedAt)}
+            </SummaryRow>
+            <SummaryRow icon={Check} label="Current Status">
+              <span className={`inline-flex items-center mt-0.5 px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
+                {formatStatusLabel(overallStatus)}
+              </span>
+            </SummaryRow>
+          </SectionCard>
 
-          <section className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Actions</h2>
-            <div className="space-y-2">
+          <SectionCard icon={Briefcase} title="Actions">
+            <div className="va-detail-actions">
               <button
+                type="button"
                 onClick={() => navigate('/admin/virtual-assistants/applications')}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                className="va-detail-btn va-detail-btn--secondary"
               >
                 <ArrowLeft size={16} />
                 Back to List
               </button>
               {application.resumeUrl && (
                 <button
+                  type="button"
                   onClick={handleDownloadResume}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                  className="va-detail-btn va-detail-btn--primary"
                 >
                   <Download size={16} />
                   Download Resume
                 </button>
               )}
             </div>
-          </section>
-        </div>
+          </SectionCard>
+        </aside>
       </div>
     </div>
   );

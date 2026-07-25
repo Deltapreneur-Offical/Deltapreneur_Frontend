@@ -1,6 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../api/services';
-import { clearAuthTokens, getStoredAccessToken, hasCookieAuthSession } from '../utils/authSession';
+import { ensureAccessTokenFromRefresh } from '../api/axios';
+import {
+  clearAuthTokens,
+  getStoredAccessToken,
+  hasCookieAuthSession,
+  setStoredAccessToken,
+} from '../utils/authSession';
 
 /** Stable fallback so `useAuth()` never returns null (avoids destructuring errors outside provider). */
 const authContextDefault = {
@@ -44,7 +50,9 @@ function shouldClearAuth(error) {
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const [hasAccessToken, setHasAccessToken] = useState(() => Boolean(getAccessToken()));
+  const [hasAccessToken, setHasAccessToken] = useState(
+    () => Boolean(getAccessToken() || hasCookieAuthSession()),
+  );
 
   // ── fetchMe: reads token, hits /profile/me, normalises response ──────────
   const fetchMe = useCallback(async () => {
@@ -56,13 +64,25 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return null;
     }
-    if (token) setHasAccessToken(true);
+    if (token || cookieSession) setHasAccessToken(true);
     try {
+      // Prefer existing access cookie / memory token for /auth/me.
+      // Do NOT refresh first — parallel refreshes after OAuth race and revoke the session.
       const { data } = await profileAPI.getMe();
       // Backend may return FastAPI { data }, Java { user }, or the user object directly.
       const userData = normalizeUserPayload(data);
       setUser(userData);
       setHasAccessToken(true);
+
+      // After a valid session, load an in-memory access JWT for WebSocket query auth.
+      // Single-flight via axios so concurrent fetchMe calls share one refresh.
+      if (!getAccessToken() && hasCookieAuthSession()) {
+        try {
+          await ensureAccessTokenFromRefresh();
+        } catch {
+          // API still works via HttpOnly cookies; WS may reconnect later.
+        }
+      }
       return userData;
     } catch (err) {
       const status = err?.response?.status;
@@ -97,8 +117,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const syncAuthState = () => {
-      const token = getAccessToken();
-      if (token) setHasAccessToken(true);
+      if (getAccessToken() || hasCookieAuthSession()) setHasAccessToken(true);
     };
 
     const onAuthCleared = () => {
@@ -118,12 +137,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ── login: called from OAuthCallbackPage and password/OTP login ──────────
-  // Stores access token for Bearer calls. Refresh stays HttpOnly-cookie based
-  // (never persist refreshToken in localStorage — XSS can exfiltrate it).
+  // Access JWT stays in memory only. Refresh stays HttpOnly-cookie based.
   const login = useCallback((tokens, userData) => {
     if (tokens?.accessToken) {
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('token', tokens.accessToken);
+      setStoredAccessToken(tokens.accessToken);
       setHasAccessToken(true);
     }
     localStorage.removeItem('refreshToken');

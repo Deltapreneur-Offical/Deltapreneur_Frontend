@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { readApiError } from '../utils/apiError';
+import { clearAuthTokens } from '../utils/authSession';
 import AppLayout from '../components/layout/AppLayout';
 import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
@@ -24,9 +25,7 @@ export default function NewVenturePage() {
   const readVentureApiError = (err) => readApiError(err, t('newVentureCreateFailed'));
 
   const clearAuthAndGoLogin = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
+    clearAuthTokens();
     window.dispatchEvent(new Event('auth:cleared'));
     const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
     navigate('/login', { state: { from: { pathname: '/ventures/new', search } }, replace: true });

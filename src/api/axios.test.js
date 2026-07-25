@@ -29,9 +29,13 @@ vi.mock('axios', () => ({
   },
 }));
 
-vi.mock('../utils/authSession', () => ({
-  isPublicBrowsePath: mocks.isPublicBrowsePathMock,
-}));
+vi.mock('../utils/authSession', async () => {
+  const actual = await vi.importActual('../utils/authSession');
+  return {
+    ...actual,
+    isPublicBrowsePath: mocks.isPublicBrowsePathMock,
+  };
+});
 
 vi.mock('../utils/apiError', () => ({
   sanitizeAxiosError: mocks.sanitizeAxiosErrorMock,
@@ -60,8 +64,9 @@ describe('api axios client', () => {
     await import('./axios');
   });
 
-  it('adds auth and csrf headers to mutating requests', () => {
-    localStorage.setItem('accessToken', 'access-123');
+  it('adds auth and csrf headers to mutating requests', async () => {
+    const { setStoredAccessToken } = await import('../utils/authSession');
+    setStoredAccessToken('access-123');
     document.cookie = 'csrf_token=csrf-abc; path=/';
 
     const config = requestHandler({ method: 'post', headers: {} });
@@ -104,9 +109,11 @@ describe('api axios client', () => {
         withCredentials: true,
       }),
     );
-    expect(localStorage.getItem('accessToken')).toBe('new-access');
-    expect(localStorage.getItem('token')).toBe('new-access');
-    // Refresh tokens are cookie-backed — not persisted in localStorage.
+    const { getStoredAccessToken } = await import('../utils/authSession');
+    expect(getStoredAccessToken()).toBe('new-access');
+    // Access + refresh JWTs are not persisted in localStorage.
+    expect(localStorage.getItem('accessToken')).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
     expect(localStorage.getItem('refreshToken')).toBeNull();
     expect(mocks.apiInstance).toHaveBeenCalledWith(
       expect.objectContaining({

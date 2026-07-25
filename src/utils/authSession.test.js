@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import {
+  clearAuthTokens,
   getStoredAccessToken,
   hasAuthSession,
   hasCookieAuthSession,
@@ -10,20 +11,32 @@ import {
   resolvePostLoginPath,
   sanitizeSafeAppPath,
   saveReturnLocationBeforeOAuth,
+  setStoredAccessToken,
   consumeReturnLocationBeforeOAuth,
 } from './authSession';
 
 describe('authSession', () => {
   beforeEach(() => {
+    clearAuthTokens();
     localStorage.clear();
     window.history.pushState({}, '', '/');
     document.cookie = 'csrf_token=; Max-Age=0; path=/';
   });
 
-  it('prefers accessToken over token', () => {
+  it('prefers memory access token and clears legacy localStorage', () => {
     localStorage.setItem('token', 'legacy');
     localStorage.setItem('accessToken', 'primary');
     expect(getStoredAccessToken()).toBe('primary');
+    expect(localStorage.getItem('accessToken')).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(getStoredAccessToken()).toBe('primary');
+  });
+
+  it('stores access token in memory only', () => {
+    setStoredAccessToken('mem-token');
+    expect(getStoredAccessToken()).toBe('mem-token');
+    expect(localStorage.getItem('accessToken')).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
   });
 
   it('detects public browse paths', () => {
@@ -62,8 +75,9 @@ describe('authSession', () => {
   });
 
   it('recognizes cookie or token auth sessions', () => {
-    localStorage.setItem('accessToken', 'abc');
+    setStoredAccessToken('abc');
     expect(hasAuthSession()).toBe(true);
+    clearAuthTokens();
 
     document.cookie = 'csrf_token=test-cookie; path=/';
     expect(hasCookieAuthSession()).toBe(true);

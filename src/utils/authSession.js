@@ -1,11 +1,31 @@
-/** Access token stored by password/OAuth callback flows. */
+/** In-memory access JWT — never persist in localStorage (XSS exfil surface). */
+let memoryAccessToken = null;
+
+/** Access token for Bearer / WebSocket use (memory first; migrates legacy LS once). */
 export function getStoredAccessToken() {
+  if (memoryAccessToken) return memoryAccessToken;
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken') || localStorage.getItem('token');
+  const legacy = localStorage.getItem('accessToken') || localStorage.getItem('token');
+  if (legacy) {
+    memoryAccessToken = legacy;
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
+    return legacy;
+  }
+  return null;
 }
 
-/** Clear all client-side auth token keys (legacy + current). */
+/** Store access token in memory only; wipe any legacy localStorage copies. */
+export function setStoredAccessToken(token) {
+  memoryAccessToken = token || null;
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('token');
+}
+
+/** Clear all client-side auth token keys (memory + legacy storage). */
 export function clearAuthTokens() {
+  memoryAccessToken = null;
   if (typeof window === 'undefined') return;
   localStorage.removeItem('accessToken');
   localStorage.removeItem('token');

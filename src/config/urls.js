@@ -103,24 +103,12 @@ export const API_ORIGIN = resolveBackendOrigin();
 export const API_BASE_URL = resolveApiBaseUrl();
 
 /**
- * SockJS / STOMP base origin.
- * Local dev with Vite proxy: same origin as the SPA so `/ws` is proxied to Uvicorn.
- */
-export function resolveRealtimeOrigin() {
-  if (import.meta.env.DEV && typeof window !== 'undefined' && isLocalBackend) {
-    return window.location.origin;
-  }
-  return resolveBackendOrigin().replace(/\/$/, '');
-}
-
-/**
- * Raw WebSocket origin (notifications).
- * Matches SockJS routing — local dev uses the Vite `/ws` proxy when on local backend.
+ * Raw WebSocket origin (auction STOMP + notifications).
+ * Local DEV talks to Uvicorn directly — Vite's WS proxy races with HMR and can fail.
  */
 export function resolveWebSocketOrigin() {
   if (import.meta.env.DEV && typeof window !== 'undefined' && isLocalBackend) {
-    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${proto}//${window.location.host}`;
+    return 'ws://127.0.0.1:8000';
   }
 
   const base = resolveBackendOrigin().replace(/\/$/, '');
@@ -132,6 +120,18 @@ export function resolveWebSocketOrigin() {
     return `${proto}//${window.location.host}`;
   }
   return 'ws://127.0.0.1:8000';
+}
+
+/**
+ * Native WebSocket for auction STOMP (raw frames, no SockJS).
+ * Path matches backend: /ws/{server}/{session}/websocket
+ */
+export function createAuctionStompSocket() {
+  const server = String(Math.floor(Math.random() * 1000));
+  const session = Math.random().toString(36).slice(2, 10);
+  return new WebSocket(
+    `${resolveWebSocketOrigin()}/ws/${server}/${session}/websocket`,
+  );
 }
 
 if (import.meta.env.DEV && typeof console !== 'undefined') {

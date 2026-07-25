@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import { softwareAuctionAPI } from '../api/services';
-import { resolveRealtimeOrigin } from '../config/urls';
+import { createAuctionStompSocket } from '../config/urls';
 import { resolveAuctionEndTime } from '../utils/auctionDate';
 import { resolveAuctionBidLimits } from '../utils/auctionBidLimits';
 
@@ -180,7 +179,7 @@ export function useSoftwareAuction(auctionId) {
     setConnected(false);
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${resolveRealtimeOrigin()}/ws`),
+      webSocketFactory: () => createAuctionStompSocket(),
       reconnectDelay: 3000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { resolveRealtimeOrigin } from '../config/urls';
+import { createAuctionStompSocket } from '../config/urls';
 import { normalizeCreatorAuctionSummary } from '../utils/creatorAuctionSummary';
 
 const PROFILE_SYNC_EVENTS = new Set([
@@ -37,7 +36,7 @@ export function useCreatorAuctionProfileSync({
     if (!ids.length) return undefined;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${resolveRealtimeOrigin()}/ws`),
+      webSocketFactory: () => createAuctionStompSocket(),
       reconnectDelay: 3000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,

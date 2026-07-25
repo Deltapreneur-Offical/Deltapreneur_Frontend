@@ -130,7 +130,7 @@ export default defineConfig(({ mode }) => {
               if (id.includes('i18next')) return 'vendor-i18n';
               if (id.includes('framer-motion')) return 'vendor-motion';
               if (id.includes('recharts')) return 'vendor-charts';
-              if (id.includes('@stomp') || id.includes('sockjs-client')) return 'vendor-websocket';
+              if (id.includes('@stomp')) return 'vendor-websocket';
               if (id.includes('axios')) return 'vendor-http';
               return 'vendor';
             }

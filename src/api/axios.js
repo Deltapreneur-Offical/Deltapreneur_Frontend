@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { API_BASE_URL, API_ORIGIN } from '../config/urls';
-import { isPublicBrowsePath } from '../utils/authSession';
+import {
+  clearAuthTokens,
+  getStoredAccessToken,
+  hasCookieAuthSession,
+  isPublicBrowsePath,
+  setStoredAccessToken,
+} from '../utils/authSession';
 import { sanitizeAxiosError, isVaPublicRequest } from '../utils/apiError';
 
 const api = axios.create({
@@ -31,27 +37,13 @@ function csrfHeader() {
   }
 }
 
-function getStoredAccessToken() {
-  if (typeof window === 'undefined') return null;
-  return (
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('token') ||
-    null
-  );
-}
-
 function getStoredRefreshToken() {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('refreshToken');
 }
 
-/** True when the backend may have set HttpOnly refresh (csrf_token is readable). */
-function hasCookieRefreshSession() {
-  return Boolean(csrfHeader()['X-CSRF-Token']);
-}
-
 function canAttemptRefresh() {
-  return Boolean(getStoredRefreshToken()) || hasCookieRefreshSession();
+  return Boolean(getStoredRefreshToken()) || hasCookieAuthSession();
 }
 
 function notifyAuthCleared() {
@@ -71,7 +63,9 @@ function isPublicAuthRequest(config) {
     url.includes('/auth/register') ||
     url.includes('/auth/otp/') ||
     url.includes('/auth/forgot-password') ||
-    url.includes('/auth/reset-password')
+    url.includes('/auth/reset-password') ||
+    url.includes('/auth/refresh') ||
+    url.includes('/auth/logout')
   );
 }
 
@@ -115,8 +109,7 @@ async function refreshAccessToken() {
       if (!newToken) {
         throw new Error('Refresh response did not include an access token');
       }
-      localStorage.setItem('accessToken', newToken);
-      localStorage.setItem('token', newToken);
+      setStoredAccessToken(newToken);
       // Prefer HttpOnly cookie refresh; do not persist refresh tokens in localStorage.
       localStorage.removeItem('refreshToken');
       return newToken;
@@ -125,6 +118,17 @@ async function refreshAccessToken() {
     });
   }
   return refreshPromise;
+}
+
+/**
+ * Ensure an in-memory access token exists (for WebSocket query auth) when
+ * HttpOnly cookies already prove a session. No-op if a token is already loaded.
+ */
+export async function ensureAccessTokenFromRefresh() {
+  const existing = getStoredAccessToken();
+  if (existing) return existing;
+  if (!canAttemptRefresh()) return null;
+  return refreshAccessToken();
 }
 
 // Attach access token to every request
@@ -155,9 +159,7 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        clearAuthTokens();
         notifyAuthCleared();
         const path = window.location.pathname;
         if (!isPublicBrowsePath(path)) {

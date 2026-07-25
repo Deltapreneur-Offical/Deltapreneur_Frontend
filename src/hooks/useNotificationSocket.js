@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { resolveWebSocketOrigin } from '../config/urls';
+import { getStoredAccessToken } from '../utils/authSession';
 
 function getAccessToken() {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken') || localStorage.getItem('token');
+  return getStoredAccessToken();
 }
 
 const MAX_RECONNECT_ATTEMPTS = 6;

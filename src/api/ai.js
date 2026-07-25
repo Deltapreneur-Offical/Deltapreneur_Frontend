@@ -1,10 +1,11 @@
 import { API_BASE_URL } from '../config/urls';
 import api from './axios';
 import { readApiError } from '../utils/apiError';
+import { getStoredAccessToken } from '../utils/authSession';
 
 function authHeaders() {
   if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+  const token = getStoredAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

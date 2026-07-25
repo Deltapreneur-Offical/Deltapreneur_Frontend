@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { CheckCircle, Headset, ShieldCheck } from 'lucide-react';
+import { Headset, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
 import FilterBar from '../components/common/FilterBar';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -9,13 +9,16 @@ import OperationsRequestModal from '../components/operations/OperationsRequestMo
 import OperationsRequestSuccess from '../components/operations/OperationsRequestSuccess';
 import OperationsServiceCard from '../components/operations/OperationsServiceCard';
 import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
+import FeaturedVirtualAssistantsListing, { useFeaturedVirtualAssistants } from '../components/virtual-assistant/FeaturedVirtualAssistantsListing';
+import VirtualAssistantPreviewModal from '../components/virtual-assistant/VirtualAssistantPreviewModal';
+import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { operationsAPI, operationsRequestAPI } from '../api/services';
+import { operationsAPI, operationsRequestAPI, virtualAssistantAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
-import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
-import { resolveOperationsIcon } from '../utils/operationsIcons';
-import { formatOperationsPrice, formatRequestAdminPrice, isComplianceService } from '../utils/operationsPricing';
+import { unwrapApiData } from '../utils/apiResponse';
+import { OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
+import { formatRequestAdminPrice } from '../utils/operationsPricing';
 import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
 
@@ -36,9 +39,11 @@ export default function OperationsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
+  const { id: routeVaId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionId = searchParams.get('section') || 'assistance';
   const activeSection = resolveOperationsSection(sectionId);
+  const hireIntent = searchParams.get('intent') === 'hire';
 
   const [services, setServices] = useState([]);
   const [sectionCounts, setSectionCounts] = useState({ assistance: 0, compliance: 0 });
@@ -52,6 +57,7 @@ export default function OperationsPage() {
   const [requestSuccess, setRequestSuccess] = useState(null);
   const [myRequests, setMyRequests] = useState([]);
   const [myRequestsLoading, setMyRequestsLoading] = useState(false);
+  const [detailProfile, setDetailProfile] = useState(null);
 
   const loadMyRequests = useCallback(async () => {
     if (!user) {
@@ -80,23 +86,65 @@ export default function OperationsPage() {
       .then(({ data }) => {
         if (cancelled) return;
         const rows = asArray(data);
-        const counts = Object.fromEntries(OPERATIONS_SECTIONS.map((section) => [section.id, 0]));
-        rows.forEach((row) => {
-          const type = row.serviceType || 'virtual_assistance';
-          const section = OPERATIONS_SECTIONS.find((s) => s.serviceType === type) || OPERATIONS_SECTIONS[0];
-          counts[section.id] += 1;
-        });
-        setSectionCounts(counts);
+        const complianceCount = rows.filter(
+          (row) => (row.serviceType || 'virtual_assistance') === 'compliance',
+        ).length;
+        setSectionCounts((prev) => ({
+          ...prev,
+          compliance: complianceCount,
+        }));
       })
       .catch(() => {
-        if (!cancelled) setSectionCounts({ assistance: 0, compliance: 0 });
+        if (!cancelled) {
+          setSectionCounts((prev) => ({ ...prev, compliance: 0 }));
+        }
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  const isCompliance = activeSection.id === 'compliance';
+  const isAssistance = activeSection.id === 'assistance';
+  const { cards: featuredVaCards, count: featuredVaCount, loading: featuredVaLoading } = useFeaturedVirtualAssistants(50);
+  const vaDetailId = routeVaId || searchParams.get('id');
+
   useEffect(() => {
+    if (!vaDetailId || isAssistance) return;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('section', 'assistance');
+      return next;
+    }, { replace: true });
+  }, [vaDetailId, isAssistance, setSearchParams]);
+
+  const { closeListingDetail } = useOpenListingDetailFromUrl({
+    items: featuredVaCards,
+    loading: featuredVaLoading,
+    setDetail: setDetailProfile,
+    fetchById: async (id) => {
+      const response = await virtualAssistantAPI.getPublicProfile(id);
+      return unwrapApiData(response);
+    },
+    allowUrlDetail: Boolean(vaDetailId),
+  });
+
+  const openVaDetailInUrl = useCallback((profileId, { intent } = {}) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('section', 'assistance');
+    next.set('id', String(profileId));
+    if (intent === 'hire') next.set('intent', 'hire');
+    else next.delete('intent');
+    setSearchParams(next);
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    setSectionCounts((prev) => ({ ...prev, assistance: featuredVaCount }));
+  }, [featuredVaCount]);
+
+  useEffect(() => {
+    if (isAssistance) return undefined;
+
     let cancelled = false;
     setLoading(true);
     operationsAPI
@@ -113,15 +161,16 @@ export default function OperationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeSection.serviceType]);
+  }, [activeSection.serviceType, isAssistance]);
 
   useEffect(() => {
+    if (isAssistance) return;
     setSearch('');
     setCategory('');
     setMinPrice('');
     setMaxPrice('');
     setSortBy('price_asc');
-  }, [activeSection.id]);
+  }, [activeSection.id, isAssistance]);
 
   const setSection = (nextSectionId) => {
     setSearchParams({ section: nextSectionId }, { replace: true });
@@ -171,9 +220,13 @@ export default function OperationsPage() {
     return result;
   }, [search, category, minPrice, maxPrice, sortBy, services]);
 
-  const isCompliance = activeSection.id === 'compliance';
   const isFiltered = activeFilterCount > 0;
-  const roleCountLabel = isFiltered
+  const roleCountLabel = isAssistance
+    ? t('operationsFeaturedVaAvailable', {
+        count: featuredVaCount,
+        defaultValue: '{{count}} Featured Virtual Assistants',
+      })
+    : isFiltered
     ? t('operationsRolesShowing', { count: filtered.length, total: services.length, defaultValue: '{{count}} of {{total}} Roles' })
     : t(
         isCompliance ? 'operationsComplianceAvailable' : 'operationsRolesAvailable',
@@ -231,12 +284,14 @@ export default function OperationsPage() {
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {isCompliance
                   ? t('operationsComplianceFindHeading', { defaultValue: 'Find Business Solutions' })
-                  : t('operationsFindHeading', { defaultValue: 'Find Your Virtual Expert' })}
+                  : t('operationsFeaturedVaHeading', { defaultValue: 'Featured Virtual Assistants' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
                 {isCompliance
                   ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and business support for your venture.' })
-                  : t('operationsFindSubtitle', { defaultValue: 'Hire experienced professionals without full-time overhead.' })}
+                  : t('operationsFeaturedVaSubtitle', {
+                      defaultValue: 'Published virtual assistants selected for the homepage and operations showcase.',
+                    })}
               </p>
             </div>
             <p className="text-sm text-gray-500 shrink-0">
@@ -244,55 +299,59 @@ export default function OperationsPage() {
             </p>
           </div>
 
-          <FilterBar
-            search={search}
-            onSearch={setSearch}
-            category={category}
-            onCategory={setCategory}
-            categoryOptions={categoryOptions}
-            minPrice={minPrice}
-            onMinPrice={setMinPrice}
-            maxPrice={maxPrice}
-            onMaxPrice={setMaxPrice}
-            sortBy={sortBy}
-            onSort={setSortBy}
-            sortOptions={sortOptions}
-            onClear={clearAll}
-            activeFilterCount={activeFilterCount}
-            placeholder={t('operationsSearchPlaceholder', { defaultValue: 'Search roles by name or skill…' })}
-            theme="light"
-          />
-
-          {loading ? (
-            <PageContentSkeleton variant="grid" rows={6} />
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
-              <p className="text-base font-semibold text-gray-900 mb-1">
-                {isCompliance
-                  ? t('operationsComplianceEmptyTitle', { defaultValue: 'No services available yet' })
-                  : t('operationsEmptyTitle', { defaultValue: 'No roles match your search' })}
-              </p>
-              <p className="text-sm text-gray-500 mb-4">
-                {isCompliance
-                  ? t('operationsComplianceEmptyBody', { defaultValue: 'Business solutions will appear here once added by the admin team.' })
-                  : t('operationsEmptyBody', { defaultValue: 'Try a different keyword or clear your filters.' })}
-              </p>
-              {!isCompliance && (
-                <button type="button" onClick={clearAll} className="btn-glow text-sm px-5 py-2">
-                  {t('operationsClearFilters', { defaultValue: 'Clear filters' })}
-                </button>
-              )}
-            </div>
+          {isAssistance ? (
+            <FeaturedVirtualAssistantsListing
+              layout="grid"
+              pageSize={50}
+              cards={featuredVaCards}
+              loading={featuredVaLoading}
+              onViewProfile={(profileId) => openVaDetailInUrl(profileId)}
+              onHireProfile={(profileId) => openVaDetailInUrl(profileId, { intent: 'hire' })}
+            />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 min-w-0">
-              {filtered.map((service) => (
-                <OperationsServiceCard
-                  key={service.id}
-                  service={service}
-                  onHire={() => setRequestTarget(service)}
-                />
-              ))}
-            </div>
+            <>
+              <FilterBar
+                search={search}
+                onSearch={setSearch}
+                category={category}
+                onCategory={setCategory}
+                categoryOptions={categoryOptions}
+                minPrice={minPrice}
+                onMinPrice={setMinPrice}
+                maxPrice={maxPrice}
+                onMaxPrice={setMaxPrice}
+                sortBy={sortBy}
+                onSort={setSortBy}
+                sortOptions={sortOptions}
+                onClear={clearAll}
+                activeFilterCount={activeFilterCount}
+                placeholder={t('operationsSearchPlaceholder', { defaultValue: 'Search roles by name or skill…' })}
+                theme="light"
+              />
+
+              {loading ? (
+                <PageContentSkeleton variant="grid" rows={6} />
+              ) : filtered.length === 0 ? (
+                <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
+                  <p className="text-base font-semibold text-gray-900 mb-1">
+                    {t('operationsComplianceEmptyTitle', { defaultValue: 'No services available yet' })}
+                  </p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    {t('operationsComplianceEmptyBody', { defaultValue: 'Business solutions will appear here once added by the admin team.' })}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 min-w-0">
+                  {filtered.map((service) => (
+                    <OperationsServiceCard
+                      key={service.id}
+                      service={service}
+                      onHire={() => setRequestTarget(service)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -357,6 +416,16 @@ export default function OperationsPage() {
         <OperationsRequestSuccess
           payload={requestSuccess}
           onClose={() => setRequestSuccess(null)}
+        />
+      )}
+
+      {detailProfile && (
+        <VirtualAssistantPreviewModal
+          profile={detailProfile}
+          open={!!detailProfile}
+          onClose={closeListingDetail}
+          hireIntent={hireIntent}
+          showShareIcon
         />
       )}
     </AppLayout>

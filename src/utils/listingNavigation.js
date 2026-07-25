@@ -36,3 +36,27 @@ export function consumeRedirectAfterLogin() {
   if (path) localStorage.removeItem('redirectAfterLogin');
   return path;
 }
+
+/** Operations → Virtual Assistance detail path (mirrors /creator?id=). */
+export function getVirtualAssistantDetailPath(id, { intent } = {}) {
+  if (id == null || id === '') {
+    return '/operations?section=assistance';
+  }
+  const params = new URLSearchParams({
+    section: 'assistance',
+    id: String(id),
+  });
+  if (intent === 'hire') params.set('intent', 'hire');
+  return `/operations?${params.toString()}`;
+}
+
+/** Logged in → operations VA detail; otherwise → login (same as Creator listings). */
+export function navigateToVirtualAssistantDetail(navigate, id, options = {}) {
+  const path = getVirtualAssistantDetailPath(id, options);
+  if (!isLoggedIn()) {
+    localStorage.setItem('redirectAfterLogin', path);
+    navigate('/login', { state: { from: path } });
+    return;
+  }
+  navigate(path);
+}

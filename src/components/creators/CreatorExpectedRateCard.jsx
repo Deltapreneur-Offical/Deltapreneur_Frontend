@@ -2,9 +2,10 @@ import { ArrowRight } from 'lucide-react';
 import useCurrency from '../../context/CurrencyContext';
 import { readCreatorExpectedRate, parseCreatorExpectedRate } from '../../utils/creatorExpectedRate';
 
-export default function CreatorExpectedRateCard({ profile, onView }) {
+export default function CreatorExpectedRateCard({ profile, onView, onHire, hireLabel = 'Hire' }) {
   const { formatPrice } = useCurrency();
   const expectedRate = readCreatorExpectedRate(profile);
+  const action = onHire || onView;
 
   if (!expectedRate) return null;
 
@@ -35,12 +36,12 @@ export default function CreatorExpectedRateCard({ profile, onView }) {
           )}
         </div>
       </div>
-      {onView && (
+      {action && (
         <button
           type="button"
           className="creator-expected-rate__cta"
-          aria-label="View creator details"
-          onClick={onView}
+          aria-label={onHire ? hireLabel : 'View creator details'}
+          onClick={action}
         >
           <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
         </button>

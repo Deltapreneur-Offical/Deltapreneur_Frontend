@@ -4,6 +4,7 @@ import { Search, Eye, Download, X, User, Mail, Phone, MapPin, Briefcase, FileTex
 import StatusFilterBar from './StatusFilterBar';
 import { adminAPI } from '../../api/services';
 import { unwrapApiData } from '../../utils/apiResponse';
+import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
 
 const STATUS_CONFIG = [
   { id: 'all', label: 'All' },
@@ -219,13 +220,18 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
                 <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      {app.profilePhotoUrl ? (
-                        <img src={app.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                          <User size={18} className="text-purple-600" />
-                        </div>
-                      )}
+                      <VaProfilePhoto
+                        source={app}
+                        applicationId={app.id}
+                        refreshScope="admin"
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                        fallbackClassName="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center"
+                        fallback="icon"
+                        fallbackIcon={User}
+                        fallbackIconSize={18}
+                        fallbackIconClassName="text-purple-600"
+                      />
                       <div>
                         <p className="font-semibold text-gray-900">{app.fullName}</p>
                         <p className="text-xs text-gray-500">{app.phoneNumber || '—'}</p>
@@ -315,13 +321,18 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
             ) : (
               <div className="p-6 space-y-6">
                 <div className="flex items-start gap-4">
-                  {selectedApp.profilePhotoUrl ? (
-                    <img src={selectedApp.profilePhotoUrl} alt="" className="w-20 h-20 rounded-xl object-cover" />
-                  ) : (
-                    <div className="w-20 h-20 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <User size={32} className="text-purple-600" />
-                    </div>
-                  )}
+                  <VaProfilePhoto
+                    source={selectedApp}
+                    applicationId={selectedApp.id}
+                    refreshScope="admin"
+                    alt=""
+                    className="w-20 h-20 rounded-xl object-cover"
+                    fallbackClassName="w-20 h-20 rounded-xl bg-purple-100 flex items-center justify-center"
+                    fallback="icon"
+                    fallbackIcon={User}
+                    fallbackIconSize={32}
+                    fallbackIconClassName="text-purple-600"
+                  />
                   <div>
                     <h4 className="text-lg font-bold text-gray-900">{selectedApp.fullName}</h4>
                     <p className="text-sm text-gray-500">{selectedApp.referenceNumber}</p>

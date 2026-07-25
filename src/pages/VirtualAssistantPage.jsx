@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { virtualAssistantAPI } from '../api/services';
+import { readApiError } from '../utils/apiError';
 import { useAuth } from '../context/AuthContext';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
@@ -270,16 +271,9 @@ const VirtualAssistantPage = () => {
       }, 1500);
     } catch (error) {
       console.error('Virtual Assistant application error:', error);
-      console.error('Response data:', error?.response?.data);
-      console.error('Response status:', error?.response?.status);
-      const responseData = error?.response?.data;
-      let detail = responseData?.detail || responseData?.message || error?.message || 'Something went wrong. Please try again later.';
-      if (detail && typeof detail === 'object') {
-        detail = JSON.stringify(detail);
-      }
       setSubmitState({
         status: 'error',
-        message: detail,
+        message: readApiError(error, 'Something went wrong. Please try again later.'),
         data: null,
       });
     }

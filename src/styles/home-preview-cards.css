@@ -1242,6 +1242,39 @@
   flex: 1 1 auto;
 }
 
+.home-operations-preview-card__desc--meta {
+  margin-top: 0.35rem;
+  min-height: 0;
+  -webkit-line-clamp: 2;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.home-operations-preview-card__availability-badge {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+}
+
+.home-operations-preview-card__footer-actions {
+  justify-content: center;
+}
+
+.home-operations-preview-card__view-profile {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.15rem 0;
+}
+
+.home-operations-preview-card__view-profile:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
 .home-operations-preview-card__skills {
   display: flex;
   align-items: flex-start;

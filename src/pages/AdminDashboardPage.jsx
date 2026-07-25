@@ -923,6 +923,7 @@ export default function AdminDashboardPage() {
                 <HomepageFeatureSelector type="coventure" />
                 <HomepageFeatureSelector type="software" />
                 <HomepageFeatureSelector type="community" />
+                <HomepageFeatureSelector type="virtual-assistant" />
                 <HomepageFeatureSelector type="auction" />
               </div>
             ) : tab === 'domain-transfers' ? (

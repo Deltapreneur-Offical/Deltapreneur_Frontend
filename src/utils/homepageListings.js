@@ -46,6 +46,23 @@ export function isActiveListing(item, type = 'domain') {
     if (['REMOVED', 'DELETED', 'INACTIVE'].includes(profileStatus)) return false;
   }
 
+  if (type === 'virtual-assistant') {
+    if (item.isDeleted === true || item.is_deleted === true) return false;
+    const publishStatus = (item.publishStatus ?? item.publish_status ?? '').toString().toLowerCase();
+    if (publishStatus !== 'published') return false;
+    const overallStatus = (item.overallStatus ?? item.overall_status ?? '').toString().toLowerCase();
+    if (overallStatus !== 'approved') return false;
+    const publicPrice = item.publicMonthlyPriceInr ?? item.public_monthly_price_inr;
+    if (publicPrice == null || Number(publicPrice) < 0) return false;
+    const roles = item.applicationRoles ?? item.application_roles;
+    if (Array.isArray(roles) && roles.length > 0) {
+      const hasActiveApprovedRole = roles.some(
+        (role) => role.status === 'approved' && role.isActive !== false && role.is_active !== false,
+      );
+      if (!hasActiveApprovedRole) return false;
+    }
+  }
+
   return true;
 }
 

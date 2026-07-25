@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { adminAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
+import { vaAdminModulePath } from '../utils/virtualAssistantAdminNav';
 
 const VA_ROLES = [
   'Administrative Support', 'Customer Support', 'Data Entry',
@@ -21,7 +22,7 @@ const AVAILABILITY_OPTIONS = [
   { value: 'temporarily_unavailable', label: 'Temporarily Unavailable' },
 ];
 
-const VirtualAssistantDirectAddAdminPage = () => {
+const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSuccess }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -151,7 +152,11 @@ const VirtualAssistantDirectAddAdminPage = () => {
 
       const response = await adminAPI.directAddVirtualAssistant(submitData);
       setSuccess('Virtual Assistant profile created successfully.');
-      setTimeout(() => navigate('/admin/virtual-assistants/applications'), 1200);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setTimeout(() => navigate(vaAdminModulePath('applications')), 1200);
+      }
     } catch (error) {
       console.error('Direct Add VA error:', error);
       const detail = readApiError(error, 'Failed to create Virtual Assistant profile.');
@@ -161,16 +166,26 @@ const VirtualAssistantDirectAddAdminPage = () => {
     }
   };
 
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+      return;
+    }
+    navigate(vaAdminModulePath('applications'));
+  };
+
   const inputClass = (field) =>
     `w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors[field] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div className={embedded ? 'w-full' : 'min-h-screen bg-gray-50'}>
+      <div className={embedded ? 'w-full' : 'max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8'}>
+        {!embedded && (
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Direct Add Virtual Assistant</h1>
           <p className="mt-2 text-gray-600">Create a Virtual Assistant profile manually without a public application.</p>
         </div>
+        )}
 
         {success && (
           <div className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 flex items-center gap-2">
@@ -354,7 +369,7 @@ const VirtualAssistantDirectAddAdminPage = () => {
           </div>
 
           <div className="flex items-center justify-end gap-3">
-            <button type="button" onClick={() => navigate('/admin/virtual-assistants/applications')} className="px-5 py-2.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={handleCancel} className="px-5 py-2.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
               Cancel
             </button>
             <button type="submit" disabled={loading} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">

@@ -479,6 +479,10 @@
   height: 2.625rem;
 }
 
+.va-detail-input--with-prefix {
+  padding-left: 2.25rem;
+}
+
 .va-detail-input::placeholder,
 .va-detail-textarea::placeholder {
   color: #94a3b8;

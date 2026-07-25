@@ -6,6 +6,7 @@ import {
 } from './homepageListings';
 import { filterPublicMarketplaceListings } from './listingVisibility';
 import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
+import { resolveVaProfilePhotoUrl } from './virtualAssistantDisplay';
 
 /** Normalize API rows into the shape listing cards expect. */
 export function normalizeHomepageListing(item, type = 'domain') {
@@ -74,7 +75,61 @@ export function normalizeHomepageListing(item, type = 'domain') {
     };
   }
 
+  if (type === 'virtual-assistant') {
+    return {
+      ...item,
+      fullName: item.fullName ?? item.full_name ?? '',
+      referenceNumber: item.referenceNumber ?? item.reference_number ?? '',
+      applicationNumber: item.applicationNumber ?? item.application_number ?? null,
+      applicationNumberDisplay: item.applicationNumberDisplay ?? item.application_number_display ?? null,
+      roles: item.roles ?? '',
+      bio: item.bio ?? item.shortBio ?? item.short_bio ?? '',
+      skills: item.skills ?? '',
+      languagesKnown: item.languagesKnown ?? item.languages_known ?? '',
+      yearsExperience: item.yearsExperience ?? item.years_experience ?? '',
+      availability: item.availability ?? '',
+      location: item.location ?? '',
+      profilePhotoUrl: resolveVaProfilePhotoUrl(item) ?? item.profilePhotoUrl ?? item.profile_photo_url ?? null,
+      publicMonthlyPriceInr: item.publicMonthlyPriceInr ?? item.public_monthly_price_inr ?? null,
+      publishStatus: item.publishStatus ?? item.publish_status ?? '',
+      overallStatus: item.overallStatus ?? item.overall_status ?? '',
+      applicationRoles: item.applicationRoles ?? item.application_roles ?? [],
+      featured: Boolean(item.featured),
+    };
+  }
+
   return item;
+}
+
+/** Map a featured VA profile to the creator card shape used on the homepage. */
+export function mapVirtualAssistantToCreatorCard(profile) {
+  const normalized = normalizeHomepageListing(profile, 'virtual-assistant');
+  if (!normalized) return null;
+
+  const roles = (normalized.roles || '')
+    .split(',')
+    .map((role) => role.trim())
+    .filter(Boolean);
+  const monthlyPrice = normalized.publicMonthlyPriceInr;
+
+  return {
+    ...normalized,
+    name: normalized.fullName,
+    role: roles[0] || 'Virtual Assistant',
+    imageUrl: normalized.profilePhotoUrl,
+    coverImageUrl: normalized.profilePhotoUrl,
+    about: normalized.bio,
+    description: normalized.bio,
+    skills: normalized.skills,
+    location: normalized.location,
+    experience: normalized.yearsExperience,
+    languagesKnown: normalized.languagesKnown,
+    availability: normalized.availability,
+    workType: normalized.availability,
+    industry: roles[0] || 'Virtual Assistant',
+    expectedRate: monthlyPrice != null && monthlyPrice !== '' ? `${monthlyPrice}/month` : '',
+    featured: true,
+  };
 }
 
 /** Featured rows first; fall back to public verified listings so rows never go blank. */

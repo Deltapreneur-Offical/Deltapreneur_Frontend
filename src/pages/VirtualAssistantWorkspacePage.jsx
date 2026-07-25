@@ -23,6 +23,7 @@ import {
   IndianRupee,
 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
+import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
 import { virtualAssistantAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 
@@ -190,6 +191,13 @@ function VirtualAssistantWorkspacePage() {
 
   useEffect(() => {
     loadAll();
+    const onFocus = () => loadAll();
+    window.addEventListener('focus', onFocus);
+    const interval = setInterval(loadAll, 30000);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      clearInterval(interval);
+    };
   }, [loadAll]);
 
   const saveProfile = async () => {
@@ -215,6 +223,7 @@ function VirtualAssistantWorkspacePage() {
 
   const changeAvailability = async (value) => {
     setAvail(value);
+    setAvailability((prev) => ({ ...prev, availability: value }));
     try {
       await virtualAssistantAPI.updateWorkspaceAvailability(value);
       loadAll();
@@ -249,7 +258,11 @@ function VirtualAssistantWorkspacePage() {
   const pendingRoles = roles.filter((r) => r.status === 'pending');
   const rejectedRoles = roles.filter((r) => r.status === 'rejected');
   const activeAssignments = assignments.filter((a) => a.status === 'active');
-  const activeClients = clients.filter((c) => c.status === 'active');
+  const uniqueClients = new Set(
+    clients.map((c) => `${(c.clientName || '').trim().toLowerCase()}|${(c.companyName || '').trim().toLowerCase()}`)
+  ).size;
+  const workspaceUnlocked = approvedRoles.length > 0;
+  const currentAvailability = availability.availability || profile?.availability || avail;
 
   if (loading) return <AppLayout><Spinner /></AppLayout>;
 
@@ -302,11 +315,11 @@ function VirtualAssistantWorkspacePage() {
               <StatCard label="Pending Roles" value={pendingRoles.length} icon={Clock} accent="text-yellow-600" bg="bg-yellow-50" />
               <StatCard label="Rejected Roles" value={rejectedRoles.length} icon={XCircle} accent="text-red-600" bg="bg-red-50" />
               <StatCard label="Active Assignments" value={activeAssignments.length} icon={ClipboardList} accent="text-indigo-600" bg="bg-indigo-50" />
-              <StatCard label="Total Clients" value={clients.length} icon={Users} accent="text-purple-600" bg="bg-purple-50" />
-              <StatCard label="Availability" value={fmtStatus(availability.availability)} icon={CalendarClock} accent="text-teal-600" bg="bg-teal-50" />
+              <StatCard label="Total Clients" value={uniqueClients} icon={Users} accent="text-purple-600" bg="bg-purple-50" />
+              <StatCard label="Availability" value={fmtStatus(currentAvailability)} icon={CalendarClock} accent="text-teal-600" bg="bg-teal-50" />
             </div>
             <SectionCard title={t('vaWorkspaceStatus', { defaultValue: 'Workspace Status' })}>
-              {profile?.workspaceLocked ? (
+              {!workspaceUnlocked ? (
                 <div className="flex items-center gap-3 rounded-xl bg-red-50 px-4 py-3">
                   <XCircle className="text-red-600" size={22} />
                   <span className="text-sm font-medium text-red-800">
@@ -329,13 +342,15 @@ function VirtualAssistantWorkspacePage() {
           <div className="space-y-6">
             <SectionCard title={t('vaProfileInfo', { defaultValue: 'Profile Information' })}>
               <div className="flex items-center gap-4">
-                {profile?.profilePhotoUrl ? (
-                  <img src={profile.profilePhotoUrl} alt="" className="h-20 w-20 rounded-2xl object-cover" />
-                ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
-                    <User size={32} />
-                  </div>
-                )}
+                <VaProfilePhoto
+                  source={profile}
+                  refreshScope="workspace"
+                  alt=""
+                  className="h-20 w-20 rounded-2xl object-cover"
+                  fallbackClassName="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600"
+                  fallback="icon"
+                  fallbackIcon={User}
+                />
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{profile?.fullName}</h3>
                   <p className="text-sm text-gray-500">{profile?.location || '—'}</p>

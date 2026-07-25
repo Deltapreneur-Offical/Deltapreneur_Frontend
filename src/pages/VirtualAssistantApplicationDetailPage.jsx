@@ -6,7 +6,11 @@ import {
   RefreshCw, Link2, Languages, Sparkles,
 } from 'lucide-react';
 import { adminAPI } from '../api/services';
-import { unwrapApiData } from '../utils/apiResponse';
+import { unwrapApiData, unwrapApiList } from '../utils/apiResponse';
+import { readApiError } from '../utils/apiError';
+import { formatVaReferenceNumber, vaDisplayApplicationNumber, hasVaProfilePhoto } from '../utils/virtualAssistantDisplay';
+import { vaAdminApplicationsPath } from '../utils/virtualAssistantAdminNav';
+import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
 import '../styles/virtual-assistant-application-detail.css';
 
 const STATUS_BADGE_CLASSES = {
@@ -131,7 +135,6 @@ function VirtualAssistantApplicationDetailPage() {
   const [capacityValues, setCapacityValues] = useState({});
   const [savingCapacityId, setSavingCapacityId] = useState(null);
   const [capacityMessage, setCapacityMessage] = useState('');
-  const [profilePhotoError, setProfilePhotoError] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -174,15 +177,16 @@ function VirtualAssistantApplicationDetailPage() {
 
   const refreshAll = useCallback(async () => {
     try {
-      const [appRes, rolesRes] = await Promise.all([
+      const [appRes, rolesRes, assignmentsRes] = await Promise.all([
         adminAPI.getVirtualAssistant(applicationId),
         adminAPI.getVirtualAssistantRoles(applicationId),
+        adminAPI.getVirtualAssistantAssignments(applicationId),
       ]);
       const appData = unwrapApiData(appRes);
       const rolesData = unwrapApiData(rolesRes) || [];
       setApplication(appData);
       setRoles(rolesData);
-      setAssignments([]);
+      setAssignments(unwrapApiList(assignmentsRes));
       const initialNotes = {};
       rolesData.forEach((r) => {
         if (r.rejectionNote) initialNotes[r.id] = r.rejectionNote;
@@ -202,11 +206,11 @@ function VirtualAssistantApplicationDetailPage() {
 
   const fetchAssignments = useCallback(async () => {
     try {
-      const appRes = await adminAPI.getVirtualAssistant(applicationId);
-      const appData = unwrapApiData(appRes);
-      setAssignments(appData?.applicationRoles?.filter((r) => r.status === 'approved') || []);
+      const res = await adminAPI.getVirtualAssistantAssignments(applicationId);
+      setAssignments(unwrapApiList(res));
     } catch (e) {
       console.error('Failed to load assignments', e);
+      setAssignments([]);
     }
   }, [applicationId]);
 
@@ -377,32 +381,36 @@ function VirtualAssistantApplicationDetailPage() {
   };
 
   const handleCreateAssignment = async () => {
-    const company = document.getElementById('assignmentCompany')?.value;
-    const role = document.getElementById('assignmentRole')?.value;
+    const company = document.getElementById('assignmentCompany')?.value?.trim();
+    const role = document.getElementById('assignmentRole')?.value?.trim();
     const start = document.getElementById('assignmentStart')?.value;
     const end = document.getElementById('assignmentEnd')?.value;
     if (!company || !role) {
       setCapacityMessage('Company and role are required.');
       return;
     }
+    if (start && end && new Date(end) < new Date(start)) {
+      setCapacityMessage('End date must be on or after start date.');
+      return;
+    }
     setCapacityMessage('');
     try {
-      const res = await adminAPI.createVirtualAssistantAssignment(applicationId, {
+      await adminAPI.createVirtualAssistantAssignment(applicationId, {
         assignedCompany: company,
         assignedRole: role,
         startDate: start || null,
         endDate: end || null,
         notes: null,
       });
-      unwrapApiData(res);
       setCapacityMessage('Assignment created successfully.');
       document.getElementById('assignmentCompany').value = '';
       document.getElementById('assignmentRole').value = '';
       document.getElementById('assignmentStart').value = '';
       document.getElementById('assignmentEnd').value = '';
-      await refreshAll();
+      await fetchAssignments();
     } catch (e) {
-      setCapacityMessage('Failed to create assignment.');
+      console.error('Failed to create assignment', e);
+      setCapacityMessage(readApiError(e, 'Failed to create assignment.'));
     }
   };
 
@@ -426,7 +434,7 @@ function VirtualAssistantApplicationDetailPage() {
       <div className="text-center py-20">
         <p className="text-red-600 mb-4">{error || 'Application not found.'}</p>
         <button
-          onClick={() => navigate('/admin/virtual-assistants/applications')}
+          onClick={() => navigate(vaAdminApplicationsPath())}
           className="va-detail-btn va-detail-btn--primary"
           style={{ width: 'auto', margin: '0 auto', paddingInline: '1.25rem' }}
         >
@@ -442,7 +450,7 @@ function VirtualAssistantApplicationDetailPage() {
       <div className="va-detail-header">
         <button
           type="button"
-          onClick={() => navigate('/admin/virtual-assistants/applications')}
+          onClick={() => navigate(vaAdminApplicationsPath())}
           className="va-detail-back"
           title="Back to Applications"
         >
@@ -451,7 +459,7 @@ function VirtualAssistantApplicationDetailPage() {
         <div>
           <h1 className="va-detail-title">Application Details</h1>
           <p className="va-detail-subtitle">
-            Reference: <code>{application.referenceNumber || application.id}</code>
+            Reference: <code>{formatVaReferenceNumber(application.referenceNumber)}</code>
           </p>
         </div>
       </div>
@@ -460,18 +468,15 @@ function VirtualAssistantApplicationDetailPage() {
         <div className="va-detail-main">
           <SectionCard icon={User} title="Applicant Details">
             <div className="va-detail-applicant">
-              {application.profilePhotoUrl && !profilePhotoError ? (
-                <img
-                  src={application.profilePhotoUrl}
-                  alt=""
-                  className="va-detail-avatar"
-                  onError={() => setProfilePhotoError(true)}
-                />
-              ) : (
-                <div className="va-detail-avatar va-detail-avatar--fallback">
-                  <User size={36} />
-                </div>
-              )}
+              <VaProfilePhoto
+                source={application}
+                applicationId={application.id}
+                refreshScope="admin"
+                alt=""
+                className="va-detail-avatar"
+                fallbackClassName="va-detail-avatar va-detail-avatar--fallback"
+                fallback="icon"
+              />
               <div className="va-detail-applicant__meta">
                 <div className="va-detail-applicant__name-row">
                   <h3 className="va-detail-applicant__name">{application.fullName || '—'}</h3>
@@ -551,7 +556,7 @@ function VirtualAssistantApplicationDetailPage() {
             </div>
           </SectionCard>
 
-          {(application.resumeUrl || application.profilePhotoUrl) && (
+          {(application.resumeUrl || hasVaProfilePhoto(application)) && (
             <SectionCard icon={FileText} title="Uploaded Documents">
               <div className="space-y-3">
                 {application.resumeUrl && (
@@ -573,7 +578,7 @@ function VirtualAssistantApplicationDetailPage() {
                     </button>
                   </div>
                 )}
-                {application.profilePhotoUrl && !profilePhotoError && (
+                {hasVaProfilePhoto(application) && (
                   <div className="va-detail-doc">
                     <div className="va-detail-doc__info">
                       <span className="va-detail-doc__icon">
@@ -642,7 +647,7 @@ function VirtualAssistantApplicationDetailPage() {
                     value={pricing.publicMonthlyPriceInr}
                     onChange={(e) => setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: e.target.value }))}
                     placeholder="Enter public price in INR"
-                    className="va-detail-input pl-9"
+                    className="va-detail-input va-detail-input--with-prefix"
                   />
                 </div>
               </div>
@@ -951,11 +956,11 @@ function VirtualAssistantApplicationDetailPage() {
 
         <aside className="va-detail-aside">
           <SectionCard icon={Hash} title="Application Summary">
-            <SummaryRow icon={Hash} label="Application ID" mono>
-              {application.id}
+            <SummaryRow icon={Hash} label="Application No." mono>
+              {vaDisplayApplicationNumber(application)}
             </SummaryRow>
             <SummaryRow icon={FileText} label="Reference" mono>
-              {application.referenceNumber || '—'}
+              {formatVaReferenceNumber(application.referenceNumber)}
             </SummaryRow>
             <SummaryRow icon={Calendar} label="Submitted">
               {formatDate(application.createdAt)}
@@ -974,7 +979,7 @@ function VirtualAssistantApplicationDetailPage() {
             <div className="va-detail-actions">
               <button
                 type="button"
-                onClick={() => navigate('/admin/virtual-assistants/applications')}
+                onClick={() => navigate(vaAdminApplicationsPath())}
                 className="va-detail-btn va-detail-btn--secondary"
               >
                 <ArrowLeft size={16} />

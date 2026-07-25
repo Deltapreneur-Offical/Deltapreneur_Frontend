@@ -312,6 +312,7 @@ export const adminAPI = {
   getDomains:           ()              => api.get('/api/v1/admin/domains'),
   getSoftwares:         ()              => api.get('/api/v1/admin/softwares'),
   getCommunities:       ()              => api.get('/api/v1/admin/communities'),
+  getVirtualAssistantsForHomepage: () => api.get('/api/v1/admin/virtual-assistants'),
   getCreators:          ()              => api.get('/api/v1/admin/communities'),
   getTechnologies:      ()              => api.get('/api/v1/admin/technologies'),
   getCoBrotherRequests: ()              => api.get('/api/v1/admin/cobrother-requests'),
@@ -364,6 +365,8 @@ export const adminAPI = {
   getVirtualAssistants: (params = {}) => api.get('/api/v1/admin/virtual-assistant/applications', { params }),
   getVirtualAssistantCounts: () => api.get('/api/v1/admin/virtual-assistant/applications/counts'),
   getVirtualAssistant: (id) => api.get(`/api/v1/admin/virtual-assistant/applications/${id}`),
+  getVirtualAssistantProfilePhotoUrl: (id) =>
+    api.get(`/api/v1/admin/virtual-assistant/applications/${id}/profile-photo-url`),
   getVirtualAssistantRoles: (id) => api.get(`/api/v1/admin/virtual-assistant/applications/${id}/roles`),
   updateVirtualAssistantStatus: (id, status) => api.patch(`/api/v1/admin/virtual-assistant/applications/${id}/status`, { status }),
   updateVirtualAssistantRole: (appId, roleId, status, rejectionNote) => api.patch(`/api/v1/admin/virtual-assistant/applications/${appId}/roles/${roleId}`, { status, rejection_note: rejectionNote }),
@@ -373,6 +376,7 @@ export const adminAPI = {
   publishVirtualAssistant: (id, action) => api.patch(`/api/v1/admin/virtual-assistant/applications/${id}/publish`, { action }),
   getPublishedVirtualAssistants: () => api.get('/api/v1/virtual-assistant/published'),
   updateVirtualAssistantRoleCapacity: (roleId, data) => api.patch(`/api/v1/admin/virtual-assistant/application-roles/${roleId}/capacity`, data),
+  getVirtualAssistantAssignments: (appId) => api.get(`/api/v1/admin/virtual-assistant/applications/${appId}/assignments`),
   createVirtualAssistantAssignment: (appId, data) => api.post(`/api/v1/admin/virtual-assistant/applications/${appId}/assignments`, data),
   updateVirtualAssistantAssignment: (assignmentId, data) => api.patch(`/api/v1/admin/virtual-assistant/assignments/${assignmentId}`, data),
   deleteVirtualAssistantAssignment: (assignmentId) => api.delete(`/api/v1/admin/virtual-assistant/assignments/${assignmentId}`),
@@ -539,4 +543,6 @@ export const virtualAssistantAPI = {
   updateWorkspaceSettings: (data) => api.patch('/api/v1/virtual-assistant/workspace/settings', data),
   getPublicList: (params = {}) => api.get('/api/v1/virtual-assistant/published', { params }),
   getPublicProfile: (id) => api.get(`/api/v1/virtual-assistant/${id}/public`),
+  getPublicProfilePhotoUrl: (id) => api.get(`/api/v1/virtual-assistant/${id}/profile-photo-url`),
+  getWorkspaceProfilePhotoUrl: () => api.get('/api/v1/virtual-assistant/workspace/profile-photo-url'),
 };

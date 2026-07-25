@@ -7,6 +7,7 @@ import { isListingVerified } from '../../utils/listingVisibility';
 import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { asArray } from '../../utils/asArray';
 import { mergeAdminHomepageAuctionItems } from '../../utils/homepageAuctions';
+import { vaDisplayReference } from '../../utils/virtualAssistantDisplay';
 
 const SECTION_KEYS = {
   domain: 'homepageFeatureDomains',
@@ -15,6 +16,7 @@ const SECTION_KEYS = {
   software: 'homepageFeatureSoftware',
   community: 'homepageFeatureCreators',
   auction: 'homepageFeatureAuctions',
+  'virtual-assistant': 'homepageFeatureVirtualAssistants',
 };
 
 const TYPE_KEYS = {
@@ -24,6 +26,7 @@ const TYPE_KEYS = {
   software: 'homepageFeatureTypeSoftware',
   community: 'homepageFeatureTypeCommunities',
   auction: 'homepageFeatureTypeAuctions',
+  'virtual-assistant': 'homepageFeatureTypeVirtualAssistants',
 };
 
 const LISTING_TYPE = {
@@ -33,6 +36,7 @@ const LISTING_TYPE = {
   software: 'software',
   community: 'community',
   auction: 'auction',
+  'virtual-assistant': 'virtual-assistant',
 };
 
 function matchesVentureFeatureType(item, type) {
@@ -57,6 +61,7 @@ function getTitle(item, type) {
   }
   if (type === 'software') return item.name || `Software #${item.id}`;
   if (type === 'community') return item.name || `Creator #${item.id}`;
+  if (type === 'virtual-assistant') return item.fullName || `Virtual Assistant #${item.id}`;
   return '';
 }
 
@@ -105,6 +110,7 @@ export default function HomepageFeatureSelector({ type }) {
       else if (type === 'venture' || type === 'coventure') response = await adminAPI.getVentures();
       else if (type === 'software') response = await adminAPI.getSoftwares();
       else if (type === 'community') response = await adminAPI.getCommunities();
+      else if (type === 'virtual-assistant') response = await adminAPI.getVirtualAssistantsForHomepage();
       else if (type === 'auction') {
         const [domainsRes, communityRes, softwareRes] = await Promise.all([
           adminAPI.getAllAuctions().catch(() => ({ data: [] })),
@@ -164,6 +170,11 @@ export default function HomepageFeatureSelector({ type }) {
       if (!q) return true;
       const title = getTitle(item, type).toLowerCase();
       const idStr = String(item.id ?? '');
+      if (type === 'virtual-assistant') {
+        const roles = (item.roles ?? '').toLowerCase();
+        const ref = (item.referenceNumber ?? '').toLowerCase();
+        return title.includes(q) || idStr.includes(q) || roles.includes(q) || ref.includes(q);
+      }
       return title.includes(q) || idStr.includes(q);
     });
 
@@ -214,6 +225,7 @@ export default function HomepageFeatureSelector({ type }) {
       coventure: 'VENTURE',
       software: 'SOFTWARE',
       community: 'COMMUNITY',
+      'virtual-assistant': 'VIRTUAL_ASSISTANT',
     };
 
     const target = items.find((row) => sameItemId(row.id, id));
@@ -369,7 +381,13 @@ export default function HomepageFeatureSelector({ type }) {
                     <p className="admin-feature-item-meta">
                       {type === 'auction'
                         ? t('homepageFeatureAuctionMeta', { category: item.category, id: item.auctionId })
-                        : t('homepageFeatureId', { id: item.id })}
+                        : type === 'virtual-assistant'
+                          ? (() => {
+                            const ref = vaDisplayReference(item);
+                            const primaryRole = item.roles ? item.roles.split(',')[0].trim() : '';
+                            return primaryRole ? `${ref} · ${primaryRole}` : String(ref);
+                          })()
+                          : t('homepageFeatureId', { id: item.id })}
                     </p>
                   </div>
                   <FeaturedSwitch

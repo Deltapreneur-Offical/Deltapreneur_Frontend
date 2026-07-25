@@ -19,6 +19,7 @@ import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import verifiedIcon from '../../assets/Verified_Icon.png';
+import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
 import '../../styles/domain-listing-cards.css';
 
 function formatLabel(value) {
@@ -26,8 +27,28 @@ function formatLabel(value) {
   return value.replace(/_/g, ' ').trim();
 }
 
-function CreatorAvatar({ imageUrl, name }) {
+function isVirtualAssistantProfile(profile) {
+  const reference = profile?.referenceNumber || profile?.reference_number || '';
+  return reference.startsWith('CB-VA') || profile?.applicationNumber != null;
+}
+
+function CreatorAvatar({ imageUrl, name, profile }) {
   const initial = name?.[0]?.toUpperCase() || '?';
+
+  if (profile && isVirtualAssistantProfile(profile)) {
+    return (
+      <div className="creator-profile-card__avatar-container">
+        <VaProfilePhoto
+          source={{ ...profile, profilePhotoUrl: imageUrl || profile.profilePhotoUrl }}
+          applicationId={profile.id}
+          refreshScope="public"
+          alt={name || 'Virtual Assistant'}
+          className="creator-profile-card__avatar"
+          fallbackClassName="creator-profile-card__avatar creator-profile-card__avatar--fallback"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="creator-profile-card__avatar-container">
@@ -51,14 +72,16 @@ export default function CommunityListingCard({
   isMe,
   onView,
   onEdit,
+  onHire,
   likeState,
   onLike,
+  skipVisibilityCheck = false,
 }) {
   const { t } = useTranslation();
   const cardRef = useRef(null);
 
   if (!profile) return null;
-  if (!isMe && !isCreatorProfileVisible(profile)) return null;
+  if (!isMe && !skipVisibilityCheck && !isCreatorProfileVisible(profile)) return null;
 
   const imageUrl = profile.imageUrl || profile.image_url || null;
   const coverImageUrl =
@@ -131,7 +154,7 @@ export default function CommunityListingCard({
 
       <div className="creator-profile-card__body">
         <div className="creator-profile-card__top-section">
-          <CreatorAvatar imageUrl={imageUrl} name={profile.name} />
+          <CreatorAvatar imageUrl={imageUrl} name={profile.name} profile={profile} />
           
           <div className="creator-profile-card__header-right">
              <div className="creator-profile-card__name-section">
@@ -250,7 +273,9 @@ export default function CommunityListingCard({
 
         <CreatorExpectedRateCard
           profile={profile}
-          onView={interactive ? () => onView() : undefined}
+          onView={interactive && !onHire ? () => onView() : undefined}
+          onHire={interactive && onHire ? () => onHire() : undefined}
+          hireLabel={onHire ? 'Hire virtual assistant' : undefined}
         />
 
         <hr className="creator-profile-card__divider" />

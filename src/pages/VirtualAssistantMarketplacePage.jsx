@@ -3,11 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, MapPin, Clock, IndianRupee, Users, Filter, X } from 'lucide-react';
 import { virtualAssistantAPI } from '../api/services';
-import { unwrapApiData } from '../utils/apiResponse';
+import { unwrapApiList } from '../utils/apiResponse';
+import { navigateToVirtualAssistantDetail } from '../utils/listingNavigation';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
+import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
 
 const VIRTUAL_ASSISTANT_ROLES = [
   'Administrative Support', 'Customer Support', 'Data Entry',
@@ -63,10 +65,10 @@ const VirtualAssistantMarketplacePage = () => {
         page_size: pageSize,
       };
       const response = await virtualAssistantAPI.getPublicList(params);
-      const data = unwrapApiData(response);
-      setProfiles(data.data || []);
-      setTotal(data.meta?.total || 0);
-      setTotalPages(data.meta?.total_pages || 1);
+      setProfiles(unwrapApiList(response));
+      const body = response?.data ?? {};
+      setTotal(body.meta?.total || 0);
+      setTotalPages(body.meta?.total_pages || 1);
     } catch (e) {
       console.error('Failed to load marketplace', e);
       setError('Failed to load Virtual Assistants. Please try again.');
@@ -143,13 +145,18 @@ const VirtualAssistantMarketplacePage = () => {
               {profiles.map((profile) => (
                 <div key={profile.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
                   <div className="p-5 flex flex-col items-center text-center flex-1">
-                    {profile.profilePhotoUrl ? (
-                      <img src={profile.profilePhotoUrl} alt={profile.fullName} className="w-20 h-20 rounded-full object-cover mb-3" />
-                    ) : (
-                      <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center mb-3">
-                        <Users size={32} className="text-purple-600" />
-                      </div>
-                    )}
+                    <VaProfilePhoto
+                      source={profile}
+                      applicationId={profile.id}
+                      refreshScope="public"
+                      alt={profile.fullName}
+                      className="w-20 h-20 rounded-full object-cover mb-3"
+                      fallbackClassName="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center mb-3"
+                      fallback="icon"
+                      fallbackIcon={Users}
+                      fallbackIconSize={32}
+                      fallbackIconClassName="text-purple-600"
+                    />
                     <h3 className="font-semibold text-gray-900 text-base">{profile.fullName}</h3>
                     <p className="text-xs text-gray-500 mt-1">{profile.roles ? profile.roles.split(',')[0] : 'Virtual Assistant'}</p>
                     <div className="flex flex-wrap justify-center gap-1.5 mt-3">
@@ -205,7 +212,7 @@ const VirtualAssistantMarketplacePage = () => {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => navigate(`/virtual-assistants/${profile.id}`)}
+                        onClick={() => navigateToVirtualAssistantDetail(navigate, profile.id)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white transition-colors"
                       >
                         View Profile

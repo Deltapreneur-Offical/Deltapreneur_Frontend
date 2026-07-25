@@ -1,3 +1,4 @@
+/** Public storefront sections on /operations (legacy monthly roles catalog + business solutions). */
 export const OPERATIONS_SECTIONS = [
   {
     id: 'assistance',
@@ -19,9 +20,30 @@ export const OPERATIONS_SECTIONS = [
   },
 ];
 
+/** Admin Operations → Business Solutions catalog partition. */
+export const OPERATIONS_ADMIN_CATALOG_SECTION = OPERATIONS_SECTIONS.find((s) => s.id === 'compliance');
+
+/** Admin Operations → Virtual Assistants profile management partition. */
+export const VIRTUAL_ASSISTANTS_ADMIN_PARTITION = {
+  id: 'virtual-assistants',
+  labelKey: 'adminTabVirtualAssistants',
+  defaultLabel: 'Virtual Assistants',
+  hintKey: 'adminOperationsVaProfilesHint',
+  defaultHint: 'Applications, publishing & direct-add profiles',
+  theme: 'assistance',
+};
+
+/** Admin Operations tab partitions (order matters). */
+export const OPERATIONS_ADMIN_PARTITIONS = [
+  VIRTUAL_ASSISTANTS_ADMIN_PARTITION,
+  OPERATIONS_ADMIN_CATALOG_SECTION,
+];
+
 const SECTION_ALIASES = {
   compliances: 'compliance',
   assistances: 'assistance',
+  'virtual-assistant': 'virtual-assistants',
+  va: 'virtual-assistants',
 };
 
 export function resolveOperationsSection(sectionId) {

@@ -1,25 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Pencil, Trash2, ChevronDown, Headset, ShieldCheck, CheckCircle2, AlertCircle, ClipboardList, User, Globe } from 'lucide-react';
+import { Pencil, Trash2, ChevronDown, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 import OperationsAdminPartitionTabs from '../components/operations/OperationsAdminPartitionTabs';
 import OperationsContactModal from '../components/operations/OperationsContactModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
-import { useCurrency } from '../context/CurrencyContext';
-import { adminAPI, operationsAdminAPI } from '../api/services';
-import { unwrapApiData } from '../utils/apiResponse';
+import { operationsAdminAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
-import VirtualAssistantsAdminTab from '../components/admin/VirtualAssistantsAdminTab';
-import VirtualAssistantDirectAddAdminPage from './VirtualAssistantDirectAddAdminPage';
-import VirtualAssistantPublishedProfilesPage from './VirtualAssistantPublishedProfilesPage';
-import { OPERATIONS_CATEGORY_LABELS, OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
-import { formatRequestAdminPrice } from '../utils/operationsPricing';
+import VirtualAssistantsAdminModule from '../components/admin/VirtualAssistantsAdminModule';
 import { getRequestActionLabel, getRequestStatusLabel } from '../utils/operationsRequestLabels';
-import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
-
-const VA_CATEGORY_OPTIONS = OPERATIONS_CATEGORY_OPTIONS.filter((opt) => opt.value !== 'compliance');
 
 const REQUEST_STATUS_STYLES = {
   PENDING: 'operations-admin-request-status--pending',
@@ -28,27 +19,6 @@ const REQUEST_STATUS_STYLES = {
 };
 
 const SECTION_META = {
-  assistance: {
-    icon: Headset,
-    titleKey: 'adminOperationsVaTitle',
-    defaultTitle: 'Virtual Assistance',
-    subtitleKey: 'adminOperationsVaSubtitle',
-    defaultSubtitle: 'Manage monthly virtual roles shown on the Operations page.',
-    addKey: 'adminOperationsAddVirtualRole',
-    defaultAdd: '+ Add Virtual Role',
-    searchKey: 'adminOperationsSearchVaPlaceholder',
-    defaultSearch: 'Search virtual roles…',
-    nameColKey: 'adminOperationsColVirtualName',
-    defaultNameCol: 'Virtual Name',
-    emptyKey: 'adminOperationsEmptyVa',
-    defaultEmpty: 'No virtual roles match your filters.',
-    modalTitleKey: 'adminOperationsModalTitleVa',
-    defaultModalTitle: 'Add / Edit Virtual Role',
-    namePlaceholderKey: 'adminOperationsFieldNamePlaceholder',
-    defaultNamePlaceholder: 'Virtual HR Manager',
-    priceHintKey: 'adminOperationsPriceHintVa',
-    defaultPriceHint: 'Monthly subscription fee (required).',
-  },
   compliance: {
     icon: ShieldCheck,
     titleKey: 'adminOperationsComplianceTitle',
@@ -97,13 +67,10 @@ function truncate(text, max = 42) {
   return `${value.slice(0, max).trim()}…`;
 }
 
-function formatAdminPrice(row, isCompliance) {
+function formatAdminPrice(row) {
   const price = Number(row.price) || 0;
-  if (isCompliance) {
-    if (price <= 0) return '—';
-    return formatInr(price);
-  }
-  return `${formatInr(price)}/mo`;
+  if (price <= 0) return '—';
+  return formatInr(price);
 }
 
 function formatRequestDate(value) {
@@ -125,13 +92,23 @@ function formatRequestPhone(phone) {
   return phone || '—';
 }
 
+const OPERATIONS_PARTITION_IDS = ['virtual-assistants', 'compliance', 'requests'];
+
+function resolveInitialPartition(sectionParam) {
+  if (sectionParam === 'compliance') return 'compliance';
+  if (sectionParam === 'requests') return 'requests';
+  if (sectionParam === 'virtual-assistants' || sectionParam === 'assistance') return 'virtual-assistants';
+  return 'virtual-assistants';
+}
+
 export default function OperationsAdminTab({ services = [], onRefresh }) {
   const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
-  const [activePartitionId, setActivePartitionId] = useState('assistance');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activePartitionId, setActivePartitionId] = useState(() =>
+    resolveInitialPartition(searchParams.get('section')),
+  );
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [requestTypeFilter, setRequestTypeFilter] = useState('all');
   const [requestStatusFilter, setRequestStatusFilter] = useState('all');
   const [requests, setRequests] = useState([]);
@@ -144,55 +121,44 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   const [notice, setNotice] = useState(null);
   const noticeTimerRef = useRef(null);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [vaData, setVaData] = useState([]);
-  const [vaLoading, setVaLoading] = useState(false);
-  const [vaSubTab, setVaSubTab] = useState(() => searchParams.get('vaSubTab') || 'applications');
-
   useEffect(() => {
-    const param = searchParams.get('vaSubTab');
-    if (param && ['applications', 'direct-add', 'published'].includes(param)) {
-      setVaSubTab(param);
+    const section = searchParams.get('section');
+    if (section === 'assistance') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('tab', 'operations');
+      newParams.set('section', 'virtual-assistants');
+      if (!newParams.get('vaSubTab')) newParams.set('vaSubTab', 'applications');
+      setSearchParams(newParams, { replace: true });
+      setActivePartitionId('virtual-assistants');
+      return;
     }
-  }, [searchParams]);
+    if (section && OPERATIONS_PARTITION_IDS.includes(section)) {
+      setActivePartitionId(section);
+    }
+  }, [searchParams, setSearchParams]);
 
-  const handleVaSubTabChange = (nextTab) => {
-    setVaSubTab(nextTab);
+  const handlePartitionChange = (nextPartitionId) => {
+    setActivePartitionId(nextPartitionId);
     const newParams = new URLSearchParams(searchParams);
     newParams.set('tab', 'operations');
-    newParams.set('section', 'assistance');
-    newParams.set('vaSubTab', nextTab);
+    newParams.set('section', nextPartitionId);
+    if (nextPartitionId !== 'virtual-assistants') {
+      newParams.delete('vaSubTab');
+    } else if (!newParams.get('vaSubTab')) {
+      newParams.set('vaSubTab', 'applications');
+    }
     setSearchParams(newParams, { replace: true });
   };
 
-  const fetchVaData = useCallback(async () => {
-    setVaLoading(true);
-    try {
-      const res = await adminAPI.getVirtualAssistants();
-      const unwrapped = unwrapApiData(res);
-      const list = Array.isArray(unwrapped) ? unwrapped : (unwrapped?.items || []);
-      setVaData(list);
-    } catch (e) {
-      console.error('Failed to load VA applications', e);
-      setVaData([]);
-    } finally {
-      setVaLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (activePartitionId === 'assistance') {
-      fetchVaData();
-    }
-  }, [activePartitionId, fetchVaData]);
-
   const isRequestsPartition = activePartitionId === 'requests';
-  const activeSection = isRequestsPartition
-    ? null
-    : resolveOperationsSection(activePartitionId);
-  const isCompliance = activeSection?.serviceType === 'compliance';
-  const meta = SECTION_META[activePartitionId] || SECTION_META.assistance;
+  const isVirtualAssistantsPartition = activePartitionId === 'virtual-assistants';
+  const meta = SECTION_META[activePartitionId] || SECTION_META.compliance;
   const SectionIcon = meta.icon;
+
+  const complianceServices = useMemo(
+    () => services.filter((row) => (row.serviceType || 'virtual_assistance') === 'compliance'),
+    [services],
+  );
 
   const showNotice = useCallback((message, type = 'success') => {
     if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
@@ -226,39 +192,26 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   useEffect(() => {
     setSearch('');
     setStatusFilter('all');
-    setCategoryFilter('all');
     if (!isRequestsPartition) {
       setRequestTypeFilter('all');
       setRequestStatusFilter('all');
     }
   }, [activePartitionId, isRequestsPartition]);
 
-  const sectionCounts = useMemo(() => {
-    const counts = Object.fromEntries(OPERATIONS_SECTIONS.map((section) => [section.id, 0]));
-    services.forEach((row) => {
-      const type = row.serviceType || 'virtual_assistance';
-      const section = OPERATIONS_SECTIONS.find((s) => s.serviceType === type) || OPERATIONS_SECTIONS[0];
-      counts[section.id] += 1;
-    });
-    return counts;
-  }, [services]);
-
-  const sectionServices = useMemo(() => {
-    if (!activeSection) return [];
-    return services.filter((row) => (row.serviceType || 'virtual_assistance') === activeSection.serviceType);
-  }, [services, activeSection]);
+  const sectionCounts = useMemo(() => ({
+    compliance: complianceServices.length,
+  }), [complianceServices]);
 
   const filteredCatalog = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return sectionServices.filter((row) => {
+    return complianceServices.filter((row) => {
       if (statusFilter === 'active' && row.isAvailable === false) return false;
       if (statusFilter === 'paused' && row.isAvailable !== false) return false;
-      if (!isCompliance && categoryFilter !== 'all' && row.category !== categoryFilter) return false;
       if (!q) return true;
       const haystack = `${row.name || ''} ${row.description || ''}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [sectionServices, search, statusFilter, categoryFilter, isCompliance]);
+  }, [complianceServices, search, statusFilter]);
 
   const filteredRequests = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -301,13 +254,10 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     }
   };
 
-  const handleSaved = (saveMode, meta = {}) => {
+  const handleSaved = (saveMode, saveMeta = {}) => {
     onRefresh?.();
-    const isComplianceSection = meta.sectionId === 'compliance';
-    const sectionLabel = isComplianceSection
-      ? t('operationsSectionCompliances', { defaultValue: 'Service' })
-      : t('operationsSectionVirtualAssistance', { defaultValue: 'Virtual Assistance role' });
-    const name = meta.name ? `"${meta.name}"` : '';
+    const sectionLabel = t('operationsSectionCompliances', { defaultValue: 'Service' });
+    const name = saveMeta.name ? `"${saveMeta.name}"` : '';
 
     if (saveMode === 'add') {
       showNotice(
@@ -422,9 +372,9 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     setModal({
       mode: 'add',
       record: null,
-      defaultServiceType: activeSection.serviceType,
+      defaultServiceType: 'compliance',
       lockServiceType: true,
-      sectionId: activeSection.id,
+      sectionId: 'compliance',
     });
   };
 
@@ -432,9 +382,9 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     setModal({
       mode: 'edit',
       record: row,
-      defaultServiceType: row.serviceType || activeSection.serviceType,
+      defaultServiceType: row.serviceType || 'compliance',
       lockServiceType: true,
-      sectionId: activeSection.id,
+      sectionId: 'compliance',
     });
   };
 
@@ -447,7 +397,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
           </h2>
           <p className="operations-admin-subtitle">
             {t('adminOperationsSubtitle', {
-              defaultValue: 'Manage virtual assistance roles and business services for the storefront.',
+              defaultValue: 'Manage Virtual Assistants, business solutions, and customer requests.',
             })}
           </p>
         </div>
@@ -455,7 +405,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
 
       <OperationsAdminPartitionTabs
         activePartitionId={activePartitionId}
-        onChange={setActivePartitionId}
+        onChange={handlePartitionChange}
         catalogCounts={sectionCounts}
         requestCount={requests.length}
       />
@@ -471,75 +421,10 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
             <span>{notice.message}</span>
           </div>
         </div>
-      )}{activePartitionId === 'assistance' ? (
-        <div>
-          <div className="operations-section-tabs-wrap mb-6">
-            <p className="operations-section-tabs-eyebrow">Virtual Assistants</p>
-            <div className="operations-section-tabs operations-section-tabs--admin" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={vaSubTab === 'applications'}
-                className={`operations-section-tab operations-section-tab--assistance ${vaSubTab === 'applications' ? 'is-active' : ''}`}
-                onClick={() => handleVaSubTabChange('applications')}
-              >
-                <span className="operations-section-tab-accent" aria-hidden />
-                <span className="operations-section-tab-main">
-                  <span className="operations-section-tab-icon-wrap">
-                    <ClipboardList size={18} strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="operations-section-tab-copy">
-                    <span className="operations-section-tab-label">Applications</span>
-                    <span className="operations-section-tab-hint">Review and manage VA applications</span>
-                  </span>
-                </span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={vaSubTab === 'direct-add'}
-                className={`operations-section-tab operations-section-tab--compliance ${vaSubTab === 'direct-add' ? 'is-active' : ''}`}
-                onClick={() => handleVaSubTabChange('direct-add')}
-              >
-                <span className="operations-section-tab-accent" aria-hidden />
-                <span className="operations-section-tab-main">
-                  <span className="operations-section-tab-icon-wrap">
-                    <User size={18} strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="operations-section-tab-copy">
-                    <span className="operations-section-tab-label">Direct Add VA</span>
-                    <span className="operations-section-tab-hint">Manually create a Virtual Assistant profile</span>
-                  </span>
-                </span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={vaSubTab === 'published'}
-                className={`operations-section-tab operations-section-tab--requests ${vaSubTab === 'published' ? 'is-active' : ''}`}
-                onClick={() => handleVaSubTabChange('published')}
-              >
-                <span className="operations-section-tab-accent" aria-hidden />
-                <span className="operations-section-tab-main">
-                  <span className="operations-section-tab-icon-wrap">
-                    <Globe size={18} strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="operations-section-tab-copy">
-                    <span className="operations-section-tab-label">Published Profiles</span>
-                    <span className="operations-section-tab-hint">View and manage published Virtual Assistants</span>
-                  </span>
-                </span>
-              </button>
-            </div>
-          </div>
-          {vaSubTab === 'applications' ? (
-            <VirtualAssistantsAdminTab data={vaData} loading={vaLoading} onRefresh={fetchVaData} />
-          ) : vaSubTab === 'direct-add' ? (
-            <VirtualAssistantDirectAddAdminPage />
-          ) : (
-            <VirtualAssistantPublishedProfilesPage />
-          )}
-        </div>
+      )}
+
+      {isVirtualAssistantsPartition ? (
+        <VirtualAssistantsAdminModule />
       ) : (
         <div
           className={`operations-admin-section-panel operations-admin-section-panel--${activePartitionId}`}
@@ -607,39 +492,19 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 </div>
               </>
             ) : (
-              <>
-                <div className="operations-admin-select-wrap">
-                  <select
-                    className="operations-admin-select"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    aria-label={t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}
-                  >
-                    <option value="all">{t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}</option>
-                    <option value="active">{t('adminOperationsStatusActive', { defaultValue: 'Active' })}</option>
-                    <option value="paused">{t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}</option>
-                  </select>
-                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-                </div>
-                {!isCompliance && (
-                  <div className="operations-admin-select-wrap">
-                    <select
-                      className="operations-admin-select"
-                      value={categoryFilter}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      aria-label={t('adminOperationsFilterAllCategories', { defaultValue: 'All Categories' })}
-                    >
-                      <option value="all">{t('adminOperationsFilterAllCategories', { defaultValue: 'All Categories' })}</option>
-                      {VA_CATEGORY_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-                  </div>
-                )}
-              </>
+              <div className="operations-admin-select-wrap">
+                <select
+                  className="operations-admin-select"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  aria-label={t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}
+                >
+                  <option value="all">{t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}</option>
+                  <option value="active">{t('adminOperationsStatusActive', { defaultValue: 'Active' })}</option>
+                  <option value="paused">{t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}</option>
+                </select>
+                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+              </div>
             )}
           </div>
 
@@ -759,7 +624,6 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   <tr>
                     <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
                     <th>{t(meta.nameColKey, { defaultValue: meta.defaultNameCol })}</th>
-                    {!isCompliance && <th>{t('adminOperationsColCategory', { defaultValue: 'Category' })}</th>}
                     <th>{t('adminOperationsColDescription', { defaultValue: 'Description' })}</th>
                     <th>{t('adminOperationsColPrice', { defaultValue: 'Price' })}</th>
                     <th>{t('adminOperationsColStatus', { defaultValue: 'Status' })}</th>
@@ -769,28 +633,20 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <tbody>
                   {filteredCatalog.length === 0 ? (
                     <tr>
-                      <td colSpan={isCompliance ? 6 : 7} className="operations-admin-empty">
+                      <td colSpan={6} className="operations-admin-empty">
                         {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
                       </td>
                     </tr>
                   ) : (
                     filteredCatalog.map((row, index) => {
                       const serial = String(index + 1).padStart(2, '0');
-                      const categoryLabel = OPERATIONS_CATEGORY_LABELS[row.category] || row.category;
                       const isActive = row.isAvailable !== false;
                       return (
                         <tr key={row.id}>
                           <td className="operations-admin-serial">{serial}</td>
                           <td className="operations-admin-name">{row.name}</td>
-                          {!isCompliance && (
-                            <td>
-                              <span className={`operations-admin-category operations-admin-category--${row.category}`}>
-                                {categoryLabel}
-                              </span>
-                            </td>
-                          )}
                           <td className="operations-admin-description">{truncate(row.description)}</td>
-                          <td className="operations-admin-price">{formatAdminPrice(row, isCompliance)}</td>
+                          <td className="operations-admin-price">{formatAdminPrice(row)}</td>
                           <td>
                             {isActive ? (
                               <span className="operations-admin-status operations-admin-status--active">
@@ -841,7 +697,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   })
                 : filteredCatalog.length === 0
                   ? t('adminOperationsNoRoles', { defaultValue: 'No roles to display' })
-                  : filteredCatalog.length === sectionServices.length
+                  : filteredCatalog.length === complianceServices.length
                     ? t('adminOperationsSectionTotal', {
                         count: filteredCatalog.length,
                         section: t(meta.titleKey, { defaultValue: meta.defaultTitle }),
@@ -849,7 +705,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                       })
                     : t('adminOperationsSectionFiltered', {
                         count: filteredCatalog.length,
-                        total: sectionServices.length,
+                        total: complianceServices.length,
                         section: t(meta.titleKey, { defaultValue: meta.defaultTitle }),
                         defaultValue: 'Showing {{count}} of {{total}} {{section}} entries',
                       })}

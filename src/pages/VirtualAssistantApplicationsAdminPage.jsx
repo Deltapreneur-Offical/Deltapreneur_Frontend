@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Eye, ChevronLeft, ChevronRight, X, User, Filter, Check, XCircle, Loader2, Trash2, Users } from 'lucide-react';
 import { adminAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
+import { vaDisplayReference } from '../utils/virtualAssistantDisplay';
+import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
 
 
 const STATUS_BADGE = {
@@ -17,12 +19,19 @@ const STATUS_BADGE = {
 };
 
 /**
- * Check both camelCase and snake_case photo URL fields returned by the backend.
- * The multipart upload uses `profile_photo` which the API may return as
- * `profilePhotoUrl` (camelCase) or `profile_photo_url` (snake_case).
+ * Applicant avatar — uses resolved profile photo URL with automatic refresh on load failure.
  */
-function getPhotoUrl(app) {
-  return app?.profilePhotoUrl || app?.profile_photo_url || app?.photoUrl || app?.photo_url || null;
+function ApplicantAvatar({ app }) {
+  return (
+    <VaProfilePhoto
+      source={app}
+      applicationId={app?.id}
+      refreshScope="admin"
+      alt={app?.fullName || 'Applicant'}
+      className="w-11 h-11 rounded-full object-cover ring-2 ring-white shadow-md flex-shrink-0"
+      fallbackClassName="w-11 h-11 rounded-full bg-gradient-to-br from-violet-100 to-purple-200 flex items-center justify-center ring-2 ring-white shadow-md flex-shrink-0 text-sm font-bold text-purple-700"
+    />
+  );
 }
 
 function StatusBadge({ status }) {
@@ -32,28 +41,6 @@ function StatusBadge({ status }) {
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1 ${cfg.bg} ${cfg.text} ${cfg.ring} whitespace-nowrap`}>
       {formatStatusLabel(status)}
     </span>
-  );
-}
-
-function ApplicantAvatar({ app }) {
-  const [errored, setErrored] = useState(false);
-  const photoUrl = getPhotoUrl(app);
-  const initial = (app?.fullName || app?.name || '?')[0]?.toUpperCase();
-
-  if (photoUrl && !errored) {
-    return (
-      <img
-        src={photoUrl}
-        alt={app?.fullName || 'Applicant'}
-        className="w-11 h-11 rounded-full object-cover ring-2 ring-white shadow-md flex-shrink-0"
-        onError={() => setErrored(true)}
-      />
-    );
-  }
-  return (
-    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-violet-100 to-purple-200 flex items-center justify-center ring-2 ring-white shadow-md flex-shrink-0">
-      <span className="text-sm font-bold text-purple-700">{initial}</span>
-    </div>
   );
 }
 
@@ -96,7 +83,7 @@ function StatCard({ label, value, colorClass, isActive, onClick }) {
   );
 }
 
-function VirtualAssistantApplicationsAdminPage() {
+function VirtualAssistantApplicationsAdminPage({ embedded = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -218,16 +205,16 @@ function VirtualAssistantApplicationsAdminPage() {
   }
 
   return (
-    <div className="admin-page w-full min-w-0" data-admin-section="virtual-assistants">
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-6">
+    <div className={embedded ? 'w-full min-w-0' : 'admin-page w-full min-w-0'} data-admin-section="virtual-assistants">
+      <div className={embedded ? 'w-full' : 'w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-6'}>
 
-      {/* Header */}
+      {!embedded && (
       <div className="mb-7">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate('/admin?tab=operations&section=virtual-assistants&vaSubTab=applications')}
             className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-800"
-            title="Back to Admin Dashboard"
+            title="Back to Virtual Assistants"
           >
             <ChevronLeft size={20} />
           </button>
@@ -237,6 +224,7 @@ function VirtualAssistantApplicationsAdminPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
@@ -357,9 +345,9 @@ function VirtualAssistantApplicationsAdminPage() {
                     <td className="py-4 px-5 whitespace-nowrap min-w-[200px]">
                       <span
                         className="inline-block max-w-[280px] font-mono text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 whitespace-nowrap overflow-hidden text-ellipsis align-middle"
-                        title={String(app.referenceNumber || app.id || '')}
+                        title={vaDisplayReference(app)}
                       >
-                        {app.referenceNumber || app.id || '—'}
+                        {vaDisplayReference(app)}
                       </span>
                     </td>
                     <td className="py-4 px-5">

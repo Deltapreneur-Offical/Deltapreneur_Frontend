@@ -76,6 +76,9 @@ export function isListingVerified(item, type = 'domain') {
   if (listingType === 'community') {
     return isCommunityProfilePublic(item);
   }
+  if (listingType === 'virtual-assistant') {
+    return isActiveListing(item, 'virtual-assistant');
+  }
   return Boolean(item.verified);
 }
 

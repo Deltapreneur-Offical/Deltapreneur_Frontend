@@ -1,6 +1,6 @@
-import { ClipboardList, Headset, ShieldCheck } from 'lucide-react';
+import { ClipboardList, ShieldCheck, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
+import { OPERATIONS_ADMIN_PARTITIONS } from '../../utils/operationsSections';
 
 const REQUESTS_PARTITION = {
   id: 'requests',
@@ -13,8 +13,8 @@ const REQUESTS_PARTITION = {
 };
 
 const SECTION_ICONS = {
-  assistance: Headset,
   compliance: ShieldCheck,
+  'virtual-assistants': Users,
   requests: ClipboardList,
 };
 
@@ -27,14 +27,14 @@ export default function OperationsAdminPartitionTabs({
   const { t } = useTranslation();
 
   const tabs = [
-    ...OPERATIONS_SECTIONS.map((section) => ({
+    ...OPERATIONS_ADMIN_PARTITIONS.map((section) => ({
       id: section.id,
       labelKey: section.labelKey,
       defaultLabel: section.defaultLabel,
       hintKey: section.hintKey,
       defaultHint: section.defaultHint,
       theme: section.theme,
-      count: catalogCounts[section.id],
+      count: section.serviceType ? catalogCounts[section.id] : undefined,
     })),
     {
       ...REQUESTS_PARTITION,
@@ -45,7 +45,7 @@ export default function OperationsAdminPartitionTabs({
   return (
     <div className="operations-section-tabs-wrap">
       <p className="operations-section-tabs-eyebrow">
-        {t('adminOperationsPartitionEyebrow', { defaultValue: 'Catalog & requests' })}
+        {t('adminOperationsPartitionEyebrow', { defaultValue: 'Operations modules' })}
       </p>
       <div
         className="operations-section-tabs operations-section-tabs--admin operations-admin-partition-tabs"

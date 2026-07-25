@@ -12,12 +12,12 @@ import {
   ArrowRight,
   Send,
   Inbox,
-  IndianRupee,
 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import { virtualAssistantAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 import { useAuth } from '../context/AuthContext';
+import '../styles/virtual-assistant-journey.css';
 
 const ROLE_STATUS_DOT = {
   pending: '🟡',
@@ -26,7 +26,7 @@ const ROLE_STATUS_DOT = {
 };
 
 const STATUS_BADGE_CLASSES = {
-  pending: 'bg-gray-100 text-gray-800',
+  pending: 'bg-yellow-100 text-yellow-800',
   under_review: 'bg-yellow-100 text-yellow-800',
   reviewing: 'bg-yellow-100 text-yellow-800',
   partially_approved: 'bg-blue-100 text-blue-800',
@@ -37,6 +37,101 @@ const STATUS_BADGE_CLASSES = {
 function formatStatusLabel(status) {
   if (!status) return 'Pending';
   return status.replace('_', ' ').replace('-', ' ');
+}
+
+function buildRoleSummariesFallback(data) {
+  if (!data) return [];
+  if (Array.isArray(data.roleSummaries) && data.roleSummaries.length > 0) {
+    return data.roleSummaries;
+  }
+  const roles = data.applicationRoles || [];
+  return roles.map((role) => ({
+    id: role.id,
+    referenceNumber: data.referenceNumber,
+    roleName: role.roleName,
+    status: role.status,
+    expectedCompensation: data.expectedCompensation,
+    publicMonthlyPriceInr: data.publicMonthlyPriceInr,
+    pricingCurrency: data.pricingCurrency || 'INR',
+  }));
+}
+
+function formatPublicMonthlyPrice(currency, amount) {
+  if (amount == null || amount === '') return '—';
+  const value = Number(amount);
+  if (Number.isNaN(value)) return '—';
+  const prefix = currency === 'INR' || !currency ? '₹' : `${currency} `;
+  return `${prefix}${value.toLocaleString('en-IN')}/mo`;
+}
+
+function formatExpectedCompensation(value) {
+  if (!value || !String(value).trim()) return '—';
+  return String(value).trim();
+}
+
+function RoleStatusSummaryTable({ rows, t }) {
+  if (rows.length === 0) {
+    return (
+      <p className="mt-3 text-sm text-gray-500">
+        {t('vaJourneyNoRoles', { defaultValue: 'No roles selected.' })}
+      </p>
+    );
+  }
+
+  return (
+    <div className="va-journey-role-table">
+      <div className="va-journey-role-table__head">
+        <span>{t('vaJourneyColReference', { defaultValue: 'Reference' })}</span>
+        <span>{t('vaJourneyColRole', { defaultValue: 'Role' })}</span>
+        <span>{t('vaJourneyColStatus', { defaultValue: 'Status' })}</span>
+        <span>{t('vaJourneyColExpected', { defaultValue: 'Expected (Private)' })}</span>
+        <span>{t('vaJourneyColPublic', { defaultValue: 'Public Price' })}</span>
+      </div>
+      {rows.map((row) => (
+        <div key={row.id} className="va-journey-role-table__row">
+          <div className="va-journey-role-table__cell">
+            <span className="va-journey-role-table__mobile-label">
+              {t('vaJourneyColReference', { defaultValue: 'Reference' })}
+            </span>
+            <span className="va-journey-role-table__ref">{row.referenceNumber || '—'}</span>
+          </div>
+          <div className="va-journey-role-table__cell">
+            <span className="va-journey-role-table__mobile-label">
+              {t('vaJourneyColRole', { defaultValue: 'Role' })}
+            </span>
+            <span className="va-journey-role-table__role">
+              <span aria-hidden>{ROLE_STATUS_DOT[row.status] || '🟡'}</span>
+              {row.roleName || '—'}
+            </span>
+          </div>
+          <div className="va-journey-role-table__cell">
+            <span className="va-journey-role-table__mobile-label">
+              {t('vaJourneyColStatus', { defaultValue: 'Status' })}
+            </span>
+            <span className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[row.status] || 'bg-gray-100 text-gray-800'}`}>
+              {formatStatusLabel(row.status)}
+            </span>
+          </div>
+          <div className="va-journey-role-table__cell">
+            <span className="va-journey-role-table__mobile-label">
+              {t('vaJourneyColExpected', { defaultValue: 'Expected (Private)' })}
+            </span>
+            <span className="va-journey-role-table__money">
+              {formatExpectedCompensation(row.expectedCompensation)}
+            </span>
+          </div>
+          <div className="va-journey-role-table__cell">
+            <span className="va-journey-role-table__mobile-label">
+              {t('vaJourneyColPublic', { defaultValue: 'Public Price' })}
+            </span>
+            <span className="va-journey-role-table__money">
+              {formatPublicMonthlyPrice(row.pricingCurrency, row.publicMonthlyPriceInr)}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function formatDate(dateStr) {
@@ -51,24 +146,22 @@ function formatDate(dateStr) {
   }
 }
 
-function TimelineStep({ number, icon: Icon, title, description, state, children }) {
-  const stateClasses = {
-    done: 'bg-green-100 text-green-600 border-green-200',
-    active: 'bg-indigo-100 text-indigo-600 border-indigo-200',
-    locked: 'bg-amber-100 text-amber-600 border-amber-200',
-    pending: 'bg-gray-100 text-gray-400 border-gray-200',
-  }[state];
+function TimelineStep({ icon: Icon, title, description, state, isLast, descVariant, children }) {
   return (
-    <li className="relative flex gap-4 pb-8 last:pb-0">
-      <div className="flex flex-col items-center">
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${stateClasses}`}>
-          {Icon ? <Icon size={18} /> : number}
+    <li className={`va-journey-timeline__step ${isLast ? 'va-journey-timeline__step--last' : ''}`}>
+      <div className="va-journey-timeline__track">
+        <span className={`va-journey-timeline__marker va-journey-timeline__marker--${state}`}>
+          {Icon ? <Icon size={16} strokeWidth={2.25} /> : null}
         </span>
-        <span className="mt-1 w-px flex-1 bg-gray-200" />
+        {!isLast && <span className="va-journey-timeline__connector" aria-hidden />}
       </div>
-      <div className="pt-1.5">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-        {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+      <div className="va-journey-timeline__content">
+        <h3 className="va-journey-timeline__title">{title}</h3>
+        {description && (
+          <div className={`va-journey-timeline__desc ${descVariant === 'success' ? 'va-journey-timeline__desc--success' : ''}`}>
+            {description}
+          </div>
+        )}
         {children}
       </div>
     </li>
@@ -81,18 +174,16 @@ function VirtualAssistantJourneyPage() {
   const { user, loading: authLoading } = useAuth();
 
   const [application, setApplication] = useState(null);
-  const [roles, setRoles] = useState([]);
+  const [roleSummaries, setRoleSummaries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notFound, setNotFound] = useState(false);
 
-  const overallStatus = application?.overallStatus || application?.status || 'pending';
   const submittedAt = application?.createdAt;
   const workspaceLocked = application?.workspaceLocked !== false;
-  const approvedCount = roles.filter((r) => r.status === 'approved').length;
-  const pendingCount = roles.filter((r) => r.status === 'pending').length;
-  const rejectedCount = roles.filter((r) => r.status === 'rejected').length;
-  const allRejected = roles.length > 0 && rejectedCount === roles.length;
+  const approvedCount = roleSummaries.filter((r) => r.status === 'approved').length;
+  const pendingCount = roleSummaries.filter((r) => r.status === 'pending').length;
+  const rejectedCount = roleSummaries.filter((r) => r.status === 'rejected').length;
   const workspaceUnlocked = !workspaceLocked || approvedCount > 0;
 
   const fetchJourney = useCallback(async () => {
@@ -103,11 +194,11 @@ function VirtualAssistantJourneyPage() {
       if (!data) {
         setNotFound(true);
         setApplication(null);
-        setRoles([]);
+        setRoleSummaries([]);
       } else {
         setNotFound(false);
         setApplication(data);
-        setRoles(data.applicationRoles || []);
+        setRoleSummaries(buildRoleSummariesFallback(data));
       }
       setError('');
     } catch (e) {
@@ -183,146 +274,85 @@ function VirtualAssistantJourneyPage() {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+      <div className="va-journey-page mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+        <header className="va-journey-page__header">
+          <h1 className="va-journey-page__title">
             {t('vaJourneyTitle', { defaultValue: 'My Virtual Assistant Journey' })}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="va-journey-page__subtitle">
             {t('vaJourneySubtitle', { defaultValue: 'Track the progress of your Virtual Assistant application.' })}
           </p>
-        </div>
+        </header>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {t('vaJourneyTimeline', { defaultValue: 'Application Journey' })}
-              </h2>
-              <ol className="mt-6">
-                <TimelineStep
-                  number={1}
-                  icon={CheckCircle2}
-                  state="done"
-                  title={t('vaJourneyStepSubmitted', { defaultValue: 'Application Submitted' })}
-                  description={t('vaJourneyStepSubmittedDesc', { defaultValue: 'We have received your application. Thank you for applying!' })}
-                >
-                  <p className="mt-1 text-xs text-gray-500">
-                    {t('vaJourneySubmittedOn', { defaultValue: 'Submitted' })}: {formatDate(submittedAt)}
-                  </p>
-                </TimelineStep>
-
-                <TimelineStep
-                  number={2}
-                  icon={Clock}
-                  state={workspaceUnlocked ? 'done' : 'active'}
-                  title={t('vaJourneyStepReview', { defaultValue: 'Waiting for Review' })}
-                  description={
-                    workspaceUnlocked
-                      ? t('vaJourneyStepReviewDone', { defaultValue: 'Your application has been reviewed by our team.' })
-                      : t('vaJourneyStepReviewDesc', { defaultValue: "Our team is reviewing your application. You'll be notified once a decision is made." })
-                  }
-                />
-
-                <TimelineStep
-                  number={3}
-                  icon={workspaceUnlocked ? LockKeyhole : Lock}
-                  state={workspaceUnlocked ? 'done' : allRejected ? 'locked' : 'locked'}
-                  title={
-                    workspaceUnlocked
-                      ? t('vaJourneyStepUnlocked', { defaultValue: 'Workspace Unlocked' })
-                      : t('vaJourneyStepLocked', { defaultValue: 'Workspace Locked' })
-                  }
-                  description={
-                    workspaceUnlocked ? (
-                      <span className="inline-flex items-center gap-1 font-medium text-green-700">
-                        <CheckCircle2 size={14} />
-                        {t('vaJourneyUnlockedDesc', { defaultValue: "Congratulations! At least one of your Virtual Assistant roles has been approved. Your VA Workspace is now available." })}
-                      </span>
-                    ) : (
-                      t('vaJourneyLockedDesc', { defaultValue: 'Your Virtual Assistant Workspace will be unlocked once at least one selected role is approved.' })
-                    )
-                  }
-                >
-                  {workspaceUnlocked && (
-                    <button
-                      onClick={() => navigate('/virtual-assistant/workspace')}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
-                    >
-                      {t('vaJourneyOpenWorkspace', { defaultValue: 'Open VA Workspace' })}
-                      <ArrowRight size={14} />
-                    </button>
-                  )}
-                </TimelineStep>
-              </ol>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                {t('vaJourneyReference', { defaultValue: 'Reference Number' })}
+        <section className="va-journey-timeline-card">
+          <h2 className="va-journey-timeline-card__title">
+            {t('vaJourneyTimeline', { defaultValue: 'Application Journey' })}
+          </h2>
+          <ol className="va-journey-timeline">
+            <TimelineStep
+              icon={CheckCircle2}
+              state="done"
+              title={t('vaJourneyStepSubmitted', { defaultValue: 'Application Submitted' })}
+              description={t('vaJourneyStepSubmittedDesc', { defaultValue: 'We have received your application. Thank you for applying!' })}
+            >
+              <p className="va-journey-timeline__meta">
+                {t('vaJourneySubmittedOn', { defaultValue: 'Submitted' })}: {formatDate(submittedAt)}
               </p>
-              <p className="mt-1 break-all font-mono text-sm font-semibold text-gray-900">
-                {application.referenceNumber}
-              </p>
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  {t('vaJourneyOverallStatus', { defaultValue: 'Overall Status' })}
-                </p>
-                <span className={`mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
-                  {formatStatusLabel(overallStatus)}
-                </span>
-              </div>
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Expected Compensation
-                </p>
-                <p className="mt-1 text-sm font-semibold text-gray-900 flex items-center gap-1">
-                  <IndianRupee size={14} className="text-gray-400" />
-                  {application.expectedCompensation || '—'}
-                </p>
-              </div>
-              {application.publicMonthlyPriceInr != null && (
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Customer Monthly Price (Public)
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-gray-900 flex items-center gap-1">
-                    <IndianRupee size={14} className="text-gray-400" />
-                    {application.pricingCurrency || 'INR'} {application.publicMonthlyPriceInr.toLocaleString()}
-                  </p>
-                </div>
+            </TimelineStep>
+
+            <TimelineStep
+              icon={Clock}
+              state={workspaceUnlocked ? 'done' : 'active'}
+              title={t('vaJourneyStepReview', { defaultValue: 'Waiting for Review' })}
+              description={
+                workspaceUnlocked
+                  ? t('vaJourneyStepReviewDone', { defaultValue: 'Your application has been reviewed by our team.' })
+                  : t('vaJourneyStepReviewDesc', { defaultValue: "Our team is reviewing your application. You'll be notified once a decision is made." })
+              }
+            />
+
+            <TimelineStep
+              icon={workspaceUnlocked ? LockKeyhole : Lock}
+              state={workspaceUnlocked ? 'done' : 'locked'}
+              isLast
+              descVariant={workspaceUnlocked ? 'success' : undefined}
+              title={
+                workspaceUnlocked
+                  ? t('vaJourneyStepUnlocked', { defaultValue: 'Workspace Unlocked' })
+                  : t('vaJourneyStepLocked', { defaultValue: 'Workspace Locked' })
+              }
+              description={
+                workspaceUnlocked ? (
+                  <span className="va-journey-timeline__success-text">
+                    <CheckCircle2 size={14} strokeWidth={2.5} aria-hidden />
+                    {t('vaJourneyUnlockedDesc', { defaultValue: "Congratulations! At least one of your Virtual Assistant roles has been approved. Your VA Workspace is now available." })}
+                  </span>
+                ) : (
+                  t('vaJourneyLockedDesc', { defaultValue: 'Your Virtual Assistant Workspace will be unlocked once at least one selected role is approved.' })
+                )
+              }
+            >
+              {workspaceUnlocked && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/virtual-assistant/workspace')}
+                  className="va-journey-timeline__action"
+                >
+                  {t('vaJourneyOpenWorkspace', { defaultValue: 'Open VA Workspace' })}
+                  <ArrowRight size={14} strokeWidth={2.5} />
+                </button>
               )}
-            </div>
-          </div>
-        </div>
+            </TimelineStep>
+          </ol>
+        </section>
 
-        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <FileText size={18} className="text-indigo-600" />
             {t('vaJourneyRoleStatus', { defaultValue: 'Role Status Summary' })}
           </h2>
-          {roles.length === 0 ? (
-            <p className="mt-3 text-sm text-gray-500">
-              {t('vaJourneyNoRoles', { defaultValue: 'No roles selected.' })}
-            </p>
-          ) : (
-            <ul className="mt-4 divide-y divide-gray-100">
-              {roles.map((role) => (
-                <li key={role.id} className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-2">
-                    <span aria-hidden className="text-base leading-none">{ROLE_STATUS_DOT[role.status] || '🟡'}</span>
-                    <span className="text-sm font-medium text-gray-900">{role.roleName}</span>
-                  </div>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[role.status] || 'bg-gray-100 text-gray-800'}`}>
-                    {formatStatusLabel(role.status)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {roles.length > 0 && (
+          <RoleStatusSummaryTable rows={roleSummaries} t={t} />
+          {roleSummaries.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
               <span>🟢 {approvedCount} {t('vaJourneyApproved', { defaultValue: 'Approved' })}</span>
               <span>🟡 {pendingCount} {t('vaJourneyPending', { defaultValue: 'Pending' })}</span>
@@ -331,8 +361,8 @@ function VirtualAssistantJourneyPage() {
           )}
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
-          <Inbox size={16} />
+        <div className="va-journey-auto-update mt-5">
+          <Inbox size={15} strokeWidth={2.25} aria-hidden />
           {t('vaJourneyAutoUpdate', { defaultValue: 'Your journey updates automatically as admins review your roles.' })}
         </div>
       </div>

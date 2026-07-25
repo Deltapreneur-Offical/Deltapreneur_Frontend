@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, X, User, Mail, Phone, MapPin, Briefcase, Globe, Clock, IndianRupee, Loader2, ChevronLeft } from 'lucide-react';
+import { Search, Eye, X, User, Mail, Phone, MapPin, Briefcase, Globe, Clock, IndianRupee, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
+import { readApiError } from '../utils/apiError';
+import { vaAdminModulePath } from '../utils/virtualAssistantAdminNav';
+import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
 
 const STATUS_CONFIG = {
   published: { label: 'Published', className: 'bg-green-100 text-green-800' },
@@ -11,45 +14,70 @@ const STATUS_CONFIG = {
   unpublished: { label: 'Unpublished', className: 'bg-red-100 text-red-800' },
 };
 
-const VirtualAssistantPublishedProfilesPage = () => {
+const PAGE_SIZE = 20;
+
+const VirtualAssistantPublishedProfilesPage = ({ embedded = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchPublished = async () => {
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const fetchPublished = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await adminAPI.getVirtualAssistants({ status: 'approved' });
-      const payload = unwrapApiData(response) || {};
-      const items = Array.isArray(payload.items) ? payload.items : [];
-      const published = items.filter(
-        (item) => item.publishStatus === 'published'
-      );
-      setProfiles(published);
+      const params = {
+        status: 'approved',
+        publish_status: 'published',
+        page,
+        page_size: PAGE_SIZE,
+      };
+      if (debouncedSearch) params.search = debouncedSearch;
+
+      const response = await adminAPI.getVirtualAssistants(params);
+      const result = unwrapApiData(response) || {};
+      setProfiles(Array.isArray(result.items) ? result.items : []);
+      setTotal(Number(result.total) || 0);
+      setTotalPages(Number(result.totalPages) || 1);
     } catch (e) {
       console.error('Failed to load published profiles', e);
-      setError('Failed to load published profiles. Please try again.');
+      setProfiles([]);
+      setTotal(0);
+      setTotalPages(1);
+      setError(readApiError(e) || 'Failed to load published profiles. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchPublished();
-  }, []);
+  }, [fetchPublished]);
 
   const openDetail = async (appId) => {
     setDetailLoading(true);
     setSelectedProfile(null);
     try {
-      const { data } = await adminAPI.getVirtualAssistant(appId);
-      setSelectedProfile(data);
+      const response = await adminAPI.getVirtualAssistant(appId);
+      const payload = unwrapApiData(response) || response?.data || {};
+      setSelectedProfile(payload);
     } catch (e) {
       console.error('Failed to load profile detail', e);
     } finally {
@@ -57,21 +85,12 @@ const VirtualAssistantPublishedProfilesPage = () => {
     }
   };
 
-  const filtered = profiles.filter((profile) => {
-    if (!search) return true;
-    const term = search.toLowerCase();
-    return (
-      (profile.fullName || '').toLowerCase().includes(term) ||
-      (profile.email || '').toLowerCase().includes(term) ||
-      (profile.roles || '').toLowerCase().includes(term)
-    );
-  });
-
   return (
     <div>
+      {!embedded && (
       <div className="mb-4 flex items-center gap-3">
         <button
-          onClick={() => navigate('/admin/virtual-assistants/applications')}
+          onClick={() => navigate(vaAdminModulePath('applications'))}
           className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
         >
           <ChevronLeft size={16} />
@@ -79,6 +98,7 @@ const VirtualAssistantPublishedProfilesPage = () => {
         </button>
         <h2 className="text-lg font-semibold text-gray-900">Published Profiles</h2>
       </div>
+      )}
       <div className="mb-4">
         <div className="relative">
           <Search size={18} className="absolute left-3 top-3 text-gray-400" />
@@ -95,71 +115,123 @@ const VirtualAssistantPublishedProfilesPage = () => {
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading published profiles...</div>
       ) : error ? (
-        <div className="text-center py-12 text-red-600">{error}</div>
-      ) : filtered.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-red-600">{error}</p>
+          <button
+            type="button"
+            onClick={fetchPublished}
+            className="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-purple-700 bg-purple-50 rounded-lg hover:bg-purple-100"
+          >
+            Retry
+          </button>
+        </div>
+      ) : profiles.length === 0 ? (
         <div className="text-center py-12 text-gray-500">No published profiles found.</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Virtual Assistant</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Roles</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Public Price</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((profile) => (
-                <tr key={profile.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      {profile.profilePhotoUrl ? (
-                        <img src={profile.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                          <User size={18} className="text-purple-600" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-semibold text-gray-900">{profile.fullName}</p>
-                        <p className="text-xs text-gray-500">{profile.phoneNumber || '—'}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-gray-600">{profile.email}</td>
-                  <td className="py-3 px-4 text-gray-600 max-w-xs truncate">
-                    {profile.roles ? profile.roles.split(',').slice(0, 2).join(', ') + (profile.roles.split(',').length > 2 ? '...' : '') : '—'}
-                  </td>
-                  <td className="py-3 px-4 text-gray-600">
-                    {profile.publicMonthlyPriceInr ? (
-                      <span className="inline-flex items-center gap-1">
-                        <IndianRupee size={14} className="text-gray-400" />
-                        {profile.publicMonthlyPriceInr.toLocaleString()}
-                      </span>
-                    ) : '—'}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_CONFIG[profile.publishStatus]?.className || 'bg-gray-100 text-gray-800'}`}>
-                      {STATUS_CONFIG[profile.publishStatus]?.label || profile.publishStatus}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => openDetail(profile.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                    >
-                      <Eye size={14} />
-                      View
-                    </button>
-                  </td>
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Virtual Assistant</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Roles</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Public Price</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {profiles.map((profile) => (
+                  <tr key={profile.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <VaProfilePhoto
+                          source={profile}
+                          applicationId={profile.id}
+                          refreshScope="admin"
+                          alt=""
+                          className="w-10 h-10 rounded-full object-cover"
+                        fallbackClassName="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center"
+                        fallback="icon"
+                        fallbackIcon={User}
+                        fallbackIconSize={18}
+                        fallbackIconClassName="text-purple-600"
+                        />
+                        <div>
+                          <p className="font-semibold text-gray-900">{profile.fullName}</p>
+                          <p className="text-xs text-gray-500">{profile.phoneNumber || '—'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-gray-600">{profile.email}</td>
+                    <td className="py-3 px-4 text-gray-600 max-w-xs truncate">
+                      {profile.roles ? profile.roles.split(',').slice(0, 2).join(', ') + (profile.roles.split(',').length > 2 ? '...' : '') : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-gray-600">
+                      {profile.publicMonthlyPriceInr ? (
+                        <span className="inline-flex items-center gap-1">
+                          <IndianRupee size={14} className="text-gray-400" />
+                          {profile.publicMonthlyPriceInr.toLocaleString()}
+                        </span>
+                      ) : '—'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_CONFIG[profile.publishStatus]?.className || 'bg-gray-100 text-gray-800'}`}>
+                        {STATUS_CONFIG[profile.publishStatus]?.label || profile.publishStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => openDetail(profile.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                        >
+                          <Eye size={14} />
+                          View
+                        </button>
+                        <button
+                          onClick={() => navigate(`/admin/virtual-assistants/applications/${profile.id}`)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+              <p>
+                Showing page {page} of {totalPages} ({total} published profiles)
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg disabled:opacity-50"
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg disabled:opacity-50"
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {selectedProfile && (
@@ -177,13 +249,18 @@ const VirtualAssistantPublishedProfilesPage = () => {
             ) : (
               <div className="p-6 space-y-6">
                 <div className="flex items-start gap-4">
-                  {selectedProfile.profilePhotoUrl ? (
-                    <img src={selectedProfile.profilePhotoUrl} alt="" className="w-20 h-20 rounded-xl object-cover" />
-                  ) : (
-                    <div className="w-20 h-20 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <User size={32} className="text-purple-600" />
-                    </div>
-                  )}
+                  <VaProfilePhoto
+                    source={selectedProfile}
+                    applicationId={selectedProfile.id}
+                    refreshScope="admin"
+                    alt=""
+                    className="w-20 h-20 rounded-xl object-cover"
+                    fallbackClassName="w-20 h-20 rounded-xl bg-purple-100 flex items-center justify-center"
+                    fallback="icon"
+                    fallbackIcon={User}
+                    fallbackIconSize={32}
+                    fallbackIconClassName="text-purple-600"
+                  />
                   <div>
                     <h4 className="text-lg font-bold text-gray-900">{selectedProfile.fullName}</h4>
                     <p className="text-sm text-gray-500">{selectedProfile.referenceNumber}</p>
@@ -239,6 +316,16 @@ const VirtualAssistantPublishedProfilesPage = () => {
                     </button>
                   </div>
                 )}
+
+                <div className="pt-4 border-t border-gray-200 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/admin/virtual-assistants/applications/${selectedProfile.id}`)}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Manage profile
+                  </button>
+                </div>
               </div>
             )}
           </div>

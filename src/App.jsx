@@ -48,10 +48,8 @@ const CoCreationDashboardPage = lazy(() => import('./pages/CoCreationDashboardPa
 const CoCreationAnalyticsPage = lazy(() => import('./pages/CoCreationAnalyticsPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
-const VirtualAssistantApplicationsAdminPage = lazy(() => import('./pages/VirtualAssistantApplicationsAdminPage'));
+const VirtualAssistantAdminRedirectPage = lazy(() => import('./pages/VirtualAssistantAdminRedirectPage'));
 const VirtualAssistantApplicationDetailPage = lazy(() => import('./pages/VirtualAssistantApplicationDetailPage'));
-const VirtualAssistantDirectAddAdminPage = lazy(() => import('./pages/VirtualAssistantDirectAddAdminPage'));
-const VirtualAssistantPublishedProfilesPage = lazy(() => import('./pages/VirtualAssistantPublishedProfilesPage'));
 const CoBrotherDashboardPage = lazy(() => import('./pages/CoBrotherDashboardPage'));
 const FeeRequestsPage = lazy(() => import('./pages/FeeRequestsPage'));
 const AuctionPage = lazy(() => import('./pages/AuctionPage'));
@@ -319,6 +317,14 @@ export default function App() {
                   }
                 />
 
+                <Route
+                  path="/operations/:id"
+                  element={
+                    <ProfileGuard>
+                      <OperationsPage />
+                    </ProfileGuard>
+                  }
+                />
                 <Route
                   path="/operations"
                   element={
@@ -630,7 +636,7 @@ export default function App() {
                   path="/admin/virtual-assistants/applications"
                   element={
                     <AdminGuard>
-                      <VirtualAssistantApplicationsAdminPage />
+                      <VirtualAssistantAdminRedirectPage />
                     </AdminGuard>
                   }
                 />
@@ -646,7 +652,7 @@ export default function App() {
                   path="/admin/virtual-assistants/direct-add"
                   element={
                     <AdminGuard>
-                      <VirtualAssistantDirectAddAdminPage />
+                      <VirtualAssistantAdminRedirectPage />
                     </AdminGuard>
                   }
                 />
@@ -654,7 +660,7 @@ export default function App() {
                   path="/admin/virtual-assistants/published"
                   element={
                     <AdminGuard>
-                      <VirtualAssistantPublishedProfilesPage />
+                      <VirtualAssistantAdminRedirectPage />
                     </AdminGuard>
                   }
                 />

@@ -9,14 +9,6 @@ import { readApiError } from '../../utils/apiError';
 const VA_CATEGORY_OPTIONS = OPERATIONS_CATEGORY_OPTIONS.filter((opt) => opt.value !== 'compliance');
 
 const SECTION_MODAL_META = {
-  assistance: {
-    titleKey: 'adminOperationsModalTitleVa',
-    defaultTitle: 'Add / Edit Virtual Role',
-    namePlaceholderKey: 'adminOperationsFieldNamePlaceholder',
-    defaultNamePlaceholder: 'Virtual HR Manager',
-    priceHintKey: 'adminOperationsPriceHintVa',
-    defaultPriceHint: 'Monthly subscription fee (required).',
-  },
   compliance: {
     titleKey: 'adminOperationsModalTitleCompliance',
     defaultTitle: 'Add / Edit Service',
@@ -29,11 +21,11 @@ const SECTION_MODAL_META = {
 
 const EMPTY_FORM = {
   name: '',
-  category: 'people',
+  category: 'compliance',
   description: '',
   price: '',
   isAvailable: true,
-  serviceType: 'virtual_assistance',
+  serviceType: 'compliance',
 };
 
 function parsePriceInput(value) {
@@ -56,15 +48,15 @@ export default function OperationRoleModal({
   onClose,
   onSaved,
   onError,
-  defaultServiceType = 'virtual_assistance',
+  defaultServiceType = 'compliance',
   lockServiceType = false,
-  sectionId = 'assistance',
+  sectionId = 'compliance',
 }) {
   const { t } = useTranslation();
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const isCompliance = form.serviceType === 'compliance';
-  const modalMeta = SECTION_MODAL_META[sectionId] || SECTION_MODAL_META.assistance;
+  const modalMeta = SECTION_MODAL_META[sectionId] || SECTION_MODAL_META.compliance;
   const categoryOptions = isCompliance
     ? OPERATIONS_CATEGORY_OPTIONS.filter((opt) => opt.value === 'compliance')
     : VA_CATEGORY_OPTIONS;

@@ -69,7 +69,10 @@ export function useOpenListingDetailFromUrl({
 
   useEffect(() => {
     if (!id || !allowUrlDetail) {
-      if (!id) fetchedIdRef.current = null;
+      if (!id) {
+        fetchedIdRef.current = null;
+        setDetail(null);
+      }
       return;
     }
     if (authLoading) return;

@@ -66,10 +66,31 @@ export default function PurchasesPage() {
     d.purchasedByUserId ||
     d.purchased_by_user_id
   );
-  const completedRegistrations = asArray(registrations);
+  const completedRegistrations = asArray(registrations).filter(isRegistrationPurchase);
+
+  const normalizeDomainKey = (item) => {
+    if (item.domain) return String(item.domain).toLowerCase().trim();
+    if (item.domainFqdn) return String(item.domainFqdn).toLowerCase().trim();
+    const name = String(item.domainName || '').trim();
+    const ext = String(item.domainExtension || '').trim();
+    if (!name) return '';
+    const normalizedExt = ext && !ext.startsWith('.') ? '.' + ext : ext;
+    return (name + normalizedExt).toLowerCase();
+  };
+
+  const seenDomainKeys = new Set();
+  const uniqueDomainCount = [...completedDomains, ...completedRegistrations, ...domainTransfers].reduce((count, item) => {
+    const key = normalizeDomainKey(item);
+    if (key && !seenDomainKeys.has(key)) {
+      seenDomainKeys.add(key);
+      return count + 1;
+    }
+    return count;
+  }, 0);
+
+  const domainTabCount = uniqueDomainCount;
   const completedTechnology = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
   const ventureItems = asArray(venturePurchases).map((d) => ({ ...d, _type: 'venture' }));
-  const domainTabCount = completedDomains.length + completedRegistrations.length + domainTransfers.length;
   const technologyCount = completedTechnology.length;
   const ventureCount = ventureItems.length;
   const totalItems = domainTabCount + technologyCount + ventureCount;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Check, XCircle, Clock, User, Mail, Phone, MapPin,
@@ -10,6 +10,9 @@ import { unwrapApiData, unwrapApiList } from '../utils/apiResponse';
 import { readApiError } from '../utils/apiError';
 import { formatVaReferenceNumber, vaDisplayApplicationNumber, hasVaProfilePhoto } from '../utils/virtualAssistantDisplay';
 import { vaAdminApplicationsPath } from '../utils/virtualAssistantAdminNav';
+import { useCurrency } from '../context/CurrencyContext';
+import { convertPrice as convertInrToForeign } from '../utils/currencyDisplay';
+import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
 import '../styles/virtual-assistant-application-detail.css';
 
@@ -133,6 +136,7 @@ function StatPill({ label, value, tone = 'default' }) {
 function VirtualAssistantApplicationDetailPage() {
   const { applicationId } = useParams();
   const navigate = useNavigate();
+  const { convertToInr, ratesMeta } = useCurrency();
 
   const [application, setApplication] = useState(null);
   const [roles, setRoles] = useState([]);
@@ -143,6 +147,7 @@ function VirtualAssistantApplicationDetailPage() {
   const [error, setError] = useState('');
   const [roleMessage, setRoleMessage] = useState('');
   const [pricing, setPricing] = useState({ publicMonthlyPriceInr: '', pricingCurrency: 'INR', maxClientCapacity: '' });
+  const basePriceInrRef = useRef(null);
   const [savingPricing, setSavingPricing] = useState(false);
   const [pricingMessage, setPricingMessage] = useState('');
   const [publishLoading, setPublishLoading] = useState(false);
@@ -174,8 +179,10 @@ function VirtualAssistantApplicationDetailPage() {
       });
       setRoleNotes(initialNotes);
       if (appData) {
+        const baseInr = appData.publicMonthlyPriceInr ?? '';
+        basePriceInrRef.current = baseInr === '' ? 0 : Number(baseInr);
         setPricing({
-          publicMonthlyPriceInr: appData.publicMonthlyPriceInr ?? '',
+          publicMonthlyPriceInr: baseInr,
           pricingCurrency: appData.pricingCurrency || 'INR',
           maxClientCapacity: appData.maxClientCapacity ?? '',
         });
@@ -183,7 +190,7 @@ function VirtualAssistantApplicationDetailPage() {
     } catch (e) {
       console.error('Failed to load application detail', e);
       const status = e?.response?.status;
-      const detail = e?.response?.data?.detail || e?.response?.data?.message || e?.message || 'Failed to load application details. Please try again.';
+      const detail = e?.response?.data?.detail || e?.response?.data?.message || e?.response?.data?.error || 'Failed to load application details. Please try again.';
       setError(status ? `Error ${status}: ${detail}` : detail);
     } finally {
       setLoading(false);
@@ -208,6 +215,8 @@ function VirtualAssistantApplicationDetailPage() {
       });
       setRoleNotes(initialNotes);
       if (appData) {
+        const baseInr = appData.publicMonthlyPriceInr ?? '';
+        basePriceInrRef.current = baseInr === '' ? 0 : Number(baseInr);
         setPricing({
           publicMonthlyPriceInr: appData.publicMonthlyPriceInr ?? '',
           pricingCurrency: appData.pricingCurrency || 'INR',
@@ -239,6 +248,8 @@ function VirtualAssistantApplicationDetailPage() {
 
   useEffect(() => {
     if (application) {
+      const baseInr = application.publicMonthlyPriceInr ?? '';
+      basePriceInrRef.current = baseInr === '' ? 0 : Number(baseInr);
       setPricing({
         publicMonthlyPriceInr: application.publicMonthlyPriceInr ?? '',
         pricingCurrency: application.pricingCurrency || 'INR',
@@ -279,12 +290,39 @@ function VirtualAssistantApplicationDetailPage() {
     window.open(application.resumeUrl, '_blank', 'noopener,noreferrer');
   };
 
+  const handleDisplayedPriceChange = (value) => {
+    const currency = pricing.pricingCurrency || 'INR';
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue) && numericValue > 0) {
+      const inr = currency === 'INR' ? numericValue : convertToInr(numericValue, currency);
+      basePriceInrRef.current = inr;
+    } else {
+      basePriceInrRef.current = 0;
+    }
+    setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: value }));
+  };
+
+  const handlePricingCurrencyChange = (nextCurrency) => {
+    const oldCurrency = pricing.pricingCurrency || 'INR';
+    const baseInr = basePriceInrRef.current ?? 0;
+    setPricing((prev) => ({ ...prev, pricingCurrency: nextCurrency }));
+    if (oldCurrency === nextCurrency || Number.isNaN(baseInr) || baseInr <= 0) return;
+    const converted = convertInrToForeign(baseInr, nextCurrency, ratesMeta);
+    if (converted != null && Number.isFinite(converted)) {
+      setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: String(Math.round(converted * 100) / 100) }));
+    }
+  };
+
   const handlePricingUpdate = async (e) => {
     e.preventDefault();
     setSavingPricing(true);
     setPricingMessage('');
     try {
-      const priceValue = pricing.publicMonthlyPriceInr === '' ? null : Number(pricing.publicMonthlyPriceInr);
+      const displayAmount = pricing.publicMonthlyPriceInr === '' ? 0 : Number(pricing.publicMonthlyPriceInr);
+      const inrAmount = pricing.pricingCurrency === 'INR'
+        ? displayAmount
+        : convertToInr(displayAmount, pricing.pricingCurrency);
+      const priceValue = displayAmount === 0 ? null : Math.round(inrAmount * 100) / 100;
       const capacityValue = pricing.maxClientCapacity === '' ? null : Number(pricing.maxClientCapacity);
       if (priceValue !== null && (Number.isNaN(priceValue) || priceValue < 0)) {
         setPricingMessage('Price must be a positive number.');
@@ -928,7 +966,7 @@ function VirtualAssistantApplicationDetailPage() {
             </div>
           </SectionCard>
 
-          <SectionCard icon={IndianRupee} title="Pricing" subtitle="Public marketplace settings">
+          <SectionCard icon={IndianRupee} title="Pricing Management" subtitle="Public marketplace settings">
             {pricingMessage && (
               <div className={`va-detail-alert ${pricingMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
                 {pricingMessage}
@@ -945,45 +983,31 @@ function VirtualAssistantApplicationDetailPage() {
               </div>
               <div>
                 <label className="va-detail-field-label">Customer Monthly Price (Public)</label>
-                <div className="relative">
-                  <IndianRupee size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={pricing.publicMonthlyPriceInr}
-                    onChange={(e) => setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: e.target.value }))}
-                    placeholder="Enter public price"
-                    className="va-detail-input va-detail-input--with-prefix"
-                  />
-                </div>
+                <CurrencyPriceInput
+                  id="admin-public-monthly-price"
+                  label=""
+                  value={pricing.publicMonthlyPriceInr}
+                  onChange={(v) => handleDisplayedPriceChange(v)}
+                  currency={pricing.pricingCurrency}
+                  onCurrencyChange={handlePricingCurrencyChange}
+                  required
+                  placeholder={`Enter public price in ${pricing.pricingCurrency}`}
+                  inputClassName="va-detail-input"
+                  labelClassName="sr-only"
+                  selectClassName="va-detail-select"
+                />
               </div>
-              <div className="va-detail-ops-row">
-                <div>
-                  <label className="va-detail-field-label">Currency</label>
-                  <select
-                    value={pricing.pricingCurrency}
-                    onChange={(e) => setPricing((prev) => ({ ...prev, pricingCurrency: e.target.value }))}
-                    className="va-detail-select"
-                  >
-                    <option value="INR">INR</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="va-detail-field-label">Max Client Capacity</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={pricing.maxClientCapacity}
-                    onChange={(e) => setPricing((prev) => ({ ...prev, maxClientCapacity: e.target.value }))}
-                    placeholder="Max clients"
-                    className="va-detail-input"
-                  />
-                </div>
+              <div>
+                <label className="va-detail-field-label">Max Client Capacity</label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={pricing.maxClientCapacity}
+                  onChange={(e) => setPricing((prev) => ({ ...prev, maxClientCapacity: e.target.value }))}
+                  placeholder="Max clients"
+                  className="va-detail-input"
+                />
               </div>
               <div className="va-detail-ops-footer">
                 <div className="text-xs text-gray-500">

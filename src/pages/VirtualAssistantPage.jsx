@@ -5,12 +5,15 @@ import { virtualAssistantAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
 import { validateLinkedInProfileUrl } from '../utils/linkedInProfileUrl';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { convertForeignToInr, convertPrice, formatCurrency } from '../utils/currencyDisplay';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import Confetti from '../components/common/Confetti';
 import BotProtectionFields from '../components/common/BotProtectionFields';
+import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { useBotProtection } from '../hooks/useBotProtection';
 import {
   PageHero,
@@ -19,7 +22,7 @@ import {
 } from '../components/motion/PageMotion';
 import {
   User, Mail, MapPin, Camera, ShieldCheck,
-  Briefcase, Globe, Clock, IndianRupee,
+  Briefcase, Globe, Clock,
   Check, AlertCircle, Loader2
 } from 'lucide-react';
 import '../styles/virtual-assistant-application.css';
@@ -68,7 +71,8 @@ const VirtualAssistantPage = () => {
     resumeUrl: '',
     availability: '',
     hoursPerWeek: '',
-    expectedCompensation: '',
+    expectedCompensationAmount: '',
+    expectedCompensationCurrency: 'INR',
     infoAccurate: false,
     agreeTerms: false,
   });
@@ -79,6 +83,7 @@ const VirtualAssistantPage = () => {
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const profilePhotoRef = useRef(null);
   const { user, hasAccessToken } = useAuth();
+  const { convertToInr, ratesMeta } = useCurrency();
 
   useEffect(() => {
     if (user?.email && hasAccessToken) {
@@ -174,7 +179,7 @@ const VirtualAssistantPage = () => {
     if (!formData.hoursPerWeek) {
       newErrors.hoursPerWeek = 'Please specify hours available per week';
     }
-    if (!formData.expectedCompensation || formData.expectedCompensation.trim().length < 1) {
+    if (!formData.expectedCompensationAmount || Number(formData.expectedCompensationAmount) <= 0) {
       newErrors.expectedCompensation = 'Please enter your expected compensation';
     }
     if (!formData.isAdult) {
@@ -197,6 +202,18 @@ const VirtualAssistantPage = () => {
       newErrors.resumeUrl = 'Enter a valid URL starting with http:// or https://';
     }
     return newErrors;
+  };
+
+  const handleCompensationCurrencyChange = (nextCurrency) => {
+    const oldCurrency = formData.expectedCompensationCurrency || 'INR';
+    const currentAmount = Number(formData.expectedCompensationAmount);
+    setFormData((prev) => ({ ...prev, expectedCompensationCurrency: nextCurrency }));
+    if (oldCurrency === nextCurrency || !Number.isFinite(currentAmount) || currentAmount <= 0) return;
+    const inr = oldCurrency === 'INR' ? currentAmount : convertToInr(currentAmount, oldCurrency);
+    const converted = convertPrice(inr, nextCurrency, ratesMeta);
+    if (converted != null && Number.isFinite(converted)) {
+      setFormData((prev) => ({ ...prev, expectedCompensationAmount: String(Math.round(converted * 100) / 100) }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -225,7 +242,11 @@ const VirtualAssistantPage = () => {
       submitData.append('portfolio_url', formData.portfolioUrl.trim());
       submitData.append('availability', formData.availability);
       submitData.append('hours_per_week', formData.hoursPerWeek);
-      submitData.append('expected_compensation', formData.expectedCompensation.trim());
+      const compensationValue = formData.expectedCompensationAmount;
+      if (compensationValue) {
+        const formattedCompensation = formatCurrency(compensationValue, formData.expectedCompensationCurrency);
+        submitData.append('expected_compensation', formattedCompensation);
+      }
       submitData.append('info_accurate', String(formData.infoAccurate));
       submitData.append('agree_terms', String(formData.agreeTerms));
 
@@ -626,17 +647,18 @@ const VirtualAssistantPage = () => {
 
                       <div className="va-app-field">
                         <label className="va-app-label">Expected Compensation <span className="va-app-required">*</span></label>
-                        <div className="va-app-input-wrap">
-                          <IndianRupee size={18} className="va-app-input-wrap__icon" />
-                          <input
-                            type="text"
-                            name="expectedCompensation"
-                            value={formData.expectedCompensation}
-                            onChange={handleChange}
-                            placeholder="e.g. 25000/month or 500/hour"
-                            className={`va-app-input va-app-input--with-icon${inputErrorClass(errors.expectedCompensation)}`}
-                          />
-                        </div>
+                        <CurrencyPriceInput
+                          id="expected-compensation"
+                          label=""
+                          value={formData.expectedCompensationAmount}
+                          onChange={(v) => setFormData((prev) => ({ ...prev, expectedCompensationAmount: v }))}
+                          currency={formData.expectedCompensationCurrency}
+                          onCurrencyChange={handleCompensationCurrencyChange}
+                          required
+                          placeholder="e.g. 50000"
+                          inputClassName={`va-app-input${inputErrorClass(errors.expectedCompensation)}`}
+                          labelClassName="sr-only"
+                        />
                         <p className="va-app-hint">Visible only to administrators for internal pricing.</p>
                         {errors.expectedCompensation && <span className="va-app-error">{errors.expectedCompensation}</span>}
                       </div>

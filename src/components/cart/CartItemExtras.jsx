@@ -6,11 +6,11 @@ import AddonSections from '../addon/AddonSections';
 import { ADDON_SERVICES } from '../addon/AddonSelector';
 import { useVirtualAssistantCatalog } from '../../hooks/useVirtualAssistantCatalog';
 import { getEnabledPricingPlans } from '../../utils/technologyPricingPlans';
-import TechnologyPlanPicker from './TechnologyPlanPicker';
+import TechnologyPurchaseConfig from './TechnologyPurchaseConfig';
 
 const BUSINESS_KEYS = new Set(ADDON_SERVICES.map((s) => s.key));
 const SAVE_DELAY_MS = 450;
-// Set to true to show Virtual Assistant options in cart again
+/** Domain listing extras only — Technology cart config is CoBrother-only (no VA). */
 const SHOW_VA_IN_CART = false;
 
 function splitAddonServices(all = [], vaCatalog = []) {
@@ -27,11 +27,20 @@ function splitAddonServices(all = [], vaCatalog = []) {
   return { business, va };
 }
 
-export default function CartItemExtras({ item, onUpdated }) {
+/**
+ * @param {object} props
+ * @param {object} props.item
+ * @param {() => void} [props.onUpdated]
+ * @param {(status: { itemId: string, requiresPlan: boolean, hasPlan: boolean, complete: boolean }) => void} [props.onConfigStatus]
+ * @param {boolean} [props.collapsed] — when true, hide body (parent accordion controls visibility)
+ * @param {boolean} [props.forceExpanded] — unused; kept for API stability
+ */
+export default function CartItemExtras({ item, onUpdated, onConfigStatus, collapsed = false }) {
   const { formatPrice } = useCurrency();
   const { updateItem } = useCart();
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const saveTimerRef = useRef(null);
+  const autoPlanSavedRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [techLoading, setTechLoading] = useState(false);
@@ -59,7 +68,25 @@ export default function CartItemExtras({ item, onUpdated }) {
       .then(({ data }) => {
         if (!active) return;
         const record = data?.data ?? data;
-        setEnabledPlans(getEnabledPricingPlans(record?.pricingPlans || record?.pricing_plans));
+        const plans = getEnabledPricingPlans(record?.pricingPlans || record?.pricing_plans);
+        setEnabledPlans(plans);
+        if (
+          plans.length === 1
+          && !item.selectedPlan
+          && autoPlanSavedRef.current !== item.id
+        ) {
+          const onlyKey = plans[0].key;
+          autoPlanSavedRef.current = item.id;
+          setSelectedPlan(onlyKey);
+          updateItem(item.id, {
+            selectedPlan: onlyKey,
+            coBrotherOptIn: Boolean(item.coBrotherOptIn),
+          })
+            .then(() => onUpdated?.())
+            .catch(() => {
+              autoPlanSavedRef.current = null;
+            });
+        }
       })
       .catch(() => {
         if (active) setEnabledPlans([]);
@@ -68,7 +95,9 @@ export default function CartItemExtras({ item, onUpdated }) {
         if (active) setTechLoading(false);
       });
     return () => { active = false; };
-  }, [isTechnology, item.productId]);
+    // Intentionally omit updateItem/onUpdated to avoid re-fetch loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTechnology, item.productId, item.id, item.selectedPlan, item.coBrotherOptIn]);
 
   useEffect(() => {
     const nextSplit = splitAddonServices(item.addonServices || [], vaServices);
@@ -78,17 +107,29 @@ export default function CartItemExtras({ item, onUpdated }) {
     setSelectedPlan(item.selectedPlan || null);
   }, [item.id, item.addonServices, item.coBrotherOptIn, item.selectedPlan, vaServices]);
 
-  const persist = useCallback(async (nextCoBrother, nextBusiness, nextVa, nextPlan) => {
+  const requiresPlan = isTechnology && enabledPlans.length > 0;
+  const hasPlan = Boolean(selectedPlan);
+  const complete = !requiresPlan || hasPlan;
+
+  useEffect(() => {
+    if (!isTechnology || !onConfigStatus) return;
+    onConfigStatus({
+      itemId: item.id,
+      requiresPlan,
+      hasPlan,
+      complete,
+    });
+  }, [isTechnology, item.id, requiresPlan, hasPlan, complete, onConfigStatus]);
+
+  const persistTechnology = useCallback(async (nextCoBrother, nextPlan) => {
     setSaving(true);
     setError('');
     try {
       const body = {
-        addonServices: [...nextBusiness, ...nextVa],
+        coBrotherOptIn: nextCoBrother,
       };
-      if (isTechnology) {
-        body.coBrotherOptIn = nextCoBrother;
-        if (nextPlan) body.selectedPlan = nextPlan;
-      }
+      if (nextPlan) body.selectedPlan = nextPlan;
+      // Do not send addonServices — leave VA/Compliance untouched; cart UI is CoBrother-only.
       await updateItem(item.id, body);
       await onUpdated?.();
     } catch {
@@ -96,14 +137,36 @@ export default function CartItemExtras({ item, onUpdated }) {
     } finally {
       setSaving(false);
     }
-  }, [isTechnology, item.id, onUpdated, updateItem]);
+  }, [item.id, onUpdated, updateItem]);
 
-  const scheduleSave = useCallback((nextCoBrother, nextBusiness, nextVa, nextPlan) => {
+  const persistDomainListing = useCallback(async (nextBusiness, nextVa) => {
+    setSaving(true);
+    setError('');
+    try {
+      await updateItem(item.id, {
+        addonServices: [...nextBusiness, ...nextVa],
+      });
+      await onUpdated?.();
+    } catch {
+      setError('Could not update options. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }, [item.id, onUpdated, updateItem]);
+
+  const scheduleTechSave = useCallback((nextCoBrother, nextPlan) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = window.setTimeout(() => {
-      persist(nextCoBrother, nextBusiness, nextVa, nextPlan);
+      persistTechnology(nextCoBrother, nextPlan);
     }, SAVE_DELAY_MS);
-  }, [persist]);
+  }, [persistTechnology]);
+
+  const scheduleDomainSave = useCallback((nextBusiness, nextVa) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = window.setTimeout(() => {
+      persistDomainListing(nextBusiness, nextVa);
+    }, SAVE_DELAY_MS);
+  }, [persistDomainListing]);
 
   useEffect(() => () => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -112,25 +175,26 @@ export default function CartItemExtras({ item, onUpdated }) {
   const handleCoBrotherToggle = () => {
     const next = !coBrotherOptIn;
     setCoBrotherOptIn(next);
-    scheduleSave(next, businessAddons, vaAddons, selectedPlan);
+    scheduleTechSave(next, selectedPlan);
   };
 
   const handleBusinessChange = (next) => {
     setBusinessAddons(next);
-    scheduleSave(coBrotherOptIn, next, vaAddons, selectedPlan);
+    scheduleDomainSave(next, vaAddons);
   };
 
   const handleVaChange = (next) => {
     setVaAddons(next);
-    scheduleSave(coBrotherOptIn, businessAddons, next, selectedPlan);
+    scheduleDomainSave(businessAddons, next);
   };
 
   const handlePlanChange = (planKey) => {
     setSelectedPlan(planKey);
-    scheduleSave(coBrotherOptIn, businessAddons, vaAddons, planKey);
+    scheduleTechSave(coBrotherOptIn, planKey);
   };
 
   if (!supported) return null;
+  if (collapsed) return null;
 
   return (
     <div className="rounded-[14px] border border-gray-200/80 bg-gray-50/60 px-3 py-4 sm:px-4 -mt-1 mb-1">
@@ -144,58 +208,36 @@ export default function CartItemExtras({ item, onUpdated }) {
         )}
       </div>
 
-      {isTechnology && enabledPlans.length > 0 && (
-        <TechnologyPlanPicker
+      {isTechnology && (
+        <TechnologyPurchaseConfig
           plans={enabledPlans}
-          selectedKey={selectedPlan}
-          onSelect={handlePlanChange}
-          loading={techLoading}
+          selectedPlan={selectedPlan}
+          onPlanSelect={handlePlanChange}
+          plansLoading={techLoading}
+          coBrotherOptIn={coBrotherOptIn}
+          onCoBrotherToggle={handleCoBrotherToggle}
           formatPrice={formatPrice}
-          className="mb-3"
         />
       )}
 
-      {isTechnology && (
-        <div
-          onClick={handleCoBrotherToggle}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCoBrotherToggle(); }}
-          className={`flex items-start gap-3 p-3 sm:p-3.5 mb-3 cursor-pointer rounded-xl border-2 transition-all ${
-            coBrotherOptIn
-              ? 'bg-purple-50/60 border-purple-300 shadow-sm'
-              : 'bg-white border-gray-200 hover:border-purple-200'
-          }`}
-        >
-          <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${
-            coBrotherOptIn ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'
-          }`}>
-            {coBrotherOptIn && <span className="text-white text-[0.65rem] font-bold">✓</span>}
-          </div>
-          <div className="min-w-0">
-            <p className={`text-sm font-semibold ${coBrotherOptIn ? 'text-purple-900' : 'text-gray-800'}`}>
-              Co-Creator Assistance
-              <span className={`ml-2 font-display ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-500'}`}>
-                +{formatPrice(1000)}
-              </span>
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-              Dedicated CoBrother support for setup and deployment within 24 hours.
-            </p>
-          </div>
-        </div>
+      {isTechnology && requiresPlan && !hasPlan && (
+        <p className="text-xs text-amber-700 mt-2 font-medium">
+          Select a pricing plan before checkout.
+        </p>
       )}
 
-      <AddonSections
-        businessSelected={businessAddons}
-        onBusinessChange={handleBusinessChange}
-        vaSelected={vaAddons}
-        onVaChange={handleVaChange}
-        vaServices={vaServices}
-        vaLoading={vaLoading}
-        showVirtualAssistant={SHOW_VA_IN_CART}
-        className="mt-0"
-      />
+      {isDomainListing && (
+        <AddonSections
+          businessSelected={businessAddons}
+          onBusinessChange={handleBusinessChange}
+          vaSelected={vaAddons}
+          onVaChange={handleVaChange}
+          vaServices={vaServices}
+          vaLoading={vaLoading}
+          showVirtualAssistant={SHOW_VA_IN_CART}
+          className="mt-0"
+        />
+      )}
 
       {error && (
         <p className="text-xs text-red-600 mt-2">{error}</p>

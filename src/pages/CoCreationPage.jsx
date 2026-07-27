@@ -26,8 +26,6 @@ import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import { softwareAuctionAPI } from '../api/services';
-import AddonSections from '../components/addon/AddonSections';
-import { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import FormSelect from '../components/common/FormSelect';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
@@ -52,14 +50,12 @@ import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows } from '../utils/listingVisibility';
 import { asArray } from '../utils/asArray';
 import { computeCommissionBreakdown, fetchListingFeesAndCharges, payAuctionCreationFee } from '../utils/auctionFees';
-import { useVirtualAssistantCatalog, vaLabel } from '../hooks/useVirtualAssistantCatalog';
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol, formatPrice, supportedCurrencies, ratesMeta } = useCurrency();
 
-  const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -376,8 +372,6 @@ export default function CoCreationPage() {
           item={buyTarget}
           selectedPlan={buyTargetPlan}
           user={user}
-          vaServices={vaServices}
-          vaLoading={vaLoading}
           onClose={() => { setBuyTarget(null); setBuyTargetPlan(null); }}
           onSuccess={item => {
             setSuccessItem(item);
@@ -1165,7 +1159,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
 
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
-function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServices = [], vaLoading = false }) {
+function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
   const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
   const cleanPhone = (phone) => {
@@ -1199,8 +1193,6 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
   const [coBrotherOptIn, setCoBrotherOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [addons, setAddons] = useState([]);
-  const [vaAddons, setVaAddons] = useState([]);
 
   const activePlan = hasPlans && currentPlanKey
     ? enabledPlans.find((p) => p.key === currentPlanKey)
@@ -1209,8 +1201,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
     ? parseFloat(activePlan.price)
     : (hasPlans ? 0 : (item.price || 0));
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
-  const addonExtra = addonTotal(addons);
-  const subTotal = basePrice + coBrotherFee + addonExtra;
+  const subTotal = basePrice + coBrotherFee;
   const gstAmount = subTotal * 0.18;
   const totalPrice = subTotal + gstAmount;
 
@@ -1249,7 +1240,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
       const { data: orderData } = await technologyAPI.createOrder(item.id, {
         ...form,
         coBrotherOptIn,
-        services: [...addons, ...vaAddons],
+        services: [],
         selectedPlan: currentPlanKey,
         ...buildOrderCurrencyPayload(currency),
       }, redeemPoints);
@@ -1274,7 +1265,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
               githubLink: verifyData.githubLink,
               coBrotherOptIn,
               coBrotherHelpPaid: coBrotherOptIn,
-              _addons: [...addons, ...vaAddons],
+              _addons: [],
             });
           } catch {
             setError('Payment verification failed. Please contact support.');
@@ -1365,7 +1356,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
 
             <div className="flex flex-col gap-4">
               <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Optional Services</div>
-              {/* ── CoBrother opt-in card ── */}
+              {/* ── CoBrother opt-in card only (no VA / Compliance) ── */}
               <div
                 onClick={() => setCoBrotherOptIn(v => !v)}
                 className={`flex flex-col gap-3 p-4 cursor-pointer rounded-xl border-2 transition-all shadow-sm ${coBrotherOptIn ? 'bg-purple-50/50 border-purple-400 shadow-md' : 'bg-white border-gray-200 hover:border-purple-300'}`}
@@ -1390,15 +1381,6 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
                   </div>
                 </div>
               </div>
-
-              <AddonSections
-                businessSelected={addons}
-                onBusinessChange={setAddons}
-                vaSelected={vaAddons}
-                onVaChange={setVaAddons}
-                vaServices={vaServices}
-                vaLoading={vaLoading}
-              />
             </div>
 
           </div>
@@ -1415,30 +1397,6 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
                   value={formatPrice(basePrice)} />
                 {coBrotherOptIn && (
                   <BillingLine label="◆ Co-Creator Assistance" value={formatPrice(1000)} accent />
-                )}
-                {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
-                  const svc = ADDON_SERVICES.find(s => s.key === k);
-                  return svc ? (
-                    <BillingLine key={k} label={svc.label}
-                      value={formatPrice(svc.price)} accent />
-                  ) : null;
-                })}
-                {vaAddons.map((k) => {
-                  return vaServices.some((s) => String(s.id) === String(k)) ? (
-                    <div key={k} className="flex justify-between items-center py-1.5 text-[0.85rem]">
-                      <span className="truncate mr-2 text-[#7c6fe0]">{vaLabel(k, vaServices)}</span>
-                      <span className="text-xs font-semibold text-amber-700">admin follow-up</span>
-                    </div>
-                  ) : null;
-                })}
-
-                {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
-                  <div className="text-xs text-amber-600 py-1.5 font-medium">+ contact-based services (no charge now)</div>
-                )}
-                {vaAddons.length > 0 && (
-                  <div className="text-xs text-amber-600 py-1.5 font-medium">
-                    Virtual assistant selection will be shared with the admin team for hiring follow-up.
-                  </div>
                 )}
               </div>
 
@@ -1485,12 +1443,11 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess, vaServ
                   productType="TECHNOLOGY"
                   productId={item.id}
                   selectedPlan={currentPlanKey}
-                  addonServices={[...addons, ...vaAddons]}
                   coBrotherOptIn={coBrotherOptIn}
                   size="md"
                   label="Add to Cart"
                   disabled={!canAddToCart}
-                  updateWhenInCart
+                  goToCartWhenInCart
                   className="w-full justify-center"
                 />
                 <button

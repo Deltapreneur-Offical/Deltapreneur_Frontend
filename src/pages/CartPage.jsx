@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Trash2 } from 'lucide-react';
+import { ShoppingCart, Trash2, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AppLayout from '../components/layout/AppLayout';
 import CartItem from '../components/cart/CartItem';
@@ -81,11 +81,23 @@ export default function CartPage() {
   const [paymentSuccess, setPaymentSuccess] = useState(null);
   const [confirmPremiumOpen, setConfirmPremiumOpen] = useState(false);
   const [premiumConfirmSuccess, setPremiumConfirmSuccess] = useState(null);
+  const [expandedConfigId, setExpandedConfigId] = useState(null);
+  const [techConfigStatus, setTechConfigStatus] = useState({});
+  const [buyer, setBuyer] = useState(() => ({
+    buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
+    buyerEmail: user?.email || '',
+    buyerPhone: String(user?.phoneNumber || user?.phone || '').replace(/\D/g, '').slice(-10),
+  }));
   const pendingCheckoutOrderId = useRef(null);
   const bumpedMinPeriodItems = useRef(new Set());
 
   useEffect(() => {
     setRegistrant((prev) => ({ ...prev, ...buildRegistrantFromUser(user) }));
+    setBuyer({
+      buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
+      buyerEmail: user?.email || '',
+      buyerPhone: String(user?.phoneNumber || user?.phone || '').replace(/\D/g, '').slice(-10),
+    });
   }, [user]);
 
   useEffect(() => {
@@ -112,6 +124,14 @@ export default function CartPage() {
   const handleCartUpdated = useCallback(() => {
     fetchCart().then(() => setRedemption(EMPTY_REDEMPTION));
   }, [fetchCart]);
+
+  const handleTechConfigStatus = useCallback((status) => {
+    if (!status?.itemId) return;
+    setTechConfigStatus((prev) => ({
+      ...prev,
+      [status.itemId]: status,
+    }));
+  }, []);
 
   const handleRemove = async (itemId) => {
     setRemovingId(itemId);
@@ -149,6 +169,28 @@ export default function CartPage() {
   }, [cart?.items, vaServices, priceByAddonKey]);
 
   const items = cart?.items || [];
+  const technologyItems = useMemo(
+    () => items.filter((it) => it.productType === 'TECHNOLOGY'),
+    [items],
+  );
+
+  // Expand first incomplete Technology line (or first tech if none incomplete).
+  useEffect(() => {
+    if (!technologyItems.length) {
+      setExpandedConfigId(null);
+      return;
+    }
+    const incompleteId = technologyItems.find((it) => {
+      const st = techConfigStatus[it.id];
+      return st ? !st.complete : !it.selectedPlan;
+    })?.id;
+    const preferred = incompleteId || technologyItems[0].id;
+    setExpandedConfigId((prev) => {
+      if (prev && technologyItems.some((it) => it.id === prev)) return prev;
+      return preferred;
+    });
+  }, [technologyItems, techConfigStatus]);
+
   const hasItems = items.length > 0;
   const hasDomainRegistration = items.some((it) => it.productType === 'DOMAIN_REGISTRATION');
   const premiumMarketplaceItems = items.filter(isPremiumMarketplaceCartItem);
@@ -230,15 +272,41 @@ export default function CartPage() {
       return;
     }
 
+    const incompleteTech = technologyItems.find((it) => {
+      const st = techConfigStatus[it.id];
+      if (st) return !st.complete;
+      return false;
+    });
+    if (incompleteTech) {
+      setExpandedConfigId(incompleteTech.id);
+      setError(`Select a pricing plan for “${incompleteTech.productName || 'Technology'}” before checkout.`);
+      return;
+    }
+
+    const buyerName = buyer.buyerFullName.trim();
+    const buyerEmail = buyer.buyerEmail.trim();
+    const buyerPhone = buyer.buyerPhone.trim();
+    if (!buyerName) {
+      setError('Please enter your full name before checkout.');
+      return;
+    }
+    if (!buyerEmail) {
+      setError('Please enter your email before checkout.');
+      return;
+    }
+    if (!/^\d{10}$/.test(buyerPhone)) {
+      setError('Please enter a valid 10-digit phone number before checkout.');
+      return;
+    }
+
     setCheckoutLoading(true);
     try {
-      const buyerName = `${user?.firstname || ''} ${user?.lastname || ''}`.trim();
       const payload = {
         redeemPoints: redemption.redeem,
         currency: selectedCurrency || 'INR',
         buyerName,
-        buyerEmail: user?.email || '',
-        buyerPhone: user?.phoneNumber || user?.phone || '',
+        buyerEmail,
+        buyerPhone,
       };
       if (needsRegistrantDetails) {
         payload.registrant = registrant;
@@ -657,30 +725,130 @@ export default function CartPage() {
             className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] gap-6 xl:gap-8 items-start"
           >
             <div className="space-y-3 min-w-0">
-              {items.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.25 }}
-                  className="space-y-0"
-                >
-                  <CartItem
-                    item={item}
-                    onRemove={handleRemove}
-                    removingId={removingId}
-                    onPeriodChange={
-                      item.productType === 'DOMAIN_REGISTRATION'
-                        ? handleItemPeriodChange
-                        : undefined
-                    }
-                    periodUpdatingId={periodUpdatingId}
-                  />
-                  {(item.productType === 'TECHNOLOGY' || item.productType === 'DOMAIN_LISTING') && (
-                    <CartItemExtras item={item} onUpdated={handleCartUpdated} />
-                  )}
-                </motion.div>
-              ))}
+              {items.map((item, index) => {
+                const isTech = item.productType === 'TECHNOLOGY';
+                const isDomainListing = item.productType === 'DOMAIN_LISTING';
+                const showExtras = isTech || isDomainListing;
+                const expanded = !isTech || expandedConfigId === item.id;
+                const status = techConfigStatus[item.id];
+                const needsConfig = isTech && status && !status.complete;
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05, duration: 0.25 }}
+                    className="space-y-0"
+                  >
+                    <CartItem
+                      item={item}
+                      onRemove={handleRemove}
+                      removingId={removingId}
+                      onPeriodChange={
+                        item.productType === 'DOMAIN_REGISTRATION'
+                          ? handleItemPeriodChange
+                          : undefined
+                      }
+                      periodUpdatingId={periodUpdatingId}
+                    />
+                    {showExtras && (
+                      <>
+                        {isTech && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedConfigId((prev) => (prev === item.id ? null : item.id))
+                            }
+                            className={`flex w-full items-center justify-between gap-2 rounded-b-[14px] border border-t-0 px-4 py-2.5 text-left text-xs font-semibold transition-colors ${
+                              needsConfig
+                                ? 'border-amber-200 bg-amber-50 text-amber-800'
+                                : 'border-gray-200/80 bg-gray-50/80 text-gray-700 hover:bg-gray-100/80'
+                            }`}
+                          >
+                            <span>
+                              {expanded ? 'Hide configuration' : 'Configure plan & Co-Creator'}
+                              {needsConfig ? ' · Plan required' : ''}
+                            </span>
+                            <ChevronDown
+                              size={16}
+                              className={`shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
+                            />
+                          </button>
+                        )}
+                        <CartItemExtras
+                          item={item}
+                          onUpdated={handleCartUpdated}
+                          onConfigStatus={isTech ? handleTechConfigStatus : undefined}
+                          collapsed={isTech && !expanded}
+                        />
+                      </>
+                    )}
+                  </motion.div>
+                );
+              })}
+
+              {technologyItems.length > 0 && (
+                <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">
+                      Buyer Information
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Used once for Technology checkout in this order.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label className="space-y-1 sm:col-span-2">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        Full Name
+                      </span>
+                      <input
+                        type="text"
+                        value={buyer.buyerFullName}
+                        onChange={(e) =>
+                          setBuyer((prev) => ({ ...prev, buyerFullName: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none"
+                        placeholder="Your full name"
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        Email
+                      </span>
+                      <input
+                        type="email"
+                        value={buyer.buyerEmail}
+                        onChange={(e) =>
+                          setBuyer((prev) => ({ ...prev, buyerEmail: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none"
+                        placeholder="your@email.com"
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        Phone <span className="text-red-500">*</span>
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={buyer.buyerPhone}
+                        onChange={(e) =>
+                          setBuyer((prev) => ({
+                            ...prev,
+                            buyerPhone: e.target.value.replace(/\D/g, '').slice(0, 10),
+                          }))
+                        }
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none"
+                        placeholder="10-digit number"
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
 
               {needsRegistrantDetails && (
                 <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 space-y-4">

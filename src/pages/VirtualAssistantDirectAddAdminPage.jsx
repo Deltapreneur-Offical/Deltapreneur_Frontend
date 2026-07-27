@@ -8,6 +8,7 @@ import {
 import { adminAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
 import { vaAdminModulePath } from '../utils/virtualAssistantAdminNav';
+import { validateLinkedInProfileUrl } from '../utils/linkedInProfileUrl';
 
 const VA_ROLES = [
   'Administrative Support', 'Customer Support', 'Data Entry',
@@ -71,6 +72,9 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       }
       return;
     }
+    if (name === 'linkedinUrl' && errors.linkedinUrl) {
+      setErrors(prev => ({ ...prev, linkedinUrl: validateLinkedInProfileUrl(value) }));
+    }
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
@@ -85,6 +89,8 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
     if (!formData.skills || formData.skills.trim().length < 2) newErrors.skills = 'Please list your skills';
     if (!formData.yearsOfExperience) newErrors.yearsOfExperience = 'Please select years of experience';
     if (!formData.languages || formData.languages.trim().length < 2) newErrors.languages = 'Please enter languages known';
+    const linkedinError = validateLinkedInProfileUrl(formData.linkedinUrl);
+    if (linkedinError) newErrors.linkedinUrl = linkedinError;
     if (!formData.expectedCompensation || formData.expectedCompensation.trim().length < 1) newErrors.expectedCompensation = 'Please enter expected compensation';
     if (!formData.publicMonthlyPrice || Number(formData.publicMonthlyPrice) < 0) newErrors.publicMonthlyPrice = 'Please enter a valid public monthly price';
     if (!formData.maxClientCapacity || Number(formData.maxClientCapacity) < 1) newErrors.maxClientCapacity = 'Please enter a valid capacity';
@@ -257,8 +263,9 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
                 {errors.languages && <span className="text-xs text-red-500 mt-1 block">{errors.languages}</span>}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">LinkedIn Profile URL</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">LinkedIn Profile URL <span className="text-red-500">*</span></label>
                 <div className="relative"><Globe size={18} className="absolute left-3 top-3.5 text-gray-400" /><input type="url" name="linkedinUrl" value={formData.linkedinUrl} onChange={handleChange} placeholder="https://linkedin.com/in/..." className={`${inputClass('linkedinUrl')} pl-10`} /></div>
+                {errors.linkedinUrl && <span className="text-xs text-red-500 mt-1 block">{errors.linkedinUrl}</span>}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Portfolio / Website URL</label>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { virtualAssistantAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
+import { validateLinkedInProfileUrl } from '../utils/linkedInProfileUrl';
 import { useAuth } from '../context/AuthContext';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
@@ -128,6 +129,9 @@ const VirtualAssistantPage = () => {
         setErrors(prev => ({ ...prev, availability: null }));
       }
     }
+    if (name === 'linkedinUrl' && errors.linkedinUrl) {
+      setErrors(prev => ({ ...prev, linkedinUrl: validateLinkedInProfileUrl(value) }));
+    }
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
@@ -162,6 +166,10 @@ const VirtualAssistantPage = () => {
     }
     if (!formData.languages || formData.languages.trim().length < 2) {
       newErrors.languages = 'Please enter languages known';
+    }
+    const linkedinError = validateLinkedInProfileUrl(formData.linkedinUrl);
+    if (linkedinError) {
+      newErrors.linkedinUrl = linkedinError;
     }
     if (!formData.hoursPerWeek) {
       newErrors.hoursPerWeek = 'Please specify hours available per week';
@@ -509,7 +517,7 @@ const VirtualAssistantPage = () => {
                       </div>
 
                       <div className="va-app-field">
-                        <label className="va-app-label">LinkedIn Profile URL</label>
+                        <label className="va-app-label">LinkedIn Profile URL <span className="va-app-required">*</span></label>
                         <div className="va-app-input-wrap">
                           <Globe size={18} className="va-app-input-wrap__icon" />
                           <input
@@ -518,9 +526,10 @@ const VirtualAssistantPage = () => {
                             value={formData.linkedinUrl}
                             onChange={handleChange}
                             placeholder="https://linkedin.com/in/yourprofile"
-                            className="va-app-input va-app-input--with-icon"
+                            className={`va-app-input va-app-input--with-icon${inputErrorClass(errors.linkedinUrl)}`}
                           />
                         </div>
+                        {errors.linkedinUrl && <span className="va-app-error">{errors.linkedinUrl}</span>}
                       </div>
                     </div>
 

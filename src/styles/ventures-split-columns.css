@@ -279,11 +279,11 @@
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__body {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__badges {
@@ -308,8 +308,9 @@
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__footer {
-  flex-shrink: 0;
-  margin-top: auto;
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+  gap: 0.35rem;
 }
 
 .ventures-split__empty {

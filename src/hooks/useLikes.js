@@ -51,8 +51,11 @@ function seedLikeMapFromItems(items) {
 
 /**
  * Manages like state for a list of items.
- * type: 'VENTURE' | 'DOMAIN' | 'SOFTWARE' | 'COMMUNITY'
+ * type: 'VENTURE' | 'DOMAIN' | 'SOFTWARE' | 'COMMUNITY' | 'VIRTUAL_ASSISTANT'
  * items: array with .id fields
+ *
+ * VIRTUAL_ASSISTANT is intentionally separate from COMMUNITY so Creator
+ * and Virtual Assistant likes never share counts.
  */
 export function useLikes(type, items) {
   const navigate = useNavigate();

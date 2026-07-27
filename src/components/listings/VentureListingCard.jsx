@@ -781,7 +781,7 @@ return (
 
 
 
-        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-2 mt-auto' : 'gap-3 mt-2'}`}>
+        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-3 mt-2'}`}>
 
           {/* Price Box */}
 

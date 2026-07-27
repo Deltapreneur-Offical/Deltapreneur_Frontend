@@ -10,6 +10,7 @@ import {
   normalizeHomepageListing,
 } from '../../utils/homepagePreview';
 import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
+import { useLikes } from '../../hooks/useLikes';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import HomePreviewCardShell from '../home/HomePreviewCardShell';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from '../home/HomeAutoScrollRow';
@@ -69,6 +70,8 @@ export function FeaturedVirtualAssistantCard({
   profile,
   onView,
   onHire,
+  likeState,
+  onLike,
   accent = 'community',
 }) {
   return (
@@ -79,6 +82,8 @@ export function FeaturedVirtualAssistantCard({
         skipVisibilityCheck
         onView={onView}
         onHire={onHire}
+        likeState={likeState}
+        onLike={onLike}
       />
     </HomePreviewCardShell>
   );
@@ -105,6 +110,8 @@ export default function FeaturedVirtualAssistantsListing({
   const loading = externalLoading ?? internal.loading;
   const count = cards.length;
   const shouldAutoScroll = useShouldAutoScroll(count);
+  // Dedicated like bucket — do not reuse COMMUNITY (Creators) likes.
+  const { toggle: toggleLike, get: getLike } = useLikes('VIRTUAL_ASSISTANT', cards);
 
   const handleView = onViewProfile || ((profileId) => navigateToVirtualAssistantDetail(navigate, profileId));
   const handleHire = onHireProfile || ((profileId) => navigateToVirtualAssistantDetail(navigate, profileId, { intent: 'hire' }));
@@ -129,6 +136,8 @@ export default function FeaturedVirtualAssistantsListing({
       profile={profile}
       onView={() => handleView(profile.id)}
       onHire={() => handleHire(profile.id)}
+      likeState={getLike(profile.id)}
+      onLike={() => toggleLike(profile.id)}
     />
   );
 

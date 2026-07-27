@@ -161,19 +161,19 @@
 
 .listing-card-stats-footer .listing-like-btn__icon--idle,
 .creator-profile-card__stat-group .listing-like-btn__icon--idle {
-  color: #111827;
+  color: #c4b5fd;
 }
 
 .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
 .creator-profile-card__stat-group .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #111827;
+  color: #a78bfa;
 }
 
 .listing-card-stats-footer .listing-like-btn__icon--active,
 .creator-profile-card__stat-group .listing-like-btn__icon--active {
-  color: #fca5a5;
+  color: #a78bfa;
 }
 
 .listing-card-stats-footer .listing-like-btn__count,

@@ -95,6 +95,8 @@ export function normalizeHomepageListing(item, type = 'domain') {
       overallStatus: item.overallStatus ?? item.overall_status ?? '',
       applicationRoles: item.applicationRoles ?? item.application_roles ?? [],
       featured: Boolean(item.featured),
+      likeCount: Number(item.likeCount ?? item.like_count ?? 0),
+      views: Number(item.views ?? item.view_count ?? 0),
     };
   }
 
@@ -129,6 +131,8 @@ export function mapVirtualAssistantToCreatorCard(profile) {
     industry: roles[0] || 'Virtual Assistant',
     expectedRate: monthlyPrice != null && monthlyPrice !== '' ? `${monthlyPrice}/month` : '',
     featured: true,
+    likeCount: Number(normalized.likeCount ?? 0),
+    views: Number(normalized.views ?? 0),
   };
 }
 

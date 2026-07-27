@@ -8,7 +8,8 @@ import {
   Clock, 
   CheckCircle2,
   Globe,
-  Lightbulb
+  Lightbulb,
+  Share2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
@@ -20,6 +21,7 @@ import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
+import { getVirtualAssistantDetailPath } from '../../utils/listingNavigation';
 import '../../styles/domain-listing-cards.css';
 
 function formatLabel(value) {
@@ -99,10 +101,39 @@ export default function CommunityListingCard({
   const expLabel = /^\d+$/.test(String(rawExp).trim()) ? `${String(rawExp).trim()}+ Years` : rawExp;
   const workTypeLabel = formatLabel(profile.workType || profile.work_type || 'Full-time');
   const description = profile.about || profile.description || profile.about_me || 'Building scalable tech products and solving real world problems.';
+  const isVa = isVirtualAssistantProfile(profile);
+  const vaLikeCount = Number(profile.likeCount ?? profile.like_count ?? likeState?.count ?? 0);
 
   const stop = (e) => {
     e.stopPropagation();
     e.preventDefault();
+  };
+
+  const handleShare = async (e) => {
+    stop(e);
+    const base = typeof window !== 'undefined' ? window.location.origin : '';
+    const path = getVirtualAssistantDetailPath(profile?.id);
+    const shareUrl = base ? `${base}${path}` : path;
+    const shareName = profile?.fullName || profile?.name || 'Virtual Assistant';
+    const shareSubject = `Check out this virtual assistant on CoBrother: ${shareName}`;
+    const shareText = `Check out this virtual assistant on CoBrother!\n\n${shareSubject}`;
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: shareSubject, text: shareText, url: shareUrl });
+        return;
+      } catch {
+        // Fall through.
+      }
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+    } catch {
+      // Ignore if blocked.
+    }
   };
   const interactive = Boolean(onView);
 
@@ -203,6 +234,18 @@ export default function CommunityListingCard({
                   ) : null}
                 </div>
              </div>
+
+             {isVa ? (
+               <button
+                 type="button"
+                 className="domain-listing-card__share-btn"
+                 onClick={handleShare}
+                 title={t('listingCardShare', { defaultValue: 'Share' })}
+                 aria-label={t('listingCardShare', { defaultValue: 'Share' })}
+               >
+                 <Share2 size={18} strokeWidth={2} />
+               </button>
+             ) : null}
              
           </div>
         </div>
@@ -295,7 +338,12 @@ export default function CommunityListingCard({
 
         <hr className="creator-profile-card__divider" />
 
-        <div className="creator-profile-card__footer">
+        <div
+          className="creator-profile-card__footer"
+          onClick={stop}
+          onMouseDown={stop}
+          role="presentation"
+        >
           <div className="footer-left">
              <span className="creator-profile-card__views" title={t('creatorProfileViews', 'Profile views')}>
                <img src={cobrotherViewMark} alt="" aria-hidden className="creator-profile-card__brand-mark" />
@@ -303,7 +351,13 @@ export default function CommunityListingCard({
              </span>
           </div>
           <div className="footer-right">
-            {onLike ? (
+            {isVa ? (
+              <LikeButton
+                liked={likeState?.liked}
+                count={Number.isFinite(vaLikeCount) ? vaLikeCount : 0}
+                onToggle={onLike}
+              />
+            ) : onLike ? (
               <LikeButton
                 liked={likeState?.liked}
                 count={likeState?.count}

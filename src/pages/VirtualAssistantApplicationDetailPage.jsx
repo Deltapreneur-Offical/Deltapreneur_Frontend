@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Check, XCircle, Clock, User, Mail, Phone, MapPin,
   Briefcase, FileText, Globe, Clock3, IndianRupee, Loader2, Hash, Calendar,
-  RefreshCw, Link2, Languages, Sparkles,
+  RefreshCw, Link2, Languages, Sparkles, Users, BadgeCheck,
 } from 'lucide-react';
 import { adminAPI } from '../api/services';
 import { unwrapApiData, unwrapApiList } from '../utils/apiResponse';
@@ -58,14 +58,20 @@ function toChips(value) {
     .filter(Boolean);
 }
 
-function SectionCard({ icon: Icon, title, children }) {
+function SectionCard({ icon: Icon, title, children, className = '', action = null, subtitle = null }) {
   return (
-    <section className="va-detail-card">
+    <section className={`va-detail-card ${className}`.trim()}>
       <div className="va-detail-card__header">
-        <span className="va-detail-card__icon">
-          <Icon size={18} />
-        </span>
-        <h2 className="va-detail-card__title">{title}</h2>
+        <div className="va-detail-card__heading">
+          <span className="va-detail-card__icon">
+            <Icon size={18} />
+          </span>
+          <div>
+            <h2 className="va-detail-card__title">{title}</h2>
+            {subtitle ? <p className="va-detail-card__subtitle">{subtitle}</p> : null}
+          </div>
+        </div>
+        {action}
       </div>
       {children}
     </section>
@@ -111,6 +117,15 @@ function ChipList({ items, empty = '—', neutral = false }) {
           {item}
         </span>
       ))}
+    </div>
+  );
+}
+
+function StatPill({ label, value, tone = 'default' }) {
+  return (
+    <div className={`va-detail-stat-pill va-detail-stat-pill--${tone}`}>
+      <span className="va-detail-stat-pill__label">{label}</span>
+      <span className="va-detail-stat-pill__value">{value}</span>
     </div>
   );
 }
@@ -405,6 +420,18 @@ function VirtualAssistantApplicationDetailPage() {
   const canPublish = hasApprovedRole && application?.publicMonthlyPriceInr != null && application?.maxClientCapacity != null;
   const skillChips = toChips(application?.skills);
   const languageChips = toChips(application?.languagesKnown);
+  const approvedRoleCount = roles.filter((r) => r.status === 'approved').length;
+  const pendingRoleCount = roles.filter((r) => r.status === 'pending').length;
+  const publishTone =
+    application?.publishStatus === 'published' ? 'success' :
+    application?.publishStatus === 'unpublished' ? 'danger' : 'warning';
+  const publishLabel =
+    application?.publishStatus === 'published' ? 'Published' :
+    application?.publishStatus === 'unpublished' ? 'Unpublished' : 'Draft';
+  const publicPriceLabel =
+    application?.publicMonthlyPriceInr != null
+      ? `${application.pricingCurrency || 'INR'} ${Number(application.publicMonthlyPriceInr).toLocaleString('en-IN')}/mo`
+      : 'Not set';
 
   if (loading) {
     return (
@@ -433,7 +460,7 @@ function VirtualAssistantApplicationDetailPage() {
 
   return (
     <div className="admin-page va-detail-page" data-admin-section="virtual-assistants">
-      <div className="va-detail-header">
+      <div className="va-detail-topbar">
         <button
           type="button"
           onClick={() => navigate(vaAdminApplicationsPath())}
@@ -442,109 +469,169 @@ function VirtualAssistantApplicationDetailPage() {
         >
           <ArrowLeft size={18} />
         </button>
-        <div>
-          <h1 className="va-detail-title">Application Details</h1>
+        <div className="va-detail-topbar__copy">
+          <p className="va-detail-kicker">Virtual Assistant Profile</p>
+          <h1 className="va-detail-title">{application.fullName || 'Applicant Profile'}</h1>
           <p className="va-detail-subtitle">
-            Reference: <code>{formatVaReferenceNumber(application.referenceNumber)}</code>
+            <code>{formatVaReferenceNumber(application.referenceNumber)}</code>
+            <span className="va-detail-dot">·</span>
+            App #{vaDisplayApplicationNumber(application)}
+            <span className="va-detail-dot">·</span>
+            Submitted {formatDate(application.createdAt)}
           </p>
+        </div>
+        <div className="va-detail-topbar__actions">
+          {application.resumeUrl && (
+            <button type="button" onClick={handleViewResume} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
+              <FileText size={14} />
+              View Resume
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => navigate(vaAdminApplicationsPath())}
+            className="va-detail-btn va-detail-btn--secondary va-detail-btn--sm"
+          >
+            Back to List
+          </button>
         </div>
       </div>
 
+      <section className="va-detail-hero">
+        <div className="va-detail-hero__identity">
+          <VaProfilePhoto
+            source={application}
+            applicationId={application.id}
+            refreshScope="admin"
+            alt=""
+            className="va-detail-avatar"
+            fallbackClassName="va-detail-avatar va-detail-avatar--fallback"
+            fallback="icon"
+          />
+          <div className="va-detail-hero__meta">
+            <div className="va-detail-hero__name-row">
+              <h2 className="va-detail-hero__name">{application.fullName || '—'}</h2>
+              <span className={`va-detail-badge ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
+                {formatStatusLabel(overallStatus)}
+              </span>
+              <span className={`va-detail-badge va-detail-badge--publish va-detail-badge--${publishTone}`}>
+                {publishLabel}
+              </span>
+            </div>
+            <div className="va-detail-hero__contacts">
+              <span><Mail size={14} /> {application.email || '—'}</span>
+              <span><Phone size={14} /> {application.phoneNumber || '—'}</span>
+              <span><MapPin size={14} /> {application.location || '—'}</span>
+            </div>
+            <div className="va-detail-hero__tags">
+              {application.yearsExperience ? (
+                <span className="va-detail-soft-chip">{application.yearsExperience} experience</span>
+              ) : null}
+              {application.availability ? (
+                <span className="va-detail-soft-chip">
+                  {application.availability.replace(/_/g, ' ').replace(/-/g, ' ')}
+                </span>
+              ) : null}
+              {application.hoursPerWeek ? (
+                <span className="va-detail-soft-chip">{application.hoursPerWeek} hrs/week</span>
+              ) : null}
+              {roles.slice(0, 3).map((role) => (
+                <span key={role.id} className="va-detail-soft-chip va-detail-soft-chip--role">
+                  <span aria-hidden>{ROLE_STATUS_DOT[role.status] || '🟡'}</span>
+                  {role.roleName}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="va-detail-hero__stats">
+          <StatPill label="Overall" value={formatStatusLabel(overallStatus)} tone={overallStatus === 'approved' ? 'success' : overallStatus === 'rejected' ? 'danger' : 'default'} />
+          <StatPill label="Publish" value={publishLabel} tone={publishTone} />
+          <StatPill label="Public Price" value={publicPriceLabel} />
+          <StatPill label="Capacity" value={application.maxClientCapacity ?? '—'} />
+          <StatPill label="Roles" value={`${approvedRoleCount}/${roles.length || 0} approved`} tone={approvedRoleCount > 0 ? 'success' : 'default'} />
+          <StatPill label="Pending Roles" value={pendingRoleCount} tone={pendingRoleCount > 0 ? 'warning' : 'default'} />
+        </div>
+      </section>
+
       <div className="va-detail-layout">
         <div className="va-detail-main">
-          <SectionCard icon={User} title="Applicant Details">
-            <div className="va-detail-applicant">
-              <VaProfilePhoto
-                source={application}
-                applicationId={application.id}
-                refreshScope="admin"
-                alt=""
-                className="va-detail-avatar"
-                fallbackClassName="va-detail-avatar va-detail-avatar--fallback"
-                fallback="icon"
-              />
-              <div className="va-detail-applicant__meta">
-                <div className="va-detail-applicant__name-row">
-                  <h3 className="va-detail-applicant__name">{application.fullName || '—'}</h3>
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
-                    {formatStatusLabel(overallStatus)}
-                  </span>
-                </div>
-                <p className="va-detail-applicant__date">
-                  Submitted {formatDate(application.createdAt)}
-                </p>
-              </div>
-            </div>
-          </SectionCard>
-
-          <SectionCard icon={Mail} title="Personal Information">
-            <div className="va-detail-info-grid">
-              <InfoItem icon={Mail} label="Email">{application.email || '—'}</InfoItem>
-              <InfoItem icon={Phone} label="Phone Number">{application.phoneNumber || '—'}</InfoItem>
-              <InfoItem icon={MapPin} label="Location" className="va-detail-info-item--span-2">
-                {application.location || '—'}
-              </InfoItem>
-            </div>
-          </SectionCard>
-
-          <SectionCard icon={Briefcase} title="Professional Information">
-            <div className="space-y-4">
+          <SectionCard
+            icon={User}
+            title="About the Applicant"
+            subtitle="Profile snapshot for quick review"
+          >
+            {application.bio ? (
               <div className="va-detail-bio">
                 <span className="va-detail-bio__label">Short Bio</span>
-                <p className="va-detail-bio__text">{application.bio || '—'}</p>
+                <p className="va-detail-bio__text">{application.bio}</p>
+              </div>
+            ) : (
+              <p className="va-detail-empty">No bio provided.</p>
+            )}
+
+            <div className="va-detail-profile-grid">
+              <div className="va-detail-profile-block">
+                <h3 className="va-detail-profile-block__title">Skills & Languages</h3>
+                <div className="va-detail-info-grid">
+                  <InfoItem icon={Sparkles} label="Skills" className="va-detail-info-item--span-2">
+                    <ChipList items={skillChips} />
+                  </InfoItem>
+                  <InfoItem icon={Languages} label="Languages" className="va-detail-info-item--span-2">
+                    <ChipList items={languageChips} neutral />
+                  </InfoItem>
+                </div>
               </div>
 
-              <div className="va-detail-info-grid">
-                <InfoItem icon={Sparkles} label="Skills">
-                  <ChipList items={skillChips} />
-                </InfoItem>
-                <InfoItem icon={Clock3} label="Years of Experience">
-                  {application.yearsExperience || '—'}
-                </InfoItem>
-                <InfoItem icon={Languages} label="Languages">
-                  <ChipList items={languageChips} neutral />
-                </InfoItem>
-                <InfoItem icon={Globe} label="LinkedIn Profile">
-                  {application.linkedinUrl ? (
-                    <a href={application.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                      View LinkedIn
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </InfoItem>
-                <InfoItem icon={Link2} label="Portfolio / Website" className="va-detail-info-item--span-2">
-                  {application.portfolioUrl ? (
-                    <a href={application.portfolioUrl} target="_blank" rel="noopener noreferrer">
-                      View Portfolio
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </InfoItem>
+              <div className="va-detail-profile-block">
+                <h3 className="va-detail-profile-block__title">Work Preferences</h3>
+                <div className="va-detail-info-grid">
+                  <InfoItem icon={Clock3} label="Years of Experience">
+                    {application.yearsExperience || '—'}
+                  </InfoItem>
+                  <InfoItem icon={Clock} label="Availability">
+                    {application.availability
+                      ? application.availability.replace(/_/g, ' ').replace(/-/g, ' ')
+                      : '—'}
+                  </InfoItem>
+                  <InfoItem icon={Calendar} label="Hours / Week">
+                    {application.hoursPerWeek || '—'}
+                  </InfoItem>
+                  <InfoItem icon={IndianRupee} label="Expected (Private)">
+                    {application.expectedCompensation || '—'}
+                  </InfoItem>
+                </div>
               </div>
-            </div>
-          </SectionCard>
 
-          <SectionCard icon={Clock3} title="Work Information">
-            <div className="va-detail-info-grid va-detail-info-grid--3">
-              <InfoItem icon={Clock} label="Availability">
-                {application.availability
-                  ? application.availability.replace(/_/g, ' ').replace(/-/g, ' ')
-                  : '—'}
-              </InfoItem>
-              <InfoItem icon={Calendar} label="Hours Available Per Week">
-                {application.hoursPerWeek || '—'}
-              </InfoItem>
-              <InfoItem icon={IndianRupee} label="Expected Compensation (Admin Only)">
-                {application.expectedCompensation || '—'}
-              </InfoItem>
+              <div className="va-detail-profile-block">
+                <h3 className="va-detail-profile-block__title">Contact & Links</h3>
+                <div className="va-detail-info-grid">
+                  <InfoItem icon={Mail} label="Email">{application.email || '—'}</InfoItem>
+                  <InfoItem icon={Phone} label="Phone">{application.phoneNumber || '—'}</InfoItem>
+                  <InfoItem icon={MapPin} label="Location">{application.location || '—'}</InfoItem>
+                  <InfoItem icon={Globe} label="LinkedIn">
+                    {application.linkedinUrl ? (
+                      <a href={application.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                        View LinkedIn
+                      </a>
+                    ) : '—'}
+                  </InfoItem>
+                  <InfoItem icon={Link2} label="Portfolio / Website" className="va-detail-info-item--span-2">
+                    {application.portfolioUrl ? (
+                      <a href={application.portfolioUrl} target="_blank" rel="noopener noreferrer">
+                        View Portfolio
+                      </a>
+                    ) : '—'}
+                  </InfoItem>
+                </div>
+              </div>
             </div>
           </SectionCard>
 
           {(application.resumeUrl || hasVaProfilePhoto(application)) && (
-            <SectionCard icon={FileText} title="Uploaded Documents">
-              <div className="space-y-3">
+            <SectionCard icon={FileText} title="Documents" subtitle="Uploaded with the application">
+              <div className="va-detail-docs-grid">
                 {application.resumeUrl && (
                   <div className="va-detail-doc">
                     <div className="va-detail-doc__info">
@@ -581,157 +668,24 @@ function VirtualAssistantApplicationDetailPage() {
             </SectionCard>
           )}
 
-          <SectionCard icon={Check} title="Overall Status">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold capitalize ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
-                  {formatStatusLabel(overallStatus)}
-                </span>
-                <p className="text-xs text-gray-500 mt-2">
-                  Current lifecycle status for this application.
-                </p>
-              </div>
-              <div className="va-detail-status-actions">
-                {['pending', 'under_review', 'partially_approved', 'approved', 'rejected'].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => handleStatusUpdate(application.id, s)}
-                    disabled={overallStatus === s}
-                    className="va-detail-status-chip-btn"
-                  >
-                    {formatStatusLabel(s)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </SectionCard>
-
-          <SectionCard icon={IndianRupee} title="Pricing Management">
-            {pricingMessage && (
-              <div className={`va-detail-alert ${pricingMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
-                {pricingMessage}
-              </div>
-            )}
-            <form onSubmit={handlePricingUpdate} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="va-detail-field-label">Expected Compensation (Private)</label>
-                <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
-                  <IndianRupee size={14} className="text-purple-600" />
-                  {application.expectedCompensation || '—'}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">Visible only to administrators.</p>
-              </div>
-              <div>
-                <label className="va-detail-field-label">Customer Monthly Price (Public)</label>
-                <div className="relative">
-                  <IndianRupee size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={pricing.publicMonthlyPriceInr}
-                    onChange={(e) => setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: e.target.value }))}
-                    placeholder="Enter public price in INR"
-                    className="va-detail-input va-detail-input--with-prefix"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="va-detail-field-label">Currency</label>
-                <select
-                  value={pricing.pricingCurrency}
-                  onChange={(e) => setPricing((prev) => ({ ...prev, pricingCurrency: e.target.value }))}
-                  className="va-detail-select"
-                >
-                  <option value="INR">INR</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
-              </div>
-              <div>
-                <label className="va-detail-field-label">Maximum Client Capacity</label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={pricing.maxClientCapacity}
-                  onChange={(e) => setPricing((prev) => ({ ...prev, maxClientCapacity: e.target.value }))}
-                  placeholder="Enter max clients"
-                  className="va-detail-input"
-                />
-              </div>
-              <div className="sm:col-span-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="text-xs text-gray-500">
-                  {application.pricingUpdatedById && (
-                    <span>Last updated: {formatDate(application.pricingUpdatedAt)} by Admin</span>
-                  )}
-                </div>
-                <button type="submit" disabled={savingPricing} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
-                  {savingPricing && <Loader2 size={14} className="animate-spin" />}
-                  Save Pricing
-                </button>
-              </div>
-            </form>
-          </SectionCard>
-
-          <SectionCard icon={Globe} title="Publishing">
-            {publishMessage && (
-              <div className={`va-detail-alert ${publishMessage.includes('success') || publishMessage.includes('published') || publishMessage.includes('unpublished') || publishMessage.includes('draft') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
-                {publishMessage}
-              </div>
-            )}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                  application.publishStatus === 'published' ? 'bg-green-100 text-green-800' :
-                  application.publishStatus === 'unpublished' ? 'bg-red-100 text-red-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {application.publishStatus === 'published' ? '🟢 Published' : application.publishStatus === 'unpublished' ? '🔴 Unpublished' : '🟡 Draft'}
-                </span>
-                <div className="mt-2 text-xs text-gray-500 space-y-1">
-                  {application.publishedAt && <p>Published: {formatDate(application.publishedAt)}</p>}
-                  {application.publishedByName && <p>By: {application.publishedByName}</p>}
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handlePublishAction('publish')}
-                  disabled={publishLoading || application.publishStatus === 'published' || !canPublish}
-                  className="va-detail-btn va-detail-btn--success va-detail-btn--sm"
-                  title={!canPublish ? 'At least one approved role, pricing, and capacity are required to publish.' : ''}
-                >
-                  {publishLoading && <Loader2 size={14} className="animate-spin" />}
-                  Publish Profile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePublishAction('unpublish')}
-                  disabled={publishLoading || application.publishStatus === 'unpublished'}
-                  className="va-detail-btn va-detail-btn--danger va-detail-btn--sm"
-                >
-                  {publishLoading && <Loader2 size={14} className="animate-spin" />}
-                  Unpublish Profile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePublishAction('draft')}
-                  disabled={publishLoading || application.publishStatus === 'draft'}
-                  className="va-detail-btn va-detail-btn--ghost va-detail-btn--sm"
-                >
-                  Save as Draft
-                </button>
-              </div>
-            </div>
-          </SectionCard>
-
-          <SectionCard icon={FileText} title="Applied Roles">
+          <SectionCard
+            icon={BadgeCheck}
+            title="Applied Roles"
+            subtitle="Review and decide per role"
+            action={
+              <span className="va-detail-count-pill">
+                {roles.length} role{roles.length === 1 ? '' : 's'}
+              </span>
+            }
+          >
             {roleMessage && (
               <div className={`va-detail-alert ${roleMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
                 {roleMessage}
+              </div>
+            )}
+            {capacityMessage && /capacit/i.test(capacityMessage) && (
+              <div className={`va-detail-alert ${capacityMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
+                {capacityMessage}
               </div>
             )}
             {roles.length === 0 ? (
@@ -739,7 +693,7 @@ function VirtualAssistantApplicationDetailPage() {
             ) : (
               <div className="space-y-4">
                 {roles.map((role) => (
-                  <div key={role.id} className="va-detail-role-card">
+                  <div key={role.id} className={`va-detail-role-card va-detail-role-card--${role.status || 'pending'}`}>
                     <div className="va-detail-role-card__body">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                         <div className="min-w-0 space-y-2">
@@ -827,6 +781,7 @@ function VirtualAssistantApplicationDetailPage() {
                       )}
 
                       <div className="pt-3 border-t border-gray-100">
+                        <p className="va-detail-field-label mb-2">Role Capacity</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
                             <label className="va-detail-field-label">Max Clients</label>
@@ -879,8 +834,8 @@ function VirtualAssistantApplicationDetailPage() {
             )}
           </SectionCard>
 
-          <SectionCard icon={Briefcase} title="Assignments">
-            {capacityMessage && (
+          <SectionCard icon={Users} title="Assignments" subtitle="Place this VA on client work">
+            {capacityMessage && !/capacit/i.test(capacityMessage) && (
               <div className={`va-detail-alert ${capacityMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
                 {capacityMessage}
               </div>
@@ -889,48 +844,56 @@ function VirtualAssistantApplicationDetailPage() {
               {!hasApprovedRole ? (
                 <p className="va-detail-empty">No approved roles yet. Approve a role to create assignments.</p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="va-detail-field-label">Company</label>
-                    <input type="text" id="assignmentCompany" className="va-detail-input" placeholder="Company name" />
+                <div className="va-detail-assignment-form">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="va-detail-field-label">Company</label>
+                      <input type="text" id="assignmentCompany" className="va-detail-input" placeholder="Company name" />
+                    </div>
+                    <div>
+                      <label className="va-detail-field-label">Role</label>
+                      <input type="text" id="assignmentRole" className="va-detail-input" placeholder="Role" />
+                    </div>
+                    <div>
+                      <label className="va-detail-field-label">Start Date</label>
+                      <input type="datetime-local" id="assignmentStart" className="va-detail-input" />
+                    </div>
+                    <div>
+                      <label className="va-detail-field-label">End Date</label>
+                      <input type="datetime-local" id="assignmentEnd" className="va-detail-input" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="va-detail-field-label">Role</label>
-                    <input type="text" id="assignmentRole" className="va-detail-input" placeholder="Role" />
-                  </div>
-                  <div>
-                    <label className="va-detail-field-label">Start Date</label>
-                    <input type="datetime-local" id="assignmentStart" className="va-detail-input" />
-                  </div>
-                  <div>
-                    <label className="va-detail-field-label">End Date</label>
-                    <input type="datetime-local" id="assignmentEnd" className="va-detail-input" />
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={handleCreateAssignment}
+                      disabled={!hasApprovedRole}
+                      className="va-detail-btn va-detail-btn--primary va-detail-btn--sm"
+                    >
+                      Create Assignment
+                    </button>
                   </div>
                 </div>
               )}
-              <div>
-                <button
-                  type="button"
-                  onClick={handleCreateAssignment}
-                  disabled={!hasApprovedRole}
-                  className="va-detail-btn va-detail-btn--primary va-detail-btn--sm"
-                >
-                  Create Assignment
-                </button>
-              </div>
               <div className="space-y-2">
                 <p className="va-detail-field-label">Existing Assignments</p>
                 {assignments.length === 0 ? (
                   <p className="va-detail-empty">No assignments yet.</p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="va-detail-assignment-list">
                     {assignments.map((assignment) => (
                       <div key={assignment.id} className="va-detail-assignment-card">
-                        <p className="text-sm font-semibold text-gray-900">{assignment.assignedCompany || '—'}</p>
+                        <div className="va-detail-assignment-card__top">
+                          <p className="text-sm font-semibold text-gray-900">{assignment.assignedCompany || '—'}</p>
+                          <span className={`va-detail-badge ${STATUS_BADGE_CLASSES[assignment.status] || 'bg-gray-100 text-gray-800'}`}>
+                            {formatStatusLabel(assignment.status)}
+                          </span>
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">Role: {assignment.assignedRole || '—'}</p>
-                        <p className="text-xs text-gray-500">Status: {formatStatusLabel(assignment.status)}</p>
-                        <p className="text-xs text-gray-500">Start: {formatDate(assignment.startDate)}</p>
-                        <p className="text-xs text-gray-500">End: {formatDate(assignment.endDate)}</p>
+                        <div className="va-detail-assignment-card__dates">
+                          <span>Start: {formatDate(assignment.startDate)}</span>
+                          <span>End: {formatDate(assignment.endDate)}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -941,6 +904,150 @@ function VirtualAssistantApplicationDetailPage() {
         </div>
 
         <aside className="va-detail-aside">
+          <SectionCard icon={Check} title="Lifecycle Status" subtitle="Set overall application state">
+            <div className="va-detail-status-panel">
+              <span className={`va-detail-badge va-detail-badge--lg ${STATUS_BADGE_CLASSES[overallStatus] || 'bg-gray-100 text-gray-800'}`}>
+                {formatStatusLabel(overallStatus)}
+              </span>
+              <p className="text-xs text-gray-500 mt-2 mb-3">
+                Current lifecycle status for this application.
+              </p>
+              <div className="va-detail-status-actions">
+                {['pending', 'under_review', 'partially_approved', 'approved', 'rejected'].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => handleStatusUpdate(application.id, s)}
+                    disabled={overallStatus === s}
+                    className={`va-detail-status-chip-btn${overallStatus === s ? ' va-detail-status-chip-btn--active' : ''}`}
+                  >
+                    {formatStatusLabel(s)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard icon={IndianRupee} title="Pricing" subtitle="Public marketplace settings">
+            {pricingMessage && (
+              <div className={`va-detail-alert ${pricingMessage.includes('success') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
+                {pricingMessage}
+              </div>
+            )}
+            <form onSubmit={handlePricingUpdate} className="va-detail-ops-form">
+              <div className="va-detail-ops-readonly">
+                <span className="va-detail-field-label">Expected Compensation (Private)</span>
+                <p className="va-detail-ops-readonly__value">
+                  <IndianRupee size={14} />
+                  {application.expectedCompensation || '—'}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Visible only to administrators.</p>
+              </div>
+              <div>
+                <label className="va-detail-field-label">Customer Monthly Price (Public)</label>
+                <div className="relative">
+                  <IndianRupee size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={pricing.publicMonthlyPriceInr}
+                    onChange={(e) => setPricing((prev) => ({ ...prev, publicMonthlyPriceInr: e.target.value }))}
+                    placeholder="Enter public price"
+                    className="va-detail-input va-detail-input--with-prefix"
+                  />
+                </div>
+              </div>
+              <div className="va-detail-ops-row">
+                <div>
+                  <label className="va-detail-field-label">Currency</label>
+                  <select
+                    value={pricing.pricingCurrency}
+                    onChange={(e) => setPricing((prev) => ({ ...prev, pricingCurrency: e.target.value }))}
+                    className="va-detail-select"
+                  >
+                    <option value="INR">INR</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="va-detail-field-label">Max Client Capacity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={pricing.maxClientCapacity}
+                    onChange={(e) => setPricing((prev) => ({ ...prev, maxClientCapacity: e.target.value }))}
+                    placeholder="Max clients"
+                    className="va-detail-input"
+                  />
+                </div>
+              </div>
+              <div className="va-detail-ops-footer">
+                <div className="text-xs text-gray-500">
+                  {application.pricingUpdatedById && (
+                    <span>Last updated: {formatDate(application.pricingUpdatedAt)} by Admin</span>
+                  )}
+                </div>
+                <button type="submit" disabled={savingPricing} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
+                  {savingPricing && <Loader2 size={14} className="animate-spin" />}
+                  Save Pricing
+                </button>
+              </div>
+            </form>
+          </SectionCard>
+
+          <SectionCard icon={Globe} title="Publishing" subtitle="Marketplace visibility">
+            {publishMessage && (
+              <div className={`va-detail-alert ${publishMessage.includes('success') || publishMessage.includes('published') || publishMessage.includes('unpublished') || publishMessage.includes('draft') ? 'va-detail-alert--success' : 'va-detail-alert--error'}`}>
+                {publishMessage}
+              </div>
+            )}
+            <div className="va-detail-publish-panel">
+              <span className={`va-detail-badge va-detail-badge--lg va-detail-badge--${publishTone}`}>
+                {publishLabel}
+              </span>
+              <div className="mt-2 text-xs text-gray-500 space-y-1">
+                {application.publishedAt && <p>Published: {formatDate(application.publishedAt)}</p>}
+                {application.publishedByName && <p>By: {application.publishedByName}</p>}
+                {!canPublish && (
+                  <p className="text-amber-600">Requires an approved role, public price, and capacity.</p>
+                )}
+              </div>
+              <div className="va-detail-publish-actions">
+                <button
+                  type="button"
+                  onClick={() => handlePublishAction('publish')}
+                  disabled={publishLoading || application.publishStatus === 'published' || !canPublish}
+                  className="va-detail-btn va-detail-btn--success va-detail-btn--sm"
+                  title={!canPublish ? 'At least one approved role, pricing, and capacity are required to publish.' : ''}
+                >
+                  {publishLoading && <Loader2 size={14} className="animate-spin" />}
+                  Publish Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePublishAction('unpublish')}
+                  disabled={publishLoading || application.publishStatus === 'unpublished'}
+                  className="va-detail-btn va-detail-btn--danger va-detail-btn--sm"
+                >
+                  {publishLoading && <Loader2 size={14} className="animate-spin" />}
+                  Unpublish
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePublishAction('draft')}
+                  disabled={publishLoading || application.publishStatus === 'draft'}
+                  className="va-detail-btn va-detail-btn--ghost va-detail-btn--sm"
+                >
+                  Save as Draft
+                </button>
+              </div>
+            </div>
+          </SectionCard>
+
           <SectionCard icon={Hash} title="Application Summary">
             <SummaryRow icon={Hash} label="Application No." mono>
               {vaDisplayApplicationNumber(application)}
@@ -961,7 +1068,7 @@ function VirtualAssistantApplicationDetailPage() {
             </SummaryRow>
           </SectionCard>
 
-          <SectionCard icon={Briefcase} title="Actions">
+          <SectionCard icon={Briefcase} title="Quick Actions">
             <div className="va-detail-actions">
               <button
                 type="button"

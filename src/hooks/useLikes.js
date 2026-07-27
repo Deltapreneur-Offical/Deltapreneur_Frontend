@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { likeAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
-import { hasAuthSession } from '../utils/authSession';
 
 function likeKey(entityId) {
   if (typeof entityId === 'string') return entityId.toLowerCase();
@@ -26,12 +25,14 @@ function mapCountPayload(payload) {
   Object.entries(payload).forEach(([entityId, value]) => {
     const key = likeKey(entityId);
     if (typeof value === 'number') {
-      next[key] = { liked: false, count: value };
+      // Counts-only: liked unknown — caller must preserve prev.liked when merging.
+      next[key] = { liked: false, count: value, countsOnly: true };
       return;
     }
     next[key] = {
       liked: Boolean(value?.liked),
       count: value?.count ?? value?.total_likes ?? 0,
+      countsOnly: false,
     };
   });
   return next;
@@ -50,18 +51,70 @@ function seedLikeMapFromItems(items) {
 }
 
 /**
+ * Merge server fetch into local map without wiping an in-flight / newer optimistic like.
+ * Counts-only rows keep previous `liked` when we already know the user liked it.
+ */
+function mergeFetchedLikeMap(prev, seededMap, fetched) {
+  const base = { ...seededMap };
+  const keys = new Set([...Object.keys(base), ...Object.keys(fetched), ...Object.keys(prev)]);
+  const next = {};
+  keys.forEach((key) => {
+    const prevRow = prev[key];
+    const fetchedRow = fetched[key];
+    const seededRow = seededMap[key];
+
+    if (!fetchedRow) {
+      if (prevRow) next[key] = prevRow;
+      else if (seededRow) next[key] = seededRow;
+      return;
+    }
+
+    if (fetchedRow.countsOnly) {
+      const liked = Boolean(prevRow?.liked);
+      const count = Math.max(
+        Number(fetchedRow.count ?? 0),
+        liked ? Number(prevRow?.count ?? 0) : 0,
+        Number(seededRow?.count ?? 0),
+      );
+      next[key] = { liked, count };
+      return;
+    }
+
+    // Full status from server — trust it, but don't drop a higher optimistic count mid-race.
+    const liked = Boolean(fetchedRow.liked);
+    const count = Math.max(
+      Number(fetchedRow.count ?? 0),
+      liked && prevRow?.liked ? Number(prevRow?.count ?? 0) : 0,
+    );
+    next[key] = { liked, count };
+  });
+  return next;
+}
+
+function redirectToLogin(navigate) {
+  if (typeof window === 'undefined') return;
+  const returnPath = `${window.location.pathname}${window.location.search}`;
+  localStorage.setItem('redirectAfterLogin', returnPath);
+  navigate('/login', { state: { from: returnPath } });
+}
+
+/**
  * Manages like state for a list of items.
  * type: 'VENTURE' | 'DOMAIN' | 'SOFTWARE' | 'COMMUNITY' | 'VIRTUAL_ASSISTANT'
  * items: array with .id fields
  *
  * VIRTUAL_ASSISTANT is intentionally separate from COMMUNITY so Creator
  * and Virtual Assistant likes never share counts.
+ *
+ * Toggle requires a real access token (user || hasAccessToken), not csrf alone —
+ * otherwise optimism flashes then rolls back on 401.
  */
 export function useLikes(type, items) {
   const navigate = useNavigate();
   const { user, hasAccessToken, loading: authLoading } = useAuth();
-  const authenticated = Boolean(user || hasAccessToken || hasAuthSession());
-  const canFetchLikeStatus = Boolean(user || hasAccessToken);
+  // Real auth for mutating likes (Bearer / loaded user). Cookie-only is not enough.
+  const canToggleLike = Boolean(user || hasAccessToken);
+  const canFetchLikeStatus = canToggleLike;
   const list = asArray(items);
   const entityIdsKey = useMemo(
     () => list.map((i) => i.id).filter(Boolean).join(','),
@@ -70,6 +123,7 @@ export function useLikes(type, items) {
   const seededMap = useMemo(() => seedLikeMapFromItems(list), [entityIdsKey]);
   const [likeMap, setLikeMap] = useState(seededMap);
   const [loading, setLoading] = useState(false);
+  const pendingToggleKeysRef = useRef(new Set());
 
   useEffect(() => {
     setLikeMap((prev) => ({ ...seededMap, ...prev }));
@@ -87,18 +141,37 @@ export function useLikes(type, items) {
     try {
       const safeIds = ids.map((id) => String(id));
       let response;
+      let usedCountsOnly = false;
       if (canFetchLikeStatus) {
         try {
           response = await likeAPI.bulkStatus(type, safeIds);
         } catch (error) {
           if (!isAuthError(error)) throw error;
           response = await likeAPI.bulkCounts(type, safeIds);
+          usedCountsOnly = true;
         }
       } else {
         response = await likeAPI.bulkCounts(type, safeIds);
+        usedCountsOnly = true;
       }
       const fetched = mapCountPayload(unwrapApiData(response));
-      setLikeMap({ ...seededMap, ...fetched });
+      if (usedCountsOnly) {
+        Object.keys(fetched).forEach((key) => {
+          if (fetched[key]) fetched[key].countsOnly = true;
+        });
+      }
+      setLikeMap((prev) => {
+        // Don't clobber keys that still have an in-flight optimistic toggle.
+        const pending = pendingToggleKeysRef.current;
+        if (pending.size === 0) {
+          return mergeFetchedLikeMap(prev, seededMap, fetched);
+        }
+        const safeFetched = { ...fetched };
+        pending.forEach((key) => {
+          delete safeFetched[key];
+        });
+        return mergeFetchedLikeMap(prev, seededMap, safeFetched);
+      });
     } catch {
       setLikeMap((prev) => ({ ...seededMap, ...prev }));
     } finally {
@@ -142,12 +215,9 @@ export function useLikes(type, items) {
   const toggle = useCallback(
     async (entityId) => {
       const key = likeKey(entityId);
-      if (!authenticated) {
-        if (typeof window !== 'undefined') {
-          const returnPath = `${window.location.pathname}${window.location.search}`;
-          localStorage.setItem('redirectAfterLogin', returnPath);
-          navigate('/login', { state: { from: returnPath } });
-        }
+      // Require real access token — csrf-only session causes flash then 401 rollback.
+      if (!canToggleLike) {
+        redirectToLogin(navigate);
         return null;
       }
 
@@ -158,6 +228,7 @@ export function useLikes(type, items) {
         previous.count + (optimisticLiked ? 1 : -1),
       );
 
+      pendingToggleKeysRef.current.add(key);
       setLikeMap((prev) => ({
         ...prev,
         [key]: { liked: optimisticLiked, count: optimisticCount },
@@ -190,12 +261,17 @@ export function useLikes(type, items) {
           );
         }
         return payload;
-      } catch {
+      } catch (error) {
         setLikeMap((prev) => ({ ...prev, [key]: previous }));
+        if (isAuthError(error)) {
+          redirectToLogin(navigate);
+        }
         return null;
+      } finally {
+        pendingToggleKeysRef.current.delete(key);
       }
     },
-    [type, likeMap, authenticated, navigate],
+    [type, likeMap, canToggleLike, navigate],
   );
 
   const get = useCallback(

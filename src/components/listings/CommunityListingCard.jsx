@@ -102,7 +102,8 @@ export default function CommunityListingCard({
   const workTypeLabel = formatLabel(profile.workType || profile.work_type || 'Full-time');
   const description = profile.about || profile.description || profile.about_me || 'Building scalable tech products and solving real world problems.';
   const isVa = isVirtualAssistantProfile(profile);
-  const vaLikeCount = Number(profile.likeCount ?? profile.like_count ?? likeState?.count ?? 0);
+  // Prefer live likeState from useLikes — profile.likeCount is a stale seed.
+  const vaLikeCount = Number(likeState?.count ?? profile.likeCount ?? profile.like_count ?? 0);
 
   const stop = (e) => {
     e.stopPropagation();

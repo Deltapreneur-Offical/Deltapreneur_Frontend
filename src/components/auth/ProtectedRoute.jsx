@@ -4,6 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { virtualAssistantAPI } from '../../api/services';
 import { unwrapApiData } from '../../utils/apiResponse';
+import { getVaApplicationUnlockId, hasSeenVaUnlock } from '../../hooks/useVaUnlockSeen';
 import PageLoader from '../common/PageLoader';
 
 function AuthLoadingScreen() {
@@ -202,6 +203,7 @@ export function VirtualAssistantGuard({ children }) {
   const [checking, setChecking] = useState(true);
   const [hasApplication, setHasApplication] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+  const [applicationId, setApplicationId] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -209,12 +211,14 @@ export function VirtualAssistantGuard({ children }) {
       setChecking(false);
       setHasApplication(false);
       setUnlocked(false);
+      setApplicationId(null);
       return;
     }
     if (user?.role === 'COBROTHER') {
       setChecking(false);
       setHasApplication(false);
       setUnlocked(false);
+      setApplicationId(null);
       return;
     }
     virtualAssistantAPI
@@ -226,9 +230,11 @@ export function VirtualAssistantGuard({ children }) {
           setHasApplication(true);
           const locked = data.workspaceLocked !== false;
           setUnlocked(!locked);
+          setApplicationId(getVaApplicationUnlockId(data));
         } else {
           setHasApplication(false);
           setUnlocked(false);
+          setApplicationId(null);
         }
       })
       .catch((err) => {
@@ -237,10 +243,12 @@ export function VirtualAssistantGuard({ children }) {
           if (status === 404) {
             setHasApplication(false);
             setUnlocked(false);
+            setApplicationId(null);
           } else {
             // Fail closed: do not unlock workspace on transient API errors.
             setHasApplication(false);
             setUnlocked(false);
+            setApplicationId(null);
           }
           setChecking(false);
         }
@@ -267,6 +275,14 @@ export function VirtualAssistantGuard({ children }) {
   }
   if (!unlocked) {
     return <Navigate to="/virtual-assistant/journey" replace />;
+  }
+  // First unlocked visit to workspace → cinematic unlock (eligibility unchanged).
+  if (
+    location.pathname === '/virtual-assistant/workspace' &&
+    applicationId &&
+    !hasSeenVaUnlock(applicationId)
+  ) {
+    return <Navigate to="/virtual-assistant/unlock" replace state={{ from: 'workspace' }} />;
   }
   return <GuardedContent loading={false}>{children}</GuardedContent>;
 }

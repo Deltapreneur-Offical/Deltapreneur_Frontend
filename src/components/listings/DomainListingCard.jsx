@@ -362,8 +362,8 @@ export default function DomainListingCard({
           productType="DOMAIN_LISTING"
           productId={domain.id}
           size="md"
-          tone="dark"
-          className={`${PRIMARY_BTN} !w-full !rounded-full !border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700 hover:!border-blue-700`}
+          tone="blue"
+          className={`${PRIMARY_BTN} !w-full !rounded-full`}
           label={t('listingCardAddToCart', 'Add to Cart')}
         />
       );

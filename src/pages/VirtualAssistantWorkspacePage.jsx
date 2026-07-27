@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   LayoutDashboard,
   User,
@@ -24,8 +26,10 @@ import {
 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
+import VaWorkspaceAmbientConfetti from '../components/virtual-assistant/VaWorkspaceAmbientConfetti';
 import { virtualAssistantAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
+import { HOME_EASE } from '../components/home/motion/homeMotion';
 
 const ROLE_STATUS_DOT = { pending: '🟡', approved: '🟢', rejected: '🔴' };
 const STATUS_BADGE = {
@@ -99,6 +103,10 @@ function Spinner() {
 
 function VirtualAssistantWorkspacePage() {
   const { t } = useTranslation();
+  const location = useLocation();
+  const reduceMotion = useReducedMotion();
+  const [fromUnlock] = useState(() => Boolean(location.state?.fromUnlock));
+  const [showAmbientConfetti] = useState(() => Boolean(location.state?.fromUnlock));
   const [activeTab, setActiveTab] = useState('overview');
   const [profile, setProfile] = useState(null);
   const [roles, setRoles] = useState([]);
@@ -268,7 +276,15 @@ function VirtualAssistantWorkspacePage() {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      {showAmbientConfetti && !reduceMotion ? (
+        <VaWorkspaceAmbientConfetti active durationMs={90_000} />
+      ) : null}
+      <motion.div
+        className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8"
+        initial={fromUnlock && !reduceMotion ? { opacity: 0, y: 16 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: HOME_EASE }}
+      >
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -602,7 +618,7 @@ function VirtualAssistantWorkspacePage() {
             </div>
           </SectionCard>
         )}
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

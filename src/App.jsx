@@ -69,6 +69,7 @@ const VirtualAssistantSuccessPage = lazy(() => import('./pages/VirtualAssistantS
 const VirtualAssistantMarketplacePage = lazy(() => import('./pages/VirtualAssistantMarketplacePage'));
 const VirtualAssistantPublicProfilePage = lazy(() => import('./pages/VirtualAssistantPublicProfilePage'));
 const VirtualAssistantJourneyPage = lazy(() => import('./pages/VirtualAssistantJourneyPage'));
+const VirtualAssistantUnlockPage = lazy(() => import('./pages/VirtualAssistantUnlockPage'));
 const VirtualAssistantWorkspacePage = lazy(() => import('./pages/VirtualAssistantWorkspacePage'));
 const loadVenturesPage = () => import('./pages/VenturesPage');
 const VenturesPage = lazy(loadVenturesPage);
@@ -609,6 +610,16 @@ export default function App() {
                     <VirtualAssistantApplicantGuard>
                       <VirtualAssistantJourneyPage />
                     </VirtualAssistantApplicantGuard>
+                  }
+                />
+
+                {/* Virtual Assistant — one-time unlock cinematic */}
+                <Route
+                  path="/virtual-assistant/unlock"
+                  element={
+                    <VirtualAssistantGuard>
+                      <VirtualAssistantUnlockPage />
+                    </VirtualAssistantGuard>
                   }
                 />
 

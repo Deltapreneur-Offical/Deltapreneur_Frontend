@@ -150,10 +150,10 @@ export default function DomainCard({
           {cartProps ? (
             <AddToCartButton
               {...cartProps}
-              allowRemove
               tone="dark"
               size="sm"
-              className="!w-[30%] !min-w-[7.5rem] !max-w-[9.5rem] !justify-center !rounded-lg !px-3 !py-2.5 !text-sm !font-bold"
+              wrapperClassName="!w-[30%] !min-w-[7.5rem] !max-w-[9.5rem]"
+              className="!w-full !justify-center !rounded-lg !px-3 !py-2.5 !text-sm !font-bold"
             />
           ) : (
             <button
@@ -220,10 +220,10 @@ export default function DomainCard({
         {cartProps ? (
           <AddToCartButton
             {...cartProps}
-            allowRemove
             tone="dark"
             size="sm"
-            className="!w-[30%] !min-w-[7rem] !max-w-[9rem] !justify-center !rounded-lg !px-3 !py-2.5 !text-xs !font-bold"
+            wrapperClassName="!w-[30%] !min-w-[7rem] !max-w-[9rem]"
+            className="!w-full !justify-center !rounded-lg !px-3 !py-2.5 !text-xs !font-bold"
           />
         ) : (
           <button

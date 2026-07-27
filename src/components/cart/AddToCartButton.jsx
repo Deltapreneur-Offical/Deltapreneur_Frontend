@@ -27,14 +27,15 @@ export default function AddToCartButton({
   coBrotherOptIn = false,
   metadata,
   className = '',
+  wrapperClassName = '',
   size = 'sm',
   label,
   variant = 'button',
   disabled = false,
   updateWhenInCart = false,
-  /** When true, an in-cart click removes the item instead of navigating to /cart. */
+  /** When true on corner variant, an in-cart click removes the item. Ignored for button (uses side remove). */
   allowRemove = false,
-  /** Dark primary button (domain cards). */
+  /** Primary tone: default | dark | blue */
   tone = 'default',
   onAdded,
   onRemoved,
@@ -43,6 +44,7 @@ export default function AddToCartButton({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const [flyRect, setFlyRect] = useState(null);
   const [conflictOpen, setConflictOpen] = useState(false);
@@ -52,18 +54,44 @@ export default function AddToCartButton({
 
   const inCart = isInCart(productType, productId);
   const showAdded = inCart || justAdded;
-  const isDisabled = disabled || loading;
+  const isDisabled = disabled || loading || removing;
+  /** Corner-only: whole control becomes remove. Button variant uses a side remove icon instead. */
+  const cornerRemove = variant === 'corner' && inCart && allowRemove;
+  const showSideRemove = variant === 'button' && showAdded && !updateWhenInCart && inCart;
+
+  const ensureAuth = () => {
+    if (!user) {
+      const returnUrl = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(returnUrl)}`);
+      return false;
+    }
+    return true;
+  };
+
+  const handleRemove = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!ensureAuth()) return;
+    if (isDisabled) return;
+    const existing = getCartItem(productType, productId);
+    if (!existing?.id) return;
+    setRemoving(true);
+    try {
+      await removeItem(existing.id);
+      setJustAdded(false);
+      onRemoved?.();
+    } catch (err) {
+      console.error('[AddToCart] remove failed', err?.response?.data?.detail || err?.message);
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   const handleClick = async (e) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (!user) {
-      const returnUrl = window.location.pathname + window.location.search;
-      navigate(`/login?redirect=${encodeURIComponent(returnUrl)}`);
-      return;
-    }
-
+    if (!ensureAuth()) return;
     if (isDisabled) return;
 
     const payload = {
@@ -73,19 +101,9 @@ export default function AddToCartButton({
       metadata,
     };
 
-    if (inCart && allowRemove) {
-      const existing = getCartItem(productType, productId);
-      if (!existing?.id) return;
-      setLoading(true);
-      try {
-        await removeItem(existing.id);
-        setJustAdded(false);
-        onRemoved?.();
-      } catch (err) {
-        console.error('[AddToCart] remove failed', err?.response?.data?.detail || err?.message);
-      } finally {
-        setLoading(false);
-      }
+    // Corner variant only: clicking the control removes when allowRemove.
+    if (cornerRemove) {
+      await handleRemove(e);
       return;
     }
 
@@ -162,8 +180,12 @@ export default function AddToCartButton({
     ? 'px-3 py-1.5 text-xs gap-1.5'
     : 'px-4 py-2.5 text-sm gap-2';
 
+  const removeBtnSize = size === 'sm'
+    ? 'h-[1.875rem] w-[1.875rem]'
+    : 'h-[2.625rem] w-[2.625rem]';
+
   const buttonLabel = label
-    || (inCart && allowRemove
+    || (cornerRemove
       ? 'Remove'
       : inCart && updateWhenInCart
         ? 'Update Cart'
@@ -192,7 +214,7 @@ export default function AddToCartButton({
   if (variant === 'corner') {
     const title = disabled
       ? (label || 'Unavailable')
-      : inCart && allowRemove
+      : cornerRemove
         ? 'Remove from cart'
         : showAdded
           ? 'In cart — view cart'
@@ -208,7 +230,7 @@ export default function AddToCartButton({
           aria-label={title}
           aria-pressed={showAdded}
           className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-all duration-200
-            ${inCart && allowRemove
+            ${cornerRemove
               ? 'border-rose-200 bg-white text-rose-500 hover:border-rose-400 hover:bg-rose-50 hover:text-rose-600'
               : showAdded
                 ? 'scale-105 border-emerald-500 bg-emerald-500 text-white shadow-md ring-2 ring-emerald-200 hover:bg-emerald-600'
@@ -217,9 +239,9 @@ export default function AddToCartButton({
             ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
             ${className}`}
         >
-          {loading ? (
+          {loading || removing ? (
             <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          ) : inCart && allowRemove ? (
+          ) : cornerRemove ? (
             <Trash2 size={14} strokeWidth={2.25} />
           ) : showAdded ? (
             <Check size={15} strokeWidth={3} />
@@ -258,38 +280,67 @@ export default function AddToCartButton({
     );
   }
 
-  const removeStyle = inCart && allowRemove;
-  const darkAdd = tone === 'dark' && !showAdded && !removeStyle;
+  const darkAdd = tone === 'dark' && !showAdded;
+  const blueAdd = tone === 'blue' && !showAdded;
+  const isFullWidth = /\bw-full\b/.test(className) || /!w-full/.test(className);
+  const isPill = /rounded-full/.test(className);
+  const removeRadius = isPill ? 'rounded-full' : 'rounded-lg';
+
+  const primaryToneClasses = darkAdd
+    ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800'
+    : blueAdd
+      ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:border-blue-700'
+      : showAdded && !updateWhenInCart
+        ? 'border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600'
+        : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-700';
+
   return (
     <>
-      <button
-        ref={btnRef}
-        type="button"
-        onClick={handleClick}
-        disabled={isDisabled}
-        className={`inline-flex items-center justify-center rounded-lg border font-medium transition-all duration-200
-          ${removeStyle
-            ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:border-rose-300'
-            : darkAdd
-              ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800'
-              : showAdded && !updateWhenInCart
-                ? 'border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-700'
-          }
-          ${sizeClasses} ${className}
-          disabled:cursor-not-allowed disabled:opacity-50`}
+      <div
+        className={`inline-flex items-stretch gap-1.5 ${isFullWidth ? 'w-full' : ''} ${wrapperClassName}`.trim()}
       >
-        {loading ? (
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : removeStyle ? (
-          <Trash2 size={14} />
-        ) : showAdded && !updateWhenInCart ? (
-          <Check size={14} />
-        ) : (
-          <ShoppingCart size={14} />
+        <button
+          ref={btnRef}
+          type="button"
+          onClick={handleClick}
+          disabled={isDisabled}
+          className={`inline-flex flex-1 min-w-0 items-center justify-center rounded-lg border font-medium transition-all duration-200
+            ${primaryToneClasses}
+            ${sizeClasses} ${className}
+            disabled:cursor-not-allowed disabled:opacity-50`}
+        >
+          {loading ? (
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : showAdded && !updateWhenInCart ? (
+            <Check size={14} />
+          ) : (
+            <ShoppingCart size={14} />
+          )}
+          {buttonLabel}
+        </button>
+
+        {showSideRemove && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            disabled={isDisabled}
+            title="Remove from cart"
+            aria-label="Remove from cart"
+            className={`inline-flex shrink-0 items-center justify-center ${removeRadius} border border-rose-200 bg-white text-rose-500
+              shadow-sm transition-all duration-200
+              hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 hover:shadow-md
+              active:scale-95
+              disabled:cursor-not-allowed disabled:opacity-50
+              ${removeBtnSize}`}
+          >
+            {removing ? (
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <Trash2 size={size === 'sm' ? 13 : 15} strokeWidth={2.25} />
+            )}
+          </button>
         )}
-        {buttonLabel}
-      </button>
+      </div>
       {flyRect && <CartFlyAnimation fromRect={flyRect} onComplete={handleAnimComplete} />}
       {conflictModal}
     </>

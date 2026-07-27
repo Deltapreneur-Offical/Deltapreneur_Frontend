@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -17,6 +17,10 @@ import AppLayout from '../components/layout/AppLayout';
 import { virtualAssistantAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 import { useAuth } from '../context/AuthContext';
+import {
+  getVaApplicationUnlockId,
+  hasSeenVaUnlock,
+} from '../hooks/useVaUnlockSeen';
 import '../styles/virtual-assistant-journey.css';
 
 const ROLE_STATUS_DOT = {
@@ -178,6 +182,7 @@ function VirtualAssistantJourneyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notFound, setNotFound] = useState(false);
+  const prevUnlockedRef = useRef(null);
 
   const submittedAt = application?.createdAt;
   const workspaceLocked = application?.workspaceLocked !== false;
@@ -185,6 +190,25 @@ function VirtualAssistantJourneyPage() {
   const pendingCount = roleSummaries.filter((r) => r.status === 'pending').length;
   const rejectedCount = roleSummaries.filter((r) => r.status === 'rejected').length;
   const workspaceUnlocked = !workspaceLocked || approvedCount > 0;
+  const applicationId = getVaApplicationUnlockId(application);
+
+  const openWorkspace = useCallback(() => {
+    if (applicationId && !hasSeenVaUnlock(applicationId)) {
+      navigate('/virtual-assistant/unlock', { state: { from: 'journey' } });
+      return;
+    }
+    navigate('/virtual-assistant/workspace');
+  }, [applicationId, navigate]);
+
+  // Auto-start cinematic when unlock flips locked → unlocked (once, if unseen).
+  useEffect(() => {
+    if (!application || !applicationId) return;
+    const wasLocked = prevUnlockedRef.current === false;
+    if (workspaceUnlocked && wasLocked && !hasSeenVaUnlock(applicationId)) {
+      navigate('/virtual-assistant/unlock', { replace: true, state: { from: 'journey' } });
+    }
+    prevUnlockedRef.current = workspaceUnlocked;
+  }, [application, applicationId, workspaceUnlocked, navigate]);
 
   const fetchJourney = useCallback(async () => {
     if (!user) return;
@@ -325,7 +349,7 @@ function VirtualAssistantJourneyPage() {
                 workspaceUnlocked ? (
                   <span className="va-journey-timeline__success-text">
                     <CheckCircle2 size={14} strokeWidth={2.5} aria-hidden />
-                    {t('vaJourneyUnlockedDesc', { defaultValue: "Congratulations! At least one of your Virtual Assistant roles has been approved. Your VA Workspace is now available." })}
+                    {t('vaJourneyUnlockedDesc', { defaultValue: "Congratulations! At least one of your Virtual Assistant roles has been approved. Open your workspace to begin." })}
                   </span>
                 ) : (
                   t('vaJourneyLockedDesc', { defaultValue: 'Your Virtual Assistant Workspace will be unlocked once at least one selected role is approved.' })
@@ -335,7 +359,7 @@ function VirtualAssistantJourneyPage() {
               {workspaceUnlocked && (
                 <button
                   type="button"
-                  onClick={() => navigate('/virtual-assistant/workspace')}
+                  onClick={openWorkspace}
                   className="va-journey-timeline__action"
                 >
                   {t('vaJourneyOpenWorkspace', { defaultValue: 'Open VA Workspace' })}

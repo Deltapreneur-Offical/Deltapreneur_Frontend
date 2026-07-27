@@ -254,9 +254,15 @@ export default function VirtualAssistantPreviewPanel({
 
   return (
     <div className={rootClassName}>
-      <div className="relative h-36 md:h-44 shrink-0 overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_55%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+      <div
+        className="relative h-36 md:h-44 shrink-0 overflow-hidden"
+        style={{
+          background: 'linear-gradient(to right, #60A5FA 0%, #93C5FD 42%, #BFDBFE 100%)',
+        }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_0%,rgba(255,255,255,0.55),transparent_52%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_10%_80%,rgba(96,165,250,0.35),transparent_48%)] backdrop-blur-[2px]" />
+        <div className="absolute inset-x-0 bottom-0 h-20 md:h-24 bg-gradient-to-t from-white via-white/85 to-transparent" />
       </div>
 
       <div className="relative px-6 md:px-8 pb-2 -mt-16 shrink-0">

@@ -59,8 +59,17 @@ export function useOpenListingDetailFromUrl({
       denyDetailAccess();
       return;
     }
+    // Card click: put ?id= in the URL so the deep-link effect opens the modal (and Back can close it).
+    const currentId = routeId || searchParams.get('id') || searchParams.get('highlight');
+    if (!routeId && entity.id != null && String(currentId) !== String(entity.id)) {
+      const next = new URLSearchParams(searchParams);
+      next.set('id', String(entity.id));
+      next.delete('highlight');
+      setSearchParams(next);
+      return;
+    }
     setDetail(entity);
-  }, [listingType, user, setDetail, denyDetailAccess]);
+  }, [listingType, user, setDetail, denyDetailAccess, routeId, searchParams, setSearchParams]);
 
   const closeListingDetail = useCallback(() => {
     setDetail(null);

@@ -1332,11 +1332,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             || premiumNewResults.length > 0
             || (tldLoading && completedNewResults.length > 0)
           ) && (
-            availableNewResults.length > 0
-            || registryPremiumLoading
-            || premiumNewResults.length > 0
-            || (tldLoading && completedNewResults.length > 0)
-          ) && (
             <div className="mb-6 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">

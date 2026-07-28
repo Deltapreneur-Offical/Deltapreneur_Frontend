@@ -191,16 +191,6 @@ export default function DomainStorefrontPage() {
         });
       }
     }
-  const premiumTldItems = useMemo(() => {
-    const byDomain = new Map();
-    const add = (it) => {
-      const domain = String(it?.domain || '').toLowerCase();
-      if (!domain || !isRegistryPremium(it)) return;
-      if (!byDomain.has(domain)) byDomain.set(domain, it);
-    };
-    tldItems.forEach(add);
-    (premiumMarketplaceItems || []).forEach(add);
-    if (checkResult && isRegistryPremium(checkResult)) add(checkResult);
     return Array.from(byDomain.values()).sort((a, b) => {
       const aDomain = String(a.domain || '').toLowerCase();
       const bDomain = String(b.domain || '').toLowerCase();

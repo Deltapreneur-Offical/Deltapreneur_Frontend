@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
@@ -101,6 +101,7 @@ export default function HomepageFeatureSelector({ type }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [pendingIds, setPendingIds] = useState(() => new Set());
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -143,6 +144,10 @@ export default function HomepageFeatureSelector({ type }) {
   useEffect(() => {
     setPage(1);
   }, [search, statusFilter, verificationFilter, sortBy, pageSize, type]);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, search, statusFilter, verificationFilter, sortBy, pageSize, type]);
 
   const featureableItems = useMemo(() => {
     if (type === 'auction') return items;
@@ -212,6 +217,23 @@ export default function HomepageFeatureSelector({ type }) {
     return filteredSorted.slice(start, start + pageSize);
   }, [filteredSorted, safePage, pageSize]);
 
+  const selectedOnPage = useMemo(
+    () => paginated.filter((item) => selectedIds.has(String(item.id))),
+    [paginated, selectedIds],
+  );
+  const allVisibleSelected = paginated.length > 0 && paginated.every((item) => selectedIds.has(String(item.id)));
+  const someVisibleSelected = paginated.some((item) => selectedIds.has(String(item.id))) && !allVisibleSelected;
+  const selectAllRef = useRef(null);
+  const [bulkPending, setBulkPending] = useState(false);
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someVisibleSelected;
+    }
+  }, [someVisibleSelected, paginated]);
+
+  const selectedPending = selectedOnPage.some((item) => pendingIds.has(String(item.id)));
+
   const rangeStart = filteredSorted.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
   const rangeEnd = Math.min(safePage * pageSize, filteredSorted.length);
 
@@ -261,6 +283,53 @@ export default function HomepageFeatureSelector({ type }) {
         next.delete(String(id));
         return next;
       });
+    }
+  };
+
+  const handleSelectAllVisible = () => {
+    if (paginated.length === 0 || bulkPending) return;
+    if (allVisibleSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        paginated.forEach((item) => next.delete(String(item.id)));
+        return next;
+      });
+      return;
+    }
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      paginated.forEach((item) => next.add(String(item.id)));
+      return next;
+    });
+  };
+
+  const toggleRowSelection = (id) => {
+    if (bulkPending) return;
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const key = String(id);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkFeatureSelected = async (shouldFeature) => {
+    if (bulkPending || selectedPending || selectedOnPage.length === 0) return;
+    const toToggle = selectedOnPage.filter((item) => Boolean(item.featured) !== shouldFeature);
+    if (toToggle.length === 0) return;
+
+    setBulkPending(true);
+    try {
+      await Promise.all(
+        toToggle.map((item) => handleToggle(item.id, Boolean(item.featured))),
+      );
+    } finally {
+      setBulkPending(false);
     }
   };
 
@@ -367,15 +436,78 @@ export default function HomepageFeatureSelector({ type }) {
         <p className="admin-feature-empty">{t('homepageFeatureEmptyMatches')}</p>
       ) : (
         <>
+          <div className="admin-feature-list-controls">
+            <div className="admin-feature-select-all">
+              <label>
+                <input
+                  ref={selectAllRef}
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={handleSelectAllVisible}
+                  disabled={bulkPending}
+                  aria-label={t('homepageFeatureSelectAll', { defaultValue: 'Select all on this page' })}
+                />
+                {t('homepageFeatureSelectAll', { defaultValue: 'Select All' })}
+              </label>
+            </div>
+            {selectedOnPage.length > 0 && (
+              <div className="admin-feature-bulk-bar">
+                <p className="admin-feature-bulk-count">
+                  {t('homepageFeatureSelectedCount', {
+                    count: selectedOnPage.length,
+                    defaultValue: 'Selected: {{count}} items',
+                  })}
+                </p>
+                <div className="admin-feature-bulk-actions">
+                  <button
+                    type="button"
+                    className="admin-feature-bulk-btn"
+                    disabled={bulkPending || selectedPending}
+                    onClick={() => handleBulkFeatureSelected(true)}
+                  >
+                    {t('homepageFeatureBulkFeature', { defaultValue: 'Feature Selected' })}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-feature-bulk-btn"
+                    disabled={bulkPending || selectedPending}
+                    onClick={() => handleBulkFeatureSelected(false)}
+                  >
+                    {t('homepageFeatureBulkUnfeature', { defaultValue: 'Unfeature Selected' })}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-feature-bulk-btn"
+                    disabled={bulkPending}
+                    onClick={handleClearSelection}
+                  >
+                    {t('homepageFeatureClearSelection', { defaultValue: 'Clear Selection' })}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <ul className="admin-feature-list" aria-live="polite">
             {paginated.map((item) => {
               const featured = Boolean(item.featured);
               const pending = pendingIds.has(String(item.id));
+              const checked = selectedIds.has(String(item.id));
               return (
                 <li
                   key={item.id}
                   className={`admin-feature-row ${featured ? 'is-featured' : ''} ${pending ? 'is-busy' : ''}`}
                 >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleRowSelection(item.id)}
+                    disabled={bulkPending}
+                    aria-label={t('homepageFeatureSelectRow', {
+                      title: getTitle(item, type),
+                      defaultValue: 'Select {{title}}',
+                    })}
+                    style={{ flexShrink: 0 }}
+                  />
                   <div className="admin-feature-row-body">
                     <p className="admin-feature-item-title">{getTitle(item, type)}</p>
                     <p className="admin-feature-item-meta">

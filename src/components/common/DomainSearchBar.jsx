@@ -1319,18 +1319,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           )}
 
           {/* Domain Names — Standard / Premium (same as Storefront) */}
-          {hasSearchQuery && searchMode === 'new' && loading && completedNewResults.length === 0 && (
-            <div className="flex items-center gap-2.5 text-xs rounded-xl border p-4 text-gray-500 bg-gray-50 border-gray-150">
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
-              Loading standard domains…
-            </div>
-          )}
-
           {hasSearchQuery && searchMode === 'new' && (
             availableNewResults.length > 0
             || registryPremiumLoading
             || premiumNewResults.length > 0
-            || (tldLoading && completedNewResults.length > 0)
+            || tldLoading
           ) && (
             <div className="mb-6 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1397,6 +1390,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                       <DomainExtensionsLoader />
                     ) : null}
                   </>
+                ) : registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading ? (
+                  <DomainExtensionsLoader skeletonCount={tldSkeletonCount} />
                 ) : (
                   <div
                     className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
@@ -1409,9 +1404,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                       ? (registryPremiumLoading
                         ? 'Searching premium marketplace…'
                         : '✨ No premium domains found. Try another keyword.')
-                      : tldLoading
-                        ? 'Loading standard domains…'
-                        : 'No standard domains in these results. Try Premium Domains.'}
+                      : 'No standard domains in these results. Try Premium Domains.'}
                   </div>
                 )}
               </div>

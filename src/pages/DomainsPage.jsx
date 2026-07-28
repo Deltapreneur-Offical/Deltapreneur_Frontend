@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, LayoutDashboard, Plus, Gavel } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
@@ -12,6 +12,7 @@ import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle
 import ListingCardShell from '../components/listings/ListingCardShell';
 import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
+import { fetchSupportedTlds, getCachedSupportedTlds } from '../utils/domainSearch';
 import { domainAPI, auctionAPI } from '../api/services';
 import AddToCartButton from '../components/cart/AddToCartButton';
 import { useAuth } from '../context/AuthContext';
@@ -100,7 +101,7 @@ function buildDomainFormState(domain, navCurrency, ratesMeta) {
   return {
     domainName: ['—', 'Unnamed', 'domain'].includes(display.name) ? '' : display.name,
     logoText: domain?.logo_text ?? domain?.logoText ?? '',
-    domainExtension: display.ext?.full ?? (domain ? '' : '.com'),
+    domainExtension: display.ext?.full ?? '',
     askingPrice: domain?.askingPrice != null ? formatPriceInputAmount(displayAskingPrice, listingCurrency) : '',
     pricingDemand: domain?.pricingDemand ?? '',
     currency: listingCurrency,
@@ -625,6 +626,108 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
 }
 
 // ─── Domain Form ──────────────────────────────────────────────────────────────
+const BASE_DOMAIN_EXTENSIONS = ['.com', '.io', '.net', '.org', '.co', '.ai'];
+
+function MoreExtensionsButton({ baseExtensions, selectedExt, onSelect, allTlds, loading, loadError, onRetry }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const containerRef = useRef(null);
+  const isMoreSelected = selectedExt?.full && !baseExtensions.includes(selectedExt.full);
+
+  useEffect(() => {
+    const onOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onOutsideClick);
+    return () => document.removeEventListener('mousedown', onOutsideClick);
+  }, []);
+
+  const filteredTlds = useMemo(() => {
+    const q = search.trim().toLowerCase().replace(/^\./, '');
+    if (!q) return allTlds;
+    return allTlds.filter((tld) => {
+      const normalized = tld.toLowerCase().replace(/^\./, '');
+      return normalized.includes(q) || tld.toLowerCase().includes(q);
+    });
+  }, [allTlds, search]);
+
+  const handleSelect = (tld) => {
+    onSelect(tld);
+    setOpen(false);
+    setSearch('');
+  };
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors inline-flex items-center gap-1 ${isMoreSelected
+            ? 'bg-indigo-600 text-white border-indigo-600'
+            : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
+          }`}
+      >
+        More Extensions
+        <ChevronDown size={12} strokeWidth={2.25} aria-hidden />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-[2000] w-56 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+          <div className="p-2 border-b border-gray-100 bg-gray-50">
+            <input
+              type="text"
+              placeholder="Search extensions..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-md outline-none focus:border-indigo-500 transition-colors"
+              autoFocus
+              disabled={Boolean(loadError)}
+            />
+          </div>
+          <div className="max-h-48 overflow-y-auto p-1">
+            {loading ? (
+              <div className="text-center py-3 text-xs text-gray-400">Loading…</div>
+            ) : loadError ? (
+              <div className="text-center py-3 px-2 text-xs text-gray-500">
+                {loadError}
+                {onRetry && (
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="mt-2 block w-full text-indigo-600 font-semibold hover:text-indigo-800 border-none bg-transparent cursor-pointer"
+                  >
+                    Try again
+                  </button>
+                )}
+              </div>
+            ) : filteredTlds.length === 0 ? (
+              <div className="text-center py-3 text-xs text-gray-400">No results found</div>
+            ) : (
+              filteredTlds.map((tld) => {
+                const full = tld.startsWith('.') ? tld : `.${tld}`;
+                return (
+                  <button
+                    key={full}
+                    type="button"
+                    onClick={() => handleSelect(full)}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs rounded-md border-none cursor-pointer ${selectedExt?.full === full
+                        ? 'bg-indigo-50 font-semibold text-indigo-800'
+                        : 'bg-transparent text-gray-700 hover:bg-gray-50'
+                      }`}
+                  >
+                    {full.toUpperCase()}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DomainForm({ editDomain, onSaved, onCancel }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -637,6 +740,35 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
+  const [allTlds, setAllTlds] = useState(() => getCachedSupportedTlds() || []);
+  const [tldsLoading, setTldsLoading] = useState(() => !getCachedSupportedTlds()?.length);
+  const [tldsError, setTldsError] = useState('');
+
+  const loadSupportedTlds = (force = false) => {
+    if (!force && getCachedSupportedTlds()?.length) {
+      setAllTlds(getCachedSupportedTlds());
+      setTldsLoading(false);
+      setTldsError('');
+      return Promise.resolve(getCachedSupportedTlds());
+    }
+    setTldsLoading(true);
+    setTldsError('');
+    return fetchSupportedTlds({ force })
+      .then((tlds) => {
+        setAllTlds(tlds);
+      })
+      .catch(() => {
+        setAllTlds([]);
+        setTldsError('Unable to load extensions. Please try again.');
+      })
+      .finally(() => {
+        setTldsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadSupportedTlds();
+  }, []);
 
   useEffect(() => {
     setForm(buildDomainFormState(editDomain, navCurrency, ratesMeta));
@@ -818,11 +950,6 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     : null;
   const formatListingCurrency = (value) => formatCurrency(value, form.currency || DEFAULT_LISTING_CURRENCY);
   const selectedExt = normalizeDomainExtension(form.domainExtension);
-  const baseExtensions = ['.com', '.io', '.net', '.org', '.co', '.ai'];
-  const extensionOptions =
-    selectedExt?.full && !baseExtensions.includes(selectedExt.full)
-      ? [...baseExtensions, selectedExt.full]
-      : baseExtensions;
 
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-purple-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
@@ -863,7 +990,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>{t('domainsPageExtensionLabel')} <span className="text-red-500">*</span></label>
             <div className="flex flex-wrap gap-2">
-              {extensionOptions.map((ext) => (
+              {BASE_DOMAIN_EXTENSIONS.map((ext) => (
                 <button
                   key={ext}
                   type="button"
@@ -876,6 +1003,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
                   {ext.toUpperCase()}
                 </button>
               ))}
+              <MoreExtensionsButton
+                baseExtensions={BASE_DOMAIN_EXTENSIONS}
+                selectedExt={selectedExt}
+                onSelect={setExtension}
+                allTlds={allTlds}
+                loading={tldsLoading}
+                loadError={tldsError}
+                onRetry={() => loadSupportedTlds(true)}
+              />
             </div>
           </div>
         </div>

@@ -29,9 +29,13 @@ export function preferredTldRank(ext) {
 }
 
 const tldCache = new Map();
+let supportedTldsCatalogCache = null;
+let supportedTldsCatalogPromise = null;
 
 export function clearDomainSearchCache() {
   tldCache.clear();
+  supportedTldsCatalogCache = null;
+  supportedTldsCatalogPromise = null;
 }
 
 export function normalizeDomainLabel(raw) {
@@ -155,4 +159,29 @@ export async function fetchDomainTlds(label, options = {}) {
   const { items } = await fetchDomainTldsPage(safeLabel, 1, options);
   tldCache.set(cacheKey, items);
   return items;
+}
+
+/** OpenProvider-supported TLD catalog (same backend source as domain search). */
+export function getCachedSupportedTlds() {
+  return supportedTldsCatalogCache;
+}
+
+export async function fetchSupportedTlds(options = {}) {
+  const { force = false } = options;
+  if (!force && supportedTldsCatalogCache) {
+    return supportedTldsCatalogCache;
+  }
+  if (!force && supportedTldsCatalogPromise) {
+    return supportedTldsCatalogPromise;
+  }
+  supportedTldsCatalogPromise = domainAPI.listTlds()
+    .then(({ data }) => {
+      const tlds = Array.isArray(data?.tlds) ? data.tlds : [];
+      supportedTldsCatalogCache = tlds;
+      return tlds;
+    })
+    .finally(() => {
+      supportedTldsCatalogPromise = null;
+    });
+  return supportedTldsCatalogPromise;
 }

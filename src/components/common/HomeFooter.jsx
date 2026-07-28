@@ -116,7 +116,7 @@ const socialRowOne = [
 
 const socialRowTwo = [
 
-  { id: 'linkedin', href: 'https://www.linkedin.com/in/co-brother-9921b03aa', label: 'LinkedIn', Icon: LinkedinIcon },
+  { id: 'linkedin', href: 'https://www.linkedin.com/company/co-brother/', label: 'LinkedIn', Icon: LinkedinIcon },
 
   { id: 'youtube', href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
 

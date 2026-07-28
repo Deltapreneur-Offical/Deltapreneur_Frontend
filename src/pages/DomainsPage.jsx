@@ -38,6 +38,7 @@ import { useVirtualAssistantCatalog, vaLabel, vaTotal } from '../hooks/useVirtua
 import { isPremiumDomain } from '../utils/domainPricing';
 import { readApiError } from '../utils/apiError';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
+import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import FormSelect from '../components/common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
@@ -71,6 +72,26 @@ function formatPriceInputAmount(value, currencyCode) {
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
   const amount = code === DEFAULT_LISTING_CURRENCY ? roundInr(value) : roundMoney(value);
   return String(amount);
+}
+
+function convertAmountBetweenCurrencies(amount, fromCurrency, toCurrency, convertToInr, ratesMeta) {
+  if (amount == null || amount === '') return '';
+  const numericAmount = Number(amount);
+  if (!Number.isFinite(numericAmount)) return amount;
+  const source = (fromCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  const target = (toCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  if (source === target) return formatPriceInputAmount(numericAmount, target);
+
+  const inrAmount =
+    source === DEFAULT_LISTING_CURRENCY
+      ? roundInr(numericAmount)
+      : convertToInr(numericAmount, source);
+  const convertedAmount =
+    target === DEFAULT_LISTING_CURRENCY
+      ? roundInr(inrAmount)
+      : convertInrToCurrency(inrAmount, target, ratesMeta);
+
+  return formatPriceInputAmount(convertedAmount, target);
 }
 
 function computeListingCurrencyCommission(sellerAmount, commissionPercent = 15, currencyCode = DEFAULT_LISTING_CURRENCY) {
@@ -495,14 +516,24 @@ export default function DomainsPage() {
 // ─── Put for Auction Modal ─────────────────────────────────────────────────────
 function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
   const { t } = useTranslation();
-  const { currency: navCurrency, convertToInr } = useCurrency();
+  const { currency: navCurrency, convertToInr, ratesMeta } = useCurrency();
   const display = resolveDomainDisplay(domain);
+  const [currency, setCurrency] = useState(() => navCurrency || 'INR');
   const [minBidPrice, setMinBidPrice] = useState('');
   const [duration, setDuration] = useState('SEVEN_DAYS');
   const [auctionFeeInr, setAuctionFeeInr] = useState(118);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
+
+  const handleCurrencyChange = (nextCurrency) => {
+    if (!nextCurrency || nextCurrency === currency) return;
+    if (minBidPrice != null && minBidPrice !== '') {
+      const converted = convertAmountBetweenCurrencies(minBidPrice, currency, nextCurrency, convertToInr, ratesMeta);
+      setMinBidPrice(converted);
+    }
+    setCurrency(nextCurrency);
+  };
 
   useEffect(() => {
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
@@ -521,9 +552,9 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
     setSubmitting(true);
     setError('');
     try {
-      const minBidInr = navCurrency === 'INR'
+      const minBidInr = currency === 'INR'
         ? parseFloat(minBidPrice)
-        : convertToInr(parseFloat(minBidPrice), navCurrency);
+        : convertToInr(parseFloat(minBidPrice), currency);
 
       let creationFeeOrderId = null;
       if (!isAdmin) {
@@ -573,16 +604,35 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <CurrencyPriceInput
-            id="auction-min-bid"
-            label={`${t('domainsPageMinBidLabel', 'Minimum bid price')} *`}
-            value={minBidPrice}
-            onChange={setMinBidPrice}
-            required
-            placeholder={t('domainsPageMinBidPlaceholder', 'e.g. 10000')}
-            inputClassName={inputCls}
-            labelClassName={labelCls}
-          />
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>
+              {t('domainsPageCurrencyLabel', 'Currency')} <span className="text-red-500">*</span>
+            </label>
+            <SearchableCurrencySelect
+              className={inputCls}
+              wrapperClassName="w-full"
+              value={currency}
+              onChange={handleCurrencyChange}
+              showFullLabel
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} htmlFor="auction-min-bid">
+              {t('domainsPageMinBidLabel', 'Minimum bid price')} <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="auction-min-bid"
+              className={inputCls}
+              type="number"
+              min="0"
+              step="any"
+              value={minBidPrice}
+              onChange={(e) => setMinBidPrice(e.target.value)}
+              placeholder={t('domainsPageMinBidPlaceholder', 'e.g. 10000')}
+              required
+            />
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>{t('domainsPageAuctionDurationLabel', 'Auction duration')} *</label>
@@ -804,32 +854,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     setForm(f => ({ ...f, domainExtension: full }));
   };
 
-  const convertAmountBetweenCurrencies = (amount, fromCurrency, toCurrency) => {
-    if (amount == null || amount === '') return '';
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount)) return amount;
-    const source = (fromCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
-    const target = (toCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
-    if (source === target) return formatPriceInputAmount(numericAmount, target);
-
-    const inrAmount =
-      source === DEFAULT_LISTING_CURRENCY
-        ? roundInr(numericAmount)
-        : convertToInr(numericAmount, source);
-    const convertedAmount =
-      target === DEFAULT_LISTING_CURRENCY
-        ? roundInr(inrAmount)
-        : convertInrToCurrency(inrAmount, target, ratesMeta);
-
-    return formatPriceInputAmount(convertedAmount, target);
-  };
+  const convertFormAmountBetweenCurrencies = (amount, fromCurrency, toCurrency) =>
+    convertAmountBetweenCurrencies(amount, fromCurrency, toCurrency, convertToInr, ratesMeta);
 
   const changeFormCurrency = (nextCurrency) => {
     setForm((current) => ({
       ...current,
       currency: nextCurrency,
-      askingPrice: convertAmountBetweenCurrencies(current.askingPrice, current.currency, nextCurrency),
-      minBidPrice: convertAmountBetweenCurrencies(current.minBidPrice, current.currency, nextCurrency),
+      askingPrice: convertFormAmountBetweenCurrencies(current.askingPrice, current.currency, nextCurrency),
+      minBidPrice: convertFormAmountBetweenCurrencies(current.minBidPrice, current.currency, nextCurrency),
     }));
   };
 

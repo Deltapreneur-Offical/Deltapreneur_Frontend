@@ -108,8 +108,8 @@ const extractActiveList = (payload) => {
 const asItems = (data) => extractActiveList(data).map(normalizeAuction);
 // Live countdown per card
 function useCountdown(endTime) {
-  const [timeLeft, setTimeLeft] = useState('—');
-  const [isUrgent, setIsUrgent] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(() => formatCountdown(endTime).timeLeft);
+  const [isUrgent, setIsUrgent] = useState(() => formatCountdown(endTime).isUrgent);
 
   useEffect(() => {
     const tick = () => {
@@ -498,7 +498,7 @@ export default function AuctionsPage() {
 
 // ─── Domain Auction Card ────────────────────────────────────────────────────────────
 function DomainAuctionCard({ auction, onClick }) {
-  const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { timeLeft, isUrgent } = useCountdown(auction?.endTime || auction);
   const { formatPrice } = useCurrency();
   const domain                  = auction.domain || {};
   const domainTitle             = resolveAuctionDomainTitle(auction);
@@ -643,7 +643,7 @@ const bone = (style) => ({
 // ─── Software / Technology Auction Card ─────────────────────────────────────
 function SoftwareAuctionCard({ auction, onClick }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { timeLeft, isUrgent } = useCountdown(auction?.endTime || auction);
   const { formatPrice } = useCurrency();
   const software = auction.software || {};
   const isExtended = auction.status === 'EXTENDED';
@@ -756,12 +756,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
           <div className="flex items-center gap-1.5">
             <svg className={`w-4 h-4 ${isUrgent ? 'text-red-500' : 'text-purple-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <div className={`font-display font-bold text-[1.1rem] ${isUrgent ? 'text-red-500 animate-pulse' : 'text-purple-700'}`}>
-              {timeLeft.split('').map((char, i) => {
-                if (['D', 'H', 'M', 'S'].includes(char)) {
-                  return <span key={i} className="text-gray-900">{char.toUpperCase()}</span>;
-                }
-                return char;
-              })}
+              {timeLeft}
             </div>
           </div>
         </div>
@@ -780,7 +775,7 @@ function SoftwareAuctionCard({ auction, onClick }) {
 // ─── Creator Profile Auction Card ────────────────────────────────────────────
 function CommunityAuctionCard({ auction, onClick }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { timeLeft, isUrgent } = useCountdown(auction?.endTime || auction);
   const { formatPrice } = useCurrency();
   const community  = auction.community || {};
   const isExtended = auction.status === 'EXTENDED';

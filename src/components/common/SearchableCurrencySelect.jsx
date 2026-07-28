@@ -13,6 +13,7 @@ export default function SearchableCurrencySelect({
   disabled = false,
   style,
   showFlag = false,
+  showFullLabel = false,
 }) {
   const { supportedCurrencies } = useCurrency();
   const [open, setOpen] = useState(false);
@@ -47,6 +48,10 @@ export default function SearchableCurrencySelect({
     setSearch('');
   };
 
+  const displayLabel = showFullLabel && value
+    ? `${value}${CURRENCY_LABELS[value] ? ` – ${CURRENCY_LABELS[value]}` : ''}`
+    : value;
+
   return (
     <div className={`relative ${wrapperClassName}`} ref={containerRef}>
       <button
@@ -60,7 +65,7 @@ export default function SearchableCurrencySelect({
           {showFlag && (
             <img src={selectedFlag} alt="" className="w-5 h-3.5 object-cover rounded-[3px] shrink-0 border border-gray-200/60 shadow-sm mr-0.5" />
           )}
-          <span className="font-semibold tabular-nums">{value}</span>
+          <span className="font-semibold tabular-nums truncate">{displayLabel}</span>
         </span>
         <ChevronDown size={14} className={`shrink-0 ${iconClassName}`} />
       </button>

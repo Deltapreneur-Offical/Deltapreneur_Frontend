@@ -1,4 +1,4 @@
-/** Parse auction timestamps from API (ISO, with/without timezone). */
+/** Parse auction timestamps from API (ISO, SQL format, millisecond numbers, or auction objects). */
 export function parseAuctionDate(value) {
   if (!value) return null;
   if (value instanceof Date) {
@@ -12,9 +12,24 @@ export function parseAuctionDate(value) {
     const trimmed = value.trim();
     if (!trimmed) return null;
     const hasTimezone = /([zZ]|[+\-]\d{2}:\d{2})$/.test(trimmed);
-    const normalized = hasTimezone ? trimmed : `${trimmed}Z`;
+    const isoString = trimmed.replace(' ', 'T');
+    const normalized = hasTimezone ? isoString : `${isoString}Z`;
     const d = new Date(normalized);
-    return Number.isNaN(d.getTime()) ? null : d;
+    if (!Number.isNaN(d.getTime())) return d;
+    const d2 = new Date(trimmed);
+    return Number.isNaN(d2.getTime()) ? null : d2;
+  }
+  if (typeof value === 'object') {
+    const directTarget = value.endTime ?? value.end_time ?? value.originalEndTime ?? value.original_end_time;
+    if (directTarget && typeof directTarget !== 'object') {
+      const parsed = parseAuctionDate(directTarget);
+      if (parsed) return parsed;
+    }
+    const start = parseAuctionDate(value.startTime ?? value.start_time ?? value.createdAt ?? value.created_at);
+    const duration = value.duration;
+    if (start && duration) {
+      return addDurationToDate(start, duration);
+    }
   }
   return null;
 }
@@ -38,12 +53,22 @@ export function addDurationToDate(startDate, duration) {
   if (!startDate || !(startDate instanceof Date) || Number.isNaN(startDate.getTime())) {
     return null;
   }
-  const key = String(duration || '').toUpperCase();
+  if (typeof duration === 'number' && Number.isFinite(duration) && duration > 0) {
+    return new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000);
+  }
+  const key = String(duration || '').toUpperCase().trim();
   if (DURATION_HOURS[key]) {
     return new Date(startDate.getTime() + DURATION_HOURS[key] * 60 * 60 * 1000);
   }
   if (DURATION_DAYS[key]) {
     return new Date(startDate.getTime() + DURATION_DAYS[key] * 24 * 60 * 60 * 1000);
+  }
+  const numMatch = key.match(/^(\d+)/);
+  if (numMatch) {
+    const days = parseInt(numMatch[1], 10);
+    if (days > 0) {
+      return new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+    }
   }
   return null;
 }
@@ -60,18 +85,25 @@ function toISOStringSafe(date) {
 }
 
 export function resolveAuctionEndTime(auction, ventureDuration) {
-  if (!auction || typeof auction !== 'object') return null;
-  const direct = parseAuctionDate(auction.endTime ?? auction.end_time);
-  if (direct) return toISOStringSafe(direct);
-  const original = parseAuctionDate(auction.originalEndTime ?? auction.original_end_time);
-  if (original) return toISOStringSafe(original);
-  const start = parseAuctionDate(auction.startTime ?? auction.start_time);
-  const duration = auction.duration ?? ventureDuration;
-  const fromDuration = addDurationToDate(start, duration);
-  if (fromDuration) return toISOStringSafe(fromDuration);
-  const created = parseAuctionDate(auction.createdAt ?? auction.created_at);
-  const fromCreated = addDurationToDate(created, duration);
-  return fromCreated ? toISOStringSafe(fromCreated) : null;
+  if (!auction) return null;
+  if (typeof auction === 'string' || typeof auction === 'number' || auction instanceof Date) {
+    const parsed = parseAuctionDate(auction);
+    return parsed ? toISOStringSafe(parsed) : null;
+  }
+  if (typeof auction === 'object') {
+    const direct = parseAuctionDate(auction.endTime ?? auction.end_time);
+    if (direct) return toISOStringSafe(direct);
+    const original = parseAuctionDate(auction.originalEndTime ?? auction.original_end_time);
+    if (original) return toISOStringSafe(original);
+    const start = parseAuctionDate(auction.startTime ?? auction.start_time);
+    const duration = auction.duration ?? ventureDuration;
+    const fromDuration = addDurationToDate(start, duration);
+    if (fromDuration) return toISOStringSafe(fromDuration);
+    const created = parseAuctionDate(auction.createdAt ?? auction.created_at);
+    const fromCreated = addDurationToDate(created, duration);
+    if (fromCreated) return toISOStringSafe(fromCreated);
+  }
+  return null;
 }
 
 /** Show parsed date, or raw text when API sends free-form strings (e.g. "Immediately"). */
@@ -125,35 +157,43 @@ export function formatExpectedRate(value, formatInr, fallback = '—') {
   return str;
 }
 
-/** Compact card countdown — e.g. 5D 8H, 18H, 45M. */
-function buildCompactTimeLeft(diff) {
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
+export function buildCountdownText(diff) {
+  if (diff <= 0) return 'Ended';
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
   if (days > 0) {
-    const parts = [`${days}D`];
-    if (hours > 0) parts.push(`${hours}H`);
+    const parts = [`${days}d`];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (days < 3 && minutes > 0) parts.push(`${minutes}m`);
     return parts.join(' ');
   }
-  if (hours > 0) return `${hours}H`;
-  return `${Math.max(1, minutes)}M`;
+  if (hours > 0) {
+    const parts = [`${hours}h`];
+    if (minutes > 0) parts.push(`${minutes}m`);
+    return parts.join(' ');
+  }
+  if (minutes > 0) {
+    const parts = [`${minutes}m`];
+    if (seconds > 0) parts.push(`${seconds}s`);
+    return parts.join(' ');
+  }
+  return `${Math.max(0, seconds)}s`;
 }
 
 export function formatCountdown(endTime) {
-  const end = parseAuctionDate(endTime);
-  if (!end) return { timeLeft: 'Awaiting schedule', isUrgent: false };
-  const diff = end.getTime() - Date.now();
-  if (diff <= 0) return { timeLeft: 'Ended', isUrgent: false };
-  const isUrgent = diff < 300000;
-  return { timeLeft: buildCompactTimeLeft(diff), isUrgent };
-}
-
-/** Homepage auction cards — same compact format as listing cards. */
-export function formatCompactCountdown(endTime) {
   const end = parseAuctionDate(endTime);
   if (!end) return { timeLeft: '—', isUrgent: false };
   const diff = end.getTime() - Date.now();
   if (diff <= 0) return { timeLeft: 'Ended', isUrgent: false };
   const isUrgent = diff < 86400000;
-  return { timeLeft: buildCompactTimeLeft(diff), isUrgent: diff < 86400000 * 2 || isUrgent };
+  return { timeLeft: buildCountdownText(diff), isUrgent };
+}
+
+/** Homepage auction cards — same compact format as listing cards. */
+export function formatCompactCountdown(endTime) {
+  return formatCountdown(endTime);
 }

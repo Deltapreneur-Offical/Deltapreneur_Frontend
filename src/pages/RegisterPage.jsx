@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 import { resolveAfterAuthNavigation } from '../utils/authSession';
-import { startGoogleOAuth, startLinkedInOAuth, startFacebookOAuth } from '../utils/socialOAuth';
+import { startGoogleOAuth, startLinkedInOAuth } from '../utils/socialOAuth';
 import AuthShell from '../components/auth/AuthShell';
 import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';
@@ -14,7 +14,6 @@ import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import AuthRecoverActions from '../components/auth/AuthRecoverActions';
 import GoogleIcon from '../components/auth/GoogleIcon';
 import LinkedInIcon from '../components/auth/LinkedInIcon';
-import FacebookIcon from '../components/auth/FacebookIcon';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -167,10 +166,6 @@ export default function RegisterPage() {
     startLinkedInOAuth(from);
   };
 
-  const handleFacebookLogin = async () => {
-    startFacebookOAuth(from);
-  };
-
   return (
     <AuthShell
       title={t('registerTitle')}
@@ -209,10 +204,6 @@ export default function RegisterPage() {
           <button type="button" className="btn-oauth btn-oauth--linkedin" onClick={handleLinkedInLogin}>
             <LinkedInIcon />
             {t('continueWithLinkedIn', 'Continue with LinkedIn')}
-          </button>
-          <button type="button" className="btn-oauth btn-oauth--facebook" onClick={handleFacebookLogin}>
-            <FacebookIcon />
-            {t('continueWithFacebook', 'Continue with Facebook')}
           </button>
           <p className="auth-google-hint">{t('registerGoogleHint')}</p>
         </div>

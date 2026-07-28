@@ -96,6 +96,7 @@ const DURATIONS = [
   { value: 'SEVEN_DAYS', label: '7 Days' },
   { value: 'FIFTEEN_DAYS', label: '15 Days' },
   { value: 'THIRTY_DAYS', label: '30 Days' },
+  { value: 'SIXTY_DAYS', label: '60 Days' },
 ];
 
 function apiErrorMessage(err, fallback) {

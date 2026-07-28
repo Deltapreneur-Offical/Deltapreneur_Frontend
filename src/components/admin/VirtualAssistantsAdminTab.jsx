@@ -228,7 +228,7 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
                   </td>
                   <td className="py-3 px-4 text-gray-600">{app.email}</td>
                   <td className="py-3 px-4 text-gray-600 max-w-xs truncate">
-                    {app.roles ? app.roles.split(',').slice(0, 2).join(', ') + (app.roles.split(',').length > 2 ? '...' : '') : '—'}
+                    {app.roles || '—'}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

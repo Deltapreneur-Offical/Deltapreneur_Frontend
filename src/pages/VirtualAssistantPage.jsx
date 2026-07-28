@@ -234,7 +234,7 @@ const VirtualAssistantPage = () => {
       submitData.append('location', formData.location.trim());
       submitData.append('is_adult', String(formData.isAdult));
       submitData.append('bio', formData.bio.trim());
-      submitData.append('roles', formData.roles.join(','));
+      submitData.append('roles', formData.roles[0]);
       submitData.append('skills', formData.skills.trim());
       submitData.append('years_of_experience', formData.yearsOfExperience.trim());
       submitData.append('languages', formData.languages.trim());
@@ -475,20 +475,18 @@ const VirtualAssistantPage = () => {
                     </div>
 
                     <div className="va-app-field">
-                      <label className="va-app-label">Select Virtual Assistant Roles <span className="va-app-required">*</span></label>
+                      <label className="va-app-label">Select Virtual Assistant Role <span className="va-app-required">*</span></label>
                       <select
                         name="roles"
-                        multiple
-                        value={formData.roles}
+                        value={formData.roles[0] || ''}
                         onChange={handleChange}
-                        size="6"
-                        className={`va-app-select va-app-roles-select${selectErrorClass(errors.roles)}`}
+                        className={`w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.roles ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                       >
-                        {VIRTUAL_ASSISTANT_ROLES.map(role => (
+                        <option value="">Select a role</option>
+                        {VIRTUAL_ASSISTANT_ROLES.map((role) => (
                           <option key={role.value} value={role.value}>{role.label}</option>
                         ))}
                       </select>
-                      <p className="va-app-hint">Hold Ctrl (Windows) or Cmd (Mac) to select multiple roles</p>
                       {errors.roles && <span className="va-app-error">{errors.roles}</span>}
                     </div>
 

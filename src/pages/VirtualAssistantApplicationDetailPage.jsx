@@ -518,21 +518,6 @@ function VirtualAssistantApplicationDetailPage() {
             Submitted {formatDate(application.createdAt)}
           </p>
         </div>
-        <div className="va-detail-topbar__actions">
-          {application.resumeUrl && (
-            <button type="button" onClick={handleViewResume} className="va-detail-btn va-detail-btn--primary va-detail-btn--sm">
-              <FileText size={14} />
-              View Resume
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => navigate(vaAdminApplicationsPath())}
-            className="va-detail-btn va-detail-btn--secondary va-detail-btn--sm"
-          >
-            Back to List
-          </button>
-        </div>
       </div>
 
       <section className="va-detail-hero">

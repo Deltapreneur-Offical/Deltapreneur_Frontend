@@ -63,7 +63,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       return;
     }
     if (name === 'roles') {
-      const selected = Array.from(e.target.selectedOptions, option => option.value);
+      const selected = value ? [value] : [];
       setFormData(prev => ({ ...prev, roles: selected }));
       if (selected.length === 0) {
         setErrors(prev => ({ ...prev, roles: 'Please select at least one role' }));
@@ -118,7 +118,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       submitData.append('phone_number', formData.phoneNumber.trim());
       submitData.append('location', formData.location.trim());
       submitData.append('bio', formData.bio.trim());
-      submitData.append('roles', formData.roles.join(','));
+      submitData.append('roles', formData.roles[0]);
       submitData.append('skills', formData.skills.trim());
       submitData.append('years_of_experience', formData.yearsOfExperience);
       submitData.append('languages', formData.languages.trim());
@@ -237,11 +237,11 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
             </h2>
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Virtual Assistant Roles <span className="text-red-500">*</span></label>
-                <select name="roles" multiple value={formData.roles} onChange={handleChange} className={inputClass('roles') + ' h-40'}>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Virtual Assistant Role <span className="text-red-500">*</span></label>
+                <select name="roles" value={formData.roles[0] || ''} onChange={handleChange} className={inputClass('roles')}>
+                  <option value="">Select a role</option>
                   {VA_ROLES.map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple roles.</p>
                 {errors.roles && <span className="text-xs text-red-500 mt-1 block">{errors.roles}</span>}
               </div>
               <div>

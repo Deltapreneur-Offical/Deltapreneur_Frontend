@@ -163,6 +163,15 @@ export default function DomainsPage() {
     resetPageWhen: filterTab,
   });
 
+  const domainListRef = useRef(null);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    requestAnimationFrame(() => {
+      domainListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -297,7 +306,7 @@ export default function DomainsPage() {
           </>
         ) : (
           <>
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
+            <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
               <div>
                 <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
                   {t('domains')}
@@ -408,7 +417,7 @@ export default function DomainsPage() {
                   ))}
                 </div>
                 <Pagination page={page} totalPages={totalPages}
-                  onPage={setPage} totalCount={totalCount} pageSize={20} />
+                  onPage={handlePageChange} totalCount={totalCount} pageSize={20} />
               </>
             )}
           </>
@@ -1639,8 +1648,8 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                     productType="DOMAIN_LISTING"
                     productId={d.id}
                     size="md"
-                    tone="dark"
-                    className="btn-glow btn-glow-sm"
+                    tone="blue"
+                    className="btn-glow btn-glow-sm hover:!bg-blue-700 hover:!border-blue-700 hover:!text-white"
                     label={t('listingCardAddToCart', 'Add to Cart')}
                   />
                 ) : null

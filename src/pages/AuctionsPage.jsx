@@ -499,6 +499,7 @@ export default function AuctionsPage() {
 // ─── Domain Auction Card ────────────────────────────────────────────────────────────
 function DomainAuctionCard({ auction, onClick }) {
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
+  const { formatPrice } = useCurrency();
   const domain                  = auction.domain || {};
   const domainTitle             = resolveAuctionDomainTitle(auction);
   const extMeta                 = normalizeDomainExtension(domain.domainExtension);

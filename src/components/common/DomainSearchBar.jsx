@@ -11,6 +11,7 @@ import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
 import { fetchAvailableTldsPage, fetchAvailableTldsChunk, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
+import { preferredTldRank } from '../../utils/domainSearch';
 import { DomainCardGrid } from '../domain/DomainCard';
 import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
 import RegistryPremiumLoader from '../domain/RegistryPremiumLoader';
@@ -33,7 +34,6 @@ import {
   HOME_EASE_OUT,
 } from '../home/motion/homeMotion';
 
-const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 const PREMIUM_LOADING_MESSAGES = 3;
 const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
@@ -427,6 +427,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const [registryPremiumItems, setRegistryPremiumItems] = useState([]);
   const [registryPremiumLoading, setRegistryPremiumLoading] = useState(false);
   const [registryPremiumMsgIndex, setRegistryPremiumMsgIndex] = useState(0);
+  const [premiumVisibleCount, setPremiumVisibleCount] = useState(15);
   const [resultsAnimKey, setResultsAnimKey] = useState(0);
   const registryPremiumAbortRef = useRef(null);
   const debounceRef           = useRef(null);
@@ -468,6 +469,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     setAuctionResults([]);
     setRegistryPremiumItems([]);
     setRegistryPremiumLoading(false);
+    setPremiumVisibleCount(15);
     setRegistrySegment(REGISTRY_PREMIUM_SEGMENT.STANDARD);
     setLoading(false);
     setTldLoading(false);
@@ -499,7 +501,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const mapTldItem = (item, label) => {
-    const tld = (item.tld || '').replace('.', '');
+    const tld = (item.tld || '').replace(/^\./, '');
     const isPremium = item.isPremium === true || item.is_premium === true;
     return {
       domain: item.domain || `${item.name || label}.${tld}`,
@@ -570,6 +572,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const controller = new AbortController();
     registryPremiumAbortRef.current = controller;
 
+    // Hard timeout (above the backend's 30s cap) so loading never hangs.
+    const timeoutId = setTimeout(() => controller.abort(), 35_000);
+
     setRegistryPremiumLoading(true);
     setRegistryPremiumMsgIndex(0);
     setRegistryPremiumItems([]);
@@ -589,11 +594,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         || err?.name === 'CanceledError'
         || requestIdRef.current !== currentRequestId
       ) {
+        // Timed out or cancelled — still clear loading state.
+        if (requestIdRef.current === currentRequestId) {
+          setRegistryPremiumLoading(false);
+        }
         return;
       }
       setRegistryPremiumItems([]);
     } finally {
-      if (requestIdRef.current === currentRequestId && !controller.signal.aborted) {
+      clearTimeout(timeoutId);
+      if (requestIdRef.current === currentRequestId) {
         setRegistryPremiumLoading(false);
       }
     }
@@ -609,6 +619,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const cacheKey = `all-tlds:${label}`;
 
     setRegistrySegment(REGISTRY_PREMIUM_SEGMENT.STANDARD);
+    setPremiumVisibleCount(15);
     void loadRegistryPremiumMarketplace(label, currentRequestId);
 
     if (!force && newSearchCacheRef.current.has(cacheKey)) {
@@ -1041,35 +1052,29 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const completedNewResults = results.filter((item) => item.status !== 'loading');
+  // The exact domain the user typed (e.g. "batter.org"); empty when label-only.
+  const searchedFqdn = normalizedQuery.includes('.') ? normalizedQuery : '';
   const availableNewResults = completedNewResults
-    .filter((item) => {
-      const isAvail = item.status === 'available' || item.available === true;
-      if (!isAvail) return false;
-      
-      const ext = (item.ext || item.tld || '').replace(/^\./, '').toLowerCase();
-      const isPriority = TLDS.indexOf(ext) !== -1;
-      if (isPriority) return true;
-      
-      const price = item.unitPrice != null ? Number(item.unitPrice) : (item.price != null ? Number(item.price) : Infinity);
-      return price < 3000;
-    })
+    // Never drop valid TLDs (including premiums) — only prioritise the order.
+    .filter((item) => item.status === 'available' || item.available === true)
     .sort((a, b) => {
-      const aExt = (a.ext || a.tld || '').replace(/^\./, '').toLowerCase();
-      const bExt = (b.ext || b.tld || '').replace(/^\./, '').toLowerCase();
-      
-      const aPriority = TLDS.indexOf(aExt);
-      const bPriority = TLDS.indexOf(bExt);
-      
-      const aIsPriority = aPriority !== -1;
-      const bIsPriority = bPriority !== -1;
-      
-      if (aIsPriority && !bIsPriority) return -1;
-      if (!aIsPriority && bIsPriority) return 1;
-      if (aIsPriority && bIsPriority) return aPriority - bPriority;
-      
+      const aDomain = String(a.domain || '').toLowerCase();
+      const bDomain = String(b.domain || '').toLowerCase();
+
+      // 1. Exact searched domain always first (Case 2: "batter.org").
+      if (searchedFqdn) {
+        if (aDomain === searchedFqdn && bDomain !== searchedFqdn) return -1;
+        if (bDomain === searchedFqdn && aDomain !== searchedFqdn) return 1;
+      }
+
+      // 2. Preferred/default TLD order.
+      const aRank = preferredTldRank(a.ext || a.tld);
+      const bRank = preferredTldRank(b.ext || b.tld);
+      if (aRank !== bRank) return aRank - bRank;
+
+      // 3. Remaining TLDs by price ascending.
       const priceA = a.unitPrice != null ? Number(a.unitPrice) : (a.price != null ? Number(a.price) : Infinity);
       const priceB = b.unitPrice != null ? Number(b.unitPrice) : (b.price != null ? Number(b.price) : Infinity);
-      
       return priceA - priceB;
     })
     .map((item) => ({
@@ -1100,14 +1105,35 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     };
     availableNewResults.forEach(add);
     (registryPremiumItems || []).forEach(add);
-    return Array.from(byDomain.values()).sort(
-      (a, b) => (Number(a.registrationPrice) || Infinity) - (Number(b.registrationPrice) || Infinity),
-    );
-  }, [availableNewResults, registryPremiumItems]);
+    return Array.from(byDomain.values()).sort((a, b) => {
+      const aDomain = String(a.domain || '').toLowerCase();
+      const bDomain = String(b.domain || '').toLowerCase();
+
+      // 1. Premium version of the exact searched domain first.
+      if (searchedFqdn) {
+        if (aDomain === searchedFqdn && bDomain !== searchedFqdn) return -1;
+        if (bDomain === searchedFqdn && aDomain !== searchedFqdn) return 1;
+      }
+
+      // 2. Common/preferred TLDs (.com, .ai, .org, .net, .io, .co, …).
+      const aRank = preferredTldRank(a.tld || a.ext);
+      const bRank = preferredTldRank(b.tld || b.ext);
+      if (aRank !== bRank) return aRank - bRank;
+
+      // 3. Remaining premiums by price ascending.
+      return (Number(a.registrationPrice) || Infinity) - (Number(b.registrationPrice) || Infinity);
+    });
+  }, [availableNewResults, registryPremiumItems, searchedFqdn]);
+
+  const premiumSlice = useMemo(
+    () => premiumNewResults.slice(0, premiumVisibleCount),
+    [premiumNewResults, premiumVisibleCount],
+  );
+  const premiumHasMore = premiumNewResults.length > premiumVisibleCount;
 
   const visibleNewResults =
     registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
-      ? premiumNewResults
+      ? premiumSlice
       : standardNewResults;
 
   useEffect(() => {
@@ -1292,12 +1318,20 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </p>
           )}
 
+          {/* Domain Names — Standard / Premium (same as Storefront) */}
           {hasSearchQuery && searchMode === 'new' && loading && completedNewResults.length === 0 && (
-            <RegistrarDomainLoader />
+            <div className="flex items-center gap-2.5 text-xs rounded-xl border p-4 text-gray-500 bg-gray-50 border-gray-150">
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
+              Loading standard domains…
+            </div>
           )}
 
-          {/* Domain Names — Standard / Premium (same as Storefront) */}
           {hasSearchQuery && searchMode === 'new' && (
+            availableNewResults.length > 0
+            || registryPremiumLoading
+            || premiumNewResults.length > 0
+            || (tldLoading && completedNewResults.length > 0)
+          ) && (
             availableNewResults.length > 0
             || registryPremiumLoading
             || premiumNewResults.length > 0
@@ -1314,6 +1348,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   standardCount={standardNewResults.length}
                   premiumCount={premiumNewResults.length}
                   premiumLoading={registryPremiumLoading}
+                  standardLoading={tldLoading}
                 />
               </div>
 
@@ -1326,7 +1361,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   <>
                     <div className="flex justify-end mb-3">
                       <span className="text-xs font-semibold text-gray-400">
-                        {visibleNewResults.length} shown · sorted by price
+                        {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+                          ? `${visibleNewResults.length} of ${premiumNewResults.length} · sorted by price`
+                          : `${visibleNewResults.length} shown · sorted by price`}
                         {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && registryPremiumLoading
                           ? ' · updating…'
                           : ''}
@@ -1349,6 +1386,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                         }
                       />
                     </div>
+                    {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && premiumHasMore ? (
+                      <div className="flex justify-center pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setPremiumVisibleCount((c) => c + 15)}
+                          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-amber-700 hover:bg-amber-600 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
+                        >
+                          Load More Premium Domains
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : null}
                     {registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading ? (
                       <DomainExtensionsLoader />
                     ) : null}
@@ -1362,7 +1411,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     }`}
                   >
                     {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
-                      ? '✨ No premium domains found. Try another keyword.'
+                      ? (registryPremiumLoading
+                        ? 'Searching premium marketplace…'
+                        : '✨ No premium domains found. Try another keyword.')
                       : tldLoading
                         ? 'Loading standard domains…'
                         : 'No standard domains in these results. Try Premium Domains.'}

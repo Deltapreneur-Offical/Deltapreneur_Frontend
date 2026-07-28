@@ -29,8 +29,13 @@ export function getCachedPremiumItems(label) {
 export function setCachedPremiumItems(label, items) {
   const key = premiumCacheKey(label);
   if (!key) return;
+  // Never cache empty results client-side: a timed-out/failed backend scan
+  // returns [], and caching it would freeze "No premium domains found" for
+  // the TTL. Genuinely-empty successful scans are cached by the backend, so
+  // re-querying stays cheap.
+  if (!Array.isArray(items) || items.length === 0) return;
   cache.set(key, {
     ts: Date.now(),
-    items: Array.isArray(items) ? items : [],
+    items,
   });
 }

@@ -11,6 +11,7 @@ export default function RegistryPremiumSegment({
   standardCount,
   premiumCount,
   premiumLoading = false,
+  standardLoading = false,
   className = '',
 }) {
   const trackRef = useRef(null);
@@ -22,6 +23,7 @@ export default function RegistryPremiumSegment({
       id: REGISTRY_PREMIUM_SEGMENT.STANDARD,
       label: 'Standard Domains',
       count: standardCount,
+      loading: standardLoading,
     },
     {
       id: REGISTRY_PREMIUM_SEGMENT.PREMIUM,
@@ -42,7 +44,7 @@ export default function RegistryPremiumSegment({
       left: btnBox.left - trackBox.left,
       width: btnBox.width,
     });
-  }, [value, standardCount, premiumCount, premiumLoading]);
+  }, [value, standardCount, premiumCount, premiumLoading, standardLoading]);
 
   return (
     <div
@@ -90,7 +92,7 @@ export default function RegistryPremiumSegment({
             {opt.sparkle ? <span aria-hidden="true">✦</span> : null}
             {opt.label}
             {opt.loading ? (
-              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-amber-300 border-t-amber-700" />
+              <span className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${opt.sparkle ? 'border-amber-300 border-t-amber-700' : 'border-gray-300 border-t-gray-700'}`} />
             ) : typeof opt.count === 'number' ? (
               <span className="text-[11px] font-bold tabular-nums text-gray-400">{opt.count}</span>
             ) : null}

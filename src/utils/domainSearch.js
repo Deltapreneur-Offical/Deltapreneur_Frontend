@@ -6,9 +6,27 @@ import { domainAPI } from '../api/services';
  */
 
 export const DOMAIN_SEARCH_PAGE_SIZE = 25;
-export const DOMAIN_PRIORITY_TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
+/**
+ * Preferred/default TLD display order for Standard Domains.
+ * These appear first (in this exact order, when available); every remaining
+ * TLD returned by the registrar is appended after them. Nothing is dropped.
+ */
+export const DOMAIN_PRIORITY_TLDS = [
+  'com', 'in', 'net', 'org', 'co', 'io', 'ai', 'app', 'asia', 'biz',
+  'blog', 'club', 'de', 'dev', 'edu.pl', 'icu', 'live', 'me', 'monster',
+  'online', 'page', 'space', 'store', 'website', 'xyz', 'pro', 'study',
+  'eu', 'uk', 'co.uk', 'org.uk', 'fr', 'es', 'it', 'net.in', 'co.in',
+  'org.in', 'nl', 'be', 'ch', 'at', 'ie', 'se', 'no', 'fi', 'dk',
+  'pl', 'cz', 'pt',
+];
 /** Homepage progressive first-page wave size (matches backend default). */
 export const DOMAIN_SEARCH_CHUNK_SIZE = 12;
+
+/** Rank in the preferred order; Infinity when not a preferred TLD. */
+export function preferredTldRank(ext) {
+  const idx = DOMAIN_PRIORITY_TLDS.indexOf(String(ext || '').replace(/^\./, '').toLowerCase());
+  return idx === -1 ? Infinity : idx;
+}
 
 const tldCache = new Map();
 
@@ -45,26 +63,14 @@ function filterMapSort(items, label) {
       it.available === true ||
       (it.status && String(it.status).toLowerCase() === 'available');
     if (!isAvailable) continue;
-
-    const ext = (it.tld || '').replace(/^\./, '').toLowerCase();
-    const isPriority = DOMAIN_PRIORITY_TLDS.indexOf(ext) !== -1;
-    const price = it.registrationPrice != null ? Number(it.registrationPrice) : Infinity;
-    if (!isPriority && price >= 3000) continue;
-
+    // Never drop valid TLDs (including premiums) — only prioritise the order.
     out.push(mapItem(it, label));
   }
 
   out.sort((a, b) => {
-    const aExt = (a.tld || '').replace(/^\./, '').toLowerCase();
-    const bExt = (b.tld || '').replace(/^\./, '').toLowerCase();
-    const aPriority = DOMAIN_PRIORITY_TLDS.indexOf(aExt);
-    const bPriority = DOMAIN_PRIORITY_TLDS.indexOf(bExt);
-    const aIsPriority = aPriority !== -1;
-    const bIsPriority = bPriority !== -1;
-
-    if (aIsPriority && !bIsPriority) return -1;
-    if (!aIsPriority && bIsPriority) return 1;
-    if (aIsPriority && bIsPriority) return aPriority - bPriority;
+    const aRank = preferredTldRank(a.tld);
+    const bRank = preferredTldRank(b.tld);
+    if (aRank !== bRank) return aRank - bRank;
 
     const pa = a.registrationPrice != null ? Number(a.registrationPrice) : Infinity;
     const pb = b.registrationPrice != null ? Number(b.registrationPrice) : Infinity;

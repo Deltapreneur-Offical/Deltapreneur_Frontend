@@ -20,6 +20,7 @@ import {
   premiumCacheKey,
   setCachedPremiumItems,
 } from '../utils/registryPremiumCache';
+import { preferredTldRank } from '../utils/domainSearch';
 
 const DEFAULT_TLD = 'com';
 const PREMIUM_LOADING_MESSAGES = 3;
@@ -108,6 +109,7 @@ export default function DomainStorefrontPage() {
   const [tldError, setTldError] = useState('');
   const [tldPage, setTldPage] = useState(1);
   const [registrySegment, setRegistrySegment] = useState(REGISTRY_PREMIUM_SEGMENT.STANDARD);
+  const [premiumVisibleCount, setPremiumVisibleCount] = useState(15);
   const [resultsAnimKey, setResultsAnimKey] = useState(0);
   const [premiumMarketplaceItems, setPremiumMarketplaceItems] = useState([]);
   const [premiumLoading, setPremiumLoading] = useState(false);
@@ -189,13 +191,46 @@ export default function DomainStorefrontPage() {
         });
       }
     }
-    return Array.from(byDomain.values()).sort(
-      (a, b) => (Number(a.registrationPrice) || Infinity) - (Number(b.registrationPrice) || Infinity),
-    );
+  const premiumTldItems = useMemo(() => {
+    const byDomain = new Map();
+    const add = (it) => {
+      const domain = String(it?.domain || '').toLowerCase();
+      if (!domain || !isRegistryPremium(it)) return;
+      if (!byDomain.has(domain)) byDomain.set(domain, it);
+    };
+    tldItems.forEach(add);
+    (premiumMarketplaceItems || []).forEach(add);
+    if (checkResult && isRegistryPremium(checkResult)) add(checkResult);
+    return Array.from(byDomain.values()).sort((a, b) => {
+      const aDomain = String(a.domain || '').toLowerCase();
+      const bDomain = String(b.domain || '').toLowerCase();
+
+      // 1. Premium version of the exact searched domain first.
+      if (checkResult?.domain) {
+        const searchedFqdn = checkResult.domain.toLowerCase();
+        if (aDomain === searchedFqdn && bDomain !== searchedFqdn) return -1;
+        if (bDomain === searchedFqdn && aDomain !== searchedFqdn) return 1;
+      }
+
+      // 2. Common/preferred TLDs (.com, .ai, .org, .net, .io, .co, …).
+      const aRank = preferredTldRank(a.tld || a.ext);
+      const bRank = preferredTldRank(b.tld || b.ext);
+      if (aRank !== bRank) return aRank - bRank;
+
+      // 3. Remaining premiums by price ascending.
+      return (Number(a.registrationPrice) || Infinity) - (Number(b.registrationPrice) || Infinity);
+    });
   }, [tldItems, premiumMarketplaceItems, checkResult]);
+
+  const premiumSlice = useMemo(
+    () => premiumTldItems.slice(0, premiumVisibleCount),
+    [premiumTldItems, premiumVisibleCount],
+  );
+  const premiumHasMore = premiumTldItems.length > premiumVisibleCount;
+
   const visibleTldItems =
     registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
-      ? premiumTldItems
+      ? premiumSlice
       : standardTldItems;
 
   // Rotate premium loading copy every 2s.
@@ -246,9 +281,13 @@ export default function DomainStorefrontPage() {
     const activeSignal = signal || controller?.signal;
     if (controller) premiumAbortRef.current = controller;
 
+    // Hard timeout (above the backend's 30s cap) so loading never hangs.
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 35_000) : null;
+
     setPremiumLoading(true);
     setPremiumMsgIndex(0);
     setPremiumMarketplaceItems([]);
+    setPremiumVisibleCount(15);
     setPremiumLoadedLabel(label);
     try {
       const { data } = await domainAPI.searchPremium({ name: label }, { signal: activeSignal });
@@ -258,13 +297,14 @@ export default function DomainStorefrontPage() {
       setPremiumMarketplaceItems(items);
     } catch (err) {
       if (activeSignal?.aborted || err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
+        // Timed out or cancelled — still clear loading state.
+        setPremiumLoading(false);
         return;
       }
       setPremiumMarketplaceItems([]);
     } finally {
-      if (!activeSignal?.aborted) {
-        setPremiumLoading(false);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
+      setPremiumLoading(false);
     }
   }, []);
 
@@ -646,10 +686,10 @@ export default function DomainStorefrontPage() {
                 )}
 
                 {/* Available TLDs — same DomainCard as Homepage */}
-                {tldLoading && (
+                {tldLoading && tldItems.length === 0 && (
                   <div className="mt-6 flex items-center gap-2.5 text-sm text-gray-500 bg-gray-50 border border-gray-150 rounded-xl p-4">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading available extensions…
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
+                    Loading standard domains…
                   </div>
                 )}
 
@@ -672,6 +712,7 @@ export default function DomainStorefrontPage() {
                         standardCount={standardTldItems.length}
                         premiumCount={premiumTldItems.length}
                         premiumLoading={premiumLoading}
+                        standardLoading={tldLoading}
                       />
                     </div>
 
@@ -685,7 +726,9 @@ export default function DomainStorefrontPage() {
                         <>
                           <div className="flex justify-end mb-3">
                             <span className="text-xs font-semibold text-gray-400">
-                              {visibleTldItems.length} shown · sorted by price
+                              {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+                                ? `${visibleTldItems.length} of ${premiumTldItems.length} · sorted by price`
+                                : `${visibleTldItems.length} shown · sorted by price`}
                               {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && premiumLoading
                                 ? ' · updating…'
                                 : ''}
@@ -700,6 +743,18 @@ export default function DomainStorefrontPage() {
                           >
                             <DomainCardGrid items={visibleTldItems} featuredFirst />
                           </div>
+                          {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && premiumHasMore ? (
+                            <div className="flex justify-center pt-4">
+                              <button
+                                type="button"
+                                onClick={() => setPremiumVisibleCount((c) => c + 15)}
+                                className="inline-flex items-center gap-2 text-sm font-bold text-white bg-amber-700 hover:bg-amber-600 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
+                              >
+                                Load More Premium Domains
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : null}
                         </>
                       ) : (
                         <div
@@ -711,8 +766,12 @@ export default function DomainStorefrontPage() {
                         >
                           <Globe className="w-4 h-4 shrink-0 opacity-70" />
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
-                            ? '✨ No premium domains found. Try another keyword.'
-                            : 'No standard domains in these results. Try Premium Domains.'}
+                            ? (premiumLoading
+                              ? 'Searching premium marketplace…'
+                              : '✨ No premium domains found. Try another keyword.')
+                            : tldLoading
+                              ? 'Loading standard domains…'
+                              : 'No standard domains in these results. Try Premium Domains.'}
                         </div>
                       )}
                     </div>

@@ -478,11 +478,11 @@ const JoinForm = () => {
 const DetailCard = ({ icon: Icon, title, items }) => {
   const reduceMotion = useReducedMotion();
   const CardTag = reduceMotion ? 'div' : motion.div;
-  const motionProps = reduceMotion ? {} : { whileHover: pageCardHover };
+  const motionProps = reduceMotion ? {} : { whileHover: { y: -2 } };
 
   return (
     <CardTag
-      className="card-glow-hover p-5 bg-white rounded-xl border border-gray-200 transition-colors"
+      className="p-5 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200"
       {...motionProps}
     >
     <div className="flex items-center gap-3 mb-4">

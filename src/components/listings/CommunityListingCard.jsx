@@ -19,6 +19,7 @@ import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
+import TruncatedItemsTooltip from '../common/TruncatedItemsTooltip';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
 import { getVirtualAssistantDetailPath } from '../../utils/listingNavigation';
@@ -266,9 +267,11 @@ export default function CommunityListingCard({
                  return (
                    <>
                      {langs.slice(0, 2).join(', ').toUpperCase()}
-                     <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
-                       +{langs.length - 2}
-                     </span>
+                     <TruncatedItemsTooltip items={langs.slice(2)}>
+                       <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
+                         +{langs.length - 2}
+                       </span>
+                     </TruncatedItemsTooltip>
                    </>
                  );
                })()}
@@ -300,9 +303,11 @@ export default function CommunityListingCard({
                   </span>
                ))}
                {skills.length > 4 && (
-                  <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-1 shadow-sm">
-                    +{skills.length - 4}
-                  </span>
+                  <TruncatedItemsTooltip items={skills.slice(4)}>
+                    <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-1 shadow-sm">
+                      +{skills.length - 4}
+                    </span>
+                  </TruncatedItemsTooltip>
                )}
             </div>
           </div>

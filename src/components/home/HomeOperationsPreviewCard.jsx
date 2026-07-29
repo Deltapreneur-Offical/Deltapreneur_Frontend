@@ -8,6 +8,7 @@ import { formatOperationsPrice, isComplianceService } from '../../utils/operatio
 import LikeButton from '../common/LikeButton';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { useIsCarouselClone } from './HomeAutoScrollRow';
+import TruncatedItemsTooltip from '../common/TruncatedItemsTooltip';
 
 function resolveSkills(service) {
   if (Array.isArray(service.skills)) return service.skills;
@@ -112,7 +113,9 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
               </span>
             ))}
             {skills.length > 3 && (
-              <span className="creator-profile-card__badge">+{skills.length - 3}</span>
+              <TruncatedItemsTooltip items={skills.slice(3)}>
+                <span className="creator-profile-card__badge cursor-pointer">+{skills.length - 3}</span>
+              </TruncatedItemsTooltip>
             )}
           </div>
         </div>

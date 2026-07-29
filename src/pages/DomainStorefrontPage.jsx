@@ -14,6 +14,7 @@ import DomainServices from '../components/storefront/DomainServices';
 import DomainCard, { DomainCardGrid } from '../components/domain/DomainCard';
 import RegistryPremiumSegment from '../components/domain/RegistryPremiumSegment';
 import RegistryPremiumLoader from '../components/domain/RegistryPremiumLoader';
+import DomainExtensionsLoader from '../components/common/DomainExtensionsLoader';
 import { isRegistryPremium, REGISTRY_PREMIUM_SEGMENT } from '../utils/registryPremium';
 import {
   getCachedPremiumItems,
@@ -118,6 +119,7 @@ export default function DomainStorefrontPage() {
   const premiumAbortRef = useRef(null);
   const [tldHasMore, setTldHasMore] = useState(false);
   const [tldLoadingMore, setTldLoadingMore] = useState(false);
+  const [tldSkeletonCount, setTldSkeletonCount] = useState(0);
 
   // Aborts the in-flight availability check + TLD load so the user can cancel a
   // slow search and immediately search again.
@@ -309,6 +311,7 @@ export default function DomainStorefrontPage() {
     }
 
     setTldLoading(true);
+    setTldSkeletonCount(6);
     setTldError('');
     setTldItems([]);
     setTldPage(1);
@@ -333,6 +336,7 @@ export default function DomainStorefrontPage() {
       setTldHasMore(false);
     } finally {
       setTldLoading(false);
+      setTldSkeletonCount(0);
     }
   }, [t]);
 
@@ -676,13 +680,6 @@ export default function DomainStorefrontPage() {
                 )}
 
                 {/* Available TLDs — same DomainCard as Homepage */}
-                {tldLoading && tldItems.length === 0 && (
-                  <div className="mt-6 flex items-center gap-2.5 text-sm text-gray-500 bg-gray-50 border border-gray-150 rounded-xl p-4">
-                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
-                    Loading standard domains…
-                  </div>
-                )}
-
                 {tldError && (
                   <div className="mt-6 flex items-start gap-2.5 text-xs text-rose-800 bg-rose-50 border border-rose-200 rounded-xl p-4">
                     <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
@@ -690,7 +687,7 @@ export default function DomainStorefrontPage() {
                   </div>
                 )}
 
-                {(!tldLoading || tldItems.length > 0 || premiumLoading || premiumTldItems.length > 0) && !tldError && (tldItems.length > 0 || premiumLoading || premiumTldItems.length > 0) && (
+                {!tldError && (tldItems.length > 0 || premiumLoading || premiumTldItems.length > 0 || tldLoading) && (
                   <div className="mt-6 space-y-5">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
@@ -731,7 +728,15 @@ export default function DomainStorefrontPage() {
                                 : undefined
                             }
                           >
-                            <DomainCardGrid items={visibleTldItems} featuredFirst />
+                            <DomainCardGrid
+                              items={visibleTldItems}
+                              featuredFirst
+                              skeletonCount={
+                                registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading
+                                  ? tldSkeletonCount
+                                  : 0
+                              }
+                            />
                           </div>
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && premiumHasMore ? (
                             <div className="flex justify-center pt-4">
@@ -745,7 +750,12 @@ export default function DomainStorefrontPage() {
                               </button>
                             </div>
                           ) : null}
+                          {registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading ? (
+                            <DomainExtensionsLoader />
+                          ) : null}
                         </>
+                      ) : registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading ? (
+                        <DomainExtensionsLoader skeletonCount={tldSkeletonCount} />
                       ) : (
                         <div
                           className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
@@ -754,14 +764,11 @@ export default function DomainStorefrontPage() {
                               : 'text-gray-500 bg-gray-50 border-gray-150'
                           }`}
                         >
-                          <Globe className="w-4 h-4 shrink-0 opacity-70" />
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                             ? (premiumLoading
                               ? 'Searching premium marketplace…'
                               : '✨ No premium domains found. Try another keyword.')
-                            : tldLoading
-                              ? 'Loading standard domains…'
-                              : 'No standard domains in these results. Try Premium Domains.'}
+                            : 'No standard domains in these results. Try Premium Domains.'}
                         </div>
                       )}
                     </div>

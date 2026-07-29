@@ -37,11 +37,9 @@ export const homeStaggerItem = {
 export const homeRowReveal = {
   hidden: {
     opacity: 0,
-    y: 14,
   },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
       duration: 0.48,
       ease: HOME_EASE,

@@ -38,9 +38,17 @@
 .domain-listing-card-shell,
 .home-feature-card-shell {
   position: relative;
+  z-index: 1;
   overflow: visible;
   padding: 12px 10px;
   min-width: 0;
+}
+
+.listing-card-glow-shell:hover,
+.technology-listing-card-shell:hover,
+.domain-listing-card-shell:hover,
+.home-feature-card-shell:hover {
+  z-index: 30 !important;
 }
 
 .listing-card-glow-shell::before,
@@ -181,7 +189,19 @@
   padding-top: 0.5rem;
 }
 
-/* Homepage preview cards — outer shell owns hover; inner listing cards stay still */
+/* Homepage preview cards — outer shell owns hover; inner listing cards stay clean */
+.home-preview-card-border .venture-listing-card,
+.home-preview-card-border .technology-listing-card,
+.home-preview-card-border .domain-listing-card,
+.home-preview-card-border .home-creator-listing-card,
+.home-preview-card-border .home-auction-preview-card,
+.home-preview-card-border .home-preview-browse-card,
+.home-preview-card-border .venture-listing-card.card-glow-hover,
+.home-preview-card-border .technology-listing-card.card-glow-hover,
+.home-preview-card-border .domain-listing-card.card-glow-hover,
+.home-preview-card-border .home-creator-listing-card.card-glow-hover,
+.home-preview-card-border .home-auction-preview-card.card-glow-hover,
+.home-preview-card-border .home-preview-browse-card.card-glow-hover,
 .home-preview-card-border .venture-listing-card.card-glow-hover:hover,
 .home-preview-card-border .technology-listing-card.card-glow-hover:hover,
 .home-preview-card-border .domain-listing-card.card-glow-hover:hover,

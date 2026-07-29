@@ -318,23 +318,20 @@
   --home-card-border: #38bdf8;
   --home-card-border-hover: #0ea5e9;
   --home-card-shadow-accent: rgba(56, 189, 248, 0.24);
-  --home-card-inner-radius: calc(1.5rem - 2px);
+  --home-card-inner-radius: 1.5rem;
   position: relative;
-  padding: 2px;
+  padding: 0;
   overflow: hidden;
-  isolation: isolate;
   display: flex;
   flex-direction: column;
   border-radius: 1.5rem;
   border: 1px solid #000000 !important;
   background: #ffffff !important;
-  box-shadow: none;
   box-shadow:
     0 4px 12px rgba(15, 23, 42, 0.08),
     0 2px 4px rgba(15, 23, 42, 0.04);
   box-sizing: border-box;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
+  transform: none;
   transition:
     border-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
@@ -496,7 +493,7 @@
   min-height: min-content;
   display: flex;
   flex-direction: column;
-  border-radius: var(--home-card-inner-radius);
+  border-radius: inherit;
   overflow: hidden;
   background: #ffffff;
 }
@@ -522,19 +519,22 @@
   flex-direction: column;
 }
 
-.home-preview-card-border__inner>.home-preview-browse-card,
-.home-preview-card-border__inner>article.home-preview-browse-card,
-.home-preview-card-border__inner>.venture-listing-card,
-.home-preview-card-border__inner>article.venture-listing-card,
-.home-preview-card-border__inner>.technology-listing-card,
-.home-preview-card-border__inner>article.technology-listing-card,
-.home-preview-card-border__inner>.home-creator-listing-card,
-.home-preview-card-border__inner>article.home-creator-listing-card,
-.home-preview-card-border__inner>.home-auction-preview-card,
-.home-preview-card-border__inner>article.home-auction-preview-card {
+.home-preview-card-border__inner > .domain-listing-card,
+.home-preview-card-border__inner > article.domain-listing-card,
+.home-preview-card-border__inner > .home-preview-browse-card,
+.home-preview-card-border__inner > article.home-preview-browse-card,
+.home-preview-card-border__inner > .venture-listing-card,
+.home-preview-card-border__inner > article.venture-listing-card,
+.home-preview-card-border__inner > .technology-listing-card,
+.home-preview-card-border__inner > article.technology-listing-card,
+.home-preview-card-border__inner > .home-creator-listing-card,
+.home-preview-card-border__inner > article.home-creator-listing-card,
+.home-preview-card-border__inner > .home-auction-preview-card,
+.home-preview-card-border__inner > article.home-auction-preview-card {
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  background: #ffffff !important;
   width: 100%;
   flex: 0 0 auto !important;
   min-width: 0;
@@ -2245,7 +2245,7 @@
 .home-auto-scroll-row {
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -2258,26 +2258,48 @@
 
 .home-auto-scroll-row__viewport {
   width: 100%;
-  overflow: hidden;
-  mask-image: linear-gradient(to right,
-      transparent 0%,
-      #000 4%,
-      #000 96%,
-      transparent 100%);
-  -webkit-mask-image: linear-gradient(to right,
-      transparent 0%,
-      #000 4%,
-      #000 96%,
-      transparent 100%);
+  overflow: visible;
+  padding-top: 12px;
+  padding-bottom: 24px;
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 .home-auto-scroll-row__track {
   display: flex;
   align-items: stretch;
-  gap: 1rem;
   width: max-content;
-  padding-block: 0.9rem;
-  margin-block: -0.5rem;
+  padding-block: 0;
+  margin-block: 0;
+  overflow: visible;
+}
+
+.home-auto-scroll-row__set {
+  display: flex;
+  align-items: stretch;
+  gap: 1.25rem;
+  padding-right: 1.25rem;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+/* Elevate hovered card above adjacent siblings so neighboring borders are never clipped */
+.home-auto-scroll-row__item,
+.home-preview-row__item,
+.home-preview-row__card,
+.home-preview-card-shell {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.home-auto-scroll-row__item:hover,
+.home-preview-row__item:hover,
+.home-preview-row__card:hover,
+.home-preview-card-shell:hover,
+.home-auto-scroll-row__item:focus-within,
+.home-preview-row__item:focus-within {
+  z-index: 30 !important;
 }
 
 .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
@@ -2285,7 +2307,7 @@
 }
 
 .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static):not(.home-auto-scroll-row__track--paused) {
-  will-change: transform;
+  will-change: auto;
 }
 
 /* JS-driven pause — applied on hover/touch via React state */
@@ -2393,7 +2415,9 @@
 }
 
 .home-auto-scroll-row__track:has(.home-auction-preview-card--home-preview),
-.home-auto-scroll-row__track:has(.community-listing-card) {
+.home-auto-scroll-row__track:has(.community-listing-card),
+.home-auto-scroll-row__set:has(.home-auction-preview-card--home-preview),
+.home-auto-scroll-row__set:has(.community-listing-card) {
   align-items: stretch;
 }
 

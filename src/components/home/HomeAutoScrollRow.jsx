@@ -314,11 +314,11 @@ export default function HomeAutoScrollRow({
           {/* 3 identical sets: [A][B][C] — manual scroll starts at B.
               Copies [B][C] render under the clone context so their cards skip
               image decoding + timers (iOS Safari memory safety). */}
-          {renderSet()}
+          <div className="home-auto-scroll-row__set">{renderSet()}</div>
           {shouldAnimate ? (
             <CarouselCloneContext.Provider value={true}>
-              {renderSet('dup1')}
-              {renderSet('dup2')}
+              <div className="home-auto-scroll-row__set">{renderSet('dup1')}</div>
+              <div className="home-auto-scroll-row__set">{renderSet('dup2')}</div>
             </CarouselCloneContext.Provider>
           ) : null}
         </div>

@@ -2249,6 +2249,13 @@
   position: relative;
 }
 
+/* Mobile only: faster marquee speed for Virtual Assistance section */
+@media (max-width: 768px) {
+  .home-va-auto-scroll-row {
+    --home-auto-scroll-duration: 22s !important;
+  }
+}
+
 .home-auto-scroll-row__viewport {
   width: 100%;
   overflow: hidden;

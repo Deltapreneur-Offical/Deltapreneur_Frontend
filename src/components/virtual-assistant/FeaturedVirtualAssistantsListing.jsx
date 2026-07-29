@@ -155,7 +155,7 @@ export default function FeaturedVirtualAssistantsListing({
 
   if (shouldAutoScroll) {
     return (
-      <HomeAutoScrollRow durationSec={50} ariaLabel={ariaLabel || 'Featured Virtual Assistants'}>
+      <HomeAutoScrollRow durationSec={50} className="home-va-auto-scroll-row" ariaLabel={ariaLabel || 'Featured Virtual Assistants'}>
         {cards.map((profile, index) => (
           <HomeAutoScrollRowItem key={cardKey(profile, index)}>
             {renderCard(profile)}

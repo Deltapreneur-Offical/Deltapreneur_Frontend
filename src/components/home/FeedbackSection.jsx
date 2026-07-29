@@ -5,6 +5,36 @@ import { feedbackAPI } from '../../api/services';
 import BotProtectionFields from '../common/BotProtectionFields';
 import { useBotProtection } from '../../hooks/useBotProtection';
 
+const CONFETTI_PIECES = [
+  { left: '5%', delay: '0ms', duration: '2600ms', color: '#a855f7', rotate: '18deg' },
+  { left: '13%', delay: '180ms', duration: '2800ms', color: '#f59e0b', rotate: '52deg' },
+  { left: '23%', delay: '70ms', duration: '2700ms', color: '#ec4899', rotate: '94deg' },
+  { left: '34%', delay: '310ms', duration: '2900ms', color: '#6366f1', rotate: '135deg' },
+  { left: '45%', delay: '120ms', duration: '2650ms', color: '#22c55e', rotate: '175deg' },
+  { left: '56%', delay: '390ms', duration: '2850ms', color: '#f97316', rotate: '215deg' },
+  { left: '67%', delay: '40ms', duration: '2750ms', color: '#8b5cf6', rotate: '255deg' },
+  { left: '77%', delay: '260ms', duration: '2600ms', color: '#06b6d4', rotate: '295deg' },
+  { left: '87%', delay: '150ms', duration: '2880ms', color: '#eab308', rotate: '335deg' },
+  { left: '95%', delay: '340ms', duration: '2720ms', color: '#d946ef', rotate: '375deg' },
+];
+
+const HAPPY_EMOJIS = [
+  { emoji: '😊', left: '10%', delay: '100ms', duration: '2750ms' },
+  { emoji: '🎉', left: '30%', delay: '480ms', duration: '2900ms' },
+  { emoji: '🥳', left: '52%', delay: '220ms', duration: '2800ms' },
+  { emoji: '😄', left: '73%', delay: '620ms', duration: '3000ms' },
+  { emoji: '✨', left: '91%', delay: '340ms', duration: '2850ms' },
+];
+
+const SAD_EMOJIS = [
+  { emoji: '😔', left: '9%', delay: '0ms', duration: '2700ms' },
+  { emoji: '☹️', left: '25%', delay: '500ms', duration: '2900ms' },
+  { emoji: '😞', left: '43%', delay: '180ms', duration: '2800ms' },
+  { emoji: '😕', left: '61%', delay: '680ms', duration: '3000ms' },
+  { emoji: '😔', left: '78%', delay: '320ms', duration: '2850ms' },
+  { emoji: '☹️', left: '93%', delay: '780ms', duration: '2950ms' },
+];
+
 export default function FeedbackSection() {
   const { t } = useTranslation();
   const [feedbackType, setFeedbackType] = useState(null);
@@ -59,8 +89,56 @@ export default function FeedbackSection() {
 
   return (
     <section className="bg-white py-8 md:py-10">
-      <div className="w-full p-4 md:p-5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
+      <div className="relative isolate w-full overflow-hidden p-4 md:p-5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl">
+        {feedbackSubmitted && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+            {feedbackType === 'like' ? (
+              <>
+                {CONFETTI_PIECES.map((piece, index) => (
+                  <span
+                    key={`confetti-${index}`}
+                    className="feedback-confetti-piece"
+                    style={{
+                      left: piece.left,
+                      animationDelay: piece.delay,
+                      animationDuration: piece.duration,
+                      backgroundColor: piece.color,
+                      '--confetti-rotate': piece.rotate,
+                    }}
+                  />
+                ))}
+                {HAPPY_EMOJIS.map((item, index) => (
+                  <span
+                    key={`happy-${index}`}
+                    className="feedback-falling-emoji feedback-happy-emoji"
+                    style={{
+                      left: item.left,
+                      animationDelay: item.delay,
+                      animationDuration: item.duration,
+                    }}
+                  >
+                    {item.emoji}
+                  </span>
+                ))}
+              </>
+            ) : (
+              SAD_EMOJIS.map((item, index) => (
+                <span
+                  key={`sad-${index}`}
+                  className="feedback-falling-emoji feedback-sad-emoji"
+                  style={{
+                    left: item.left,
+                    animationDelay: item.delay,
+                    animationDuration: item.duration,
+                  }}
+                >
+                  {item.emoji}
+                </span>
+              ))
+            )}
+          </div>
+        )}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
           <div className="flex-1 min-w-0">
             <p className="text-sm md:text-base font-semibold text-gray-900 mb-1 leading-snug">
               {t('feedbackQuestion')}
@@ -95,7 +173,7 @@ export default function FeedbackSection() {
           </div>
         </div>
         {feedbackType && !feedbackSubmitted && (
-          <div className="mt-4">
+          <div className="relative z-10 mt-4">
             <textarea
               className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-gray-400 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] resize-none"
               placeholder={t('feedbackPlaceholder')}
@@ -122,6 +200,68 @@ export default function FeedbackSection() {
             </div>
           </div>
         )}
+        <style>{`
+          @keyframes feedbackConfettiFall {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, -18px, 0) rotate(var(--confetti-rotate));
+            }
+            12% { opacity: 0.95; }
+            100% {
+              opacity: 0;
+              transform: translate3d(14px, 105px, 0) rotate(calc(var(--confetti-rotate) + 430deg));
+            }
+          }
+
+          @keyframes feedbackEmojiFall {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, -24px, 0) rotate(-8deg) scale(0.78);
+            }
+            15% { opacity: 0.9; }
+            100% {
+              opacity: 0;
+              transform: translate3d(10px, 105px, 0) rotate(12deg) scale(1);
+            }
+          }
+
+          .feedback-confetti-piece {
+            position: absolute;
+            top: -8px;
+            width: 7px;
+            height: 11px;
+            border-radius: 2px;
+            animation: feedbackConfettiFall 2s ease-in forwards;
+            animation-iteration-count: 4;
+          }
+
+          .feedback-falling-emoji {
+            position: absolute;
+            top: -20px;
+            line-height: 1;
+            animation: feedbackEmojiFall 4.6s ease-in-out forwards;
+            animation-iteration-count: 4;
+            filter: drop-shadow(0 2px 3px rgba(76, 29, 149, 0.15));
+          }
+
+          .feedback-happy-emoji {
+            font-size: 18px;
+          }
+
+          .feedback-sad-emoji {
+            font-size: 17px;
+            opacity: 0.82;
+            filter: grayscale(0.15) drop-shadow(0 2px 3px rgba(71, 85, 105, 0.12));
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .feedback-confetti-piece,
+            .feedback-falling-emoji {
+              animation: none;
+              display: none;
+            }
+          }
+        `}</style>
       </div>
     </section>
   );

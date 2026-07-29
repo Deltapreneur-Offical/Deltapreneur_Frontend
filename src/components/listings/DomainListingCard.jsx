@@ -48,10 +48,16 @@ function DomainListingCover({
   );
 }
 
-function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel }) {
+function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel, auctionLabel }) {
   return (
     <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
-      {amount ? (
+      {isAuction ? (
+        <div className="domain-listing-card__price-text min-w-0">
+          <span className="domain-listing-card__price-value truncate font-semibold text-indigo-600">
+            {auctionLabel || 'On Live Auction'}
+          </span>
+        </div>
+      ) : amount ? (
         <div className="domain-listing-card__price-text min-w-0">
           <span className="domain-listing-card__price-value truncate">
             {amount}
@@ -96,7 +102,7 @@ export default function DomainListingCard({
   const ownerMenuPortalRef = useRef(null);
   const [ownerMenuCoords, setOwnerMenuCoords] = useState({ top: 0, left: 0 });
 
-  const isAuction = domain.saleType === 'AUCTION';
+  const isAuction = domain.saleType === 'AUCTION' || Boolean(domain.onAuction) || Boolean(domain.isAuction);
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
@@ -495,12 +501,13 @@ export default function DomainListingCard({
           ) : null}
         </div>
 
-        {(Number(priceAmount) > 0 || handleViewDetails) && (
+        {(isAuction || Number(domain.askingPrice) > 0 || handleViewDetails) && (
           <DomainListingPriceBox
-            amount={Number(priceAmount) > 0 ? formatPrice(priceAmount) : null}
+            amount={!isAuction && Number(domain.askingPrice) > 0 ? formatPrice(domain.askingPrice) : null}
             isAuction={isAuction}
             onViewDetails={handleViewDetails}
             viewLabel={t('listingCardViewDetails', 'View details')}
+            auctionLabel={t('listingCardOnLiveAuction', 'On Live Auction')}
           />
         )}
 

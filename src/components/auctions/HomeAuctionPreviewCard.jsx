@@ -254,17 +254,19 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </span>
           </div>
         )}
-        {coverImage ? (
-          <span className={`home-auction-preview-card__category-badge ${categoryMeta.badgeClass}`}>
-            {categoryLabel}
-          </span>
-        ) : null}
-        {isFeatured ? (
-          <span className="home-auction-preview-card__featured-badge">
-            <Sparkles size={11} aria-hidden />
-            {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
-          </span>
-        ) : null}
+        <div className="home-auction-preview-card__top-left-badges">
+          {coverImage ? (
+            <span className={`home-auction-preview-card__category-badge ${categoryMeta.badgeClass}`}>
+              {categoryLabel}
+            </span>
+          ) : null}
+          {isFeatured ? (
+            <span className="home-auction-preview-card__featured-badge">
+              <Sparkles size={11} aria-hidden />
+              {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
+            </span>
+          ) : null}
+        </div>
         <div className="domain-listing-card__share-container" ref={shareRef}>
           <button
             type="button"

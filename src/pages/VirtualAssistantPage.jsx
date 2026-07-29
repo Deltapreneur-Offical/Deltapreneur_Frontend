@@ -15,6 +15,7 @@ import Confetti from '../components/common/Confetti';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { useBotProtection } from '../hooks/useBotProtection';
+import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import {
   PageHero,
   PageHeroItem,
@@ -80,6 +81,7 @@ const VirtualAssistantPage = () => {
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '', data: null });
   const [showConfetti, setShowConfetti] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const { isScrolled, navRef } = useHomePageScrollNav();
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const profilePhotoRef = useRef(null);
   const { user, hasAccessToken } = useAuth();
@@ -295,11 +297,13 @@ const VirtualAssistantPage = () => {
     <div className="va-app-page">
       <div className="va-app-page__glow va-app-page__glow--top" aria-hidden />
       <div className="va-app-page__glow va-app-page__glow--bottom" aria-hidden />
-      <TopNavbar homeMobileMenu />
+      <TopNavbar homeMobileMenu isScrolled={isScrolled} />
       <HomeNavbar
+        navRef={navRef}
         openDropdown={openDropdown}
         setOpenDropdown={setOpenDropdown}
         navigate={navigate}
+        isScrolled={isScrolled}
       />
       <Confetti show={showConfetti} />
 

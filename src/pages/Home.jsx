@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import DomainSearchBar from '../components/common/DomainSearchBar';
 import ExploreSection from '../components/common/ExploreSection';
 
 import HomeFooter from '../components/common/HomeFooter';
+import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 
 
 
@@ -67,52 +68,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  const navRef = useRef(null);
-
-
-
-  const handleScroll = useCallback(() => {
-    const scrolled = window.scrollY > 1;
-
-    if (scrolled) {
-      document.body.classList.add('scrolled');
-    } else {
-      document.body.classList.remove('scrolled');
-    }
-
-    if (navRef.current) {
-      if (scrolled) {
-        navRef.current.classList.add('scrolled');
-      } else {
-        navRef.current.classList.remove('scrolled');
-      }
-    }
-
-    setIsScrolled(scrolled);
-  }, []);
-
-  useEffect(() => {
-
-    document.body.classList.add('home-page-body');
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-
-      document.body.classList.remove('home-page-body');
-      document.body.classList.remove('scrolled');
-
-      window.removeEventListener('scroll', handleScroll);
-
-    };
-
-  }, [handleScroll]);
-
-
-
-
+  const { isScrolled, navRef } = useHomePageScrollNav();
 
   useEffect(() => {
 

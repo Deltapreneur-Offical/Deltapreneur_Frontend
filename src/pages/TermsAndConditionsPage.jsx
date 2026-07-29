@@ -7,11 +7,13 @@ import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
+import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 
 export default function TermsAndConditionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
+  const { isScrolled, navRef } = useHomePageScrollNav();
   const lastUpdated = '18 APRIL 2026';
 
   const sections = [
@@ -37,8 +39,14 @@ export default function TermsAndConditionsPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <TopNavbar homeMobileMenu />
-      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} />
+      <TopNavbar homeMobileMenu isScrolled={isScrolled} />
+      <HomeNavbar
+        navRef={navRef}
+        openDropdown={openDropdown}
+        setOpenDropdown={setOpenDropdown}
+        navigate={navigate}
+        isScrolled={isScrolled}
+      />
 
       <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
         <div className="pointer-events-none absolute inset-0">

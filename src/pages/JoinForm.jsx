@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
+import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import Confetti from '../components/common/Confetti';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
+import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import {
   PageHero,
   PageHeroItem,
@@ -67,6 +69,8 @@ const JoinForm = () => {
   const [errors, setErrors] = useState({});
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '' });
   const [showConfetti, setShowConfetti] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const { isScrolled, navRef } = useHomePageScrollNav();
   const {
     requiresTurnstile,
     getProtectionPayload,
@@ -181,7 +185,14 @@ const JoinForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-      <TopNavbar />
+      <TopNavbar homeMobileMenu isScrolled={isScrolled} />
+      <HomeNavbar
+        navRef={navRef}
+        openDropdown={openDropdown}
+        setOpenDropdown={setOpenDropdown}
+        navigate={navigate}
+        isScrolled={isScrolled}
+      />
       <Confetti show={showConfetti} />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">

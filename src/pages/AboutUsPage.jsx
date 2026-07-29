@@ -9,6 +9,7 @@ import {
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import { pageViewport, HOME_EASE, pageRevealFade, pageRevealLeft, pageRevealRight, pageRevealUp } from '../components/motion/motionPresets';
 
 /* ─────────────────────────────────────────────────────────────
@@ -66,6 +67,7 @@ function Divider() {
 export default function AboutUsPage() {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
+  const { isScrolled, navRef } = useHomePageScrollNav();
 
   return (
     <div className="min-h-screen bg-white cb-body">
@@ -109,12 +111,14 @@ export default function AboutUsPage() {
         .cb-mono { font-variant-numeric: tabular-nums; }
       `}</style>
 
-      <TopNavbar homeMobileMenu />
+      <TopNavbar homeMobileMenu isScrolled={isScrolled} />
       <HomeNavbar
+        navRef={navRef}
         openDropdown={openDropdown}
         setOpenDropdown={setOpenDropdown}
         navigate={navigate}
         showBack
+        isScrolled={isScrolled}
       />
 
       {/* ══════════════════════════════════════════════════════

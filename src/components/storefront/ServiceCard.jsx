@@ -5,7 +5,9 @@ const priceStyles = {
   unavailable: 'text-gray-500 bg-gray-50 border-gray-200',
 };
 
-export default function ServiceCard({ icon, name, description, price, priceAvailable = true, onConfigure, isActive, children }) {
+import NoDomainsOverlay from './NoDomainsOverlay';
+
+export default function ServiceCard({ icon, name, description, price, priceAvailable = true, onConfigure, isActive, noDomainsOverlay = false, children }) {
   return (
     <div
       className={`bg-white border rounded-2xl shadow-sm p-5 transition-all duration-200 flex flex-col gap-3 ${
@@ -42,8 +44,17 @@ export default function ServiceCard({ icon, name, description, price, priceAvail
       </div>
 
       {isActive && children && (
-        <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200">
-          {children}
+        <div className="relative mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200">
+          {noDomainsOverlay ? (
+            <>
+              <div className="pointer-events-none select-none blur-[3px] opacity-55" aria-hidden="true">
+                {children}
+              </div>
+              <NoDomainsOverlay />
+            </>
+          ) : (
+            children
+          )}
         </div>
       )}
     </div>

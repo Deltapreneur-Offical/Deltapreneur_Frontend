@@ -96,7 +96,11 @@ const services = [
   },
 ];
 
-export default function DomainServices({ orders }) {
+function hasRegisteredDomains(orders) {
+  return Array.isArray(orders) && orders.length > 0;
+}
+
+export default function DomainServices({ orders, ordersLoading = false }) {
   const [selectedService, setSelectedService] = useState(null);
   const [priceLabels, setPriceLabels] = useState({});
   const { t } = useTranslation();
@@ -187,6 +191,12 @@ export default function DomainServices({ orders }) {
     }
   };
 
+  const userHasRegisteredDomains = hasRegisteredDomains(orders);
+
+  const handleConfigure = (serviceId) => {
+    setSelectedService((current) => (current === serviceId ? null : serviceId));
+  };
+
   return (
     <section className="space-y-6">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
@@ -203,7 +213,13 @@ export default function DomainServices({ orders }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {pricedServices.map((service) => (
+          {pricedServices.map((service) => {
+            const isActive = selectedService === service.id;
+            const showNoDomainsOverlay = isActive
+              && !ordersLoading
+              && !userHasRegisteredDomains;
+
+            return (
             <ServiceCard
               key={service.id}
               icon={service.icon}
@@ -211,12 +227,14 @@ export default function DomainServices({ orders }) {
               description={service.description}
               price={service.price}
               priceAvailable={service.priceAvailable}
-              onConfigure={() => setSelectedService(selectedService === service.id ? null : service.id)}
-              isActive={selectedService === service.id}
+              onConfigure={() => handleConfigure(service.id)}
+              isActive={isActive}
+              noDomainsOverlay={showNoDomainsOverlay}
             >
-              {selectedService === service.id && renderForm(service)}
+              {isActive && renderForm(service)}
             </ServiceCard>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -1095,7 +1095,7 @@ export default function DomainStorefrontPage() {
           </section>
 
           {/* ══ DOMAIN SERVICES ══ */}
-          <DomainServices orders={orders} />
+          <DomainServices orders={orders} ordersLoading={ordersLoading} />
         </div>
       </div>
     </AppLayout>

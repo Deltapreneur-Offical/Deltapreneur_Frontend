@@ -10,10 +10,10 @@ import NoDomainsOverlay from './NoDomainsOverlay';
 export default function ServiceCard({ icon, name, description, price, priceAvailable = true, onConfigure, isActive, noDomainsOverlay = false, children }) {
   return (
     <div
-      className={`bg-white border rounded-2xl shadow-sm p-5 transition-all duration-200 flex flex-col gap-3 ${
+      className={`flex flex-col gap-3 rounded-2xl border bg-gradient-to-br from-amber-50/40 via-white to-white p-5 shadow-[0_0_0_1px_rgba(251,191,36,0.2),0_8px_28px_rgba(180,83,9,0.1),0_0_24px_rgba(251,191,36,0.12)] ring-1 transition-all duration-200 ${
         isActive
-          ? 'border-indigo-400 ring-4 ring-indigo-50'
-          : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+          ? 'border-amber-300 ring-4 ring-amber-200/70'
+          : 'border-amber-200 ring-amber-100 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-[0_10px_28px_rgba(251,191,36,0.18)] hover:ring-amber-200/70'
       }`}
     >
       <div className="flex items-start gap-3">

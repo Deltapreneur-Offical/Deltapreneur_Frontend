@@ -10,7 +10,7 @@ import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiA
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
-import { fetchAvailableTldsPage, fetchAvailableTldsChunk, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
+import { fetchAvailableTldsPage, fetchAvailableTldsChunk, fetchAvailableTlds, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
 import { preferredTldRank } from '../../utils/domainSearch';
 import { DomainCardGrid } from '../domain/DomainCard';
 import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
@@ -71,13 +71,45 @@ function useMinWidthLg() {
 }
 
 function TldPriceMarquee() {
+  const { formatPrice } = useCurrency();
+  const [tldPrices, setTldPrices] = useState(INITIAL_TLD_PRICES);
+
+  useEffect(() => {
+    let isCancelled = false;
+    fetchAvailableTlds('domain', { force: true })
+      .then((fetchedItems) => {
+        if (isCancelled || !Array.isArray(fetchedItems) || fetchedItems.length === 0) return;
+
+        const priceMap = new Map();
+        fetchedItems.forEach((it) => {
+          const rawTld = (it.tld || '').startsWith('.') ? it.tld.toLowerCase() : `.${(it.tld || '').toLowerCase()}`;
+          const priceVal = it.registrationPrice ?? it.unitPrice ?? it.price;
+          if (rawTld && priceVal != null) {
+            priceMap.set(rawTld, priceVal);
+          }
+        });
+
+        setTldPrices((prev) =>
+          prev.map((item) => {
+            const livePrice = priceMap.get(item.tld.toLowerCase());
+            return livePrice != null ? { ...item, price: livePrice } : item;
+          })
+        );
+      })
+      .catch(() => {});
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
   // Double items — enough for seamless wrap without excessive DOM
   const items = useMemo(
     () => [
-      ...INITIAL_TLD_PRICES,
-      ...INITIAL_TLD_PRICES,
+      ...tldPrices,
+      ...tldPrices,
     ],
-    []
+    [tldPrices]
   );
 
   const scrollRef = useRef(null);
@@ -160,18 +192,22 @@ function TldPriceMarquee() {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         className="flex items-center gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"
       >
-        {items.map((item, index) => (
-          <div
-            key={`${item.tld}-${index}`}
-            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-purple-50/95 border border-purple-200/90 shadow-sm hover:border-purple-400 hover:bg-purple-100/90 hover:shadow-md transition-all duration-200 shrink-0 select-none"
-          >
-            <span className="font-black text-purple-950 text-[16px] tracking-tight">{item.tld}</span>
-            <span className="text-[15px] font-extrabold text-purple-700">
-              ₹{item.price}
-              <span className="text-[12px] font-semibold text-purple-500 ml-0.5">/yr</span>
-            </span>
-          </div>
-        ))}
+        {items.map((item, index) => {
+          const numPrice = Number(typeof item.price === 'number' ? item.price : String(item.price).replace(/,/g, ''));
+          const formatted = Number.isFinite(numPrice) ? formatPrice(numPrice) : `₹${item.price}`;
+          return (
+            <div
+              key={`${item.tld}-${index}`}
+              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-purple-50/95 border border-purple-200/90 shadow-sm hover:border-purple-400 hover:bg-purple-100/90 hover:shadow-md transition-all duration-200 shrink-0 select-none"
+            >
+              <span className="font-black text-purple-950 text-[16px] tracking-tight">{item.tld}</span>
+              <span className="text-[15px] font-extrabold text-purple-700">
+                {formatted}
+                <span className="text-[12px] font-semibold text-purple-500 ml-0.5">/yr</span>
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

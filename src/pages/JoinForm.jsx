@@ -7,6 +7,8 @@ import TopNavbar from '../components/common/TopNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import Confetti from '../components/common/Confetti';
+import BotProtectionFields from '../components/common/BotProtectionFields';
+import { useBotProtection } from '../hooks/useBotProtection';
 import {
   PageHero,
   PageHeroItem,
@@ -65,6 +67,12 @@ const JoinForm = () => {
   const [errors, setErrors] = useState({});
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '' });
   const [showConfetti, setShowConfetti] = useState(false);
+  const {
+    requiresTurnstile,
+    getProtectionPayload,
+    resetProtection,
+    botProtectionProps,
+  } = useBotProtection();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -108,6 +116,13 @@ const JoinForm = () => {
       setErrors(newErrors);
       return;
     }
+    if (requiresTurnstile) {
+      setSubmitState({
+        status: 'error',
+        message: t('completeSecurityCheck', 'Please complete the security check.'),
+      });
+      return;
+    }
 
     try {
       setSubmitState({ status: 'loading', message: '' });
@@ -119,6 +134,7 @@ const JoinForm = () => {
         pinCode: formData.cityPincode,
         skill: formData.topSkill,
         equipment: formData.hasEquipment,
+        ...getProtectionPayload(),
       };
       
       await joinUsAPI.submit(requestData);
@@ -129,6 +145,7 @@ const JoinForm = () => {
       });
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 12000);
+      resetProtection();
       setFormData({
         fullName: '',
         email: '',
@@ -139,9 +156,11 @@ const JoinForm = () => {
       });
     } catch (error) {
       console.error('Join Us error:', error);
+      resetProtection();
+      const errMsg = error.response?.data?.message || error.response?.data?.detail || t('joinFormErrorMessage');
       setSubmitState({
         status: 'error',
-        message: t('joinFormErrorMessage')
+        message: errMsg
       });
     }
   };
@@ -410,6 +429,8 @@ const JoinForm = () => {
                       <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                     </label>
                   </div>
+
+                  <BotProtectionFields className="mt-3" {...botProtectionProps} />
 
                   <button
                     type="submit"

@@ -286,6 +286,9 @@ export const notificationAPI = {
   getUnreadCount:() => api.get('/api/v1/notifications/unread-count'),
   markAllRead:   () => api.put('/api/v1/notifications/mark-all-read'),
   markOneRead:   (id)=> api.put(`/api/v1/notifications/${id}/read`),
+  deleteOne:     (id) => api.delete(`/api/v1/notifications/${id}`),
+  deleteMultiple:(ids) => api.post('/api/v1/notifications/delete-multiple', { ids }),
+  deleteAll:     () => api.delete('/api/v1/notifications/delete-all'),
 };
 
 

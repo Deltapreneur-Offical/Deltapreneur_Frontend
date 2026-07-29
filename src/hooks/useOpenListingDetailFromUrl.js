@@ -25,6 +25,7 @@ export function useOpenListingDetailFromUrl({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const fetchedIdRef = useRef(null);
+  const closedIdRef = useRef(null);
   const id = routeId || searchParams.get('id') || searchParams.get('highlight');
 
   const clearUrlListingParams = useCallback(() => {
@@ -68,23 +69,33 @@ export function useOpenListingDetailFromUrl({
       setSearchParams(next);
       return;
     }
+    closedIdRef.current = null;
     setDetail(entity);
   }, [listingType, user, setDetail, denyDetailAccess, routeId, searchParams, setSearchParams]);
 
   const closeListingDetail = useCallback(() => {
+    const currentId = routeId || searchParams.get('id') || searchParams.get('highlight');
+    if (currentId) {
+      closedIdRef.current = String(currentId);
+    }
     setDetail(null);
     clearUrlListingParams();
-  }, [setDetail, clearUrlListingParams]);
+  }, [routeId, searchParams, setDetail, clearUrlListingParams]);
 
   useEffect(() => {
     if (!id || !allowUrlDetail) {
       if (!id) {
         fetchedIdRef.current = null;
+        closedIdRef.current = null;
         setDetail(null);
       }
       return;
     }
     if (authLoading) return;
+
+    if (closedIdRef.current && String(closedIdRef.current) === String(id)) {
+      return;
+    }
 
     const match = items.find((item) => String(item.id) === String(id));
     if (match) {
@@ -97,6 +108,7 @@ export function useOpenListingDetailFromUrl({
 
     fetchById(id)
       .then((entity) => {
+        if (closedIdRef.current && String(closedIdRef.current) === String(id)) return;
         openDetailIfAllowed(entity);
       })
       .catch(() => {

@@ -1519,6 +1519,22 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
       .finally(() => setLoading(false));
   }, [domain.id]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow || '';
+    };
+  }, [onClose]);
+
   const d = detail || domain;
   const display = resolveDomainDisplay(d);
   const c = normalizeContactInfo(d.contactInfo, d.contact_info);
@@ -1529,10 +1545,23 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={e => e.target === e.currentTarget && onClose?.()}
+    >
       <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
+        <button
+          type="button"
+          aria-label="Close"
+          className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose?.();
+          }}
+        >
+          ✕
+        </button>
 
         {loading ? (
           <div className="flex justify-center p-12">

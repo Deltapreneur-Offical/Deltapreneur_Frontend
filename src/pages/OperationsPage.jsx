@@ -106,7 +106,7 @@ export default function OperationsPage() {
 
   const isCompliance = activeSection.id === 'compliance';
   const isAssistance = activeSection.id === 'assistance';
-  const { cards: featuredVaCards, count: featuredVaCount, loading: featuredVaLoading } = useFeaturedVirtualAssistants(50);
+  const { cards: featuredVaCards, count: featuredVaCount, loading: featuredVaLoading, patchProfile } = useFeaturedVirtualAssistants(50);
   const vaDetailId = routeVaId || searchParams.get('id');
 
   useEffect(() => {
@@ -128,6 +128,29 @@ export default function OperationsPage() {
     },
     allowUrlDetail: Boolean(vaDetailId),
   });
+
+  // Record VA profile views on every detail open (including in-list card clicks).
+  useEffect(() => {
+    if (!detailProfile?.id) return undefined;
+
+    let cancelled = false;
+    virtualAssistantAPI.getPublicProfile(detailProfile.id)
+      .then((response) => {
+        if (cancelled) return;
+        const fresh = unwrapApiData(response);
+        if (!fresh) return;
+        const views = Number(fresh.views ?? 0);
+        patchProfile(fresh.id, { views });
+        setDetailProfile((prev) => (
+          prev && String(prev.id) === String(fresh.id) ? { ...prev, views } : prev
+        ));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [detailProfile?.id, patchProfile]);
 
   const openVaDetailInUrl = useCallback((profileId, { intent } = {}) => {
     const next = new URLSearchParams(searchParams);

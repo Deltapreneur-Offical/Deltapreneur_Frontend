@@ -399,6 +399,30 @@ export default function CommunityPage() {
     },
   });
 
+  // Record profile views on every public detail open (including in-list card clicks).
+  useEffect(() => {
+    if (!detailProfile?.id || authLoading || !user) return;
+
+    let cancelled = false;
+    communityAPI.getOne(detailProfile.id)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const fresh = data?.data ?? data;
+        if (!fresh) return;
+        setDetailProfile((prev) => (
+          prev && String(prev.id) === String(fresh.id) ? { ...prev, ...fresh } : prev
+        ));
+        setProfiles((prev) => prev.map((p) => (
+          String(p.id) === String(fresh.id) ? { ...p, views: fresh.views ?? p.views } : p
+        )));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [detailProfile?.id, authLoading, user]);
+
   const handleConnectLinkedIn = async () => {
     setLinkedInError('');
     setLinkedInSuccess('');

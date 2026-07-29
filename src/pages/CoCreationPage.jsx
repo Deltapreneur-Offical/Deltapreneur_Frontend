@@ -401,6 +401,9 @@ export default function CoCreationPage() {
           } : undefined}
           onAuction={() => { setAuctionTarget(detailTarget); closeListingDetail(); }}
           auctionStatus={auctionStatuses[detailTarget.id]}
+          onViewsUpdated={(id, views) => {
+            setAllSoftware((prev) => prev.map((row) => (row.id === id ? { ...row, views } : row)));
+          }}
         />
       )}
 
@@ -1549,7 +1552,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 }
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
-function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction, auctionStatus, likeState, onLike }) {
+function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction, auctionStatus, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const [detail, setDetail] = useState(null);
@@ -1560,7 +1563,11 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
     if (hasFetched.current) return;
     hasFetched.current = true;
     technologyAPI.get(item.id)
-      .then(({ data }) => setDetail(data?.data ?? data))
+      .then(({ data }) => {
+        const normalized = data?.data ?? data;
+        setDetail(normalized);
+        onViewsUpdated?.(normalized.id, normalized.views);
+      })
       .catch(() => setDetail(item))
       .finally(() => setLoading(false));
   }, [item.id]);

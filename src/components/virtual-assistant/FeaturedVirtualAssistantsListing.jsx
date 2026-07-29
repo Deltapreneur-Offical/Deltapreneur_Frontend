@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { virtualAssistantAPI } from '../../api/services';
@@ -53,6 +53,12 @@ export function useFeaturedVirtualAssistants(pageSize = 20, { enabled = true } =
     };
   }, [pageSize, enabled]);
 
+  const patchProfile = useCallback((id, patch) => {
+    setProfiles((prev) => prev.map((item) => (
+      String(item.id) === String(id) ? { ...item, ...patch } : item
+    )));
+  }, []);
+
   const cards = useMemo(
     () => asArray(profiles)
       .map((item) => {
@@ -63,7 +69,7 @@ export function useFeaturedVirtualAssistants(pageSize = 20, { enabled = true } =
     [profiles],
   );
 
-  return { cards, loading, count: cards.length };
+  return { cards, loading, count: cards.length, patchProfile };
 }
 
 export function FeaturedVirtualAssistantCard({

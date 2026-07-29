@@ -56,9 +56,23 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const title = t(section.labelKey, { defaultValue: section.defaultLabel });
   const shouldAutoScroll = useShouldAutoScroll(services.length);
 
+  const openServiceRequest = (service) => {
+    operationsAPI.get(service.id)
+      .then(({ data }) => {
+        const fresh = data?.data ?? data;
+        if (fresh?.views != null) {
+          setServices((prev) => prev.map((s) => (
+            String(s.id) === String(service.id) ? { ...s, views: fresh.views } : s
+          )));
+        }
+      })
+      .catch(() => {});
+    setRequestTarget(service);
+  };
+
   const renderServiceCard = (service) => (
     <HomePreviewCardShell accent="operations">
-      <HomeOperationsPreviewCard service={service} onHire={(s) => setRequestTarget(s)} />
+      <HomeOperationsPreviewCard service={service} onHire={openServiceRequest} />
     </HomePreviewCardShell>
   );
 

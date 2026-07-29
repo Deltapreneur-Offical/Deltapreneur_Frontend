@@ -511,7 +511,7 @@ function DomainAuctionCard({ auction, onClick }) {
 
   return (
     <div
-      className="card-glow-hover bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer relative h-auto sm:h-[355px] sm:max-h-[355px] min-h-[355px] overflow-hidden flex flex-col"
+      className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer relative h-auto sm:h-[355px] sm:max-h-[355px] min-h-[355px] overflow-hidden flex flex-col hover:-translate-y-0.5"
       onClick={onClick}
     >
       {/* Status pill */}
@@ -536,7 +536,10 @@ function DomainAuctionCard({ auction, onClick }) {
             {domainTitle || 'Unnamed domain'}
           </h3>
           <div className="flex flex-wrap items-center gap-2 text-xs text-purple-600 font-semibold">
-            <span>🔨 Auction</span>
+            <span className="inline-flex items-center gap-1">
+              <Gavel size={13} className="shrink-0" />
+              <span>Auction</span>
+            </span>
             {resolveAuctionListerName(auction) && (
               <span className="text-gray-500 font-medium">Listed by {resolveAuctionListerName(auction)}</span>
             )}

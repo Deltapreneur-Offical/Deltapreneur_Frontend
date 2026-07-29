@@ -452,7 +452,12 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             className="domain-listing-card__price-box domain-listing-card__price-box--auction domain-listing-card__price-box--compact"
             style={{
               borderRadius: '0.75rem',
-              background: `linear-gradient(#ffffff, #ffffff) padding-box, ${PRICE_BOX_GRADIENT[category] || PRICE_BOX_GRADIENT.domain} border-box`,
+              background: category === 'domain'
+                ? '#f8fafc'
+                : `linear-gradient(#ffffff, #ffffff) padding-box, ${PRICE_BOX_GRADIENT[category] || PRICE_BOX_GRADIENT.domain} border-box`,
+              border: category === 'domain'
+                ? '1px solid #e2e8f0'
+                : undefined,
             }}
           >
             <div className="domain-listing-card__price-text min-w-0 flex flex-col">

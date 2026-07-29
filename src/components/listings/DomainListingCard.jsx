@@ -52,7 +52,8 @@ function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel, au
   return (
     <div className={`domain-listing-card__price-box${isAuction ? ' domain-listing-card__price-box--auction' : ''}`}>
       {isAuction ? (
-        <div className="domain-listing-card__price-text min-w-0">
+        <div className="domain-listing-card__price-text min-w-0 flex items-center gap-1.5">
+          <Gavel size={14} className="shrink-0 text-indigo-600" />
           <span className="domain-listing-card__price-value truncate font-semibold text-indigo-600">
             {auctionLabel || 'On Live Auction'}
           </span>
@@ -386,9 +387,11 @@ export default function DomainListingCard({
     ? 'h-auto home-preview-browse-card'
     : 'h-full min-h-0';
 
+  const cardGlowClass = isAuction ? 'domain-auction-card-clean' : 'card-glow-hover';
+
   return (
     <article
-      className={`domain-listing-card card-glow-hover relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
+      className={`domain-listing-card ${cardGlowClass} relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
       onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}

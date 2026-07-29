@@ -2471,6 +2471,24 @@
     0 8px 26px rgba(15, 23, 42, 0.08) !important;
 }
 
+/* Domain Auction Cards on Homepage — Clean Dashboard Match (no gradient, clean white background) */
+.home-auto-scroll-row .home-auction-preview-card--category-domain:hover,
+.home-preview-row .home-auction-preview-card--category-domain:hover,
+.home-preview-card-border__inner .home-auction-preview-card--category-domain:hover {
+  background: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+
+.home-preview-card-border:has(.home-auction-preview-card--category-domain) .home-feature-card-beam-spinner {
+  display: none !important;
+}
+
+.home-preview-card-shell:has(.home-auction-preview-card--category-domain)::before {
+  display: none !important;
+  opacity: 0 !important;
+}
+
 /* ─── Homepage preview skeleton — neutral shell, no section accent until loaded ─── */
 .home-preview-card-skeleton-border {
   position: relative;

@@ -1698,8 +1698,9 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                 isAuction ? (
                   <button
                     onClick={onViewAuction}
-                    className="btn-glow btn-glow-sm">
-                    🔨 {auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')} →
+                    className="btn-glow btn-glow-sm inline-flex items-center gap-1">
+                    <Gavel size={14} className="shrink-0" />
+                    <span>{auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')} →</span>
                   </button>
                 ) : d.domainStatus === 'UNDER_REVIEW' ? (
                   <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-3 py-2 text-sm font-semibold text-amber-800">

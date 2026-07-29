@@ -35,21 +35,26 @@ export default function RegistryPremiumSegment({
   ];
 
   useEffect(() => {
-    const btn = btnRefs.current[value];
-    const track = trackRef.current;
-    if (!btn || !track) return;
-    const trackBox = track.getBoundingClientRect();
-    const btnBox = btn.getBoundingClientRect();
-    setIndicator({
-      left: btnBox.left - trackBox.left,
-      width: btnBox.width,
-    });
+    const updateIndicator = () => {
+      const btn = btnRefs.current[value];
+      const track = trackRef.current;
+      if (!btn || !track) return;
+      const trackBox = track.getBoundingClientRect();
+      const btnBox = btn.getBoundingClientRect();
+      setIndicator({
+        left: btnBox.left - trackBox.left,
+        width: btnBox.width,
+      });
+    };
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
   }, [value, standardCount, premiumCount, premiumLoading, standardLoading]);
 
   return (
     <div
       ref={trackRef}
-      className={`relative inline-flex items-center gap-1 rounded-xl bg-gray-100/90 p-1 shadow-inner ${className}`}
+      className={`relative flex sm:inline-flex items-center gap-1 w-full sm:w-auto max-w-full rounded-xl bg-gray-100/90 p-1 shadow-inner ${className}`}
       role="tablist"
       aria-label="Domain tier filter"
     >
@@ -81,7 +86,7 @@ export default function RegistryPremiumSegment({
               btnRefs.current[opt.id] = el;
             }}
             onClick={() => onChange(opt.id)}
-            className={`relative z-[1] inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors duration-300 whitespace-nowrap select-none ${
+            className={`relative z-[1] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-300 whitespace-nowrap select-none min-w-0 ${
               active
                 ? opt.sparkle
                   ? 'text-amber-950'
@@ -90,7 +95,7 @@ export default function RegistryPremiumSegment({
             }`}
           >
             {opt.sparkle ? <span aria-hidden="true">✦</span> : null}
-            {opt.label}
+            <span className="truncate">{opt.label}</span>
             {opt.loading ? (
               <span className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${opt.sparkle ? 'border-amber-300 border-t-amber-700' : 'border-gray-300 border-t-gray-700'}`} />
             ) : typeof opt.count === 'number' ? (

@@ -195,7 +195,7 @@ export default function AddToCartButton({
 
   const sizeClasses = size === 'sm'
     ? 'px-3 py-1.5 text-xs gap-1.5'
-    : 'px-4 py-2.5 text-sm gap-2';
+    : 'px-4 py-2.5 max-sm:px-2.5 max-sm:py-2 text-sm max-sm:text-xs gap-2 max-sm:gap-1.5';
 
   const removeBtnSize = size === 'sm'
     ? 'h-[1.875rem] w-[1.875rem]'
@@ -332,13 +332,13 @@ export default function AddToCartButton({
           {loading ? (
             <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : showGoToCart ? (
-            <ShoppingCart size={14} />
+            <ShoppingCart size={14} className="shrink-0" />
           ) : showAdded && !updateWhenInCart ? (
-            <Check size={14} />
+            <Check size={14} className="shrink-0" />
           ) : (
-            <ShoppingCart size={14} />
+            <ShoppingCart size={14} className="shrink-0" />
           )}
-          {buttonLabel}
+          <span className="truncate whitespace-nowrap">{buttonLabel}</span>
         </button>
 
         {showSideRemove && (

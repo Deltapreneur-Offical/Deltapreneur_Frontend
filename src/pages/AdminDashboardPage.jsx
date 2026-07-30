@@ -1137,7 +1137,7 @@ function VentureAdminRow({
                 Pending approval
               </span>
             )}
-            {listingApproval === 'APPROVED' && (
+            {listingApproval === 'APPROVED' && !venture.takenDown && !venture.taken_down && (
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#059669', background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
                 Live
               </span>

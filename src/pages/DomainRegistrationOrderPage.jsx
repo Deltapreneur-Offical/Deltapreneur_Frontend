@@ -277,6 +277,7 @@ export default function DomainRegistrationOrderPage() {
   const nameservers  = Array.isArray(order.domainManagement?.nameservers) ? order.domainManagement.nameservers : [];
   const panelUrl     = order.domainManagement?.customerPanelUrl;
   const loginEmail   = order.domainManagement?.loginEmail;
+  const legacyResellerClub = Boolean(order.domainManagement?.legacyResellerClub);
   const expiresAt    = order.expiresAt ? new Date(order.expiresAt) : null;
   const daysLeft     = expiresAt ? Math.floor((expiresAt - Date.now()) / 86400000) : null;
   const expiringSoon = daysLeft !== null && daysLeft < 90;
@@ -556,6 +557,7 @@ export default function DomainRegistrationOrderPage() {
               nameservers={nameservers}
               panelUrl={panelUrl}
               loginEmail={loginEmail}
+              legacyResellerClub={legacyResellerClub}
               onUpdateSuccess={() => loadOrder(false)}
             />
           )}
@@ -655,7 +657,7 @@ function TimelineNode({ label, date, active }) {
 }
 
 /* ─── DNS SECTION COMPONENT WITH NAMESERVER UPDATE FORM & VISUAL RECORDS EDITOR ─── */
-function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
+function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false, onUpdateSuccess }) {
   const [ns1, setNs1] = useState('');
   const [ns2, setNs2] = useState('');
   const [loading, setLoading] = useState(false);
@@ -696,7 +698,7 @@ function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
       const { data } = await domainStorefrontAPI.getDnsRecords(orderId);
       setRecords(Array.isArray(data) ? data : data?.data ?? []);
     } catch (err) {
-      setDnsError('Could not fetch DNS records.');
+      setDnsError(readApiError(err, 'Could not fetch DNS records.'));
     } finally { setRecordsLoading(false); }
   }, [orderId]);
 
@@ -767,6 +769,17 @@ function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
+        {legacyResellerClub && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+            <p className="font-bold">Legacy ResellerClub domain</p>
+            <p className="mt-1 text-amber-800/90">
+              This domain was registered before CoBrother moved to OpenProvider.
+              DNS and nameserver management in CoBrother requires transferring it
+              to OpenProvider first. Until then, use the previous registrar panel
+              or complete the one-time transfer checklist.
+            </p>
+          </div>
+        )}
         
         {/* Form Card (Nameservers) */}
         <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
@@ -893,8 +906,19 @@ function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 font-medium">
-                    {records.map((r) => (
-                      <tr key={r.id} className="hover:bg-gray-50/50">
+                    {records.map((r, idx) => {
+                      const rowKey = [
+                        r.id,
+                        r.type,
+                        r.name,
+                        r.value,
+                        r.priority,
+                        idx,
+                      ]
+                        .filter((part) => part !== undefined && part !== null && part !== '')
+                        .join('|');
+                      return (
+                      <tr key={rowKey} className="hover:bg-gray-50/50">
                         <td className="px-4 py-3 font-bold text-indigo-700">{r.type}</td>
                         <td className="px-4 py-3 font-mono text-gray-800">{r.name}</td>
                         <td className="px-4 py-3 font-mono text-gray-800 break-all max-w-xs">{r.value} {r.priority != null && `(Priority: ${r.priority})`}</td>
@@ -910,7 +934,8 @@ function DnsManagementSection({ orderId, nameservers, onUpdateSuccess }) {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

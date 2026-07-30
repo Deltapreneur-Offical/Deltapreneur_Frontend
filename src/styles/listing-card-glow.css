@@ -79,12 +79,12 @@
 
 .domain-listing-card-shell::before {
   background: linear-gradient(90deg,
-      rgba(245, 158, 11, 0.28) 0%,
-      rgba(251, 191, 36, 0.12) 20%,
+      rgba(14, 165, 233, 0.28) 0%,
+      rgba(56, 189, 248, 0.12) 20%,
       transparent 42%,
       transparent 58%,
-      rgba(251, 191, 36, 0.12) 80%,
-      rgba(245, 158, 11, 0.28) 100%);
+      rgba(56, 189, 248, 0.12) 80%,
+      rgba(14, 165, 233, 0.28) 100%);
 }
 
 .listing-card-glow-shell.community-listing-card-shell {
@@ -176,36 +176,36 @@
 }
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card) {
-  border: 1px solid #fcd34d !important;
+  border: 1px solid #7dd3fc !important;
   border-radius: 1rem;
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.18),
-    0 8px 24px rgba(180, 83, 9, 0.08),
-    0 0 20px rgba(251, 191, 36, 0.1);
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12);
   background: #ffffff !important;
 }
 
-/* Kill shared purple ::after wash from professional-ui — use soft cream/gold instead */
+/* Kill shared purple ::after wash — Standard Domains sky wash */
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card)::after {
   background:
     linear-gradient(180deg,
       rgba(255, 255, 255, 0.2) 0%,
-      rgba(255, 251, 235, 0.55) 55%,
-      rgba(254, 243, 199, 0.7) 100%),
+      rgba(240, 249, 255, 0.55) 55%,
+      rgba(186, 230, 253, 0.65) 100%),
     linear-gradient(135deg,
-      rgba(253, 230, 138, 0.18) 0%,
-      rgba(251, 191, 36, 0.1) 50%,
-      rgba(245, 158, 11, 0.14) 100%) !important;
+      rgba(125, 211, 252, 0.18) 0%,
+      rgba(56, 189, 248, 0.1) 50%,
+      rgba(14, 165, 233, 0.14) 100%) !important;
 }
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):hover:not(.creator-profile-card) {
-  border-color: #d97706 !important;
+  border-color: #38bdf8 !important;
   background-color: #ffffff !important;
   box-shadow:
-    0 0 0 1px rgba(217, 119, 6, 0.28),
-    0 12px 32px rgba(180, 83, 9, 0.14),
-    0 0 32px rgba(251, 191, 36, 0.22),
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -217,12 +217,12 @@
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):hover {
   transform: translateY(-3px) translateZ(0);
-  border-color: #d97706 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
+  border-color: #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
   box-shadow:
-    0 0 0 1px rgba(217, 119, 6, 0.28),
-    0 12px 32px rgba(180, 83, 9, 0.14),
-    0 0 32px rgba(251, 191, 36, 0.22),
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 

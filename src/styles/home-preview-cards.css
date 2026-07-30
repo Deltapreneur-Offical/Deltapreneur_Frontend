@@ -382,26 +382,26 @@
   }
 }
 
-/* Domains — premium gold (matches registry Premium Domain cards; no badge) */
+/* Domains — Standard Domains sky (matches registry Standard Domain cards) */
 .home-preview-card-border--domain {
-  --home-card-border: #fcd34d;
-  --home-card-border-hover: #d97706;
-  --home-card-shadow-accent: rgba(251, 191, 36, 0.28);
-  border: 1px solid #fcd34d !important;
+  --home-card-border: #7dd3fc;
+  --home-card-border-hover: #38bdf8;
+  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
+  border: 1px solid #7dd3fc !important;
   background: #ffffff !important;
   box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.18),
-    0 8px 24px rgba(180, 83, 9, 0.08),
-    0 0 20px rgba(251, 191, 36, 0.1) !important;
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12) !important;
 }
 
 .home-preview-card-border--domain:hover {
-  border: 1px solid #d97706 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
+  border: 1px solid #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
   box-shadow:
-    0 0 0 1px rgba(217, 119, 6, 0.28),
-    0 12px 32px rgba(180, 83, 9, 0.14),
-    0 0 32px rgba(251, 191, 36, 0.22),
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -425,8 +425,8 @@
 
 .home-preview-card-border--domain .domain-listing-card__cover-fallback,
 .home-preview-card-border--domain:hover .domain-listing-card__cover-fallback {
-  background: linear-gradient(180deg, #f8fafc 0%, #fffbeb 100%) !important;
-  background-image: linear-gradient(180deg, #f8fafc 0%, #fffbeb 100%) !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #f0f9ff 100%) !important;
+  background-image: linear-gradient(180deg, #f8fafc 0%, #f0f9ff 100%) !important;
   box-shadow: none !important;
 }
 
@@ -495,7 +495,7 @@
   --home-card-shadow-accent: rgba(52, 211, 153, 0.3);
 }
 
-/* Price box — domain cards use premium TLD amber (not black) */
+/* Price box — domain cards use Standard Domains sky */
 .home-preview-card-border .domain-listing-card__price-box,
 .home-preview-card-border .home-auction-preview-card__price-box {
   border: 1px solid #000000 !important;
@@ -504,7 +504,7 @@
 }
 
 .home-preview-card-border--domain .domain-listing-card__price-box {
-  border: 1px solid #b45309 !important;
+  border: 1px solid #38bdf8 !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__price-box,
@@ -518,7 +518,7 @@
 }
 
 .home-preview-card-border--domain:hover .domain-listing-card__price-box {
-  border: 1px solid #92400e !important;
+  border: 1px solid #0284c7 !important;
   background: #ffffff !important;
 }
 

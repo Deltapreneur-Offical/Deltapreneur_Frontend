@@ -25,6 +25,7 @@ import { resolveUserDisplayName } from '../../utils/userDisplayName';
 import { SUPPORT_PHONE_DISPLAY, SUPPORT_PHONE_TEL } from '../../config/contactLinks';
 import { useDomainPendingVerification } from '../../hooks/useDomainPendingVerification';
 import { PendingVerificationDot } from '../domains/DomainVerificationPendingBanner';
+import ConfirmationModal from '../common/ConfirmationModal';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
@@ -195,6 +196,8 @@ export default function AppLayout({ children }) {
   const [referralPopup, setReferralPopup] = useState(null);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifPanelStyle, setNotifPanelStyle] = useState(null);
+  const [showClearNotifsConfirm, setShowClearNotifsConfirm] = useState(false);
+  const [clearingNotifs, setClearingNotifs] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileMenuStyle, setProfileMenuStyle] = useState(null);
   const [showInitial, setShowInitial] = useState(false);
@@ -425,18 +428,22 @@ export default function AppLayout({ children }) {
       });
   };
 
-  const handleClearAllNotifications = async () => {
+  const handleClearAllNotifications = () => {
     if (notifications.length === 0) return;
-    const confirmed = window.confirm(
-      'Clear all notifications? Once cleared, this cannot be reverted.',
-    );
-    if (!confirmed) return;
+    setShowClearNotifsConfirm(true);
+  };
+
+  const confirmClearAllNotifications = async () => {
+    setClearingNotifs(true);
     try {
       await notificationAPI.deleteAll();
       setNotifications([]);
       setUnreadCount(0);
+      setShowClearNotifsConfirm(false);
     } catch {
       // keep existing list on failure
+    } finally {
+      setClearingNotifs(false);
     }
   };
 
@@ -1029,6 +1036,22 @@ export default function AppLayout({ children }) {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        open={showClearNotifsConfirm}
+        title="Clear all notifications?"
+        message="Once cleared, this cannot be reverted."
+        confirmLabel="Clear all"
+        cancelLabel="Cancel"
+        variant="red"
+        loading={clearingNotifs}
+        loadingLabel="Clearing..."
+        zIndex={10100}
+        onCancel={() => {
+          if (!clearingNotifs) setShowClearNotifsConfirm(false);
+        }}
+        onConfirm={confirmClearAllNotifications}
+      />
       {/* Referral Reward Congratulations Overlay */}
       {referralPopup && (
         <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">

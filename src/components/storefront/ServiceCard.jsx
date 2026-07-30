@@ -7,6 +7,14 @@ const priceStyles = {
 
 import NoDomainsOverlay from './NoDomainsOverlay';
 
+/** API labels often already include "From …" — avoid "From From …". */
+function formatServicePriceLabel(price) {
+  const raw = String(price ?? '').trim();
+  if (!raw || raw === '—') return 'Price on request';
+  if (/^from\b/i.test(raw)) return raw;
+  return `From ${raw}`;
+}
+
 export default function ServiceCard({ icon, name, description, price, priceAvailable = true, onConfigure, isActive, noDomainsOverlay = false, children }) {
   return (
     <div
@@ -28,7 +36,7 @@ export default function ServiceCard({ icon, name, description, price, priceAvail
 
       <div className="flex items-center justify-between gap-3 mt-1">
         <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded border ${priceAvailable ? priceStyles.available : priceStyles.unavailable}`}>
-          {priceAvailable ? `From ${price}` : 'Price on request'}
+          {priceAvailable ? formatServicePriceLabel(price) : 'Price on request'}
         </span>
         <button
           type="button"

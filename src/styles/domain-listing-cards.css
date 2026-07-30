@@ -51,7 +51,7 @@
   width: 100%;
   height: 100%;
   padding: 0.75rem 1rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #fffbeb 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #f0f9ff 100%);
   text-align: center;
 }
 
@@ -66,7 +66,7 @@
   /* cleaner spacing */
   line-height: 1.2;
   /* text-transform: uppercase; */
-  color: #b45309;
+  color: #0369a1;
   overflow: hidden;
   text-overflow: clip;
   white-space: normal;
@@ -245,14 +245,14 @@
   margin-top: 0;
   padding: 0.32rem 0.45rem 0.32rem 0.6rem;
   border-radius: 1rem;
-  border: 1px solid #b45309;
+  border: 1px solid #38bdf8;
   background: #ffffff;
   box-shadow: none;
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .domain-listing-card.card-glow-hover:hover .domain-listing-card__price-box {
-  border-color: #92400e;
+  border-color: #0284c7;
 }
 
 .domain-listing-card__price-text {
@@ -451,7 +451,7 @@
 }
 
 .domain-listing-card__tld {
-  color: #b45309;
+  color: #0369a1;
 }
 
 .home-preview-card-border--domain .domain-listing-card__body {
@@ -698,22 +698,22 @@
   color: #0f172a;
 }
 
-/* Domain marketplace cards — premium gold/brown likes */
+/* Domain marketplace cards — Standard Domains sky likes */
 .domain-listing-card .listing-like-btn__icon--idle {
-  color: #d97706;
+  color: #38bdf8;
 }
 
 .domain-listing-card .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .domain-listing-card .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #b45309;
+  color: #0284c7;
 }
 
 .domain-listing-card .listing-like-btn__icon--active {
-  color: #92400e;
+  color: #0369a1;
 }
 
 .domain-listing-card .listing-like-btn__count {
-  color: #92400e;
+  color: #0369a1;
 }
 
 .creator-profile-card__stats {

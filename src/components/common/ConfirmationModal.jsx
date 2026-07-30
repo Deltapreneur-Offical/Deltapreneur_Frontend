@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 const buttonVariantMap = {
@@ -25,6 +26,9 @@ export default function ConfirmationModal({
   bodyClassName = '',
   panelClassName = '',
   footerClassName = '',
+  overlayClassName = '',
+  /** Stack above portaled menus (notifications use 10050). */
+  zIndex = 10060,
   children,
   onCancel,
   onConfirm,
@@ -38,7 +42,7 @@ export default function ConfirmationModal({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [loading, onCancel, open]);
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
   const sizeClassMap = {
     md: 'max-w-md',
@@ -47,9 +51,10 @@ export default function ConfirmationModal({
   };
   const maxWidthClass = sizeClassMap[size] || sizeClassMap.md;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex items-end justify-center bg-gray-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className={`fixed inset-0 flex items-end justify-center bg-gray-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4 ${overlayClassName}`.trim()}
+      style={{ zIndex }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirmation-modal-title"
@@ -106,6 +111,7 @@ export default function ConfirmationModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

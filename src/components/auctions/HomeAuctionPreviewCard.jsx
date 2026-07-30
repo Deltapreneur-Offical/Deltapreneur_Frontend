@@ -73,12 +73,6 @@ const COVER_GRADIENT = {
   community: 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700',
 };
 
-const PRICE_BOX_GRADIENT = {
-  domain: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
-  technology: 'linear-gradient(90deg, #a78bfa 0%, #818cf8 50%, #4f46e5 100%)',
-  community: 'linear-gradient(90deg, #34d399 0%, #10b981 50%, #059669 100%)',
-};
-
 const BADGE_TONE_CLASS = {
   domain: {
     primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
@@ -452,12 +446,9 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             className="domain-listing-card__price-box domain-listing-card__price-box--auction domain-listing-card__price-box--compact"
             style={{
               borderRadius: '0.75rem',
-              background: category === 'domain'
-                ? '#f8fafc'
-                : `linear-gradient(#ffffff, #ffffff) padding-box, ${PRICE_BOX_GRADIENT[category] || PRICE_BOX_GRADIENT.domain} border-box`,
-              border: category === 'domain'
-                ? '1px solid #e2e8f0'
-                : undefined,
+              background: '#ffffff',
+              border: '1px solid #fcd34d',
+              boxShadow: '0 0 0 1px rgba(251, 191, 36, 0.18), 0 4px 14px rgba(180, 83, 9, 0.08)',
             }}
           >
             <div className="domain-listing-card__price-text min-w-0 flex flex-col">

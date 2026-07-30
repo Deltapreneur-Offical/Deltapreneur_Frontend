@@ -6,7 +6,7 @@
  * No external dependencies required.
  */
 
-import coBrotherLogo from '../assets/Cobrother_logo2.png';
+import coBrotherLogo from '../assets/Cobrother_logo.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 

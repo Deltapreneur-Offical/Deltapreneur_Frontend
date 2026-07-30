@@ -47,12 +47,12 @@ function DomainEssentialCard({
       <div className="p-6 flex flex-col flex-1 gap-4">
         <div className="flex items-start justify-between gap-3">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-purple-50 border border-purple-100"
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-amber-50 border border-amber-100"
           >
-            <Icon className="w-6 h-6 text-purple-600" strokeWidth={2} />
+            <Icon className="w-6 h-6 text-amber-700" strokeWidth={2} />
           </div>
           <span
-            className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200"
+            className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200"
           >
             {card.tag}
           </span>
@@ -100,7 +100,7 @@ function DomainEssentialCard({
             {card.bullets.map((b) => (
               <li key={b} className="flex items-start gap-2 text-[12px] text-gray-650 font-medium">
                 <CheckCircle2
-                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-purple-400"
+                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500"
                 />
                 <span>{b}</span>
               </li>
@@ -113,7 +113,7 @@ function DomainEssentialCard({
             {card.bullets.slice(0, 2).map((b) => (
               <li key={b} className="flex items-start gap-2 text-[12px] text-gray-655 font-medium">
                 <CheckCircle2
-                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-purple-400"
+                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500"
                 />
                 <span>{b}</span>
               </li>
@@ -142,7 +142,7 @@ function DomainEssentialCard({
           <button
             type="button"
             onClick={() => onCta(card.id)}
-            className="domain-essential-card__cta inline-flex items-center justify-center gap-1 h-8 px-3 rounded-xl text-white text-[11px] font-semibold bg-purple-600 hover:bg-purple-700 transition-all select-none active:scale-95 shadow-sm shrink-0"
+            className="domain-essential-card__cta inline-flex items-center justify-center gap-1 h-8 px-3 rounded-xl text-white text-[11px] font-semibold bg-amber-700 hover:bg-amber-800 transition-all select-none active:scale-95 shadow-sm shrink-0"
           >
             {card.cta}
             <ArrowRight

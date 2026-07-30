@@ -54,7 +54,7 @@
   --cobrother-brand-green-rgb: 80, 191, 120;
   --cobrother-brand-green-dark: #50BF78;
   --cobrother-brand-green-soft: #edf9f1;
-  --cobrother-hover-color: var(--cobrother-brand-green);
+  --cobrother-hover-color: #0369a1;
   /* WhatsApp brand + glow (nav, footer, floating button) */
   --whatsapp-color: #25d366;
   --whatsapp-color-bright: #1faa59;
@@ -7683,7 +7683,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 
 .home-nav-phone-number:hover,
 .home-nav-phone-number:focus-visible {
-  color: var(--cobrother-hover-color);
+  color: #0369a1;
 }
 
 /* Premium inline locale + currency controls (1st navbar) */
@@ -7743,10 +7743,17 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
   transition: color 0.25s ease, background-color 0.25s ease;
 }
 
+.home-top-nav-actions .home-nav-util-btn svg,
+.app-layout-header-utils .home-nav-util-btn svg,
+.home-top-nav-actions .home-nav-util-btn span,
+.app-layout-header-utils .home-nav-util-btn span {
+  color: inherit !important;
+}
+
 .home-top-nav-actions .home-nav-util-btn:hover,
 .home-top-nav-actions .home-nav-util-btn:focus-visible,
 .app-layout-header-utils .home-nav-util-btn:hover {
-  color: var(--cobrother-hover-color) !important;
+  color: #0369a1 !important;
   background: transparent !important;
 }
 
@@ -8292,13 +8299,13 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 .home-nav-pill:focus-visible,
 .home-nav-pill.is-open {
   background: transparent;
-  color: #92400e;
+  color: #0369a1;
 }
 
 .home-nav-pill:hover svg,
 .home-nav-pill:focus-visible svg,
 .home-nav-pill.is-open svg {
-  color: #92400e;
+  color: #0369a1;
 }
 
 .home-nav-call-btn,
@@ -8469,7 +8476,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo {
 .home-nav-dropdown-link:focus-visible,
 .home-nav-dropdown-link[aria-current='page'] {
   background: transparent;
-  color: #92400e !important;
+  color: #0369a1 !important;
 }
 
 .home-nav-overlay {
@@ -8629,12 +8636,12 @@ body.home-menu-open {
 .home-mobile-accordion-trigger:hover,
 .home-mobile-accordion-trigger:focus-visible {
   background: transparent;
-  color: #92400e !important;
+  color: #0369a1 !important;
 }
 
 .home-mobile-accordion-trigger:hover svg,
 .home-mobile-accordion-trigger:focus-visible svg {
-  color: #92400e !important;
+  color: #0369a1 !important;
 }
 
 .home-mobile-accordion-panel {
@@ -8661,7 +8668,7 @@ body.home-menu-open {
 .home-mobile-link:hover,
 .home-mobile-link:focus-visible {
   background: transparent;
-  color: #92400e !important;
+  color: #0369a1 !important;
 }
 
 /* ─── Navbar (legacy) ─────────────────────────────────────────────────────── */

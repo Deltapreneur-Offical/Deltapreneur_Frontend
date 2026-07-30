@@ -3,6 +3,7 @@ import AddToCartButton from '../cart/AddToCartButton';
 import { domainRegistrationCartProps } from '../../utils/domainRegistrationCart';
 import { DomainCardSkeleton } from '../common/DomainExtensionsLoader';
 import RegistryPremiumBadge from './RegistryPremiumBadge';
+import RegistryStandardBadge from './RegistryStandardBadge';
 import { isRegistryPremium } from '../../utils/registryPremium';
 
 /**
@@ -101,12 +102,12 @@ export default function DomainCard({
   if (featured) {
     return (
       <div
-        className={`domain-search-card domain-search-card--featured relative bg-white rounded-2xl border p-4 sm:p-5 shadow-[0_6px_24px_rgba(15,23,42,0.06)] transition-all duration-200 ${
+        className={`domain-search-card domain-search-card--featured relative rounded-2xl border p-4 sm:p-5 transition-all duration-200 ${
           item.available
             ? item.isPremium
-              ? 'border-amber-300 ring-1 ring-amber-200/70 bg-gradient-to-br from-amber-50/50 via-white to-white'
-              : 'border-[var(--cobrother-brand-green)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.14)]'
-            : 'border-gray-200'
+              ? 'border-amber-300 ring-1 ring-amber-200/70 bg-gradient-to-br from-amber-50/50 via-white to-white shadow-[0_0_0_1px_rgba(251,191,36,0.2),0_8px_28px_rgba(180,83,9,0.1),0_0_24px_rgba(251,191,36,0.12)]'
+              : 'border-sky-300 ring-1 ring-sky-200/70 bg-gradient-to-br from-sky-50/50 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.22),0_8px_28px_rgba(2,132,199,0.1),0_0_24px_rgba(56,189,248,0.14)]'
+            : 'border-gray-200 bg-white shadow-[0_6px_24px_rgba(15,23,42,0.06)]'
         } ${className}`}
       >
         {cartProps && (
@@ -120,7 +121,7 @@ export default function DomainCard({
         <div className="pr-10 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={item.status} />
-            {item.isPremium ? <RegistryPremiumBadge /> : null}
+            {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
           </div>
           {showStyleBadge && item.style ? (
             <span className="inline-flex w-fit rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700">
@@ -129,10 +130,12 @@ export default function DomainCard({
           ) : null}
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-950 leading-tight">
             {item.name}
-            <span className={item.isPremium ? 'text-amber-700' : 'text-purple-600'}>.{item.tld}</span>
+            <span className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
           </h2>
           {item.isPremium ? (
             <p className="text-xs font-semibold text-amber-800/85">Premium Domain</p>
+          ) : item.available ? (
+            <p className="text-xs font-semibold text-sky-800/85">Standard Domain</p>
           ) : null}
           {priceText ? (
             <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none">
@@ -171,12 +174,12 @@ export default function DomainCard({
 
   return (
     <div
-      className={`domain-search-card relative flex flex-col bg-white border rounded-2xl p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)] hover:shadow-[0_10px_28px_rgba(79,70,229,0.10)] hover:-translate-y-0.5 transition-all duration-200 ${
+      className={`domain-search-card relative flex flex-col border rounded-2xl p-4 hover:-translate-y-0.5 transition-all duration-200 ${
         item.available
           ? item.isPremium
-            ? 'border-amber-200 ring-1 ring-amber-100 bg-gradient-to-br from-amber-50/40 via-white to-white'
-            : 'border-[rgba(var(--cobrother-brand-green-rgb),0.38)] ring-1 ring-[rgba(var(--cobrother-brand-green-rgb),0.10)]'
-          : 'border-gray-200 opacity-70'
+            ? 'border-amber-200 ring-1 ring-amber-100 bg-gradient-to-br from-amber-50/40 via-white to-white shadow-[0_0_0_1px_rgba(251,191,36,0.18),0_8px_24px_rgba(180,83,9,0.08),0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_0_0_1px_rgba(251,191,36,0.28),0_10px_28px_rgba(180,83,9,0.12),0_0_28px_rgba(251,191,36,0.16)]'
+            : 'border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]'
+          : 'border-gray-200 bg-white opacity-70 shadow-[0_4px_16px_rgba(15,23,42,0.05)]'
       } ${className}`}
     >
       {cartProps && (
@@ -190,7 +193,7 @@ export default function DomainCard({
       <div className="pr-9 space-y-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
           <StatusBadge status={item.status} />
-          {item.isPremium ? <RegistryPremiumBadge /> : null}
+          {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
         </div>
         {showStyleBadge && item.style ? (
           <span className="inline-flex w-fit rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700">
@@ -199,10 +202,12 @@ export default function DomainCard({
         ) : null}
         <h3 className="text-lg font-extrabold tracking-tight text-gray-950 leading-snug">
           {item.name}
-          <span className={item.isPremium ? 'text-amber-700' : 'text-purple-500'}>.{item.tld}</span>
+          <span className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
         </h3>
         {item.isPremium ? (
           <p className="text-[11px] font-semibold text-amber-800/80">Premium Domain</p>
+        ) : item.available ? (
+          <p className="text-[11px] font-semibold text-sky-800/80">Standard Domain</p>
         ) : null}
         {priceText ? (
           <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">

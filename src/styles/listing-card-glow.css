@@ -8,12 +8,16 @@
 .listing-card-glow.card-glow-hover,
 .technology-listing-card.card-glow-hover,
 .home-feature-card.card-glow-hover,
-.domain-listing-card.card-glow-hover,
 .venture-listing-card.card-glow-hover,
 .community-listing-card.card-glow-hover,
 .creator-profile-card.card-glow-hover,
 .listing-card-skeleton {
   background: var(--listing-card-gradient) !important;
+}
+
+/* Domain cards use white/cream — never the shared indigo wash */
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card) {
+  background: #ffffff !important;
 }
 
 .listing-card-glow-grid,
@@ -71,6 +75,16 @@
       transparent 58%,
       rgba(15, 23, 42, 0.06) 80%,
       rgba(15, 23, 42, 0.18) 100%);
+}
+
+.domain-listing-card-shell::before {
+  background: linear-gradient(90deg,
+      rgba(245, 158, 11, 0.28) 0%,
+      rgba(251, 191, 36, 0.12) 20%,
+      transparent 42%,
+      transparent 58%,
+      rgba(251, 191, 36, 0.12) 80%,
+      rgba(245, 158, 11, 0.28) 100%);
 }
 
 .listing-card-glow-shell.community-listing-card-shell {
@@ -161,17 +175,74 @@
     0 4px 14px rgba(15, 23, 42, 0.06);
 }
 
-.domain-listing-card.card-glow-hover,
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card) {
+  border: 1px solid #fcd34d !important;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.1);
+  background: #ffffff !important;
+}
+
+/* Kill shared purple ::after wash from professional-ui — use soft cream/gold instead */
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card)::after {
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 251, 235, 0.55) 55%,
+      rgba(254, 243, 199, 0.7) 100%),
+    linear-gradient(135deg,
+      rgba(253, 230, 138, 0.18) 0%,
+      rgba(251, 191, 36, 0.1) 50%,
+      rgba(245, 158, 11, 0.14) 100%) !important;
+}
+
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):hover:not(.creator-profile-card) {
+  border-color: #d97706 !important;
+  background-color: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
 .home-feature-card.card-glow-hover {
   border: none !important;
   border-radius: 1rem;
   overflow: hidden;
 }
 
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):hover {
+  transform: translateY(-3px) translateZ(0);
+  border-color: #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):hover .domain-listing-card__body,
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):hover .domain-listing-card__cover {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Homepage domain shells — no inner purple/gold overlay; outer shell owns hover */
+.home-preview-card-border--domain .domain-listing-card.card-glow-hover::after,
+.home-preview-card-border--domain .domain-listing-card.card-glow-hover:hover::after {
+  opacity: 0 !important;
+  background: none !important;
+}
+
 .listing-card-glow.card-glow-hover:hover,
 .technology-listing-card.card-glow-hover:hover,
 .home-feature-card.card-glow-hover:hover,
-.domain-listing-card.card-glow-hover:hover,
 .venture-listing-card.card-glow-hover:hover,
 .community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-3px) translateZ(0);
@@ -190,21 +261,19 @@
 }
 
 /* Homepage preview cards — outer shell owns hover; inner listing cards stay clean */
+/* Homepage preview cards — outer shell owns hover; inner listing cards stay clean */
 .home-preview-card-border .venture-listing-card,
 .home-preview-card-border .technology-listing-card,
-.home-preview-card-border .domain-listing-card,
 .home-preview-card-border .home-creator-listing-card,
 .home-preview-card-border .home-auction-preview-card,
 .home-preview-card-border .home-preview-browse-card,
 .home-preview-card-border .venture-listing-card.card-glow-hover,
 .home-preview-card-border .technology-listing-card.card-glow-hover,
-.home-preview-card-border .domain-listing-card.card-glow-hover,
 .home-preview-card-border .home-creator-listing-card.card-glow-hover,
 .home-preview-card-border .home-auction-preview-card.card-glow-hover,
 .home-preview-card-border .home-preview-browse-card.card-glow-hover,
 .home-preview-card-border .venture-listing-card.card-glow-hover:hover,
 .home-preview-card-border .technology-listing-card.card-glow-hover:hover,
-.home-preview-card-border .domain-listing-card.card-glow-hover:hover,
 .home-preview-card-border .home-creator-listing-card.card-glow-hover:hover,
 .home-preview-card-border .home-auction-preview-card.card-glow-hover:hover,
 .home-preview-card-border .home-preview-browse-card.card-glow-hover:hover {
@@ -212,6 +281,16 @@
   box-shadow: none !important;
   border: none !important;
   background: #ffffff !important;
+}
+
+/* Domain homepage cards — transparent so outer premium-gold shell shows through */
+.home-preview-card-border--domain .domain-listing-card,
+.home-preview-card-border--domain .domain-listing-card.card-glow-hover,
+.home-preview-card-border--domain .domain-listing-card.card-glow-hover:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 /* Domain Auction Cards — Clean Dashboard Match */

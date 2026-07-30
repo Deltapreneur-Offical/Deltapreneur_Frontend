@@ -1,49 +1,51 @@
 import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
 import './domain-extensions-loader.css';
 
 function SkeletonBone({ className = '' }) {
-  return <div className={`animate-pulse rounded bg-slate-100 ${className}`.trim()} aria-hidden="true" />;
+  return (
+    <div
+      className={`animate-pulse rounded bg-sky-100/80 ${className}`.trim()}
+      aria-hidden="true"
+    />
+  );
 }
 
-/** Compact card skeleton matching DomainCard proportions. */
+/** Compact card skeleton — sky theme for Standard Domains (search-bar border palette). */
 export function DomainCardSkeleton({ featured = false }) {
   if (featured) {
     return (
       <div
-        className="domain-search-card domain-search-card--featured rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-[0_6px_24px_rgba(15,23,42,0.06)]"
+        className="domain-search-card domain-search-card--featured rounded-2xl border border-sky-100/80 bg-gradient-to-br from-sky-50/60 via-white to-white p-4 sm:p-5 shadow-[0_6px_24px_rgba(2,132,199,0.06)] animate-pulse"
         aria-hidden="true"
       >
-        <SkeletonBone className="mb-2.5 h-5 w-24 rounded-full" />
-        <SkeletonBone className="mb-2.5 h-8 w-2/3 max-w-sm" />
-        <SkeletonBone className="mb-3.5 h-7 w-28" />
-        <SkeletonBone className="h-10 w-[30%] min-w-[7.5rem] max-w-[9.5rem] rounded-lg" />
+        <SkeletonBone className="mb-2.5 h-5 w-24 rounded-full bg-sky-100" />
+        <SkeletonBone className="mb-2.5 h-8 w-2/3 max-w-sm bg-sky-100/70" />
+        <SkeletonBone className="mb-3.5 h-7 w-28 bg-sky-50" />
+        <SkeletonBone className="h-10 w-[30%] min-w-[7.5rem] max-w-[9.5rem] rounded-lg bg-sky-100/80" />
       </div>
     );
   }
 
   return (
     <div
-      className="domain-search-card flex flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]"
+      className="domain-search-card flex flex-col rounded-2xl border border-sky-100/80 bg-gradient-to-br from-sky-50/50 via-white to-white p-4 shadow-[0_4px_16px_rgba(2,132,199,0.05)] animate-pulse"
       aria-hidden="true"
     >
-      <SkeletonBone className="mb-1.5 h-4 w-20 rounded-full" />
-      <SkeletonBone className="mb-1.5 h-6 w-40" />
-      <SkeletonBone className="mb-3 h-5 w-24" />
-      <SkeletonBone className="h-9 w-[30%] min-w-[7rem] max-w-[9rem] rounded-lg" />
+      <SkeletonBone className="mb-1.5 h-4 w-20 rounded-full bg-sky-100" />
+      <SkeletonBone className="mb-1.5 h-6 w-40 bg-sky-100/70" />
+      <SkeletonBone className="mb-3 h-5 w-24 bg-sky-50" />
+      <SkeletonBone className="h-9 w-[30%] min-w-[7rem] max-w-[9rem] rounded-lg bg-sky-100/80" />
     </div>
   );
 }
 
 export const DOMAIN_LOADING_MESSAGES = [
-  'Domains will appear as each batch finishes…',
-  'Loading more extensions…',
-  'Exploring more TLDs for you…',
-  'Checking premium extensions…',
-  'Looking for the best domain matches…',
+  'Checking available extensions…',
+  'Loading more TLDs…',
+  'Exploring more domains for you…',
+  'Looking for the best matches…',
   'More domains are on the way…',
   'Almost there…',
-  'Did you know? We support hundreds of TLDs.',
   'Finding the perfect domain for you…',
 ];
 
@@ -62,8 +64,8 @@ function ThreeDotLoader() {
 }
 
 /**
- * Premium loading strip shown while remaining TLD waves load.
- * Rotating messages + three-dot indicator; unmounts when loading ends.
+ * Standard Domains loading strip — sky theme (mirrors premium gold loader).
+ * Rotating messages + skeleton cards; unmounts when loading ends.
  */
 export default function DomainExtensionsLoader({
   skeletonCount = 0,
@@ -93,33 +95,36 @@ export default function DomainExtensionsLoader({
   }, [list.length]);
 
   const activeMessage = list[messageIndex % list.length];
+  const displaySlots = slots.length > 0 ? slots : [];
 
   return (
     <div
-      className="domain-tld-loader space-y-3.5"
+      className="domain-tld-loader space-y-4"
       role="status"
       aria-live="polite"
       aria-busy="true"
       aria-label={activeMessage}
     >
-      <div className="domain-tld-loader__pill">
-        <span className="domain-tld-loader__icon" aria-hidden="true">
-          <Sparkles size={14} strokeWidth={2.25} />
+      <div className="flex items-center gap-2.5 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50/80 to-cyan-50/40 px-4 py-3">
+        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-sky-300 border-t-sky-700" />
+        <p
+          className={`text-sm font-semibold text-sky-900/90 transition-opacity duration-300 ${
+            phase === 'out' ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          {activeMessage}
+        </p>
+        <span className="ml-auto hidden sm:inline-flex">
+          <ThreeDotLoader />
         </span>
-
-        <div className="domain-tld-loader__message-wrap">
-          <p className={`domain-tld-loader__message domain-tld-loader__message--${phase}`}>
-            {activeMessage}
-          </p>
-        </div>
-
-        <ThreeDotLoader />
       </div>
 
-      {slots.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {slots.map((item) => (
-            <DomainCardSkeleton key={`tld-skel-${item}`} />
+      {displaySlots.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {displaySlots.map((item, i) => (
+            <div key={`tld-skel-${item}`} style={{ animationDelay: `${i * 80}ms` }}>
+              <DomainCardSkeleton />
+            </div>
           ))}
         </div>
       ) : null}

@@ -74,7 +74,7 @@ export default function CartItem({
 
   return (
     <article
-      className={`group relative flex items-start gap-4 p-5 rounded-[14px] border transition-all duration-200 ${
+      className={`relative flex items-start gap-4 p-5 rounded-[14px] border transition-all duration-200 ${
         item.available
           ? isPeriodUpdating
             ? 'border-indigo-200 bg-indigo-50/30 ring-1 ring-indigo-100 shadow-sm'
@@ -197,14 +197,14 @@ export default function CartItem({
           type="button"
           onClick={() => onRemove(item.id)}
           disabled={isRemoving || isPeriodUpdating}
-          className="p-2 rounded-lg text-gray-400 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 transition-all duration-200 disabled:opacity-50 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors duration-150 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
           title="Remove from cart"
           aria-label="Remove from cart"
         >
           {isRemoving ? (
-            <span className="block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+            <span className="block h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-200 border-t-red-500" />
           ) : (
-            <Trash2 size={15} />
+            <Trash2 size={14} strokeWidth={2} />
           )}
         </button>
       </div>

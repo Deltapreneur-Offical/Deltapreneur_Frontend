@@ -188,12 +188,12 @@ function ProductRow({ product, formatPrice }) {
   const hasBreakdown = product.coBrotherFee > 0 || product.addonAmount > 0 || product.basePrice !== product.amount;
 
   return (
-    <div className="group">
+    <div className="rounded-xl border border-gray-100 bg-white overflow-hidden">
       <button
         type="button"
         disabled={!hasBreakdown}
         onClick={() => hasBreakdown && setExpanded((v) => !v)}
-        className={`w-full flex items-center gap-3 p-3 text-left rounded-xl transition-colors ${
+        className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
           hasBreakdown ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'
         }`}
         aria-expanded={hasBreakdown ? expanded : undefined}
@@ -225,6 +225,7 @@ function ProductRow({ product, formatPrice }) {
           )}
         </div>
       </button>
+
       <AnimatePresence initial={false}>
         {expanded && hasBreakdown && (
           <motion.div
@@ -494,12 +495,18 @@ export default function CartSummary({
               count={orderView.products.length}
             />
           </div>
-          <div className="rounded-2xl border border-gray-100 bg-white divide-y divide-gray-50 overflow-hidden">
+          <div className="space-y-2">
             {orderView.products.length === 0 ? (
-              <p className="text-[12px] text-gray-400 p-4 text-center">No products in cart</p>
+              <p className="text-[12px] text-gray-400 p-4 text-center rounded-2xl border border-gray-100 bg-white">
+                No products in cart
+              </p>
             ) : (
               orderView.products.map((product) => (
-                <ProductRow key={product.id} product={product} formatPrice={money} />
+                <ProductRow
+                  key={product.id}
+                  product={product}
+                  formatPrice={money}
+                />
               ))
             )}
           </div>

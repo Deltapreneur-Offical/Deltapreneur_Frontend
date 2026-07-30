@@ -382,11 +382,52 @@
   }
 }
 
-/* Domains — sky blue (hero search bar) */
+/* Domains — premium gold (matches registry Premium Domain cards; no badge) */
 .home-preview-card-border--domain {
-  --home-card-border: #38bdf8;
-  --home-card-border-hover: #0ea5e9;
-  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
+  --home-card-border: #fcd34d;
+  --home-card-border-hover: #d97706;
+  --home-card-shadow-accent: rgba(251, 191, 36, 0.28);
+  border: 1px solid #fcd34d !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.1) !important;
+}
+
+.home-preview-card-border--domain:hover {
+  border: 1px solid #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Kill any leftover purple/indigo wash on domain marketplace cards */
+.home-preview-card-border--domain .domain-listing-card,
+.home-preview-card-border--domain .domain-listing-card.card-glow-hover,
+.home-preview-card-border--domain .domain-listing-card.home-preview-browse-card,
+.home-preview-card-border--domain .domain-listing-card__body,
+.home-preview-card-border--domain .domain-listing-card__cover,
+.home-preview-card-border--domain:hover .domain-listing-card,
+.home-preview-card-border--domain:hover .domain-listing-card.card-glow-hover,
+.home-preview-card-border--domain:hover .domain-listing-card.home-preview-browse-card,
+.home-preview-card-border--domain:hover .domain-listing-card__body,
+.home-preview-card-border--domain .domain-listing-card:hover,
+.home-preview-card-border--domain .domain-listing-card:hover .domain-listing-card__body {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.home-preview-card-border--domain .domain-listing-card__cover-fallback,
+.home-preview-card-border--domain:hover .domain-listing-card__cover-fallback {
+  background: linear-gradient(180deg, #f8fafc 0%, #fffbeb 100%) !important;
+  background-image: linear-gradient(180deg, #f8fafc 0%, #fffbeb 100%) !important;
+  box-shadow: none !important;
 }
 
 /* Ventures — teal */
@@ -417,11 +458,27 @@
   --home-card-shadow-accent: rgba(165, 180, 252, 0.32);
 }
 
-/* Auctions — amber */
+/* Auctions — premium gold border (same family as marketplace domain cards) */
 .home-preview-card-border--auction {
-  --home-card-border: #fbbf24;
-  --home-card-border-hover: #f59e0b;
-  --home-card-shadow-accent: rgba(251, 191, 36, 0.32);
+  --home-card-border: #fcd34d;
+  --home-card-border-hover: #d97706;
+  --home-card-shadow-accent: rgba(251, 191, 36, 0.28);
+  border: 1px solid #fcd34d !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.1) !important;
+}
+
+.home-preview-card-border--auction:hover {
+  border: 1px solid #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
 /* Operations — Virtual Assistance (indigo) */
@@ -438,12 +495,16 @@
   --home-card-shadow-accent: rgba(52, 211, 153, 0.3);
 }
 
-/* Price box border matches outer card accent */
+/* Price box — domain cards use premium TLD amber (not black) */
 .home-preview-card-border .domain-listing-card__price-box,
 .home-preview-card-border .home-auction-preview-card__price-box {
   border: 1px solid #000000 !important;
   background: #ffffff !important;
   box-shadow: none !important;
+}
+
+.home-preview-card-border--domain .domain-listing-card__price-box {
+  border: 1px solid #b45309 !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__price-box,
@@ -454,6 +515,11 @@
       var(--home-card-border-hover) 0%,
       var(--home-card-border) 50%,
       var(--home-card-border-hover) 100%) border-box !important;
+}
+
+.home-preview-card-border--domain:hover .domain-listing-card__price-box {
+  border: 1px solid #92400e !important;
+  background: #ffffff !important;
 }
 
 .home-preview-card-border .domain-listing-card__price-box--compact {
@@ -1442,26 +1508,24 @@
   transition: none !important;
 }
 
-.home-preview-card-border:hover .domain-listing-card,
-.home-preview-card-border:hover .venture-listing-card,
-.home-preview-card-border:hover .technology-listing-card,
-.home-preview-card-border:hover .community-listing-card,
-.home-preview-card-border:hover .home-creator-listing-card,
-.home-preview-card-border:hover .home-auction-preview-card,
-.home-preview-card-border:hover .community-profile-card,
-.home-preview-card-border:hover .creator-profile-card,
-.home-preview-card-border:hover .home-operations-preview-card,
-.home-preview-card-border__inner .venture-listing-card:hover,
-.home-preview-card-border__inner .venture-listing-card--venture:hover,
-.home-preview-card-border__inner .venture-listing-card--coventure:hover,
-.home-preview-card-border__inner .technology-listing-card:hover,
-.home-preview-card-border__inner .domain-listing-card:hover,
-.home-preview-card-border__inner .home-creator-listing-card:hover,
-.home-preview-card-border__inner .home-auction-preview-card:hover,
-.home-preview-card-border__inner .home-preview-browse-card:hover,
-.home-preview-row .home-preview-card-border__inner .card-glow-hover:hover,
-.home-auto-scroll-row .home-preview-card-border__inner .card-glow-hover:hover,
-.home-preview-card-border__inner .home-operations-preview-card:hover {
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .venture-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .technology-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .community-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .home-creator-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .home-auction-preview-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .community-profile-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .creator-profile-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):hover .home-operations-preview-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .venture-listing-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .venture-listing-card--venture:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .venture-listing-card--coventure:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .technology-listing-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .home-creator-listing-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .home-auction-preview-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .home-preview-browse-card:not(.domain-listing-card):hover,
+.home-preview-row .home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .card-glow-hover:hover,
+.home-auto-scroll-row .home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .card-glow-hover:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction) .home-preview-card-border__inner .home-operations-preview-card:hover {
   transform: none !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
@@ -1478,6 +1542,22 @@
       rgba(56, 189, 248, 0.12) 0%,
       rgba(99, 102, 241, 0.08) 48%,
       rgba(168, 85, 247, 0.12) 100%) !important;
+}
+
+/* Domain + auction cards — premium gold hover (no purple wash); outer shell owns tint */
+.home-preview-card-border--domain:hover .domain-listing-card,
+.home-preview-card-border--domain .domain-listing-card:hover,
+.home-preview-card-border--domain .domain-listing-card.card-glow-hover:hover,
+.home-preview-row .home-preview-card-border--domain .card-glow-hover:hover,
+.home-auto-scroll-row .home-preview-card-border--domain .card-glow-hover:hover,
+.home-preview-card-border--auction:hover .home-auction-preview-card,
+.home-preview-card-border--auction .home-auction-preview-card:hover,
+.home-preview-card-border--auction .home-auction-preview-card.card-glow-hover:hover {
+  transform: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-image: none !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__cover-img,
@@ -1783,12 +1863,12 @@
 }
 
 .home-auction-preview-card--category-domain {
-  --auction-accent: #7c3aed;
-  --auction-accent-strong: #6d28d9;
-  --auction-accent-soft: #f5f3ff;
-  --auction-accent-border: #e9d5ff;
-  --auction-badge-text: #1d4ed8;
-  --auction-badge-border: #bfdbfe;
+  --auction-accent: #d97706;
+  --auction-accent-strong: #b45309;
+  --auction-accent-soft: #fffbeb;
+  --auction-accent-border: #fcd34d;
+  --auction-badge-text: #92400e;
+  --auction-badge-border: #fde68a;
 }
 
 .home-auction-preview-card--category-technology {
@@ -2482,33 +2562,17 @@
     transform 0.35s ease;
 }
 
+/* Auction inner cards stay clean — outer premium-gold shell owns hover */
 .home-auto-scroll-row .home-auction-preview-card--home-preview:hover,
 .home-preview-row .home-auction-preview-card--home-preview:hover,
-.home-preview-card-border__inner .home-auction-preview-card--home-preview:hover {
-  transform: translateY(-2px) translateZ(0);
-  background:
-    linear-gradient(180deg,
-      rgba(255, 255, 255, 0.04) 0%,
-      rgba(241, 245, 255, 0.5) 56%,
-      rgba(224, 231, 255, 0.78) 100%),
-    linear-gradient(135deg,
-      rgba(56, 189, 248, 0.12) 0%,
-      rgba(99, 102, 241, 0.08) 48%,
-      rgba(168, 85, 247, 0.12) 100%) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -20px 34px rgba(99, 102, 241, 0.12),
-    0 22px 50px rgba(15, 23, 42, 0.14),
-    0 8px 26px rgba(15, 23, 42, 0.08) !important;
-}
-
-/* Domain Auction Cards on Homepage — Clean Dashboard Match (no gradient, clean white background) */
+.home-preview-card-border__inner .home-auction-preview-card--home-preview:hover,
 .home-auto-scroll-row .home-auction-preview-card--category-domain:hover,
 .home-preview-row .home-auction-preview-card--category-domain:hover,
 .home-preview-card-border__inner .home-auction-preview-card--category-domain:hover {
-  background: #ffffff !important;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08) !important;
-  transform: translateY(-2px) !important;
+  transform: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
 }
 
 .home-preview-card-border:has(.home-auction-preview-card--category-domain) .home-feature-card-beam-spinner {

@@ -198,12 +198,12 @@ function TldPriceMarquee() {
           return (
             <div
               key={`${item.tld}-${index}`}
-              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-purple-50/95 border border-purple-200/90 shadow-sm hover:border-purple-400 hover:bg-purple-100/90 hover:shadow-md transition-all duration-200 shrink-0 select-none"
+              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-sky-50/95 border border-sky-200/90 shadow-sm hover:border-sky-400 hover:bg-sky-100/90 hover:shadow-md transition-all duration-200 shrink-0 select-none"
             >
-              <span className="font-black text-purple-950 text-[16px] tracking-tight">{item.tld}</span>
-              <span className="text-[15px] font-extrabold text-purple-700">
+              <span className="font-black text-sky-950 text-[16px] tracking-tight">{item.tld}</span>
+              <span className="text-[15px] font-extrabold text-sky-700">
                 {formatted}
-                <span className="text-[12px] font-semibold text-purple-500 ml-0.5">/yr</span>
+                <span className="text-[12px] font-semibold text-sky-500 ml-0.5">/yr</span>
               </span>
             </div>
           );
@@ -221,6 +221,16 @@ function toSafeText(value) {
   } catch {
     return '';
   }
+}
+
+/** Strip vendor names (e.g. OpenProvider) from user-facing registrar errors. */
+function sanitizeRegistrarErrorMessage(raw) {
+  const text = toSafeText(raw).trim();
+  if (!text) return '';
+  if (/open\s*provider/i.test(text)) {
+    return 'Could not fetch available extensions from the registrar. Please try again shortly.';
+  }
+  return text;
 }
 
 function toSafeLower(value) {
@@ -828,11 +838,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             return [exact];
           });
         } else if (!exact) {
-          const registrarMessage =
+          const registrarMessage = sanitizeRegistrarErrorMessage(
             err?.response?.data?.message
             || err?.response?.data?.error
             || err?.message
-            || 'Could not fetch available extensions.';
+            || 'Could not fetch available extensions.',
+          );
           setResults([{
             domain: fqdn,
             name: label,
@@ -1193,10 +1204,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     setResultsAnimKey((k) => k + 1);
   };
 
-  const registrarErrorMessage = completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
+  const registrarErrorMessage = sanitizeRegistrarErrorMessage(
+    completedNewResults.find((item) => item.registrarMessage)?.registrarMessage
     || (completedNewResults.length > 0 && completedNewResults.every((item) => item.status === 'error')
       ? completedNewResults[0]?.registrarMessage
-      : '');
+      : '')
+    || '',
+  );
   const filteredPremiumDomains = premiumDomains.filter((item) => {
     const q = normalizedQuery;
     const domainName = toSafeLower(item.domainName || '');
@@ -1362,10 +1376,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             || tldLoading
           ) && (
             <div className="mb-6 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                  Available Extensions
-                </h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
                 <RegistryPremiumSegment
                   value={registrySegment}
                   onChange={handleRegistrySegmentChange}
@@ -1397,7 +1408,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                       className={
                         registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                           ? 'premium-results-stagger'
-                          : undefined
+                          : 'standard-results-stagger'
                       }
                     >
                       <DomainCardGrid
@@ -1433,7 +1444,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
                       registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                         ? 'text-amber-900/80 bg-amber-50/50 border-amber-100'
-                        : 'text-gray-500 bg-gray-50 border-gray-150'
+                        : 'text-sky-900/80 bg-sky-50/50 border-sky-100'
                     }`}
                   >
                     {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
@@ -1467,6 +1478,20 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 .premium-results-stagger .grid .domain-search-card:nth-child(2) { animation-delay: 140ms; }
                 .premium-results-stagger .grid .domain-search-card:nth-child(3) { animation-delay: 190ms; }
                 .premium-results-stagger .grid .domain-search-card:nth-child(n+4) { animation-delay: 230ms; }
+                .standard-results-stagger .domain-search-card {
+                  animation: registryResultsEnter 300ms ease-out both;
+                  box-shadow:
+                    0 0 0 1px rgba(125, 211, 252, 0.22),
+                    0 8px 28px rgba(2, 132, 199, 0.1),
+                    0 0 24px rgba(56, 189, 248, 0.14);
+                }
+                .standard-results-stagger .domain-search-card--featured {
+                  animation-delay: 40ms;
+                }
+                .standard-results-stagger .grid .domain-search-card:nth-child(1) { animation-delay: 90ms; }
+                .standard-results-stagger .grid .domain-search-card:nth-child(2) { animation-delay: 140ms; }
+                .standard-results-stagger .grid .domain-search-card:nth-child(3) { animation-delay: 190ms; }
+                .standard-results-stagger .grid .domain-search-card:nth-child(n+4) { animation-delay: 230ms; }
               `}</style>
             </div>
           )}

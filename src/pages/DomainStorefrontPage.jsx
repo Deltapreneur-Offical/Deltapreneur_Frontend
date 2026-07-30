@@ -689,10 +689,7 @@ export default function DomainStorefrontPage() {
 
                 {!tldError && (tldItems.length > 0 || premiumLoading || premiumTldItems.length > 0 || tldLoading) && (
                   <div className="mt-6 space-y-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                        Available Extensions
-                      </h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
                       <RegistryPremiumSegment
                         value={registrySegment}
                         onChange={handleRegistrySegmentChange}
@@ -725,7 +722,7 @@ export default function DomainStorefrontPage() {
                             className={
                               registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                                 ? 'premium-results-stagger'
-                                : undefined
+                                : 'standard-results-stagger'
                             }
                           >
                             <DomainCardGrid
@@ -761,7 +758,7 @@ export default function DomainStorefrontPage() {
                           className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
                             registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                               ? 'text-amber-900/80 bg-amber-50/50 border-amber-100'
-                              : 'text-gray-500 bg-gray-50 border-gray-150'
+                              : 'text-sky-900/80 bg-sky-50/50 border-sky-100'
                           }`}
                         >
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
@@ -795,6 +792,20 @@ export default function DomainStorefrontPage() {
                       .premium-results-stagger .grid .domain-search-card:nth-child(2) { animation-delay: 140ms; }
                       .premium-results-stagger .grid .domain-search-card:nth-child(3) { animation-delay: 190ms; }
                       .premium-results-stagger .grid .domain-search-card:nth-child(n+4) { animation-delay: 230ms; }
+                      .standard-results-stagger .domain-search-card {
+                        animation: registryResultsEnter 300ms ease-out both;
+                        box-shadow:
+                          0 0 0 1px rgba(125, 211, 252, 0.22),
+                          0 8px 28px rgba(2, 132, 199, 0.1),
+                          0 0 24px rgba(56, 189, 248, 0.14);
+                      }
+                      .standard-results-stagger .domain-search-card--featured {
+                        animation-delay: 40ms;
+                      }
+                      .standard-results-stagger .grid .domain-search-card:nth-child(1) { animation-delay: 90ms; }
+                      .standard-results-stagger .grid .domain-search-card:nth-child(2) { animation-delay: 140ms; }
+                      .standard-results-stagger .grid .domain-search-card:nth-child(3) { animation-delay: 190ms; }
+                      .standard-results-stagger .grid .domain-search-card:nth-child(n+4) { animation-delay: 230ms; }
                     `}</style>
 
                     {tldHasMore && registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && (

@@ -479,25 +479,25 @@ export default function CartPage() {
       <Confetti show={showConfetti} />
       {confirmPremiumOpen && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm px-4 py-8 sm:px-6 sm:py-12 md:py-16"
           onClick={(e) => {
             if (e.target === e.currentTarget && !checkoutLoading) setConfirmPremiumOpen(false);
           }}
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-[520px] overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.3)]">
-            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
-            <div className="px-6 pt-7 pb-6 sm:px-8">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-800">
-                CoBrother Priority Managed Acquisition
+          <div className="relative flex w-full max-w-[520px] max-h-[min(100%,calc(100dvh-4rem))] sm:max-h-[min(100%,calc(100dvh-6rem))] md:max-h-[min(100%,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.3)]">
+            <div className="absolute inset-x-0 top-0 z-10 h-1.5 shrink-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
+            <div className="overflow-y-auto overscroll-contain px-4 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6">
+              <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-800 sm:text-[11px]">
+                <span className="truncate">CoBrother Priority Managed Acquisition</span>
               </div>
-              <h2 className="font-display text-[1.65rem] font-extrabold leading-tight text-slate-900">
+              <h2 className="font-display text-xl font-extrabold leading-tight text-slate-900 sm:text-[1.65rem]">
                 Confirm your Priority Managed Acquisition
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
                 Thank you for trusting CoBrother with your premium acquisition of{' '}
-                <strong className="text-slate-900">
+                <strong className="text-slate-900 break-words">
                   {managedAcquisitionItems[0]?.productName || 'this domain'}
                 </strong>
                 . Because this is a high-value transaction, it qualifies for our Priority Managed
@@ -506,27 +506,27 @@ export default function CartPage() {
                 to ensure a seamless handover.
               </p>
 
-              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50/90 p-4">
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/90 p-3.5 sm:mt-5 sm:p-4">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
                   What Happens Next
                 </p>
                 <ol className="space-y-2.5 text-sm text-slate-700">
                   <li className="flex gap-2.5">
-                    <span className="font-bold text-emerald-700">1</span>
+                    <span className="shrink-0 font-bold text-emerald-700">1</span>
                     <span>
                       <strong>Priority Escalation:</strong> We instantly open your managed
                       acquisition file and alert your dedicated specialist.
                     </span>
                   </li>
                   <li className="flex gap-2.5">
-                    <span className="font-bold text-emerald-700">2</span>
+                    <span className="shrink-0 font-bold text-emerald-700">2</span>
                     <span>
                       <strong>White-Glove Coordination:</strong> We contact the current owner on
                       your behalf to verify readiness and secure the best possible terms.
                     </span>
                   </li>
                   <li className="flex gap-2.5">
-                    <span className="font-bold text-emerald-700">3</span>
+                    <span className="shrink-0 font-bold text-emerald-700">3</span>
                     <span>
                       <strong>Guided Secure Transfer:</strong> We provide 1-on-1 support through
                       the payment process and oversee the transfer until complete ownership is in
@@ -542,10 +542,10 @@ export default function CartPage() {
                 <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Encrypted secure transfer</span>
               </div>
 
-              <div className="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row">
+              <div className="mt-5 flex flex-col-reverse gap-2.5 sm:mt-6 sm:flex-row sm:items-stretch">
                 <button
                   type="button"
-                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  className="w-full shrink-0 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
                   disabled={checkoutLoading}
                   onClick={() => setConfirmPremiumOpen(false)}
                 >
@@ -553,7 +553,7 @@ export default function CartPage() {
                 </button>
                 <button
                   type="button"
-                  className="flex-1 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  className="w-full flex-1 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                   disabled={checkoutLoading}
                   onClick={handlePremiumConfirm}
                 >
@@ -676,12 +676,12 @@ export default function CartPage() {
                   type="button"
                   onClick={handleClear}
                   disabled={clearing}
-                  className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-semibold text-red-600 shadow-sm transition-colors hover:bg-red-100 hover:border-red-300 hover:text-red-700 disabled:opacity-50"
                 >
                   {clearing ? (
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-200 border-t-red-600" />
                   ) : (
-                    <Trash2 size={13} />
+                    <Trash2 size={13} strokeWidth={2.25} />
                   )}
                   Clear all
                 </button>

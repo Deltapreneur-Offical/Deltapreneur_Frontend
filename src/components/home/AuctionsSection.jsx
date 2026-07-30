@@ -25,9 +25,8 @@ import '../../styles/domain-listing-cards.css';
 import '../../styles/home-preview-cards.css';
 
 function AuctionPreviewCard({ auction, onView }) {
-  const isDomainAuction = auction.category === 'domain';
   return (
-    <HomePreviewCardShell accent={isDomainAuction ? 'none' : 'auction'} borderless={isDomainAuction}>
+    <HomePreviewCardShell accent="auction">
       <HomeAuctionPreviewCard auction={auction} onView={onView} />
     </HomePreviewCardShell>
   );

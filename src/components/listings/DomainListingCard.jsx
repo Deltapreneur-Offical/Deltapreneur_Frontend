@@ -493,7 +493,10 @@ export default function DomainListingCard({
               display: 'block',
             }}
           >
-            <OverflowMarqueeText text={display.fullDomain} />
+            <span>{display.name}</span>
+            {display.ext?.full ? (
+              <span className="domain-listing-card__tld">{display.ext.full}</span>
+            ) : null}
           </p>
           {domain.verified ? (
             <img

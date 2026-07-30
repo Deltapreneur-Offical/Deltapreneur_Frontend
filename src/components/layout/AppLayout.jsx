@@ -425,10 +425,19 @@ export default function AppLayout({ children }) {
       });
   };
 
-  const handleMarkAllRead = async () => {
-    await notificationAPI.markAllRead();
-    setNotifications((items) => items.map((item) => ({ ...item, read: true })));
-    setUnreadCount(0);
+  const handleClearAllNotifications = async () => {
+    if (notifications.length === 0) return;
+    const confirmed = window.confirm(
+      'Clear all notifications? Once cleared, this cannot be reverted.',
+    );
+    if (!confirmed) return;
+    try {
+      await notificationAPI.deleteAll();
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch {
+      // keep existing list on failure
+    }
   };
 
   const handleNotificationClick = (notification) => {
@@ -841,13 +850,13 @@ export default function AppLayout({ children }) {
                   >
                     <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100 gap-2">
                       <span className="font-semibold text-sm text-gray-900">{t('notifications')}</span>
-                      {unreadCount > 0 && (
+                      {notifications.length > 0 && (
                         <button
                           type="button"
-                          className="text-xs text-gray-500 hover:text-gray-700 shrink-0 whitespace-nowrap"
-                          onClick={handleMarkAllRead}
+                          className="text-xs text-red-600 hover:text-red-700 shrink-0 whitespace-nowrap font-medium"
+                          onClick={handleClearAllNotifications}
                         >
-                          {t('markAllRead')}
+                          Clear all
                         </button>
                       )}
                     </div>

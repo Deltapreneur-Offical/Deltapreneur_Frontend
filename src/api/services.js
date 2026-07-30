@@ -349,6 +349,7 @@ export const adminAPI = {
   rejectDomainVerification:    (id, reason) => api.post(`/api/v1/admin/domains/${id}/verification/reject`, { reason }),
   requestDomainVerificationInfo: (id, message) => api.post(`/api/v1/admin/domains/${id}/verification/request-info`, { message }),
   markTechnologyVerified: (id)  => api.post(`/api/v1/admin/softwares/${id}/mark-verified`),
+  markTechnologyUnverified: (id) => api.post(`/api/v1/admin/softwares/${id}/mark-unverified`),
   domainVerifyInit:     (id, m) => api.post(`/api/v1/admin/domains/${id}/verification/init`, { method: m }),
   domainVerifyCheck:    (id, t) => api.post(`/api/v1/admin/domains/${id}/verification/check`, t ? { token: t } : {}),
   toggleDomainHomepage:   (id)  => api.post(`/api/v1/admin/domain/${id}/toggle-homepage`),

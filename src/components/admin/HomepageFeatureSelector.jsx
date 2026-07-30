@@ -151,7 +151,10 @@ export default function HomepageFeatureSelector({ type }) {
 
   const featureableItems = useMemo(() => {
     if (type === 'auction') return items;
-    return items.filter((item) => isActiveListing(item, listingType));
+    return items.filter((item) => (
+      isActiveListing(item, listingType)
+      && isListingVerified(item, listingType)
+    ));
   }, [items, listingType, type]);
 
   const featuredCount = useMemo(() => {

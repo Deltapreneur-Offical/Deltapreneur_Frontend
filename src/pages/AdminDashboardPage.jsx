@@ -1737,13 +1737,9 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePer
                     style={{ fontSize: '0.8rem', border: '1px solid gray' }}
                     onClick={async () => {
                       try {
-                        if (adminAPI.markTechnologyUnverified) {
-                          await adminAPI.markTechnologyUnverified(item.id);
-                          adminToast.success("Technology marked as unverified.");
-                          onRefresh?.();
-                        } else {
-                          alert("markTechnologyUnverified API is not defined yet.");
-                        }
+                        await adminAPI.markTechnologyUnverified(item.id);
+                        adminToast.success("Technology marked as unverified.");
+                        onRefresh?.();
                       } catch (e) {
                         adminToast.error(e.response?.data?.error || "Could not mark unverified.");
                       }

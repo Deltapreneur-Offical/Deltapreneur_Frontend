@@ -77,7 +77,9 @@
       rgba(15, 23, 42, 0.18) 100%);
 }
 
-.domain-listing-card-shell::before {
+.domain-listing-card-shell::before,
+.technology-listing-card-shell::before,
+.listing-card-glow-shell:has(.technology-listing-card)::before {
   background: linear-gradient(90deg,
       rgba(14, 165, 233, 0.28) 0%,
       rgba(56, 189, 248, 0.12) 20%,
@@ -160,11 +162,44 @@
   overflow: hidden;
 }
 
+/* Technology marketplace cards — Standard Domains sky border */
+.technology-listing-card.domain-listing-card.card-glow-hover,
 .technology-listing-card.technology-listing-card--browse.card-glow-hover,
 .technology-listing-card.domain-listing-card--browse.card-glow-hover {
-  border: none !important;
-  border-radius: 1.5rem;
+  border: 1px solid #7dd3fc !important;
+  border-radius: 1rem;
   overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12);
+  background: #ffffff !important;
+}
+
+.technology-listing-card.domain-listing-card.card-glow-hover:hover,
+.technology-listing-card.technology-listing-card--browse.card-glow-hover:hover,
+.technology-listing-card.domain-listing-card--browse.card-glow-hover:hover {
+  border-color: #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+.technology-listing-card.domain-listing-card.card-glow-hover::after,
+.technology-listing-card.technology-listing-card--browse.card-glow-hover::after,
+.technology-listing-card.domain-listing-card--browse.card-glow-hover::after {
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(240, 249, 255, 0.55) 55%,
+      rgba(186, 230, 253, 0.65) 100%),
+    linear-gradient(135deg,
+      rgba(125, 211, 252, 0.18) 0%,
+      rgba(56, 189, 248, 0.1) 50%,
+      rgba(14, 165, 233, 0.14) 100%) !important;
 }
 
 .creator-profile-card.community-listing-card.card-glow-hover {
@@ -285,7 +320,6 @@
 }
 
 .listing-card-glow.card-glow-hover:hover,
-.technology-listing-card.card-glow-hover:hover,
 .home-feature-card.card-glow-hover:hover,
 .venture-listing-card.card-glow-hover:hover,
 .community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {

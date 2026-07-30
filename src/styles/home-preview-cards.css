@@ -1165,36 +1165,28 @@
 }
 
 .home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta,
-.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta,
-.home-preview-card-border--auction .domain-listing-card__price-cta {
+.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta {
   width: 1.5rem !important;
   height: 1.5rem !important;
-  background: #b45309 !important;
-  border: 1px solid #fcd34d !important;
+  background: #000000 !important;
+  border-color: #000000 !important;
   color: #ffffff !important;
-  box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.35),
-    0 6px 14px rgba(180, 83, 9, 0.28) !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18) !important;
 }
 
 .home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta svg,
-.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta svg,
-.home-preview-card-border--auction .domain-listing-card__price-cta svg {
+.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta svg {
   color: #ffffff !important;
   stroke: currentColor;
 }
 
 .home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta:hover,
-.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta:hover,
-.home-preview-card-border--auction .domain-listing-card__price-cta:hover,
-.home-preview-card-border--auction .domain-listing-card__price-cta:focus-visible {
-  background: #92400e !important;
-  border-color: #fbbf24 !important;
+.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta:hover {
+  background: #000000 !important;
+  border-color: #000000 !important;
   color: #ffffff !important;
   transform: translateY(-2px);
-  box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.45),
-    0 8px 18px rgba(180, 83, 9, 0.34) !important;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24) !important;
 }
 
 .home-preview-row .home-preview-browse-card,

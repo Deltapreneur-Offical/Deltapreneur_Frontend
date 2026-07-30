@@ -154,7 +154,7 @@ export default function CommunityListingCard({
   return (
     <article
       ref={cardRef}
-      className={`creator-profile-card community-listing-card card-glow-hover${isMe ? ' creator-profile-card--owner' : ''}`}
+      className={`creator-profile-card community-listing-card card-glow-hover${isVa ? ' virtual-assistant-listing-card' : ''}${isMe ? ' creator-profile-card--owner' : ''}`}
       onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
@@ -285,29 +285,37 @@ export default function CommunityListingCard({
           <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
              <User2 size={18} className="text-indigo-600" />
           </div>
-          <div className="desc-content flex-1 pt-0.5">
-            <p className="desc-text text-sm text-slate-700 leading-relaxed font-medium line-clamp-3">{description}</p>
+          <div className="desc-content flex-1 min-w-0 pt-0.5">
+            <p className="desc-text text-slate-700 font-medium" title={description}>
+              {description}
+            </p>
           </div>
         </div>
 
-        {skills.length > 0 && (
+        {(skills.length > 0 || isVa) && (
           <div className="creator-profile-card__skills-section flex items-start gap-3 mt-1 pb-2">
             <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
                <Lightbulb size={18} className="text-indigo-600" />
             </div>
-            <div className="desc-content flex-1 pt-1.5 flex flex-wrap items-center gap-y-1.5">
-               {skills.slice(0, 4).map((skill, i) => (
-                  <span key={i} className="flex items-center text-slate-700 text-[13px] font-medium mr-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mr-1.5 flex-shrink-0"></span>
-                    {skill}
-                  </span>
-               ))}
-               {skills.length > 4 && (
-                  <TruncatedItemsTooltip items={skills.slice(4)}>
-                    <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-1 shadow-sm">
-                      +{skills.length - 4}
-                    </span>
-                  </TruncatedItemsTooltip>
+            <div className="desc-content flex-1 pt-1.5 flex flex-wrap items-center gap-y-1.5 min-w-0">
+               {skills.length > 0 ? (
+                 <>
+                   {skills.slice(0, 4).map((skill, i) => (
+                      <span key={i} className="flex items-center text-slate-700 text-[13px] font-medium mr-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mr-1.5 flex-shrink-0"></span>
+                        {skill}
+                      </span>
+                   ))}
+                   {skills.length > 4 && (
+                      <TruncatedItemsTooltip items={skills.slice(4)}>
+                        <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-1 shadow-sm">
+                          +{skills.length - 4}
+                        </span>
+                      </TruncatedItemsTooltip>
+                   )}
+                 </>
+               ) : (
+                 <span className="text-[13px] font-medium text-slate-400">Skills coming soon</span>
                )}
             </div>
           </div>

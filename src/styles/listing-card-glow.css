@@ -175,6 +175,50 @@
     0 4px 14px rgba(15, 23, 42, 0.06);
 }
 
+/* Virtual Assistance — softer Standard sky chrome (default + hover) */
+.virtual-assistant-listing-card.creator-profile-card.community-listing-card.card-glow-hover {
+  border: 1px solid #bae6fd !important;
+  border-radius: 1.5rem;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.12),
+    0 6px 18px rgba(2, 132, 199, 0.05),
+    0 0 12px rgba(56, 189, 248, 0.06) !important;
+}
+
+.virtual-assistant-listing-card.creator-profile-card.community-listing-card.card-glow-hover:hover {
+  border-color: #7dd3fc !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f8fcff 55%, #f0f9ff 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.18),
+    0 8px 22px rgba(2, 132, 199, 0.08),
+    0 0 16px rgba(56, 189, 248, 0.1),
+    0 2px 8px rgba(15, 23, 42, 0.04) !important;
+}
+
+.virtual-assistant-listing-card.creator-profile-card.community-listing-card.card-glow-hover::after {
+  opacity: 0.35;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(240, 249, 255, 0.28) 55%,
+      rgba(224, 242, 254, 0.32) 100%),
+    linear-gradient(135deg,
+      rgba(125, 211, 252, 0.08) 0%,
+      rgba(56, 189, 248, 0.05) 50%,
+      rgba(14, 165, 233, 0.06) 100%) !important;
+}
+
+.home-preview-card-border--domain:has(.virtual-assistant-listing-card):hover {
+  border-color: #7dd3fc !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f8fcff 50%, #f0f9ff 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.18),
+    0 8px 22px rgba(2, 132, 199, 0.08),
+    0 0 16px rgba(56, 189, 248, 0.1),
+    0 2px 8px rgba(15, 23, 42, 0.04) !important;
+}
+
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card) {
   border: 1px solid #7dd3fc !important;
   border-radius: 1rem;

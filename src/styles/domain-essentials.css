@@ -40,3 +40,14 @@
     animation: none;
   }
 }
+
+/* Domain Essentials — Premium Domain gold chrome (outer shell owns border/glow) */
+.home-preview-card-border--auction .domain-essential-card {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.home-preview-card-border--auction:hover .domain-essential-card {
+  background: transparent !important;
+}

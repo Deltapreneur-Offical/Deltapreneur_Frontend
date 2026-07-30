@@ -42,7 +42,7 @@ function DomainEssentialCard({
 
   return (
     <div
-      className="domain-essential-card relative flex h-full flex-col rounded-[24px] overflow-hidden cursor-default border border-black bg-white shadow-sm"
+      className="domain-essential-card relative flex h-full flex-col rounded-[24px] overflow-hidden cursor-default border border-transparent bg-white"
     >
       <div className="p-6 flex flex-col flex-1 gap-4">
         <div className="flex items-start justify-between gap-3">
@@ -397,7 +397,7 @@ export default function ServicesSection({ isDashboard = false }) {
   );
 
   const renderHomeCard = (card) => (
-    <HomePreviewCardShell accent="domain" borderless>
+    <HomePreviewCardShell accent="auction">
       {renderCard(card)}
     </HomePreviewCardShell>
   );

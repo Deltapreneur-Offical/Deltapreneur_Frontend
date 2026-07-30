@@ -507,6 +507,27 @@
   border: 1px solid #38bdf8 !important;
 }
 
+/* VA compensation box inside Standard sky shell */
+.home-preview-card-border--domain .creator-expected-rate {
+  border: 1px solid #38bdf8 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.home-preview-card-border--domain:hover .creator-expected-rate {
+  border-color: #0284c7 !important;
+  background: #ffffff !important;
+}
+
+/* Avoid double chrome when VA card sits inside the Standard sky shell */
+.home-preview-card-border--domain .virtual-assistant-listing-card.creator-profile-card.community-listing-card.card-glow-hover,
+.home-preview-card-border--domain:hover .virtual-assistant-listing-card.creator-profile-card.community-listing-card.card-glow-hover {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
 .home-preview-card-border:hover .domain-listing-card__price-box,
 .home-preview-card-border:hover .home-auction-preview-card__price-box {
   background:
@@ -718,6 +739,16 @@
 
   overflow: hidden;
 
+}
+
+/* VA cards are taller than the shared 355px preview height. Use min-content so
+   overflow:hidden cannot shrink them and clip the description mid-line.
+   Row stretch keeps every card in the strip the same height. */
+.home-preview-row .virtual-assistant-listing-card.community-listing-card,
+.home-auto-scroll-row .virtual-assistant-listing-card.community-listing-card {
+  min-height: min-content;
+  height: 100%;
+  align-self: stretch;
 }
 
 /* Homepage venture/co-venture previews — fit content */
@@ -1478,8 +1509,13 @@
 }
 
 .home-preview-row .listing-card-glow-shell>.creator-profile-card,
-.home-preview-row .listing-card-glow-shell>.community-listing-card.creator-profile-card {
-  overflow: visible;
+.home-preview-row .listing-card-glow-shell>.community-listing-card.creator-profile-card,
+.home-auto-scroll-row .listing-card-glow-shell>.creator-profile-card,
+.home-auto-scroll-row .listing-card-glow-shell>.community-listing-card.creator-profile-card {
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .home-preview-row .card-glow-hover,

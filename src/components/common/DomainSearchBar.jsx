@@ -374,13 +374,13 @@ function BrandSearchTabs({
         {useMotionPill && isActive ? (
           <motion.span
             layoutId={layoutId}
-            className="absolute inset-0 rounded-full bg-black shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
+            className="absolute inset-0 rounded-full brand-search-tab-pill-fill shadow-[0_0_0_1px_rgba(14,165,233,0.22),0_4px_14px_rgba(2,132,199,0.12)]"
             transition={heroTabSpring}
             aria-hidden="true"
           />
         ) : null}
         <span className="brand-lightning-tail" aria-hidden="true" />
-        <span className={`relative z-10 ${isActive ? 'text-white' : ''}`}>
+        <span className={`relative z-10 ${isActive ? 'text-sky-950' : ''}`}>
           {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
         </span>
       </TabButtonTag>
@@ -1765,11 +1765,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           overflow: visible;
         }
 
+        .brand-search-tab-pill-fill {
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
+        }
+
         .brand-search-tab-active {
-          background: #000000;
-          color: #ffffff;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-          border: 1px solid #000000;
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
+          color: #0c4a6e;
+          box-shadow:
+            0 0 0 1px rgba(14, 165, 233, 0.22),
+            0 4px 14px rgba(2, 132, 199, 0.12);
+          border: 1px solid rgba(125, 211, 252, 0.85);
           overflow: visible;
           transition:
             background 0.48s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1793,10 +1799,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-tab-active:hover,
         .brand-search-tab-active:focus-visible {
-          background: #000000;
-          color: #ffffff;
-          border-color: #000000;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+          background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+          color: #0c4a6e;
+          border-color: rgba(56, 189, 248, 0.9);
+          box-shadow:
+            0 0 0 1px rgba(14, 165, 233, 0.28),
+            0 6px 16px rgba(2, 132, 199, 0.16);
         }
 
         .brand-search-tab-idle {
@@ -1814,10 +1822,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-tab-idle:hover,
         .brand-search-tab-idle:focus-visible {
-          background: #000000;
-          color: #ffffff;
-          border-color: #000000;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
+          color: #0c4a6e;
+          border-color: rgba(125, 211, 252, 0.85);
+          box-shadow:
+            0 0 0 1px rgba(14, 165, 233, 0.22),
+            0 4px 14px rgba(2, 132, 199, 0.12);
         }
 
         @media (prefers-reduced-motion: reduce) {

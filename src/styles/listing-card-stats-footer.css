@@ -177,20 +177,20 @@
 }
 
 .domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle {
-  color: #38bdf8;
+  color: #bae6fd;
 }
 
 .domain-listing-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .domain-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #0284c7;
+  color: #7dd3fc;
 }
 
 .domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--active {
-  color: #0369a1;
+  color: #7dd3fc;
 }
 
 .domain-listing-card .listing-card-stats-footer .listing-like-btn__count {
-  color: #0369a1;
+  color: #bae6fd;
 }
 
 .listing-card-stats-footer .listing-like-btn__count,

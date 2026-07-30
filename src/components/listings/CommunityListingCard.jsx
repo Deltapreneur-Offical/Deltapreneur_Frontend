@@ -37,6 +37,7 @@ function isVirtualAssistantProfile(profile) {
 
 function CreatorAvatar({ imageUrl, name, profile }) {
   const initial = name?.[0]?.toUpperCase() || '?';
+  const [failedUrl, setFailedUrl] = useState(null);
 
   if (profile && isVirtualAssistantProfile(profile)) {
     return (
@@ -53,13 +54,16 @@ function CreatorAvatar({ imageUrl, name, profile }) {
     );
   }
 
+  const showImage = Boolean(imageUrl) && failedUrl !== imageUrl;
+
   return (
     <div className="creator-profile-card__avatar-container">
-      {imageUrl ? (
+      {showImage ? (
         <img
           src={imageUrl}
           alt={name || 'Creator'}
           className="creator-profile-card__avatar"
+          onError={() => setFailedUrl(imageUrl)}
         />
       ) : (
         <div className="creator-profile-card__avatar creator-profile-card__avatar--fallback" aria-hidden>
@@ -82,15 +86,17 @@ export default function CommunityListingCard({
 }) {
   const { t } = useTranslation();
   const cardRef = useRef(null);
+  const [failedCoverUrl, setFailedCoverUrl] = useState(null);
 
   if (!profile) return null;
   if (!isMe && !skipVisibilityCheck && !isCreatorProfileVisible(profile)) return null;
 
   const imageUrl = profile.imageUrl || profile.image_url || null;
-  const coverImageUrl =
+  const rawCover =
     profile.coverImageUrl
     || profile.cover_image_url
     || imageUrl;
+  const coverImageUrl = rawCover && failedCoverUrl !== rawCover ? rawCover : null;
     
   const skills = profile.skills ? profile.skills.split(',').map((s) => s.trim()).filter(Boolean) : [];
   const roleLabel = formatLabel(profile.role);
@@ -178,7 +184,15 @@ export default function CommunityListingCard({
           </>
         ) : coverImageUrl ? (
           <>
-            <img src={coverImageUrl} alt="" className="creator-profile-card__banner-image" loading="lazy" decoding="async" aria-hidden />
+            <img
+              src={coverImageUrl}
+              alt=""
+              className="creator-profile-card__banner-image"
+              loading="lazy"
+              decoding="async"
+              aria-hidden
+              onError={() => setFailedCoverUrl(coverImageUrl)}
+            />
             <div className="creator-profile-card__banner-overlay" aria-hidden />
           </>
         ) : (

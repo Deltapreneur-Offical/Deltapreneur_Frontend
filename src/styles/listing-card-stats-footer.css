@@ -159,38 +159,46 @@
   box-shadow: none;
 }
 
+/* Footer hearts — light red on all marketplace cards */
 .listing-card-stats-footer .listing-like-btn__icon--idle,
-.creator-profile-card__stat-group .listing-like-btn__icon--idle {
-  color: #c4b5fd;
+.creator-profile-card__stat-group .listing-like-btn__icon--idle,
+.domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
+.technology-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
+.venture-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
+.home-auction-preview-card .listing-card-stats-footer .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .creator-profile-card__stat-group .listing-like-btn__icon--idle {
+  color: #fecaca;
 }
 
 .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
 .creator-profile-card__stat-group .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
-.creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #a78bfa;
+.creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.domain-listing-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.domain-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.technology-listing-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.technology-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.venture-listing-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.venture-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.home-auction-preview-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.home-auction-preview-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .creator-profile-card__stat-group .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
+  color: #fca5a5;
 }
 
 .listing-card-stats-footer .listing-like-btn__icon--active,
-.creator-profile-card__stat-group .listing-like-btn__icon--active {
-  color: #a78bfa;
-}
-
-.domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle {
-  color: #bae6fd;
-}
-
-.domain-listing-card .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
-.domain-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #7dd3fc;
-}
-
-.domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--active {
-  color: #7dd3fc;
-}
-
-.domain-listing-card .listing-card-stats-footer .listing-like-btn__count {
-  color: #bae6fd;
+.creator-profile-card__stat-group .listing-like-btn__icon--active,
+.domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--active,
+.technology-listing-card .listing-card-stats-footer .listing-like-btn__icon--active,
+.venture-listing-card .listing-card-stats-footer .listing-like-btn__icon--active,
+.home-auction-preview-card .listing-card-stats-footer .listing-like-btn__icon--active,
+.virtual-assistant-listing-card .listing-card-stats-footer .listing-like-btn__icon--active,
+.virtual-assistant-listing-card .creator-profile-card__stat-group .listing-like-btn__icon--active {
+  color: #fca5a5;
 }
 
 .listing-card-stats-footer .listing-like-btn__count,

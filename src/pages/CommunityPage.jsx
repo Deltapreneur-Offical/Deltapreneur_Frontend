@@ -28,6 +28,7 @@ import {
   isCreatorProfileVisible,
 } from '../utils/creatorProfile';
 import { getVisibleCreatorFields } from '../utils/creatorRoleFields';
+import { roleWaivesAuctionPlatformFees } from '../utils/adminRoles';
 import SkillsInput from '../components/common/SkillsInput';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import { isListingOwner } from '../utils/listingVisibility';
@@ -746,7 +747,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
   const [auctionId, setAuctionId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
+  const isAdmin = roleWaivesAuctionPlatformFees(user?.role);
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 

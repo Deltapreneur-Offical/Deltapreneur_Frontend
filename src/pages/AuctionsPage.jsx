@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Gavel, Search, ChevronDown, X, Home, Smartphone, Cpu, Code } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -20,7 +20,122 @@ import { normalizeCommunityAuction } from '../utils/homepageAuctions';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 import '../styles/auctions-page.css';
+
+const VIEW_IDS = new Set(['browse', 'yours', 'bids']);
+
+const extractTrackedList = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data?.items)) return payload.data.items;
+  return [];
+};
+
+const paymentDueLabel = (auction) => {
+  const dueRaw = auction?.winnerPaymentDueAt ?? auction?.winner_payment_due_at;
+  if (!dueRaw) return null;
+  const due = parseAuctionDate(dueRaw);
+  if (!due) return null;
+  const ms = due.getTime() - Date.now();
+  if (ms <= 0) return 'Payment overdue';
+  const days = Math.max(1, Math.ceil(ms / 86400000));
+  if (days === 1) return 'Payment due today';
+  return `Payment due in ${days} days`;
+};
+
+const resolveTrackingBadge = (auction, view) => {
+  const status = String(auction?.status || '').toUpperCase();
+  const approval = String(auction?.approvalStatus || auction?.approval_status || '').toUpperCase();
+  const isLive = status === 'ACTIVE' || status === 'EXTENDED';
+  const type = String(auction?.auctionType || '').toUpperCase();
+  const hasWinner = Boolean(
+    auction?.isWinner
+    || auction?.currentWinnerId
+    || auction?.current_winner_id
+    || auction?.paymentPending,
+  );
+  const paymentDue = status === 'PAYMENT_PENDING' || (status === 'ENDED' && hasWinner);
+
+  if (view === 'bids') {
+    if (auction?.paymentPending || (auction?.isWinner && paymentDue)) {
+      return {
+        label: paymentDueLabel(auction) || 'Payment pending',
+        className: 'auctions-track-badge--amber',
+      };
+    }
+    if (auction?.isWinner && status === 'COMPLETED') {
+      return { label: 'You won', className: 'auctions-track-badge--green' };
+    }
+    if (auction?.isLeading && isLive) {
+      return { label: "You're leading", className: 'auctions-track-badge--green' };
+    }
+    if (isLive) {
+      return { label: 'Outbid — still live', className: 'auctions-track-badge--orange' };
+    }
+    if (status === 'COMPLETED') return { label: 'Completed', className: 'auctions-track-badge--gray' };
+    if (status === 'UNSOLD' || status === 'CLOSED' || status === 'CANCELLED') {
+      return { label: status.replace(/_/g, ' '), className: 'auctions-track-badge--gray' };
+    }
+    return { label: status.replace(/_/g, ' ') || 'Ended', className: 'auctions-track-badge--gray' };
+  }
+
+  // Your Auctions (seller)
+  if (type === 'TECHNOLOGY' && (approval === 'PENDING_APPROVAL' || approval === 'PENDING')) {
+    return { label: 'Awaiting approval', className: 'auctions-track-badge--amber' };
+  }
+  if (status === 'DRAFT' || (type === 'CREATOR' && status === 'PAYMENT_PENDING' && !hasWinner)) {
+    return { label: 'Pending activation', className: 'auctions-track-badge--amber' };
+  }
+  if (isLive) {
+    return { label: status === 'EXTENDED' ? 'Live — extended' : 'Live', className: 'auctions-track-badge--green' };
+  }
+  if (paymentDue) {
+    return { label: 'Waiting for winner payment', className: 'auctions-track-badge--amber' };
+  }
+  if (status === 'ENDED' && !hasWinner) {
+    return { label: 'Awaiting winner decision', className: 'auctions-track-badge--amber' };
+  }
+  if (status === 'COMPLETED') return { label: 'Completed', className: 'auctions-track-badge--gray' };
+  if (status === 'UNSOLD') return { label: 'Unsold', className: 'auctions-track-badge--gray' };
+  if (status === 'CANCELLED' || status === 'CLOSED' || status === 'TAKEN_DOWN') {
+    return { label: status.replace(/_/g, ' '), className: 'auctions-track-badge--gray' };
+  }
+  return { label: status.replace(/_/g, ' ') || 'Auction', className: 'auctions-track-badge--gray' };
+};
+
+const trackedAuctionHref = (auction) => {
+  const type = String(auction?.auctionType || '').toUpperCase();
+  if (type === 'TECHNOLOGY' || auction?.software || auction?.softwareId) {
+    return `/technology/auction/${auction.id}`;
+  }
+  if (type === 'CREATOR' || auction?.community || auction?.communityId || auction?.community_id) {
+    return `/creator-auction/${auction.id}`;
+  }
+  return `/auction/${auction.id}`;
+};
+
+const trackedAuctionTitle = (auction) => {
+  if (auction?.domain || String(auction?.auctionType || '').toUpperCase() === 'DOMAIN') {
+    return resolveAuctionDomainTitle(auction) || 'Domain auction';
+  }
+  if (auction?.software || auction?.name || String(auction?.auctionType || '').toUpperCase() === 'TECHNOLOGY') {
+    return auction.auctionTitle || auction.name || auction.software?.name || 'Technology auction';
+  }
+  return auction.auctionTitle || auction.community?.name || 'Creator auction';
+};
+
+const trackedTypeMeta = (auction) => {
+  const type = String(auction?.auctionType || '').toUpperCase();
+  if (type === 'TECHNOLOGY' || auction?.software || auction?.softwareId) {
+    return { label: 'Technology', icon: TechnologyIcon, tone: 'indigo' };
+  }
+  if (type === 'CREATOR' || auction?.community || auction?.communityId || auction?.community_id) {
+    return { label: 'Creator', icon: CreatorIcon, tone: 'violet' };
+  }
+  return { label: 'Domain', icon: DomainsIcon, tone: 'blue' };
+};
 
 function AuctionCategoryIcon({ src, selected, className = 'w-4 h-4 object-contain shrink-0' }) {
   return (
@@ -202,16 +317,22 @@ const matchesAuctionSearch = (auction, query) => {
 export default function AuctionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
   const [domainAuctions, setDomainAuctions]       = useState([]);
   const [communityAuctions, setCommunityAuctions] = useState([]);
   const [softwareAuctions, setSoftwareAuctions] = useState([]);
+  const [myListed, setMyListed] = useState([]);
+  const [myBids, setMyBids] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [trackingLoading, setTrackingLoading] = useState(false);
   const [section, setSection]   = useState('all'); // all | domains | community | technology
   const [filter, setFilter]     = useState('all'); // all | ending_soon | no_bids
   const [sortBy, setSortBy]     = useState('default');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewAuction, setPreviewAuction] = useState(null);
+  const viewParam = searchParams.get('view');
+  const view = VIEW_IDS.has(viewParam) ? viewParam : 'browse';
 
   useEffect(() => {
     const fromUrl = searchParams.get('section');
@@ -221,6 +342,7 @@ export default function AuctionsPage() {
   }, [searchParams]);
 
   useEffect(() => {
+    if (view !== 'browse') return undefined;
     setLoading(true);
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
@@ -235,7 +357,96 @@ export default function AuctionsPage() {
       setCommunityAuctions(community);
       setSoftwareAuctions(software);
     }).finally(() => setLoading(false));
-  }, []);
+    return undefined;
+  }, [view]);
+
+  const loadTracking = useCallback(async (mode) => {
+    if (!user) {
+      setMyListed([]);
+      setMyBids([]);
+      return;
+    }
+    setTrackingLoading(true);
+    try {
+      if (mode === 'yours') {
+        const [domains, software, creators] = await Promise.all([
+          auctionAPI.getMyAuctions()
+            .then(({ data }) => extractTrackedList(data).map((row) => ({
+              ...normalizeAuction(row),
+              auctionType: row.auctionType || 'DOMAIN',
+            })))
+            .catch(() => []),
+          softwareAuctionAPI.getMyAuctions()
+            .then(({ data }) => extractTrackedList(data).map((row) => ({
+              ...normalizeSoftwareAuction(row),
+              auctionType: row.auctionType || 'TECHNOLOGY',
+              userHighestBid: row.userHighestBid,
+              isLeading: row.isLeading,
+              isWinner: row.isWinner,
+              paymentPending: row.paymentPending,
+              approvalStatus: row.approvalStatus,
+            })))
+            .catch(() => []),
+          communityAuctionAPI.getMyAuctions()
+            .then(({ data }) => extractTrackedList(data).map((row) => ({
+              ...normalizeCommunityAuction(row),
+              auctionType: row.auctionType || 'CREATOR',
+            })).filter(Boolean))
+            .catch(() => []),
+        ]);
+        setMyListed([...domains, ...software, ...creators]);
+      } else if (mode === 'bids') {
+        const [domains, software, creators] = await Promise.all([
+          auctionAPI.getMyBids()
+            .then(({ data }) => extractTrackedList(data).map((row) => ({
+              ...normalizeAuction(row),
+              auctionType: row.auctionType || 'DOMAIN',
+              userHighestBid: row.userHighestBid,
+              isLeading: row.isLeading,
+              isWinner: row.isWinner,
+              paymentPending: row.paymentPending,
+            })))
+            .catch(() => []),
+          softwareAuctionAPI.getMyBids()
+            .then(({ data }) => extractTrackedList(data).map((row) => ({
+              ...normalizeSoftwareAuction(row),
+              auctionType: row.auctionType || 'TECHNOLOGY',
+              userHighestBid: row.userHighestBid,
+              isLeading: row.isLeading,
+              isWinner: row.isWinner,
+              paymentPending: row.paymentPending,
+            })))
+            .catch(() => []),
+          communityAuctionAPI.getMyBids()
+            .then(({ data }) => extractTrackedList(data).map((row) => ({
+              ...normalizeCommunityAuction(row),
+              auctionType: row.auctionType || 'CREATOR',
+              userHighestBid: row.userHighestBid,
+              isLeading: row.isLeading,
+              isWinner: row.isWinner,
+              paymentPending: row.paymentPending,
+            })).filter(Boolean))
+            .catch(() => []),
+        ]);
+        setMyBids([...domains, ...software, ...creators]);
+      }
+    } finally {
+      setTrackingLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (view === 'yours' || view === 'bids') {
+      loadTracking(view);
+    }
+  }, [view, loadTracking]);
+
+  const setView = (next) => {
+    const params = new URLSearchParams(searchParams);
+    if (next === 'browse') params.delete('view');
+    else params.set('view', next);
+    setSearchParams(params, { replace: true });
+  };
 
   const applyFilter = (list) => list.filter(a => {
     if (!matchesAuctionSearch(a, searchQuery)) return false;
@@ -259,12 +470,24 @@ export default function AuctionsPage() {
   const totalShown      = shownDomains.length + shownCommunity.length + shownSoftware.length;
   const hasActiveFilters = section !== 'all' || filter !== 'all' || sortBy !== 'default' || searchQuery.trim().length > 0;
 
-  const categoryOptions = useMemo(() => ([
-    { value: 'all', label: 'Category' },
-    { value: 'domains', label: `Domains (${domainAuctions.length})` },
-    { value: 'technology', label: `Technology (${softwareAuctions.length})` },
-    { value: 'community', label: `Creators (${communityAuctions.length})` },
-  ]), [domainAuctions.length, softwareAuctions.length, communityAuctions.length]);
+  const categoryOptions = useMemo(() => {
+    const source = view === 'yours' ? myListed : view === 'bids' ? myBids : null;
+    const domainCount = source
+      ? source.filter((a) => String(a.auctionType || '').toUpperCase() === 'DOMAIN' || a.domain).length
+      : domainAuctions.length;
+    const techCount = source
+      ? source.filter((a) => String(a.auctionType || '').toUpperCase() === 'TECHNOLOGY' || a.software || a.softwareId).length
+      : softwareAuctions.length;
+    const creatorCount = source
+      ? source.filter((a) => String(a.auctionType || '').toUpperCase() === 'CREATOR' || a.community || a.communityId).length
+      : communityAuctions.length;
+    return [
+      { value: 'all', label: 'Category' },
+      { value: 'domains', label: `Domains (${domainCount})` },
+      { value: 'technology', label: `Technology (${techCount})` },
+      { value: 'community', label: `Creators (${creatorCount})` },
+    ];
+  }, [view, myListed, myBids, domainAuctions.length, softwareAuctions.length, communityAuctions.length]);
 
   const statusOptions = useMemo(() => ([
     { value: 'all', label: 'Status' },
@@ -279,18 +502,54 @@ export default function AuctionsPage() {
     { value: 'price_desc', label: 'Price: High to Low' },
   ]), []);
 
+  const trackedSource = view === 'yours' ? myListed : view === 'bids' ? myBids : [];
+  const trackedFiltered = useMemo(() => {
+    if (view === 'browse') return [];
+    let list = trackedSource.filter((a) => matchesAuctionSearch(a, searchQuery));
+    if (section === 'domains') {
+      list = list.filter((a) => String(a.auctionType || '').toUpperCase() === 'DOMAIN' || a.domain);
+    } else if (section === 'technology') {
+      list = list.filter((a) => String(a.auctionType || '').toUpperCase() === 'TECHNOLOGY' || a.software || a.softwareId);
+    } else if (section === 'community') {
+      list = list.filter((a) => String(a.auctionType || '').toUpperCase() === 'CREATOR' || a.community || a.communityId);
+    }
+    return sortAuctionList(list, sortBy === 'default' ? 'ending_soon' : sortBy);
+  }, [view, trackedSource, searchQuery, section, sortBy]);
+
   const clearAllFilters = () => {
     setSection('all');
     setFilter('all');
     setSortBy('default');
     setSearchQuery('');
-    navigate('/auctions', { replace: true });
+    const params = new URLSearchParams();
+    if (view !== 'browse') params.set('view', view);
+    setSearchParams(params, { replace: true });
   };
 
   const handleCategoryChange = (value) => {
     setSection(value);
-    navigate(value === 'all' ? '/auctions' : `/auctions?section=${value}`, { replace: true });
+    const params = new URLSearchParams(searchParams);
+    if (value === 'all') params.delete('section');
+    else params.set('section', value);
+    setSearchParams(params, { replace: true });
   };
+
+  const heroTitle = view === 'yours'
+    ? 'Your Auctions'
+    : view === 'bids'
+      ? 'Your Bids'
+      : 'Live Auctions';
+  const heroSubtitle = view === 'yours'
+    ? (user
+      ? `${myListed.length} auction${myListed.length !== 1 ? 's' : ''} you listed`
+      : 'Sign in to track auctions you listed')
+    : view === 'bids'
+      ? (user
+        ? `${myBids.length} auction${myBids.length !== 1 ? 's' : ''} you bid on`
+        : 'Sign in to track auctions you bid on')
+      : (totalLive > 0
+        ? `${totalLive} auction${totalLive !== 1 ? 's' : ''} live right now`
+        : 'No live auctions at the moment');
 
   return (
     <AppLayout>
@@ -303,21 +562,47 @@ export default function AuctionsPage() {
               </div>
               <div className="auctions-page-hero-copy">
                 <div className="auctions-page-title-row">
-                  <h1 className="font-display text-3xl font-bold text-gray-900">Live Auctions</h1>
-                  {totalLive > 0 && (
+                  <h1 className="font-display text-3xl font-bold text-gray-900">{heroTitle}</h1>
+                  {view === 'browse' && totalLive > 0 && (
                     <span className="auctions-page-live-badge" aria-hidden>
                       <span className="auctions-page-live-dot" />
                       Live
                     </span>
                   )}
                 </div>
-                <p className="text-gray-600">
-                  {totalLive > 0
-                    ? `${totalLive} auction${totalLive !== 1 ? 's' : ''} live right now`
-                    : 'No live auctions at the moment'}
-                </p>
+                <p className="text-gray-600">{heroSubtitle}</p>
               </div>
             </div>
+          </div>
+
+          <div className="auctions-page-view-tabs" role="tablist" aria-label="Auction views">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'browse'}
+              className={`auctions-page-view-tab ${view === 'browse' ? 'is-active' : ''}`}
+              onClick={() => setView('browse')}
+            >
+              Browse
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'yours'}
+              className={`auctions-page-view-tab ${view === 'yours' ? 'is-active' : ''}`}
+              onClick={() => setView('yours')}
+            >
+              Your Auctions
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'bids'}
+              className={`auctions-page-view-tab ${view === 'bids' ? 'is-active' : ''}`}
+              onClick={() => setView('bids')}
+            >
+              Your Bids
+            </button>
           </div>
 
           <div className="auctions-page-toolbar-divider" aria-hidden />
@@ -342,12 +627,14 @@ export default function AuctionsPage() {
               options={categoryOptions}
             />
 
-            <AuctionFilterSelect
-              label="Status"
-              value={filter}
-              onChange={setFilter}
-              options={statusOptions}
-            />
+            {view === 'browse' && (
+              <AuctionFilterSelect
+                label="Status"
+                value={filter}
+                onChange={setFilter}
+                options={statusOptions}
+              />
+            )}
 
             <AuctionFilterSelect
               label="Sort by"
@@ -369,14 +656,58 @@ export default function AuctionsPage() {
           </div>
         </div>
 
-        {!loading && totalShown > 0 && hasActiveFilters && (
+        {view !== 'browse' ? (
+          authLoading || trackingLoading ? (
+            <PageContentSkeleton variant="cards" rows={4} />
+          ) : !user ? (
+            <div className="auctions-page-empty">
+              <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">Sign in to track</h3>
+              <p className="text-gray-600 mb-6">
+                {view === 'yours'
+                  ? 'Your listed Domain, Technology, and Creator auctions appear here after you sign in.'
+                  : 'Auctions you bid on across Domains, Technology, and Creators appear here after you sign in.'}
+              </p>
+              <button className="btn-glow btn-glow-sm" type="button" onClick={() => navigate('/login')}>
+                Sign in →
+              </button>
+            </div>
+          ) : trackedFiltered.length === 0 ? (
+            <div className="auctions-page-empty">
+              <div className="mb-4 flex justify-center">
+                <img src={AuctionImg} alt="" className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
+              </div>
+              <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+                {view === 'yours' ? "You haven't listed an auction yet" : 'No bids yet'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {view === 'yours'
+                  ? 'When you put a Domain, Technology, or Creator listing into auction, it shows up here with live status.'
+                  : 'When you bid on any live auction, it shows up here so you can track leading / outbid / payment pending.'}
+              </p>
+              <button className="btn-glow btn-glow-sm" type="button" onClick={() => setView('browse')}>
+                Browse live auctions →
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+              {trackedFiltered.map((auction) => (
+                <TrackedAuctionCard
+                  key={`${auction.auctionType || 'x'}-${auction.id}`}
+                  auction={auction}
+                  view={view}
+                  onClick={() => navigate(trackedAuctionHref(auction))}
+                />
+              ))}
+            </div>
+          )
+        ) : !loading && totalShown > 0 && hasActiveFilters ? (
           <p className="auctions-page-results-note">
             Showing {totalShown} auction{totalShown !== 1 ? 's' : ''}
             {searchQuery.trim() ? ` matching “${searchQuery.trim()}”` : ''}
           </p>
-        )}
+        ) : null}
 
-        {loading ? (
+        {view === 'browse' && (loading ? (
           <PageContentSkeleton variant="cards" rows={6} />
         ) : (shownDomains.length === 0 && shownCommunity.length === 0 && shownSoftware.length === 0) ? (
           <div className="auctions-page-empty">
@@ -477,7 +808,7 @@ export default function AuctionsPage() {
               </div>
             )}
           </>
-        )}
+        ))}
       </div>
 
       {previewAuction && (
@@ -493,6 +824,82 @@ export default function AuctionsPage() {
         />
       )}
     </AppLayout>
+  );
+}
+
+function TrackedAuctionCard({ auction, view, onClick }) {
+  const { timeLeft, isUrgent } = useCountdown(auction?.endTime || auction);
+  const { formatPrice } = useCurrency();
+  const badge = resolveTrackingBadge(auction, view);
+  const typeMeta = trackedTypeMeta(auction);
+  const title = trackedAuctionTitle(auction);
+  const highestBid = toNum(auction.currentHighestBid, 0);
+  const minBid = toNum(auction.minBidPrice, 0);
+  const currentAmount = highestBid > 0 ? highestBid : minBid;
+  const userHigh = toNum(auction.userHighestBid, 0);
+  const totalBids = toNum(auction.totalBids, 0);
+  const status = String(auction.status || '').toUpperCase();
+  const isLive = status === 'ACTIVE' || status === 'EXTENDED';
+
+  return (
+    <div
+      className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer relative min-h-[300px] overflow-hidden flex flex-col hover:-translate-y-0.5"
+      onClick={onClick}
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <span className={`auctions-track-type auctions-track-type--${typeMeta.tone}`}>
+          <AuctionCategoryIcon src={typeMeta.icon} className="w-3.5 h-3.5 object-contain" />
+          {typeMeta.label}
+        </span>
+        <span className={`auctions-track-badge ${badge.className}`}>{badge.label}</span>
+      </div>
+
+      <h3 className="text-base font-bold text-gray-900 m-0 mb-1 whitespace-normal break-words leading-snug">
+        {title}
+      </h3>
+      {resolveAuctionListerName(auction) && (
+        <p className="text-xs text-gray-500 m-0 mb-3">Listed by {resolveAuctionListerName(auction)}</p>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 my-auto">
+        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-xs text-gray-600 font-medium mb-1">
+            {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+          </div>
+          <div className={`font-display text-lg font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+            {formatPrice(currentAmount)}
+          </div>
+        </div>
+        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-xs text-gray-600 font-medium mb-1">
+            {view === 'bids' ? 'Your Highest Bid' : 'Total Bids'}
+          </div>
+          <div className="font-display text-lg font-bold text-gray-900">
+            {view === 'bids' ? (userHigh > 0 ? formatPrice(userHigh) : '—') : totalBids}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center gap-3 pt-3 mt-3 border-t border-gray-200 shrink-0">
+        <div className="min-w-0 flex-1">
+          <div className="text-xs text-gray-600 font-medium">
+            {isLive ? 'Ends In' : 'Status'}
+          </div>
+          <div className={`font-display font-bold text-sm sm:text-base leading-snug ${isLive ? (isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500') : 'text-gray-700'}`}>
+            {isLive ? timeLeft : badge.label}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onClick(); }}
+          className="auctions-track-open-btn shrink-0"
+        >
+          {view === 'bids' && auction.isWinner && (status === 'PAYMENT_PENDING' || status === 'ENDED')
+            ? 'Pay now →'
+            : 'Open →'}
+        </button>
+      </div>
+    </div>
   );
 }
 

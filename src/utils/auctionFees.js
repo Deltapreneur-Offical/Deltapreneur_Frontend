@@ -18,6 +18,13 @@ export function payAuctionCreationFee({
       auctionType,
       referenceId,
     }).then(({ data: orderData }) => {
+      const order = orderData?.data ?? orderData;
+      const orderId = order?.orderId || order?.order_id || order?.id;
+      const amount = Number(order?.amount ?? 0);
+      if (amount <= 0 || String(orderId || '').startsWith('admin_free_')) {
+        resolve(orderId || `admin_free_${auctionType}`);
+        return;
+      }
       openRazorpayCheckout({
         orderData,
         user,
@@ -54,6 +61,17 @@ export function payBidFee({
       auctionType,
       bidAmount,
     }).then(({ data: orderData }) => {
+      const order = orderData?.data ?? orderData;
+      const orderId = order?.orderId || order?.order_id || order?.id;
+      const amount = Number(order?.amount ?? 0);
+      if (amount <= 0 || String(orderId || '').startsWith('admin_free_')) {
+        resolve({
+          razorpayPaymentId: 'admin_free',
+          razorpayOrderId: orderId || `admin_free_bid_${auctionId}`,
+          razorpaySignature: 'admin_free',
+        });
+        return;
+      }
       openRazorpayCheckout({
         orderData,
         user,

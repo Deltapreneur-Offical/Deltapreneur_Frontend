@@ -4,6 +4,7 @@ import { softwareAuctionAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchListingFeesAndCharges, payAuctionCreationFee } from '../utils/auctionFees';
+import { roleWaivesAuctionPlatformFees } from '../utils/adminRoles';
 
 const DURATIONS = ['ONE_DAY', 'THREE_DAYS', 'FIVE_DAYS', 'SEVEN_DAYS', 'FOURTEEN_DAYS', 'THIRTY_DAYS'];
 const DURATION_KEYS = {
@@ -31,7 +32,7 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
-  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
+  const isAdmin = roleWaivesAuctionPlatformFees(user?.role);
 
   useEffect(() => {
     fetchListingFeesAndCharges()

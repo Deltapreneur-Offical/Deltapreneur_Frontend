@@ -1771,6 +1771,16 @@
   flex-shrink: 0;
 }
 
+/* Homepage shells — light red hearts on all marketplace cards */
+.home-preview-card-border .listing-like-btn__icon--idle {
+  color: #fecaca;
+}
+
+.home-preview-card-border .listing-like-btn__icon--active,
+.home-preview-card-border .listing-like-btn--interactive:hover .listing-like-btn__icon--idle {
+  color: #fca5a5;
+}
+
 .home-preview-row .home-preview-browse-card .listing-card-stats-footer__cta {
   display: none;
 }

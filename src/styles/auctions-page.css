@@ -30,6 +30,130 @@
   align-items: center;
 }
 
+.auctions-page-view-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.auctions-page-view-tab {
+  appearance: none;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.auctions-page-view-tab:hover {
+  border-color: #c4b5fd;
+  color: #5b21b6;
+}
+
+.auctions-page-view-tab.is-active {
+  background: #111827;
+  border-color: #111827;
+  color: #fff;
+}
+
+.auctions-track-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.auctions-track-type--blue {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.auctions-track-type--indigo {
+  color: #4338ca;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.auctions-track-type--violet {
+  color: #6d28d9;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.auctions-track-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 58%;
+  text-align: right;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+
+.auctions-track-badge--green {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.auctions-track-badge--amber {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.auctions-track-badge--orange {
+  color: #c2410c;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.28);
+}
+
+.auctions-track-badge--gray {
+  color: #4b5563;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+
+.auctions-track-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 2.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #111827;
+  background: #111827;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.auctions-track-open-btn:hover {
+  background: #fff;
+  color: #111827;
+}
+
 .auctions-page-hero-main {
   display: flex;
   align-items: center;

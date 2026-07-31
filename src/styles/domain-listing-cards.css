@@ -686,17 +686,18 @@
   transition: color 0.2s ease, fill 0.2s ease;
 }
 
+/* Marketplace heart — light red on all cards */
 .listing-like-btn__icon--idle {
-  color: #c4b5fd;
+  color: #fecaca;
 }
 
 .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #a78bfa;
+  color: #fca5a5;
 }
 
 .listing-like-btn__icon--active {
-  color: #a78bfa;
+  color: #fca5a5;
 }
 
 .listing-like-btn__count {
@@ -704,22 +705,29 @@
   color: #0f172a;
 }
 
-/* Domain marketplace cards — Standard Domains sky likes (very light) */
-.domain-listing-card .listing-like-btn__icon--idle {
-  color: #bae6fd;
+.domain-listing-card .listing-like-btn__icon--idle,
+.technology-listing-card .listing-like-btn__icon--idle,
+.venture-listing-card .listing-like-btn__icon--idle,
+.home-auction-preview-card .listing-like-btn__icon--idle {
+  color: #fecaca;
 }
 
 .domain-listing-card .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
-.domain-listing-card .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #7dd3fc;
+.domain-listing-card .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.technology-listing-card .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.technology-listing-card .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.venture-listing-card .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.venture-listing-card .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
+.home-auction-preview-card .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.home-auction-preview-card .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
+  color: #fca5a5;
 }
 
-.domain-listing-card .listing-like-btn__icon--active {
-  color: #7dd3fc;
-}
-
-.domain-listing-card .listing-like-btn__count {
-  color: #bae6fd;
+.domain-listing-card .listing-like-btn__icon--active,
+.technology-listing-card .listing-like-btn__icon--active,
+.venture-listing-card .listing-like-btn__icon--active,
+.home-auction-preview-card .listing-like-btn__icon--active {
+  color: #fca5a5;
 }
 
 .creator-profile-card__stats {
@@ -772,7 +780,7 @@
 .domain-listing-card__ext-badge--in {
   color: #c2410c;
   background: #fff7ed;
-  border-color: #fed7aa;
+  border-color: #fdba74;
 }
 
 .domain-listing-card__ext-badge--io {

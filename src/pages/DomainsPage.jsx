@@ -37,6 +37,7 @@ import { addonTotal, addonLabel, ADDON_SERVICES } from '../components/addon/Addo
 import { useVirtualAssistantCatalog, vaLabel, vaTotal } from '../hooks/useVirtualAssistantCatalog';
 import { isPremiumDomain } from '../utils/domainPricing';
 import { readApiError } from '../utils/apiError';
+import { roleWaivesAuctionPlatformFees } from '../utils/adminRoles';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import FormSelect from '../components/common/FormSelect';
@@ -524,7 +525,7 @@ function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
   const [auctionFeeInr, setAuctionFeeInr] = useState(118);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
+  const isAdmin = roleWaivesAuctionPlatformFees(user?.role);
 
   const handleCurrencyChange = (nextCurrency) => {
     if (!nextCurrency || nextCurrency === currency) return;
@@ -794,7 +795,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const [commissionPercent, setCommissionPercent] = useState(15);
   const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
   const isEdit = Boolean(editDomain?.id);
-  const isAdmin = (user?.role ?? '').toString().toUpperCase() === 'ADMIN' || (user?.role ?? '').toString().toUpperCase() === 'ROLE_ADMIN';
+  const isAdmin = roleWaivesAuctionPlatformFees(user?.role);
   const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency, ratesMeta));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

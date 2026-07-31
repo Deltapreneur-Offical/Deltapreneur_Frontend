@@ -528,13 +528,23 @@
   line-height: 1;
 }
 
-.creator-profile-card__footer .listing-like-btn__icon--idle {
-  color: #c4b5fd;
+/* Light red hearts on VA / marketplace creator cards */
+.creator-profile-card__footer .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card.creator-profile-card .listing-like-btn__icon--idle,
+.virtual-assistant-listing-card .creator-profile-card__footer .listing-like-btn__icon--idle {
+  color: #fecaca;
   opacity: 1;
 }
 
-.creator-profile-card__footer .listing-like-btn__icon--active {
-  color: #a78bfa;
+.creator-profile-card__footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
+.creator-profile-card__footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
+  color: #fca5a5;
+}
+
+.creator-profile-card__footer .listing-like-btn__icon--active,
+.virtual-assistant-listing-card.creator-profile-card .listing-like-btn__icon--active,
+.virtual-assistant-listing-card .creator-profile-card__footer .listing-like-btn__icon--active {
+  color: #fca5a5;
 }
 
 .creator-profile-card__footer .listing-like-btn__icon {

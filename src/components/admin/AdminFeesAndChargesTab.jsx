@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminAPI } from '../../api/services';
+import { readApiError } from '../../utils/apiError';
 
 const EDITABLE_KEYS = [
   'listingCommissionPercent',
+  'softwareOnetimeCommissionPercent',
+  'hardwareOnetimeCommissionPercent',
   'auctionCreationFeeInr',
   'auctionBidFeeInr',
   'communityParticipationFeeInr',
@@ -163,11 +166,16 @@ function InfoRow({ emoji, label, description, value }) {
 }
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
-export default function AdminFeesAndChargesTab() {
+export default function AdminFeesAndChargesTab({ toast } = {}) {
   const { t } = useTranslation();
+  const notify = toast || {
+    success: () => {},
+    error: () => {},
+  };
   const [fees, setFees] = useState(() => Object.fromEntries(EDITABLE_KEYS.map((k) => [k, ''])));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   const loadFees = useCallback(() => {
     setLoading(true);
@@ -176,6 +184,7 @@ export default function AdminFeesAndChargesTab() {
       .then(({ data }) => {
         const src = data?.data ?? data ?? {};
         setFees(Object.fromEntries(EDITABLE_KEYS.map((key) => [key, src[key] ?? ''])));
+        setDirty(false);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -183,18 +192,31 @@ export default function AdminFeesAndChargesTab() {
 
   useEffect(() => { loadFees(); }, [loadFees]);
 
-  const handleFieldChange = (key, value) => setFees((prev) => ({ ...prev, [key]: value }));
+  const handleFieldChange = (key, value) => {
+    setFees((prev) => ({ ...prev, [key]: value }));
+    setDirty(true);
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload = Object.fromEntries(EDITABLE_KEYS.map((key) => [key, Number(fees[key])]));
+      if (EDITABLE_KEYS.some((key) => !Number.isFinite(payload[key]))) {
+        notify.error(t('adminFeesInvalidNumbers', 'All fee fields must be valid numbers.'));
+        return;
+      }
       const { data } = await adminAPI.updateListingFeesAndCharges(payload);
       const saved = data?.data ?? data ?? {};
-      setFees(Object.fromEntries(EDITABLE_KEYS.map((key) => [key, saved[key] ?? ''])));
-      alert(t('adminFeesUpdated', 'Fees updated successfully.'));
+      setFees(Object.fromEntries(EDITABLE_KEYS.map((key) => [key, saved[key] ?? fees[key] ?? ''])));
+      setDirty(false);
+      notify.success(
+        t(
+          'adminFeesUpdated',
+          'Fees saved. Auction pages will use the new bid fee after you refresh or reopen them.',
+        ),
+      );
     } catch (e) {
-      alert(e?.response?.data?.error || t('adminFeesUpdateFailed', 'Failed to update fees.'));
+      notify.error(readApiError(e, t('adminFeesUpdateFailed', 'Failed to update fees.')));
     } finally {
       setSaving(false);
     }
@@ -234,7 +256,7 @@ export default function AdminFeesAndChargesTab() {
         <FeeInput
           fieldKey="listingCommissionPercent"
           label="Marketplace Commission"
-          hint="Added on top of the seller's asking price. The buyer sees the final (higher) price. Example: if seller sets ₹10,000 and commission is 15%, buyer pays ₹11,500."
+          hint="Deducted from the seller's payout when a buy-now domain sells. Example: if the listing price is ₹10,000 and commission is 15%, the buyer pays ₹10,000 and the seller receives ₹8,500."
           value={fees.listingCommissionPercent}
           onChange={handleFieldChange}
           suffix="%"
@@ -242,7 +264,7 @@ export default function AdminFeesAndChargesTab() {
         <InfoRow
           emoji="💡"
           label="Who pays this?"
-          description="The buyer pays the commission as part of the total purchase price. The seller receives their original asking amount."
+          description="The seller pays this. It is deducted from their payout. The buyer only sees and pays the listed price — they are not charged this commission."
         />
         <SharedFeeBadge
           label="Auction fees also apply to Domain Auctions"
@@ -284,11 +306,21 @@ export default function AdminFeesAndChargesTab() {
         subtitle="Software & hardware listings on the Co-Creation marketplace (CoCreationPage)"
         accentColor="#10b981"
       >
-        <InfoRow
-          emoji="🏷️"
-          label="Marketplace Commission (shared with Domains)"
-          description={`Same commission rate as Domains applies here for buy-now technology listings. Current rate: ${fmt(fees.listingCommissionPercent, '')}%`}
-          value={`${fmt(fees.listingCommissionPercent, '')}%`}
+        <FeeInput
+          fieldKey="softwareOnetimeCommissionPercent"
+          label="Software / Technology Commission"
+          hint="Independent of Domains. Deducted from the seller's payout on buy-now technology sales. Example: listing ₹10,000 at 15% → buyer pays ₹10,000; seller receives ₹8,500."
+          value={fees.softwareOnetimeCommissionPercent}
+          onChange={handleFieldChange}
+          suffix="%"
+        />
+        <FeeInput
+          fieldKey="hardwareOnetimeCommissionPercent"
+          label="Hardware One-Time Commission"
+          hint="Independent rate for one-time hardware buy-now listings. Deducted from the seller's payout; buyer pays the listed price only."
+          value={fees.hardwareOnetimeCommissionPercent}
+          onChange={handleFieldChange}
+          suffix="%"
         />
         <SharedFeeBadge
           label="Auction fees also apply to Technology Auctions"
@@ -297,7 +329,7 @@ export default function AdminFeesAndChargesTab() {
         <InfoRow
           emoji="💡"
           label="Who pays this?"
-          description="The buyer pays the commission on top of the listing price, same as domain buy-now purchases."
+          description="The seller pays technology commissions (deducted from payout). The buyer only sees and pays the listed price."
         />
       </ProductCard>
 
@@ -414,7 +446,8 @@ export default function AdminFeesAndChargesTab() {
         gap: 12,
       }}>
         {[
-          { label: 'Marketplace Commission', value: `${fmt(fees.listingCommissionPercent, '')}%`, color: '#0ea5e9' },
+          { label: 'Domains Commission', value: `${fmt(fees.listingCommissionPercent, '')}%`, color: '#0ea5e9' },
+          { label: 'Technology Commission', value: `${fmt(fees.softwareOnetimeCommissionPercent, '')}%`, color: '#10b981' },
           { label: 'Venture Acquisition Commission', value: `${fmt(fees.ventureAcquisitionCommissionPercent, '')}%`, color: '#8b5cf6' },
           { label: 'Auction Creation Fee', value: fmt(fees.auctionCreationFeeInr, '₹'), color: '#ef4444' },
           { label: 'Bid Placement Fee', value: fmt(fees.auctionBidFeeInr, '₹'), color: '#ef4444' },
@@ -437,14 +470,16 @@ export default function AdminFeesAndChargesTab() {
         gap: 12,
         flexWrap: 'wrap',
       }}>
-        <p style={{ margin: 0, fontSize: 11, color: '#9ca3af', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          {EDITABLE_KEYS.length} configurable fees
+        <p style={{ margin: 0, fontSize: 11, color: dirty ? '#b45309' : '#9ca3af', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {dirty
+            ? t('adminFeesUnsaved', 'Unsaved changes — click Save All Fees')
+            : `${EDITABLE_KEYS.length} configurable fees`}
         </p>
         <button
           type="button"
           className="btn-professional-sm"
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || !dirty}
         >
           {saving ? t('adminSaving', 'Saving…') : t('adminSaveFees', 'Save All Fees')}
         </button>

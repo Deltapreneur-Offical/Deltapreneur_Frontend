@@ -320,7 +320,12 @@ export function convertForeignToInr(amount, fromCurrency, meta = FALLBACK_META) 
   const code = (fromCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
   if (code === 'INR') return roundInr(value);
   const fallback = buildFallbackMetaFromRates();
-  const rate = safeNumber(m[code]?.rateFromInr ?? fallback[code]?.rateFromInr, 0);
+  // Treat 0 as missing — `0 ?? fallback` would incorrectly keep 0 and skip fallback.
+  const rawRate = m[code]?.rateFromInr;
+  const rate = safeNumber(
+    rawRate > 0 ? rawRate : fallback[code]?.rateFromInr,
+    0,
+  );
   if (!rate) return roundInr(value);
   return roundInr(value / rate);
 }
@@ -340,7 +345,12 @@ export function convertInrAmount(inrAmount, currencyCode, meta = FALLBACK_META) 
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
   if (code === 'INR') return roundMoney(inr);
   const fallback = buildFallbackMetaFromRates();
-  const rate = safeNumber(m[code]?.rateFromInr ?? fallback[code]?.rateFromInr, 0);
+  // Treat 0 as missing so initial meta `{ INR: 1 }` (other rates 0) still converts.
+  const rawRate = m[code]?.rateFromInr;
+  const rate = safeNumber(
+    rawRate > 0 ? rawRate : fallback[code]?.rateFromInr,
+    0,
+  );
   if (!rate) return roundMoney(inr);
   return roundMoney(inr * rate);
 }

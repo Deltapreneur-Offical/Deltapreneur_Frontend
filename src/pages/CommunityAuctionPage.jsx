@@ -26,8 +26,9 @@ import {
   toDatetimeLocalInput,
 } from '../utils/auctionDate';
 import { getLinkedInProfileUrl } from '../utils/creatorProfile';
-import { payAuctionCreationFee } from '../utils/auctionFees';
+import { payAuctionCreationFee, fetchListingFeesAndCharges } from '../utils/auctionFees';
 import useCurrency from '../context/CurrencyContext';
+import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import { hasPlacedCommunityAuctionBid } from '../utils/communityAuctionMeetings';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
@@ -58,14 +59,22 @@ export default function CommunityAuctionPage() {
   useReferralTracker(auctionId, 'auction');
 
   const navigate      = useNavigate();
-  const { auction, bids, minNextBid, maxBidPrice, bidFee, wsState, loading, lastUpdate, placeBid, refresh }
+  const { auction, bids, minNextBid, maxBidPrice, bidFee: hookBidFee, wsState, loading, lastUpdate, placeBid, refresh }
                       = useCommunityAuction(auctionId);
   const resolvedEndTime = resolveAuctionEndTime(auction);
   const { timeLeft, isUrgent } = useCountdown(resolvedEndTime);
-  const { formatPrice, getSymbol } = useCurrency();
+  const {
+    currency,
+    formatPrice,
+    convertToInr,
+    getSymbol,
+    ratesMeta,
+  } = useCurrency();
 
-  // Bid state
+  // Bid state — input is in site currency; API always receives INR
   const [bidAmount, setBidAmount]   = useState('');
+  const [bidAmountInr, setBidAmountInr] = useState('');
+  const [bidFee, setBidFee] = useState(0);
   const [bidLoading, setBidLoading] = useState(false);
   const [bidError, setBidError]     = useState('');
   const [bidSuccess, setBidSuccess] = useState('');
@@ -79,6 +88,45 @@ export default function CommunityAuctionPage() {
 
   const [redeemPoints, setRedeemPoints] = useState(false);
   const [finalPayable, setFinalPayable] = useState(0);
+
+  const formatBidInputValue = (inrAmount, currencyCode = currency) => {
+    const converted = convertInrToCurrency(inrAmount, currencyCode, ratesMeta);
+    if (!Number.isFinite(converted)) return '';
+    if (currencyCode === 'INR') return String(Math.round(converted));
+    return String(Number(converted.toFixed(2)));
+  };
+
+  const handleBidAmountChange = (value) => {
+    setBidAmount(value);
+    const parsed = Number(value);
+    setBidAmountInr(
+      Number.isFinite(parsed) && parsed > 0
+        ? String(convertToInr(parsed, currency))
+        : '',
+    );
+    setBidError('');
+  };
+
+  useEffect(() => {
+    if (!bidAmountInr) return;
+    setBidAmount(formatBidInputValue(Number(bidAmountInr), currency));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, ratesMeta]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchListingFeesAndCharges()
+      .then((fees) => {
+        if (cancelled) return;
+        const fromApi = Number(fees?.auctionBidFeeInr ?? 0);
+        if (fromApi > 0) setBidFee(fromApi);
+        else if (Number(hookBidFee) > 0) setBidFee(Number(hookBidFee));
+      })
+      .catch(() => {
+        if (!cancelled && Number(hookBidFee) > 0) setBidFee(Number(hookBidFee));
+      });
+    return () => { cancelled = true; };
+  }, [hookBidFee]);
 
   useEffect(() => {
     if (auction) {
@@ -206,8 +254,13 @@ export default function CommunityAuctionPage() {
 
   // Place bid
   const handleBid = async () => {
-    const amount = parseFloat(bidAmount);
-    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice });
+    const displayAmount = parseFloat(bidAmount);
+    if (isNaN(displayAmount) || displayAmount <= 0) {
+      setBidError('Enter a valid bid amount.');
+      return;
+    }
+    const amountInr = Number(bidAmountInr) || convertToInr(displayAmount, currency);
+    const bidErrorMsg = validateBidAmount(amountInr, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -218,18 +271,19 @@ export default function CommunityAuctionPage() {
       const payment = await payBidFee({
         auctionType: 'COMMUNITY',
         auctionId: auction.id,
-        bidAmount: amount,
+        bidAmount: amountInr,
         user,
         description: 'Creator auction bid fee',
       });
       await placeBid({
-        amount,
+        amount: amountInr,
         razorpayOrderId: payment.razorpayOrderId,
         razorpayPaymentId: payment.razorpayPaymentId,
         razorpaySignature: payment.razorpaySignature,
       });
-      setBidSuccess(`Bid of ${formatPrice(amount)} placed!`);
+      setBidSuccess(`Bid of ${formatPrice(amountInr)} placed!`);
       setBidAmount('');
+      setBidAmountInr('');
     } catch (err) {
       setBidError(err.response?.data?.error || err?.message || 'Failed to place bid.');
     } finally { setBidLoading(false); }
@@ -577,17 +631,24 @@ export default function CommunityAuctionPage() {
                     <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Bid</div>
                     <div className="flex gap-2 flex-wrap">
                       {[1, 1.1, 1.25].map(mult => {
-                        const quickAmount = Math.ceil(minNextBid * mult / 100) * 100;
-                        const selected = bidAmount === String(quickAmount);
+                        const quickAmountInr = Math.ceil(minNextBid * mult / 100) * 100;
+                        const quickDisplay = formatBidInputValue(quickAmountInr);
+                        const selected = bidAmountInr === String(quickAmountInr)
+                          || bidAmount === quickDisplay;
                         return (
                           <button key={mult}
-                            onClick={() => setBidAmount(String(quickAmount))}
+                            type="button"
+                            onClick={() => {
+                              setBidAmount(quickDisplay);
+                              setBidAmountInr(String(quickAmountInr));
+                              setBidError('');
+                            }}
                             className={`px-3 py-1.5 rounded-lg text-[0.78rem] cursor-pointer font-semibold transition-all ${
                               selected
                                 ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
                                 : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
                             }`}>
-                            {formatPrice(quickAmount)}
+                            {formatPrice(quickAmountInr)}
                           </button>
                         );
                       })}
@@ -602,10 +663,11 @@ export default function CommunityAuctionPage() {
                   <input
                     type="number"
                     value={bidAmount}
-                    onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
+                    onChange={e => handleBidAmountChange(e.target.value)}
                     placeholder={`Min ${formatPrice(minNextBid)}`}
-                    min={minNextBid}
-                    max={maxBidPrice || undefined}
+                    min={formatBidInputValue(minNextBid) || undefined}
+                    max={maxBidPrice ? formatBidInputValue(maxBidPrice) : undefined}
+                    step="any"
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
                     onKeyDown={e => e.key === 'Enter' && handleBid()}
                   />
@@ -632,7 +694,11 @@ export default function CommunityAuctionPage() {
                   disabled={bidLoading || !bidAmount}>
                   {bidLoading
                     ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-                    : `Place Bid${bidAmount ? ` — ${formatPrice(Number(bidAmount))}` : ''} →`}
+                    : (bidAmountInr
+                      ? (bidFee > 0
+                        ? `Place Bid — pay ${formatPrice(Number(bidFee))} fee →`
+                        : `Place Bid — ${formatPrice(Number(bidAmountInr))} →`)
+                      : 'Place Bid →')}
                 </button>
 
                 <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">

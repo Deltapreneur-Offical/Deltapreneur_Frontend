@@ -874,7 +874,7 @@ export default function AdminDashboardPage() {
           )}
 
           {tab === 'fees-charges' && (
-            <AdminFeesAndChargesTab />
+            <AdminFeesAndChargesTab toast={toast} />
           )}
 
           {tab === 'openprovider-pricing' && (

@@ -124,6 +124,31 @@ export default function DomainStorefrontPage() {
   // Aborts the in-flight availability check + TLD load so the user can cancel a
   // slow search and immediately search again.
   const checkAbortRef = useRef(null);
+  const storefrontSearchFrameRef = useRef(null);
+  const storefrontSearchTailAtRef = useRef(0);
+  const storefrontSearchTailTimerRef = useRef(0);
+
+  const playStorefrontSearchTail = useCallback(() => {
+    const host = storefrontSearchFrameRef.current;
+    if (!host) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - storefrontSearchTailAtRef.current < 120) return;
+    storefrontSearchTailAtRef.current = now;
+    host.classList.remove('storefront-search-tail--play');
+    void host.offsetWidth;
+    host.classList.add('storefront-search-tail--play');
+    window.clearTimeout(storefrontSearchTailTimerRef.current);
+    storefrontSearchTailTimerRef.current = window.setTimeout(() => {
+      host.classList.remove('storefront-search-tail--play');
+    }, 2400);
+  }, []);
+
+  useEffect(() => () => {
+    window.clearTimeout(storefrontSearchTailTimerRef.current);
+  }, []);
 
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -583,42 +608,70 @@ export default function DomainStorefrontPage() {
                 </div>
               )}
 
-              {/* Domain Search Card */}
-              <section className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-indigo-50/50 via-violet-50/10 to-transparent" aria-hidden="true" />
+              {/* Domain Search Card — Standard sky × Premium gold + border tail */}
+              <section className="storefront-domain-search relative overflow-hidden bg-white rounded-2xl shadow-sm p-5 sm:p-6">
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-sky-50/40 via-white/80 to-amber-50/35"
+                  aria-hidden="true"
+                />
                 <div className="relative">
-                  <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Find your domain name</h2>
-
-                  <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 bg-gray-50 border border-gray-200 rounded-xl p-2 focus-within:bg-white focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all duration-200">
-                    <div className="flex-1 flex items-center gap-2 px-2">
-                      <Search className="h-5 w-5 shrink-0 text-gray-400" />
-                      <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search for domain e.g. mybrand"
-                        className="w-full bg-transparent border-none py-2 text-sm text-gray-950 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none"
-                      />
+                  <div className="mb-4 flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">
+                        Domain search
+                      </p>
+                      <h2 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
+                        Find your domain name
+                      </h2>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={checking}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-white font-bold px-6 text-sm transition-all shadow-sm disabled:opacity-50 select-none"
+                  </div>
+
+                  <form onSubmit={handleSearch} className="storefront-search-form">
+                    <div
+                      ref={storefrontSearchFrameRef}
+                      className="storefront-search-frame"
+                      onMouseEnter={playStorefrontSearchTail}
+                      onClick={playStorefrontSearchTail}
+                      onFocusCapture={playStorefrontSearchTail}
                     >
-                      {checking ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Checking...
-                        </>
-                      ) : (
-                        'Check Availability'
-                      )}
-                    </button>
+                      <span className="storefront-search-tail" aria-hidden="true" />
+                      <div className="storefront-search-shell search-glow-focus">
+                        <div className="storefront-search-form__fields">
+                          <Search className="storefront-search-form__icon" aria-hidden="true" />
+                          <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search for domain e.g. mybrand"
+                            className="storefront-search-form__input"
+                            autoComplete="off"
+                            spellCheck={false}
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={checking}
+                          className="storefront-search-form__submit"
+                        >
+                          {checking ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                              Checking...
+                            </>
+                          ) : (
+                            <>
+                              Check Availability
+                              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
                     {checking && (
                       <button
                         type="button"
                         onClick={handleCancelCheck}
-                        className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold px-4 text-sm transition-all select-none"
+                        className="storefront-search-form__cancel"
                       >
                         <X className="w-4 h-4" />
                         Cancel

@@ -12,6 +12,7 @@ import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctio
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 import useCurrency from '../context/CurrencyContext';
+import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 
@@ -48,9 +49,16 @@ export default function AuctionPage() {
   const { auction, bids, minNextBid, maxBidPrice, connected, loading, lastUpdate, placeBid, refresh }
                        = useAuction(auctionId);
   const { timeLeft, isUrgent } = useCountdown(resolveAuctionEndTime(auction));
-  const { formatPrice, getSymbol } = useCurrency();
+  const {
+    currency,
+    formatPrice,
+    convertToInr,
+    getSymbol,
+    ratesMeta,
+  } = useCurrency();
 
   const [bidAmount, setBidAmount]         = useState('');
+  const [bidAmountInr, setBidAmountInr]   = useState('');
   const [bidLoading, setBidLoading]       = useState(false);
   const [bidError, setBidError]           = useState('');
   const [bidSuccess, setBidSuccess]       = useState('');
@@ -66,6 +74,31 @@ export default function AuctionPage() {
 
   const [redeemPoints, setRedeemPoints] = useState(false);
   const [finalPayable, setFinalPayable] = useState(0);
+
+  const formatBidInputValue = (inrAmount, currencyCode = currency) => {
+    const converted = convertInrToCurrency(inrAmount, currencyCode, ratesMeta);
+    if (!Number.isFinite(converted)) return '';
+    if (currencyCode === 'INR') return String(Math.round(converted));
+    return String(Number(converted.toFixed(2)));
+  };
+
+  const handleBidAmountChange = (value) => {
+    setBidAmount(value);
+    const parsed = Number(value);
+    setBidAmountInr(
+      Number.isFinite(parsed) && parsed > 0
+        ? String(convertToInr(parsed, currency))
+        : '',
+    );
+    setBidError('');
+  };
+
+  // Keep the bid input in the selected site currency when the navbar currency changes.
+  useEffect(() => {
+    if (!bidAmountInr) return;
+    setBidAmount(formatBidInputValue(Number(bidAmountInr), currency));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only reformat when currency/rates change
+  }, [currency, ratesMeta]);
 
   // FIX #13: access domain.listedBy safely — it comes through because
   // @JsonIgnoreProperties on domain only strips {"auction","hibernateLazyInitializer"}
@@ -161,13 +194,21 @@ export default function AuctionPage() {
       });
 
     if (user && isActive) {
-      fetchListingFeesAndCharges()
-        .then(data => {
-          if (data?.auctionBidFeeInr) {
-            setBidFee(data.auctionBidFeeInr);
-          }
-        })
-        .catch(console.error);
+      const loadBidFee = () => {
+        fetchListingFeesAndCharges()
+          .then(data => {
+            if (data?.auctionBidFeeInr != null) {
+              setBidFee(data.auctionBidFeeInr);
+            }
+          })
+          .catch(console.error);
+      };
+      loadBidFee();
+      const onVisible = () => {
+        if (document.visibilityState === 'visible') loadBidFee();
+      };
+      document.addEventListener('visibilitychange', onVisible);
+      return () => document.removeEventListener('visibilitychange', onVisible);
     }
   }, [auction?.id, user?.id, isActive, biddingBlocked]);
 
@@ -252,8 +293,13 @@ export default function AuctionPage() {
   };
 
   const handleBid = async () => {
-    const amount = parseFloat(bidAmount);
-    const bidErrorMsg = validateBidAmount(amount, { minNextBid, maxBidPrice }, formatPrice);
+    const displayAmount = parseFloat(bidAmount);
+    if (isNaN(displayAmount) || displayAmount <= 0) {
+      setBidError(t('auctionDetailEnterValidAmount'));
+      return;
+    }
+    const amountInr = Number(bidAmountInr) || convertToInr(displayAmount, currency);
+    const bidErrorMsg = validateBidAmount(amountInr, { minNextBid, maxBidPrice }, formatPrice);
     if (bidErrorMsg) {
       setBidError(bidErrorMsg);
       return;
@@ -264,18 +310,19 @@ export default function AuctionPage() {
       const payment = await payBidFee({
         auctionType: 'DOMAIN',
         auctionId: auction.id,
-        bidAmount: amount,
+        bidAmount: amountInr,
         user,
         description: t('auctionDetailBidFee', { defaultValue: 'Auction bid fee' }),
       });
       await placeBid({
-        amount,
+        amount: amountInr,
         razorpayOrderId: payment.razorpayOrderId,
         razorpayPaymentId: payment.razorpayPaymentId,
         razorpaySignature: payment.razorpaySignature,
       });
-      setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amount) }));
+      setBidSuccess(t('auctionDetailBidPlaced', { amount: formatPrice(amountInr) }));
       setBidAmount('');
+      setBidAmountInr('');
     } catch (err) {
       setBidError(err?.response?.data?.error || err?.message || t('auctionDetailFailedPlaceBid'));
     } finally { setBidLoading(false); }
@@ -593,23 +640,30 @@ export default function AuctionPage() {
                   </div>
                 )}
 
-                {/* Quick bid buttons */}
+                {/* Quick bid buttons — amounts stored in INR; UI shows site currency */}
                 {minNextBid > 0 && (
                   <div className="mb-4">
                     <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailQuickBid')}</div>
                     <div className="flex gap-2 flex-wrap">
                       {[1, 1.1, 1.25].map(mult => {
-                        const quickAmount = Math.ceil(minNextBid * mult / 100) * 100;
-                        const selected = bidAmount === String(quickAmount);
+                        const quickAmountInr = Math.ceil(minNextBid * mult / 100) * 100;
+                        const quickDisplay = formatBidInputValue(quickAmountInr);
+                        const selected = bidAmountInr === String(quickAmountInr)
+                          || bidAmount === quickDisplay;
                         return (
                           <button key={mult}
-                            onClick={() => setBidAmount(String(quickAmount))}
+                            type="button"
+                            onClick={() => {
+                              setBidAmount(quickDisplay);
+                              setBidAmountInr(String(quickAmountInr));
+                              setBidError('');
+                            }}
                             className={`px-3 py-1.5 rounded-lg text-[0.78rem] cursor-pointer font-semibold transition-all ${
                               selected
                                 ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
                                 : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
                             }`}>
-                            {formatPrice(quickAmount)}
+                            {formatPrice(quickAmountInr)}
                           </button>
                         );
                       })}
@@ -617,9 +671,14 @@ export default function AuctionPage() {
                   </div>
                 )}
 
-                {bidAmount && (
+                {bidAmountInr && (
                   <div className="mb-4 text-[0.82rem] text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-                    You will be charged <strong>{formatPrice(parseFloat(bidAmount))}</strong> to place this bid.
+                    Your bid offer: <strong>{formatPrice(Number(bidAmountInr))}</strong>
+                    {bidFee != null && Number(bidFee) > 0 && (
+                      <>
+                        . A bid placement fee of <strong>{formatPrice(Number(bidFee))}</strong> will be charged to place this bid.
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -630,10 +689,11 @@ export default function AuctionPage() {
                   <input
                     type="number"
                     value={bidAmount}
-                    onChange={e => { setBidAmount(e.target.value); setBidError(''); }}
+                    onChange={e => handleBidAmountChange(e.target.value)}
                     placeholder={t('auctionDetailMinPlaceholder', { amount: formatPrice(minNextBid) })}
-                    min={minNextBid}
-                    max={maxBidPrice || undefined}
+                    min={formatBidInputValue(minNextBid) || undefined}
+                    max={maxBidPrice ? formatBidInputValue(maxBidPrice) : undefined}
+                    step="any"
                     className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
                     onKeyDown={e => e.key === 'Enter' && handleBid()}
                   />
@@ -651,17 +711,21 @@ export default function AuctionPage() {
                   </div>
                 )}
 
-                {bidAmount && (
+                {bidAmountInr && (
                   <div className="text-[0.75rem] text-gray-500 mb-3 text-center font-medium bg-gray-50 p-2 rounded">
-                    This amount will be charged to place your bid.
+                    {bidFee != null && Number(bidFee) > 0
+                      ? `Only the bid placement fee (${formatPrice(Number(bidFee))}) is charged now. The full bid is paid only if you win.`
+                      : 'The full bid amount is paid only if you win the auction.'}
                   </div>
                 )}
 
                 <button className="btn-glow w-full" onClick={handleBid}
                   disabled={bidLoading || !bidAmount}>
                   {bidLoading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-                    (bidAmount
-                      ? t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(bidAmount) })
+                    (bidAmountInr
+                      ? (bidFee != null && Number(bidFee) > 0
+                        ? `Place Bid — pay ${formatPrice(Number(bidFee))} fee →`
+                        : t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(Number(bidAmountInr)) }))
                       : `${t('auctionDetailPlaceBidBtn')} →`)}
                 </button>
 

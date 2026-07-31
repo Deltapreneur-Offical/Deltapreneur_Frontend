@@ -1297,23 +1297,23 @@
   color: #1e293b !important;
 }
 
-/* Premium Venture Card */
+/* Premium Venture Card — Premium Domains gold */
 .venture-listing-card--venture {
-  border: 1px solid #7dd3fc !important;
+  border: 1px solid #fcd34d !important;
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.2),
-    0 8px 24px rgba(2, 132, 199, 0.08),
-    0 0 20px rgba(56, 189, 248, 0.12) !important;
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.12) !important;
 }
 
 .venture-listing-card--venture:hover {
   transform: translateY(-4px) !important;
-  border-color: #38bdf8 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  border-color: #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
   box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -1326,23 +1326,23 @@
   box-shadow: none !important;
 }
 
-/* Premium Co-Venture Card */
+/* Premium Co-Venture Card — same Premium gold */
 .venture-listing-card--coventure {
-  border: 1px solid #7dd3fc !important;
+  border: 1px solid #fcd34d !important;
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.2),
-    0 8px 24px rgba(2, 132, 199, 0.08),
-    0 0 20px rgba(56, 189, 248, 0.12) !important;
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.12) !important;
 }
 
 .venture-listing-card--coventure:hover {
   transform: translateY(-4px) !important;
-  border-color: #38bdf8 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  border-color: #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
   box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -1436,8 +1436,50 @@
   line-height: 1.25;
 }
 
+/* Premium Domains gold highlight — Equity / Offers / Applicants chips */
+.venture-listing-card__metric--premium {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #fcd34d;
+  background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 100%);
+  color: #92400e;
+  font-weight: 600;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.14),
+    0 2px 8px rgba(180, 83, 9, 0.08);
+}
+
+.venture-listing-card--venture .venture-listing-card__metric--premium,
+.venture-listing-card--coventure .venture-listing-card__metric--premium {
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
 .venture-listing-card__metric--role {
-  color: #0369a1;
+  color: #b45309;
+}
+
+/* Venture / Co-Venture price box — Premium gold (not Standard sky) */
+.domain-listing-card__price-box--venture,
+.domain-listing-card__price-box--coventure,
+.venture-listing-card .domain-listing-card__price-box {
+  border: 1px solid #fcd34d !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 4px 14px rgba(180, 83, 9, 0.08) !important;
+}
+
+.venture-listing-card.card-glow-hover:hover .domain-listing-card__price-box,
+.venture-listing-card:hover .domain-listing-card__price-box--venture,
+.venture-listing-card:hover .domain-listing-card__price-box--coventure {
+  border-color: #d97706 !important;
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 6px 18px rgba(180, 83, 9, 0.12) !important;
 }
 
 .venture-listing-card__price-label {

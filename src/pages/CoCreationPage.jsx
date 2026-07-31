@@ -516,7 +516,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   useEffect(() => {
     fetchListingFeesAndCharges()
       .then((fees) => {
-        setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15));
+        setCommissionPercent(Number(fees?.softwareOnetimeCommissionPercent ?? fees?.listingCommissionPercent ?? 15));
         setAuctionCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118));
       })
       .catch(() => { });
@@ -930,9 +930,12 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                 <div className="text-xs text-purple-500 font-semibold mb-1 uppercase tracking-wide">
                   Commission preview · One-Time Purchase
                 </div>
-                <div className="flex justify-between"><span>Seller amount</span><span>{formatCurrency(commissionBreakdown.sellerAmount, form.currency)}</span></div>
+                <div className="flex justify-between"><span>Listing price (buyer pays)</span><span>{formatCurrency(commissionBreakdown.finalListingPrice, form.currency)}</span></div>
                 <div className="flex justify-between"><span>Platform commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatCurrency(commissionBreakdown.commissionAmount, form.currency)}</span></div>
-                <div className="flex justify-between font-semibold text-gray-900"><span>Final listing price</span><span>{formatCurrency(commissionBreakdown.finalListingPrice, form.currency)}</span></div>
+                <div className="flex justify-between font-semibold text-gray-900"><span>Estimated seller earnings</span><span>{formatCurrency(commissionBreakdown.sellerEarnings, form.currency)}</span></div>
+                <p className="text-xs text-gray-500 pt-1">
+                  Commission is deducted from your payout. Buyers pay the listed price only.
+                </p>
               </div>
             )}
             {/* Subscription Revenue Policy if any subscription is enabled */}

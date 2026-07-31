@@ -509,7 +509,7 @@ return (
           <div
 
             className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${compact ? 'p-2' : 'p-4'
-              } bg-gradient-to-br from-sky-400 via-sky-500 to-cyan-600`}
+              } bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600`}
 
             aria-hidden
 
@@ -643,7 +643,7 @@ return (
             {b.industry && (
 
               <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } bg-sky-50 text-sky-800 border border-sky-100`}>
+                } bg-amber-50 text-amber-900 border border-amber-100`}>
 
                 {b.industry}
 
@@ -654,7 +654,7 @@ return (
             {sellerAsk.dealTypeLabel && (
 
               <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } bg-sky-50 text-sky-700 border border-sky-100`}>
+                } bg-amber-50 text-amber-800 border border-amber-100`}>
 
                 {sellerAsk.dealTypeLabel}
 
@@ -720,7 +720,7 @@ return (
           {compact ? (
             <div className="venture-listing-card__metrics flex flex-nowrap items-center justify-between gap-x-2 mt-1 min-w-0 w-full">
               {sellerAsk.equityLabel ? (
-                <div className="venture-listing-card__metric flex items-center gap-1 min-w-0 shrink">
+                <div className="venture-listing-card__metric venture-listing-card__metric--premium flex items-center gap-1 min-w-0 shrink">
                   <span className="truncate">{sellerAsk.equityLabel} Equity</span>
                 </div>
               ) : (
@@ -729,7 +729,7 @@ return (
                 </span>
               )}
 
-              <div className="venture-listing-card__metric shrink-0">
+              <div className="venture-listing-card__metric venture-listing-card__metric--premium shrink-0">
                 <span className="truncate">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
               </div>
             </div>
@@ -737,7 +737,7 @@ return (
             <div className="grid grid-cols-2 gap-2 mt-1">
               {/* Equity Offered */}
               {sellerAsk.equityLabel && (
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-sky-50/40 border-sky-100/60 text-sky-800">
+                <div className="venture-listing-card__metric--premium flex items-center gap-1.5 px-2 py-1.5 rounded-lg">
                   <span className="text-[11px] font-medium truncate">
                     {sellerAsk.equityLabel} Equity
                   </span>
@@ -746,8 +746,8 @@ return (
 
               {/* Role Offered (for Co-Venture) */}
               {isCoVenture && roleOffer ? (
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-sky-50/40 border-sky-100/60 text-sky-800">
-                  <Briefcase size={12} className="text-sky-500" />
+                <div className="venture-listing-card__metric--premium flex items-center gap-1.5 px-2 py-1.5 rounded-lg">
+                  <Briefcase size={12} className="text-amber-700" />
                   <span className="text-[11px] font-medium truncate" title={roleOffer}>
                     {roleOffer}
                   </span>
@@ -755,10 +755,7 @@ return (
               ) : null}
 
               {/* Interest/Pitches Count */}
-              <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${interestCount > 0
-                  ? 'bg-sky-50/40 border-sky-100/60 text-sky-800'
-                  : 'bg-slate-50 border-slate-100 text-slate-500'
-                }`}>
+              <div className="venture-listing-card__metric--premium flex items-center gap-1.5 px-2 py-1.5 rounded-lg">
                 <span className="text-[11px] font-medium truncate">
                   {formatInterestCountLabel(interestCount, isCoVenture)}
                 </span>
@@ -785,8 +782,8 @@ return (
 
               style={isHomePreview ? undefined : {
                 borderRadius: compact ? '0.75rem' : '1rem',
-                background: 'linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #7dd3fc 0%, #38bdf8 50%, #0ea5e9 100%) border-box',
-                boxShadow: '-8px 0 16px -8px rgba(56, 189, 248, 0.22), 8px 0 16px -8px rgba(14, 165, 233, 0.18), 0 0 10px -4px rgba(56, 189, 248, 0.18)',
+                background: 'linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%) border-box',
+                boxShadow: '-8px 0 16px -8px rgba(251, 191, 36, 0.22), 8px 0 16px -8px rgba(217, 119, 6, 0.18), 0 0 10px -4px rgba(251, 191, 36, 0.18)',
               }}
 
             >

@@ -1130,11 +1130,11 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         )}
         {commissionBreakdown && (
           <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Listing Price</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
+            <div className="flex justify-between"><span>Listing Price (buyer pays)</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
             <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span></div>
             <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatListingCurrency(commissionBreakdown.sellerEarnings)}</span></div>
             <p className="pt-2 text-xs leading-5 text-gray-600">
-              CoBrother charges a 15% commission on successful sales. The commission is deducted from the final sale amount. You will receive approximately 85% of the sale price.
+              CoBrother deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout on successful buy-now sales. Buyers pay the listed price only. Your estimated earnings are shown above.
             </p>
           </div>
         )}

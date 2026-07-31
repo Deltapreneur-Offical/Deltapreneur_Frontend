@@ -430,53 +430,53 @@
   box-shadow: none !important;
 }
 
-/* Ventures — Standard Domains / Technology sky */
+/* Ventures — Premium Domains gold (same family as marketplace Premium / Auctions) */
 .home-preview-card-border--venture {
-  --home-card-border: #7dd3fc;
-  --home-card-border-hover: #38bdf8;
-  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
-  border: 1px solid #7dd3fc !important;
+  --home-card-border: #fcd34d;
+  --home-card-border-hover: #d97706;
+  --home-card-shadow-accent: rgba(251, 191, 36, 0.28);
+  border: 1px solid #fcd34d !important;
   background: #ffffff !important;
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.2),
-    0 8px 24px rgba(2, 132, 199, 0.08),
-    0 0 20px rgba(56, 189, 248, 0.12) !important;
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.12) !important;
 }
 
 .home-preview-card-border--venture:hover {
-  border: 1px solid #38bdf8 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  border: 1px solid #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
   box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
-/* Co-Ventures — same sky family as Technology */
+/* Co-Ventures — same Premium gold family */
 .home-preview-card-border--coventure {
-  --home-card-border: #7dd3fc;
-  --home-card-border-hover: #38bdf8;
-  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
-  border: 1px solid #7dd3fc !important;
+  --home-card-border: #fcd34d;
+  --home-card-border-hover: #d97706;
+  --home-card-shadow-accent: rgba(251, 191, 36, 0.28);
+  border: 1px solid #fcd34d !important;
   background: #ffffff !important;
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.2),
-    0 8px 24px rgba(2, 132, 199, 0.08),
-    0 0 20px rgba(56, 189, 248, 0.12) !important;
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 8px 24px rgba(180, 83, 9, 0.08),
+    0 0 20px rgba(251, 191, 36, 0.12) !important;
 }
 
 .home-preview-card-border--coventure:hover {
-  border: 1px solid #38bdf8 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  border: 1px solid #d97706 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fffefb 40%, #fffbeb 100%) !important;
   box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 12px 32px rgba(180, 83, 9, 0.14),
+    0 0 32px rgba(251, 191, 36, 0.22),
     0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
-/* Kill leftover teal/green/purple wash on venture shells */
+/* Kill leftover sky/teal wash on venture shells — outer Premium shell owns tint */
 .home-preview-card-border--venture .venture-listing-card,
 .home-preview-card-border--venture .venture-listing-card.card-glow-hover,
 .home-preview-card-border--venture .domain-listing-card__body,
@@ -493,9 +493,11 @@
 
 .home-preview-card-border--venture .domain-listing-card__price-box,
 .home-preview-card-border--coventure .domain-listing-card__price-box {
-  border: 1px solid #38bdf8 !important;
+  border: 1px solid #fcd34d !important;
   background: #ffffff !important;
-  box-shadow: none !important;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 4px 14px rgba(180, 83, 9, 0.08) !important;
 }
 
 /* Technology — Standard Domains sky (same family as marketplace domain cards) */
@@ -598,12 +600,19 @@
   border: 1px solid #38bdf8 !important;
 }
 
-.home-preview-card-border--technology .domain-listing-card__price-box,
-.home-preview-card-border--venture .domain-listing-card__price-box,
-.home-preview-card-border--coventure .domain-listing-card__price-box {
+.home-preview-card-border--technology .domain-listing-card__price-box {
   border: 1px solid #38bdf8 !important;
   background: #ffffff !important;
   box-shadow: none !important;
+}
+
+.home-preview-card-border--venture .domain-listing-card__price-box,
+.home-preview-card-border--coventure .domain-listing-card__price-box {
+  border: 1px solid #fcd34d !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 4px 14px rgba(180, 83, 9, 0.08) !important;
 }
 
 .home-preview-card-border--auction .domain-listing-card__price-box,
@@ -652,11 +661,18 @@
   background: #ffffff !important;
 }
 
-.home-preview-card-border--technology:hover .domain-listing-card__price-box,
-.home-preview-card-border--venture:hover .domain-listing-card__price-box,
-.home-preview-card-border--coventure:hover .domain-listing-card__price-box {
+.home-preview-card-border--technology:hover .domain-listing-card__price-box {
   border: 1px solid #0284c7 !important;
   background: #ffffff !important;
+}
+
+.home-preview-card-border--venture:hover .domain-listing-card__price-box,
+.home-preview-card-border--coventure:hover .domain-listing-card__price-box {
+  border: 1px solid #d97706 !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 6, 0.28),
+    0 6px 18px rgba(180, 83, 9, 0.12) !important;
 }
 
 .home-preview-card-border--auction:hover .domain-listing-card__price-box,
@@ -916,9 +932,17 @@
 
 .home-preview-row .venture-listing-card--compact .venture-listing-card__metrics,
 .home-auto-scroll-row .venture-listing-card--compact .venture-listing-card__metrics {
-  height: 1.25rem;
-  min-height: 1.25rem;
-  max-height: 1.25rem;
+  height: auto;
+  min-height: 1.5rem;
+  max-height: none;
+  align-items: center;
+}
+
+.home-preview-row .venture-listing-card--compact .venture-listing-card__metric--premium,
+.home-auto-scroll-row .venture-listing-card--compact .venture-listing-card__metric--premium {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.625rem;
+  line-height: 1.2;
 }
 
 /* Keep asking-price + stats glued; do not push stats to the card bottom */
@@ -995,8 +1019,8 @@
 }
 
 .home-preview-row .venture-listing-card--home-preview .venture-listing-card__metric {
-  font-size: 0.6875rem;
-  font-weight: 500;
+  font-size: 0.625rem;
+  font-weight: 600;
 }
 
 .home-preview-row .venture-listing-card--home-preview .venture-listing-card__price-label {
@@ -1706,7 +1730,7 @@
       rgba(168, 85, 247, 0.12) 100%) !important;
 }
 
-/* Domain + auction + technology + venture/coventure — Standard sky hover (no purple wash); outer shell owns tint */
+/* Domain + auction + technology + venture/coventure — outer shell owns tint (no purple wash) */
 .home-preview-card-border--domain:hover .domain-listing-card,
 .home-preview-card-border--domain .domain-listing-card:hover,
 .home-preview-card-border--domain .domain-listing-card.card-glow-hover:hover,

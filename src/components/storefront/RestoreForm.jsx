@@ -87,7 +87,7 @@ export default function RestoreForm({ onClose, orders }) {
         </button>
       </div>
       <p className="text-xs text-gray-500">
-        Restore a domain in redemption / grace period via OpenProvider. Quote uses the live restore price plus your commission.
+        Restore a domain in redemption / grace period. Quote uses the live restore price plus your commission.
       </p>
       <div className="space-y-1.5">
         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Domain</label>

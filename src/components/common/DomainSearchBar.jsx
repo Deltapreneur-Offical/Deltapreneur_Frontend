@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Search, Loader2, ChevronRight } from 'lucide-react';
-import { domainAPI } from '../../api/services';
+import { domainAPI, domainStorefrontAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
-import { IS_IPHONE } from '../../utils/deviceDetection';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
@@ -43,16 +42,61 @@ const SEARCH_MODE_CONFIG = {
   auction: { labelKey: 'searchTabAuction', placeholderKey: 'searchPlaceholderAuction' },
 };
 
-// Easily editable initial TLD prices for the marquee strip shown under 'Domain Names' tab
-export const INITIAL_TLD_PRICES = [
-  { tld: '.com', price: '1,049.53' },
-  { tld: '.in', price: '500' },
-  { tld: '.net', price: '1,190.01' },
-  { tld: '.org', price: '753' },
-  { tld: '.co', price: '1,505' },
-  { tld: '.io', price: '5,017' },
-  { tld: '.ai', price: '8,027' },
-];
+/** Preferred display order for hero TLD price pills (prices come from storefront API). */
+const TLD_MARQUEE_ORDER = ['.com', '.in', '.net', '.org', '.co', '.io', '.ai'];
+const TLD_MARQUEE_CACHE_KEY = 'cb-tld-marquee-registration-prices';
+
+function normalizeTldKey(raw) {
+  const text = String(raw || '').trim().toLowerCase();
+  if (!text) return '';
+  return text.startsWith('.') ? text : `.${text}`;
+}
+
+function tldPricesFromByTldMap(byTld) {
+  if (!byTld || typeof byTld !== 'object') return [];
+
+  const normalized = {};
+  Object.entries(byTld).forEach(([key, value]) => {
+    const tld = normalizeTldKey(key);
+    const price = Number(value);
+    if (tld && Number.isFinite(price) && price > 0) normalized[tld] = price;
+  });
+
+  const known = TLD_MARQUEE_ORDER.filter((tld) => normalized[tld] != null);
+  const extras = Object.keys(normalized)
+    .filter((tld) => !TLD_MARQUEE_ORDER.includes(tld))
+    .sort((a, b) => a.localeCompare(b));
+
+  return [...known, ...extras].map((tld) => ({ tld, price: normalized[tld] }));
+}
+
+function readTldMarqueeCache() {
+  if (typeof sessionStorage === 'undefined') return [];
+  try {
+    const raw = sessionStorage.getItem(TLD_MARQUEE_CACHE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => {
+        const tld = normalizeTldKey(item?.tld);
+        const price = Number(item?.price);
+        return tld && Number.isFinite(price) && price > 0 ? { tld, price } : null;
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function writeTldMarqueeCache(items) {
+  if (typeof sessionStorage === 'undefined' || !Array.isArray(items) || items.length === 0) return;
+  try {
+    sessionStorage.setItem(TLD_MARQUEE_CACHE_KEY, JSON.stringify(items));
+  } catch {
+    /* quota / private mode */
+  }
+}
 
 function useMinWidthLg() {
   const [isLg, setIsLg] = useState(() =>
@@ -72,142 +116,240 @@ function useMinWidthLg() {
 
 function TldPriceMarquee() {
   const { formatPrice } = useCurrency();
-  const [tldPrices, setTldPrices] = useState(INITIAL_TLD_PRICES);
+  const reduceMotion = useReducedMotion();
+  const [tldPrices, setTldPrices] = useState(() => readTldMarqueeCache());
+  const [isLoading, setIsLoading] = useState(() => readTldMarqueeCache().length === 0);
+
+  const maskRef = useRef(null);
+  const trackRef = useRef(null);
+  const scrubbingRef = useRef(false);
+  const lastPointerXRef = useRef(null);
+  const baseOffsetRef = useRef(0);
+  const durationSec = 48;
 
   useEffect(() => {
     let isCancelled = false;
-    fetchAvailableTlds('domain', { force: true })
-      .then((fetchedItems) => {
-        if (isCancelled || !Array.isArray(fetchedItems) || fetchedItems.length === 0) return;
 
-        const priceMap = new Map();
-        fetchedItems.forEach((it) => {
-          const rawTld = (it.tld || '').startsWith('.') ? it.tld.toLowerCase() : `.${(it.tld || '').toLowerCase()}`;
-          const priceVal = it.registrationPrice ?? it.unitPrice ?? it.price;
-          if (rawTld && priceVal != null) {
-            priceMap.set(rawTld, priceVal);
-          }
-        });
+    const applyItems = (items) => {
+      if (isCancelled || !items.length) return;
+      setTldPrices((prev) => {
+        const same =
+          prev.length === items.length
+          && prev.every((p, i) => p.tld === items[i].tld && Number(p.price) === Number(items[i].price));
+        return same ? prev : items;
+      });
+      writeTldMarqueeCache(items);
+      setIsLoading(false);
+    };
 
-        setTldPrices((prev) =>
-          prev.map((item) => {
-            const livePrice = priceMap.get(item.tld.toLowerCase());
-            return livePrice != null ? { ...item, price: livePrice } : item;
-          })
-        );
+    const fromStorefront = domainStorefrontAPI
+      .getPrices()
+      .then(({ data }) => {
+        const payload = data?.data ?? data;
+        return tldPricesFromByTldMap(payload?.registration?.byTld);
       })
-      .catch(() => {});
+      .catch(() => []);
+
+    const fromSearchTlds = fetchAvailableTlds('domain', { force: true })
+      .then((fetchedItems) => {
+        if (!Array.isArray(fetchedItems) || fetchedItems.length === 0) return [];
+        const byTld = {};
+        fetchedItems.forEach((it) => {
+          const tld = normalizeTldKey(it?.tld);
+          const price = Number(it?.registrationPrice ?? it?.unitPrice ?? it?.price);
+          if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
+        });
+        return tldPricesFromByTldMap(byTld);
+      })
+      .catch(() => []);
+
+    fromSearchTlds.then((items) => {
+      if (isCancelled || !items.length) return;
+      setTldPrices((prev) => (prev.length > 0 ? prev : items));
+      if (items.length) setIsLoading(false);
+    });
+
+    fromStorefront.then((items) => {
+      if (items.length) applyItems(items);
+      else if (!isCancelled) setIsLoading(false);
+    });
 
     return () => {
       isCancelled = true;
     };
   }, []);
 
-  // Double items — enough for seamless wrap without excessive DOM
-  const items = useMemo(
-    () => [
-      ...tldPrices,
-      ...tldPrices,
-    ],
-    [tldPrices]
+  const readTrackOffsetPx = () => {
+    const track = trackRef.current;
+    if (!track) return 0;
+    const style = window.getComputedStyle(track);
+    const matrix = style.transform;
+    if (!matrix || matrix === 'none') return 0;
+    // matrix(a, b, c, d, tx, ty) or matrix3d(...)
+    if (matrix.startsWith('matrix3d(')) {
+      const parts = matrix.slice(9, -1).split(',').map((v) => Number(v.trim()));
+      return Number.isFinite(parts[12]) ? parts[12] : 0;
+    }
+    if (matrix.startsWith('matrix(')) {
+      const parts = matrix.slice(7, -1).split(',').map((v) => Number(v.trim()));
+      return Number.isFinite(parts[4]) ? parts[4] : 0;
+    }
+    return 0;
+  };
+
+  const oneSetWidth = () => {
+    const track = trackRef.current;
+    if (!track) return 0;
+    // Two identical sets → loop width is half the track.
+    return track.scrollWidth / 2;
+  };
+
+  const wrapOffset = (value) => {
+    const w = oneSetWidth();
+    if (!(w > 0) || !Number.isFinite(value)) return value;
+    let next = value % w;
+    if (next > 0) next -= w;
+    if (next <= -w) next += w;
+    return next;
+  };
+
+  const setPausedClass = (on) => {
+    maskRef.current?.classList.toggle('tld-price-marquee-mask--paused', on);
+  };
+
+  const freezeAtCurrent = () => {
+    const track = trackRef.current;
+    if (!track) return 0;
+    const x = wrapOffset(readTrackOffsetPx());
+    track.style.animation = 'none';
+    track.style.transform = `translate3d(${x}px,0,0)`;
+    baseOffsetRef.current = x;
+    return x;
+  };
+
+  const resumeAutoFrom = (offsetPx) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const w = oneSetWidth();
+    const x = wrapOffset(offsetPx);
+    // Negative delay resumes the CSS loop from the current pixel.
+    const progress = w > 0 ? (Math.abs(x) % w) / w : 0;
+    const delaySec = -(progress * durationSec);
+    track.style.animation = 'none';
+    track.style.transform = '';
+    // Force reflow so the browser restarts the animation cleanly.
+    void track.offsetWidth;
+    track.style.animation = `tld-price-marquee-scroll ${durationSec}s linear infinite`;
+    track.style.animationDelay = `${delaySec}s`;
+  };
+
+  const onMouseEnter = (event) => {
+    if (reduceMotion) return;
+    scrubbingRef.current = true;
+    lastPointerXRef.current = event.clientX;
+    freezeAtCurrent();
+    setPausedClass(true);
+  };
+
+  const onMouseLeave = () => {
+    if (reduceMotion) return;
+    scrubbingRef.current = false;
+    lastPointerXRef.current = null;
+    setPausedClass(false);
+    resumeAutoFrom(baseOffsetRef.current);
+  };
+
+  const onPointerMove = (event) => {
+    if (reduceMotion || !scrubbingRef.current) return;
+    if (lastPointerXRef.current == null) {
+      lastPointerXRef.current = event.clientX;
+      return;
+    }
+    const dx = event.clientX - lastPointerXRef.current;
+    lastPointerXRef.current = event.clientX;
+    if (!dx) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const next = wrapOffset(baseOffsetRef.current + dx);
+    baseOffsetRef.current = next;
+    track.style.transform = `translate3d(${next}px,0,0)`;
+  };
+
+  const onPointerDown = (event) => {
+    if (reduceMotion || event.pointerType === 'mouse') return;
+    scrubbingRef.current = true;
+    lastPointerXRef.current = event.clientX;
+    freezeAtCurrent();
+    setPausedClass(true);
+  };
+
+  const onPointerUp = (event) => {
+    if (reduceMotion || event.pointerType === 'mouse') return;
+    scrubbingRef.current = false;
+    lastPointerXRef.current = null;
+    setPausedClass(false);
+    resumeAutoFrom(baseOffsetRef.current);
+  };
+
+  const renderSet = (setKey, hidden) => (
+    <div
+      className="tld-price-marquee-set"
+      aria-hidden={hidden || undefined}
+    >
+      {tldPrices.map((item) => (
+        <div key={`${setKey}-${item.tld}`} className="tld-price-marquee-pill">
+          <span className="tld-price-marquee-pill__tld">{item.tld}</span>
+          <span className="tld-price-marquee-pill__price">
+            {formatPrice(Number(item.price))}
+            <span className="tld-price-marquee-pill__yr">/yr</span>
+          </span>
+        </div>
+      ))}
+    </div>
   );
 
-  const scrollRef = useRef(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isPageHidden, setIsPageHidden] = useState(
-    () => typeof document !== 'undefined' && document.visibilityState === 'hidden',
-  );
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const scrollLeftPos = useRef(0);
+  if (isLoading) {
+    return (
+      <div
+        className="tld-price-marquee-mask tld-price-marquee-mask--loading"
+        aria-busy="true"
+        aria-label="Loading domain extension prices"
+      >
+        <div className="tld-price-marquee-loading-track">
+          {TLD_MARQUEE_ORDER.map((tld) => (
+            <div key={tld} className="tld-price-marquee-skeleton-pill">
+              <span className="tld-price-marquee-skeleton-tld">{tld}</span>
+              <span className="tld-price-marquee-skeleton-bar" aria-hidden />
+              <span className="tld-price-marquee-skeleton-yr">/yr</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const onVisibility = () => setIsPageHidden(document.visibilityState === 'hidden');
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, []);
-
-  // Single rAF loop; pause when tab hidden, hovered, or dragging.
-  // Never runs on iPhone — a permanent rAF loop mutating scrollLeft keeps the
-  // compositor busy for the page's whole lifetime, eating into the WebKit
-  // memory budget that the rest of the homepage needs. Users swipe instead.
-  useEffect(() => {
-    if (IS_IPHONE || isPaused || isPageHidden) return undefined;
-
-    let animationFrameId;
-    const scrollStep = () => {
-      const el = scrollRef.current;
-      if (el && !isDragging.current) {
-        el.scrollLeft += 0.65;
-        if (el.scrollLeft >= el.scrollWidth / 2) {
-          el.scrollLeft = 0;
-        }
-      }
-      animationFrameId = requestAnimationFrame(scrollStep);
-    };
-
-    animationFrameId = requestAnimationFrame(scrollStep);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isPaused, isPageHidden]);
-
-  // Click & drag handlers for mouse dragging
-  const handleMouseDown = (e) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    isDragging.current = true;
-    startX.current = e.pageX - el.offsetLeft;
-    scrollLeftPos.current = el.scrollLeft;
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging.current) return;
-    e.preventDefault();
-    const el = scrollRef.current;
-    if (!el) return;
-    const x = e.pageX - el.offsetLeft;
-    const walk = (x - startX.current) * 1.6;
-    el.scrollLeft = scrollLeftPos.current - walk;
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
-  };
+  if (tldPrices.length === 0) return null;
 
   return (
     <div
-      className="tld-price-marquee-mask relative w-full overflow-hidden py-2 select-none"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => {
-        setIsPaused(false);
-        handleMouseUpOrLeave();
-      }}
+      ref={maskRef}
+      className="tld-price-marquee-mask"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
-      <div
-        ref={scrollRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUpOrLeave}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        className="flex items-center gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"
-      >
-        {items.map((item, index) => {
-          const numPrice = Number(typeof item.price === 'number' ? item.price : String(item.price).replace(/,/g, ''));
-          const formatted = Number.isFinite(numPrice) ? formatPrice(numPrice) : `₹${item.price}`;
-          return (
-            <div
-              key={`${item.tld}-${index}`}
-              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-sky-50/95 border border-sky-200/90 shadow-sm hover:border-sky-400 hover:bg-sky-100/90 hover:shadow-md transition-all duration-200 shrink-0 select-none"
-            >
-              <span className="font-black text-sky-950 text-[16px] tracking-tight">{item.tld}</span>
-              <span className="text-[15px] font-extrabold text-sky-700">
-                {formatted}
-                <span className="text-[12px] font-semibold text-sky-500 ml-0.5">/yr</span>
-              </span>
-            </div>
-          );
-        })}
+      <div className="tld-price-marquee-viewport">
+        <div
+          ref={trackRef}
+          className={`tld-price-marquee-track${reduceMotion ? '' : ' tld-price-marquee-track--auto'}`}
+          style={reduceMotion ? undefined : { animationDuration: `${durationSec}s` }}
+        >
+          {renderSet('a', false)}
+          {renderSet('b', true)}
+        </div>
       </div>
     </div>
   );

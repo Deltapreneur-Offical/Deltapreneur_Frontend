@@ -75,7 +75,7 @@ export default function DomainsSection() {
         {previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={100} ariaLabel={t('domains')}>
+          <HomeAutoScrollRow durationSec={40} ariaLabel={t('domains')}>
             {previewDomains.map((domain) => (
               <HomeAutoScrollRowItem key={domain.id}>
                 {renderDomainCard(domain)}

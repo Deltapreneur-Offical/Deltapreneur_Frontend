@@ -7430,32 +7430,7 @@ body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
     box-shadow: none;
   }
 
-  /*
-   * One continuous hero glow from under the topbar through the hero —
-   * same formula/hue as .glow-layer so reserved space + hero feel seamless.
-   */
-  body.home-page-body.scrolled::after {
-    content: '';
-    position: fixed;
-    top: var(--home-topbar-height);
-    left: 0;
-    right: 0;
-    height: calc(var(--home-main-nav-height) + 17rem);
-    z-index: 1;
-    pointer-events: none;
-    background: radial-gradient(
-      ellipse 90% 80% at 22% 0%,
-      hsl(var(--home-hero-glow-hue, 200), 70%, 66%, 0.42) 0%,
-      hsl(var(--home-hero-glow-hue, 200), 62%, 64%, 0.22) 40%,
-      hsl(var(--home-hero-glow-hue, 200), 58%, 62%, 0.1) 65%,
-      transparent 82%
-    );
-  }
-
-  /* Avoid a second stacked glow band while the continuous wash is active */
-  body.home-page-body.scrolled .glow-layer {
-    opacity: 0;
-  }
+  /* Hero glow stays in-document (.glow-layer) at the top only — never a fixed wash while scrolled */
 }
 
 /* Mobile / tablet: collapse in-flow (top bar is already hidden when stacked) */
@@ -12985,30 +12960,176 @@ body.home-menu-open {
 }
 
 /* ── TLD Price Marquee (Hero domain search bar) ─────────────────────────── */
+/* CSS translate3d animation — GPU-smooth; JS only freezes/scrubs on hover. */
 .tld-price-marquee-mask {
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
-  mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.5rem 0;
+  cursor: grab;
+  touch-action: none;
+  contain: paint;
+  isolation: isolate;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tld-price-marquee-mask--paused {
+  cursor: ew-resize;
+}
+
+.tld-price-marquee-mask--loading {
+  cursor: default;
+  touch-action: pan-y;
+}
+
+.tld-price-marquee-viewport {
+  width: 100%;
+  overflow: hidden;
 }
 
 .tld-price-marquee-track {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  min-width: max-content;
-  gap: 1.5rem;
-  animation: tld-marquee-scroll 28s linear infinite;
-  will-change: transform;
+  width: max-content;
+  gap: 0;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
-.tld-price-marquee-mask:hover .tld-price-marquee-track {
+.tld-price-marquee-track--auto {
+  will-change: transform;
+  animation: tld-price-marquee-scroll 48s linear infinite;
+}
+
+.tld-price-marquee-mask--paused .tld-price-marquee-track--auto {
   animation-play-state: paused;
 }
 
-@keyframes tld-marquee-scroll {
-  0% {
-    transform: translateX(0);
+@keyframes tld-price-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  100% {
-    transform: translateX(-50%);
+  to {
+    /* Two identical sets side-by-side → -50% is one seamless loop */
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tld-price-marquee-track--auto {
+    animation: none !important;
+    will-change: auto;
+  }
+}
+
+.tld-price-marquee-set {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 1rem;
+  /* Trailing gap so -50% loop includes spacing between set copies */
+  padding-right: 1rem;
+}
+
+.tld-price-marquee-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(186, 230, 253, 0.9);
+  background: rgba(240, 249, 255, 0.95);
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.06);
+  pointer-events: none; /* drag hits the mask, not pills */
+}
+
+.tld-price-marquee-pill__tld {
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  color: rgb(8, 47, 73);
+  line-height: 1;
+}
+
+.tld-price-marquee-pill__price {
+  font-size: 15px;
+  font-weight: 800;
+  color: rgb(3, 105, 161);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tld-price-marquee-pill__yr {
+  margin-left: 0.125rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(14, 165, 233);
+}
+
+.tld-price-marquee-loading-track {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: max-content;
+  min-height: 2.95rem;
+}
+
+.tld-price-marquee-skeleton-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(186, 230, 253, 0.9);
+  background: rgba(240, 249, 255, 0.95);
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.06);
+}
+
+.tld-price-marquee-skeleton-tld {
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  color: rgb(8, 47, 73);
+  line-height: 1;
+}
+
+.tld-price-marquee-skeleton-bar {
+  display: inline-block;
+  width: 4.25rem;
+  height: 0.85rem;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(125, 211, 252, 0.28) 0%,
+    rgba(186, 230, 253, 0.75) 45%,
+    rgba(125, 211, 252, 0.28) 100%
+  );
+  background-size: 200% 100%;
+  animation: tld-marquee-skeleton-shimmer 1.15s ease-in-out infinite;
+}
+
+.tld-price-marquee-skeleton-yr {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(14, 165, 233);
+  opacity: 0.55;
+  line-height: 1;
+}
+
+@keyframes tld-marquee-skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tld-price-marquee-skeleton-bar {
+    animation: none;
+    background: rgba(186, 230, 253, 0.55);
   }
 }
 

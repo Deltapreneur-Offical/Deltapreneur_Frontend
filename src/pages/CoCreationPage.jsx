@@ -435,7 +435,29 @@ export default function CoCreationPage() {
 // ─── Pricing plan definitions ─────────────────────────────────────────────────
 // normalizePricingPlans + getEnabledPricingPlans live in utils/technologyPricingPlans.js
 
-function softwareToFormFields(item, navCurrency) {
+function formatListingAmountForInput(inrAmount, listingCurrency, ratesMeta) {
+  const code = (listingCurrency || DEFAULT_LISTING_CURRENCY).toUpperCase();
+  const inr = Number(inrAmount);
+  if (!Number.isFinite(inr)) return '';
+  if (code === 'INR') return String(inr);
+  const converted = convertInrToForeign(inr, code, ratesMeta);
+  if (converted == null || !Number.isFinite(converted)) return String(inr);
+  // Keep input tidy: drop trailing zeros for whole amounts.
+  return String(Number.isInteger(converted) ? converted : Number(converted.toFixed(2)));
+}
+
+function softwareToFormFields(item, navCurrency, ratesMeta) {
+  const listingCurrency = item?.currency || navCurrency || DEFAULT_LISTING_CURRENCY;
+  const plans = normalizePricingPlans(item?.pricingPlans || item?.pricing_plans).map((plan) => ({
+    ...plan,
+    price: plan.price !== ''
+      ? formatListingAmountForInput(plan.price, listingCurrency, ratesMeta)
+      : '',
+  }));
+  const legacyPrice = item?.price != null && item?.price !== ''
+    ? formatListingAmountForInput(item.price, listingCurrency, ratesMeta)
+    : '';
+
   return {
     name: item?.name || '',
     description: item?.description || '',
@@ -448,11 +470,11 @@ function softwareToFormFields(item, navCurrency) {
     techStack: item?.techStack || item?.tech_stack || '',
     category: item?.category || '',
     pricingDemand: item?.pricingDemand || item?.pricing_demand || '',
-    price: item?.price != null && item?.price !== '' ? String(item.price) : '',
-    currency: item?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    price: legacyPrice,
+    currency: listingCurrency,
     technologyType: item?.technologyType || item?.technology_type || 'SOFTWARE',
     purchaseType: item?.purchaseType || item?.purchase_type || 'ONE_TIME',
-    pricingPlans: normalizePricingPlans(item?.pricingPlans || item?.pricing_plans),
+    pricingPlans: plans,
     supportingDocuments: [],
     agreement: { terms: Boolean(item?.id) },
   };
@@ -465,7 +487,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   const { user } = useAuth();
   const { currency: navCurrency, ratesMeta, supportedCurrencies, getSymbol, formatCurrency } = useCurrency();
   const isEdit = Boolean(initial?.id);
-  const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency));
+  const [form, setForm] = useState(() => softwareToFormFields(initial, navCurrency, ratesMeta));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [commissionPercent, setCommissionPercent] = useState(15);
@@ -483,13 +505,13 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
   useEffect(() => {
     if (initial?.id) {
-      setForm(softwareToFormFields(initial, navCurrency));
+      setForm(softwareToFormFields(initial, navCurrency, ratesMeta));
       setImagePreview(initial.imageUrl || initial.image_url || null);
       setImageFile(null);
       setImageError('');
       setError('');
     }
-  }, [initial?.id, navCurrency]);
+  }, [initial?.id, navCurrency, ratesMeta]);
 
   useEffect(() => {
     fetchListingFeesAndCharges()

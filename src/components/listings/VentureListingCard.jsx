@@ -509,13 +509,7 @@ return (
           <div
 
             className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${compact ? 'p-2' : 'p-4'
-              } ${isCoVenture
-
-                ? 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700'
-
-                : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800'
-
-              }`}
+              } bg-gradient-to-br from-sky-400 via-sky-500 to-cyan-600`}
 
             aria-hidden
 
@@ -649,7 +643,7 @@ return (
             {b.industry && (
 
               <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } bg-indigo-50 text-indigo-700 border border-indigo-100`}>
+                } bg-sky-50 text-sky-800 border border-sky-100`}>
 
                 {b.industry}
 
@@ -660,7 +654,7 @@ return (
             {sellerAsk.dealTypeLabel && (
 
               <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } bg-purple-50 text-purple-700 border border-purple-100`}>
+                } bg-sky-50 text-sky-700 border border-sky-100`}>
 
                 {sellerAsk.dealTypeLabel}
 
@@ -743,10 +737,7 @@ return (
             <div className="grid grid-cols-2 gap-2 mt-1">
               {/* Equity Offered */}
               {sellerAsk.equityLabel && (
-                <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${isCoVenture
-                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800'
-                    : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800'
-                  }`}>
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-sky-50/40 border-sky-100/60 text-sky-800">
                   <span className="text-[11px] font-medium truncate">
                     {sellerAsk.equityLabel} Equity
                   </span>
@@ -755,8 +746,8 @@ return (
 
               {/* Role Offered (for Co-Venture) */}
               {isCoVenture && roleOffer ? (
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-teal-50/30 border-teal-100/50 text-teal-800">
-                  <Briefcase size={12} className="text-teal-500" />
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-sky-50/40 border-sky-100/60 text-sky-800">
+                  <Briefcase size={12} className="text-sky-500" />
                   <span className="text-[11px] font-medium truncate" title={roleOffer}>
                     {roleOffer}
                   </span>
@@ -765,9 +756,7 @@ return (
 
               {/* Interest/Pitches Count */}
               <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${interestCount > 0
-                  ? (isCoVenture
-                    ? 'bg-emerald-50/30 border-emerald-100/50 text-emerald-800'
-                    : 'bg-indigo-50/30 border-indigo-100/50 text-indigo-800')
+                  ? 'bg-sky-50/40 border-sky-100/60 text-sky-800'
                   : 'bg-slate-50 border-slate-100 text-slate-500'
                 }`}>
                 <span className="text-[11px] font-medium truncate">
@@ -796,14 +785,8 @@ return (
 
               style={isHomePreview ? undefined : {
                 borderRadius: compact ? '0.75rem' : '1rem',
-                background: 'linear-gradient(#ffffff, #ffffff) padding-box, ' + (
-                  isCoVenture
-                    ? 'linear-gradient(90deg, #34d399 0%, #10b981 50%, #059669 100%) border-box'
-                    : 'linear-gradient(90deg, #a78bfa 0%, #818cf8 50%, #4f46e5 100%) border-box'
-                ),
-                boxShadow: isCoVenture
-                  ? '-8px 0 16px -8px rgba(16, 185, 129, 0.22), 8px 0 16px -8px rgba(5, 150, 105, 0.18), 0 0 10px -4px rgba(16, 185, 129, 0.18)'
-                  : '-8px 0 16px -8px rgba(129, 140, 248, 0.22), 8px 0 16px -8px rgba(79, 70, 229, 0.18), 0 0 10px -4px rgba(139, 92, 246, 0.18)',
+                background: 'linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #7dd3fc 0%, #38bdf8 50%, #0ea5e9 100%) border-box',
+                boxShadow: '-8px 0 16px -8px rgba(56, 189, 248, 0.22), 8px 0 16px -8px rgba(14, 165, 233, 0.18), 0 0 10px -4px rgba(56, 189, 248, 0.18)',
               }}
 
             >

@@ -430,18 +430,72 @@
   box-shadow: none !important;
 }
 
-/* Ventures — teal */
+/* Ventures — Standard Domains / Technology sky */
 .home-preview-card-border--venture {
-  --home-card-border: #2dd4bf;
-  --home-card-border-hover: #14b8a6;
-  --home-card-shadow-accent: rgba(45, 212, 191, 0.28);
+  --home-card-border: #7dd3fc;
+  --home-card-border-hover: #38bdf8;
+  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
+  border: 1px solid #7dd3fc !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12) !important;
 }
 
-/* Co-Ventures — brand green */
+.home-preview-card-border--venture:hover {
+  border: 1px solid #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Co-Ventures — same sky family as Technology */
 .home-preview-card-border--coventure {
-  --home-card-border: #50bf78;
-  --home-card-border-hover: #22c55e;
-  --home-card-shadow-accent: rgba(80, 191, 120, 0.28);
+  --home-card-border: #7dd3fc;
+  --home-card-border-hover: #38bdf8;
+  --home-card-shadow-accent: rgba(56, 189, 248, 0.28);
+  border: 1px solid #7dd3fc !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12) !important;
+}
+
+.home-preview-card-border--coventure:hover {
+  border: 1px solid #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Kill leftover teal/green/purple wash on venture shells */
+.home-preview-card-border--venture .venture-listing-card,
+.home-preview-card-border--venture .venture-listing-card.card-glow-hover,
+.home-preview-card-border--venture .domain-listing-card__body,
+.home-preview-card-border--coventure .venture-listing-card,
+.home-preview-card-border--coventure .venture-listing-card.card-glow-hover,
+.home-preview-card-border--coventure .domain-listing-card__body,
+.home-preview-card-border--venture:hover .venture-listing-card,
+.home-preview-card-border--coventure:hover .venture-listing-card {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.home-preview-card-border--venture .domain-listing-card__price-box,
+.home-preview-card-border--coventure .domain-listing-card__price-box {
+  border: 1px solid #38bdf8 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
 }
 
 /* Technology — Standard Domains sky (same family as marketplace domain cards) */
@@ -544,7 +598,9 @@
   border: 1px solid #38bdf8 !important;
 }
 
-.home-preview-card-border--technology .domain-listing-card__price-box {
+.home-preview-card-border--technology .domain-listing-card__price-box,
+.home-preview-card-border--venture .domain-listing-card__price-box,
+.home-preview-card-border--coventure .domain-listing-card__price-box {
   border: 1px solid #38bdf8 !important;
   background: #ffffff !important;
   box-shadow: none !important;
@@ -596,7 +652,9 @@
   background: #ffffff !important;
 }
 
-.home-preview-card-border--technology:hover .domain-listing-card__price-box {
+.home-preview-card-border--technology:hover .domain-listing-card__price-box,
+.home-preview-card-border--venture:hover .domain-listing-card__price-box,
+.home-preview-card-border--coventure:hover .domain-listing-card__price-box {
   border: 1px solid #0284c7 !important;
   background: #ffffff !important;
 }
@@ -1612,24 +1670,24 @@
   transition: none !important;
 }
 
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .venture-listing-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .technology-listing-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .community-listing-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .home-creator-listing-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .home-auction-preview-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .community-profile-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .creator-profile-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):hover .home-operations-preview-card,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .venture-listing-card:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .venture-listing-card--venture:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .venture-listing-card--coventure:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .technology-listing-card:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .home-creator-listing-card:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .home-auction-preview-card:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .home-preview-browse-card:not(.domain-listing-card):hover,
-.home-preview-row .home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .card-glow-hover:hover,
-.home-auto-scroll-row .home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .card-glow-hover:hover,
-.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology) .home-preview-card-border__inner .home-operations-preview-card:hover {
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .venture-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .technology-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .community-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .home-creator-listing-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .home-auction-preview-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .community-profile-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .creator-profile-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure):hover .home-operations-preview-card,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .venture-listing-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .venture-listing-card--venture:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .venture-listing-card--coventure:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .technology-listing-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .home-creator-listing-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .home-auction-preview-card:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .home-preview-browse-card:not(.domain-listing-card):hover,
+.home-preview-row .home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .card-glow-hover:hover,
+.home-auto-scroll-row .home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .card-glow-hover:hover,
+.home-preview-card-border:not(.home-preview-card-border--domain):not(.home-preview-card-border--auction):not(.home-preview-card-border--technology):not(.home-preview-card-border--venture):not(.home-preview-card-border--coventure) .home-preview-card-border__inner .home-operations-preview-card:hover {
   transform: none !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
@@ -1648,7 +1706,7 @@
       rgba(168, 85, 247, 0.12) 100%) !important;
 }
 
-/* Domain + auction + technology — Standard sky hover (no purple wash); outer shell owns tint */
+/* Domain + auction + technology + venture/coventure — Standard sky hover (no purple wash); outer shell owns tint */
 .home-preview-card-border--domain:hover .domain-listing-card,
 .home-preview-card-border--domain .domain-listing-card:hover,
 .home-preview-card-border--domain .domain-listing-card.card-glow-hover:hover,
@@ -1661,7 +1719,17 @@
 .home-preview-card-border--technology .technology-listing-card:hover,
 .home-preview-card-border--technology .technology-listing-card.card-glow-hover:hover,
 .home-preview-row .home-preview-card-border--technology .card-glow-hover:hover,
-.home-auto-scroll-row .home-preview-card-border--technology .card-glow-hover:hover {
+.home-auto-scroll-row .home-preview-card-border--technology .card-glow-hover:hover,
+.home-preview-card-border--venture:hover .venture-listing-card,
+.home-preview-card-border--venture .venture-listing-card:hover,
+.home-preview-card-border--venture .venture-listing-card.card-glow-hover:hover,
+.home-preview-row .home-preview-card-border--venture .card-glow-hover:hover,
+.home-auto-scroll-row .home-preview-card-border--venture .card-glow-hover:hover,
+.home-preview-card-border--coventure:hover .venture-listing-card,
+.home-preview-card-border--coventure .venture-listing-card:hover,
+.home-preview-card-border--coventure .venture-listing-card.card-glow-hover:hover,
+.home-preview-row .home-preview-card-border--coventure .card-glow-hover:hover,
+.home-auto-scroll-row .home-preview-card-border--coventure .card-glow-hover:hover {
   transform: none !important;
   border: none !important;
   box-shadow: none !important;

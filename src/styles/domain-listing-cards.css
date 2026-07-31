@@ -1299,18 +1299,22 @@
 
 /* Premium Venture Card */
 .venture-listing-card--venture {
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #7dd3fc !important;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 14px rgba(15, 23, 42, 0.05) !important;
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12) !important;
 }
 
 .venture-listing-card--venture:hover {
   transform: translateY(-4px) !important;
-  border-color: #cbd5e1 !important;
+  border-color: #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
   box-shadow:
-    0 8px 24px rgba(15, 23, 42, 0.08),
-    0 2px 8px rgba(15, 23, 42, 0.04) !important;
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
 .home-preview-card-border .venture-listing-card--venture:hover,
@@ -1324,18 +1328,22 @@
 
 /* Premium Co-Venture Card */
 .venture-listing-card--coventure {
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #7dd3fc !important;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 14px rgba(15, 23, 42, 0.05) !important;
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 8px 24px rgba(2, 132, 199, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.12) !important;
 }
 
 .venture-listing-card--coventure:hover {
   transform: translateY(-4px) !important;
-  border-color: #cbd5e1 !important;
+  border-color: #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
   box-shadow:
-    0 8px 24px rgba(15, 23, 42, 0.08),
-    0 2px 8px rgba(15, 23, 42, 0.04) !important;
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
 }
 
 .home-preview-card-border .venture-listing-card--coventure:hover {
@@ -1429,7 +1437,7 @@
 }
 
 .venture-listing-card__metric--role {
-  color: #0f766e;
+  color: #0369a1;
 }
 
 .venture-listing-card__price-label {

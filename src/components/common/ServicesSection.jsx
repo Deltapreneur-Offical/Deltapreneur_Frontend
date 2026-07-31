@@ -142,7 +142,7 @@ function DomainEssentialCard({
           <button
             type="button"
             onClick={() => onCta(card.id)}
-            className="domain-essential-card__cta inline-flex items-center justify-center gap-1 h-8 px-3 rounded-xl text-white text-[11px] font-semibold bg-amber-700 hover:bg-amber-800 transition-all select-none active:scale-95 shadow-sm shrink-0"
+            className="domain-essential-card__cta inline-flex items-center justify-center gap-1 h-8 px-3 rounded-xl text-white text-[11px] font-semibold bg-black hover:bg-neutral-900 transition-all select-none active:scale-95 shadow-sm shrink-0"
           >
             {card.cta}
             <ArrowRight
@@ -332,7 +332,7 @@ export default function ServicesSection({ isDashboard = false }) {
       unit: 'yr',
       bullets: [
         'Recover domains in redemption',
-        'Live OpenProvider restore price',
+        'Live restore price',
         'Secure ownership before delete',
         'Pay once & restore via registrar',
       ],
@@ -354,7 +354,7 @@ export default function ServicesSection({ isDashboard = false }) {
       bullets: [
         'Stop brand email spoofing',
         'DMARC DNS record guidance',
-        'OpenProvider EasyDMARC order',
+        'EasyDMARC order',
         'SSO access to DMARC panel',
       ],
       cta: 'Activate EasyDMARC',
@@ -376,7 +376,7 @@ export default function ServicesSection({ isDashboard = false }) {
         'Incoming spam & malware filter',
         'Protect your domain mailbox',
         'Control-panel login after setup',
-        'Managed via OpenProvider',
+        'Managed via CoBrother',
       ],
       cta: 'Activate Filter',
     },

@@ -33,6 +33,13 @@ import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
 import { readApiError } from '../utils/domainRegistrationOrder';
 import { formatInr } from '../utils/money';
+import {
+  displayNameserverHost,
+  formatNameserversForDisplay,
+  isPlatformNameserverSet,
+  resolveNameserverForSubmit,
+  scrubRegistrarVendorNames,
+} from '../utils/registrarDisplay';
 
 function unwrapOrder(data) { return data?.data ?? data; }
 
@@ -698,14 +705,14 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
       const { data } = await domainStorefrontAPI.getDnsRecords(orderId);
       setRecords(Array.isArray(data) ? data : data?.data ?? []);
     } catch (err) {
-      setDnsError(readApiError(err, 'Could not fetch DNS records.'));
+      setDnsError(scrubRegistrarVendorNames(readApiError(err, 'Could not fetch DNS records.'), 'Could not fetch DNS records.'));
     } finally { setRecordsLoading(false); }
   }, [orderId]);
 
   useEffect(() => {
     if (nameservers.length > 0) {
-      setNs1(nameservers[0] || '');
-      setNs2(nameservers[1] || '');
+      setNs1(displayNameserverHost(nameservers[0] || '', 0));
+      setNs2(displayNameserverHost(nameservers[1] || '', 1));
     }
     fetchDnsRecords();
   }, [nameservers, fetchDnsRecords]);
@@ -713,17 +720,19 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (!ns1.trim() || !ns2.trim()) {
+    const resolvedNs1 = resolveNameserverForSubmit(ns1, 0, nameservers);
+    const resolvedNs2 = resolveNameserverForSubmit(ns2, 1, nameservers);
+    if (!resolvedNs1.trim() || !resolvedNs2.trim()) {
       setError('Both nameservers are required.');
       return;
     }
     setLoading(true);
     try {
-      await domainStorefrontAPI.updateNameservers(orderId, [ns1.trim(), ns2.trim()]);
+      await domainStorefrontAPI.updateNameservers(orderId, [resolvedNs1.trim(), resolvedNs2.trim()]);
       setSuccess('Nameservers successfully updated!');
       if (onUpdateSuccess) onUpdateSuccess();
     } catch (err) {
-      setError(readApiError(err, 'Failed to update nameservers.'));
+      setError(scrubRegistrarVendorNames(readApiError(err, 'Failed to update nameservers.'), 'Failed to update nameservers.'));
     } finally { setLoading(false); }
   };
 
@@ -751,7 +760,10 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
       setRecValue('');
       await fetchDnsRecords();
     } catch (err) {
-      setDnsError(readApiError(err, 'Could not create DNS record. Make sure nameservers are set to default.'));
+      setDnsError(scrubRegistrarVendorNames(
+        readApiError(err, 'Could not create DNS record. Make sure nameservers are set to default.'),
+        'Could not create DNS record. Make sure nameservers are set to CoBrother managed DNS.',
+      ));
     } finally { setAddingRecord(false); }
   };
 
@@ -771,12 +783,10 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
       <div className="lg:col-span-2 space-y-6">
         {legacyResellerClub && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-            <p className="font-bold">Legacy ResellerClub domain</p>
+            <p className="font-bold">Domain DNS setup required</p>
             <p className="mt-1 text-amber-800/90">
-              This domain was registered before CoBrother moved to OpenProvider.
-              DNS and nameserver management in CoBrother requires transferring it
-              to OpenProvider first. Until then, use the previous registrar panel
-              or complete the one-time transfer checklist.
+              DNS and nameserver management for this domain is not fully enabled in CoBrother yet.
+              Please contact CoBrother support to finish setup.
             </p>
           </div>
         )}
@@ -843,8 +853,15 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
 
           {nameservers.length > 0 && (
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-3 justify-between items-center">
-              <span className="text-xs text-gray-500 font-mono">Current Settings: {nameservers.join(', ')}</span>
-              <CopyBtn text={nameservers.join('\n')} label="Copy Settings" />
+              <span className="text-xs text-gray-500 font-medium">
+                Current Settings: {formatNameserversForDisplay(nameservers)}
+              </span>
+              {!isPlatformNameserverSet(nameservers) && (
+                <CopyBtn
+                  text={nameservers.map((host, i) => displayNameserverHost(host, i)).join('\n')}
+                  label="Copy Settings"
+                />
+              )}
             </div>
           )}
         </div>
@@ -1234,7 +1251,7 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
             <div className="space-y-1 flex-1">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">SSL Security protection</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
-                Order a live OpenProvider SSL certificate. Prices include Admin SSL Certificates commission.
+                Order an SSL certificate for this domain. Prices include Admin SSL Certificates commission.
               </p>
               {sslState && (
                 <div className="mt-2.5 flex flex-wrap items-center gap-3">

@@ -95,7 +95,7 @@ export default function RenewalForm({ onClose, orders }) {
           ))}
         </select>
         {domainId && !isOpenProvider && (
-           <p className="text-xs text-rose-500 mt-1">This domain is not managed by OpenProvider. Services cannot be configured.</p>
+           <p className="text-xs text-rose-500 mt-1">This domain is not eligible for CoBrother managed services yet.</p>
         )}
       </div>
 

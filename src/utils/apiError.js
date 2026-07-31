@@ -8,7 +8,7 @@ const GENERIC = {
 };
 
 const INTERNAL_PATTERN =
-  /openrouter|sqlalchemy|psycopg|operationalerror|traceback|econnrefused|enotfound|network error|failed to fetch|axioserror|httpx|aiohttp|exception:|\.py["']|line \d+:|api[_ ]?key|secret[_ ]?missing|not configured|database_unavailable|connection refused|could not connect to|postgres|pg_conn|rds tunnel|run_.*\.ps1|port 5433|add credits at|openrouter\.ai|invalid openrouter|internal server error|unexpected error occurred|hostname.*not known|ssl.*certificate|certificate verify failed/i;
+  /openrouter|openprovider|open provider|resellerclub|reseller club|sqlalchemy|psycopg|operationalerror|traceback|econnrefused|enotfound|network error|failed to fetch|axioserror|httpx|aiohttp|exception:|\.py["']|line \d+:|api[_ ]?key|secret[_ ]?missing|not configured|database_unavailable|connection refused|could not connect to|postgres|pg_conn|rds tunnel|run_.*\.ps1|port 5433|add credits at|openrouter\.ai|invalid openrouter|internal server error|unexpected error occurred|hostname.*not known|ssl.*certificate|certificate verify failed|legacy_resellerclub/i;
 
 const SAFE_MESSAGE_PATTERN =
   /(invalid email or password|invalid email or code|please verify|already exists|not found|required|must be|cannot be|too short|too long|invalid otp|incorrect password|unauthorized|forbidden|payout|bank account|upi|ifsc|pan card|gstin|deal not found|listing not found|sign in|log in|verify your email|email already|password must|account unavailable|verification|incomplete|is required|must be configured|must be selected|must be set|must be approved|positive integer|at least)/i;
@@ -68,7 +68,16 @@ export function sanitizeUserErrorMessage(raw, fallback, options = {}) {
     return baseFallback;
   }
 
-  if (isSafeUserFacingMessage(raw)) return raw;
+  const text = String(raw).trim();
+  // Never surface registrar vendor names to end users.
+  if (/open\s*provider|reseller\s*club|legacy_resellerclub/i.test(text)) {
+    if (/dns|nameserver/i.test(text)) {
+      return 'DNS and nameserver management is not available for this domain yet. Please contact CoBrother support.';
+    }
+    return baseFallback;
+  }
+
+  if (isSafeUserFacingMessage(text)) return text;
   if (options.context === 'ai') return GENERIC.ai;
   if (status >= 500 || status === 502 || status === 503 || status === 504) {
     return options.serverFallback || GENERIC.server;

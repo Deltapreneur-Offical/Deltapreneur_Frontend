@@ -61,51 +61,6 @@ export default function HeroGlow() {
       </div>
 
       <style>{`
-        @property --glow-hue {
-          syntax: '<number>';
-          initial-value: 200;
-          inherits: false;
-        }
-
-        @keyframes hueRotate {
-          0% { --glow-hue: 200; }
-          25% { --glow-hue: 220; }
-          50% { --glow-hue: 190; }
-          75% { --glow-hue: 170; }
-          100% { --glow-hue: 200; }
-        }
-
-        .glow-layer {
-          animation: hueRotate 12s ease-in-out infinite;
-          background: radial-gradient(
-            ellipse 90% 80% at 22% 0%,
-            hsl(var(--glow-hue), 70%, 66%, 0.42) 0%,
-            hsl(var(--glow-hue), 62%, 64%, 0.22) 40%,
-            hsl(var(--glow-hue), 58%, 62%, 0.1) 65%,
-            transparent 82%
-          );
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .glow-layer {
-            animation: none;
-          }
-        }
-
-        /* iOS Safari: animated @property + large gradients are a known WebKit crash class */
-        @supports (-webkit-touch-callout: none) {
-          .glow-layer {
-            animation: none;
-            background: radial-gradient(
-              ellipse 90% 80% at 22% 0%,
-              hsl(200, 70%, 66%, 0.42) 0%,
-              hsl(200, 62%, 64%, 0.22) 40%,
-              hsl(200, 58%, 62%, 0.1) 65%,
-              transparent 82%
-            );
-          }
-        }
-
         .hero-text-stack {
           display: grid;
           grid-template-columns: auto 1fr;

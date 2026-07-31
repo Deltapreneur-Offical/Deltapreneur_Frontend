@@ -26,7 +26,7 @@ export default function TopNavbar({ homeMobileMenu = false, hideContactUs = fals
       }${isScrolled ? ' is-scrolled' : ''}`}
     >
       <div className="home-top-nav-inner">
-        {/* Scroll-in logo — only visible when main nav is hidden */}
+        {/* Compact scroll-in logo — small mark for the first navbar only */}
         <button
           type="button"
           className={`home-top-nav-scroll-logo home-nav-logo-btn${isScrolled ? ' is-visible' : ''}`}
@@ -34,7 +34,7 @@ export default function TopNavbar({ homeMobileMenu = false, hideContactUs = fals
           aria-label="CoBrother home"
           tabIndex={isScrolled ? 0 : -1}
         >
-          <BrandNavLogo />
+          <BrandNavLogo className="home-top-nav-scroll-logo__mark" />
         </button>
 
         <div className="home-top-nav-actions">

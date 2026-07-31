@@ -2,14 +2,16 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * Shared scroll behavior for public pages using TopNavbar + HomeNavbar (same as Homepage).
- * Toggles body classes and nav ref so the logo moves into the sticky top bar on scroll.
+ * Toggles body/nav scrolled classes so the 2nd nav hides visually while its document
+ * space stays reserved (no page jump when returning to top).
  */
 export default function useHomePageScrollNav() {
   const [isScrolled, setIsScrolled] = useState(false);
   const navRef = useRef(null);
 
   const handleScroll = useCallback(() => {
-    const scrolled = window.scrollY > 1;
+    // Small threshold avoids flicker at the very top while still feeling instant
+    const scrolled = window.scrollY > 8;
 
     if (scrolled) {
       document.body.classList.add('scrolled');

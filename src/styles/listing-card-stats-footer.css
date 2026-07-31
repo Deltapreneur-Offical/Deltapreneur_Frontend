@@ -223,3 +223,9 @@
   max-width: 100%;
   overflow: hidden;
 }
+
+/* Domain cards — count left, heart right */
+.domain-listing-card .listing-card-stats-footer .listing-like-btn,
+.domain-listing-card .listing-card-stats-footer .listing-card-stats-footer__group--split .listing-like-btn {
+  flex-direction: row;
+}

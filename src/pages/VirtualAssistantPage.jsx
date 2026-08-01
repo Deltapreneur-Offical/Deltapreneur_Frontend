@@ -26,22 +26,9 @@ import {
   Briefcase, Globe, Clock,
   Check, AlertCircle, Loader2
 } from 'lucide-react';
+import VaRolePicker from '../components/virtual-assistant/VaRolePicker';
+import { resolveVaApplicationRole, VA_ROLE_OTHER } from '../constants/virtualAssistantRoles';
 import '../styles/virtual-assistant-application.css';
-
-const VIRTUAL_ASSISTANT_ROLES = [
-  { value: 'Administrative Support', label: 'Administrative Support' },
-  { value: 'Customer Support', label: 'Customer Support' },
-  { value: 'Data Entry', label: 'Data Entry' },
-  { value: 'Social Media Management', label: 'Social Media Management' },
-  { value: 'Content Writing', label: 'Content Writing' },
-  { value: 'Email Management', label: 'Email Management' },
-  { value: 'Research', label: 'Research' },
-  { value: 'Technical Support', label: 'Technical Support' },
-  { value: 'Sales Support', label: 'Sales Support' },
-  { value: 'Personal Assistance', label: 'Personal Assistance' },
-  { value: 'Project Coordination', label: 'Project Coordination' },
-  { value: 'Calendar Management', label: 'Calendar Management' },
-];
 
 const inputErrorClass = (hasError) => (hasError ? ' va-app-input--error' : '');
 const selectErrorClass = (hasError) => (hasError ? ' va-app-select--error' : '');
@@ -64,6 +51,7 @@ const VirtualAssistantPage = () => {
     isAdult: false,
     bio: '',
     roles: [],
+    customRole: '',
     skills: '',
     yearsOfExperience: '',
     languages: '',
@@ -116,16 +104,6 @@ const VirtualAssistantPage = () => {
       }
       return;
     }
-    if (name === 'roles') {
-      const selected = Array.from(e.target.selectedOptions, option => option.value);
-      setFormData(prev => ({ ...prev, roles: selected }));
-      if (selected.length === 0) {
-        setErrors(prev => ({ ...prev, roles: 'Please select at least one role' }));
-      } else {
-        setErrors(prev => ({ ...prev, roles: null }));
-      }
-      return;
-    }
     if (name === 'bio') {
       if (value.trim().length >= 100 && errors.bio) {
         setErrors(prev => ({ ...prev, bio: null }));
@@ -162,8 +140,13 @@ const VirtualAssistantPage = () => {
     if (!formData.availability) {
       newErrors.availability = 'Please select your availability';
     }
-    if (!formData.roles || formData.roles.length === 0) {
-      newErrors.roles = 'Please select at least one Virtual Assistant role';
+    const roleResult = resolveVaApplicationRole(formData.roles[0], formData.customRole);
+    if (roleResult.error) {
+      if (formData.roles[0] === VA_ROLE_OTHER) {
+        newErrors.customRole = roleResult.error;
+      } else {
+        newErrors.roles = roleResult.error;
+      }
     }
     if (!formData.skills || formData.skills.trim().length < 2) {
       newErrors.skills = 'Please list your skills';
@@ -236,7 +219,18 @@ const VirtualAssistantPage = () => {
       submitData.append('location', formData.location.trim());
       submitData.append('is_adult', String(formData.isAdult));
       submitData.append('bio', formData.bio.trim());
-      submitData.append('roles', formData.roles[0]);
+      const roleResult = resolveVaApplicationRole(formData.roles[0], formData.customRole);
+      if (roleResult.error || !roleResult.role) {
+        setErrors((prev) => ({
+          ...prev,
+          ...(formData.roles[0] === VA_ROLE_OTHER
+            ? { customRole: roleResult.error }
+            : { roles: roleResult.error }),
+        }));
+        setSubmitState({ status: 'idle', message: '', data: null });
+        return;
+      }
+      submitData.append('roles', roleResult.role);
       submitData.append('skills', formData.skills.trim());
       submitData.append('years_of_experience', formData.yearsOfExperience.trim());
       submitData.append('languages', formData.languages.trim());
@@ -478,21 +472,26 @@ const VirtualAssistantPage = () => {
                       {errors.bio && <span className="va-app-error">{errors.bio}</span>}
                     </div>
 
-                    <div className="va-app-field">
-                      <label className="va-app-label">Select Virtual Assistant Role <span className="va-app-required">*</span></label>
-                      <select
-                        name="roles"
-                        value={formData.roles[0] || ''}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.roles ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
-                      >
-                        <option value="">Select a role</option>
-                        {VIRTUAL_ASSISTANT_ROLES.map((role) => (
-                          <option key={role.value} value={role.value}>{role.label}</option>
-                        ))}
-                      </select>
-                      {errors.roles && <span className="va-app-error">{errors.roles}</span>}
-                    </div>
+                    <VaRolePicker
+                      selectedRole={formData.roles[0] || ''}
+                      customRole={formData.customRole}
+                      error={errors.roles}
+                      customError={errors.customRole}
+                      onSelectRole={(role) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          roles: role ? [role] : [],
+                          customRole: role === VA_ROLE_OTHER ? prev.customRole : '',
+                        }));
+                        setErrors((prev) => ({ ...prev, roles: null, customRole: null }));
+                      }}
+                      onCustomRoleChange={(value) => {
+                        setFormData((prev) => ({ ...prev, customRole: value }));
+                        if (errors.customRole) {
+                          setErrors((prev) => ({ ...prev, customRole: null }));
+                        }
+                      }}
+                    />
 
                     <div className="va-app-field-grid">
                       <div className="va-app-field">

@@ -9,13 +9,8 @@ import { adminAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
 import { vaAdminModulePath } from '../utils/virtualAssistantAdminNav';
 import { validateLinkedInProfileUrl } from '../utils/linkedInProfileUrl';
-
-const VA_ROLES = [
-  'Administrative Support', 'Customer Support', 'Data Entry',
-  'Social Media Management', 'Content Writing', 'Email Management',
-  'Research', 'Technical Support', 'Sales Support', 'Personal Assistance',
-  'Project Coordination', 'Calendar Management',
-];
+import VaRolePicker from '../components/virtual-assistant/VaRolePicker';
+import { resolveVaApplicationRole, VA_ROLE_OTHER } from '../constants/virtualAssistantRoles';
 
 const AVAILABILITY_OPTIONS = [
   { value: 'available', label: 'Available' },
@@ -28,7 +23,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '', email: '', phoneNumber: '', location: '', bio: '',
-    roles: [], skills: '', yearsOfExperience: '', languages: '',
+    roles: [], customRole: '', skills: '', yearsOfExperience: '', languages: '',
     linkedinUrl: '', portfolioUrl: '', resumeUrl: '', availability: 'available',
     hoursPerWeek: '', expectedCompensation: '',
     maxClientCapacity: '', currentAssignedClients: '0',
@@ -62,16 +57,6 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       }
       return;
     }
-    if (name === 'roles') {
-      const selected = value ? [value] : [];
-      setFormData(prev => ({ ...prev, roles: selected }));
-      if (selected.length === 0) {
-        setErrors(prev => ({ ...prev, roles: 'Please select at least one role' }));
-      } else {
-        setErrors(prev => ({ ...prev, roles: null }));
-      }
-      return;
-    }
     if (name === 'linkedinUrl' && errors.linkedinUrl) {
       setErrors(prev => ({ ...prev, linkedinUrl: validateLinkedInProfileUrl(value) }));
     }
@@ -85,7 +70,11 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
     if (!formData.phoneNumber || !/^\d{10,15}$/.test(formData.phoneNumber.replace(/[\s\-]/g, ''))) newErrors.phoneNumber = 'Enter a valid phone number';
     if (!formData.location || formData.location.trim().length < 2) newErrors.location = 'Location is required';
     if (!formData.bio || formData.bio.trim().length < 100) newErrors.bio = 'Please provide a short bio (at least 100 characters)';
-    if (!formData.roles || formData.roles.length === 0) newErrors.roles = 'Please select at least one role';
+    const roleResult = resolveVaApplicationRole(formData.roles[0], formData.customRole);
+    if (roleResult.error) {
+      if (formData.roles[0] === VA_ROLE_OTHER) newErrors.customRole = roleResult.error;
+      else newErrors.roles = roleResult.error;
+    }
     if (!formData.skills || formData.skills.trim().length < 2) newErrors.skills = 'Please list your skills';
     if (!formData.yearsOfExperience) newErrors.yearsOfExperience = 'Please select years of experience';
     if (!formData.languages || formData.languages.trim().length < 2) newErrors.languages = 'Please enter languages known';
@@ -118,7 +107,18 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       submitData.append('phone_number', formData.phoneNumber.trim());
       submitData.append('location', formData.location.trim());
       submitData.append('bio', formData.bio.trim());
-      submitData.append('roles', formData.roles[0]);
+      const roleResult = resolveVaApplicationRole(formData.roles[0], formData.customRole);
+      if (roleResult.error || !roleResult.role) {
+        setErrors((prev) => ({
+          ...prev,
+          ...(formData.roles[0] === VA_ROLE_OTHER
+            ? { customRole: roleResult.error }
+            : { roles: roleResult.error }),
+        }));
+        setLoading(false);
+        return;
+      }
+      submitData.append('roles', roleResult.role);
       submitData.append('skills', formData.skills.trim());
       submitData.append('years_of_experience', formData.yearsOfExperience);
       submitData.append('languages', formData.languages.trim());
@@ -236,14 +236,30 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
               <Briefcase size={18} className="text-purple-600" /> Professional Details
             </h2>
             <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Virtual Assistant Role <span className="text-red-500">*</span></label>
-                <select name="roles" value={formData.roles[0] || ''} onChange={handleChange} className={inputClass('roles')}>
-                  <option value="">Select a role</option>
-                  {VA_ROLES.map(role => <option key={role} value={role}>{role}</option>)}
-                </select>
-                {errors.roles && <span className="text-xs text-red-500 mt-1 block">{errors.roles}</span>}
-              </div>
+              <VaRolePicker
+                selectedRole={formData.roles[0] || ''}
+                customRole={formData.customRole}
+                error={errors.roles}
+                customError={errors.customRole}
+                label="Virtual Assistant Role"
+                labelClassName="block text-sm font-semibold text-gray-700 mb-2"
+                errorClassName="text-xs text-red-500 mt-1 block"
+                inputClassName={inputClass('roles')}
+                onSelectRole={(role) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    roles: role ? [role] : [],
+                    customRole: role === VA_ROLE_OTHER ? prev.customRole : '',
+                  }));
+                  setErrors((prev) => ({ ...prev, roles: null, customRole: null }));
+                }}
+                onCustomRoleChange={(value) => {
+                  setFormData((prev) => ({ ...prev, customRole: value }));
+                  if (errors.customRole) {
+                    setErrors((prev) => ({ ...prev, customRole: null }));
+                  }
+                }}
+              />
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Skills <span className="text-red-500">*</span></label>
                 <input type="text" name="skills" value={formData.skills} onChange={handleChange} placeholder="e.g. Data entry, Excel, Communication" className={inputClass('skills')} />

@@ -60,7 +60,7 @@ export default function VirtualAssistantPreviewModal({
         role="dialog"
         aria-modal="true"
         aria-label="Virtual assistant preview"
-        className="relative w-full max-w-[850px] h-[85vh] overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_32px_96px_-16px_rgba(15,23,42,0.16)] flex flex-col"
+        className="relative flex h-[85vh] w-full max-w-[850px] flex-col overflow-x-hidden overflow-y-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_32px_96px_-16px_rgba(15,23,42,0.16)]"
         onClick={(e) => e.stopPropagation()}
       >
         <VirtualAssistantPreviewPanel

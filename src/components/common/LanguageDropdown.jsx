@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
@@ -51,15 +52,49 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
   const { t, i18n } = useTranslation();
   const { changeLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const [coords, setCoords] = useState(null);
+  const triggerRef = useRef(null);
+  const panelRef = useRef(null);
+
+  const updatePosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const panelWidth = 168;
+    const panelHeight = Math.min(192, window.innerHeight - 16);
+    let left = rect.right - panelWidth;
+    if (left < 8) left = 8;
+    if (left + panelWidth > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - panelWidth - 8);
+    }
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const openUp = spaceBelow < panelHeight && spaceAbove > spaceBelow;
+    setCoords({
+      top: openUp ? Math.max(8, rect.top - panelHeight - 6) : rect.bottom + 6,
+      left,
+      width: panelWidth,
+      maxHeight: openUp ? Math.min(panelHeight, spaceAbove - 6) : Math.min(panelHeight, spaceBelow - 6),
+    });
+  }, []);
 
   useEffect(() => {
+    if (!open) return undefined;
+    updatePosition();
     const onDoc = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (triggerRef.current?.contains(e.target) || panelRef.current?.contains(e.target)) return;
+      setOpen(false);
     };
+    const onReposition = () => updatePosition();
     document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
+    window.addEventListener('resize', onReposition);
+    window.addEventListener('scroll', onReposition, true);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      window.removeEventListener('resize', onReposition);
+      window.removeEventListener('scroll', onReposition, true);
+    };
+  }, [open, updatePosition]);
 
   if (variant === 'profile-menu') {
     const sectionItemCls = (active) =>
@@ -99,10 +134,6 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
       ? 'text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200 max-w-[min(100%,11rem)]'
       : 'inline-flex max-w-[min(100%,11rem)] cursor-pointer items-center gap-1.5 rounded-md border border-slate-300/90 bg-white px-3 py-1.5 text-xs font-medium tracking-wide text-slate-700 shadow-sm transition-all duration-300 hover:border-[var(--cobrother-hover-color)] hover:text-[var(--cobrother-hover-color)] hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-200/80';
 
-  const panelCls = isMinimal
-    ? 'home-nav-util-panel absolute top-full right-0 z-[1002] mt-1.5 min-w-[9.5rem] max-w-[calc(100vw-2rem)] max-h-48 overflow-y-auto rounded-xl border border-slate-100 bg-white/95 py-1 shadow-[0_12px_40px_rgba(15,23,42,0.1)] backdrop-blur-md'
-    : 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1002]';
-
   const isNavUtil = className.includes('home-nav-util-language');
   const itemCls = isMinimal
     ? (active) =>
@@ -114,30 +145,21 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
           active ? 'bg-purple-50 text-purple font-semibold' : 'text-gray-700 hover:bg-gray-100'
         }`;
 
-  return (
-    <div className={`relative shrink-0 ${className}`.trim()} ref={ref}>
-      <button
-        type="button"
-        className={`${triggerCls}${isNavUtil && !isMinimal ? ' home-nav-util-btn' : ''}`.trim()}
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-label={languageLabel(i18n.language)}
-      >
-        <Globe
-          size={14}
-          className={`shrink-0 ${isMinimal ? 'text-slate-400' : 'text-slate-500 md:h-3.5 md:w-3.5'}`}
-          strokeWidth={1.75}
-        />
-        {isMinimal ? (
-          <span className="home-nav-language-compact tabular-nums">{languageShortCode(i18n.language)}</span>
-        ) : (
-          <span className="home-nav-language-label truncate">{languageLabel(i18n.language)}</span>
-        )}
-        {!isMinimal ? <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} /> : null}
-      </button>
-      {open && (
-        <div className={panelCls} role="listbox">
+  const panel = open && coords
+    ? createPortal(
+        <div
+          ref={panelRef}
+          className={`home-nav-util-panel fixed z-[10050] overflow-y-auto rounded-xl border border-slate-100 bg-white py-1 shadow-[0_12px_40px_rgba(15,23,42,0.12)] ${
+            isMinimal ? 'backdrop-blur-md bg-white/95' : ''
+          }`}
+          style={{
+            top: coords.top,
+            left: coords.left,
+            width: coords.width,
+            maxHeight: coords.maxHeight,
+          }}
+          role="listbox"
+        >
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
@@ -159,8 +181,41 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
               )}
             </button>
           ))}
-        </div>
-      )}
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div className={`relative shrink-0 ${className}`.trim()} ref={triggerRef}>
+      <button
+        type="button"
+        className={`${triggerCls}${isNavUtil && !isMinimal ? ' home-nav-util-btn' : ''}`.trim()}
+        onClick={() => {
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          updatePosition();
+          setOpen(true);
+        }}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={languageLabel(i18n.language)}
+      >
+        <Globe
+          size={14}
+          className={`shrink-0 ${isMinimal ? 'text-slate-400' : 'text-slate-500 md:h-3.5 md:w-3.5'}`}
+          strokeWidth={1.75}
+        />
+        {isMinimal ? (
+          <span className="home-nav-language-compact tabular-nums">{languageShortCode(i18n.language)}</span>
+        ) : (
+          <span className="home-nav-language-label truncate">{languageLabel(i18n.language)}</span>
+        )}
+        {!isMinimal ? <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} /> : null}
+      </button>
+      {panel}
     </div>
   );
 }

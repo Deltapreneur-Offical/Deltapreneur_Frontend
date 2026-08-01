@@ -10,6 +10,7 @@ import {
   FileText,
   ExternalLink,
   ArrowRight,
+  ArrowLeft,
   Clock,
   User2,
   Share2,
@@ -51,23 +52,23 @@ function getCleanDisplayLink(url) {
 
 function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) {
   return (
-    <div className={`flex items-center gap-4 px-4 py-4 md:py-5 ${border ? 'border-b border-slate-100' : ''}`}>
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
-        <Icon size={22} strokeWidth={1.75} />
+    <div className={`flex items-center gap-3 px-3.5 py-3.5 sm:gap-4 sm:px-4 sm:py-4 md:py-5 ${border ? 'border-b border-slate-100' : ''}`}>
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 sm:h-12 sm:w-12">
+        <Icon size={20} strokeWidth={1.75} className="sm:h-[22px] sm:w-[22px]" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500">
+        <div className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-slate-500 sm:text-[0.68rem]">
           {label}
         </div>
-        <div className="mt-1 text-[0.95rem] font-medium text-slate-800 break-words leading-relaxed">
+        <div className="mt-0.5 break-words text-sm font-medium leading-relaxed text-slate-800 sm:mt-1 sm:text-[0.95rem]">
           {isLink && linkUrl ? (
             <a
               href={linkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 hover:underline break-all"
+              className="inline-flex max-w-full items-center gap-1.5 break-all text-indigo-600 hover:text-indigo-700 hover:underline"
             >
-              {value}
+              <span className="min-w-0 truncate">{value}</span>
               <ExternalLink size={14} className="shrink-0" />
             </a>
           ) : (
@@ -75,8 +76,8 @@ function InfoCard({ label, value, icon: Icon, isLink, linkUrl, border = true }) 
           )}
         </div>
       </div>
-      <div className="flex-shrink-0 text-slate-400 pr-2">
-        <ChevronRight size={20} />
+      <div className="shrink-0 pr-0.5 text-slate-300 sm:pr-2">
+        <ChevronRight size={18} className="sm:h-5 sm:w-5" />
       </div>
     </div>
   );
@@ -265,9 +266,9 @@ export default function VirtualAssistantPreviewPanel({
         <div className="absolute inset-x-0 bottom-0 h-20 md:h-24 bg-gradient-to-t from-white via-white/85 to-transparent" />
       </div>
 
-      <div className="relative px-6 md:px-8 pb-2 -mt-16 shrink-0">
-        <div className="flex min-w-0 items-end gap-5">
-          <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-50 shadow-lg">
+      <div className="relative -mt-14 shrink-0 px-4 pb-3 sm:-mt-16 sm:px-6 md:px-8">
+        <div className="flex min-w-0 items-end gap-3 sm:gap-5">
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-50 shadow-lg sm:h-28 sm:w-28">
             <VaProfilePhoto
               source={profile}
               applicationId={profile?.id}
@@ -278,54 +279,51 @@ export default function VirtualAssistantPreviewPanel({
               fallback="initial"
             />
           </div>
-          <div className="min-w-0 flex-1 pb-2">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h1
-                className="text-xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-tight w-full overflow-hidden"
-                style={{
-                  textOverflow: 'clip',
-                  whiteSpace: 'nowrap',
-                  display: 'block',
-                }}
-              >
-                <OverflowMarqueeText text={name} />
-              </h1>
+
+          <div className="min-w-0 flex-1 pb-1 sm:pb-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {verified ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-                  <BadgeCheck size={13} />
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700">
+                  <BadgeCheck size={12} className="shrink-0" />
                   Verified
                 </span>
               ) : null}
               {featured ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.65rem] font-bold text-amber-600 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-                  <Sparkles size={13} className="text-amber-500 fill-amber-500" />
+                <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.65rem] font-bold text-amber-700">
+                  <Sparkles size={12} className="shrink-0 fill-amber-500 text-amber-500" />
                   Featured
                 </span>
               ) : null}
             </div>
 
-            <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
               {approvedRoles.map((role) => (
                 <span
                   key={role}
-                  className="inline-block rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 text-[0.68rem] font-bold uppercase tracking-wider px-3 py-1"
+                  className="inline-flex max-w-full items-center truncate rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-indigo-600 sm:px-3 sm:text-[0.68rem]"
                 >
                   {role}
                 </span>
               ))}
-              {location ? (
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 ml-1">
-                  <MapPin size={15} className="text-slate-400" />
-                  {location}
-                </div>
-              ) : null}
             </div>
+
+            {location ? (
+              <div className="mt-2 flex min-w-0 items-center gap-1.5 text-sm font-medium text-slate-500">
+                <MapPin size={14} className="shrink-0 text-slate-400" />
+                <span className="truncate">{location}</span>
+              </div>
+            ) : null}
           </div>
         </div>
+
+        {/* Full-width name marquee — uses entire card width, not just space beside photo */}
+        <h1 className="mt-3 w-full min-w-0 overflow-hidden font-display text-xl font-extrabold leading-tight tracking-tight text-slate-900 sm:mt-3.5 sm:text-2xl md:text-[1.65rem]">
+          <OverflowMarqueeText text={name} className="block w-full min-w-0" />
+        </h1>
       </div>
 
-      <div className="overflow-y-auto px-6 md:px-8 pb-6 md:pb-8 flex-1 bg-white">
-        <div className="rounded-[1.25rem] border border-slate-150 p-1 shadow-[0_1px_4px_rgba(15,23,42,0.02)]">
+      <div className="flex-1 overflow-y-auto bg-white px-4 pb-6 sm:px-6 md:px-8 md:pb-8">
+        <div className="rounded-[1.25rem] border border-slate-200/80 bg-white p-0.5 shadow-[0_1px_4px_rgba(15,23,42,0.03)] sm:p-1">
           <InfoCard label="Monthly Price" value={priceLabel} icon={Tag} />
           <InfoCard label="Experience" value={experience} icon={Briefcase} />
           <InfoCard label="Availability" value={availability} icon={Clock} />
@@ -372,23 +370,29 @@ export default function VirtualAssistantPreviewPanel({
         ) : null}
       </div>
 
-      <div className="border-t border-slate-100 px-6 py-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-slate-50/50 shrink-0">
+      <div className="flex shrink-0 flex-col gap-2.5 border-t border-slate-100 bg-slate-50/80 px-4 py-3.5 sm:gap-3 sm:px-6 sm:py-4">
+        {/* Primary CTA — full width where Back used to sit */}
         <button
           type="button"
-          onClick={onClose}
-          className="px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md hover:border-slate-400 hover:-translate-y-0.5 active:translate-y-0"
+          onClick={hireIntent ? handleHire : () => { window.location.href = SUPPORT_PHONE_TEL; }}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-[0_2px_8px_rgba(79,70,229,0.22)] transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${
+            hireIntent ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-purple-600 hover:bg-purple-700'
+          }`}
         >
-          Back
+          <span>{hireIntent ? 'Hire Virtual Assistant' : 'Contact'}</span>
+          <ArrowRight size={16} className="shrink-0" />
         </button>
 
-        <div className="flex items-center justify-end gap-3.5">
+        {/* Secondary actions: Share · Connect · Back (icon only) */}
+        <div className="flex w-full min-w-0 items-center gap-2 sm:gap-2.5">
           {showShareIcon ? (
-            <div className="relative" ref={shareRef}>
+            <div className="relative shrink-0" ref={shareRef}>
               <button
                 type="button"
                 onClick={toggleShare}
-                className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-[14px] text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
                 title="Share"
+                aria-label="Share"
                 aria-expanded={shareOpen}
                 aria-haspopup="menu"
               >
@@ -396,37 +400,37 @@ export default function VirtualAssistantPreviewPanel({
               </button>
               {shareOpen && createPortal(
                 <div
-                  className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+                  className="fixed z-[9999] w-[200px] overflow-hidden rounded-2xl border border-slate-100 bg-white text-gray-900 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)]"
                   style={{
                     top: `${coords.top}px`,
                     left: `${coords.left}px`,
                   }}
                 >
-                  <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                  <div className="border-b border-slate-50 bg-slate-50/50 px-4 py-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
                   </div>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(linkedinShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(linkedinShare)}>
                     LinkedIn
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(facebookShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(facebookShare)}>
                     Facebook
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(twitterShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(twitterShare)}>
                     Twitter / X
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(whatsappShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(whatsappShare)}>
                     WhatsApp
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(gmailShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(gmailShare)}>
                     Gmail
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(emailShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(emailShare)}>
                     Email
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(telegramShare)}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={() => handleShare(telegramShare)}>
                     Telegram
                   </button>
-                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={handleCopyLink}>
+                  <button type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900" onClick={handleCopyLink}>
                     Copy Link
                   </button>
                 </div>,
@@ -439,24 +443,26 @@ export default function VirtualAssistantPreviewPanel({
             type="button"
             onClick={handleConnect}
             disabled={!linkedInUrl}
-            className={`px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 flex items-center gap-3 shadow-sm transition-all duration-300 ${linkedInUrl
-              ? 'hover:bg-slate-50 hover:shadow-md hover:border-slate-450 hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
-              : 'opacity-50 cursor-not-allowed'
-              }`}
+            className={`flex h-11 min-w-0 flex-1 items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 text-slate-700 shadow-sm transition-all duration-300 sm:px-5 ${
+              linkedInUrl
+                ? 'cursor-pointer hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:translate-y-0'
+                : 'cursor-not-allowed opacity-50'
+            }`}
           >
-            <span className="flex items-center justify-center w-8 h-8 rounded-[6px] bg-[#0A66C2] text-white text-[15px] font-bold transition-all duration-300">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#0A66C2] text-[13px] font-bold leading-none text-white">
               in
             </span>
-            <span className="text-sm font-bold">Connect</span>
+            <span className="text-sm font-bold tracking-tight">Connect</span>
           </button>
 
           <button
             type="button"
-            onClick={hireIntent ? handleHire : () => { window.location.href = SUPPORT_PHONE_TEL; }}
-            className={`px-6 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 transition-all shadow-[0_2px_4px_rgba(79,70,229,0.2)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 ${hireIntent ? 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-650/30' : 'bg-purple-600 hover:bg-purple-700 hover:shadow-purple-650/30'}`}
+            onClick={onClose}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:translate-y-0"
+            title="Back"
+            aria-label="Back"
           >
-            {hireIntent ? 'Hire Virtual Assistant' : 'Contact'}
-            <ArrowRight size={16} />
+            <ArrowLeft size={18} strokeWidth={2.25} />
           </button>
         </div>
       </div>

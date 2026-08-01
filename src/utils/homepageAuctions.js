@@ -356,20 +356,11 @@ export function mergeHomepageAuctions({
   });
 }
 
+/** Homepage auction row: admin-featured live auctions only (same rule as other Homepage Features). */
 export function pickHomepagePreviewAuctions(auctions, limit = HOMEPAGE_PREVIEW_LIMIT) {
-  const merged = mergeHomepageAuctions(auctions);
-  const featured = merged.filter((item) => Boolean(item.featured));
-  let selected;
-  if (featured.length >= limit) {
-    selected = featured.slice(0, limit);
-  } else if (featured.length > 0) {
-    const featuredKeys = new Set(featured.map((item) => `${item.category}:${item.id}`));
-    const remainder = merged.filter((item) => !featuredKeys.has(`${item.category}:${item.id}`));
-    selected = [...featured, ...remainder].slice(0, limit);
-  } else {
-    selected = merged.slice(0, limit);
-  }
-  return selected;
+  return mergeHomepageAuctions(auctions)
+    .filter((item) => Boolean(item.featured))
+    .slice(0, limit);
 }
 
 /** Normalize admin auction rows into homepage-feature selector items. */

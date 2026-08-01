@@ -328,8 +328,8 @@ export default function DomainsPage() {
           </>
         ) : (
           <>
-            <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
-              <div>
+            <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6 min-w-0">
+              <div className="min-w-0 w-full md:w-auto">
                 <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
                   {t('domains')}
                   {pendingVerificationCount > 0 ? (
@@ -338,30 +338,56 @@ export default function DomainsPage() {
                 </h1>
                 <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
               </div>
-              <div className="flex flex-row w-full md:w-auto gap-1 sm:gap-2 md:gap-3 justify-between items-center">
-                <Link className="btn-glow btn-glow-sm flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-3 min-w-0 whitespace-nowrap" to="/settings/payouts">
-                  <CreditCard className="shrink-0 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" /> <span>Payout Settings</span>
+              <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end md:w-auto md:gap-3">
+                <Link
+                  className="btn-glow btn-glow-sm !px-3 !py-2 flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
+                  to="/settings/payouts"
+                >
+                  <CreditCard className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
+                  <span className="truncate">
+                    <span className="sm:hidden">Payouts</span>
+                    <span className="hidden sm:inline">Payout Settings</span>
+                  </span>
                 </Link>
-                <button className="btn-glow btn-glow-sm flex-1 md:flex-none relative flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-3 min-w-0 whitespace-nowrap" onClick={() => navigate('/domains/dashboard')}>
-                  <LayoutDashboard className="shrink-0 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
-                  <span>{t('dashboard')}</span>
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm !px-3 !py-2 relative flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
+                  onClick={() => navigate('/domains/dashboard')}
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
+                  <span className="truncate">{t('dashboard')}</span>
                   {pendingVerificationCount > 0 ? (
-                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
+                    <span className="absolute -right-1 -top-1 flex h-2.5 w-2.5 items-center justify-center">
                       <PendingVerificationDot className="h-2.5 w-2.5" />
                     </span>
                   ) : null}
                 </button>
-                <button className="btn-glow btn-glow-sm flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-3 min-w-0 whitespace-nowrap" onClick={() => { setShowForm(true); setEditTarget(null); }}>
-                  <Plus className="shrink-0 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" /> <span>{t('listDomain')}</span>
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm !px-3 !py-2 flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
+                  onClick={() => { setShowForm(true); setEditTarget(null); }}
+                >
+                  <Plus className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
+                  <span className="truncate">{t('listDomain')}</span>
                 </button>
               </div>
             </div>
 
-            <div className="flex gap-2 mb-6">
-              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allDomains')}</button>
-              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
+            <div className="mb-6 flex min-w-0 flex-wrap gap-2">
+              <button
+                type="button"
+                className={`btn-glow btn-glow-sm !px-3 !py-2 text-xs md:text-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}
+              >
+                {t('allDomains')}
+              </button>
+              <button
+                type="button"
+                className={`btn-glow btn-glow-sm !px-3 !py-2 text-xs md:text-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}
+              >
+                {t('myListings')}
+              </button>
             </div>
 
             {filterTab === 'mine' && pendingVerificationCount > 0 ? (

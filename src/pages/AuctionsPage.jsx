@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Gavel, Search, ChevronDown, X, Home, Smartphone, Cpu, Code } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -241,19 +241,79 @@ function useCountdown(endTime) {
 }
 
 function AuctionFilterSelect({ label, value, onChange, options }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const selected = options.find((opt) => opt.value === value) || options[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onPointerDown = (event) => {
+      if (rootRef.current && !rootRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
   return (
-    <div className="auctions-page-select-wrap">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="auctions-page-select"
+    <div
+      ref={rootRef}
+      className="relative w-full min-w-0 max-w-full md:w-[170px] md:flex-none md:max-w-[170px]"
+    >
+      <button
+        type="button"
         aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+        className="box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 rounded-[11px] border border-gray-300 bg-white px-3.5 py-[0.68rem] text-left text-sm font-medium leading-tight text-gray-700 outline-none transition hover:border-gray-400 focus-visible:border-indigo-400 focus-visible:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]"
       >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-      <ChevronDown className="auctions-page-select-chevron" size={16} strokeWidth={2.25} aria-hidden />
+        <span className="min-w-0 flex-1 truncate">{selected?.label || label}</span>
+        <ChevronDown
+          size={16}
+          strokeWidth={2.25}
+          aria-hidden
+          className={`h-4 w-4 shrink-0 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {open ? (
+        <ul
+          role="listbox"
+          aria-label={label}
+          className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 m-0 max-h-56 w-full min-w-0 max-w-full list-none overflow-y-auto overflow-x-hidden rounded-[11px] border border-gray-200 bg-white p-1 shadow-lg"
+        >
+          {options.map((opt) => {
+            const isActive = opt.value === value;
+            return (
+              <li key={opt.value} role="option" aria-selected={isActive}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full min-w-0 items-center rounded-lg px-3 py-2 text-left text-sm font-medium leading-tight transition ${
+                    isActive
+                      ? 'bg-sky-100 text-slate-900'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="min-w-0 truncate">{opt.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </div>
   );
 }
@@ -554,13 +614,13 @@ export default function AuctionsPage() {
   return (
     <AppLayout>
       <div className="auctions-page">
-        <div className="auctions-page-toolbar">
+        <div className="auctions-page-toolbar !overflow-visible">
           <div className="auctions-page-toolbar-top">
-            <div className="auctions-page-hero-main">
+            <div className="auctions-page-hero-main min-w-0">
               <div className="auctions-page-hero-icon" aria-hidden>
                 <Gavel className="w-[1.15rem] h-[1.15rem]" strokeWidth={2} />
               </div>
-              <div className="auctions-page-hero-copy">
+              <div className="auctions-page-hero-copy min-w-0">
                 <div className="auctions-page-title-row">
                   <h1 className="font-display text-3xl font-bold text-gray-900">{heroTitle}</h1>
                   {view === 'browse' && totalLive > 0 && (
@@ -607,15 +667,15 @@ export default function AuctionsPage() {
 
           <div className="auctions-page-toolbar-divider" aria-hidden />
 
-          <div className="auctions-page-controls">
-            <div className="auctions-page-search">
+          <div className="auctions-page-controls flex w-full min-w-0 max-w-full flex-col items-stretch gap-2 overflow-visible sm:flex-row sm:flex-wrap sm:items-center md:gap-2.5">
+            <div className="auctions-page-search relative w-full min-w-0 max-w-full sm:min-w-[180px] sm:flex-1">
               <Search className="auctions-page-search-icon w-4 h-4" strokeWidth={2} aria-hidden />
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search auctions"
-                className="auctions-page-search-input"
+                className="auctions-page-search-input box-border w-full max-w-full"
                 aria-label="Search auctions"
               />
             </div>
@@ -646,7 +706,7 @@ export default function AuctionsPage() {
             {hasActiveFilters && (
               <button
                 type="button"
-                className="auctions-page-clear-filters"
+                className="auctions-page-clear-filters w-full justify-center sm:w-auto"
                 onClick={clearAllFilters}
               >
                 <X size={14} strokeWidth={2.25} aria-hidden />

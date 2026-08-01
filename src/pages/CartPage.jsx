@@ -650,25 +650,27 @@ export default function CartPage() {
         </div>
       )}
       <div className="max-w-6xl mx-auto px-4 pt-5 sm:pt-6 pb-12 sm:pb-14 lg:pb-16">
-        <div className="relative mb-8 rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 px-5 py-5 sm:px-6 sm:py-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="relative mb-8 overflow-hidden rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 px-4 py-4 sm:px-6 sm:py-6">
+          <div className="relative z-10 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <ShoppingCart size={22} className="shrink-0 text-indigo-600" strokeWidth={1.75} aria-hidden />
               <div className="min-w-0">
-                <h1 className="font-display text-xl font-semibold text-gray-900 tracking-tight">Shopping Cart</h1>
+                <h1 className="font-display truncate text-xl font-semibold tracking-tight text-gray-900">
+                  Shopping Cart
+                </h1>
                 {hasItems && (
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="mt-0.5 text-xs text-gray-500">
                     {items.length} item{items.length !== 1 ? 's' : ''} in your cart
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end sm:gap-4">
               <ShoppingCart
                 size={64}
                 strokeWidth={1.15}
-                className="shrink-0 text-indigo-200/90 sm:w-[76px] sm:h-[76px]"
+                className="pointer-events-none hidden h-14 w-14 shrink-0 text-indigo-200/90 sm:block sm:h-[76px] sm:w-[76px]"
                 aria-hidden
               />
               {hasItems && (
@@ -676,7 +678,7 @@ export default function CartPage() {
                   type="button"
                   onClick={handleClear}
                   disabled={clearing}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-semibold text-red-600 shadow-sm transition-colors hover:bg-red-100 hover:border-red-300 hover:text-red-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-700 disabled:opacity-50 sm:px-3.5"
                 >
                   {clearing ? (
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-200 border-t-red-600" />

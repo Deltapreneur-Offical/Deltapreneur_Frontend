@@ -358,7 +358,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-6 lg:gap-8 min-w-0">
+      <div className="app-dashboard mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-6 pt-2 sm:pt-3 lg:gap-8">
         {isAdmin ? (
           <section className="dashboard-admin-header">
             <div className="dashboard-admin-header__copy">
@@ -409,7 +409,9 @@ export default function DashboardPage() {
         ) : null}
 
         {!isAdmin && creatorProfileReady && creatorProfile ? (
-          <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
+          <div className="relative z-0 w-full min-w-0 overflow-visible">
+            <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
+          </div>
         ) : null}
 
         {user?.id ? <PayoutProfileBanner context="default" /> : null}

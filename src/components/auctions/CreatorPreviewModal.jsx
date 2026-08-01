@@ -309,7 +309,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
         role="dialog"
         aria-modal="true"
         aria-label="Creator preview"
-        className="relative w-full max-w-[850px] h-[85vh] overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_32px_96px_-16px_rgba(15,23,42,0.16)] flex flex-col"
+        className="relative flex h-[85vh] w-full max-w-[850px] flex-col overflow-x-hidden overflow-y-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_32px_96px_-16px_rgba(15,23,42,0.16)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -559,25 +559,25 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
             </div>
           </div>
         ) : (
-          <div className="border-t border-slate-100 px-6 py-4 flex justify-between items-center bg-slate-50/50 shrink-0">
+          <div className="flex shrink-0 flex-col gap-3 border-t border-slate-100 bg-slate-50/50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
             {/* Close Button */}
             <button
               type="button"
               onClick={close}
-              className="px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md hover:border-slate-400 hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md active:translate-y-0 sm:w-auto sm:px-6"
             >
               Close
             </button>
 
             {/* Right side container */}
-            <div className="flex items-center gap-3.5">
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-stretch gap-2 sm:w-auto sm:justify-end sm:gap-2.5">
               {/* Share Icon (Creators page only) */}
               {showShareIcon && (
-                <div className="relative" ref={shareRef}>
+                <div className="relative shrink-0" ref={shareRef}>
                   <button
                     type="button"
                     onClick={toggleShare}
-                    className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-[14px] text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
                     title="Share"
                     aria-expanded={shareOpen}
                     aria-haspopup="menu"
@@ -630,13 +630,13 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                 type="button"
                 onClick={handleConnect}
                 disabled={!linkedInUrl}
-                className={`px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 flex items-center gap-3 shadow-sm transition-all duration-300 ${linkedInUrl
-                  ? 'hover:bg-slate-50 hover:shadow-md hover:border-slate-450 hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
-                  : 'opacity-50 cursor-not-allowed'
+                className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-700 shadow-sm transition-all duration-300 sm:flex-none sm:gap-3 sm:px-5 ${linkedInUrl
+                  ? 'cursor-pointer hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md active:translate-y-0'
+                  : 'cursor-not-allowed opacity-50'
                   }`}
               >
                 {/* LinkedIn Box */}
-                <span className="flex items-center justify-center w-8 h-8 rounded-[6px] bg-[#0A66C2] text-white text-[15px] font-bold transition-all duration-300">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] bg-[#0A66C2] text-[13px] font-bold text-white sm:h-8 sm:w-8 sm:text-[15px]">
                   in
                 </span>
 

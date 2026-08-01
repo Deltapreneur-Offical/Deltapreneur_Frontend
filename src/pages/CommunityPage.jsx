@@ -560,28 +560,32 @@ export default function CommunityPage() {
                 <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
                 <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
               </div>
-              <div className="flex gap-3 flex-wrap items-center">
+              <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
                 {effectiveMyProfile ? (
-                  <div className="flex gap-3 flex-wrap items-center">
+                  <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
                     {/* Auction status / button */}
                     {auctionBadge ? (
-                      <div className="flex gap-2 items-center">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${auctionBadge.color === 'green' ? 'bg-green-50 text-green-700 border-green-300' :
                             auctionBadge.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-300' :
                               auctionBadge.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-300' :
                                 'bg-red-50 text-red-600 border-red-300'
                           }`}>{auctionBadge.text}</span>
-                        <button className="btn-glow btn-glow-sm"
+                        <button
+                          type="button"
+                          className="btn-glow btn-glow-sm !px-3 !py-2"
                           onClick={() => {
                             const targetId = resolveCreatorAuctionId(myAuction);
                             if (targetId) navigate(`/creator-auction/${targetId}`);
-                          }}>
+                          }}
+                        >
                           View Auction →
                         </button>
                       </div>
                     ) : (
                       <button
-                        className="btn-glow btn-glow-sm"
+                        type="button"
+                        className="btn-glow btn-glow-sm !px-3 !py-2 max-w-full"
                         onClick={() => {
                           if (myAuction?.status === 'ACTIVE' || myAuction?.status === 'EXTENDED') {
                             const targetId = resolveCreatorAuctionId(myAuction);
@@ -596,18 +600,19 @@ export default function CommunityPage() {
                           setShowAuctionModal(true);
                         }}
                       >
-                        🔨 Put Profile to Auction
+                        <span className="sm:hidden">🔨 Auction Profile</span>
+                        <span className="hidden sm:inline">🔨 Put Profile to Auction</span>
                       </button>
                     )}
-                    <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
+                    <button type="button" className="btn-glow btn-glow-sm !px-3 !py-2" onClick={() => navigate('/profile/analytics')}>
                       📈 Analytics
                     </button>
-                    <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
+                    <button type="button" className="btn-glow btn-glow-sm !px-3 !py-2 inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
                       <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
                     </button>
                     <button
                       type="button"
-                      className="btn-glow btn-glow-sm btn-glow-danger"
+                      className="btn-glow btn-glow-sm btn-glow-danger !px-3 !py-2"
                       onClick={() => setShowDeleteConfirm(true)}
                       disabled={deleteLoading}
                     >
@@ -646,10 +651,12 @@ export default function CommunityPage() {
             </div>
 
             {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
-              <CreatorProfileCompletionBanner
-                profile={effectiveMyProfile}
-                onEdit={() => setShowForm(true)}
-              />
+              <div className="mb-6 w-full min-w-0 max-w-full overflow-visible">
+                <CreatorProfileCompletionBanner
+                  profile={effectiveMyProfile}
+                  onEdit={() => setShowForm(true)}
+                />
+              </div>
             ) : null}
 
             {loading ? (

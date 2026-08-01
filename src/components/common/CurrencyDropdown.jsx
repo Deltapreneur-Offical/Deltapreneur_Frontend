@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { CURRENCY_LABELS } from '../../constants/currencies';
@@ -22,15 +23,50 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
   const { currency, setCurrency, supportedCurrencies } = useCurrency();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const ref = useRef(null);
+  const [coords, setCoords] = useState(null);
+  const triggerRef = useRef(null);
+  const panelRef = useRef(null);
+
+  const updatePosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const panelWidth = Math.min(224, window.innerWidth - 16);
+    const panelHeight = Math.min(240, window.innerHeight - 16);
+    let left = rect.right - panelWidth;
+    if (left < 8) left = 8;
+    if (left + panelWidth > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - panelWidth - 8);
+    }
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const openUp = spaceBelow < panelHeight && spaceAbove > spaceBelow;
+    setCoords({
+      top: openUp ? Math.max(8, rect.top - panelHeight - 6) : rect.bottom + 6,
+      left,
+      width: panelWidth,
+      maxHeight: openUp ? Math.min(panelHeight, spaceAbove - 6) : Math.min(panelHeight, spaceBelow - 6),
+    });
+  }, []);
 
   useEffect(() => {
+    if (!open) return undefined;
+    updatePosition();
     const onOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (triggerRef.current?.contains(e.target) || panelRef.current?.contains(e.target)) return;
+      setOpen(false);
+      setSearchQuery('');
     };
+    const onReposition = () => updatePosition();
     document.addEventListener('mousedown', onOutside);
-    return () => document.removeEventListener('mousedown', onOutside);
-  }, []);
+    window.addEventListener('resize', onReposition);
+    window.addEventListener('scroll', onReposition, true);
+    return () => {
+      document.removeEventListener('mousedown', onOutside);
+      window.removeEventListener('resize', onReposition);
+      window.removeEventListener('scroll', onReposition, true);
+    };
+  }, [open, updatePosition]);
 
   if (variant === 'profile-menu') {
     const sectionItemCls = (active) =>
@@ -79,8 +115,6 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
     return code.toLowerCase().includes(term) || label.includes(term);
   });
 
-  const panelCls = 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg w-56 max-w-[calc(100vw-2rem)] max-h-60 overflow-y-auto z-[2000] flex flex-col';
-
   const fullLabel = CURRENCY_LABELS[currency] || currency;
   const shortLabel = CURRENCY_SHORT[currency] || currency;
   const isNavUtil = className.includes('home-nav-util-currency');
@@ -90,43 +124,30 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
       active ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'bg-transparent text-gray-700 hover:bg-gray-50'
     }`;
 
-  return (
-    <div className={`relative shrink-0 ${className}`.trim()} ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`${triggerCls}${isNavUtil && !isMinimal ? ' home-nav-util-btn' : ''}`.trim()}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-label={fullLabel}
-      >
-        {isMinimal ? (
-          <span className="home-nav-currency-compact inline-flex items-center gap-1 tabular-nums">
-            <span className="text-slate-500">{shortLabel}</span>
-            <span>{currency}</span>
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 truncate">
-            <img src={getCurrencyFlag(currency)} alt="" className="w-5 h-3.5 object-cover rounded-[3px] shrink-0 border border-gray-200/60 shadow-sm" />
-            <span className="home-nav-currency-label home-nav-currency-label--full truncate">{fullLabel}</span>
-            <span className="home-nav-currency-label home-nav-currency-label--short truncate">{shortLabel}</span>
-            <ChevronDown size={13} className="shrink-0 text-slate-400" strokeWidth={2} />
-          </span>
-        )}
-      </button>
-      {open && (
-        <div className={panelCls} role="listbox">
-          <div className="p-2 border-b border-gray-100 bg-gray-50">
+  const panel = open && coords
+    ? createPortal(
+        <div
+          ref={panelRef}
+          className="fixed z-[10050] flex w-56 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg"
+          style={{
+            top: coords.top,
+            left: coords.left,
+            width: coords.width,
+            maxHeight: coords.maxHeight,
+          }}
+          role="listbox"
+        >
+          <div className="border-b border-gray-100 bg-gray-50 p-2">
             <input
               type="text"
               placeholder="Search currency..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-md outline-none focus:border-indigo-500 transition-colors"
+              className="w-full rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs outline-none transition-colors focus:border-indigo-500"
               autoFocus
             />
           </div>
-          <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
+          <div className="max-h-60 space-y-0.5 overflow-y-auto p-1">
             {filteredCurrencies.map((code) => {
               const flag = getCurrencyFlag(code);
               const symbol = getCurrencySymbol(code);
@@ -144,23 +165,59 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
                   }}
                   className={itemCls(currency === code)}
                 >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <img src={flag} alt="" className="w-5 h-3.5 object-cover rounded-[3px] shrink-0 border border-gray-200/60 shadow-sm" />
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <img src={flag} alt="" className="h-3.5 w-5 shrink-0 rounded-[3px] border border-gray-200/60 object-cover shadow-sm" />
                     <span className="min-w-0">
-                      <span className="block font-medium text-gray-900 leading-tight">{code}</span>
-                      <span className="block text-[10px] text-gray-400 truncate leading-tight mt-0.5">{cleanLabel}</span>
+                      <span className="block font-medium leading-tight text-gray-900">{code}</span>
+                      <span className="mt-0.5 block truncate text-[10px] leading-tight text-gray-400">{cleanLabel}</span>
                     </span>
                   </span>
-                  <span className="text-xs font-semibold text-gray-500 shrink-0">{symbol}</span>
+                  <span className="shrink-0 text-xs font-semibold text-gray-500">{symbol}</span>
                 </button>
               );
             })}
             {filteredCurrencies.length === 0 && (
-              <div className="text-center py-4 text-xs text-gray-400">No results found</div>
+              <div className="py-4 text-center text-xs text-gray-400">No results found</div>
             )}
           </div>
-        </div>
-      )}
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div className={`relative shrink-0 ${className}`.trim()} ref={triggerRef}>
+      <button
+        type="button"
+        onClick={() => {
+          if (open) {
+            setOpen(false);
+            setSearchQuery('');
+            return;
+          }
+          updatePosition();
+          setOpen(true);
+        }}
+        className={`${triggerCls}${isNavUtil && !isMinimal ? ' home-nav-util-btn' : ''}`.trim()}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={fullLabel}
+      >
+        {isMinimal ? (
+          <span className="home-nav-currency-compact inline-flex items-center gap-1 tabular-nums">
+            <span className="text-slate-500">{shortLabel}</span>
+            <span>{currency}</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 truncate">
+            <img src={getCurrencyFlag(currency)} alt="" className="h-3.5 w-5 shrink-0 rounded-[3px] border border-gray-200/60 object-cover shadow-sm" />
+            <span className="home-nav-currency-label home-nav-currency-label--full truncate">{fullLabel}</span>
+            <span className="home-nav-currency-label home-nav-currency-label--short truncate">{shortLabel}</span>
+            <ChevronDown size={13} className="shrink-0 text-slate-400" strokeWidth={2} />
+          </span>
+        )}
+      </button>
+      {panel}
     </div>
   );
 }

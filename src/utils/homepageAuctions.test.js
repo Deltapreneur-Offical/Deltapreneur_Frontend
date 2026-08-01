@@ -18,15 +18,25 @@ describe('homepageAuctions', () => {
     expect(merged.map((a) => a.id)).toEqual(['s1', 'c1', 'd1']);
   });
 
-  it('selects featured auctions first', () => {
+  it('selects only admin-featured auctions (Homepage Features rule)', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
         { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2026-06-30T00:00:00Z' },
         { id: 'd2', status: 'ACTIVE', verified: true, featured: true, endTime: '2026-06-29T00:00:00Z' },
       ],
-    }, 1);
+    }, 6);
 
-    expect(picked[0].id).toBe('d2');
+    expect(picked.map((a) => a.id)).toEqual(['d2']);
+  });
+
+  it('returns no homepage auctions when none are featured', () => {
+    const picked = pickHomepagePreviewAuctions({
+      domains: [
+        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2026-06-30T00:00:00Z' },
+      ],
+    }, 6);
+
+    expect(picked).toEqual([]);
   });
 
   it('builds category specific paths and descriptions', () => {

@@ -995,7 +995,7 @@ export default function AppLayout({ children }) {
         </header>
 
         <div className="app-layout-scroll-body flex flex-1 flex-col bg-gray-50 min-w-0">
-          <div className="app-main-content min-w-0 max-w-[100%] flex-1 p-4 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:p-5 lg:p-6 xl:p-8">
+          <div className="app-main-content min-w-0 max-w-[100%] flex-1 px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:p-5 lg:p-6 xl:p-8">
             {children}
           </div>
         </div>

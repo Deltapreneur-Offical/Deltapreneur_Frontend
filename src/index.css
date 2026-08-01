@@ -7359,7 +7359,9 @@ body.home-page-body {
   height: var(--home-topbar-height);
   left: 0;
   right: 0;
-  overflow: hidden;
+  /* Keep fixed bar height via height above — overflow must stay visible so
+     Language/Currency panels (and other menus) are not clipped. */
+  overflow: visible;
 }
 
 /* ── Main nav base ───────────────────────────────────────────────────────── */
@@ -7744,6 +7746,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   box-sizing: border-box;
   padding-left: 1rem;
   padding-right: 1rem;
+  overflow: visible;
 }
 
 .home-top-nav-actions {
@@ -7753,6 +7756,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   flex-wrap: nowrap;
   gap: 0.625rem;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .home-nav-support-label,
@@ -8358,24 +8362,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   }
 }
 
-/* Position language/currency dropdowns upwards inside mobile drawer footer */
-.home-nav-drawer-footer .home-nav-util-language .absolute {
-  top: auto !important;
-  bottom: 100% !important;
-  margin-top: 0 !important;
-  margin-bottom: 0.5rem !important;
-  left: -10px !important;
-  right: auto !important;
-}
-
-.home-nav-drawer-footer .home-nav-util-currency .absolute {
-  top: auto !important;
-  bottom: 100% !important;
-  margin-top: 0 !important;
-  margin-bottom: 0.5rem !important;
-  right: -10px !important;
-  left: auto !important;
-}
+/* Language/Currency menus use fixed portals (see LanguageDropdown / CurrencyDropdown);
+   leftover absolute-position rules for drawer footers are intentionally removed. */
 
 
 .home-nav-pill {

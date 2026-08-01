@@ -1,0 +1,266 @@
+/* Virtual Assistant marketplace cards — matches target card design */
+
+.virtual-assistant-listing-card.domain-listing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* Header — centered photo, name, role badge */
+.virtual-assistant-listing-card .va-listing-card__header {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.virtual-assistant-listing-card .va-listing-card__cover {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  height: 6.25rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f8fafc 0%, #f0f9ff 100%);
+}
+
+.virtual-assistant-listing-card .va-listing-card__cover-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem 2.75rem 0.75rem 1rem;
+  box-sizing: border-box;
+}
+
+.virtual-assistant-listing-card .va-listing-card__cover .creator-profile-card__avatar-container {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.virtual-assistant-listing-card .va-listing-card__cover .creator-profile-card__avatar {
+  width: 4.25rem;
+  height: 4.25rem;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+}
+
+.virtual-assistant-listing-card .va-listing-card__cover .creator-profile-card__avatar--fallback {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0369a1;
+  background: #e0f2fe;
+}
+
+.virtual-assistant-listing-card .va-listing-card__title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.35rem 0.9rem 0.55rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.virtual-assistant-listing-card .va-listing-card__name-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.virtual-assistant-listing-card .va-listing-card__name {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.virtual-assistant-listing-card .va-listing-card__title-block .creator-profile-card__badge {
+  margin-top: 0;
+}
+
+/* Body */
+.virtual-assistant-listing-card .domain-listing-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 0;
+  min-width: 0;
+  padding: 0.5rem 0.9rem 0.65rem;
+}
+
+/* Two-column stats — Experience | Work Type */
+.virtual-assistant-listing-card .va-listing-card__stats-grid {
+  padding: 0.45rem 0;
+  margin: 0;
+}
+
+.virtual-assistant-listing-card .va-listing-card__stats-grid .stat-col {
+  align-items: center;
+  text-align: center;
+}
+
+.virtual-assistant-listing-card .va-listing-card__stats-grid--two-col .stat-col--center {
+  border-left: 1px solid #f1f5f9;
+  border-right: none;
+}
+
+.virtual-assistant-listing-card .va-listing-card__stats-grid .stat-value {
+  display: block;
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 0.15rem;
+  box-sizing: border-box;
+}
+
+.virtual-assistant-listing-card .stat-icon {
+  color: #0369a1;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-bottom: 0.1rem;
+}
+
+.virtual-assistant-listing-card .stat-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.virtual-assistant-listing-card .stat-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #0284c7;
+  letter-spacing: 0.02em;
+}
+
+/* Compensation */
+.virtual-assistant-listing-card .va-listing-card__compensation {
+  margin-top: 0;
+  align-items: center;
+}
+
+.virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-text {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.15rem;
+  line-height: 1.2;
+}
+
+.virtual-assistant-listing-card .va-listing-card__compensation-label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #0369a1;
+  line-height: 1;
+}
+
+.virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0369a1;
+}
+
+.virtual-assistant-listing-card .va-listing-card__compensation-period {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.virtual-assistant-listing-card .domain-listing-card__stats.listing-card-stats-footer {
+  margin-top: 0;
+  padding-top: 0.2rem;
+}
+
+.virtual-assistant-listing-card .creator-profile-card__edit {
+  top: 0.65rem;
+  left: 0.65rem;
+  right: auto;
+  z-index: 11;
+}
+
+.featured-va-grid .virtual-assistant-listing-card.domain-listing-card,
+.listing-card-glow-grid .virtual-assistant-listing-card.domain-listing-card,
+.home-preview-row .virtual-assistant-listing-card.domain-listing-card,
+.home-auto-scroll-row .virtual-assistant-listing-card.domain-listing-card {
+  min-height: min-content;
+  height: 100%;
+  align-self: stretch;
+}
+
+.featured-va-grid .virtual-assistant-listing-card .domain-listing-card__body,
+.listing-card-glow-grid .virtual-assistant-listing-card .domain-listing-card__body,
+.home-preview-row .virtual-assistant-listing-card .domain-listing-card__body,
+.home-auto-scroll-row .virtual-assistant-listing-card .domain-listing-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: min-content;
+}
+
+.home-preview-card-border--domain .virtual-assistant-listing-card.domain-listing-card,
+.home-preview-card-border--domain .virtual-assistant-listing-card.domain-listing-card.card-glow-hover,
+.home-preview-card-border--domain .virtual-assistant-listing-card.domain-listing-card.card-glow-hover:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.listing-card-glow-grid .virtual-assistant-listing-card.domain-listing-card:hover,
+.featured-va-grid .virtual-assistant-listing-card.domain-listing-card:hover {
+  transform: translateY(-3px) translateZ(0);
+  border-color: #38bdf8 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(14, 165, 233, 0.28),
+    0 12px 32px rgba(2, 132, 199, 0.14),
+    0 0 32px rgba(56, 189, 248, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+.virtual-assistant-listing-card.domain-listing-card.card-glow-hover:hover .va-listing-card__compensation {
+  border-color: #0284c7;
+}
+
+@media (min-width: 640px) {
+  .virtual-assistant-listing-card .va-listing-card__cover .creator-profile-card__avatar {
+    width: 4.75rem;
+    height: 4.75rem;
+  }
+
+  .virtual-assistant-listing-card .va-listing-card__name {
+    font-size: 1.1rem;
+  }
+}

@@ -2,7 +2,13 @@ import { ArrowRight } from 'lucide-react';
 import useCurrency from '../../context/CurrencyContext';
 import { readCreatorExpectedRate, parseCreatorExpectedRate } from '../../utils/creatorExpectedRate';
 
-export default function CreatorExpectedRateCard({ profile, onView, onHire, hireLabel = 'Hire' }) {
+export default function CreatorExpectedRateCard({
+  profile,
+  onView,
+  onHire,
+  hireLabel = 'Hire',
+  variant = 'default',
+}) {
   const { formatPrice } = useCurrency();
   const expectedRate = readCreatorExpectedRate(profile);
   const action = onHire || onView;
@@ -20,6 +26,35 @@ export default function CreatorExpectedRateCard({ profile, onView, onHire, hireL
     displayPeriod = `/ ${parsed.period.slice(1).replace(/^(\w)/, (l) => l.toUpperCase())}`;
   } else {
     displayPeriod = parsed.period;
+  }
+
+  if (variant === 'domain') {
+    return (
+      <div
+        className="domain-listing-card__price-box va-listing-card__compensation"
+        aria-label="Compensation"
+      >
+        <div className="domain-listing-card__price-text min-w-0">
+          <span className="va-listing-card__compensation-label">Compensation</span>
+          <span className="domain-listing-card__price-value truncate">
+            {displayAmount}
+            {displayPeriod ? (
+              <span className="va-listing-card__compensation-period">{displayPeriod}</span>
+            ) : null}
+          </span>
+        </div>
+        {action ? (
+          <button
+            type="button"
+            className="domain-listing-card__price-cta"
+            aria-label={onHire ? hireLabel : 'View creator details'}
+            onClick={action}
+          >
+            <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+          </button>
+        ) : null}
+      </div>
+    );
   }
 
   return (

@@ -16,7 +16,8 @@
 }
 
 /* Domain cards use white/cream — never the shared indigo wash */
-.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card) {
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card),
+.virtual-assistant-listing-card.community-listing-card.card-glow-hover {
   background: #ffffff !important;
 }
 
@@ -322,7 +323,7 @@
 .listing-card-glow.card-glow-hover:hover,
 .home-feature-card.card-glow-hover:hover,
 .venture-listing-card.card-glow-hover:hover,
-.community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {
+.community-listing-card.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card) {
   transform: translateY(-3px) translateZ(0);
   border-color: transparent !important;
   background: var(--listing-card-gradient-hover) !important;

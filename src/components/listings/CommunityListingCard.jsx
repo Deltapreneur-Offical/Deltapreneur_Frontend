@@ -17,6 +17,7 @@ import { isCreatorProfileComplete, isCreatorProfileVisible } from '../../utils/c
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import CreatorExpectedRateCard from '../creators/CreatorExpectedRateCard';
+import ListingCardStatsFooter from './ListingCardStatsFooter';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import TruncatedItemsTooltip from '../common/TruncatedItemsTooltip';
@@ -24,6 +25,7 @@ import verifiedIcon from '../../assets/Verified_Icon.png';
 import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
 import { getVirtualAssistantDetailPath } from '../../utils/listingNavigation';
 import '../../styles/domain-listing-cards.css';
+import '../../styles/virtual-assistant-listing-card.css';
 
 function formatLabel(value) {
   if (!value || typeof value !== 'string') return '';
@@ -156,6 +158,120 @@ export default function CommunityListingCard({
     if (e.target !== e.currentTarget) return;
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
   };
+
+  if (isVa) {
+    return (
+      <article
+        ref={cardRef}
+        className={`domain-listing-card virtual-assistant-listing-card community-listing-card card-glow-hover relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-white${isMe ? ' virtual-assistant-listing-card--owner' : ''}${interactive ? ' cursor-pointer' : ''}`}
+        onClick={interactive ? handleCardClick : undefined}
+        role={interactive ? 'button' : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        onKeyDown={interactive ? handleCardKeyDown : undefined}
+      >
+        <div className="va-listing-card__header">
+          <div className="domain-listing-card__cover va-listing-card__cover">
+            <div className="va-listing-card__cover-inner">
+              <div className="creator-profile-card__avatar-container">
+                <VaProfilePhoto
+                  source={{ ...profile, profilePhotoUrl: imageUrl || profile.profilePhotoUrl || profile.profile_photo_url }}
+                  applicationId={profile.id}
+                  refreshScope="public"
+                  alt=""
+                  className="creator-profile-card__avatar"
+                  fallbackClassName="creator-profile-card__avatar creator-profile-card__avatar--fallback"
+                />
+              </div>
+            </div>
+            <div className="domain-listing-card__share-container">
+              <button
+                type="button"
+                className="domain-listing-card__share-btn"
+                onClick={handleShare}
+                title={t('listingCardShare', { defaultValue: 'Share' })}
+                aria-label={t('listingCardShare', { defaultValue: 'Share' })}
+              >
+                <Share2 size={18} strokeWidth={2} />
+              </button>
+            </div>
+            {isMe && onEdit ? (
+              <button
+                type="button"
+                className="creator-profile-card__edit"
+                aria-label={t('edit')}
+                onClick={(e) => {
+                  stop(e);
+                  onEdit();
+                }}
+              >
+                <EditIcon size={14} className="text-slate-700" />
+              </button>
+            ) : null}
+          </div>
+
+          <div className="va-listing-card__title-block">
+            <div className="va-listing-card__name-row">
+              <h3
+                className="va-listing-card__name"
+                title={profile.name || undefined}
+              >
+                <OverflowMarqueeText text={profile.name || t('listingCardAnonymous')} />
+              </h3>
+              {isCreatorProfileComplete(profile) ? (
+                <img
+                  src={verifiedIcon}
+                  alt="Verified"
+                  className="domain-listing-card__verified-badge"
+                />
+              ) : null}
+            </div>
+            {(isMe || roleLabel) ? (
+              <span className="creator-profile-card__badge">
+                {isMe ? t('listingCardOwner', 'Owner').toUpperCase() : roleLabel.toUpperCase()}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="domain-listing-card__body">
+          <div className="creator-profile-card__stats-grid va-listing-card__stats-grid va-listing-card__stats-grid--two-col">
+            <div className="stat-col">
+              <Briefcase size={15} className="stat-icon" />
+              <TruncatedTextTooltip text={expLabel}>
+                <span className="stat-value">{expLabel}</span>
+              </TruncatedTextTooltip>
+              <span className="stat-label">Experience</span>
+            </div>
+            <div className="stat-col stat-col--center">
+              <Clock size={15} className="stat-icon" />
+              <span className="stat-value">{workTypeLabel}</span>
+              <span className="stat-label">Work Type</span>
+            </div>
+          </div>
+
+          <CreatorExpectedRateCard
+            profile={profile}
+            variant="domain"
+            onView={interactive && !onHire ? () => onView() : undefined}
+            onHire={interactive && onHire ? () => onHire() : undefined}
+            hireLabel={onHire ? 'Hire virtual assistant' : undefined}
+          />
+
+          <ListingCardStatsFooter
+            viewCount={viewCount}
+            likeState={{
+              liked: likeState?.liked,
+              count: Number.isFinite(vaLikeCount) ? vaLikeCount : 0,
+            }}
+            onLike={onLike}
+            likesFirst
+            showCta={false}
+            className="domain-listing-card__stats domain-listing-card__stats--split"
+          />
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article

@@ -310,13 +310,8 @@
 
 .listing-card-glow.card-glow-hover:hover,
 .home-feature-card.card-glow-hover:hover,
-<<<<<<< HEAD
-.venture-listing-card.card-glow-hover:hover,
-.community-listing-card.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card) {
-=======
 .venture-listing-card.card-glow-hover:hover:not(.venture-listing-card--venture),
-.community-listing-card.card-glow-hover:hover:not(.creator-profile-card) {
->>>>>>> 6c97af4 (Refine UI styling and auction card improvements)
+.community-listing-card.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card) {
   transform: translateY(-3px) translateZ(0);
   border-color: transparent !important;
   background: var(--listing-card-gradient-hover) !important;

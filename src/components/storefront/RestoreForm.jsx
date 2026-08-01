@@ -78,23 +78,23 @@ export default function RestoreForm({ onClose, orders }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-          <RotateCcw className="w-4 h-4 text-amber-600" />
+        <h4 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
+          <RotateCcw className="w-4 h-4 text-[#1D4ED8]" />
           Domain Restore
         </h4>
-        <button type="button" onClick={onClose} className="text-xs font-bold text-gray-400 hover:text-gray-600">
+        <button type="button" onClick={onClose} className="text-xs font-bold text-slate-400 hover:text-slate-600">
           Close
         </button>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-slate-500">
         Restore a domain in redemption / grace period. Quote uses the live restore price plus your commission.
       </p>
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Domain</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Domain</label>
         <select
           value={domainId}
           onChange={(e) => setDomainId(e.target.value)}
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           required
         >
           <option value="">Select a registered domain</option>
@@ -114,7 +114,7 @@ export default function RestoreForm({ onClose, orders }) {
           type="button"
           onClick={handleRetry}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 rounded-full border border-sky-300 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {loading ? 'Retrying...' : 'Retry activation (no extra charge)'}
@@ -123,7 +123,7 @@ export default function RestoreForm({ onClose, orders }) {
       <button
         type="submit"
         disabled={isDisabled || loading || !domainId || !user || !!retryPayment}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 rounded-full bg-[#1D4ED8] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#1E40AF] disabled:opacity-50 shadow-sm"
       >
         {loading && !retryPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         {loading && !retryPayment ? 'Processing...' : 'Pay & Restore Domain'}

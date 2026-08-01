@@ -451,8 +451,15 @@ export default function TechnologyListingCard({
             onError={() => setImgFailed(true)}
           />
         ) : (
-          <div className="domain-listing-card__cover-fallback" aria-hidden>
-            <span className="domain-listing-card__cover-fallback-domain">{techName}</span>
+          <div className="domain-listing-card__cover-fallback technology-listing-card__cover-fallback" aria-hidden>
+            <OverflowMarqueeText
+              text={techName}
+              className="domain-listing-card__cover-fallback-domain technology-listing-card__cover-title-marquee"
+              loopStyle="pause"
+              plainOverflow="clip"
+              alignPlain="center"
+              title={techName}
+            />
           </div>
         )}
 

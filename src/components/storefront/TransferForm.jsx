@@ -64,48 +64,48 @@ export default function TransferForm({ onClose }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-          <ArrowRightLeft className="w-4 h-4 text-indigo-600" />
+        <h4 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
+          <ArrowRightLeft className="w-4 h-4 text-[#1D4ED8]" />
           Domain Transfer
         </h4>
         <button
           type="button"
           onClick={onClose}
-          className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
         >
           Close
         </button>
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Domain</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Domain</label>
         <input
           type="text"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
           placeholder="e.g. mycompany.com"
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           required
         />
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EPP / Authorization Code</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">EPP / Authorization Code</label>
         <input
           type="text"
           value={authCode}
           onChange={(e) => setAuthCode(e.target.value)}
           placeholder="Enter EPP code from current registrar"
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           required
         />
       </div>
 
       {quoteLoading && (
-        <p className="text-xs text-gray-500">Loading transfer price...</p>
+        <p className="text-xs text-slate-500">Loading transfer price...</p>
       )}
       {quote?.totalInr != null && !quoteLoading && (
-        <p className="text-sm font-semibold text-gray-800">
+        <p className="text-sm font-semibold text-slate-800">
           Total due: ₹{Number(quote.totalInr).toLocaleString('en-IN')}
           {quote.gstInr > 0 ? ` (incl. GST ₹${Number(quote.gstInr).toLocaleString('en-IN')})` : ''}
         </p>
@@ -124,7 +124,7 @@ export default function TransferForm({ onClose }) {
       <button
         type="submit"
         disabled={loading || !domain || !authCode || !user}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 rounded-full bg-[#1D4ED8] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#1E40AF] transition-colors disabled:opacity-50 shadow-sm"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         {loading ? 'Processing...' : 'Pay & Transfer'}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, Clock, Gavel, Sparkles, Star, Tag, Share2 } from 'lucide-react';
+import { ArrowRight, Clock, Gavel, Sparkles, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -8,16 +8,49 @@ import { formatCompactCountdown } from '../../utils/auctionDate';
 import { resolveAuctionListerName } from '../../utils/auctionLister';
 import {
   resolveHomeAuctionBadges,
-  resolveHomeAuctionCategoryMeta,
+  resolveHomeAuctionCurrentBidDisplay,
   resolveHomeAuctionDescription,
   resolveHomeAuctionImage,
   resolveHomeAuctionTitle,
-  resolveHomeAuctionVerified,
+  resolveAuctionMinBidPrice,
+  resolveAuctionTotalBids,
 } from '../../utils/homepageAuctions';
-import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import CreatorPreviewModal from './CreatorPreviewModal';
 import { useIsCarouselClone } from '../home/HomeAutoScrollRow';
+
+function AuctionCountdownDisplay({ value }) {
+  const text = String(value || '').trim();
+  if (!text || text === '—' || text === 'Ended') {
+    return (
+      <span className="home-auction-preview-card__countdown home-auction-preview-card__countdown--static">
+        {text || '—'}
+      </span>
+    );
+  }
+
+  const parts = text.split(/\s+/).filter(Boolean);
+  return (
+    <span className="home-auction-preview-card__countdown">
+      {parts.map((part, index) => {
+        const match = part.match(/^(\d+)([dhms])$/i);
+        if (!match) {
+          return (
+            <span key={`${part}-${index}`} className="home-auction-preview-card__countdown--static">
+              {part}
+            </span>
+          );
+        }
+        return (
+          <span key={`${part}-${index}`} className="home-auction-preview-card__countdown-segment">
+            <span className="home-auction-preview-card__countdown-num">{match[1]}</span>
+            <span className="home-auction-preview-card__countdown-unit">{match[2].toLowerCase()}</span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 function useCountdown(target) {
   const [timeLeft, setTimeLeft] = useState(() => formatCompactCountdown(target).timeLeft);
@@ -35,56 +68,24 @@ function useCountdown(target) {
   return timeLeft;
 }
 
-function formatCompactBid(amount, formatPrice) {
-  const value = Number(amount);
-  if (!Number.isFinite(value) || value <= 0) return formatPrice(0);
-
-  const sample = formatPrice(value);
-  const symbol = sample.replace(/[\d,.\s]/g, '').trim() || '₹';
-
-  if (value >= 10000000) {
-    const cr = value / 10000000;
-    const compact = cr % 1 === 0 ? String(cr) : cr.toFixed(1).replace(/\.0$/, '');
-    return `${symbol}${compact}Cr`;
-  }
-  if (value >= 100000) {
-    const lakhs = value / 100000;
-    const compact = lakhs % 1 === 0 ? String(lakhs) : lakhs.toFixed(1).replace(/\.0$/, '');
-    return `${symbol}${compact}L`;
-  }
-  if (value >= 1000) {
-    const thousands = value / 1000;
-    const compact = thousands % 1 === 0 ? String(thousands) : thousands.toFixed(1).replace(/\.0$/, '');
-    return `${symbol}${compact}K`;
-  }
-
-  return formatPrice(value);
-}
-
 const CATEGORY_CLASS = {
   domain: 'home-auction-preview-card--category-domain',
   technology: 'home-auction-preview-card--category-technology',
   community: 'home-auction-preview-card--category-community',
 };
 
-const COVER_GRADIENT = {
-  domain: 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600',
-  technology: 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800',
-  community: 'bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700',
-};
-
 const BADGE_TONE_CLASS = {
   domain: {
-    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
-    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
+    primary: 'bg-sky-50 text-sky-700 border border-sky-200',
+    secondary: 'bg-[#F8E9D2] text-[#8A5A1F] border border-[#E7C58B]',
   },
   technology: {
-    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
-    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
+    primary: 'bg-sky-50 text-sky-700 border border-sky-200',
+    secondary: 'bg-[#F8E9D2] text-[#8A5A1F] border border-[#E7C58B]',
   },
   community: {
-    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
-    secondary: 'bg-purple-50 text-purple-700 border border-purple-100',
+    primary: 'bg-sky-50 text-sky-700 border border-sky-200',
+    secondary: 'bg-[#F8E9D2] text-[#8A5A1F] border border-[#E7C58B]',
   },
 };
 
@@ -97,31 +98,30 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const isCarouselClone = useIsCarouselClone();
   const title = resolveHomeAuctionTitle(auction);
   const image = resolveHomeAuctionImage(auction);
-  const verified = resolveHomeAuctionVerified(auction);
-  const startingBid = Number(auction?.minBidPrice) || 0;
-  const currentBid = Number(auction?.currentHighestBid) || 0;
-  const totalBids = Number(auction?.totalBids) || 0;
-  const hasCurrentBid = currentBid > 0;
-  const bidLabel = t('homeAuctionCurrentBid', { defaultValue: 'Current Bid' });
-  const bidDisplay = totalBids > 0
-    ? formatPrice(hasCurrentBid ? currentBid : startingBid)
-    : t('homeAuctionNoBidYet', { defaultValue: 'NIL' });
-  const compactStartingBid = formatCompactBid(startingBid, formatPrice);
+  const startingBid = resolveAuctionMinBidPrice(auction);
+  const totalBids = resolveAuctionTotalBids(auction);
+  const startingBidLabel = t('auctionsPageStartingBid', { defaultValue: 'Starting Bid' });
+  const currentBidLabel = t('homeAuctionCurrentBid', { defaultValue: 'Current Bid' });
+  const bidDisplay = resolveHomeAuctionCurrentBidDisplay(auction, formatPrice, t);
+  const startingBidDisplay = formatPrice(startingBid);
   const timeLeft = useCountdown(auction?.endTime || auction);
-  const categoryMeta = resolveHomeAuctionCategoryMeta(auction);
   const category = auction?.category || 'domain';
   const categoryClass = CATEGORY_CLASS[category] || CATEGORY_CLASS.domain;
   const coverImage = image && !imgFailed ? image : null;
-  const badges = resolveHomeAuctionBadges(auction);
+  const badges = resolveHomeAuctionBadges(auction, t);
+  const categoryBadges = badges.filter((badge) => badge.tone !== 'primary');
   const listerName = resolveAuctionListerName(auction);
+  const isFeatured = Boolean(auction?.isFeatured || auction?.featured);
   const descriptionFromData = resolveHomeAuctionDescription(auction);
   const badgeToneClass = BADGE_TONE_CLASS[category] || BADGE_TONE_CLASS.domain;
-  const isFeatured = Boolean(auction?.featured);
-  const categoryLabel = t(categoryMeta.labelKey);
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const cardRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [image, auction?.id]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -138,23 +138,44 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     };
   }, []);
 
+  const stop = (e) => e.stopPropagation();
+
   const toggleShare = async (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+    stop(e);
+
+    let relativePath = `/auctions?id=${auction?.id}`;
+    let shareCaption = "Check out this Auction Listing on CoBrother!";
+
+    if (category === 'domain') {
+      relativePath = `/domains/auction/${auction?.id}`;
+      shareCaption = "Check out this Domain Auction on CoBrother!";
+    } else if (category === 'community') {
+      relativePath = `/community/auction/${auction?.id}`;
+      shareCaption = "Check out this Community Auction on CoBrother!";
+    } else if (category === 'technology' || category === 'software') {
+      relativePath = `/technology/auction/${auction?.id}`;
+      shareCaption = "Check out this Technology Auction on CoBrother!";
+    }
+
+    const shareUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}${relativePath}${user?.id ? `?ref=${user.id}` : ''}`
+        : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}${user?.id ? `?ref=${user.id}` : ''}`;
+
+    const auctionTitle = title || 'Auction';
+    const shareSubject = `Active Auction Listing on CoBrother: ${auctionTitle}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Auction: ${title}`,
-          text: `Check out this Auction listed on CoBrother!`,
+          title: shareSubject,
+          text: shareCaption,
           url: shareUrl,
         });
         return;
       } catch (err) {
         if (err.name !== 'AbortError') {
           console.error('Error sharing:', err);
-        } else {
-          return;
         }
       }
     }
@@ -172,15 +193,11 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     setShareOpen(!shareOpen);
   };
 
-  let relativePath = `/auction/${auction?.id}`;
-  let shareCaption = "Check out this domain Auction on CoBrother!";
-  if (category === 'community' || category === 'creator') {
-    relativePath = `/creator-auction/${auction?.id}`;
-    shareCaption = "Check out this Creator Auction on CoBrother!";
-  } else if (category === 'technology' || category === 'software') {
-    relativePath = `/technology/auction/${auction?.id}`;
-    shareCaption = "Check out this Technology Auction on CoBrother!";
-  }
+  const relativePath = category === 'domain'
+    ? `/domains/auction/${auction?.id}`
+    : category === 'community'
+      ? `/community/auction/${auction?.id}`
+      : `/technology/auction/${auction?.id}`;
 
   const shareUrl =
     typeof window !== 'undefined'
@@ -189,6 +206,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
 
   const auctionTitle = title || 'Auction';
   const shareSubject = `Active Auction Listing on CoBrother: ${auctionTitle}`;
+  const shareCaption = "Check out this Auction Listing on CoBrother!";
   const shareBody = `Dear colleague / partner,\n\nI would like to share an active auction listing currently open on CoBrother.\n\n🌐 Auction: ${auctionTitle}\n📝 Description: ${shareCaption}\n🔗 View Listing:\n${shareUrl}\n\nCoBrother is a premium marketplace offering secure acquisitions and partnerships through active bidding and auctions.\n\nBest regards,\n[Shared via CoBrother]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
@@ -203,17 +221,20 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     setShareOpen(false);
   };
 
-  const stop = (e) => e.stopPropagation();
-
   const handleView = (e) => {
     if (e && e.target && e.target.closest && e.target.closest('button, a, input, textarea, select, label, [role="link"]')) return;
+    onView?.();
+  };
+
+  const handleArrowClick = (e) => {
+    e.stopPropagation();
     onView?.();
   };
 
   return (
     <article
       ref={cardRef}
-      className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white`}
+      className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white border border-[#BAE6FD] hover:border-[#38BDF8] shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200`}
       onClick={handleView}
       role="button"
       tabIndex={0}
@@ -225,7 +246,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         }
       }}
     >
-      <div className="domain-listing-card__cover">
+      <div className="domain-listing-card__cover home-auction-preview-card__cover">
         {coverImage && !isCarouselClone ? (
           <img
             src={coverImage}
@@ -237,23 +258,26 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
           />
         ) : (
           <div
-            className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden p-2 ${COVER_GRADIENT[category] || COVER_GRADIENT.domain}`}
+            className="home-auction-preview-card__cover-fallback relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden p-2 bg-gradient-to-br from-[#38BDF8] via-[#0284C7] to-[#0369A1] opacity-95"
             aria-hidden
           >
-            <span className="relative z-10 venture-listing-card__cover-title venture-listing-card__cover-title--compact max-w-full px-2 whitespace-normal break-words leading-tight text-center">
-              {title}
-            </span>
-            <span className="relative z-10 mt-1 venture-listing-card__cover-badge venture-listing-card__cover-badge--compact uppercase">
-              {categoryLabel}
-            </span>
+            <div className="home-auction-preview-card__cover-content">
+              <div className="listing-card-cover-logo-slot" aria-hidden />
+              <span
+                className="domain-listing-card__cover-fallback-domain home-auction-preview-card__cover-title-marquee"
+                style={{
+                  whiteSpace: 'nowrap',
+                  display: 'block',
+                  width: '100%',
+                  overflow: 'hidden',
+                }}
+              >
+                <OverflowMarqueeText text={title || ''} />
+              </span>
+            </div>
           </div>
         )}
         <div className="home-auction-preview-card__top-left-badges">
-          {coverImage ? (
-            <span className={`home-auction-preview-card__category-badge ${categoryMeta.badgeClass}`}>
-              {categoryLabel}
-            </span>
-          ) : null}
           {isFeatured ? (
             <span className="home-auction-preview-card__featured-badge">
               <Sparkles size={11} aria-hidden />
@@ -264,11 +288,11 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         <div className="domain-listing-card__share-container" ref={shareRef}>
           <button
             type="button"
-            className="domain-listing-card__share-btn"
+            className="domain-listing-card__share-btn !text-slate-400 hover:!text-slate-600"
             onClick={toggleShare}
             title={t('listingCardShare')}
           >
-            <Share2 size={18} strokeWidth={2} />
+            <Share2 size={20} strokeWidth={2} />
           </button>
           {shareOpen && createPortal(
             <div
@@ -341,12 +365,22 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         onPlaceBid={handleView}
       />
 
-      <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-2.5 p-3">
-        <div className="home-auction-preview-card__content flex flex-col flex-1 gap-2.5">
+      <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-1.5 p-3">
+        <div className="home-auction-preview-card__content flex flex-col flex-1 gap-1.5">
+          <div className="home-auction-preview-card__ends-in-row">
+            <span className="home-auction-preview-card__ends-in-compact">
+              <Clock size={10} className="home-auction-preview-card__ends-in-icon shrink-0" aria-hidden />
+              <span className="home-auction-preview-card__ends-in-label">
+                {t('auctionsPageEndsIn', { defaultValue: 'Ends In' })}:
+              </span>
+              <AuctionCountdownDisplay value={timeLeft} />
+            </span>
+          </div>
+
           <div className="home-auction-preview-card__title-row">
             <div className="home-auction-preview-card__title-line">
               <h3
-                className="home-auction-preview-card__title venture-listing-card__title--compact line-clamp-2 min-h-[2.125rem] leading-tight"
+                className="home-auction-preview-card__title venture-listing-card__title--compact line-clamp-2 leading-tight font-extrabold text-slate-900 tracking-tight"
                 title={title}
                 style={{
                   overflowWrap: 'anywhere',
@@ -355,118 +389,99 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
               >
                 {title}
               </h3>
-              <span
-                className="home-auction-preview-card__live shrink-0"
-                title={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
-                aria-label={t('auctionsPageStatusLive', { defaultValue: 'Live' })}
-              >
-                <span>{t('auctionsPageStatusLive', { defaultValue: 'Live' })}</span>
-              </span>
             </div>
           </div>
 
-          <p className="home-auction-preview-card__creator" title={listerName || ''}>
-            {listerName ? (
-              <>
-                {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
-                <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom">
-                  <OverflowMarqueeText text={listerName} />
+          {listerName ? (
+            <p className="home-auction-preview-card__creator" title={listerName}>
+              {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
+              <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom font-semibold text-slate-900">
+                <OverflowMarqueeText text={listerName} />
+              </span>
+            </p>
+          ) : null}
+
+          {categoryBadges.length > 0 ? (
+            <div className="venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1">
+              {categoryBadges.map((badge) => (
+                <span
+                  key={badge.label}
+                  className={`venture-listing-card__badge venture-listing-card__badge--compact ${badgeToneClass[badge.tone] || badgeToneClass.primary
+                    }`}
+                >
+                  {badge.label}
                 </span>
-              </>
-            ) : (
-              <span className="invisible" aria-hidden="true">&nbsp;</span>
-            )}
-          </p>
+              ))}
+            </div>
+          ) : null}
 
-          <div
-            className={`venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1${badges.length === 0 ? ' home-auction-preview-card__badges--placeholder' : ''
-              }`}
-            aria-hidden={badges.length === 0 ? true : undefined}
-          >
-            {badges.map((badge) => (
-              <span
-                key={badge.label}
-                className={`venture-listing-card__badge venture-listing-card__badge--compact ${badgeToneClass[badge.tone] || badgeToneClass.primary
-                  }`}
-              >
-                {badge.label}
-              </span>
-            ))}
+          {descriptionFromData ? (
+            <p
+              className="home-auction-preview-card__detail text-slate-500"
+              title={descriptionFromData}
+            >
+              {descriptionFromData}
+            </p>
+          ) : null}
+
+          {/* Starting Bid — primary highlighted value */}
+          <div className="home-auction-preview-card__current-bid">
+            <span className="home-auction-preview-card__current-bid-label">
+              {startingBidLabel}
+            </span>
+            <span
+              className="home-auction-preview-card__current-bid-value currency-display"
+              title={startingBidDisplay}
+            >
+              {startingBidDisplay}
+            </span>
           </div>
 
-          <p
-            className="home-auction-preview-card__detail"
-            title={descriptionFromData || ''}
-          >
-            {descriptionFromData || <span className="invisible" aria-hidden="true">&nbsp;</span>}
-          </p>
+          {/* Current Bid + action arrow */}
+          <div className="home-auction-preview-card__metrics-row">
+            <div className="home-auction-preview-card__live-bid min-w-0 flex-1">
+              <Gavel
+                size={14}
+                strokeWidth={2.25}
+                className="home-auction-preview-card__live-bid-icon shrink-0"
+                aria-hidden
+              />
+              <div className="home-auction-preview-card__live-bid-copy min-w-0">
+                <span className="home-auction-preview-card__live-bid-label">
+                  {currentBidLabel}
+                </span>
+                <span
+                  className={`home-auction-preview-card__live-bid-value currency-display${totalBids <= 0 ? ' home-auction-preview-card__live-bid-value--nil' : ''}`}
+                >
+                  {bidDisplay}
+                </span>
+              </div>
+            </div>
 
-          <div className="home-auction-preview-card__metrics">
-            <div className="home-auction-preview-card__metric home-auction-preview-card__metric--bid">
-              <span className="home-auction-preview-card__metric-icon-wrap" aria-hidden>
-                <Tag size={10} className="home-auction-preview-card__metric-icon" />
-              </span>
-              <span className="home-auction-preview-card__metric-label">
-                {t('auctionsPageStartingBid', { defaultValue: 'Starting Bid' })}
-              </span>
-              <span
-                className="home-auction-preview-card__metric-value currency-display"
-                title={formatPrice(startingBid)}
-              >
-                {compactStartingBid}
-              </span>
-            </div>
-            <div className="home-auction-preview-card__metric home-auction-preview-card__metric--bids">
-              <span className="home-auction-preview-card__metric-icon-wrap" aria-hidden>
-                <Gavel size={10} className="home-auction-preview-card__metric-icon" />
-              </span>
-              <span className="home-auction-preview-card__metric-label">
-                {t('auctionsPageTotalBids', { defaultValue: 'Total Bids' })}
-              </span>
-              <span className="home-auction-preview-card__metric-value">{totalBids}</span>
-            </div>
-            <div className="home-auction-preview-card__metric home-auction-preview-card__metric--time">
-              <span className="home-auction-preview-card__metric-icon-wrap" aria-hidden>
-                <Clock size={10} className="home-auction-preview-card__metric-icon" />
-              </span>
-              <span className="home-auction-preview-card__metric-label">
-                {t('auctionsPageEndsIn', { defaultValue: 'Ends In' })}
-              </span>
-              <span className="home-auction-preview-card__metric-value home-auction-preview-card__metric-value--time">
-                {timeLeft}
-              </span>
-            </div>
+            <button
+              type="button"
+              className="domain-listing-card__price-cta home-auction-preview-card__nav-cta flex items-center justify-center self-center transition-all w-8 h-8 shrink-0 aspect-square rounded-full bg-black text-white hover:bg-neutral-900 shadow-sm"
+              aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
+              onClick={handleArrowClick}
+            >
+              <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+            </button>
           </div>
         </div>
 
-        <div className="flex-grow min-h-0" aria-hidden="true" />
-
-        <div className="home-auction-preview-card__footer flex flex-col gap-2 mt-auto">
+        {/* Footer: Total Bids */}
+        <div className="home-auction-preview-card__stats-footer">
           <div
-            className="domain-listing-card__price-box domain-listing-card__price-box--auction domain-listing-card__price-box--compact"
-            style={{
-              borderRadius: '0.75rem',
-              background: '#ffffff',
-              border: '1px solid #fcd34d',
-              boxShadow: '0 0 0 1px rgba(251, 191, 36, 0.18), 0 4px 14px rgba(180, 83, 9, 0.08)',
-            }}
+            className="home-auction-preview-card__total-bids"
+            title={t('homeAuctionTotalBids', { defaultValue: 'Total bids' })}
           >
-            <div className="domain-listing-card__price-text min-w-0 flex flex-col">
-              <span className="venture-listing-card__price-label leading-none">
-                {bidLabel}
-              </span>
-              <span className="domain-listing-card__price-value venture-listing-card__price-value--compact currency-display truncate">
-                {bidDisplay}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="domain-listing-card__price-cta flex items-center justify-center transition-all w-6 h-6 shrink-0 aspect-square rounded-full"
-              aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
-              onClick={handleView}
-            >
-              <ArrowRight size={12} strokeWidth={2.25} aria-hidden />
-            </button>
+            <Gavel size={15} className="home-auction-preview-card__total-bids-icon shrink-0" aria-hidden />
+            <span className="home-auction-preview-card__total-bids-count">{totalBids}</span>
+            <span className="home-auction-preview-card__total-bids-label">
+              {totalBids === 1
+                ? t('homeAuctionBidSingular', { defaultValue: 'Bid' })
+                : t('homeAuctionBidPlural', { defaultValue: 'Bids' })}
+            </span>
           </div>
         </div>
       </div>

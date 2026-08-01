@@ -96,72 +96,44 @@ export default function MarketplaceListingCardFrame({
 
 export function ListingCardBadge({ children, variant = 'glass', className = '' }) {
   const base =
-    `inline-flex items-center justify-center leading-none min-h-[18px] px-2 py-[3px] text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm whitespace-nowrap ${className}`.trim();
-  if (variant === 'verified') {
+    `inline-flex items-center justify-center leading-none min-h-[18px] px-2.5 py-[3px] text-[9px] font-extrabold rounded-full uppercase tracking-wide border whitespace-nowrap ${className}`.trim();
+  if (variant === 'verified' || variant === 'live' || variant === 'available') {
     return (
-      <span className={`${base} bg-emerald-600 text-white`}>
+      <span className={`${base} bg-emerald-50 text-emerald-700 border-emerald-200`}>
         {children}
       </span>
     );
   }
-  if (variant === 'admin') {
+  if (variant === 'premium' || variant === 'featured') {
     return (
-      <span className={`${base} bg-amber-100 text-amber-800`}>
+      <span className={`${base} bg-[#F8F0DC] text-[#9A6B1D] border-[#E5D7B8]`}>
         {children}
       </span>
     );
   }
   if (variant === 'pending') {
     return (
-      <span className={`${base} bg-gray-100 text-gray-600`}>
-        {children}
-      </span>
-    );
-  }
-  if (variant === 'review') {
-    return (
-      <span className={`${base} bg-sky-100 text-sky-800`}>
+      <span className={`${base} bg-slate-50 text-slate-600 border-slate-200`}>
         {children}
       </span>
     );
   }
   if (variant === 'rejected') {
     return (
-      <span className={`${base} bg-red-100 text-red-700`}>
-        {children}
-      </span>
-    );
-  }
-  if (variant === 'review') {
-    return (
-      <span className={`${base} bg-sky-100 text-sky-800`}>
-        {children}
-      </span>
-    );
-  }
-  if (variant === 'rejected') {
-    return (
-      <span className={`${base} bg-red-100 text-red-700`}>
+      <span className={`${base} bg-red-50 text-red-700 border-red-200`}>
         {children}
       </span>
     );
   }
   if (variant === 'owner') {
     return (
-      <span className={`${base} bg-gray-100 text-gray-800`}>
-        {children}
-      </span>
-    );
-  }
-  if (variant === 'auction') {
-    return (
-      <span className={`${base} bg-gray-900 text-white font-bold`}>
+      <span className={`${base} bg-slate-50 text-slate-800 border-slate-200`}>
         {children}
       </span>
     );
   }
   return (
-    <span className={`${base} bg-gray-100 text-gray-700 font-bold`}>
+    <span className={`${base} bg-sky-50 text-sky-700 border-sky-200`}>
       {children}
     </span>
   );

@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 const services = [
   {
     id: 'email',
-    icon: <Mail className="w-6 h-6" />,
+    icon: <Mail className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Professional Email',
     description: 'Create branded email addresses with your domain. Includes spam filtering and webmail access.',
     price: 'From catalog',
@@ -26,7 +26,7 @@ const services = [
   },
   {
     id: 'ssl',
-    icon: <ShieldCheck className="w-6 h-6" />,
+    icon: <ShieldCheck className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'SSL Certificate',
     description: 'Secure your website with industry-standard SSL encryption. Boost trust and SEO rankings.',
     price: '—',
@@ -36,7 +36,7 @@ const services = [
   },
   {
     id: 'restore',
-    icon: <RotateCcw className="w-6 h-6" />,
+    icon: <RotateCcw className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Domain Restore',
     description: 'Restore a domain in redemption period through CoBrother before it is permanently deleted.',
     price: 'Live quote',
@@ -46,7 +46,7 @@ const services = [
   },
   {
     id: 'easydmarc',
-    icon: <Shield className="w-6 h-6" />,
+    icon: <Shield className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'EasyDMARC',
     description: 'Protect your brand from spoofing with DMARC monitoring and reporting via CoBrother.',
     price: 'From catalog',
@@ -56,7 +56,7 @@ const services = [
   },
   {
     id: 'spamexperts',
-    icon: <Filter className="w-6 h-6" />,
+    icon: <Filter className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'SpamExperts',
     description: 'Incoming email filtering for your domain with a control-panel login link after activation.',
     price: 'From catalog',
@@ -66,7 +66,7 @@ const services = [
   },
   {
     id: 'dnssec',
-    icon: <Globe className="w-6 h-6" />,
+    icon: <Globe className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'DNSSEC',
     description: 'Add an extra layer of security to your DNS with cryptographic signatures. Prevent DNS spoofing attacks.',
     price: 'Free',
@@ -76,7 +76,7 @@ const services = [
   },
   {
     id: 'transfer',
-    icon: <ArrowRightLeft className="w-6 h-6" />,
+    icon: <ArrowRightLeft className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Domain Transfer',
     description: 'Transfer your existing domain to CoBrother with seamless migration and 1-year extension.',
     price: '—',
@@ -86,7 +86,7 @@ const services = [
   },
   {
     id: 'renewal',
-    icon: <Sparkles className="w-6 h-6" />,
+    icon: <Sparkles className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Domain Renewal',
     description: 'Renew your domain registration before expiry to avoid downtime and retain ownership.',
     price: '—',
@@ -201,7 +201,7 @@ export default function DomainServices({ orders, ordersLoading = false }) {
     <section className="space-y-6">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+          <div className="p-2 rounded-xl bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>

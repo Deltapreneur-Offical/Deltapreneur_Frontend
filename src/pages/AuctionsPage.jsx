@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Gavel, Search, ChevronDown, X, Home, Smartphone, Cpu, Code } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Gavel, Search, ChevronDown, X, Home, Smartphone, Cpu, Code, Heart, Tag, Clock } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   auctionAPI,
@@ -11,6 +11,7 @@ import AuctionImg from '../assets/Auction.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
 import CreatorIcon from '../assets/Cobrother_Profile.png';
+import cobrotherViewMark from '../assets/Cobrother_Profile.png';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 import { resolveAuctionListerName } from '../utils/auctionLister';
 import { useTranslation } from 'react-i18next';
@@ -903,7 +904,7 @@ function TrackedAuctionCard({ auction, view, onClick }) {
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer relative min-h-[300px] overflow-hidden flex flex-col hover:-translate-y-0.5"
+      className="bg-white border border-[#BAE6FD] hover:border-[#38BDF8] rounded-2xl p-5 shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200 cursor-pointer relative min-h-[300px] overflow-hidden flex flex-col hover:-translate-y-0.5"
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -914,45 +915,42 @@ function TrackedAuctionCard({ auction, view, onClick }) {
         <span className={`auctions-track-badge ${badge.className}`}>{badge.label}</span>
       </div>
 
-      <h3 className="text-base font-bold text-gray-900 m-0 mb-1 whitespace-normal break-words leading-snug">
+      <h3 className="text-base font-extrabold text-slate-900 m-0 mb-1 whitespace-normal break-words leading-snug tracking-tight">
         {title}
       </h3>
       {resolveAuctionListerName(auction) && (
-        <p className="text-xs text-gray-500 m-0 mb-3">Listed by {resolveAuctionListerName(auction)}</p>
+        <p className="text-xs text-slate-500 m-0 mb-3 font-medium">Listed by {resolveAuctionListerName(auction)}</p>
       )}
 
       <div className="grid grid-cols-2 gap-3 my-auto">
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-600 font-medium mb-1">
+        <div className="p-2.5 bg-white rounded-xl border border-[#BAE6FD]">
+          <div className="text-xs text-slate-500 font-medium mb-1">
             {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
           </div>
-          <div className={`font-display text-lg font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+          <div className={`font-display text-lg font-bold ${highestBid > 0 ? 'text-emerald-600' : 'text-slate-900'}`}>
             {formatPrice(currentAmount)}
           </div>
         </div>
-        <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-600 font-medium mb-1">
-            {view === 'bids' ? 'Your Highest Bid' : 'Total Bids'}
+        <div className="p-2.5 bg-white rounded-xl border border-[#BAE6FD]">
+          <div className="text-xs text-slate-500 font-medium mb-1">
+            {isLive ? 'Ends In' : 'Status'}
           </div>
-          <div className="font-display text-lg font-bold text-gray-900">
-            {view === 'bids' ? (userHigh > 0 ? formatPrice(userHigh) : '—') : totalBids}
+          <div className={`font-display font-bold text-lg ${isLive ? (isUrgent ? 'text-rose-500 animate-pulse' : 'text-slate-900') : 'text-slate-700'}`}>
+            {isLive ? timeLeft : badge.label}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between items-center gap-3 pt-3 mt-3 border-t border-gray-200 shrink-0">
+      <div className="flex justify-between items-center gap-3 pt-3 mt-3 border-t border-[#E2E8F0] shrink-0">
         <div className="min-w-0 flex-1">
-          <div className="text-xs text-gray-600 font-medium">
-            {isLive ? 'Ends In' : 'Status'}
-          </div>
-          <div className={`font-display font-bold text-sm sm:text-base leading-snug ${isLive ? (isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500') : 'text-gray-700'}`}>
-            {isLive ? timeLeft : badge.label}
-          </div>
+          <p className="text-xs text-slate-500 font-medium m-0">
+            {view === 'bids' && userHigh > 0 ? `Your Bid: ${formatPrice(userHigh)}` : 'Live Marketplace Auction'}
+          </p>
         </div>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onClick(); }}
-          className="auctions-track-open-btn shrink-0"
+          className="auctions-track-open-btn shrink-0 !bg-black !text-white hover:!bg-neutral-900 !rounded-full !px-4 !py-2 !text-xs !font-bold"
         >
           {view === 'bids' && auction.isWinner && (status === 'PAYMENT_PENDING' || status === 'ENDED')
             ? 'Pay now →'
@@ -978,37 +976,30 @@ function DomainAuctionCard({ auction, onClick }) {
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer relative h-auto sm:h-[355px] sm:max-h-[355px] min-h-[355px] overflow-hidden flex flex-col hover:-translate-y-0.5"
+      className="bg-white border border-[#BAE6FD] hover:border-[#38BDF8] rounded-3xl p-5 shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200 cursor-pointer relative h-auto sm:h-[355px] sm:max-h-[355px] min-h-[355px] overflow-hidden flex flex-col hover:-translate-y-0.5"
       onClick={onClick}
     >
       {/* Status pill */}
-      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold" style={{
-        position: 'absolute',
-        top: '12px',
-        right: '12px',
-        color: isExtended ? '#c8a96e' : '#6ec896',
-        background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
-        border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
-      }}>
+      <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
         {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
       </div>
 
       {/* Domain info */}
       <div className="flex items-center gap-3 mb-4 pr-20">
-        <div className="w-11 h-11 rounded-[10px] flex items-center justify-center text-xs font-bold text-purple-600 bg-purple-100 border border-purple-200 px-1">
+        <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xs font-bold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-1">
           {extMeta?.label || (domainTitle?.includes('.') ? domainTitle.slice(domainTitle.lastIndexOf('.')) : '.?')}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-gray-900 m-0 whitespace-normal break-words leading-snug">
+          <h3 className="text-base font-extrabold text-slate-900 m-0 whitespace-normal break-words leading-snug tracking-tight">
             {domainTitle || 'Unnamed domain'}
           </h3>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-purple-600 font-semibold">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[#2563EB] font-semibold">
             <span className="inline-flex items-center gap-1">
               <Gavel size={13} className="shrink-0" />
               <span>Auction</span>
             </span>
             {resolveAuctionListerName(auction) && (
-              <span className="text-gray-500 font-medium">Listed by {resolveAuctionListerName(auction)}</span>
+              <span className="text-slate-500 font-medium">Listed by {resolveAuctionListerName(auction)}</span>
             )}
           </div>
         </div>
@@ -1018,56 +1009,103 @@ function DomainAuctionCard({ auction, onClick }) {
         <div>
           {domain.verified && (
             <div className="mb-2">
-              <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
                 ✓ Verified
               </span>
             </div>
           )}
           {domain.description && (
-            <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed" title={domain.description}>
+            <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed" title={domain.description}>
               {domain.description}
             </p>
           )}
         </div>
 
         <div>
-          <div className="grid grid-cols-2 gap-3 my-3">
-            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-xs text-gray-600 font-medium mb-1">
-                {highestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
-              </div>
-              <div className={`font-display text-xl font-bold ${highestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
+          {/* 1. Primary Highlighted Current Bid Section (No arrow inside) */}
+          <div className="p-3 bg-[#F0F9FF] rounded-2xl border border-[#BAE6FD] shadow-[0_2px_10px_rgba(56,189,248,0.08)] my-2 flex items-center justify-between gap-3">
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs text-slate-500 font-medium">
+                {highestBid > 0 ? 'Current Bid' : 'Starting Bid'}
+              </span>
+              <div className="font-display text-xl font-extrabold text-slate-900 mt-0.5">
                 {formatPrice(currentAmount)}
               </div>
             </div>
-            <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-xs text-gray-600 font-medium mb-1">
-                Total Bids
-              </div>
-              <div className="font-display text-xl font-bold text-gray-900">
-                {totalBids}
+          </div>
+
+          {/* 2. Shared Metrics Container: Starting Bid | Ends In + Single Action Arrow */}
+          <div className="p-3 bg-white rounded-2xl border border-[#BAE6FD] shadow-[0_4px_16px_rgba(56,189,248,0.1)] my-2 flex items-center justify-between gap-2.5">
+            {/* Starting Bid (Left) */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="w-6 h-6 rounded-full bg-[#ECFDF5] flex items-center justify-center shrink-0" aria-hidden>
+                <Tag size={11} className="text-[#10B981]" />
+              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[0.625rem] font-semibold text-slate-500 leading-tight truncate">
+                  Starting Bid
+                </span>
+                <span className="text-xs font-bold text-slate-900 truncate leading-tight font-display">
+                  {formatPrice(minBid || currentAmount)}
+                </span>
               </div>
             </div>
+
+            {/* Subtle Vertical Divider */}
+            <div className="w-[1px] h-7 bg-slate-200 shrink-0" aria-hidden />
+
+            {/* Ends In (Middle) */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="w-6 h-6 rounded-full bg-[#FFFBEB] flex items-center justify-center shrink-0" aria-hidden>
+                <Clock size={11} className="text-[#F59E0B]" />
+              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[0.625rem] font-semibold text-slate-500 leading-tight truncate">
+                  Ends In
+                </span>
+                <span className={`text-xs font-bold truncate leading-tight ${isUrgent ? 'text-rose-500 animate-pulse' : 'text-slate-900'}`}>
+                  {timeLeft}
+                </span>
+              </div>
+            </div>
+
+            {/* Single Black Circular Arrow (Far Right) */}
+            <button
+              onClick={e => { e.stopPropagation(); onClick(); }}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-neutral-900 shadow-sm transition-all select-none shrink-0 ml-1"
+              aria-label="Bid Now"
+            >
+              →
+            </button>
           </div>
 
           <AuctionCardNextBidLine highestBid={highestBid} />
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-3 border-t border-gray-200 shrink-0">
-        <div>
-          <div className="text-xs text-gray-600 font-medium">
-            Ends In
-          </div>
-          <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
-            {timeLeft}
-          </div>
+      {/* 3. Footer Statistics: Profile View Count, Total Bids (Center), Favourite Icon (Right) */}
+      <div className="flex items-center justify-between gap-2 pt-2.5 mt-auto border-t border-[#E2E8F0] text-[#64748B] shrink-0">
+        <span
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#64748B]"
+          title="Profile views"
+        >
+          <img
+            src={cobrotherViewMark}
+            alt=""
+            aria-hidden
+            className="w-3.5 h-3.5 object-contain opacity-75 shrink-0"
+          />
+          <span>{Number(auction?.views) || 0}</span>
+        </span>
+
+        <div className="inline-flex items-center gap-1 text-xs font-semibold text-[#64748B]">
+          <Gavel size={14} className="text-[#2563EB] shrink-0" />
+          <span>{totalBids} {totalBids === 1 ? 'Bid' : 'Bids'}</span>
         </div>
-        <button
-          onClick={e => { e.stopPropagation(); onClick(); }}
-          className="btn-glow btn-glow-sm">
-          Bid Now →
-        </button>
+
+        <div className="inline-flex items-center text-xs font-semibold text-slate-400">
+          <Heart size={15} className="text-[#60A5FA] fill-none stroke-current" />
+        </div>
       </div>
 
       <style>{`

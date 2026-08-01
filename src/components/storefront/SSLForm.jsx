@@ -84,21 +84,21 @@ export default function SSLForm({ onClose, orders }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-indigo-600" />
+        <h4 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#1D4ED8]" />
           SSL Certificate
         </h4>
-        <button type="button" onClick={onClose} className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">
+        <button type="button" onClick={onClose} className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
           Close
         </button>
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Domain</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Domain</label>
         <select
           value={domainId}
           onChange={(e) => setDomainId(e.target.value)}
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           required
         >
           <option value="">Select a registered domain</option>
@@ -109,13 +109,13 @@ export default function SSLForm({ onClose, orders }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Product</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Product</label>
         {pricesLoading ? (
-          <div className="flex items-center gap-2 text-xs text-gray-400 py-2">
+          <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
             <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading live SSL products…
           </div>
         ) : products.length === 0 ? (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
             SSL products are currently unavailable.
           </p>
         ) : (
@@ -123,7 +123,7 @@ export default function SSLForm({ onClose, orders }) {
             value={productId}
             onChange={(e) => setProductId(e.target.value)}
             disabled={isDisabled}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm"
+            className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
             required
           >
             {products.map((p) => (
@@ -137,12 +137,12 @@ export default function SSLForm({ onClose, orders }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Period (years)</label>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Period (years)</label>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
             disabled={isDisabled}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm"
+            className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           >
             {periodOptions.map((y) => (
               <option key={y} value={y}>{y} Year{y > 1 ? 's' : ''}</option>
@@ -150,12 +150,12 @@ export default function SSLForm({ onClose, orders }) {
           </select>
         </div>
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Validation</label>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Validation</label>
           <select
             value={validationMethod}
             onChange={(e) => setValidationMethod(e.target.value)}
             disabled={isDisabled}
-            className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm"
+            className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           >
             <option value="email">Email</option>
             <option value="https">HTTPS</option>
@@ -164,17 +164,17 @@ export default function SSLForm({ onClose, orders }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Approver email</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Approver email</label>
         <input
           type="email"
           value={approverEmail}
           onChange={(e) => setApproverEmail(e.target.value)}
           disabled={isDisabled}
           placeholder="admin@yourdomain.com"
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all disabled:opacity-50"
           required
         />
-        <p className="text-[10px] text-gray-400">Use a well-known address such as admin@, hostmaster@, or webmaster@ on the domain.</p>
+        <p className="text-[10px] text-slate-400">Use a well-known address such as admin@, hostmaster@, or webmaster@ on the domain.</p>
       </div>
 
       {error && <p className="text-xs text-rose-600">{error}</p>}
@@ -187,7 +187,7 @@ export default function SSLForm({ onClose, orders }) {
       <button
         type="submit"
         disabled={isDisabled || loading || !domainId || !user || !productId || !approverEmail.trim()}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 rounded-full bg-[#1D4ED8] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#1E40AF] disabled:opacity-50 shadow-sm"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         {loading ? 'Processing...' : (selectedProduct?.label ? `Pay & Order (${selectedProduct.label})` : 'Pay & Purchase SSL')}

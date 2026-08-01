@@ -88,21 +88,21 @@ export default function EmailForm({ onClose, orders }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-          <Mail className="w-4 h-4 text-indigo-600" />
+        <h4 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
+          <Mail className="w-4 h-4 text-[#1D4ED8]" />
           Professional Email Setup
         </h4>
-        <button type="button" onClick={onClose} className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">
+        <button type="button" onClick={onClose} className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
           Close
         </button>
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Domain</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Domain</label>
         <select
           value={domainId}
           onChange={(e) => setDomainId(e.target.value)}
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all"
           required
         >
           <option value="">Select a registered domain</option>
@@ -113,22 +113,22 @@ export default function EmailForm({ onClose, orders }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Email Address</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Email Address</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isDisabled}
           placeholder="e.g. hello@yourdomain.com"
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all disabled:opacity-50"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all disabled:opacity-50"
           required
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Mailbox Size</label>
-          <select value={mailboxSize} onChange={(e) => setMailboxSize(e.target.value)} disabled={isDisabled} className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm">
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Mailbox Size</label>
+          <select value={mailboxSize} onChange={(e) => setMailboxSize(e.target.value)} disabled={isDisabled} className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all">
             <option value="1">1 GB</option>
             <option value="5">5 GB</option>
             <option value="10">10 GB</option>
@@ -136,8 +136,8 @@ export default function EmailForm({ onClose, orders }) {
           </select>
         </div>
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Duration (months)</label>
-          <select value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isDisabled} className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm">
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Duration (months)</label>
+          <select value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isDisabled} className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#1D4ED8] outline-none transition-all">
             <option value="1">1 Month</option>
             <option value="6">6 Months</option>
             <option value="12">1 Year</option>
@@ -159,7 +159,7 @@ export default function EmailForm({ onClose, orders }) {
           type="button"
           onClick={handleRetry}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 rounded-full border border-sky-300 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {loading ? 'Retrying...' : 'Retry activation (no extra charge)'}
@@ -169,7 +169,7 @@ export default function EmailForm({ onClose, orders }) {
       <button
         type="submit"
         disabled={isDisabled || loading || !domainId || !email || !user || !!retryPayment}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 rounded-full bg-[#1D4ED8] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#1E40AF] disabled:opacity-50 shadow-sm"
       >
         {loading && !retryPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         {loading && !retryPayment ? 'Processing...' : 'Pay & Create Mailbox'}

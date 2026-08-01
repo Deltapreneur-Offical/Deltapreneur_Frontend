@@ -58,15 +58,15 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
         open={open}
         onToggle={() => setOpen((value) => !value)}
       >
-        <div className={`px-4 py-3 border-b flex items-start justify-between gap-3 bg-[#f8f6ff] border-[#e8e2f8]`}>
-          <p className="text-xs text-[#4a4478] leading-relaxed flex-1">
+        <div className={`px-4 py-3 border-b flex items-start justify-between gap-3 bg-[#EFF6FF] border-[#BFDBFE]`}>
+          <p className="text-xs text-[#1E293B] leading-relaxed flex-1">
             {t('addonSelectorHint')}
           </p>
           {selected.length > 0 && (
             <button
               type="button"
               onClick={() => onChange([])}
-              className="shrink-0 text-xs font-semibold text-[#6b5fc7] hover:text-[#4f4599] underline underline-offset-2 whitespace-nowrap"
+              className="shrink-0 text-xs font-semibold text-[#1D4ED8] hover:text-[#1E40AF] underline underline-offset-2 whitespace-nowrap"
             >
               {t('addonSelectorUnselectAll')}
             </button>
@@ -79,10 +79,10 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
             return (
               <label
                 key={service.key}
-                className={`flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${checked ? 'bg-[#f8f6ff]' : 'bg-white hover:bg-gray-50/80'
+                className={`flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${checked ? 'bg-[#EFF6FF]' : 'bg-white hover:bg-gray-50/80'
                   }`}
               >
-                <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${checked ? 'bg-[#6b5fc7] border-[#6b5fc7]' : 'border-gray-300'
+                <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${checked ? 'bg-[#1D4ED8] border-[#1D4ED8]' : 'border-gray-300'
                   }`}>
                   {checked && (
                     <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
@@ -103,13 +103,13 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
                     {t(service.labelKey)}
                   </div>
                   {service.contactOnly && (
-                    <div className="text-xs text-amber-600 mt-0.5">{t('addonSelectorContactNote')}</div>
+                    <div className="text-xs text-[#1D4ED8] mt-0.5">{t('addonSelectorContactNote')}</div>
                   )}
                 </div>
 
                 <div className="flex-shrink-0 text-right">
                   {service.contactOnly ? (
-                    <span className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">{t('addonSelectorContact')}</span>
+                    <span className="text-xs font-semibold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-full">{t('addonSelectorContact')}</span>
                   ) : (
                     <span className="text-sm font-bold text-gray-900">
                       {formatPrice(service.price)}
@@ -126,11 +126,11 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
             <div className="text-xs text-gray-600">
               {t('addonSelectorServicesSelected', { count: selected.length })}
               {selected.some((key) => ADDON_SERVICES.find((service) => service.key === key)?.contactOnly) && (
-                <span className="ml-1 text-amber-600">{t('addonSelectorSomeContactBased')}</span>
+                <span className="ml-1 text-[#1D4ED8]">{t('addonSelectorSomeContactBased')}</span>
               )}
             </div>
             {total > 0 && (
-              <div className="text-sm font-bold text-[#6b5fc7]">
+              <div className="text-sm font-bold text-[#1D4ED8]">
                 {t('addonSelectorAddonsTotal', { price: formatPrice(total) })}
               </div>
             )}

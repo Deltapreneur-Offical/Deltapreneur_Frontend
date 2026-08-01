@@ -4,7 +4,7 @@ import { homeCardHover, homeCardTap } from './motion/homeMotion';
 
 /**
  * Homepage listing preview wrapper — slight hero-glow border (no shadow).
- * @param {'domain'|'venture'|'coventure'|'technology'|'community'|'auction'} accent
+ * @param {'domain'|'venture'|'coventure'|'technology'|'community'|'auction'|'operations'|'assistance'|'essentials'} accent
  * @param {boolean} [borderless] — hide the outer border (default + hover); keep lift hover
  */
 export default function HomePreviewCardShell({

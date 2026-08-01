@@ -263,9 +263,9 @@
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__cover {
-  height: 5.5rem !important;
-  min-height: 5.5rem !important;
-  max-height: 5.5rem !important;
+  height: 8.5rem !important;
+  min-height: 8.5rem !important;
+  max-height: 8.5rem !important;
   flex-shrink: 0;
   overflow: hidden;
 }

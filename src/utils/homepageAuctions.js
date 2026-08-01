@@ -8,24 +8,192 @@ const toNum = (value, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
-const extractActiveList = (payload) => {
+/** Extract list rows from active-auction API payloads (matches AuctionsPage). */
+export function extractActiveList(payload) {
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data?.items)) return payload.data.items;
+  if (Array.isArray(payload?.data)) return payload.data;
   return [];
-};
+}
+
+/** Total bids — same field resolution as useAuction / AuctionsPage. */
+export function resolveAuctionTotalBids(raw) {
+  if (!raw || typeof raw !== 'object') return 0;
+  const direct = raw.totalBids ?? raw.total_bids ?? raw.bid_count ?? raw.bidCount ?? raw.totalBidCount;
+  if (direct != null && direct !== '') {
+    const n = Number(direct);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  if (Array.isArray(raw.bids)) return raw.bids.length;
+  return 0;
+}
+
+/** Current highest bid — same field resolution as useAuction / AuctionsPage. */
+export function resolveAuctionCurrentHighestBid(raw) {
+  if (!raw || typeof raw !== 'object') return 0;
+  const direct = raw.currentHighestBid
+    ?? raw.current_highest_bid
+    ?? raw.current_bid
+    ?? raw.currentBid
+    ?? raw.highest_bid
+    ?? raw.highestBid;
+  if (direct != null && direct !== '') {
+    const n = Number(direct);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return 0;
+}
+
+/** Minimum / starting bid. */
+export function resolveAuctionMinBidPrice(raw) {
+  if (!raw || typeof raw !== 'object') return 0;
+  return toNum(raw.minBidPrice ?? raw.min_bid_price ?? raw.startingBid ?? raw.starting_bid, 0);
+}
+
+/** Profile / listing view count from auction payload or nested listing. */
+export function resolveHomeAuctionViews(auction) {
+  if (!auction || typeof auction !== 'object') return 0;
+  const domain = auction.domain || {};
+  const community = auction.community || {};
+  const software = auction.software || {};
+  const candidates = [
+    auction.views,
+    auction.view_count,
+    auction.viewCount,
+    auction.profile_views,
+    auction.profileViews,
+    auction.total_views,
+    auction.totalViews,
+    domain.views,
+    domain.view_count,
+    domain.viewCount,
+    community.views,
+    community.view_count,
+    community.viewCount,
+    software.views,
+    software.view_count,
+    software.viewCount,
+  ];
+  for (const value of candidates) {
+    const n = Number(value);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return 0;
+}
+
+function formatPricingTypeLabel(value) {
+  const key = String(value || '').trim().toUpperCase().replace(/\s+/g, '_');
+  if (!key) return '';
+  if (key === 'FIXED' || key === 'FIXED_PRICE') return 'Fixed';
+  if (key === 'NEGOTIABLE') return 'Negotiable';
+  if (key === 'PREMIUM') return 'Premium';
+  return String(value).trim().replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Pricing type (Fixed / Negotiable / etc.) from listing nested on the auction. */
+export function resolveHomeAuctionPricingType(auction) {
+  if (!auction || typeof auction !== 'object') return '';
+  const domain = auction.domain || {};
+  const software = auction.software || {};
+  const candidates = [
+    domain.pricingDemand,
+    domain.pricing_demand,
+    domain.pricingType,
+    domain.pricing_type,
+    software.pricingDemand,
+    software.pricing_demand,
+    software.pricingType,
+    software.pricing_type,
+    auction.pricingDemand,
+    auction.pricing_demand,
+    auction.pricingType,
+    auction.pricing_type,
+  ];
+  for (const value of candidates) {
+    const label = formatPricingTypeLabel(value);
+    if (label) return label;
+  }
+  return '';
+}
+
+/** Current bid display — NIL only when there are genuinely no bids. */
+export function resolveHomeAuctionCurrentBidDisplay(auction, formatPrice, t) {
+  const totalBids = resolveAuctionTotalBids(auction);
+  const currentHighestBid = resolveAuctionCurrentHighestBid(auction);
+
+  if (totalBids <= 0 && currentHighestBid <= 0) {
+    return t('homeAuctionNoBidYet', { defaultValue: 'NIL' });
+  }
+
+  const amount = currentHighestBid > 0 ? currentHighestBid : resolveAuctionMinBidPrice(auction);
+  return formatPrice(amount);
+}
+
+/** Pricing type label with fallback when the backend omits pricing metadata. */
+export function resolveHomeAuctionPricingTypeLabel(auction, t) {
+  const pricingType = resolveHomeAuctionPricingType(auction);
+  if (pricingType) return pricingType;
+  return t?.('homeAuctionPricingNotSpecified', { defaultValue: 'Not Specified' }) ?? 'Not Specified';
+}
+
+/** Entity id + like API type for the listing behind a homepage auction card. */
+export function resolveHomeAuctionLikeTarget(auction) {
+  if (!auction || typeof auction !== 'object') return null;
+  const category = auction.category || 'domain';
+
+  if (category === 'domain') {
+    const entityId = auction.domain?.id ?? auction.domainId ?? auction.domain_id;
+    return entityId ? { type: 'DOMAIN', entityId: String(entityId) } : null;
+  }
+
+  if (category === 'community') {
+    const entityId = auction.community?.id ?? auction.communityId ?? auction.community_id;
+    return entityId ? { type: 'COMMUNITY', entityId: String(entityId) } : null;
+  }
+
+  if (category === 'technology') {
+    const entityId = auction.software?.id ?? auction.softwareId ?? auction.software_id;
+    return entityId ? { type: 'SOFTWARE', entityId: String(entityId) } : null;
+  }
+
+  return null;
+}
+
+/** Build `{ id }` rows for useLikes from homepage auction cards. */
+export function buildHomeAuctionLikeItems(auctions, category) {
+  return (Array.isArray(auctions) ? auctions : [])
+    .filter((auction) => (auction?.category || 'domain') === category)
+    .map((auction) => {
+      const target = resolveHomeAuctionLikeTarget(auction);
+      return target ? { id: target.entityId } : null;
+    })
+    .filter(Boolean);
+}
 
 export function normalizeDomainAuction(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const domainRaw = raw.domain || {};
+  const minBidPrice = resolveAuctionMinBidPrice(raw);
+  const currentHighestBid = resolveAuctionCurrentHighestBid(raw);
+  const totalBids = resolveAuctionTotalBids(raw);
+  const views = resolveHomeAuctionViews(raw);
+  const pricingDemand = domainRaw.pricingDemand
+    ?? domainRaw.pricing_demand
+    ?? raw.pricingDemand
+    ?? raw.pricing_demand
+    ?? null;
+
   return {
-    category: 'domain',
+    ...raw,
+    category: raw.category || 'domain',
     id: raw.id ?? raw.auctionId ?? raw.auction_id ?? null,
     status: String(raw.status || 'ACTIVE').toUpperCase(),
     featured: Boolean(raw.featured ?? false),
-    minBidPrice: toNum(raw.minBidPrice ?? raw.min_bid_price, 0),
-    currentHighestBid: toNum(raw.currentHighestBid ?? raw.current_highest_bid, 0),
-    totalBids: toNum(raw.totalBids ?? raw.total_bids, 0),
+    minBidPrice,
+    currentHighestBid,
+    totalBids,
+    views,
     endTime: resolveAuctionEndTime(raw) ?? raw.endTime ?? raw.end_time ?? null,
     domainDisplayName: raw.domainDisplayName ?? raw.domain_display_name ?? null,
     listedBy: raw.listedBy ?? raw.listed_by ?? domainRaw.listedBy ?? domainRaw.listed_by ?? null,
@@ -36,7 +204,8 @@ export function normalizeDomainAuction(raw) {
       domainExtension: domainRaw.domainExtension ?? domainRaw.domain_extension ?? '',
       verified: Boolean(domainRaw.verified ?? domainRaw.is_verified ?? false),
       logo: pickMediaUrl(domainRaw),
-      pricingDemand: domainRaw.pricingDemand ?? domainRaw.pricing_demand ?? null,
+      pricingDemand,
+      views: domainRaw.views ?? domainRaw.view_count ?? domainRaw.viewCount ?? views,
       listedBy: domainRaw.listedBy ?? domainRaw.listed_by ?? null,
     },
   };
@@ -68,6 +237,8 @@ const SKIPPED_AUCTION_BADGE_VALUES = new Set([
 ]);
 
 function formatAuctionBadgeLabel(value) {
+  const pricingLabel = formatPricingTypeLabel(value);
+  if (pricingLabel) return pricingLabel;
   const text = String(value || '').trim();
   if (!text) return '';
   return text.replace(/_/g, ' ');
@@ -82,18 +253,22 @@ function pushAuctionBadge(badges, seen, value, tone = 'primary') {
 }
 
 /** Venture-style badge chips for homepage auction preview cards. */
-export function resolveHomeAuctionBadges(auction) {
+export function resolveHomeAuctionBadges(auction, t) {
   if (!auction) return [];
 
   const badges = [];
   const seen = new Set();
   const category = auction.category || 'domain';
+  const pricingLabel = resolveHomeAuctionPricingTypeLabel(auction, t);
+
+  badges.push({ label: pricingLabel, tone: 'primary' });
+  seen.add(pricingLabel.toLowerCase());
 
   if (category === 'community') {
     const community = auction.community || {};
-    pushAuctionBadge(badges, seen, community.industry, 'primary');
-    pushAuctionBadge(badges, seen, community.role, 'primary');
-    pushAuctionBadge(badges, seen, community.niche, 'primary');
+    pushAuctionBadge(badges, seen, community.industry, 'secondary');
+    pushAuctionBadge(badges, seen, community.role, 'secondary');
+    pushAuctionBadge(badges, seen, community.niche, 'secondary');
     pushAuctionBadge(badges, seen, auction.workType ?? auction.work_type, 'secondary');
 
     const skillsRaw = auction.auctionSkills ?? auction.auction_skills ?? community.skills;
@@ -114,7 +289,7 @@ export function resolveHomeAuctionBadges(auction) {
       badges,
       seen,
       software.category || software.techCategory || software.type,
-      'primary',
+      'secondary',
     );
     pushAuctionBadge(badges, seen, software.subcategory || software.subCategory, 'secondary');
     return badges;
@@ -122,7 +297,6 @@ export function resolveHomeAuctionBadges(auction) {
 
   if (category === 'domain') {
     const domain = auction.domain || {};
-    pushAuctionBadge(badges, seen, domain.pricingDemand ?? domain.pricing_demand, 'primary');
     pushAuctionBadge(badges, seen, domain.domainCategory ?? domain.domain_category, 'secondary');
   }
 
@@ -191,8 +365,8 @@ export function resolveHomeAuctionVerified(auction) {
 }
 
 export function resolveHomeAuctionBidAmount(auction) {
-  const highest = toNum(auction?.currentHighestBid, 0);
-  const minimum = toNum(auction?.minBidPrice, 0);
+  const highest = resolveAuctionCurrentHighestBid(auction);
+  const minimum = resolveAuctionMinBidPrice(auction);
   return highest > 0 ? highest : minimum;
 }
 
@@ -286,7 +460,7 @@ export function resolveHomeAuctionDescription(auction) {
   if (category === 'community') {
     const community = auction.community || {};
     const badgeLabels = new Set(
-      resolveHomeAuctionBadges(auction).map((badge) => badge.label.toLowerCase()),
+      resolveHomeAuctionBadges(auction, null).map((badge) => badge.label.toLowerCase()),
     );
     const candidates = [
       community.whyImHere,
@@ -414,5 +588,3 @@ export function mergeAdminHomepageAuctionItems(domainRows = [], communityRows = 
   });
   return items.sort((a, b) => a.title.localeCompare(b.title));
 }
-
-export { extractActiveList };

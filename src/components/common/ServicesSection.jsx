@@ -42,17 +42,17 @@ function DomainEssentialCard({
 
   return (
     <div
-      className="domain-essential-card relative flex h-full flex-col rounded-[24px] overflow-hidden cursor-default border border-transparent bg-white"
+      className="domain-essential-card relative flex h-full flex-col rounded-[24px] overflow-hidden cursor-default border border-[#93C5FD] bg-white shadow-[0_8px_24px_rgba(30,167,253,0.15)] hover:border-[#1EA7FD] hover:shadow-[0_12px_28px_rgba(30,167,253,0.22)] transition-all duration-200"
     >
       <div className="p-6 flex flex-col flex-1 gap-4">
         <div className="flex items-start justify-between gap-3">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-amber-50 border border-amber-100"
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#EFF6FF] border border-[#93C5FD]"
           >
-            <Icon className="w-6 h-6 text-amber-700" strokeWidth={2} />
+            <Icon className="w-6 h-6 text-[#1EA7FD]" strokeWidth={2} />
           </div>
           <span
-            className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200"
+            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#EFF6FF] text-[#0E7ACD] border border-[#93C5FD]"
           >
             {card.tag}
           </span>
@@ -63,7 +63,7 @@ function DomainEssentialCard({
             {card.title}
           </h3>
           {!hasDomains && card.id !== 'transfer' && (
-            <span className="inline-block mt-1 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+            <span className="inline-block mt-1 text-[9px] font-bold text-[#0E7ACD] bg-[#EFF6FF] border border-[#93C5FD] px-2 py-0.5 rounded-full">
               Needs an Active Domain
             </span>
           )}
@@ -100,7 +100,7 @@ function DomainEssentialCard({
             {card.bullets.map((b) => (
               <li key={b} className="flex items-start gap-2 text-[12px] text-gray-650 font-medium">
                 <CheckCircle2
-                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500"
+                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#1EA7FD]"
                 />
                 <span>{b}</span>
               </li>
@@ -113,7 +113,7 @@ function DomainEssentialCard({
             {card.bullets.slice(0, 2).map((b) => (
               <li key={b} className="flex items-start gap-2 text-[12px] text-gray-655 font-medium">
                 <CheckCircle2
-                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500"
+                  className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#1EA7FD]"
                 />
                 <span>{b}</span>
               </li>
@@ -397,7 +397,7 @@ export default function ServicesSection({ isDashboard = false }) {
   );
 
   const renderHomeCard = (card) => (
-    <HomePreviewCardShell accent="auction">
+    <HomePreviewCardShell accent="essentials">
       {renderCard(card)}
     </HomePreviewCardShell>
   );

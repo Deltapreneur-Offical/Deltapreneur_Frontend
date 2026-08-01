@@ -78,7 +78,7 @@ export function FeaturedVirtualAssistantCard({
   onHire,
   likeState,
   onLike,
-  accent = 'domain',
+  accent = 'assistance',
 }) {
   return (
     <HomePreviewCardShell accent={accent}>

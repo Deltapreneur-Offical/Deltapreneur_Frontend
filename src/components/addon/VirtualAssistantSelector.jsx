@@ -20,16 +20,16 @@ export { vaLabel, vaTotal } from '../../hooks/useVirtualAssistantCatalog';
 export const VA_SERVICES = [];
 
 const BADGE_TONES = {
-  default: 'bg-[#eef2ff] text-[#4f46e5] border-[#dbe4ff]',
-  marketing: 'bg-[#fff1e3] text-[#b86a14] border-[#f5dcc0]',
-  people: 'bg-[#e8f7ef] text-[#1f7a4c] border-[#c9ebd8]',
-  support: 'bg-[#e8f1fd] text-[#2563b8] border-[#cfe0fb]',
-  creative: 'bg-[#f7ecff] text-[#7c3aed] border-[#e6d5ff]',
-  technology: 'bg-[#e8f2ff] text-[#1d4ed8] border-[#cfe0fb]',
-  operations: 'bg-[#f4f1ff] text-[#6b5fc7] border-[#ded8f6]',
-  finance: 'bg-[#fff7e8] text-[#b45309] border-[#f5e1b5]',
-  growth: 'bg-[#ecfbf4] text-[#15803d] border-[#caebd6]',
-  sales: 'bg-[#eef5ff] text-[#2563eb] border-[#d7e4ff]',
+  default: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  marketing: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  people: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  support: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  creative: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  technology: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  operations: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  finance: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  growth: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+  sales: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
 };
 
 function getTone(category) {
@@ -53,7 +53,7 @@ function AssistantPlanCard({ service, checked, onToggle, formatPrice, t }) {
     <label
       className={`group block min-w-0 cursor-pointer rounded-[10px] border p-3 transition-all duration-200 ease-out ${
         checked
-          ? 'border-[#8b83e8] bg-[#f8f7ff] shadow-[0_2px_10px_rgba(99,102,241,0.1)]'
+          ? 'border-[#1D4ED8] bg-[#EFF6FF] shadow-[0_2px_10px_rgba(29,78,216,0.1)]'
           : 'border-gray-200/90 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(15,23,42,0.05)]'
       }`}
     >
@@ -63,7 +63,7 @@ function AssistantPlanCard({ service, checked, onToggle, formatPrice, t }) {
         <span
           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border-2 transition-all duration-200 ${
             checked
-              ? 'border-[#7c6fe0] bg-[#7c6fe0] shadow-[0_2px_6px_rgba(124,111,224,0.3)]'
+              ? 'border-[#1D4ED8] bg-[#1D4ED8] shadow-[0_2px_6px_rgba(29,78,216,0.3)]'
               : 'border-gray-300 bg-white'
           }`}
           aria-hidden="true"

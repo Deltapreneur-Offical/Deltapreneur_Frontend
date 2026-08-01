@@ -96,8 +96,8 @@ function StatusBadge({ status, lifecycleStatus }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50/70 border border-amber-200/80 px-3 py-1 rounded-full shadow-sm">
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse" />
+    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] px-3 py-1 rounded-full shadow-sm">
+      <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] inline-block animate-pulse" />
       {life ? life.replace(/_/g, ' ').toUpperCase() : (s || 'PENDING')}
     </span>
   );

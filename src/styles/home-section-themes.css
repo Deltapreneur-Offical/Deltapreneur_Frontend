@@ -1,0 +1,367 @@
+/**
+ * Homepage card design systems — two premium themes.
+ *
+ * Cool theme  → Domains (unchanged), Co-Ventures, Technologies, Business Solutions, Creators
+ * Warm theme  → Ventures, Auctions, Virtual Assistants, Domain Essentials
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COOL PREMIUM THEME — shared tokens (matches finalized Domains styling)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.home-preview-card-border--coventure,
+.home-preview-card-border--technology,
+.home-preview-card-border--operations,
+.home-preview-card-border--compliance,
+.home-preview-card-border--community {
+  --home-card-border: #93c5fd;
+  --home-card-border-hover: #1ea7fd;
+  --home-card-shadow: rgba(30, 167, 253, 0.15);
+  --home-card-shadow-hover: rgba(30, 167, 253, 0.22);
+  --home-card-price-bg: #e0f2fe;
+  --home-card-price-border: #93c5fd;
+  --home-card-price-border-hover: #1ea7fd;
+  --home-card-price-shadow-hover: rgba(30, 167, 253, 0.12);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WARM PREMIUM THEME — shared tokens (gold / amber)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.home-preview-card-border--venture,
+.home-preview-card-border--auction,
+.home-preview-card-border--assistance,
+.home-preview-card-border--essentials {
+  --home-card-border: #fcd34d;
+  --home-card-border-hover: #d97706;
+  --home-card-shadow: rgba(217, 119, 6, 0.15);
+  --home-card-shadow-hover: rgba(217, 119, 6, 0.22);
+  --home-card-price-bg: #fffbeb;
+  --home-card-price-border: #fcd34d;
+  --home-card-price-border-hover: #d97706;
+  --home-card-price-shadow-hover: rgba(217, 119, 6, 0.12);
+}
+
+/* ─── 1. Domains — UNCHANGED (finalized cool premium) ─── */
+.home-preview-card-border--domain {
+  --home-card-border: #93c5fd;
+  --home-card-border-hover: #1ea7fd;
+  --home-card-shadow: rgba(30, 167, 253, 0.15);
+  --home-card-shadow-hover: rgba(30, 167, 253, 0.22);
+  --home-card-price-bg: #e0f2fe;
+  --home-card-price-border: #93c5fd;
+  --home-card-price-border-hover: #1ea7fd;
+  --home-card-price-shadow-hover: rgba(30, 167, 253, 0.12);
+}
+
+.home-preview-card-border--domain .domain-listing-card__cover-fallback {
+  background: linear-gradient(180deg, #f8fafc 0%, #dbeafe 100%) !important;
+}
+
+.home-preview-card-border--domain .domain-listing-card__cover-fallback-domain {
+  color: #0e7acd !important;
+}
+
+/* ─── 2. Co-Ventures — cool premium, very light header ─── */
+.home-preview-card-border--coventure .venture-listing-card__cover-fallback {
+  background: linear-gradient(180deg, #f8fafc 0%, #e0f2fe 100%) !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
+  color: #0369a1 !important;
+  text-shadow: none !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card__cover-fallback .domain-listing-card__share-btn svg {
+  color: #0369a1 !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card__cover-fallback > .absolute svg {
+  color: #38bdf8 !important;
+  opacity: 0.12 !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--premium,
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badge {
+  border-color: #bae6fd !important;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
+.home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
+  border-color: #93c5fd !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--role {
+  color: #0369a1 !important;
+}
+
+/* ─── 3. Technologies — cool premium (shell tokens only) ─── */
+
+/* ─── 4. Business Solutions — cool premium ─── */
+.home-preview-card-border--operations .home-operations-preview-card,
+.home-preview-card-border--compliance .home-operations-preview-card {
+  border-color: #bae6fd !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcff 100%) !important;
+  box-shadow: none !important;
+}
+
+.home-preview-card-border--operations .home-operations-preview-card__category-badge,
+.home-preview-card-border--compliance .home-operations-preview-card__category-badge {
+  border-color: #bae6fd !important;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
+}
+
+.home-preview-card-border--operations .home-operations-preview-card__avatar--fallback,
+.home-preview-card-border--compliance .home-operations-preview-card__avatar--fallback {
+  color: #0284c7 !important;
+  background: #f0f9ff !important;
+  border-color: #bae6fd !important;
+}
+
+.home-preview-card-border--operations .home-operations-preview-card__avatar,
+.home-preview-card-border--compliance .home-operations-preview-card__avatar {
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.12) !important;
+}
+
+.home-preview-card-border--operations .home-operations-preview-card__price-box,
+.home-preview-card-border--compliance .home-operations-preview-card__price-box {
+  border-color: #93c5fd !important;
+  background: #e0f2fe !important;
+}
+
+.home-preview-card-border--operations .home-operations-preview-card__skill-pills span,
+.home-preview-card-border--compliance .home-operations-preview-card__skill-pills span {
+  border-color: #bae6fd !important;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
+}
+
+/* ─── 5. Creators — cool premium ─── */
+.home-preview-card-border--community .creator-profile-card__badge,
+.home-preview-card-border--community .skill-pill:not(.skill-pill--more) {
+  border: 1px solid #bae6fd !important;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
+}
+
+.home-preview-card-border--community .creator-expected-rate {
+  border-color: #93c5fd !important;
+  background: #ffffff !important;
+}
+
+.home-preview-card-border--community:hover .creator-expected-rate {
+  border-color: #1ea7fd !important;
+}
+
+.home-preview-card-border--community .creator-expected-rate__label {
+  color: #0369a1 !important;
+}
+
+/* ─── 6. Ventures — warm premium, very light header ─── */
+.home-preview-card-border--venture .venture-listing-card__cover-fallback {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%) !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
+  color: #b45309 !important;
+  text-shadow: none !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card__cover-fallback .domain-listing-card__share-btn svg {
+  color: #b45309 !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card__cover-fallback > .absolute svg {
+  color: #f59e0b !important;
+  opacity: 0.12 !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__metric--premium,
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__badge {
+  border-color: #fcd34d !important;
+  background: #fffbeb !important;
+  color: #92400e !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box,
+.home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box--venture {
+  border-color: #fcd34d !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__metric--role {
+  color: #b45309 !important;
+}
+
+/* Venture homepage — no color change on hover (elevation/shadow only) */
+.home-preview-card-border--venture:hover {
+  border-color: var(--home-card-border) !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 28px var(--home-card-shadow-hover) !important;
+}
+
+.home-preview-card-border--venture:hover .home-feature-card-beam-spinner {
+  opacity: 0 !important;
+  animation: none !important;
+  display: none !important;
+}
+
+.home-preview-card-border--venture:hover .venture-listing-card,
+.home-preview-card-border--venture .venture-listing-card:hover,
+.home-preview-card-border--venture .venture-listing-card.card-glow-hover:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card.card-glow-hover::after,
+.home-preview-card-border--venture .venture-listing-card.card-glow-hover:hover::after,
+.home-preview-card-border--venture .venture-listing-card--venture.card-glow-hover::after,
+.home-preview-card-border--venture .venture-listing-card--venture.card-glow-hover:hover::after {
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  display: none !important;
+}
+
+.home-preview-card-border--venture:hover .domain-listing-card__price-box,
+.home-preview-card-border--venture:hover .domain-listing-card__price-box--venture,
+.home-preview-card-border--venture .venture-listing-card:hover .domain-listing-card__price-box,
+.home-preview-card-border--venture .venture-listing-card:hover .domain-listing-card__price-box--venture {
+  border-color: var(--home-card-price-border) !important;
+  background: var(--home-card-price-bg) !important;
+  box-shadow: none !important;
+}
+
+/* ─── 7. Auctions — warm premium ─── */
+.home-preview-card-border--auction .home-auction-preview-card {
+  border-color: #fcd34d !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__cover-fallback {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%) !important;
+  opacity: 1 !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
+  color: #b45309 !important;
+  text-shadow: none !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card .venture-listing-card__badge--compact {
+  border-color: #fcd34d !important;
+  background: #fffbeb !important;
+  color: #92400e !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__metrics-row {
+  background: #fffbeb !important;
+  border: 1px solid #fcd34d !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.12), 0 1px 3px rgba(180, 83, 9, 0.08) !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__live-bid-icon {
+  color: #d97706 !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__total-bids {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__total-bids-icon {
+  color: #b45309 !important;
+}
+
+/* ─── 8. Virtual Assistants — warm premium ─── */
+.home-preview-card-border--assistance .virtual-assistant-listing-card .creator-expected-rate,
+.home-preview-card-border--assistance .creator-expected-rate {
+  border-color: #fcd34d !important;
+  background: #ffffff !important;
+}
+
+.home-preview-card-border--assistance:hover .virtual-assistant-listing-card .creator-expected-rate,
+.home-preview-card-border--assistance:hover .creator-expected-rate {
+  border-color: #fcd34d !important;
+}
+
+.home-preview-card-border--assistance .creator-expected-rate__label {
+  color: #b45309 !important;
+}
+
+.home-preview-card-border--assistance .virtual-assistant-listing-card .creator-profile-card__badge,
+.home-preview-card-border--assistance .virtual-assistant-listing-card .skill-pill:not(.skill-pill--more) {
+  border-color: #fcd34d !important;
+  background: #fffbeb !important;
+  color: #92400e !important;
+}
+
+/* VA homepage — no blue hover (elevation/shadow only) */
+.home-preview-card-border--assistance:hover {
+  border-color: var(--home-card-border) !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 28px var(--home-card-shadow-hover) !important;
+}
+
+.home-preview-card-border--assistance:hover .home-feature-card-beam-spinner {
+  opacity: 0 !important;
+  animation: none !important;
+  display: none !important;
+}
+
+.home-preview-card-border--assistance:hover .virtual-assistant-listing-card,
+.home-preview-card-border--assistance .virtual-assistant-listing-card:hover,
+.home-preview-card-border--assistance .virtual-assistant-listing-card.card-glow-hover:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.home-preview-card-border--assistance .virtual-assistant-listing-card.card-glow-hover::after,
+.home-preview-card-border--assistance .virtual-assistant-listing-card.card-glow-hover:hover::after {
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  display: none !important;
+}
+
+.home-preview-card-border--assistance:hover .creator-expected-rate,
+.home-preview-card-border--assistance:hover .virtual-assistant-listing-card .creator-expected-rate {
+  border-color: #fcd34d !important;
+  background: #ffffff !important;
+}
+
+/* ─── 9. Domain Essentials — warm premium ─── */
+.home-preview-card-border--essentials .domain-essential-card {
+  border-color: #fcd34d !important;
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.15) !important;
+}
+
+.home-preview-card-border--essentials .domain-essential-card:hover {
+  border-color: #d97706 !important;
+  box-shadow: 0 12px 28px rgba(217, 119, 6, 0.22) !important;
+}
+
+.home-preview-card-border--essentials .domain-essential-card [class*="border-[#93C5FD]"],
+.home-preview-card-border--essentials .domain-essential-card [class*="border-[#BFDBFE]"] {
+  border-color: #fcd34d !important;
+}
+
+.home-preview-card-border--essentials .domain-essential-card [class*="bg-[#EFF6FF]"] {
+  background-color: #fffbeb !important;
+}
+
+.home-preview-card-border--essentials .domain-essential-card [class*="text-[#1EA7FD]"],
+.home-preview-card-border--essentials .domain-essential-card [class*="text-[#0E7ACD]"] {
+  color: #b45309 !important;
+}

@@ -32,25 +32,25 @@ export default function DNSSECForm({ onClose, onSubmit, orders }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-          <Globe className="w-4 h-4 text-indigo-600" />
+        <h4 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
+          <Globe className="w-4 h-4 text-[#2563EB]" />
           DNSSEC Management
         </h4>
         <button
           type="button"
           onClick={onClose}
-          className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
         >
           Close
         </button>
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Domain</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Domain</label>
         <select
           value={domainId}
           onChange={(e) => setDomainId(e.target.value)}
-          className="w-full rounded-xl border border-gray-250 bg-gray-50/30 px-4 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none transition-all"
+          className="w-full rounded-xl border border-[#BFDBFE] bg-[#EFF6FF]/40 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-[#2563EB] outline-none transition-all"
           required
         >
           <option value="">Select a registered domain</option>
@@ -65,13 +65,13 @@ export default function DNSSECForm({ onClose, onSubmit, orders }) {
         )}
       </div>
 
-      <div className="bg-gray-50 border border-gray-150 rounded-xl p-4 space-y-2">
-        <span className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">Current Status</span>
-        <p className="text-xs text-gray-600 font-medium">
+      <div className="bg-[#EFF6FF]/60 border border-[#BFDBFE] rounded-xl p-4 space-y-2">
+        <span className="text-[0.65rem] font-bold text-slate-400 uppercase tracking-wider">Current Status</span>
+        <p className="text-xs text-slate-700 font-semibold">
           {domainId ? (enabled ? 'Enabled' : 'Not Enabled') : 'Select a domain to view status'}
         </p>
         {domainId && !supportsDnssec && (
-          <p className="text-[0.65rem] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+          <p className="text-[0.65rem] font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1.5">
             DNSSEC management is not available for this domain.
           </p>
         )}
@@ -85,7 +85,7 @@ export default function DNSSECForm({ onClose, onSubmit, orders }) {
           className={`flex-1 h-10 text-xs font-bold rounded-xl border transition-all select-none ${
             enabled
               ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-              : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Enable DNSSEC
@@ -97,7 +97,7 @@ export default function DNSSECForm({ onClose, onSubmit, orders }) {
           className={`flex-1 h-10 text-xs font-bold rounded-xl border transition-all select-none ${
             !enabled
               ? 'bg-rose-50 border-rose-200 text-rose-700'
-              : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Disable DNSSEC
@@ -114,7 +114,7 @@ export default function DNSSECForm({ onClose, onSubmit, orders }) {
         <button
           type="submit"
           disabled={isDisabled || loading || !domainId || !supportsDnssec}
-          className="inline-flex h-10 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
+          className="inline-flex h-10 items-center justify-center gap-2 text-sm font-bold text-white bg-[#1D4ED8] hover:bg-[#1E40AF] disabled:opacity-50 px-6 rounded-full transition-all shadow-sm select-none"
         >
           {loading ? (
             <>

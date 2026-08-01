@@ -412,8 +412,8 @@ export default function CommunityListingCard({
         <hr className="creator-profile-card__divider mt-3" />
 
         <div className="creator-profile-card__description-section flex items-start py-3 gap-3">
-          <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-             <User2 size={18} className="text-indigo-600" />
+          <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+             <User2 size={18} className="text-[#0284C7]" />
           </div>
           <div className="desc-content flex-1 min-w-0 pt-0.5">
             <p className="desc-text text-slate-700 font-medium" title={description}>
@@ -424,8 +424,8 @@ export default function CommunityListingCard({
 
         {(skills.length > 0 || isVa) && (
           <div className="creator-profile-card__skills-section flex items-start gap-3 mt-1 pb-2">
-            <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-               <Lightbulb size={18} className="text-indigo-600" />
+            <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+               <Lightbulb size={18} className="text-[#0284C7]" />
             </div>
             <div className="desc-content flex-1 pt-1.5 flex flex-wrap items-center gap-y-1.5 min-w-0">
                {skills.length > 0 ? (

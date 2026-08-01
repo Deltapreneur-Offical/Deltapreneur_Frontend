@@ -243,7 +243,7 @@
 .virtual-assistant-listing-card.card-glow-hover:hover .creator-expected-rate,
 .home-preview-card-border--domain:hover .creator-expected-rate,
 .featured-va-grid .virtual-assistant-listing-card:hover .creator-expected-rate {
-  border-color: #0284c7;
+  border-color: #fcd34d;
 }
 
 .creator-expected-rate__text {
@@ -666,6 +666,26 @@
 
 .listing-card-glow-grid .creator-profile-card.community-listing-card:hover::after {
   opacity: 1;
+}
+
+/* VA cards in grids — no blue/indigo hover wash */
+.listing-card-glow-grid .virtual-assistant-listing-card.creator-profile-card.community-listing-card:hover,
+.featured-va-grid .virtual-assistant-listing-card.creator-profile-card.community-listing-card:hover {
+  border-color: #fcd34d !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(217, 119, 6, 0.22) !important;
+  transform: translateY(-2px) translateZ(0);
+}
+
+.listing-card-glow-grid .virtual-assistant-listing-card.creator-profile-card.community-listing-card:hover::after,
+.featured-va-grid .virtual-assistant-listing-card.creator-profile-card.community-listing-card:hover::after,
+.listing-card-glow-grid .virtual-assistant-listing-card.creator-profile-card::after,
+.featured-va-grid .virtual-assistant-listing-card.creator-profile-card::after {
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  display: none !important;
 }
 
 .listing-card-glow-grid .creator-profile-card--owner:hover {

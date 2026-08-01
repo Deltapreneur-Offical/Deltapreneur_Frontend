@@ -103,8 +103,8 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
 
       {skills.length > 0 && (
         <div className="home-operations-preview-card__skills">
-          <div className="desc-icon-wrapper">
-            <Lightbulb size={16} strokeWidth={2} aria-hidden />
+          <div className="desc-icon-wrapper flex-shrink-0 w-8 h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+            <Lightbulb size={16} strokeWidth={2} className="text-[#0284C7]" aria-hidden />
           </div>
           <div className="home-operations-preview-card__skill-pills">
             {skills.slice(0, 3).map((skill, i) => (

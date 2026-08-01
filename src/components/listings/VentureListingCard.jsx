@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase } from 'lucide-react';
+import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase, PieChart } from 'lucide-react';
 
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -507,62 +507,44 @@ return (
         ) : (
 
           <div
-
-            className={`relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${compact ? 'p-2' : 'p-4'
-              } bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600`}
-
+            className={`venture-listing-card__cover-fallback relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden ${compact ? 'p-2' : 'p-4'
+              } bg-gradient-to-b from-[#38BDF8] to-[#0284C7]`}
             aria-hidden
-
           >
-
             {/* Subtle background icon watermark */}
-
-            <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none transform scale-150">
-
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none transform scale-150">
               {isCoVenture ? (
-
-                <Handshake size={compact ? 80 : 120} strokeWidth={1.5} className="text-white" />
-
+                <Handshake size={compact ? 70 : 100} strokeWidth={1.5} className="text-white" />
               ) : (
-
-                <Rocket size={compact ? 80 : 120} strokeWidth={1.5} className="text-white" />
-
+                <Rocket size={compact ? 70 : 100} strokeWidth={1.5} className="text-white" />
               )}
-
             </div>
 
-
-
-            {/* Brand Name Text */}
-
-            <span className={`relative z-10 venture-listing-card__cover-title max-w-full px-2 whitespace-normal break-words leading-tight text-center ${compact ? 'venture-listing-card__cover-title--compact' : ''
-              }`}>
-
-              {brandName}
-
-            </span>
-
-
-
-            {/* Subtle badge on cover */}
-
-            <span className={`relative z-10 mt-1 venture-listing-card__cover-badge uppercase ${compact ? 'venture-listing-card__cover-badge--compact' : ''
-              }`}>
-
-              {isCoVenture ? 'Co-Venture' : 'Venture'}
-
-            </span>
+            <div className="venture-listing-card__cover-content">
+              <div className="listing-card-cover-logo-slot" aria-hidden />
+              <span
+                className="domain-listing-card__cover-fallback-domain venture-listing-card__cover-title-marquee"
+                style={{
+                  whiteSpace: 'nowrap',
+                  display: 'block',
+                  width: '100%',
+                  overflow: 'hidden',
+                }}
+              >
+                <OverflowMarqueeText text={brandName || ''} />
+              </span>
+            </div>
           </div>
         )}
 
         <div className="domain-listing-card__share-container" ref={shareRef}>
           <button
             type="button"
-            className="domain-listing-card__share-btn"
+            className="domain-listing-card__share-btn flex items-center justify-center"
             onClick={toggleShare}
             title={t('listingCardShare')}
           >
-            <Share2 size={18} strokeWidth={2} />
+            <Share2 size={19} strokeWidth={2.2} className="text-white/90 hover:text-white" />
           </button>
           {shareOpen && createPortal(
             <div
@@ -602,7 +584,7 @@ return (
                 className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
                 onClick={() => handleShare(whatsappShare)}
               >
-                {t('listingCardWhatsApp')}
+                WhatsApp
               </button>
               <button
                 type="button"
@@ -622,28 +604,24 @@ return (
             document.body
           )}
         </div>
-
       </div>
 
-
-
       <div className={`domain-listing-card__body flex flex-col flex-1 ${compact && browseMode
-          ? 'gap-2 p-3'
+          ? 'gap-2.5 p-3.5'
           : compact
-            ? 'justify-between gap-2 p-3'
+            ? 'justify-between gap-2.5 p-3.5'
             : 'justify-between gap-3 p-4'
         }`}>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
 
           {/* Industry & Deal Type Badges */}
 
-          <div className="venture-listing-card__badges flex flex-wrap gap-0.5">
+          <div className="venture-listing-card__badges flex flex-wrap items-center gap-2 min-h-[1.5rem]">
 
             {b.industry && (
 
-              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } bg-amber-50 text-amber-900 border border-amber-100`}>
+              <span className="inline-flex items-center h-6 px-2.5 text-[10px] font-bold rounded-full bg-sky-50 text-sky-700 border border-sky-200 uppercase tracking-wide">
 
                 {b.industry}
 
@@ -653,8 +631,7 @@ return (
 
             {sellerAsk.dealTypeLabel && (
 
-              <span className={`venture-listing-card__badge px-1.5 py-0 rounded-full ${compact ? 'venture-listing-card__badge--compact' : ''
-                } bg-amber-50 text-amber-800 border border-amber-100`}>
+              <span className="inline-flex items-center h-6 px-2.5 text-[10px] font-bold rounded-full bg-sky-50 text-sky-700 border border-sky-200 uppercase tracking-wide">
 
                 {sellerAsk.dealTypeLabel}
 
@@ -664,14 +641,12 @@ return (
 
           </div>
 
-
-
           {/* Brand Name & Status Dot */}
 
           <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
 
             <h3
-              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words leading-snug ${compact ? 'venture-listing-card__title--compact' : ''
+              className={`venture-listing-card__title flex-1 min-w-0 whitespace-normal break-words text-slate-900 font-bold leading-snug ${compact ? 'venture-listing-card__title--compact text-sm' : 'text-base'
                 }`}
               title={brandName}
               style={{
@@ -693,19 +668,17 @@ return (
               <img
                 src={verifiedIcon}
                 alt="Verified"
-                className="domain-listing-card__verified-badge"
+                className="domain-listing-card__verified-badge shrink-0"
               />
             ) : null}
 
           </div>
 
-
-
           {/* Description - only show if not compact */}
 
           {!compact && b.description && (
 
-            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed m-0">
+            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed m-0 font-medium">
 
               {b.description}
 
@@ -713,61 +686,43 @@ return (
 
           )}
 
-
-
-          {/* Key Metrics / Details Grid */}
-
-          {compact ? (
-            <div className="venture-listing-card__metrics flex flex-nowrap items-center justify-between gap-x-2 mt-1 min-w-0 w-full">
-              {sellerAsk.equityLabel ? (
-                <div className="venture-listing-card__metric venture-listing-card__metric--premium flex items-center gap-1 min-w-0 shrink">
-                  <span className="truncate">{sellerAsk.equityLabel} Equity</span>
+          {/* Key Metrics / Details Grid - Standout Equity Pill Badge */}
+          <div className="venture-listing-card__metrics flex flex-nowrap items-center justify-between gap-2 mt-1 min-w-0 w-full">
+            {sellerAsk.equityLabel ? (
+              <div className="venture-listing-card__equity-badge">
+                <PieChart size={15} className="venture-listing-card__equity-badge-icon shrink-0" aria-hidden />
+                <div className="venture-listing-card__equity-badge-copy min-w-0">
+                  <span className="venture-listing-card__equity-badge-value">
+                    {sellerAsk.equityLabel.includes('%') ? sellerAsk.equityLabel : `${sellerAsk.equityLabel}%`}
+                  </span>
+                  <span className="venture-listing-card__equity-badge-label">
+                    EQUITY
+                  </span>
                 </div>
-              ) : (
-                <span className="venture-listing-card__metric shrink-0" aria-hidden>
-                  {'\u00A0'}
-                </span>
-              )}
-
-              <div className="venture-listing-card__metric venture-listing-card__metric--premium shrink-0">
-                <span className="truncate">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
               </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 mt-1">
-              {/* Equity Offered */}
-              {sellerAsk.equityLabel && (
-                <div className="venture-listing-card__metric--premium flex items-center gap-1.5 px-2 py-1.5 rounded-lg">
-                  <span className="text-[11px] font-medium truncate">
-                    {sellerAsk.equityLabel} Equity
-                  </span>
-                </div>
-              )}
+            ) : (
+              <span className="shrink-0" aria-hidden>
+                {'\u00A0'}
+              </span>
+            )}
 
-              {/* Role Offered (for Co-Venture) */}
-              {isCoVenture && roleOffer ? (
-                <div className="venture-listing-card__metric--premium flex items-center gap-1.5 px-2 py-1.5 rounded-lg">
-                  <Briefcase size={12} className="text-amber-700" />
-                  <span className="text-[11px] font-medium truncate" title={roleOffer}>
-                    {roleOffer}
-                  </span>
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+              {isCoVenture && roleOffer && !compact ? (
+                <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full text-slate-600 font-medium text-[11px] shrink-0">
+                  <Briefcase size={12} className="text-slate-400 shrink-0" />
+                  <span className="truncate max-w-[110px]" title={roleOffer}>{roleOffer}</span>
                 </div>
               ) : null}
 
-              {/* Interest/Pitches Count */}
-              <div className="venture-listing-card__metric--premium flex items-center gap-1.5 px-2 py-1.5 rounded-lg">
-                <span className="text-[11px] font-medium truncate">
-                  {formatInterestCountLabel(interestCount, isCoVenture)}
-                </span>
+              <div className="inline-flex items-center px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full text-slate-500 font-medium text-[11px] shrink-0">
+                <span className="truncate text-slate-600 font-semibold">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
               </div>
             </div>
-          )}
+          </div>
 
         </div>
 
-
-
-        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-3 mt-2'}`}>
+        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-2.5 mt-2'}`}>
 
           {/* Price Box */}
 
@@ -779,12 +734,6 @@ return (
                   ? 'domain-listing-card__price-box--coventure'
                   : 'domain-listing-card__price-box--venture'
                 } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
-
-              style={isHomePreview ? undefined : {
-                borderRadius: compact ? '0.75rem' : '1rem',
-                background: 'linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(90deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%) border-box',
-                boxShadow: '-8px 0 16px -8px rgba(251, 191, 36, 0.22), 8px 0 16px -8px rgba(217, 119, 6, 0.18), 0 0 10px -4px rgba(251, 191, 36, 0.18)',
-              }}
 
             >
 

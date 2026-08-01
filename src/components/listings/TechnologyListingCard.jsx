@@ -108,7 +108,7 @@ export default function TechnologyListingCard({
       try {
         await navigator.share({
           title: `Technology: ${item.name || 'Technology'}`,
-          text: `Check out this Technology listed on CoBrother!`,
+          text: `Check out this Technology listed on CoBrother!\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;

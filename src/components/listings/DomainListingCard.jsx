@@ -148,7 +148,7 @@ export default function DomainListingCard({
       try {
         await navigator.share({
           title: `Domain: ${display.fullDomain}`,
-          text: `Check out this premium Domain listed on CoBrother!`,
+          text: `Check out this premium Domain listed on CoBrother!\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;

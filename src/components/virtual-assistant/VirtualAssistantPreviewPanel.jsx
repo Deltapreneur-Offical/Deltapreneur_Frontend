@@ -211,7 +211,7 @@ export default function VirtualAssistantPreviewPanel({
       try {
         await navigator.share({
           title: shareSubject,
-          text: shareSubject,
+          text: `${shareSubject}\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;

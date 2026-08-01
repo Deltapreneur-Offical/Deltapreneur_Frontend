@@ -258,7 +258,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
       try {
         await navigator.share({
           title: shareSubject,
-          text: shareSubject,
+          text: `${shareSubject}\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;

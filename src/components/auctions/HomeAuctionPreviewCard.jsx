@@ -169,7 +169,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       try {
         await navigator.share({
           title: shareSubject,
-          text: shareCaption,
+          text: `${shareCaption}\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;

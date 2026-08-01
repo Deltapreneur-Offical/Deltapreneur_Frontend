@@ -24,6 +24,7 @@ import TruncatedItemsTooltip from '../common/TruncatedItemsTooltip';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
 import { getVirtualAssistantDetailPath } from '../../utils/listingNavigation';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/virtual-assistant-listing-card.css';
 
@@ -87,6 +88,7 @@ export default function CommunityListingCard({
   skipVisibilityCheck = false,
 }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const cardRef = useRef(null);
   const [failedCoverUrl, setFailedCoverUrl] = useState(null);
 
@@ -123,10 +125,10 @@ export default function CommunityListingCard({
     stop(e);
     const base = typeof window !== 'undefined' ? window.location.origin : '';
     const path = getVirtualAssistantDetailPath(profile?.id);
-    const shareUrl = base ? `${base}${path}` : path;
+    const shareUrl = `${base}${path}${user?.id ? `?ref=${user.id}` : ''}`;
     const shareName = profile?.fullName || profile?.name || 'Virtual Assistant';
     const shareSubject = `Check out this virtual assistant on CoBrother: ${shareName}`;
-    const shareText = `Check out this virtual assistant on CoBrother!\n\n${shareSubject}`;
+    const shareText = `Check out this virtual assistant on CoBrother!\n\n${shareSubject}\n\n${shareUrl}`;
 
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {

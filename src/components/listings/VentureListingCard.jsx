@@ -214,7 +214,7 @@ export default function VentureListingCard({
       try {
         await navigator.share({
           title: `${typeLabel}: ${brandName}`,
-          text: `Check out this ${typeLabel} listed on CoBrother!`,
+          text: `Check out this ${typeLabel} listed on CoBrother!\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;

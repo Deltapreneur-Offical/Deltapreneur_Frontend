@@ -2773,7 +2773,8 @@
   font-size: 0.975rem;
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: #b45309;
+  /* Match auction header domain name dark brown */
+  color: #8B4513;
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }

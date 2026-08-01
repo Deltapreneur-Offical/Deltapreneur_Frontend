@@ -288,11 +288,11 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         <div className="domain-listing-card__share-container" ref={shareRef}>
           <button
             type="button"
-            className="domain-listing-card__share-btn !text-slate-400 hover:!text-slate-600"
+            className="domain-listing-card__share-btn"
             onClick={toggleShare}
             title={t('listingCardShare')}
           >
-            <Share2 size={20} strokeWidth={2} />
+            <Share2 size={18} strokeWidth={2} />
           </button>
           {shareOpen && createPortal(
             <div

@@ -544,7 +544,7 @@ return (
             onClick={toggleShare}
             title={t('listingCardShare')}
           >
-            <Share2 size={19} strokeWidth={2.2} className="text-white/90 hover:text-white" />
+            <Share2 size={18} strokeWidth={2} />
           </button>
           {shareOpen && createPortal(
             <div

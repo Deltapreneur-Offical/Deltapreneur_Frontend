@@ -231,18 +231,26 @@
   text-align: left;
 }
 
-/* Virtual Assistance cards — Standard Domains / search-bar sky borders */
+/* Virtual Assistance cards — warm dark-brown borders (no sky blue) */
 .virtual-assistant-listing-card .creator-expected-rate,
-.home-preview-card-border--domain .creator-expected-rate,
 .featured-va-grid .creator-expected-rate {
+  border: 1px solid #fcd34d;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.home-preview-card-border--domain .creator-expected-rate {
   border: 1px solid #38bdf8;
   background: #ffffff;
   box-shadow: none;
 }
 
 .virtual-assistant-listing-card.card-glow-hover:hover .creator-expected-rate,
-.home-preview-card-border--domain:hover .creator-expected-rate,
 .featured-va-grid .virtual-assistant-listing-card:hover .creator-expected-rate {
+  border-color: #fcd34d;
+}
+
+.home-preview-card-border--domain:hover .creator-expected-rate {
   border-color: #fcd34d;
 }
 

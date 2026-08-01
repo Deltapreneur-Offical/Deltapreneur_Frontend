@@ -1413,23 +1413,19 @@
   opacity: 1 !important;
 }
 
-.venture-listing-card--venture .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain,
-.home-auction-preview-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
+.venture-listing-card--venture .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
   color: #b45309;
+  text-shadow: none;
+}
+
+.home-auction-preview-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
+  color: #8B4513;
   text-shadow: none;
 }
 
 .venture-listing-card--coventure .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
   color: #0369a1;
   text-shadow: none;
-}
-
-.venture-listing-card--venture .venture-listing-card__cover-fallback .domain-listing-card__share-btn svg {
-  color: #b45309 !important;
-}
-
-.venture-listing-card--coventure .venture-listing-card__cover-fallback .domain-listing-card__share-btn svg {
-  color: #0369a1 !important;
 }
 
 .venture-listing-card--venture .venture-listing-card__cover-fallback > .absolute svg {

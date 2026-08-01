@@ -72,10 +72,6 @@
   text-shadow: none !important;
 }
 
-.home-preview-card-border--coventure .venture-listing-card__cover-fallback .domain-listing-card__share-btn svg {
-  color: #0369a1 !important;
-}
-
 .home-preview-card-border--coventure .venture-listing-card__cover-fallback > .absolute svg {
   color: #38bdf8 !important;
   opacity: 0.12 !important;
@@ -170,10 +166,6 @@
   text-shadow: none !important;
 }
 
-.home-preview-card-border--venture .venture-listing-card__cover-fallback .domain-listing-card__share-btn svg {
-  color: #b45309 !important;
-}
-
 .home-preview-card-border--venture .venture-listing-card__cover-fallback > .absolute svg {
   color: #f59e0b !important;
   opacity: 0.12 !important;
@@ -249,8 +241,12 @@
 }
 
 .home-preview-card-border--auction .home-auction-preview-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
-  color: #b45309 !important;
+  color: #8B4513 !important;
   text-shadow: none !important;
+}
+
+.home-preview-card-border--auction .home-auction-preview-card__current-bid-value {
+  color: #8B4513 !important;
 }
 
 .home-preview-card-border--auction .home-auction-preview-card .venture-listing-card__badge--compact {
@@ -293,14 +289,18 @@
 }
 
 .home-preview-card-border--assistance .creator-expected-rate__label {
-  color: #b45309 !important;
+  color: #8B4513 !important;
+}
+
+.home-preview-card-border--assistance .creator-expected-rate__value {
+  color: #8B4513 !important;
 }
 
 .home-preview-card-border--assistance .virtual-assistant-listing-card .creator-profile-card__badge,
 .home-preview-card-border--assistance .virtual-assistant-listing-card .skill-pill:not(.skill-pill--more) {
   border-color: #fcd34d !important;
   background: #fffbeb !important;
-  color: #92400e !important;
+  color: #8B4513 !important;
 }
 
 /* VA homepage — no blue hover (elevation/shadow only) */

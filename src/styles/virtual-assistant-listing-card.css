@@ -1,4 +1,4 @@
-/* Virtual Assistant marketplace cards — matches target card design */
+/* Virtual Assistant marketplace cards — warm dark-brown accents (no blue) */
 
 .virtual-assistant-listing-card.domain-listing-card {
   position: relative;
@@ -17,7 +17,7 @@
 /* Header — centered photo, name, role badge */
 .virtual-assistant-listing-card .va-listing-card__header {
   flex-shrink: 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
 }
 
 .virtual-assistant-listing-card .va-listing-card__cover {
@@ -26,7 +26,7 @@
   width: 100%;
   height: 6.25rem;
   overflow: hidden;
-  background: linear-gradient(180deg, #f8fafc 0%, #f0f9ff 100%);
+  background: linear-gradient(180deg, #fffbeb 0%, #fff7ed 100%);
 }
 
 .virtual-assistant-listing-card .va-listing-card__cover-inner {
@@ -54,8 +54,8 @@
 .virtual-assistant-listing-card .va-listing-card__cover .creator-profile-card__avatar--fallback {
   font-size: 1.35rem;
   font-weight: 700;
-  color: #0369a1;
-  background: #e0f2fe;
+  color: #8B4513;
+  background: #fff7ed;
 }
 
 .virtual-assistant-listing-card .va-listing-card__title-block {
@@ -138,7 +138,7 @@
 }
 
 .virtual-assistant-listing-card .stat-icon {
-  color: #0369a1;
+  color: #8B4513;
   width: 0.85rem;
   height: 0.85rem;
   margin-bottom: 0.1rem;
@@ -147,13 +147,13 @@
 .virtual-assistant-listing-card .stat-value {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #0369a1;
+  color: #8B4513;
 }
 
 .virtual-assistant-listing-card .stat-label {
   font-size: 0.625rem;
   font-weight: 600;
-  color: #0284c7;
+  color: #7A3E00;
   letter-spacing: 0.02em;
 }
 
@@ -177,7 +177,7 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #0369a1;
+  color: #8B4513;
   line-height: 1;
 }
 
@@ -189,13 +189,13 @@
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #0369a1;
+  color: #8B4513;
 }
 
 .virtual-assistant-listing-card .va-listing-card__compensation-period {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #0284c7;
+  color: #7A3E00;
 }
 
 .virtual-assistant-listing-card .domain-listing-card__stats.listing-card-stats-footer {
@@ -240,18 +240,58 @@
 
 .listing-card-glow-grid .virtual-assistant-listing-card.domain-listing-card:hover,
 .featured-va-grid .virtual-assistant-listing-card.domain-listing-card:hover {
-  transform: translateY(-3px) translateZ(0);
-  border-color: #38bdf8 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
-  box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
-    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+  transform: translateY(-2px) translateZ(0);
+  border-color: #fcd34d !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(217, 119, 6, 0.18) !important;
 }
 
 .virtual-assistant-listing-card.domain-listing-card.card-glow-hover:hover .va-listing-card__compensation {
-  border-color: #0284c7;
+  border-color: #fcd34d;
+}
+
+/* Compensation / expected-rate accents — dark brown (no blue/purple) */
+.virtual-assistant-listing-card .creator-expected-rate,
+.virtual-assistant-listing-card.card-glow-hover:hover .creator-expected-rate,
+.featured-va-grid .virtual-assistant-listing-card .creator-expected-rate,
+.featured-va-grid .virtual-assistant-listing-card:hover .creator-expected-rate {
+  border: 1px solid #fcd34d !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.virtual-assistant-listing-card .creator-expected-rate__label {
+  color: #8B4513 !important;
+}
+
+.virtual-assistant-listing-card .creator-expected-rate__value {
+  color: #8B4513 !important;
+}
+
+.virtual-assistant-listing-card .creator-profile-card__badge {
+  background: #fffbeb !important;
+  color: #8B4513 !important;
+  border-color: #fcd34d !important;
+}
+
+/* Kill blue/indigo hover wash & glow on VA cards */
+.virtual-assistant-listing-card.domain-listing-card.card-glow-hover:hover,
+.virtual-assistant-listing-card.creator-profile-card.card-glow-hover:hover {
+  border-color: #fcd34d !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(217, 119, 6, 0.18) !important;
+}
+
+.virtual-assistant-listing-card.card-glow-hover::after,
+.virtual-assistant-listing-card.card-glow-hover:hover::after,
+.virtual-assistant-listing-card.creator-profile-card::after,
+.virtual-assistant-listing-card.creator-profile-card:hover::after {
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  display: none !important;
 }
 
 @media (min-width: 640px) {

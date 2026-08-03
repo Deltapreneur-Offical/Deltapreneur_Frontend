@@ -23,7 +23,7 @@ export default function CreatorExpectedRateCard({
   
   let displayPeriod = '';
   if (parsed.period && parsed.period.startsWith('/')) {
-    displayPeriod = `/ ${parsed.period.slice(1).replace(/^(\w)/, (l) => l.toUpperCase())}`;
+    displayPeriod = `/ ${parsed.period.slice(1).toLowerCase()}`;
   } else {
     displayPeriod = parsed.period;
   }

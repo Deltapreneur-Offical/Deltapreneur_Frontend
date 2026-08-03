@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Gavel, Search, ChevronDown, X, Home, Smartphone, Cpu, Code, Heart, Tag, Clock } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {

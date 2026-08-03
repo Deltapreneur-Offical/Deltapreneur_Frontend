@@ -110,17 +110,68 @@ function loadRazorpayScript() {
 }
 
 export function buildRazorpayPrefill(user, orderData = {}) {
+  const name = (
+    orderData.buyerName
+    || orderData.buyer_name
+    || orderData.fullName
+    || [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim()
+    || user?.name
+    || user?.fullName
+    || ''
+  ).toString().trim();
   const email =
-    user?.email ||
-    orderData.buyerEmail ||
-    orderData.email ||
-    '';
+    orderData.buyerEmail
+    || orderData.buyer_email
+    || orderData.email
+    || user?.email
+    || '';
   const contact =
-    user?.phoneNumber ||
-    user?.phone ||
-    orderData.buyerPhone ||
-    '';
-  return { email, contact };
+    orderData.buyerPhone
+    || orderData.buyer_phone
+    || user?.phoneNumber
+    || user?.phone
+    || '';
+  const prefill = {};
+  if (name) prefill.name = name;
+  if (email) prefill.email = email;
+  if (contact) prefill.contact = contact;
+  return prefill;
+}
+
+/** Map cart productType → ops-friendly category label. */
+export function cartCategoryLabel(productType) {
+  const key = String(productType || '').toUpperCase();
+  if (key === 'DOMAIN_REGISTRATION') return 'Domain Registration';
+  if (key === 'DOMAIN_LISTING') return 'Domain Marketplace';
+  if (key === 'TECHNOLOGY') return 'Technology';
+  if (key === 'VENTURE_DEAL') return 'Venture';
+  return key ? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'Other';
+}
+
+/** Short cart description for Razorpay Checkout / payment dashboard. */
+export function buildCartPaymentDescription(items, itemCount) {
+  const list = Array.isArray(items) ? items : [];
+  const count = Number(itemCount) || list.length || 0;
+  const categories = [];
+  for (const it of list) {
+    const label = cartCategoryLabel(it?.productType);
+    if (label && !categories.includes(label)) categories.push(label);
+  }
+  const lines = list
+    .slice(0, 3)
+    .map((it) => {
+      const name = String(it?.productName || it?.domainName || '').trim();
+      const category = cartCategoryLabel(it?.productType);
+      return name ? `${category}: ${name}` : category;
+    })
+    .filter(Boolean);
+  const extra = Math.max(0, count - lines.length);
+  const itemsText = lines.length
+    ? `${lines.join(' | ')}${extra > 0 ? ` (+${extra} more)` : ''}`
+    : `${count} item${count === 1 ? '' : 's'}`;
+  const categoryText = categories.length ? categories.join(', ') : 'Cart';
+  const text = `CoBrother - ${categoryText} - ${itemsText}`;
+  return text.length > 255 ? `${text.slice(0, 254)}…` : text;
 }
 
 export async function openRazorpayCheckout({

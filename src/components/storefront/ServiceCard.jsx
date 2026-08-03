@@ -61,7 +61,7 @@ export default function ServiceCard({ icon, name, description, price, priceAvail
         <div className="relative mt-3 pt-3 border-t border-[#E2E8F0] animate-in fade-in slide-in-from-top-2 duration-200">
           {noDomainsOverlay ? (
             <>
-              <div className="pointer-events-none select-none blur-[3px] opacity-55" aria-hidden="true">
+              <div className="pointer-events-none select-none blur-[1px] opacity-70" aria-hidden="true">
                 {children}
               </div>
               <NoDomainsOverlay />

@@ -1,9 +1,9 @@
 /** Creator profile expected price (amount + period, e.g. 4000/day). */
 
 export const CREATOR_RATE_PERIODS = [
-  { value: '/day', label: '/ Day' },
-  { value: '/month', label: '/ Month' },
-  { value: '/project', label: '/ Project' },
+  { value: '/day', label: '/ day' },
+  { value: '/month', label: '/ month' },
+  { value: '/project', label: '/ project' },
 ];
 
 const PERIOD_VALUES = new Set(CREATOR_RATE_PERIODS.map((option) => option.value));
@@ -76,7 +76,7 @@ export function formatCreatorExpectedRate(profile, formatPrice) {
   if (!suffix) return formattedAmount;
 
   if (suffix.startsWith('/')) {
-    const label = suffix.slice(1).replace(/^(\w)/, (letter) => letter.toUpperCase());
+    const label = suffix.slice(1).toLowerCase();
     return `${formattedAmount}/${label}`;
   }
 

@@ -17,7 +17,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { cartAPI } from '../api/services';
-import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { openRazorpayCheckout, buildCartPaymentDescription } from '../utils/razorpayCheckout';
 import { PREMIUM_DOMAIN_MIN_PRICE } from '../utils/domainPricing';
 
 const EMPTY_REDEMPTION = {
@@ -339,9 +339,16 @@ export default function CartPage() {
       }
 
       openRazorpayCheckout({
-        orderData,
+        orderData: {
+          ...orderData,
+          buyerName,
+          buyerEmail,
+          buyerPhone,
+        },
         user,
-        description: `CoBrother Cart (${orderData.itemCount} item${orderData.itemCount > 1 ? 's' : ''})`,
+        description:
+          orderData?.paymentDescription
+          || buildCartPaymentDescription(cart?.items || [], orderData?.itemCount),
         onSuccess: async (response) => {
           pendingCheckoutOrderId.current = null;
           try {

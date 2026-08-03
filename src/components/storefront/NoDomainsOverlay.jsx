@@ -3,7 +3,7 @@ import { Lock } from 'lucide-react';
 export default function NoDomainsOverlay() {
   return (
     <div
-      className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/45 backdrop-blur-[5px]"
+      className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/25 backdrop-blur-[1.5px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="storefront-no-domains-title"

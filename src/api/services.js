@@ -104,6 +104,9 @@ export const creatorAPI = {
   linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth', {
     params: typeof window !== 'undefined' ? { return_origin: window.location.origin } : undefined,
   }),
+  syncPhotoAuthUrl: ()        => api.get('/api/v1/community/linkedin/sync-photo/auth', {
+    params: typeof window !== 'undefined' ? { return_origin: window.location.origin } : undefined,
+  }),
 };
 
 export const creatorFollowAPI = {

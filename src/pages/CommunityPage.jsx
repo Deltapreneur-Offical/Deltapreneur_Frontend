@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, CircleHelp } from 'lucide-react';
+import { Search, CircleHelp, RefreshCw } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -162,6 +162,9 @@ export default function CommunityPage() {
   const [profileNotice, setProfileNotice] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showSyncPhotoModal, setShowSyncPhotoModal] = useState(false);
+  const [syncPhotoLoading, setSyncPhotoLoading] = useState(false);
+  const [syncPhotoSuccess, setSyncPhotoSuccess] = useState('');
 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -335,6 +338,28 @@ export default function CommunityPage() {
       return;
     }
 
+    // ── Photo sync completed ──────────────────────────────────────────────────
+    if (status === 'photo_synced' && profileId) {
+      setLinkedInError('');
+      setSyncPhotoSuccess('Profile photo updated successfully.');
+      // Refresh only this creator card without a full page reload.
+      communityAPI.getOne(profileId)
+        .then(({ data }) => {
+          const profile = data?.data ?? data;
+          if (!profile) return;
+          setMyProfile(profile);
+          setProfiles(prev => prev.map(p =>
+            String(p.id) === String(profile.id) ? { ...p, ...profile } : p
+          ));
+        })
+        .catch(() => {})
+        .finally(() => {
+          // Auto-dismiss success toast after 5 s
+          setTimeout(() => setSyncPhotoSuccess(''), 5000);
+        });
+      return;
+    }
+
     if (status === 'success' && profileId) {
       setLinkedInLoading(true);
       setLinkedInError('');
@@ -441,6 +466,24 @@ export default function CommunityPage() {
     }
   };
 
+  const handleSyncPhotoConfirm = async () => {
+    setLinkedInError('');
+    setSyncPhotoSuccess('');
+    clearLinkedInOAuthSession();
+    setSyncPhotoLoading(true);
+    setShowSyncPhotoModal(false);
+    try {
+      const { data } = await communityAPI.syncPhotoAuthUrl();
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      const url = parsed?.url ?? parsed?.authUrl ?? parsed;
+      if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
+      window.location.assign(url);
+    } catch {
+      setSyncPhotoLoading(false);
+      setLinkedInError('Unable to fetch the latest LinkedIn profile photo. Please reconnect your LinkedIn account and try again.');
+    }
+  };
+
   const handleProfileSaved = (saved) => {
     setMyProfile(saved);
     setShowForm(false);
@@ -534,6 +577,11 @@ export default function CommunityPage() {
         {profileNotice && !effectiveMyProfile && !linkedInError && (
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 mb-6">{profileNotice}</div>
         )}
+        {syncPhotoSuccess && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 mb-6 flex items-center gap-2">
+            <span aria-hidden>✅</span> {syncPhotoSuccess}
+          </div>
+        )}
         {linkedInSuccess && (
           <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-600 mb-6 flex items-center gap-2">
             <LinkedInIcon size={16} /> {linkedInSuccess}
@@ -606,6 +654,19 @@ export default function CommunityPage() {
                     )}
                     <button type="button" className="btn-glow btn-glow-sm !px-3 !py-2" onClick={() => navigate('/profile/analytics')}>
                       📈 Analytics
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-glow btn-glow-sm !px-3 !py-2 inline-flex items-center justify-center gap-1.5"
+                      onClick={() => setShowSyncPhotoModal(true)}
+                      disabled={syncPhotoLoading}
+                      title="Sync your LinkedIn profile photo"
+                    >
+                      {syncPhotoLoading
+                        ? <span className="w-3.5 h-3.5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+                        : <RefreshCw size={14} strokeWidth={2.5} aria-hidden />}
+                      <span className="sm:hidden">Sync Photo</span>
+                      <span className="hidden sm:inline">Sync Profile Photo</span>
                     </button>
                     <button type="button" className="btn-glow btn-glow-sm !px-3 !py-2 inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
                       <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
@@ -731,7 +792,82 @@ export default function CommunityPage() {
           onSuccess={handleAuctionCreated}
         />
       )}
+
+      {showSyncPhotoModal && (
+        <SyncProfilePhotoModal
+          onConfirm={handleSyncPhotoConfirm}
+          onCancel={() => setShowSyncPhotoModal(false)}
+        />
+      )}
     </AppLayout>
+  );
+}
+
+
+// ─── Sync Profile Photo Modal ─────────────────────────────────────────────────
+function SyncProfilePhotoModal({ onConfirm, onCancel }) {
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={e => e.target === e.currentTarget && onCancel()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sync-photo-modal-title"
+    >
+      <div className="relative w-full max-w-[460px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+        {/* Decorative blur blob */}
+        <div className="absolute -top-16 -right-16 w-[220px] h-[220px] rounded-full bg-blue-100/40 blur-3xl pointer-events-none" />
+
+        {/* Close button */}
+        <button
+          id="sync-photo-modal-close"
+          className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700"
+          onClick={onCancel}
+          aria-label="Close"
+        >✕</button>
+
+        {/* Icon */}
+        <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-5">
+          <RefreshCw size={22} className="text-blue-600" strokeWidth={2} />
+        </div>
+
+        {/* Title */}
+        <h2
+          id="sync-photo-modal-title"
+          className="font-display text-[1.5rem] font-semibold text-gray-900 mb-2"
+        >
+          Sync Profile Photo
+        </h2>
+
+        {/* Description */}
+        <p className="text-sm text-gray-500 leading-relaxed mb-7">
+          Your LinkedIn profile photo may have changed. Sync your LinkedIn account to update
+          your profile picture. Only your profile photo will be updated—no other profile
+          details will be modified.
+        </p>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            id="sync-photo-cancel-btn"
+            type="button"
+            className="flex-1 px-4 py-2.5 rounded-[10px] border border-gray-200 bg-white text-gray-700 text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            id="sync-photo-confirm-btn"
+            type="button"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0077b5] text-white text-sm font-semibold rounded-[10px] border-none cursor-pointer hover:bg-[#005885] transition-colors"
+            onClick={onConfirm}
+          >
+            <RefreshCw size={14} strokeWidth={2.5} aria-hidden />
+            Sync Photo
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

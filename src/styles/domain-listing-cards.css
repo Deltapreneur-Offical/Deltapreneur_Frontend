@@ -1755,6 +1755,12 @@
   line-height: 1.2;
 }
 
+.venture-listing-card .domain-listing-card__price-text--auction {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+}
+
 .venture-listing-card .domain-listing-card__price-box--compact {
   padding: 0.4rem 0.4rem 0.4rem 0.55rem;
   min-height: 2.625rem;

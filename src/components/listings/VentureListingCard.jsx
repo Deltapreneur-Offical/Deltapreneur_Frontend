@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase, PieChart } from 'lucide-react';
+import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel } from 'lucide-react';
 
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -162,17 +162,33 @@ export default function VentureListingCard({
     ? coVentureInvestment
     : Number(sellerAsk.price ?? 0);
 
-
-
   const priceDisplay = isCoVenture && coVentureInvestment != null
-
     ? formatCoVentureInvestmentDisplay(coVentureInvestment, formatPrice)
-
     : (Number(priceAmount) > 0 ? formatVentureAskingPrice(priceAmount, formatPrice) : '');
 
-
-
   const showPriceText = Boolean(priceDisplay);
+
+  const isAuction = venture?.saleType === 'AUCTION'
+    || venture?.sale_type === 'AUCTION'
+    || Boolean(venture?.onAuction)
+    || Boolean(venture?.on_auction)
+    || Boolean(venture?.isAuction)
+    || Boolean(venture?.is_auction)
+    || Boolean(venture?.auction)
+    || Boolean(venture?.auctionId)
+    || Boolean(venture?.auction_id)
+    || venture?.auctionStatus === 'ACTIVE'
+    || venture?.auction_status === 'ACTIVE'
+    || venture?.status === 'AUCTION'
+    || venture?.listingStatus === 'AUCTION'
+    || venture?.listing_status === 'AUCTION'
+    || venture?.listingApprovalStatus === 'AUCTION'
+    || venture?.listing_approval_status === 'AUCTION'
+    || venture?.dealType === 'AUCTION'
+    || venture?.deal_type === 'AUCTION'
+    || venture?.dealType === 'BID'
+    || venture?.deal_type === 'BID'
+    || (!showPriceText && (isCoVenture || sellerAsk.price == null || Number(sellerAsk.price) === 0));
 
 
 
@@ -455,7 +471,7 @@ export default function VentureListingCard({
 
 
 
-  const showPriceBox = showPriceText || handleViewDetails;
+  const showPriceBox = isAuction || showPriceText || handleViewDetails;
   const isHomePreview = compact && browseMode;
 return (
 
@@ -730,14 +746,21 @@ return (
 
             <div
 
-              className={`domain-listing-card__price-box ${isCoVenture
+              className={`domain-listing-card__price-box ${isAuction ? 'domain-listing-card__price-box--auction ' : ''}${isCoVenture
                   ? 'domain-listing-card__price-box--coventure'
                   : 'domain-listing-card__price-box--venture'
                 } ${compact ? 'domain-listing-card__price-box--compact' : ''}`}
 
             >
 
-              {showPriceText ? (
+              {isAuction ? (
+                <div className="domain-listing-card__price-text domain-listing-card__price-text--auction min-w-0 flex items-center gap-1.5">
+                  <Gavel size={compact ? 12 : 14} className="shrink-0 text-indigo-600" />
+                  <span className="domain-listing-card__price-value truncate font-semibold text-indigo-600">
+                    {t('listingCardOnLiveAuction', 'On Live Auction')}
+                  </span>
+                </div>
+              ) : showPriceText ? (
 
                 <div className="domain-listing-card__price-text min-w-0 flex flex-col">
 

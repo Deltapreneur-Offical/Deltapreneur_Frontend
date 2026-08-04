@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
@@ -17,6 +18,8 @@ export default function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -64,31 +67,53 @@ export default function ResetPasswordPage() {
       <form onSubmit={onSubmit} className="auth-form">
         <div className="auth-form-field">
           <label className="auth-form-label" htmlFor="reset-password">{t('newPasswordLabel')}</label>
-          <input
-            id="reset-password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t('passwordPlaceholder')}
-            required
-            autoComplete="new-password"
-            className="auth-form-input"
-          />
+          <div className="auth-password-wrapper">
+            <input
+              id="reset-password"
+              name="password"
+              type={showNewPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t('passwordPlaceholder')}
+              required
+              autoComplete="new-password"
+              className="auth-form-input"
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowNewPassword((v) => !v)}
+              aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
+              tabIndex={0}
+            >
+              {showNewPassword ? <EyeOff size={17} aria-hidden /> : <Eye size={17} aria-hidden />}
+            </button>
+          </div>
         </div>
         <div className="auth-form-field">
           <label className="auth-form-label" htmlFor="reset-confirm">{t('confirmPasswordLabel')}</label>
-          <input
-            id="reset-confirm"
-            name="confirm"
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            placeholder={t('confirmPasswordPlaceholder')}
-            required
-            autoComplete="new-password"
-            className="auth-form-input"
-          />
+          <div className="auth-password-wrapper">
+            <input
+              id="reset-confirm"
+              name="confirm"
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder={t('confirmPasswordPlaceholder')}
+              required
+              autoComplete="new-password"
+              className="auth-form-input"
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              tabIndex={0}
+            >
+              {showConfirmPassword ? <EyeOff size={17} aria-hidden /> : <Eye size={17} aria-hidden />}
+            </button>
+          </div>
         </div>
 
         <AuthPrimaryButton type="submit" busy={busy}>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../api/services';
@@ -42,6 +43,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     requiresTurnstile,
@@ -411,17 +413,28 @@ export default function LoginPage() {
           </div>
           <div className="auth-form-field">
             <label className="auth-form-label" htmlFor="login-password">{t('passwordLabel', 'Password')}</label>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder={t('passwordPlaceholder', '••••••••')}
-              required
-              className="auth-form-input"
-            />
+            <div className="auth-password-wrapper">
+              <input
+                id="login-password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder={t('passwordPlaceholder', '••••••••')}
+                required
+                className="auth-form-input"
+              />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={0}
+              >
+                {showPassword ? <EyeOff size={17} aria-hidden /> : <Eye size={17} aria-hidden />}
+              </button>
+            </div>
           </div>
           <BotProtectionFields {...botProtectionProps} className="flex flex-col gap-3" />
           <AuthPrimaryButton type="submit" busy={busy} disabled={requiresTurnstile}>

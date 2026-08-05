@@ -338,7 +338,7 @@ export default function AddToCartButton({
           ) : (
             <ShoppingCart size={14} className="shrink-0" />
           )}
-          <span className="truncate whitespace-nowrap">{buttonLabel}</span>
+          <span className="whitespace-nowrap">{buttonLabel}</span>
         </button>
 
         {showSideRemove && (

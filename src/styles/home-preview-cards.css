@@ -1709,11 +1709,12 @@
 
 .home-section-header__top {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 0.75rem;
   min-width: 0;
-  padding-bottom: 0.75rem;
+  /* Tiny gap between View All / title and the divider line below */
+  padding-bottom: 0.28rem;
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
@@ -1721,6 +1722,8 @@
   margin: 0;
   min-width: 0;
   flex: 0 1 auto;
+  align-self: flex-end;
+  padding-bottom: 0.12rem;
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 1.125rem;
   font-weight: 600;
@@ -1733,22 +1736,102 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   flex-shrink: 0;
-  min-height: 2rem;
-  padding: 0.4rem 0.8rem;
+  min-height: 2.35rem;
+  padding: 0.5rem 1rem;
   border-radius: 9999px;
   border: 1.5px solid rgba(15, 23, 42, 0.14);
   background: #ffffff;
   color: #111827;
   font-family: var(--font-body), system-ui, sans-serif;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 700;
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Cool sections — match domain / co-venture light-blue card border */
+.home-section-header--domain .home-section-header__view-all,
+.home-section-header--coventure .home-section-header__view-all,
+.home-section-header--technology .home-section-header__view-all,
+.home-section-header--operations .home-section-header__view-all,
+.home-section-header--community .home-section-header__view-all {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #0c4a6e;
+}
+
+.home-section-header--domain .home-section-header__view-all:hover,
+.home-section-header--domain .home-section-header__view-all:focus-visible,
+.home-section-header--coventure .home-section-header__view-all:hover,
+.home-section-header--coventure .home-section-header__view-all:focus-visible,
+.home-section-header--technology .home-section-header__view-all:hover,
+.home-section-header--technology .home-section-header__view-all:focus-visible,
+.home-section-header--operations .home-section-header__view-all:hover,
+.home-section-header--operations .home-section-header__view-all:focus-visible,
+.home-section-header--community .home-section-header__view-all:hover,
+.home-section-header--community .home-section-header__view-all:focus-visible {
+  background: #bfdbfe;
+  border-color: #1ea7fd;
+  color: #0c4a6e;
+  box-shadow: 0 4px 14px rgba(30, 167, 253, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* Ventures — light gold / yellow */
+.home-section-header--venture .home-section-header__view-all {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.home-section-header--venture .home-section-header__view-all:hover,
+.home-section-header--venture .home-section-header__view-all:focus-visible {
+  background: #fde68a;
+  border-color: #d97706;
+  color: #78350f;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* Auctions — light gold / orange */
+.home-section-header--auction .home-section-header__view-all {
+  background: #ffedd5;
+  border-color: #fdba74;
+  color: #9a3412;
+}
+
+.home-section-header--auction .home-section-header__view-all:hover,
+.home-section-header--auction .home-section-header__view-all:focus-visible {
+  background: #fed7aa;
+  border-color: #f97316;
+  color: #7c2d12;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* Virtual Assistance — warm gold (matches card border) */
+.home-section-header--assistance .home-section-header__view-all {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.home-section-header--assistance .home-section-header__view-all:hover,
+.home-section-header--assistance .home-section-header__view-all:focus-visible {
+  background: #fde68a;
+  border-color: #d97706;
+  color: #78350f;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.18);
+  transform: translateY(-1px);
+  outline: none;
 }
 
 .home-section-header__view-all:hover,
@@ -1762,8 +1845,8 @@
 }
 
 .home-section-header__view-all-icon {
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 1.05rem;
+  height: 1.05rem;
   flex-shrink: 0;
 }
 
@@ -1791,13 +1874,18 @@
 
   .home-section-header__top {
     gap: 0.5rem;
-    padding-bottom: 0.65rem;
+    padding-bottom: 0.22rem;
   }
 
   .home-section-header__view-all {
-    min-height: 1.875rem;
-    padding: 0.35rem 0.65rem;
-    font-size: 0.75rem;
+    min-height: 2.125rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8125rem;
+  }
+
+  .home-section-header__view-all-icon {
+    width: 0.95rem;
+    height: 0.95rem;
   }
 }
 
@@ -1814,11 +1902,17 @@
   }
 
   .home-section-header__top {
-    padding-bottom: 0.875rem;
+    padding-bottom: 0.32rem;
   }
 
   .home-section-header__title {
     font-size: 1.375rem;
+  }
+
+  .home-section-header__view-all {
+    min-height: 2.5rem;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.9rem;
   }
 }
 

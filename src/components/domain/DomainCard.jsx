@@ -155,14 +155,14 @@ export default function DomainCard({
               {...cartProps}
               tone="dark"
               size="sm"
-              wrapperClassName="!w-[30%] !min-w-[7.5rem] !max-w-[9.5rem]"
-              className="!w-full !justify-center !rounded-lg !px-3 !py-2.5 !text-sm !font-bold"
+              wrapperClassName="w-fit max-w-full"
+              className="!flex-none !min-w-0 !w-auto !justify-center !rounded-lg !px-4 !py-2.5 !text-sm !font-bold !whitespace-nowrap"
             />
           ) : (
             <button
               type="button"
               disabled
-              className="w-[30%] min-w-[7.5rem] max-w-[9.5rem] px-3 py-2.5 rounded-lg font-bold text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
+              className="inline-flex w-fit min-w-[8.5rem] px-4 py-2.5 rounded-lg font-bold text-sm bg-gray-100 text-gray-400 cursor-not-allowed whitespace-nowrap"
             >
               {item.status === 'error' ? 'Could not check' : 'Taken'}
             </button>
@@ -227,14 +227,14 @@ export default function DomainCard({
             {...cartProps}
             tone="dark"
             size="sm"
-            wrapperClassName="!w-[30%] !min-w-[7rem] !max-w-[9rem]"
-            className="!w-full !justify-center !rounded-lg !px-3 !py-2.5 !text-xs !font-bold"
+            wrapperClassName="w-fit max-w-full"
+            className="!flex-none !min-w-0 !w-auto !justify-center !rounded-lg !px-3.5 sm:!px-4 !py-2.5 !text-xs sm:!text-sm !font-bold !whitespace-nowrap"
           />
         ) : (
           <button
             type="button"
             disabled
-            className="w-[30%] min-w-[7rem] max-w-[9rem] px-3 py-2.5 rounded-lg font-bold text-xs bg-gray-100 text-gray-400 cursor-not-allowed"
+            className="inline-flex w-fit min-w-[8rem] px-3.5 sm:px-4 py-2.5 rounded-lg font-bold text-xs sm:text-sm bg-gray-100 text-gray-400 cursor-not-allowed whitespace-nowrap"
           >
             {item.status === 'error' ? 'Could not check' : 'Taken'}
           </button>

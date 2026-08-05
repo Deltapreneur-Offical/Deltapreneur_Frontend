@@ -65,13 +65,18 @@ export default function DomainsSection() {
   );
 
   if (loading || !hasFetchedDomains) {
-    return <HomeSectionCardSkeleton title={t('domains')} to="/domains" />;
+    return <HomeSectionCardSkeleton title={t('domains')} to="/domains" accent="domain" />;
   }
 
   return (
     <section className="bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
-        <HomeSectionHeader title={t('domains')} to="/domains" />
+        <HomeSectionHeader
+          title={t('domains')}
+          to="/domains"
+          accent="domain"
+          showViewAll={previewDomains.length > 0}
+        />
         {previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : shouldAutoScroll ? (

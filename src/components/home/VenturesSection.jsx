@@ -64,6 +64,7 @@ export default function VenturesSection() {
       <HomeSectionCardSkeleton
         title={t('coVentures')}
         to="/ventures?mode=venture"
+        accent="venture"
         compact
       />
     );
@@ -72,7 +73,12 @@ export default function VenturesSection() {
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
-        <HomeSectionHeader title={t('coVentures')} to="/ventures?mode=venture" />
+        <HomeSectionHeader
+          title={t('coVentures')}
+          to="/ventures?mode=venture"
+          accent="venture"
+          showViewAll={ventures.length > 0}
+        />
         {ventures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noVentures')}</p>
         ) : shouldAutoScroll ? (

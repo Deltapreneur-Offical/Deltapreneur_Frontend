@@ -61,13 +61,18 @@ export default function TechnologySection() {
   );
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('technologySoftware')} to="/technology" />;
+    return <HomeSectionCardSkeleton title={t('technologySoftware')} to="/technology" accent="technology" />;
   }
 
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
-        <HomeSectionHeader title={t('technologySoftware')} to="/technology" />
+        <HomeSectionHeader
+          title={t('technologySoftware')}
+          to="/technology"
+          accent="technology"
+          showViewAll={previewSoftwares.length > 0}
+        />
         {previewSoftwares.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noSoftware')}</p>
         ) : shouldAutoScroll ? (

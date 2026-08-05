@@ -65,6 +65,7 @@ export default function CoVenturesSection() {
       <HomeSectionCardSkeleton
         title={sectionTitle}
         to="/ventures?mode=co-venture"
+        accent="coventure"
         compact
       />
     );
@@ -76,6 +77,8 @@ export default function CoVenturesSection() {
         <HomeSectionHeader
           title={sectionTitle}
           to="/ventures?mode=co-venture"
+          accent="coventure"
+          showViewAll={ventures.length > 0}
         />
         {ventures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">

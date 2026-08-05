@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Search,
@@ -19,6 +19,7 @@ import {
   PackageCheck,
   Calendar,
   Layers,
+  Copy,
 } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { formatInr } from '../../utils/money';
@@ -66,14 +67,35 @@ export default function AdminTrackRecordsTab() {
   // Selected Detail Record Drawer
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authExpired, setAuthExpired] = useState(false);
+  const [fetchError, setFetchError] = useState('');
+  const authExpiredRef = useRef(false);
+
+  const isAuthError = (err) => {
+    const status = err?.response?.status;
+    return status === 401 || status === 403;
+  };
 
   const fetchTrackRecords = useCallback(async () => {
     setLoading(true);
+    setFetchError('');
     try {
-      try {
-        await adminAPI.syncTrackRecords();
-      } catch (syncErr) {
-        console.warn('Track Records sync skipped:', syncErr);
+      // Avoid hammering sync when the session is already known-expired.
+      if (!authExpiredRef.current) {
+        try {
+          await adminAPI.syncTrackRecords();
+        } catch (syncErr) {
+          if (isAuthError(syncErr)) {
+            authExpiredRef.current = true;
+            setAuthExpired(true);
+            setFetchError('Session expired. Please sign in again to load Track Records.');
+            setRecords([]);
+            setTotalCount(0);
+            setTotalPages(1);
+            return;
+          }
+          console.warn('Track Records sync skipped:', syncErr);
+        }
       }
 
       const params = {
@@ -91,6 +113,8 @@ export default function AdminTrackRecordsTab() {
       const res = await adminAPI.getTrackRecords(params);
       const data = res.data;
       if (data && data.success) {
+        authExpiredRef.current = false;
+        setAuthExpired(false);
         setRecords(data.items || []);
         setTotalCount(data.totalCount || 0);
         setTotalPages(data.totalPages || 1);
@@ -101,6 +125,13 @@ export default function AdminTrackRecordsTab() {
       }
     } catch (err) {
       console.error('Failed to fetch Track Records:', err);
+      if (isAuthError(err)) {
+        authExpiredRef.current = true;
+        setAuthExpired(true);
+        setFetchError('Session expired. Please sign in again to load Track Records.');
+      } else {
+        setFetchError('Failed to load Track Records. Try Refresh.');
+      }
       setRecords([]);
     } finally {
       setLoading(false);
@@ -123,6 +154,68 @@ export default function AdminTrackRecordsTab() {
   const openRecordDetails = (rec) => {
     setSelectedRecord(rec);
     setDrawerOpen(true);
+  };
+
+  const paymentOkOf = (r) =>
+    typeof r.paymentOk === 'boolean'
+      ? r.paymentOk
+      : ['CAPTURED', 'SUCCESS', 'PAID', 'AUTHORIZED'].includes(
+          String(r.paymentStatus || '').toUpperCase(),
+        );
+
+  const registrationLabelOf = (r) => {
+    if (r.registrationLabel) return String(r.registrationLabel).toUpperCase();
+    if (r.registrationOk === true) return 'OK';
+    const overall = String(r.overallStatus || '').toUpperCase();
+    const fulfill = String(r.fulfillmentStatus || '').toUpperCase();
+    const isDomainReg = String(r.category || '').toLowerCase().includes('domain registration');
+    const opId = String(r.openproviderDomainId || '').trim();
+    if (isDomainReg && (!opId || opId.toUpperCase().startsWith('DEMO-'))) {
+      if (overall === 'FAILED' || fulfill.includes('FAIL') || paymentOkOf(r)) return 'FAIL';
+      return 'PENDING';
+    }
+    if (overall === 'FAILED' || fulfill.includes('FAIL')) return 'FAIL';
+    if ((overall === 'SUCCESS' || fulfill.includes('PROVISION')) && (!isDomainReg || opId)) return 'OK';
+    return 'PENDING';
+  };
+
+  const domainOf = (r) => {
+    if (r.domainName) return String(r.domainName);
+    const name = String(r.itemName || '').trim();
+    if (!name || name.startsWith('Payment #') || name.startsWith('Unprovisioned')) return '';
+    if (name.includes('.') && !name.includes(' ') && !name.includes('@')) return name;
+    return '';
+  };
+
+  const shortId = (value, keep = 10) => {
+    const s = String(value || '');
+    if (!s) return '—';
+    if (s.length <= keep + 4) return s;
+    return `${s.slice(0, keep)}…`;
+  };
+
+  const copyDiagnostics = async (r) => {
+    const text =
+      r.developerSummary ||
+      [
+        'CoBrother Track Record Diagnostics',
+        '---------------------------------',
+        `InternalOrderId: ${r.internalOrderId || 'n/a'}`,
+        `RazorpayPaymentId: ${r.razorpayPaymentId || 'n/a'}`,
+        `RazorpayOrderId: ${r.razorpayOrderId || 'n/a'}`,
+        `Domain/Item: ${r.itemName || 'n/a'}`,
+        `Payment: ${paymentOkOf(r) ? 'OK' : 'FAIL'} (${r.paymentStatus || 'n/a'})`,
+        `Registration: ${registrationLabelOf(r)}`,
+        `OpenProviderDomainId: ${r.openproviderDomainId || '(none)'}`,
+        `ErrorSource: ${r.errorSource || 'n/a'}`,
+        `ErrorCode: ${r.errorCode || 'n/a'}`,
+        `ErrorMessage: ${r.errorMessage || 'n/a'}`,
+      ].join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.warn('Clipboard copy failed', err);
+    }
   };
 
   // Status Badge Helper
@@ -195,13 +288,28 @@ export default function AdminTrackRecordsTab() {
           </p>
         </div>
         <button
-          onClick={fetchTrackRecords}
+          onClick={() => {
+            authExpiredRef.current = false;
+            setAuthExpired(false);
+            setFetchError('');
+            fetchTrackRecords();
+          }}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold text-xs backdrop-blur transition-all border border-white/15 active:scale-95 shrink-0 self-start md:self-auto"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Refresh Audit Trail
         </button>
       </div>
+
+      {fetchError ? (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 text-sm">
+          <ShieldAlert size={18} className="shrink-0 mt-0.5 text-amber-600" />
+          <div>
+            <p className="font-semibold">{authExpired ? 'Authentication required' : 'Could not load records'}</p>
+            <p className="mt-0.5 text-amber-800/90">{fetchError}</p>
+          </div>
+        </div>
+      ) : null}
 
       {/* Summary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -369,12 +477,16 @@ export default function AdminTrackRecordsTab() {
                   <th className="py-3.5 px-4">Timestamp</th>
                   <th className="py-3.5 px-4">Internal Order ID</th>
                   <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">Item & Qty</th>
+                  <th className="py-3.5 px-4">Domain</th>
                   <th className="py-3.5 px-4">Buyer</th>
-                  <th className="py-3.5 px-4">Phone Number</th>
+                  <th className="py-3.5 px-4">Phone</th>
                   <th className="py-3.5 px-4">Amount</th>
+                  <th className="py-3.5 px-4">RZP Pay</th>
+                  <th className="py-3.5 px-4">OP ID</th>
                   <th className="py-3.5 px-4">Payment</th>
-                  <th className="py-3.5 px-4">Overall Status</th>
+                  <th className="py-3.5 px-4">Registration</th>
+                  <th className="py-3.5 px-4">Error</th>
+                  <th className="py-3.5 px-4">Overall</th>
                   <th className="py-3.5 px-4 text-right">Action</th>
                 </tr>
               </thead>
@@ -400,9 +512,22 @@ export default function AdminTrackRecordsTab() {
                         {r.category}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 max-w-[200px] truncate" title={r.itemName}>
-                      <div className="font-bold text-slate-900 truncate">{r.itemName}</div>
-                      <div className="text-[10px] text-slate-400">Qty/Years: {r.quantityYears}</div>
+                    <td className="py-3.5 px-4 max-w-[220px]" title={domainOf(r) || r.itemName}>
+                      {domainOf(r) ? (
+                        <>
+                          <div className="font-bold text-slate-900 truncate">{domainOf(r)}</div>
+                          <div className="text-[10px] text-slate-400">Qty/Years: {r.quantityYears}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-semibold text-amber-700 truncate">
+                            {r.itemName || 'Domain not recovered'}
+                          </div>
+                          <div className="text-[10px] text-amber-600">
+                            Open Details / re-sync to recover from Razorpay
+                          </div>
+                        </>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="font-semibold text-slate-900">{r.buyerName || 'Buyer'}</div>
@@ -414,18 +539,57 @@ export default function AdminTrackRecordsTab() {
                     <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                       {formatInr(r.amountCharged)}
                     </td>
+                    <td
+                      className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-700"
+                      title={r.razorpayPaymentId || ''}
+                    >
+                      {shortId(r.razorpayPaymentId, 12)}
+                    </td>
+                    <td
+                      className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-700"
+                      title={r.openproviderDomainId || ''}
+                    >
+                      {r.openproviderDomainId ? shortId(r.openproviderDomainId, 10) : (
+                        <span className="text-rose-600 font-semibold">none</span>
+                      )}
+                    </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                          r.paymentStatus === 'CAPTURED' || r.paymentStatus === 'SUCCESS'
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                          paymentOkOf(r)
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : r.paymentStatus === 'FAILED'
                             ? 'bg-rose-50 text-rose-700 border border-rose-200'
                             : 'bg-amber-50 text-amber-700 border border-amber-200'
                         }`}
                       >
-                        {r.paymentStatus === 'CAPTURED' ? 'SUCCESS' : r.paymentStatus}
+                        {paymentOkOf(r) ? 'OK' : (r.paymentStatus === 'CAPTURED' ? 'SUCCESS' : r.paymentStatus || '—')}
                       </span>
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                          registrationLabelOf(r) === 'OK'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : registrationLabelOf(r) === 'FAIL'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}
+                      >
+                        {registrationLabelOf(r)}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap max-w-[140px]">
+                      {r.errorCode ? (
+                        <span
+                          className="text-[10px] font-bold text-rose-700 truncate inline-block max-w-full"
+                          title={r.errorMessage || r.errorCode}
+                        >
+                          {r.errorCode}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">{renderStatusBadge(r.overallStatus)}</td>
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
@@ -497,15 +661,76 @@ export default function AdminTrackRecordsTab() {
               </div>
 
               {/* Status Banner */}
-              <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <div className="text-xs font-semibold text-slate-600">Overall Transaction Status</div>
-                <div>{renderStatusBadge(selectedRecord.overallStatus)}</div>
+              <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-600">Overall:</span>
+                  {renderStatusBadge(selectedRecord.overallStatus)}
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                      paymentOkOf(selectedRecord)
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200'
+                    }`}
+                  >
+                    Payment {paymentOkOf(selectedRecord) ? 'OK' : 'FAIL'}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                      registrationLabelOf(selectedRecord) === 'OK'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : registrationLabelOf(selectedRecord) === 'FAIL'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}
+                  >
+                    Registration {registrationLabelOf(selectedRecord)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyDiagnostics(selectedRecord)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors"
+                >
+                  <Copy size={13} /> Copy diagnostics for developer
+                </button>
               </div>
 
               {/* Drawer Content Body */}
               <div className="p-6 space-y-6 text-xs text-slate-700">
-                {/* Error Diagnostics Section if Failed */}
-                {selectedRecord.overallStatus === 'Failed' && (
+                {/* Always-visible developer diagnostics (false Success rows need this too) */}
+                <div className="bg-slate-900 text-slate-100 border border-slate-700 rounded-2xl p-4 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 font-bold text-sm text-indigo-300">
+                      <ShieldAlert size={16} /> Developer diagnostics
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyDiagnostics(selectedRecord)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg text-xs font-bold transition-colors"
+                    >
+                      <Copy size={13} /> Copy for developer
+                    </button>
+                  </div>
+                  <pre className="p-3 bg-black/40 border border-slate-700 rounded-xl text-[11px] font-mono whitespace-pre-wrap break-all text-slate-200 max-h-56 overflow-y-auto">
+                    {selectedRecord.developerSummary ||
+                      [
+                        `InternalOrderId: ${selectedRecord.internalOrderId || 'n/a'}`,
+                        `RazorpayPaymentId: ${selectedRecord.razorpayPaymentId || 'n/a'}`,
+                        `Domain/Item: ${selectedRecord.itemName || 'n/a'}`,
+                        `Payment: ${paymentOkOf(selectedRecord) ? 'OK' : 'FAIL'} (${selectedRecord.paymentStatus || 'n/a'})`,
+                        `Registration: ${registrationLabelOf(selectedRecord)}`,
+                        `OpenProviderDomainId: ${selectedRecord.openproviderDomainId || '(none)'}`,
+                        `Overall: ${selectedRecord.overallStatus || 'n/a'}`,
+                        `Fulfillment: ${selectedRecord.fulfillmentStatus || 'n/a'}`,
+                        `ErrorSource: ${selectedRecord.errorSource || 'n/a'}`,
+                        `ErrorCode: ${selectedRecord.errorCode || 'n/a'}`,
+                        `ErrorMessage: ${selectedRecord.errorMessage || 'n/a'}`,
+                      ].join('\n')}
+                  </pre>
+                </div>
+
+                {/* Error Diagnostics — show whenever registration is not OK */}
+                {registrationLabelOf(selectedRecord) !== 'OK' && (
                   <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2">
                     <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
                       <ShieldAlert size={16} /> Provisioning / Fulfillment Error Diagnostics
@@ -523,7 +748,10 @@ export default function AdminTrackRecordsTab() {
                     <div className="pt-1">
                       <span className="text-slate-500 font-normal">Error Message:</span>
                       <pre className="mt-1 p-2.5 bg-white border border-rose-100 rounded-xl text-rose-800 text-[11px] font-mono whitespace-pre-wrap break-all">
-                        {selectedRecord.errorMessage || 'No detailed error message captured.'}
+                        {selectedRecord.errorMessage ||
+                          (String(selectedRecord.itemName || '').startsWith('Payment #')
+                            ? 'Payment captured but no linked domain registration / OpenProvider id. This is not a completed registration.'
+                            : 'No detailed error message captured.')}
                       </pre>
                     </div>
                   </div>
@@ -560,6 +788,12 @@ export default function AdminTrackRecordsTab() {
                     <PackageCheck size={14} className="text-indigo-600" /> Purchase Details
                   </h4>
                   <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                    <div className="col-span-2">
+                      <span className="text-slate-500">Domain:</span>{' '}
+                      <span className="font-bold text-slate-900">
+                        {domainOf(selectedRecord) || selectedRecord.domainName || 'Not recovered'}
+                      </span>
+                    </div>
                     <div className="col-span-2">
                       <span className="text-slate-500">Item Name:</span>{' '}
                       <span className="font-bold text-slate-900">{selectedRecord.itemName}</span>

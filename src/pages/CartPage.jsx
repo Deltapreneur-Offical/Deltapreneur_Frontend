@@ -388,20 +388,30 @@ export default function CartPage() {
             await fetchCart();
             const purchased = verifyData?.purchasedCount ?? 0;
             const total = verifyData?.totalItems ?? purchased;
+            const needsAttention = Boolean(verifyData?.needsAttention) || verifyData?.success === false;
             const domains = (verifyData?.results || [])
               .filter((r) => r?.type === 'DOMAIN_REGISTRATION' && r?.success && r?.domain)
               .map((r) => r.domain);
-            if (purchased > 0 && purchased < total) {
-              setError(`${purchased} of ${total} items purchased. Some items were no longer available — review your cart.`);
+            if (needsAttention || purchased <= 0) {
+              setError(
+                verifyData?.message
+                || 'Payment was received but domain registration did not complete. Do not pay again — contact support with your payment ID.',
+              );
+              setPaymentSuccess(null);
+              setShowConfetti(false);
+            } else {
+              if (purchased > 0 && purchased < total) {
+                setError(`${purchased} of ${total} items purchased. Some items were no longer available — review your cart.`);
+              }
+              setPaymentSuccess({
+                purchased,
+                total,
+                domains,
+                partial: purchased > 0 && purchased < total,
+              });
+              setShowConfetti(true);
+              setTimeout(() => setShowConfetti(false), 4500);
             }
-            setPaymentSuccess({
-              purchased,
-              total,
-              domains,
-              partial: purchased > 0 && purchased < total,
-            });
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 4500);
           } catch (err) {
             const detail = err?.response?.data?.detail || '';
             if (detail.includes('No cart items found')) {

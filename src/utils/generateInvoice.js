@@ -1,14 +1,24 @@
-
 /**
  * generateInvoice.js
- * CoBrother — Invoice PDF Generator
- * Uses a hidden iframe + window.print() to produce a clean PDF.
- * No external dependencies required.
+ * CoBrother storefront — Tax Invoice PDF (print) generator.
+ * Seller billed as Aultum International.
  */
 
-import coBrotherLogo from '../assets/Cobrother_logo.png';
+import coBrotherLogo from '../assets/CoBrother_logo_skyblue.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
+
+const SELLER = {
+  legalName: 'Aultum International',
+  gstin: '29DXMPA9959L2ZF',
+  email: 'support@cobrother.com',
+  website: 'www.cobrother.com',
+  addressLines: [
+    'Third Floor TF 307 Marvel Artiza',
+    'Pune Bangalore Road, Vidyanagar, Hubballi',
+    'Dharwad, Karnataka, 580021 India',
+  ],
+};
 
 function invoiceLogoUrl() {
   if (typeof coBrotherLogo === 'string' && coBrotherLogo.startsWith('http')) {
@@ -53,118 +63,180 @@ function formatINR(amount) {
 function formatMoney(amount, currencyCode = 'INR') {
   const code = (currencyCode || 'INR').toUpperCase();
   if (code === 'INR') {
-    return formatInr(amount);
+    return formatInr(amount, { forceDecimals: true });
   }
   const symbols = { USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$', AUD: 'A$', CAD: 'C$' };
   const sym = symbols[code] || `${code} `;
-  return sym + Number(amount || 0).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return (
+    sym +
+    Number(amount || 0).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
 
 function today() {
   return new Date().toLocaleDateString('en-IN', {
-    day: '2-digit', month: 'long', year: 'numeric',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
   });
 }
 
 function invoiceNumber(id) {
-  const num = String(id || Math.floor(Math.random() * 90000) + 10000).slice(-6).padStart(6, '0');
+  const num = String(id || Math.floor(Math.random() * 90000) + 10000)
+    .slice(-6)
+    .padStart(6, '0');
   return `CB-INV-${num}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function buildLineItems({ type, item }) {
+  /** @type {{ name: string, description?: string, qty: number, unitPrice: number, amount: number }[]} */
+  const lines = [];
+
+  if (type === 'domain_registration') {
+    const productName =
+      item.domain || `${item.domainName || ''}${item.domainExtension || ''}` || 'Domain registration';
+    const qty = Math.max(1, Number(item.periodYears ?? item.quantityYears ?? 1) || 1);
+    const gst = Number(item.gstInr ?? 0);
+    const total = Number(item.priceInr ?? item.price ?? 0);
+    const subtotal =
+      item.subtotalInr != null
+        ? Number(item.subtotalInr)
+        : gst > 0 && total > gst
+          ? total - gst
+          : total || Number(item.quotedUnitPriceInr ?? 0) * qty;
+    const unitPrice =
+      item.quotedUnitPriceInr != null
+        ? Number(item.quotedUnitPriceInr)
+        : qty > 0
+          ? subtotal / qty
+          : subtotal;
+
+    lines.push({
+      name: productName,
+      description: `Domain registration · ${qty} ${qty === 1 ? 'year' : 'years'}`,
+      qty,
+      unitPrice,
+      amount: subtotal,
+    });
+    return { lines, gst, total: total || subtotal + gst };
+  }
+
+  if (type === 'domain') {
+    const productName = `${item.domainName || ''}${item.domainExtension || ''}`.trim() || 'Domain';
+    const amount = Number(item.askingPrice || item.priceInr || item.price || 0);
+    lines.push({
+      name: productName,
+      description: item.pricingDemand || 'Domain name purchase',
+      qty: 1,
+      unitPrice: amount,
+      amount,
+    });
+    return { lines, gst: 0, total: amount };
+  }
+
+  const sw = item.software || {};
+  const productName = sw.name || 'Software License';
+  const amount = Number(sw.price || item.price || 0);
+  lines.push({
+    name: productName,
+    description: sw.description || 'Software purchase',
+    qty: 1,
+    unitPrice: amount,
+    amount,
+  });
+  if (item.coBrotherHelpPaid) {
+    lines.push({
+      name: 'CoBrother Helper Service',
+      description: 'Optional helper add-on',
+      qty: 1,
+      unitPrice: 1000,
+      amount: 1000,
+    });
+  }
+  const subtotal = lines.reduce((s, l) => s + l.amount, 0);
+  return { lines, gst: 0, total: subtotal };
 }
 
 /**
  * @param {object} opts
  * @param {'domain'|'domain_registration'|'software'} opts.type
- * @param {object} opts.item   — the raw purchase object from the API
- * @param {object} opts.user   — { name, email } of the logged-in user (pass what you have)
+ * @param {object} opts.item
+ * @param {object} opts.user — { name, email, gstin, address, phone }
  */
 export function generateInvoice({ type, item, user = {} }) {
-  /* ── Derive fields ─────────────────────────────────────── */
   const invNo = invoiceNumber(item.id);
   const invDate = item.createdAt
     ? formatAuctionDate(item.createdAt, { day: '2-digit', month: 'long', year: 'numeric' }, today())
     : today();
 
-  let productName, productDesc, baseAmount, extraLines = [];
-  let paymentRef = '';
-
-  if (type === 'domain_registration') {
-    productName = item.domain || `${item.domainName || ''}${item.domainExtension || ''}`;
-    productDesc = 'New domain registration (CoBrother storefront)';
-    baseAmount = Number(item.subtotalInr ?? item.priceInr ?? item.price ?? 0);
-    paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
-  } else if (type === 'domain') {
-    productName = `${item.domainName}${item.domainExtension}`;
-    productDesc = item.pricingDemand || 'Domain Name Purchase';
-    baseAmount = Number(item.askingPrice || 0);
-    paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
-  } else {
-    const sw = item.software || {};
-    productName = sw.name || 'Software License';
-    productDesc = sw.description || 'Software Purchase';
-    baseAmount = Number(sw.price || 0);
-    if (item.coBrotherHelpPaid) {
-      extraLines.push({ label: 'CoBrother Helper Service', amount: 1000 });
-    }
-  }
+  const paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
+  const { lines, gst, total } = buildLineItems({ type, item });
+  const subtotal = lines.reduce((s, l) => s + Number(l.amount || 0), 0);
 
   const chargeCurrency = item.chargeCurrency || 'INR';
-  const formatLine = (amt) =>
-    item.amountCharged != null && chargeCurrency !== 'INR'
-      ? formatMoney(item.amountCharged, chargeCurrency)
-      : formatINR(amt);
-
-  const subtotal = baseAmount + extraLines.reduce((s, l) => s + l.amount, 0);
-  const gst =
-    type === 'domain_registration'
-      ? Number(item.gstInr ?? 0)
-      : 0;
-  const total =
-    type === 'domain_registration'
-      ? Number(item.priceInr ?? item.price ?? subtotal + gst)
-      : subtotal + gst;
   const displayTotal =
-    item.amountCharged != null ? formatMoney(item.amountCharged, chargeCurrency) : formatLine(total);
+    item.amountCharged != null
+      ? formatMoney(item.amountCharged, chargeCurrency)
+      : formatINR(total || subtotal + gst);
 
-  const sellerGstin =
-    type === 'domain_registration' && item.cobrotherGstin
-      ? item.cobrotherGstin
-      : '[Your GSTIN]';
   const logoUrl = invoiceLogoUrl();
-
   const typeLabel =
     type === 'domain_registration'
-      ? '◇ Domain Registration'
+      ? 'Domain Registration'
       : type === 'domain'
-        ? '◇ Domain Purchase'
-        : '⟁ Software License';
+        ? 'Domain Purchase'
+        : 'Software License';
   const typeBadgeBg =
     type === 'software' ? '#ede9fe' : type === 'domain_registration' ? '#ecfdf5' : '#e0f2fe';
   const typeBadgeColor =
     type === 'software' ? '#6d28d9' : type === 'domain_registration' ? '#047857' : '#0369a1';
 
-  const extraRows = extraLines.map(l => `
-      <tr>
-        <td>${l.label}</td>
-        <td class="text-right">${formatINR(l.amount)}</td>
-      </tr>
-    `).join('');
+  const sellerAddressHtml = SELLER.addressLines.map((line) => escapeHtml(line)).join('<br/>');
 
-  /* ── HTML Template ─────────────────────────────────────── */
+  const itemRows = lines
+    .map((line, idx) => {
+      const sno = idx + 1;
+      return `
+      <tr>
+        <td class="col-sno">${sno}</td>
+        <td>
+          <div class="item-name">${escapeHtml(line.name)}</div>
+          ${line.description ? `<div class="item-desc">${escapeHtml(line.description)}</div>` : ''}
+        </td>
+        <td class="text-right col-qty">${Number(line.qty || 1)}</td>
+        <td class="text-right">${formatINR(line.unitPrice)}</td>
+        <td class="text-right">${formatINR(line.amount)}</td>
+      </tr>`;
+    })
+    .join('');
+
+  const buyerGstin = user.gstin || item.buyerGstin || item.buyer_gstin || '';
+  const buyerPhone = user.phone || item.buyerPhone || item.buyer_phone || '';
+  const buyerAddress = user.address || '';
+
   const html = `<!DOCTYPE html>
   <html lang="en">
   <head>
   <meta charset="UTF-8"/>
-  <title>Invoice ${invNo} — CoBrother</title>
+  <title>Invoice ${escapeHtml(invNo)} — ${escapeHtml(SELLER.legalName)}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap');
-  
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  
+
     body {
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'DM Sans', system-ui, sans-serif;
       background: #fff;
       color: #111827;
       font-size: 13px;
@@ -172,28 +244,29 @@ export function generateInvoice({ type, item, user = {} }) {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-  
+
     .page {
       width: 794px;
       min-height: 1123px;
       margin: 0 auto;
-      padding: 56px 60px;
+      padding: 48px 52px;
       display: flex;
       flex-direction: column;
     }
-  
-    /* ── Header ── */
+
     .header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 48px;
+      margin-bottom: 36px;
+      gap: 24px;
     }
     .brand-block {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: 6px;
+      max-width: 55%;
     }
     .brand-logo {
       height: 44px;
@@ -202,45 +275,30 @@ export function generateInvoice({ type, item, user = {} }) {
       object-fit: contain;
       display: block;
     }
-    .brand-tagline {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 4px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .invoice-meta {
-      text-align: right;
-    }
+    .invoice-meta { text-align: right; }
     .invoice-title {
       font-family: 'DM Serif Display', serif;
       font-size: 22px;
       color: #111827;
       letter-spacing: -0.3px;
     }
-    .invoice-number {
+    .invoice-number, .invoice-date {
       font-size: 12px;
       color: #6b7280;
       margin-top: 2px;
     }
-    .invoice-date {
-      font-size: 12px;
-      color: #6b7280;
-    }
-  
-    /* ── Divider ── */
+
     .divider {
       height: 1px;
       background: linear-gradient(90deg, #111827 0%, #e5e7eb 100%);
-      margin-bottom: 40px;
+      margin-bottom: 32px;
     }
-  
-    /* ── Address Block ── */
+
     .addresses {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 32px;
-      margin-bottom: 40px;
+      gap: 28px;
+      margin-bottom: 28px;
     }
     .address-block .label {
       font-size: 10px;
@@ -254,53 +312,58 @@ export function generateInvoice({ type, item, user = {} }) {
       font-weight: 700;
       font-size: 14px;
       color: #111827;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
     .address-block p {
       color: #4b5563;
-      font-size: 12px;
-      line-height: 1.7;
+      font-size: 11.5px;
+      line-height: 1.65;
     }
-  
-    /* ── Badge ── */
+
     .type-badge {
       display: inline-block;
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       background: ${typeBadgeBg};
       color: ${typeBadgeColor};
     }
-  
-    /* ── Items Table ── */
+
     .items-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
     .items-table thead tr {
       background: #111827;
       color: #fff;
     }
     .items-table thead th {
-      padding: 12px 16px;
-      font-size: 11px;
+      padding: 11px 12px;
+      font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       text-transform: uppercase;
       text-align: left;
     }
     .items-table thead th.text-right { text-align: right; }
-    .items-table tbody tr {
-      border-bottom: 1px solid #f3f4f6;
+    .items-table thead th.col-sno,
+    .items-table tbody td.col-sno {
+      width: 48px;
+      text-align: center;
     }
-    .items-table tbody tr:last-child { border-bottom: none; }
+    .items-table thead th.col-qty,
+    .items-table tbody td.col-qty {
+      width: 56px;
+    }
+    .items-table tbody tr { border-bottom: 1px solid #f3f4f6; }
     .items-table tbody td {
-      padding: 14px 16px;
+      padding: 12px;
       color: #374151;
       vertical-align: top;
+      font-size: 12.5px;
     }
     .items-table tbody td.text-right { text-align: right; }
     .item-name {
@@ -313,11 +376,10 @@ export function generateInvoice({ type, item, user = {} }) {
       font-size: 11px;
       color: #9ca3af;
     }
-  
-    /* ── Totals ── */
+
     .totals {
       margin-left: auto;
-      width: 280px;
+      width: 300px;
     }
     .totals-row {
       display: flex;
@@ -334,15 +396,10 @@ export function generateInvoice({ type, item, user = {} }) {
       margin-top: 6px;
       padding-top: 10px;
     }
-    .totals-row .gst-note {
-      font-size: 10px;
-      color: #9ca3af;
-    }
-  
-    /* ── Status Banner ── */
+
     .status-banner {
-      margin-top: 40px;
-      padding: 16px 20px;
+      margin-top: 32px;
+      padding: 14px 18px;
       background: #f0fdf4;
       border: 1px solid #bbf7d0;
       border-radius: 10px;
@@ -362,158 +419,143 @@ export function generateInvoice({ type, item, user = {} }) {
       font-weight: 600;
       color: #166534;
     }
-  
-    /* ── Footer ── */
+
     .footer {
       margin-top: auto;
-      padding-top: 40px;
+      padding-top: 32px;
       border-top: 1px solid #e5e7eb;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
+      gap: 16px;
     }
-    .footer-left {
+    .footer-left, .footer-right {
       font-size: 11px;
       color: #9ca3af;
       line-height: 1.7;
     }
-    .footer-right {
-      text-align: right;
-      font-size: 11px;
-      color: #9ca3af;
-    }
+    .footer-right { text-align: right; }
     .footer-logo {
-      height: 22px;
+      height: 20px;
       width: auto;
-      max-width: 140px;
+      max-width: 120px;
       object-fit: contain;
       display: block;
-      margin-top: 4px;
+      margin: 4px 0 0 auto;
       opacity: 0.55;
     }
-  
-    /* ── Watermark stripe ── */
+
     .stripe {
       height: 5px;
-      background: linear-gradient(90deg, #111827 0%, #6d28d9 50%, #111827 100%);
+      background: linear-gradient(90deg, #111827 0%, #0f766e 50%, #111827 100%);
       margin-bottom: 0;
       border-radius: 0 0 3px 3px;
     }
-  
+
     @media print {
       body { margin: 0; }
-      .page { padding: 40px 48px; }
+      .page { padding: 36px 40px; }
     }
   </style>
   </head>
   <body>
   <div class="stripe"></div>
   <div class="page">
-  
-    <!-- Header -->
+
     <div class="header">
       <div class="brand-block">
         <img class="brand-logo" src="${logoUrl}" alt="CoBrother" />
       </div>
       <div class="invoice-meta">
         <div class="invoice-title">Tax Invoice</div>
-        <div class="invoice-number">${invNo}</div>
-        <div class="invoice-date">Date: ${invDate}</div>
+        <div class="invoice-number">${escapeHtml(invNo)}</div>
+        <div class="invoice-date">Date: ${escapeHtml(invDate)}</div>
       </div>
     </div>
-  
+
     <div class="divider"></div>
-  
-    <!-- Addresses -->
+
     <div class="addresses">
       <div class="address-block">
         <div class="label">From</div>
-        <div class="name">CoBrother Technologies Pvt. Ltd.</div>
+        <div class="name">${escapeHtml(SELLER.legalName)}</div>
         <p>
-          [Address Line 1]<br/>
-          [City, State – PIN]<br/>
-          India<br/>
-          GSTIN: ${sellerGstin}<br/>
-          support@cobrother.com
+          ${sellerAddressHtml}<br/>
+          GSTIN: ${escapeHtml(SELLER.gstin)}<br/>
+          ${escapeHtml(SELLER.email)}
         </p>
       </div>
       <div class="address-block">
         <div class="label">Billed To</div>
-        <div class="name">${user.name || 'Customer'}</div>
+        <div class="name">${escapeHtml(user.name || 'Customer')}</div>
         <p>
-          ${user.email || ''}<br/>
-          ${user.gstin ? 'GSTIN: ' + user.gstin + '<br/>' : ''}
-          ${user.address || ''}
+          ${user.email ? `${escapeHtml(user.email)}<br/>` : ''}
+          ${buyerPhone ? `Phone: ${escapeHtml(buyerPhone)}<br/>` : ''}
+          ${buyerGstin ? `GSTIN: ${escapeHtml(buyerGstin)}<br/>` : ''}
+          ${buyerAddress ? escapeHtml(buyerAddress) : ''}
         </p>
       </div>
     </div>
-  
-    <!-- Type Badge -->
+
     <div>
-      <span class="type-badge">${typeLabel}</span>
+      <span class="type-badge">${escapeHtml(typeLabel)}</span>
     </div>
-  
-    <!-- Items Table -->
+
     <table class="items-table">
       <thead>
         <tr>
-          <th>Description</th>
+          <th class="col-sno">S/No</th>
+          <th>Item Name</th>
+          <th class="text-right col-qty">Qty</th>
+          <th class="text-right">Price</th>
           <th class="text-right">Amount</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>
-            <div class="item-name">${productName}</div>
-            <div class="item-desc">${productDesc}</div>
-          </td>
-          <td class="text-right">${formatINR(baseAmount)}</td>
-        </tr>
-        ${extraRows}
+        ${itemRows}
       </tbody>
     </table>
-  
-    <!-- Totals -->
+
     <div class="totals">
       <div class="totals-row">
         <span>Subtotal</span>
         <span>${formatINR(subtotal)}</span>
       </div>
       <div class="totals-row">
-        <span>GST (18%)${gst === 0 ? ' <span class="gst-note">*</span>' : ''}</span>
-        <span>${gst === 0 ? '—' : formatINR(gst)}</span>
+        <span>GST (18%)</span>
+        <span>${gst > 0 ? formatINR(gst) : '—'}</span>
       </div>
       <div class="totals-row bold">
-        <span>Total</span>
+        <span>Final Amount</span>
         <span>${displayTotal}</span>
       </div>
     </div>
-  
-    <!-- Status -->
+
     <div class="status-banner">
       <div class="status-dot"></div>
       <div class="status-text">Payment Confirmed — Thank you for your purchase!</div>
     </div>
-    ${paymentRef ? `<p style="margin-top:12px;font-size:11px;color:#6b7280;"><strong>Payment reference:</strong> ${paymentRef}</p>` : ''}
-  
-    <!-- Footer -->
+    ${
+      paymentRef
+        ? `<p style="margin-top:12px;font-size:11px;color:#6b7280;"><strong>Payment reference:</strong> ${escapeHtml(paymentRef)}</p>`
+        : ''
+    }
+
     <div class="footer">
       <div class="footer-left">
-        ${gst === 0 ? '* GST details will appear once GSTIN configuration is complete.<br/>' : ''}
         This is a computer-generated invoice and does not require a signature.<br/>
-        For queries, write to support@cobrother.com
+        For queries, write to ${escapeHtml(SELLER.email)}
       </div>
       <div class="footer-right">
-        <img class="footer-logo" src="${logoUrl}" alt="CoBrother" />
-        www.cobrother.com
+        <img class="footer-logo" src="${logoUrl}" alt="${escapeHtml(SELLER.legalName)}" />
+        ${escapeHtml(SELLER.website)}
       </div>
     </div>
-  
+
   </div>
   </body>
   </html>`;
 
-  /* ── Open in new window and trigger print ──────────────── */
   const win = window.open('', '_blank', 'width=900,height=700');
   if (!win) {
     alert('Please allow pop-ups for this site to download invoices.');
@@ -521,6 +563,5 @@ export function generateInvoice({ type, item, user = {} }) {
   }
   win.document.write(html);
   win.document.close();
-
   win.onload = () => printInvoiceWindow(win);
 }

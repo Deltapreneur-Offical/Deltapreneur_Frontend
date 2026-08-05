@@ -62,6 +62,7 @@ import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../u
 import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
 import AdminBlacklistUsersTab from '../components/admin/AdminBlacklistUsersTab';
 import AdminOpenProviderCommissionTab from '../components/admin/AdminOpenProviderCommissionTab';
+import AdminTrackRecordsTab from '../components/admin/AdminTrackRecordsTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -470,7 +471,7 @@ export default function AdminDashboardPage() {
     refreshing: pendingRefreshing,
     lastFetchedAt: pendingLastFetchedAt,
     refresh: refreshPendingCounts,
-  } = useAdminPendingCounts({ enabled: tab !== 'fees-charges' && tab !== 'domain-transfers' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && tab !== 'blacklist-users' });
+  } = useAdminPendingCounts({ enabled: tab !== 'fees-charges' && tab !== 'domain-transfers' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && tab !== 'blacklist-users' && tab !== 'track-records' });
 
   const loadTab = (currentTab, options = {}) => {
     const { silent = false } = options;
@@ -488,7 +489,7 @@ export default function AdminDashboardPage() {
       'addon-orders':      adminAPI.getAddonOrders,
     };
   
-    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals' || currentTab === 'openprovider-pricing' || currentTab === 'blacklist-users') {
+    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals' || currentTab === 'openprovider-pricing' || currentTab === 'blacklist-users' || currentTab === 'track-records') {
       setLoading(false);
       setData([]);
       return;
@@ -649,6 +650,7 @@ export default function AdminDashboardPage() {
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
     { id: 'openprovider-pricing', label: 'OpenProvider Pricing',           icon: DomainsIcon },
     { id: 'domain-transfers',   label: t('adminTabDomainTransfers', { defaultValue: 'Domain transfers' }), icon: DomainsIcon },
+    { id: 'track-records',      label: 'Track Records',                  icon: null, Icon: ClipboardList },
     { id: 'blacklist-users',    label: 'Blacklist Users', icon: null, Icon: Ban },
   ].filter((tabItem) => {
     if (!isAuctionModeratorOnly) return true;
@@ -884,6 +886,10 @@ export default function AdminDashboardPage() {
             <AdminBlacklistUsersTab toast={toast} />
           )}
 
+          {tab === 'track-records' && (
+            <AdminTrackRecordsTab />
+          )}
+
           {tab === 'openprovider-pricing' && (
             <AdminOpenProviderCommissionTab />
           )}
@@ -892,7 +898,7 @@ export default function AdminDashboardPage() {
             <VentureDealsAdminTab />
           )}
 
-          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && (
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

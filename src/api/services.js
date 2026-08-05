@@ -344,6 +344,9 @@ export const adminAPI = {
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
   getOpenProviderManagedAcquisitions: () =>
     api.get('/api/v1/openprovider-managed-acquisitions/all'),
+  getTrackRecords: (params) => api.get('/api/v1/admin/track-records', { params }),
+  syncTrackRecords: () => api.post('/api/v1/admin/track-records/sync'),
+  getTrackRecordDetail: (id) => api.get(`/api/v1/admin/track-records/${id}`),
   markDomainVerified:   (id)    => api.post(`/api/v1/admin/domains/${id}/mark-verified`),
   markDomainUnverified: (id)    => api.post(`/api/v1/admin/domains/${id}/mark-unverified`),
   getDomainVerificationReview: (id) => api.get(`/api/v1/admin/domains/${id}/verification-review`),

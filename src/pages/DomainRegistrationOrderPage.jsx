@@ -250,13 +250,24 @@ export default function DomainRegistrationOrderPage() {
 
   const handleInvoice = () => {
     if (!order) return;
+    const customerName =
+      order.buyerFullName ||
+      order.buyer_full_name ||
+      [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim() ||
+      [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() ||
+      user?.fullName ||
+      user?.username ||
+      '';
     generateInvoice({
       type: 'domain_registration',
       item: order,
       user: {
-        name: order.buyerFullName || order.buyerEmail || user?.email,
-        email: order.buyerEmail || user?.email,
+        ...user,
+        name: customerName,
+        email: order.buyerEmail || user?.email || '',
+        phone: order.buyerPhone || user?.phoneNumber || user?.phone || '',
         gstin: order.buyerGstin || '',
+        address: user?.address || '',
       },
     });
   };

@@ -4,7 +4,7 @@
  * Seller billed as Aultum International.
  */
 
-import coBrotherLogo from '../assets/CoBrother_logo_skyblue.png';
+import coBrotherLogo from '../assets/Cobrother_logo.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 
@@ -84,11 +84,103 @@ function today() {
   });
 }
 
-function invoiceNumber(id) {
-  const num = String(id || Math.floor(Math.random() * 90000) + 10000)
-    .slice(-6)
-    .padStart(6, '0');
-  return `CB-INV-${num}`;
+/**
+ * Aultum tax invoice id: AI + YYYY + 5-digit domain-purchase sequence.
+ * Example: AI202600001
+ * Reuses the same number for the same payment/order on re-download (local map).
+ */
+function buildAultumInvoiceNumber(item = {}, explicitSequence = null) {
+  if (item.taxInvoiceNumber || item.invoiceNumber) {
+    return String(item.taxInvoiceNumber || item.invoiceNumber).trim();
+  }
+
+  const year = new Date(item.createdAt || Date.now()).getFullYear();
+  const paymentKey = String(
+    item.razorpayPaymentId ||
+      item.razorpay_payment_id ||
+      item.id ||
+      '',
+  ).trim();
+
+  if (explicitSequence != null && Number.isFinite(Number(explicitSequence))) {
+    const seq = Math.max(1, Math.floor(Number(explicitSequence)));
+    return `AI${year}${String(seq).padStart(5, '0')}`;
+  }
+
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const seqKey = `aultum_tax_invoice_seq_${year}`;
+      const mapKey = `aultum_tax_invoice_map_${year}`;
+      const map = JSON.parse(localStorage.getItem(mapKey) || '{}');
+      if (paymentKey && map[paymentKey]) {
+        return `AI${year}${String(map[paymentKey]).padStart(5, '0')}`;
+      }
+      const next = Math.max(1, Number(localStorage.getItem(seqKey) || '0') + 1);
+      localStorage.setItem(seqKey, String(next));
+      if (paymentKey) {
+        map[paymentKey] = next;
+        localStorage.setItem(mapKey, JSON.stringify(map));
+      }
+      return `AI${year}${String(next).padStart(5, '0')}`;
+    } catch {
+      // fall through
+    }
+  }
+
+  return `AI${year}00001`;
+}
+
+function resolveCustomerName(user = {}, item = {}) {
+  const candidates = [
+    user.name,
+    user.fullName,
+    user.full_name,
+    [user.firstname, user.lastname].filter(Boolean).join(' ').trim(),
+    [user.firstName, user.lastName].filter(Boolean).join(' ').trim(),
+    user.username,
+    item.buyerFullName,
+    item.buyer_full_name,
+    item.buyerName,
+    item.buyer_name,
+  ];
+  for (const c of candidates) {
+    const name = String(c || '').trim();
+    if (name && name.toLowerCase() !== 'customer') return name;
+  }
+  return '';
+}
+
+/**
+ * Prefer checkout registrant address on the order, then profile address.
+ * Returns a multi-line string (newlines preserved for HTML rendering).
+ */
+function resolveBuyerAddress(user = {}, item = {}) {
+  const street = String(item.street || user.street || '').trim();
+  const city = String(item.city || user.city || '').trim();
+  const state = String(item.state || user.state || '').trim();
+  const zip = String(
+    item.zipCode || item.zip_code || item.zip || user.zipCode || user.zip || user.pincode || '',
+  ).trim();
+  const countryRaw = String(item.country || user.country || '').trim();
+  const country =
+    !countryRaw || countryRaw.toUpperCase() === 'IN' ? (countryRaw ? 'India' : '') : countryRaw;
+
+  const lines = [];
+  if (street) lines.push(street);
+  const cityStateZip = [city, state, zip].filter(Boolean).join(', ');
+  if (cityStateZip) lines.push(cityStateZip);
+  // Only append country when there is a real address line (orders default country to IN).
+  if (lines.length && country) lines.push(country);
+  if (lines.length) return lines.join('\n');
+
+  // Profile address filled at account creation / complete-profile.
+  return String(user.address || '').trim();
+}
+
+function addressToHtml(address) {
+  const text = String(address || '').trim();
+  if (!text) return '';
+  return escapeHtml(text).replace(/\r\n|\r|\n/g, '<br/>');
 }
 
 function escapeHtml(value) {
@@ -172,10 +264,11 @@ function buildLineItems({ type, item }) {
  * @param {object} opts
  * @param {'domain'|'domain_registration'|'software'} opts.type
  * @param {object} opts.item
- * @param {object} opts.user — { name, email, gstin, address, phone }
+ * @param {object} opts.user — { name, email, gstin, address, phone, firstname, lastname, ... }
+ * @param {number} [opts.invoiceSequence] — optional 1-based domain purchase sequence
  */
-export function generateInvoice({ type, item, user = {} }) {
-  const invNo = invoiceNumber(item.id);
+export function generateInvoice({ type, item, user = {}, invoiceSequence = null }) {
+  const invNo = buildAultumInvoiceNumber(item, invoiceSequence);
   const invDate = item.createdAt
     ? formatAuctionDate(item.createdAt, { day: '2-digit', month: 'long', year: 'numeric' }, today())
     : today();
@@ -191,6 +284,7 @@ export function generateInvoice({ type, item, user = {} }) {
       : formatINR(total || subtotal + gst);
 
   const logoUrl = invoiceLogoUrl();
+  const customerName = resolveCustomerName(user, item);
   const typeLabel =
     type === 'domain_registration'
       ? 'Domain Registration'
@@ -222,8 +316,10 @@ export function generateInvoice({ type, item, user = {} }) {
     .join('');
 
   const buyerGstin = user.gstin || item.buyerGstin || item.buyer_gstin || '';
-  const buyerPhone = user.phone || item.buyerPhone || item.buyer_phone || '';
-  const buyerAddress = user.address || '';
+  const buyerPhone = user.phone || user.phoneNumber || item.buyerPhone || item.buyer_phone || '';
+  const buyerAddress = resolveBuyerAddress(user, item);
+  const buyerAddressHtml = addressToHtml(buyerAddress);
+  const buyerEmail = user.email || item.buyerEmail || item.buyer_email || '';
 
   const html = `<!DOCTYPE html>
   <html lang="en">
@@ -282,10 +378,15 @@ export function generateInvoice({ type, item, user = {} }) {
       color: #111827;
       letter-spacing: -0.3px;
     }
-    .invoice-number, .invoice-date {
+    .invoice-number, .invoice-date, .invoice-gstin {
       font-size: 12px;
       color: #6b7280;
       margin-top: 2px;
+    }
+    .invoice-gstin {
+      font-weight: 600;
+      color: #374151;
+      margin-top: 6px;
     }
 
     .divider {
@@ -470,6 +571,7 @@ export function generateInvoice({ type, item, user = {} }) {
         <div class="invoice-title">Tax Invoice</div>
         <div class="invoice-number">${escapeHtml(invNo)}</div>
         <div class="invoice-date">Date: ${escapeHtml(invDate)}</div>
+        <div class="invoice-gstin">GSTIN: ${escapeHtml(SELLER.gstin)}</div>
       </div>
     </div>
 
@@ -481,18 +583,17 @@ export function generateInvoice({ type, item, user = {} }) {
         <div class="name">${escapeHtml(SELLER.legalName)}</div>
         <p>
           ${sellerAddressHtml}<br/>
-          GSTIN: ${escapeHtml(SELLER.gstin)}<br/>
           ${escapeHtml(SELLER.email)}
         </p>
       </div>
       <div class="address-block">
         <div class="label">Billed To</div>
-        <div class="name">${escapeHtml(user.name || 'Customer')}</div>
+        <div class="name">${escapeHtml(customerName || 'Customer Name')}</div>
         <p>
-          ${user.email ? `${escapeHtml(user.email)}<br/>` : ''}
+          ${buyerAddressHtml ? `${buyerAddressHtml}<br/>` : ''}
+          ${buyerEmail ? `${escapeHtml(buyerEmail)}<br/>` : ''}
           ${buyerPhone ? `Phone: ${escapeHtml(buyerPhone)}<br/>` : ''}
-          ${buyerGstin ? `GSTIN: ${escapeHtml(buyerGstin)}<br/>` : ''}
-          ${buyerAddress ? escapeHtml(buyerAddress) : ''}
+          ${buyerGstin ? `GSTIN: ${escapeHtml(buyerGstin)}` : ''}
         </p>
       </div>
     </div>

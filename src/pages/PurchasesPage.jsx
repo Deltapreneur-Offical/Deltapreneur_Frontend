@@ -227,6 +227,15 @@ export default function PurchasesPage() {
                   order={item}
                   user={user}
                   t={t}
+                  invoiceSequence={
+                    [...completedRegistrations]
+                      .sort(
+                        (a, b) =>
+                          new Date(a.createdAt || 0).getTime() -
+                          new Date(b.createdAt || 0).getTime(),
+                      )
+                      .findIndex((o) => String(o.id) === String(item.id)) + 1 || undefined
+                  }
                 />
               ) : item._type === 'venture' ? (
                 <VentureDealRow
@@ -325,11 +334,27 @@ function DomainPurchaseRow({ domain, user }) {
   );
 }
 
-function RegistrationPurchaseRow({ order, user, t }) {
+function RegistrationPurchaseRow({ order, user, t, invoiceSequence }) {
   const { formatPrice } = useCurrency();
   const amount = Number(order.priceInr || 0);
   const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
   const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);
+
+  const invoiceUser = {
+    ...user,
+    name:
+      order.buyerFullName ||
+      order.buyer_full_name ||
+      [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim() ||
+      [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() ||
+      user?.fullName ||
+      user?.username ||
+      '',
+    email: order.buyerEmail || user?.email || '',
+    phone: order.buyerPhone || user?.phoneNumber || user?.phone || '',
+    gstin: order.buyerGstin || user?.gstin || '',
+    address: user?.address || '',
+  };
 
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -386,7 +411,14 @@ function RegistrationPurchaseRow({ order, user, t }) {
             View order →
           </Link>
           <InvoiceDownloadButton
-            onClick={() => generateInvoice({ type: 'domain_registration', item: order, user })}
+            onClick={() =>
+              generateInvoice({
+                type: 'domain_registration',
+                item: order,
+                user: invoiceUser,
+                invoiceSequence,
+              })
+            }
           />
         </div>
       </div>

@@ -253,7 +253,11 @@ export default function DomainRegistrationOrderPage() {
     generateInvoice({
       type: 'domain_registration',
       item: order,
-      user: { name: order.buyerEmail || user?.email, email: order.buyerEmail || user?.email },
+      user: {
+        name: order.buyerFullName || order.buyerEmail || user?.email,
+        email: order.buyerEmail || user?.email,
+        gstin: order.buyerGstin || '',
+      },
     });
   };
 

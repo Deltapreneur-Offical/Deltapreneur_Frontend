@@ -55,6 +55,7 @@ function buildRegistrantFromUser(user) {
     state: user?.state || '',
     zip: user?.zipCode || user?.zip || user?.pincode || '',
     country: user?.country || 'IN',
+    gstin: user?.gstin || user?.gstNo || '',
   };
 }
 
@@ -62,6 +63,17 @@ function registrantComplete(r) {
   return ['firstName', 'lastName', 'email', 'phone', 'street', 'city', 'state', 'zip'].every(
     (k) => String(r?.[k] || '').trim(),
   );
+}
+
+/** Optional GSTIN — empty is fine; if filled must be 15 alphanumeric chars. */
+function registrantGstinError(r) {
+  const raw = String(r?.gstin || '').trim();
+  if (!raw) return '';
+  const normalized = raw.toUpperCase().replace(/\s+/g, '');
+  if (!/^[0-9A-Z]{15}$/.test(normalized)) {
+    return 'GSTIN must be exactly 15 letters/numbers (e.g. 22AAAAA0000A1Z5).';
+  }
+  return '';
 }
 
 export default function CartPage() {
@@ -92,7 +104,14 @@ export default function CartPage() {
   const bumpedMinPeriodItems = useRef(new Set());
 
   useEffect(() => {
-    setRegistrant((prev) => ({ ...prev, ...buildRegistrantFromUser(user) }));
+    setRegistrant((prev) => {
+      const fromUser = buildRegistrantFromUser(user);
+      return {
+        ...fromUser,
+        // Keep a GSTIN the shopper already typed if the profile has none.
+        gstin: String(prev.gstin || '').trim() || fromUser.gstin || '',
+      };
+    });
     setBuyer({
       buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
       buyerEmail: user?.email || '',
@@ -271,6 +290,11 @@ export default function CartPage() {
       setError('Please complete registrant details before paying for domain registrations.');
       return;
     }
+    const gstinErr = needsRegistrantDetails ? registrantGstinError(registrant) : '';
+    if (gstinErr) {
+      setError(gstinErr);
+      return;
+    }
 
     const incompleteTech = technologyItems.find((it) => {
       const st = techConfigStatus[it.id];
@@ -309,7 +333,11 @@ export default function CartPage() {
         buyerPhone,
       };
       if (needsRegistrantDetails) {
-        payload.registrant = registrant;
+        const gstin = String(registrant.gstin || '').trim().toUpperCase().replace(/\s+/g, '');
+        payload.registrant = {
+          ...registrant,
+          gstin: gstin || undefined,
+        };
         // Periods are per cart item — do not send a global periodYears.
       }
 
@@ -867,7 +895,8 @@ export default function CartPage() {
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">
                       Required once for all domain registrations in this order. Choose each domain&apos;s
-                      registration period on its card above. GST is added at checkout.
+                      registration period on its card above. GST tax is added at checkout — optionally
+                      enter your GSTIN below for the invoice.
                     </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -892,6 +921,43 @@ export default function CartPage() {
                         />
                       </label>
                     ))}
+                    <label className="space-y-1 sm:col-span-2">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                        GST Number (GSTIN){' '}
+                        <span className="font-semibold normal-case tracking-normal text-gray-400">
+                          — optional
+                        </span>
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="text"
+                        autoComplete="off"
+                        spellCheck={false}
+                        maxLength={15}
+                        value={registrant.gstin || ''}
+                        onChange={(e) =>
+                          updateRegistrant(
+                            'gstin',
+                            e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 15),
+                          )
+                        }
+                        placeholder="e.g. 22AAAAA0000A1Z5"
+                        className={`w-full rounded-xl border bg-gray-50/40 px-3 py-2 text-sm text-gray-900 tracking-wider focus:bg-white focus:border-indigo-400 outline-none ${
+                          registrantGstinError(registrant)
+                            ? 'border-rose-300 focus:border-rose-400'
+                            : 'border-gray-200'
+                        }`}
+                      />
+                      {registrantGstinError(registrant) ? (
+                        <span className="block text-[11px] text-rose-600">
+                          {registrantGstinError(registrant)}
+                        </span>
+                      ) : (
+                        <span className="block text-[11px] text-gray-400">
+                          For business invoices. Leave blank if you don&apos;t have a GSTIN.
+                        </span>
+                      )}
+                    </label>
                   </div>
                 </div>
               )}
@@ -920,7 +986,11 @@ export default function CartPage() {
                   productTotal={productOrderTotal}
                   checkoutDisabled={
                     (needsRegistrantDetails
-                      && (!registrantComplete(registrant) || Boolean(periodUpdatingId)))
+                      && (
+                        !registrantComplete(registrant)
+                        || Boolean(registrantGstinError(registrant))
+                        || Boolean(periodUpdatingId)
+                      ))
                     || (managedAcquisitionItems.length > 0 && !isManagedAcquisitionOnly)
                   }
                   checkoutLabel={

@@ -7,6 +7,7 @@ const SKELETON_COUNT = 5;
 export default function HomeSectionCardSkeleton({
   title,
   to,
+  accent,
   variant = 'browse',
   compact = false,
   hideHeader = false,
@@ -14,7 +15,9 @@ export default function HomeSectionCardSkeleton({
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full">
-        {!hideHeader && title ? <HomeSectionHeader title={title} to={to} /> : null}
+        {!hideHeader && title ? (
+          <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />
+        ) : null}
         <HomePreviewRow animate={false}>
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
             <HomePreviewRowItem key={i}>

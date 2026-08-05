@@ -4,7 +4,9 @@ import { operationsAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
-import FeaturedVirtualAssistantsListing from '../virtual-assistant/FeaturedVirtualAssistantsListing';
+import FeaturedVirtualAssistantsListing, {
+  useFeaturedVirtualAssistants,
+} from '../virtual-assistant/FeaturedVirtualAssistantsListing';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -29,6 +31,8 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const [loading, setLoading] = useState(true);
   const [requestTarget, setRequestTarget] = useState(null);
   const [requestSuccess, setRequestSuccess] = useState(null);
+
+  const vaFeatured = useFeaturedVirtualAssistants(20, { enabled: isAssistanceSection });
 
   useEffect(() => {
     if (isAssistanceSection) return undefined;
@@ -55,6 +59,8 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
 
   const title = t(section.labelKey, { defaultValue: section.defaultLabel });
   const shouldAutoScroll = useShouldAutoScroll(services.length);
+  const accent = isAssistanceSection ? 'assistance' : 'operations';
+  const viewAllPath = operationsPathForSection(sectionId);
 
   const openServiceRequest = (service) => {
     operationsAPI.get(service.id)
@@ -77,22 +83,32 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   );
 
   if (isAssistanceSection) {
+    if (vaFeatured.loading) {
+      return (
+        <HomeSectionCardSkeleton
+          title={title}
+          to={viewAllPath}
+          accent={accent}
+          compact
+        />
+      );
+    }
+
     return (
       <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
         <div className="w-full min-w-0">
-          <HomeSectionHeader title={title} to={operationsPathForSection(sectionId)} />
+          <HomeSectionHeader
+            title={title}
+            to={viewAllPath}
+            accent={accent}
+            showViewAll={vaFeatured.count > 0}
+          />
           <FeaturedVirtualAssistantsListing
             layout="row"
             pageSize={20}
+            cards={vaFeatured.cards}
+            loading={false}
             ariaLabel={title}
-            loadingFallback={(
-              <HomeSectionCardSkeleton
-                title={title}
-                to={operationsPathForSection(sectionId)}
-                hideHeader
-                compact
-              />
-            )}
           />
         </div>
       </section>
@@ -100,13 +116,24 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   }
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={title} to={operationsPathForSection(sectionId)} />;
+    return (
+      <HomeSectionCardSkeleton
+        title={title}
+        to={viewAllPath}
+        accent={accent}
+      />
+    );
   }
 
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
-        <HomeSectionHeader title={title} to={operationsPathForSection(sectionId)} />
+        <HomeSectionHeader
+          title={title}
+          to={viewAllPath}
+          accent={accent}
+          showViewAll={services.length > 0}
+        />
 
         {services.length === 0 ? (
           <p className="text-center text-gray-500 py-8">

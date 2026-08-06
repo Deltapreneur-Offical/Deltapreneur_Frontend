@@ -297,8 +297,6 @@ export default function DomainRegistrationOrderPage() {
 
   const isActive     = order.status === 'ACTIVE' || order.lifecycleStatus === 'registration_confirmed';
   const nameservers  = Array.isArray(order.domainManagement?.nameservers) ? order.domainManagement.nameservers : [];
-  const panelUrl     = order.domainManagement?.customerPanelUrl;
-  const loginEmail   = order.domainManagement?.loginEmail;
   const legacyResellerClub = Boolean(order.domainManagement?.legacyResellerClub);
   const expiresAt    = order.expiresAt ? new Date(order.expiresAt) : null;
   const daysLeft     = expiresAt ? Math.floor((expiresAt - Date.now()) / 86400000) : null;
@@ -577,8 +575,6 @@ export default function DomainRegistrationOrderPage() {
             <DnsManagementSection
               orderId={orderId}
               nameservers={nameservers}
-              panelUrl={panelUrl}
-              loginEmail={loginEmail}
               legacyResellerClub={legacyResellerClub}
               onUpdateSuccess={() => loadOrder(false)}
             />

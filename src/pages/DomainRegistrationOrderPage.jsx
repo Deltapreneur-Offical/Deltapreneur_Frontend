@@ -250,6 +250,13 @@ export default function DomainRegistrationOrderPage() {
 
   const handleInvoice = () => {
     if (!order) return;
+    if (!(order.taxInvoiceNumber || order.invoiceNumber)) {
+      window.alert(
+        'Invoice is available only after the domain is successfully registered. '
+        + 'Failed or refunded purchases do not receive an invoice number.',
+      );
+      return;
+    }
     const customerName =
       order.buyerFullName ||
       order.buyer_full_name ||
@@ -539,7 +546,7 @@ export default function DomainRegistrationOrderPage() {
                       </button>
                     )}
 
-                    {(order.razorpayPaymentId || isActive) && (
+                    {(order.taxInvoiceNumber || order.invoiceNumber) && (
                       <button type="button" onClick={handleInvoice}
                         className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
                         <FileText className="w-4 h-4 text-gray-500" />

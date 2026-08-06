@@ -227,15 +227,6 @@ export default function PurchasesPage() {
                   order={item}
                   user={user}
                   t={t}
-                  invoiceSequence={
-                    [...completedRegistrations]
-                      .sort(
-                        (a, b) =>
-                          new Date(a.createdAt || 0).getTime() -
-                          new Date(b.createdAt || 0).getTime(),
-                      )
-                      .findIndex((o) => String(o.id) === String(item.id)) + 1 || undefined
-                  }
                 />
               ) : item._type === 'venture' ? (
                 <VentureDealRow
@@ -334,11 +325,12 @@ function DomainPurchaseRow({ domain, user }) {
   );
 }
 
-function RegistrationPurchaseRow({ order, user, t, invoiceSequence }) {
+function RegistrationPurchaseRow({ order, user, t }) {
   const { formatPrice } = useCurrency();
   const amount = Number(order.priceInr || 0);
   const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
   const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);
+  const taxInvoiceNumber = order.taxInvoiceNumber || order.invoiceNumber || null;
 
   const invoiceUser = {
     ...user,
@@ -408,16 +400,17 @@ function RegistrationPurchaseRow({ order, user, t, invoiceSequence }) {
           >
             View order →
           </Link>
-          <InvoiceDownloadButton
-            onClick={() =>
-              generateInvoice({
-                type: 'domain_registration',
-                item: order,
-                user: invoiceUser,
-                invoiceSequence,
-              })
-            }
-          />
+          {taxInvoiceNumber ? (
+            <InvoiceDownloadButton
+              onClick={() =>
+                generateInvoice({
+                  type: 'domain_registration',
+                  item: order,
+                  user: invoiceUser,
+                })
+              }
+            />
+          ) : null}
         </div>
       </div>
     </div>

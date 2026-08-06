@@ -85,16 +85,36 @@ function today() {
 }
 
 /**
- * Aultum tax invoice id: AI + YYYY + 5-digit domain-purchase sequence.
- * Example: AI202600001
- * Reuses the same number for the same payment/order on re-download (local map).
+ * Aultum tax invoice id: AI + YY + 5-digit sequence (e.g. AI2600001).
+ *
+ * Domain registration invoices MUST use the backend-assigned
+ * ``taxInvoiceNumber`` / ``invoiceNumber`` (allocated only after successful
+ * provisioning). Client-side sequencing must never invent numbers for
+ * failed / refunded / cancelled / PROVISION_FAILED registrations.
  */
-function buildAultumInvoiceNumber(item = {}, explicitSequence = null) {
-  if (item.taxInvoiceNumber || item.invoiceNumber) {
-    return String(item.taxInvoiceNumber || item.invoiceNumber).trim();
+function buildAultumInvoiceNumber(item = {}, explicitSequence = null, type = null) {
+  const fromBackend = item.taxInvoiceNumber || item.invoiceNumber || item.tax_invoice_number;
+  if (fromBackend) {
+    return String(fromBackend).trim();
   }
 
-  const year = new Date(item.createdAt || Date.now()).getFullYear();
+  const isDomainRegistration = type === 'domain_registration';
+  if (isDomainRegistration) {
+    // Successful registrations always receive a backend number on ACTIVE.
+    // Missing number ⇒ do not invent / consume a client-side sequence.
+    return null;
+  }
+
+  const fullYear = new Date(item.createdAt || Date.now()).getFullYear();
+  const yearSuffix = String(fullYear).slice(-2);
+
+  if (explicitSequence != null && Number.isFinite(Number(explicitSequence))) {
+    const seq = Math.max(1, Math.floor(Number(explicitSequence)));
+    return `AI${yearSuffix}${String(seq).padStart(5, '0')}`;
+  }
+
+  // Non-registration downloads (legacy software/resale) keep a local map only
+  // so re-download of the same payment reuses the same display id.
   const paymentKey = String(
     item.razorpayPaymentId ||
       item.razorpay_payment_id ||
@@ -102,18 +122,13 @@ function buildAultumInvoiceNumber(item = {}, explicitSequence = null) {
       '',
   ).trim();
 
-  if (explicitSequence != null && Number.isFinite(Number(explicitSequence))) {
-    const seq = Math.max(1, Math.floor(Number(explicitSequence)));
-    return `AI${year}${String(seq).padStart(5, '0')}`;
-  }
-
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
-      const seqKey = `aultum_tax_invoice_seq_${year}`;
-      const mapKey = `aultum_tax_invoice_map_${year}`;
+      const seqKey = `aultum_tax_invoice_seq_${fullYear}`;
+      const mapKey = `aultum_tax_invoice_map_${fullYear}`;
       const map = JSON.parse(localStorage.getItem(mapKey) || '{}');
       if (paymentKey && map[paymentKey]) {
-        return `AI${year}${String(map[paymentKey]).padStart(5, '0')}`;
+        return `AI${yearSuffix}${String(map[paymentKey]).padStart(5, '0')}`;
       }
       const next = Math.max(1, Number(localStorage.getItem(seqKey) || '0') + 1);
       localStorage.setItem(seqKey, String(next));
@@ -121,13 +136,13 @@ function buildAultumInvoiceNumber(item = {}, explicitSequence = null) {
         map[paymentKey] = next;
         localStorage.setItem(mapKey, JSON.stringify(map));
       }
-      return `AI${year}${String(next).padStart(5, '0')}`;
+      return `AI${yearSuffix}${String(next).padStart(5, '0')}`;
     } catch {
       // fall through
     }
   }
 
-  return `AI${year}00001`;
+  return `AI${yearSuffix}00001`;
 }
 
 function resolveCustomerName(user = {}, item = {}) {
@@ -268,7 +283,16 @@ function buildLineItems({ type, item }) {
  * @param {number} [opts.invoiceSequence] — optional 1-based domain purchase sequence
  */
 export function generateInvoice({ type, item, user = {}, invoiceSequence = null }) {
-  const invNo = buildAultumInvoiceNumber(item, invoiceSequence);
+  const invNo = buildAultumInvoiceNumber(item, invoiceSequence, type);
+  if (!invNo) {
+    if (typeof window !== 'undefined') {
+      window.alert(
+        'Invoice is available only after the domain is successfully registered. '
+        + 'Failed or refunded purchases do not receive an invoice number.',
+      );
+    }
+    return;
+  }
   const invDate = item.createdAt
     ? formatAuctionDate(item.createdAt, { day: '2-digit', month: 'long', year: 'numeric' }, today())
     : today();

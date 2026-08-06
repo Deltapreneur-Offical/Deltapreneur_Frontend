@@ -261,13 +261,6 @@ export default function DomainStorefrontPage() {
   );
   const premiumHasMore = premiumTldItems.length > premiumVisibleCount || tldHasMore;
 
-  const handleLoadMorePremium = useCallback(() => {
-    setPremiumVisibleCount((c) => c + 15);
-    if (tldHasMore && !tldLoadingMore) {
-      loadMoreStorefrontTlds();
-    }
-  }, [tldHasMore, tldLoadingMore, loadMoreStorefrontTlds]);
-
   const visibleTldItems =
     registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
       ? premiumSlice
@@ -415,6 +408,13 @@ export default function DomainStorefrontPage() {
       setTldLoadingMore(false);
     }
   }, [query, tldPage, tldLoadingMore]);
+
+  const handleLoadMorePremium = useCallback(() => {
+    setPremiumVisibleCount((c) => c + 15);
+    if (tldHasMore && !tldLoadingMore) {
+      loadMoreStorefrontTlds();
+    }
+  }, [tldHasMore, tldLoadingMore, loadMoreStorefrontTlds]);
 
   const runCheck = useCallback(
     async (raw) => {

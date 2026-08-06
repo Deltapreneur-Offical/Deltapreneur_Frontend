@@ -46,6 +46,7 @@ export default function TermsAndConditionsPage() {
         setOpenDropdown={setOpenDropdown}
         navigate={navigate}
         isScrolled={isScrolled}
+        hideJoinCta
       />
 
       <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">

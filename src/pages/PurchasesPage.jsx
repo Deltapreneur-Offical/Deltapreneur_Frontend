@@ -395,14 +395,12 @@ function RegistrationPurchaseRow({ order, user, t, invoiceSequence }) {
             {formatPrice(amount)}
           </div>
           {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
-            <a
-              href={domainManagementHref(order)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to={domainManagementHref(order)}
               className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
             >
               Manage DNS →
-            </a>
+            </Link>
           ) : null}
           <Link
             to={registrationOrderDetailPath(order.id)}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Gavel, Info, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuction } from '../hooks/useAuction';
 import useReferralTracker from '../hooks/useReferralTracker';
@@ -617,19 +618,26 @@ export default function AuctionPage() {
 
             {/* Bid form — only for non-owner, active auction */}
             {isActive && !isOwner && (
-              <div className="p-6 bg-white border border-gray-200 rounded-[14px]">
-                <h3 className="font-display text-[1.25rem] font-semibold text-gray-900 mb-5">
-                  {t('auctionDetailPlaceYourBid')}
-                </h3>
+              <div className="auction-place-bid-card bg-white border border-slate-200/90 rounded-[18px] shadow-[0_10px_32px_rgba(15,23,42,0.06)] p-5 sm:p-6 md:p-7">
+                <div className="flex items-center gap-2.5 mb-6">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+                    <Gavel size={18} strokeWidth={2.25} aria-hidden />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-[1.35rem] sm:text-[1.45rem] font-bold tracking-tight text-slate-900 leading-tight">
+                      {t('auctionDetailPlaceYourBid')}
+                    </h3>
+                  </div>
+                </div>
                 {(biddingBlocked || participation.biddingBlocked) ? (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
                     {participation.biddingBlockedReason ||
                       t('auctionDetailBiddingBlockedDomain')}
                   </div>
                 ) : (
                 <>
                 {false && !participation.loading && !participation.paid && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                     <div className="text-sm text-amber-800 mb-2">
                       {t('auctionDetailParticipationRequired', { amount: formatPrice(participation.fee || 0) })}
                     </div>
@@ -642,9 +650,11 @@ export default function AuctionPage() {
 
                 {/* Quick bid buttons — amounts stored in INR; UI shows site currency */}
                 {minNextBid > 0 && (
-                  <div className="mb-4">
-                    <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('auctionDetailQuickBid')}</div>
-                    <div className="flex gap-2 flex-wrap">
+                  <div className="mb-6">
+                    <div className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-[0.08em] mb-3">
+                      {t('auctionDetailQuickBid')}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2.5">
                       {[1, 1.1, 1.25].map(mult => {
                         const quickAmountInr = Math.ceil(minNextBid * mult / 100) * 100;
                         const quickDisplay = formatBidInputValue(quickAmountInr);
@@ -658,10 +668,10 @@ export default function AuctionPage() {
                               setBidAmountInr(String(quickAmountInr));
                               setBidError('');
                             }}
-                            className={`px-3 py-1.5 rounded-lg text-[0.78rem] cursor-pointer font-semibold transition-all ${
+                            className={`min-h-[42px] w-full px-2 py-2.5 rounded-full text-[0.8rem] sm:text-[0.85rem] cursor-pointer font-semibold transition-all duration-200 ${
                               selected
-                                ? 'bg-indigo-50 border border-indigo-400 text-indigo-700'
-                                : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-indigo-300'
+                                ? 'bg-indigo-600 border border-indigo-600 text-white shadow-[0_6px_16px_rgba(79,70,229,0.28)] scale-[1.02]'
+                                : 'bg-slate-50 border border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700'
                             }`}>
                             {formatPrice(quickAmountInr)}
                           </button>
@@ -671,65 +681,106 @@ export default function AuctionPage() {
                   </div>
                 )}
 
+                <div className="flex flex-col gap-2 mb-5">
+                  <label className="text-[0.7rem] text-slate-500 font-bold uppercase tracking-[0.08em]">
+                    {t('auctionDetailYourBidAmount', { symbol: getSymbol() })}
+                  </label>
+                  <div className="flex w-full items-stretch overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
+                    <span
+                      className="inline-flex min-w-[4.25rem] shrink-0 items-center justify-center border-r border-slate-200 bg-slate-50 px-3 text-[0.95rem] font-bold text-slate-500"
+                      aria-hidden
+                    >
+                      {getSymbol()}
+                    </span>
+                    <input
+                      type="number"
+                      value={bidAmount}
+                      onChange={e => handleBidAmountChange(e.target.value)}
+                      placeholder={t('auctionDetailMinPlaceholder', { amount: formatPrice(minNextBid) })}
+                      min={formatBidInputValue(minNextBid) || undefined}
+                      max={maxBidPrice ? formatBidInputValue(maxBidPrice) : undefined}
+                      step="any"
+                      className="min-w-0 flex-1 bg-transparent text-[1.15rem] font-bold text-slate-900 px-4 py-[0.95rem] outline-none border-0"
+                      onKeyDown={e => e.key === 'Enter' && handleBid()}
+                    />
+                  </div>
+                </div>
+
                 {bidAmountInr && (
-                  <div className="mb-4 text-[0.82rem] text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-                    Your bid offer: <strong>{formatPrice(Number(bidAmountInr))}</strong>
-                    {bidFee != null && Number(bidFee) > 0 && (
-                      <>
-                        . A bid placement fee of <strong>{formatPrice(Number(bidFee))}</strong> will be charged to place this bid.
-                      </>
-                    )}
+                  <div className="mb-5 flex gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-4 py-3.5">
+                    <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-indigo-600 border border-indigo-100">
+                      <Info size={14} strokeWidth={2.25} aria-hidden />
+                    </span>
+                    <p className="text-[0.84rem] leading-relaxed text-slate-600">
+                      Your bid offer: <strong className="text-slate-900">{formatPrice(Number(bidAmountInr))}</strong>
+                      {bidFee != null && Number(bidFee) > 0 && (
+                        <>
+                          . A bid placement fee of{' '}
+                          <strong className="text-indigo-700">{formatPrice(Number(bidFee))}</strong>
+                          {' '}will be charged to place this bid.
+                        </>
+                      )}
+                    </p>
                   </div>
                 )}
 
-                <div className="flex flex-col gap-1.5 mb-4">
-                  <label className="text-[0.78rem] text-gray-500 font-semibold block uppercase tracking-wider">
-                    {t('auctionDetailYourBidAmount', { symbol: getSymbol() })}
-                  </label>
-                  <input
-                    type="number"
-                    value={bidAmount}
-                    onChange={e => handleBidAmountChange(e.target.value)}
-                    placeholder={t('auctionDetailMinPlaceholder', { amount: formatPrice(minNextBid) })}
-                    min={formatBidInputValue(minNextBid) || undefined}
-                    max={maxBidPrice ? formatBidInputValue(maxBidPrice) : undefined}
-                    step="any"
-                    className="text-[1.1rem] font-semibold bg-gray-50 text-gray-900 border-2 border-gray-200 px-4 py-3 rounded-lg w-full outline-none focus:border-indigo-400 transition-colors"
-                    onKeyDown={e => e.key === 'Enter' && handleBid()}
-                  />
-                </div>
-
                 {bidError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4 text-[0.82rem] text-red-600">
+                  <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl mb-5 text-[0.82rem] text-red-600">
                     {bidError}
                   </div>
                 )}
 
                 {bidSuccess && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4 text-[0.82rem] text-green-700">
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl mb-5 text-[0.82rem] text-emerald-700">
                     ✓ {bidSuccess}
                   </div>
                 )}
 
                 {bidAmountInr && (
-                  <div className="text-[0.75rem] text-gray-500 mb-3 text-center font-medium bg-gray-50 p-2 rounded">
-                    {bidFee != null && Number(bidFee) > 0
-                      ? `Only the bid placement fee (${formatPrice(Number(bidFee))}) is charged now. The full bid is paid only if you win.`
-                      : 'The full bid amount is paid only if you win the auction.'}
+                  <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+                    <p className="text-[0.78rem] leading-relaxed text-slate-500 font-medium">
+                      {bidFee != null && Number(bidFee) > 0
+                        ? `Only the bid placement fee (${formatPrice(Number(bidFee))}) is charged now. The full bid is paid only if you win.`
+                        : 'The full bid amount is paid only if you win the auction.'}
+                    </p>
                   </div>
                 )}
 
-                <button className="btn-glow w-full" onClick={handleBid}
-                  disabled={bidLoading || !bidAmount}>
-                  {bidLoading ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-                    (bidAmountInr
-                      ? (bidFee != null && Number(bidFee) > 0
-                        ? `Place Bid — pay ${formatPrice(Number(bidFee))} fee →`
-                        : t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(Number(bidAmountInr)) }))
-                      : `${t('auctionDetailPlaceBidBtn')} →`)}
+                <button
+                  type="button"
+                  className={`group relative w-full min-h-[56px] rounded-2xl px-5 text-[0.95rem] font-bold transition-all duration-200 ${
+                    bidLoading || !bidAmount
+                      ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
+                      : 'bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-[0_12px_28px_rgba(79,70,229,0.28)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(79,70,229,0.34)] active:translate-y-0'
+                  }`}
+                  onClick={handleBid}
+                  disabled={bidLoading || !bidAmount}
+                >
+                  {bidLoading ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" />
+                      Placing bid…
+                    </span>
+                  ) : (
+                    <span className="flex w-full items-center justify-between gap-3">
+                      <span>
+                        {bidAmountInr
+                          ? (bidFee != null && Number(bidFee) > 0
+                            ? `Place Bid • Pay ${formatPrice(Number(bidFee))}`
+                            : t('auctionDetailPlaceBidWithAmount', { amount: formatPrice(Number(bidAmountInr)) }))
+                          : t('auctionDetailPlaceBidBtn')}
+                      </span>
+                      <ArrowRight
+                        size={18}
+                        strokeWidth={2.4}
+                        className="shrink-0 opacity-90 transition-transform duration-200 group-hover:translate-x-0.5"
+                        aria-hidden
+                      />
+                    </span>
+                  )}
                 </button>
 
-                <p className="text-[0.72rem] text-gray-500 mt-3 text-center leading-relaxed">
+                <p className="text-[0.72rem] text-slate-400 mt-4 text-center leading-relaxed">
                   {t('auctionDetailBidCommitDomain')}
                 </p>
                 </>

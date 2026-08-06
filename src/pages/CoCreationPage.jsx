@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft } from 'lucide-react';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
+import { technologyServicesAPI } from '../api/technologyServicesApi';
+import TechnologyServiceCard from '../components/technology/TechnologyServiceCard';
+import { Sparkles } from 'lucide-react';
 import AddToCartButton from '../components/cart/AddToCartButton';
 import TechnologyPlanPicker from '../components/cart/TechnologyPlanPicker';
 import { normalizePricingPlans, getEnabledPricingPlans } from '../utils/technologyPricingPlans';
@@ -74,6 +77,19 @@ export default function CoCreationPage() {
   const [technologyType, setTechnologyType] = useState('');
   const [auctionTarget, setAuctionTarget] = useState(null);
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
+  const [techServices, setTechServices] = useState([]);
+  const [serviceCategory, setServiceCategory] = useState('All');
+
+  useEffect(() => {
+    technologyServicesAPI.getServices()
+      .then(res => setTechServices(res.data || res || []))
+      .catch(() => setTechServices([]));
+  }, []);
+
+  const filteredTechServices = useMemo(() => {
+    if (serviceCategory === 'All') return techServices;
+    return techServices.filter(s => (s.category || '').toLowerCase() === serviceCategory.toLowerCase());
+  }, [techServices, serviceCategory]);
 
   useReferralTracker(detailTarget?.id, 'technology');
 
@@ -363,6 +379,47 @@ export default function CoCreationPage() {
                 />
               </>
             )}
+
+            {/* Technology Services Catalogue */}
+            <div className="mt-16 pt-12 border-t border-gray-200">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 px-3 py-1 text-xs font-semibold text-indigo-600 mb-2 border border-indigo-100">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    CoBrother Enterprise Catalogue
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
+                    Technology Services
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    White-labelled provider-powered applications & cloud services.
+                  </p>
+                </div>
+
+                {/* Service Category Filter Buttons */}
+                <div className="flex flex-wrap gap-1.5">
+                  {['All', 'AI', 'Business', 'Marketing', 'Productivity', 'Communication', 'Hosting', 'Security', 'Storage'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setServiceCategory(cat)}
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
+                        serviceCategory === cat
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredTechServices.map((service) => (
+                  <TechnologyServiceCard key={service.id || service.slug} service={service} />
+                ))}
+              </div>
+            </div>
           </>
         )}
       </div>

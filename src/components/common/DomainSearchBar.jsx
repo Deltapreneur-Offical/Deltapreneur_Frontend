@@ -725,6 +725,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       // Never fall back to `price` (GST-inclusive total) for the /yr unit display.
       price: data.unitPrice ?? null,
       unitPrice: data.unitPrice ?? null,
+      renewalPrice: data.renewalPrice ?? data.renewalPriceInr ?? null,
       priceCurrency: data.priceCurrency ?? null,
       minPeriodYears: data.minPeriodYears ?? 1,
       isPremium,
@@ -1290,7 +1291,23 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const add = (it) => {
       const domain = String(it?.domain || '').toLowerCase();
       if (!domain || !isRegistryPremium(it)) return;
-      if (!byDomain.has(domain)) byDomain.set(domain, it);
+      if (!byDomain.has(domain)) {
+        byDomain.set(domain, it);
+      } else {
+        const existing = byDomain.get(domain);
+        const existingRenew = existing.renewalPrice ?? existing.renewalPriceInr ?? null;
+        const newRenew = it.renewalPrice ?? it.renewalPriceInr ?? null;
+        const existingReg = existing.registrationPrice ?? existing.unitPrice ?? null;
+        const newReg = it.registrationPrice ?? it.unitPrice ?? null;
+        byDomain.set(domain, {
+          ...existing,
+          ...it,
+          isPremium: true,
+          renewalPrice: newRenew ?? existingRenew,
+          renewalPriceInr: newRenew ?? existingRenew,
+          registrationPrice: newReg ?? existingReg,
+        });
+      }
     };
     availableNewResults.forEach(add);
     (registryPremiumItems || []).forEach(add);
@@ -1318,7 +1335,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     () => premiumNewResults.slice(0, premiumVisibleCount),
     [premiumNewResults, premiumVisibleCount],
   );
-  const premiumHasMore = premiumNewResults.length > premiumVisibleCount;
+  const premiumHasMore = premiumNewResults.length > premiumVisibleCount || tldHasMore;
+
+  const handleLoadMorePremium = useCallback(() => {
+    setPremiumVisibleCount((c) => c + 15);
+    if (tldHasMore && !tldLoadingMore) {
+      loadMoreTlds(normalizedQuery.split('.')[0]);
+    }
+  }, [tldHasMore, tldLoadingMore, loadMoreTlds, normalizedQuery]);
 
   const visibleNewResults =
     registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
@@ -1567,11 +1591,21 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                       <div className="flex justify-center pt-4">
                         <button
                           type="button"
-                          onClick={() => setPremiumVisibleCount((c) => c + 15)}
-                          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-amber-700 hover:bg-amber-600 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
+                          onClick={handleLoadMorePremium}
+                          disabled={tldLoadingMore}
+                          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-amber-700 hover:bg-amber-600 disabled:opacity-60 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
                         >
-                          Load More Premium Domains
-                          <ChevronRight className="w-4 h-4" />
+                          {tldLoadingMore ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Loading Premium Domains…
+                            </>
+                          ) : (
+                            <>
+                              Load More Premium Domains
+                              <ChevronRight className="w-4 h-4" />
+                            </>
+                          )}
                         </button>
                       </div>
                     ) : null}

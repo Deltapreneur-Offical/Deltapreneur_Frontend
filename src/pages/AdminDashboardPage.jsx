@@ -569,6 +569,7 @@ export default function AdminDashboardPage() {
       'addon-orders',
       'domain-transfers',
       'venture-deals',
+      'premium-tech',
     ]);
     if (requestedTab && allowedTabs.has(requestedTab)) {
       setTab(requestedTab);

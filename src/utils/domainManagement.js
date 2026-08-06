@@ -1,10 +1,39 @@
-/** Link to order detail DNS management section or external panel. */
+import { registrationOrderDetailPath } from './domainRegistrationOrder';
+
+function orderIdFrom(order) {
+  return order?.id || order?.orderId || null;
+}
+
+/** True if URL points at a vendor registrar control panel (never use for customers). */
+export function isVendorRegistrarPanelUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  const lower = url.toLowerCase();
+  return (
+    lower.includes('openprovider') ||
+    lower.includes('resellerclub') ||
+    lower.includes('onlyfordemo')
+  );
+}
+
+/**
+ * Customer-facing DNS management link — always CoBrother order DNS tab.
+ * Never returns OpenProvider / ResellerClub control-panel URLs.
+ */
 export function domainManagementHref(order) {
-  if (order?.customerPanelUrl) {
-    return order.customerPanelUrl;
+  const id = orderIdFrom(order);
+  if (id) {
+    return `${registrationOrderDetailPath(id)}#dns`;
   }
-  if (order?.domainManagement?.customerPanelUrl) {
-    return order.domainManagement.customerPanelUrl;
+  const candidates = [
+    order?.cobrotherDnsUrl,
+    order?.domainManagement?.cobrotherDnsUrl,
+    order?.customerPanelUrl,
+    order?.domainManagement?.customerPanelUrl,
+  ];
+  for (const url of candidates) {
+    if (url && !isVendorRegistrarPanelUrl(url)) {
+      return url;
+    }
   }
   return null;
 }
@@ -16,5 +45,7 @@ export function canManageRegisteredDomain(order) {
 }
 
 export function isExternalManagementLink(order) {
-  return Boolean(domainManagementHref(order));
+  const href = domainManagementHref(order);
+  if (!href) return false;
+  return /^https?:\/\//i.test(href) && !href.includes('/storefront/orders/');
 }

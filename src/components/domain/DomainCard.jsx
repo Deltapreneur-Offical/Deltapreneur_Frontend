@@ -34,6 +34,18 @@ export function normalizeDomainCardItem(raw = {}) {
   const period = 1;
   const registryPremium = isRegistryPremium(raw);
 
+  // [RENEWAL_PRICE_DEBUG] Log raw vs normalized renewal price to trace the pipeline.
+  if (raw.isPremium || registryPremium) {
+    console.debug(
+      '[RENEWAL_PRICE] DomainCard.normalizeDomainCardItem domain=%s ' +
+      'raw.renewalPrice=%o raw.renewalPriceInr=%o normalized_renewalPriceInr=%o',
+      domain,
+      raw.renewalPrice,
+      raw.renewalPriceInr,
+      Number.isFinite(renewalPriceInr) && renewalPriceInr > 0 ? renewalPriceInr : null,
+    );
+  }
+
   return {
     domain,
     name,
@@ -99,6 +111,17 @@ export default function DomainCard({
   const renewalText =
     item.renewalPriceInr != null ? formatDomainPrice(item.renewalPriceInr) : null;
 
+  // [RENEWAL_PRICE_DEBUG] Log the value actually rendered for premium domains.
+  if (item.isPremium) {
+    console.debug(
+      '[RENEWAL_PRICE] DomainCard.render domain=%s renewalPriceInr=%o renewalText=%o ' +
+      '(null renewalText → shows "Renewal price unavailable")',
+      item.domain,
+      item.renewalPriceInr,
+      renewalText,
+    );
+  }
+
   if (featured) {
     return (
       <div
@@ -140,13 +163,17 @@ export default function DomainCard({
           {priceText ? (
             <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none">
               {priceText}
-              <span className="text-xs font-medium text-gray-400 ml-1.5">/yr</span>
+              <span className="text-xs font-medium text-gray-400 ml-1.5">
+                {item.isPremium ? ' (1st Year)' : '/yr'}
+              </span>
             </p>
           ) : (
             <p className="text-sm font-semibold text-gray-400">Price unavailable</p>
           )}
           {renewalText ? (
             <p className="text-xs text-gray-500">Renews at {renewalText}/yr</p>
+          ) : item.isPremium ? (
+            <p className="text-xs text-gray-400">Renewal price unavailable</p>
           ) : null}
         </div>
         <div className="mt-3.5 flex justify-start">
@@ -212,13 +239,17 @@ export default function DomainCard({
         {priceText ? (
           <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">
             {priceText}
-            <span className="text-[11px] font-medium text-gray-400 ml-1">/yr</span>
+            <span className="text-[11px] font-medium text-gray-400 ml-1">
+              {item.isPremium ? ' (1st Year)' : '/yr'}
+            </span>
           </p>
         ) : (
           <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
         )}
         {renewalText ? (
           <p className="text-[11px] text-gray-500">Renews at {renewalText}/yr</p>
+        ) : item.isPremium ? (
+          <p className="text-[11px] text-gray-400">Renewal price unavailable</p>
         ) : null}
       </div>
       <div className="mt-3 flex justify-start">

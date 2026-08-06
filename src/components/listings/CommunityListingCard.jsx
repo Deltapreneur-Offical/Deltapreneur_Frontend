@@ -384,76 +384,7 @@ export default function CommunityListingCard({
           </div>
         </div>
 
-        <div className="creator-profile-card__details-row mt-2 flex items-center flex-wrap gap-y-2 gap-x-2">
-          {locationLabel && (
-            <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
-              <MapPin size={14} className="text-slate-400 mr-1" /> {locationLabel}
-            </span>
-          )}
-          {(profile.languagesKnown || profile.languages_known) && (
-            <span className="detail-item flex items-center text-slate-500 uppercase font-bold text-[11px] tracking-wide">
-               <Globe size={14} className="text-slate-400 mr-1" />
-               {(() => {
-                 const langs = String(profile.languagesKnown || profile.languages_known).split(',').map(l => l.trim()).filter(Boolean);
-                 if (langs.length <= 2) return langs.join(', ').toUpperCase();
-                 return (
-                   <>
-                     {langs.slice(0, 2).join(', ').toUpperCase()}
-                     <TruncatedItemsTooltip items={langs.slice(2)}>
-                       <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-2 shadow-sm">
-                         +{langs.length - 2}
-                       </span>
-                     </TruncatedItemsTooltip>
-                   </>
-                 );
-               })()}
-            </span>
-          )}
-        </div>
-
         <hr className="creator-profile-card__divider mt-3" />
-
-        <div className="creator-profile-card__description-section flex items-start py-3 gap-3">
-          <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
-             <User2 size={18} className="text-[#0284C7]" />
-          </div>
-          <div className="desc-content flex-1 min-w-0 pt-0.5">
-            <p className="desc-text text-slate-700 font-medium" title={description}>
-              {description}
-            </p>
-          </div>
-        </div>
-
-        {(skills.length > 0 || isVa) && (
-          <div className="creator-profile-card__skills-section flex items-start gap-3 mt-1 pb-2">
-            <div className="desc-icon-wrapper flex-shrink-0 w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
-               <Lightbulb size={18} className="text-[#0284C7]" />
-            </div>
-            <div className="desc-content flex-1 pt-1.5 flex flex-wrap items-center gap-y-1.5 min-w-0">
-               {skills.length > 0 ? (
-                 <>
-                   {skills.slice(0, 4).map((skill, i) => (
-                      <span key={i} className="flex items-center text-slate-700 text-[13px] font-medium mr-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mr-1.5 flex-shrink-0"></span>
-                        {skill}
-                      </span>
-                   ))}
-                   {skills.length > 4 && (
-                      <TruncatedItemsTooltip items={skills.slice(4)}>
-                        <span className="skill-pill skill-pill--more text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-white ml-1 shadow-sm">
-                          +{skills.length - 4}
-                        </span>
-                      </TruncatedItemsTooltip>
-                   )}
-                 </>
-               ) : (
-                 <span className="text-[13px] font-medium text-slate-400">Skills coming soon</span>
-               )}
-            </div>
-          </div>
-        )}
-
-        <hr className="creator-profile-card__divider mt-auto" />
 
         <div className="creator-profile-card__stats-grid">
            <div className="stat-col">
@@ -497,13 +428,7 @@ export default function CommunityListingCard({
              </span>
           </div>
           <div className="footer-right">
-            {isVa ? (
-              <LikeButton
-                liked={likeState?.liked}
-                count={Number.isFinite(vaLikeCount) ? vaLikeCount : 0}
-                onToggle={onLike}
-              />
-            ) : onLike ? (
+            {onLike ? (
               <LikeButton
                 liked={likeState?.liked}
                 count={likeState?.count}

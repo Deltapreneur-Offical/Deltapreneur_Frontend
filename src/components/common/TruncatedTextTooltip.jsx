@@ -25,9 +25,11 @@ export default function TruncatedTextTooltip({ text, className = '', children })
   const checkTruncation = useCallback(() => {
     const trigger = triggerRef.current;
     if (!trigger) return false;
-    const child = trigger.firstElementChild;
-    if (!child) return false;
-    return child.scrollHeight > child.clientHeight + 1;
+    const child = trigger.firstElementChild || trigger;
+    return (
+      child.scrollWidth > child.clientWidth + 1 ||
+      child.scrollHeight > child.clientHeight + 1
+    );
   }, []);
 
   const clearHideTimer = useCallback(() => {
@@ -161,7 +163,7 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     <>
       <span
         ref={triggerRef}
-        className={`relative inline-block ${className}`}
+        className={`relative inline-block w-full max-w-full min-w-0 ${className}`}
         tabIndex={isTruncated ? 0 : undefined}
         onMouseEnter={isTruncated && !isMobile() ? openTooltip : undefined}
         onMouseLeave={isTruncated && !isMobile() ? closeTooltip : undefined}

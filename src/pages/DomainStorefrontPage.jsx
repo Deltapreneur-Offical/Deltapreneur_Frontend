@@ -194,7 +194,23 @@ export default function DomainStorefrontPage() {
     const add = (it) => {
       const domain = String(it?.domain || '').toLowerCase();
       if (!domain || !isRegistryPremium(it)) return;
-      if (!byDomain.has(domain)) byDomain.set(domain, it);
+      if (!byDomain.has(domain)) {
+        byDomain.set(domain, it);
+      } else {
+        const existing = byDomain.get(domain);
+        const existingRenew = existing.renewalPrice ?? existing.renewalPriceInr ?? null;
+        const newRenew = it.renewalPrice ?? it.renewalPriceInr ?? null;
+        const existingReg = existing.registrationPrice ?? existing.unitPrice ?? null;
+        const newReg = it.registrationPrice ?? it.unitPrice ?? null;
+        byDomain.set(domain, {
+          ...existing,
+          ...it,
+          isPremium: true,
+          renewalPrice: newRenew ?? existingRenew,
+          renewalPriceInr: newRenew ?? existingRenew,
+          registrationPrice: newReg ?? existingReg,
+        });
+      }
     };
     (tldItems || []).forEach(add);
     (premiumMarketplaceItems || []).forEach(add);
@@ -243,7 +259,14 @@ export default function DomainStorefrontPage() {
     () => premiumTldItems.slice(0, premiumVisibleCount),
     [premiumTldItems, premiumVisibleCount],
   );
-  const premiumHasMore = premiumTldItems.length > premiumVisibleCount;
+  const premiumHasMore = premiumTldItems.length > premiumVisibleCount || tldHasMore;
+
+  const handleLoadMorePremium = useCallback(() => {
+    setPremiumVisibleCount((c) => c + 15);
+    if (tldHasMore && !tldLoadingMore) {
+      loadMoreStorefrontTlds();
+    }
+  }, [tldHasMore, tldLoadingMore, loadMoreStorefrontTlds]);
 
   const visibleTldItems =
     registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
@@ -378,7 +401,11 @@ export default function DomainStorefrontPage() {
       // "View More" control driven by the backend's paging flag so a sparse
       // window never ends pagination prematurely.
       if (items.length) {
-        setTldItems((prev) => [...prev, ...items]);
+        setTldItems((prev) => {
+          const seen = new Set(prev.map((it) => String(it.domain || '').toLowerCase()));
+          const fresh = items.filter((it) => !seen.has(String(it.domain || '').toLowerCase()));
+          return [...prev, ...fresh];
+        });
       }
       setTldPage((p) => p + 1);
       setTldHasMore(moreAvailable);
@@ -792,11 +819,21 @@ export default function DomainStorefrontPage() {
                             <div className="flex justify-center pt-4">
                               <button
                                 type="button"
-                                onClick={() => setPremiumVisibleCount((c) => c + 15)}
-                                className="inline-flex items-center gap-2 text-sm font-bold text-white bg-amber-700 hover:bg-amber-600 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
+                                onClick={handleLoadMorePremium}
+                                disabled={tldLoadingMore}
+                                className="inline-flex items-center gap-2 text-sm font-bold text-white bg-amber-700 hover:bg-amber-600 disabled:opacity-60 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
                               >
-                                Load More Premium Domains
-                                <ChevronRight className="w-4 h-4" />
+                                {tldLoadingMore ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Loading Premium Domains…
+                                  </>
+                                ) : (
+                                  <>
+                                    Load More Premium Domains
+                                    <ChevronRight className="w-4 h-4" />
+                                  </>
+                                )}
                               </button>
                             </div>
                           ) : null}

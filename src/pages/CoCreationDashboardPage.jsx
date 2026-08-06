@@ -18,6 +18,7 @@ import {
 } from '../utils/technologyAuctionUi';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
+import MyTechnologiesTab from '../components/profile/MyTechnologiesTab';
 
 export default function CoCreationDashboardPage() {
   const { formatPrice } = useCurrency();
@@ -151,10 +152,16 @@ export default function CoCreationDashboardPage() {
             onClick={() => setTab('sold')}>
             Sold Listings ({soldTransfers.length})
           </button>
+          <button className={`btn-glow btn-glow-sm ${tab === 'services' ? 'bg-indigo-600 text-white border-indigo-600' : ''}`}
+            onClick={() => setTab('services')}>
+            My Technologies (Services)
+          </button>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+        ) : tab === 'services' ? (
+          <MyTechnologiesTab />
         ) : tab === 'sold' ? (
           soldTransfers.length === 0 ? (
             <div className="text-center py-20">

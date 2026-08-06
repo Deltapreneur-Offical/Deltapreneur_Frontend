@@ -78,6 +78,7 @@ const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const loadDomainsPage = () => import('./pages/DomainsPage');
 const DomainsPage = lazy(loadDomainsPage);
 const CoCreationPage = lazy(() => import('./pages/CoCreationPage'));
+const TechnologyServiceDetailPage = lazy(() => import('./pages/TechnologyServiceDetailPage'));
 const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const loadAuctionsPage = () => import('./pages/AuctionsPage');
 const AuctionsPage = lazy(loadAuctionsPage);
@@ -498,6 +499,58 @@ export default function App() {
                 {/* Technology (software marketplace) */}
                 <Route path="/cocreation/*" element={<CocreationLegacyRedirect />} />
 
+                <Route
+                  path="/technology/services/:slug"
+                  element={
+                    <ProfileGuard>
+                      <TechnologyServiceDetailPage />
+                    </ProfileGuard>
+                  }
+                />
+                <Route
+                  path="/technologies/services/:slug"
+                  element={
+                    <ProfileGuard>
+                      <TechnologyServiceDetailPage />
+                    </ProfileGuard>
+                  }
+                />
+
+                {[
+                  'ai-business-suite', 'website-builder', 'crm', 'invoice-ai',
+                  'appointment-booking', 'document-signer', 'cloud-storage', 'business-phone',
+                  'vpn', 'email-marketing', 'social-media-automation', 'reputation-management',
+                  'link-in-bio', 'smm-growth', 'esim', 'web-hosting', 'wordpress-plugin-pack'
+                ].map((serviceSlug) => (
+                  <Route
+                    key={serviceSlug}
+                    path={`/technology/${serviceSlug}`}
+                    element={
+                      <ProfileGuard>
+                        <TechnologyServiceDetailPage />
+                      </ProfileGuard>
+                    }
+                  />
+                ))}
+
+                {[
+                  'ai-business-suite', 'website-builder', 'crm', 'invoice-ai',
+                  'appointment-booking', 'document-signer', 'cloud-storage', 'business-phone',
+                  'vpn', 'email-marketing', 'social-media-automation', 'reputation-management',
+                  'link-in-bio', 'smm-growth', 'esim', 'web-hosting', 'wordpress-plugin-pack'
+                ].map((serviceSlug) => (
+                  <Route
+                    key={`plural-${serviceSlug}`}
+                    path={`/technologies/${serviceSlug}`}
+                    element={
+                      <ProfileGuard>
+                        <TechnologyServiceDetailPage />
+                      </ProfileGuard>
+                    }
+                  />
+                ))}
+
+                <Route path="/technologies" element={<Navigate to="/technology" replace />} />
                 <Route
                   path="/technology"
                   element={

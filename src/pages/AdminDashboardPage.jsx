@@ -62,7 +62,11 @@ import { formatAuctionDate, formatAuctionDateTime, parseAuctionDate } from '../u
 import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
 import AdminBlacklistUsersTab from '../components/admin/AdminBlacklistUsersTab';
 import AdminOpenProviderCommissionTab from '../components/admin/AdminOpenProviderCommissionTab';
+<<<<<<< HEAD
 import AdminTrackRecordsTab from '../components/admin/AdminTrackRecordsTab';
+=======
+import AdminPremiumTechTab from '../components/admin/AdminPremiumTechTab';
+>>>>>>> c1f7ddb (Update domain search and technology services)
 import { formatEquityPercent } from '../constants/ventureLabels';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -569,6 +573,7 @@ export default function AdminDashboardPage() {
       'addon-orders',
       'domain-transfers',
       'venture-deals',
+      'premium-tech',
     ]);
     if (requestedTab && allowedTabs.has(requestedTab)) {
       setTab(requestedTab);
@@ -898,7 +903,15 @@ export default function AdminDashboardPage() {
             <VentureDealsAdminTab />
           )}
 
+<<<<<<< HEAD
           {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && (
+=======
+          {tab === 'premium-tech' && (
+            <AdminPremiumTechTab />
+          )}
+
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && tab !== 'premium-tech' && (
+>>>>>>> c1f7ddb (Update domain search and technology services)
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

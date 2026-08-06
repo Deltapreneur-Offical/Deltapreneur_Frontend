@@ -1,16 +1,26 @@
 /**
  * Customer-facing helpers — never expose registrar vendor brand names.
+ *
+ * Prefer vanity CoBrother hosts for new domains. Legacy OpenProvider hosts
+ * still map to friendly labels for existing customer orders.
  */
 
 const PLATFORM_NS_ALIASES = {
+  'ns1.cobrother.com': 'CoBrother DNS 1',
+  'ns2.cobrother.com': 'CoBrother DNS 2',
+  'ns3.cobrother.com': 'CoBrother DNS 3',
+  // Legacy (existing domains registered before vanity NS cutover)
   'ns1.openprovider.nl': 'CoBrother DNS 1',
   'ns2.openprovider.be': 'CoBrother DNS 2',
   'ns3.openprovider.eu': 'CoBrother DNS 3',
 };
 
-const ALIAS_TO_PLATFORM_NS = Object.fromEntries(
-  Object.entries(PLATFORM_NS_ALIASES).map(([real, alias]) => [alias.toLowerCase(), real]),
-);
+/** When user picks a friendly label, submit the vanity host (not legacy OP). */
+const ALIAS_TO_PLATFORM_NS = {
+  'cobrother dns 1': 'ns1.cobrother.com',
+  'cobrother dns 2': 'ns2.cobrother.com',
+  'cobrother dns 3': 'ns3.cobrother.com',
+};
 
 const VENDOR_NS_PATTERN = /openprovider|resellerclub|onlyfordemo/i;
 
@@ -32,12 +42,18 @@ export function displayNameserverHost(host, index = 0) {
   return String(host).trim();
 }
 
-/** Map a displayed alias back to the real platform hostname when submitting. */
+/** Map a displayed alias back to a real hostname when submitting. */
 export function resolveNameserverForSubmit(value, index = 0, originalHosts = []) {
   const raw = String(value || '').trim();
   if (!raw) return '';
   const aliased = ALIAS_TO_PLATFORM_NS[raw.toLowerCase()];
-  if (aliased) return aliased;
+  if (aliased) {
+    // Prefer keeping the original host when editing an existing order so we
+    // do not force-migrate legacy OP NS on a simple save.
+    const original = String(originalHosts[index] || '').trim().toLowerCase();
+    if (original && PLATFORM_NS_ALIASES[original]) return String(originalHosts[index]).trim();
+    return aliased;
+  }
   const original = String(originalHosts[index] || '').trim();
   if (original && displayNameserverHost(original, index) === raw) return original;
   return raw;

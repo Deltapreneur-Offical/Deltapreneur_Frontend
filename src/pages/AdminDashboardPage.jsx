@@ -903,15 +903,7 @@ export default function AdminDashboardPage() {
             <VentureDealsAdminTab />
           )}
 
-<<<<<<< HEAD
           {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && (
-=======
-          {tab === 'premium-tech' && (
-            <AdminPremiumTechTab />
-          )}
-
-          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && tab !== 'premium-tech' && (
->>>>>>> c1f7ddb (Update domain search and technology services)
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

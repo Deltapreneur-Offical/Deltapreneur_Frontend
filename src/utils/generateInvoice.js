@@ -12,6 +12,7 @@ const SELLER = {
   legalName: 'Aultum International',
   gstin: '29DXMPA9959L2ZF',
   email: 'support@cobrother.com',
+  phone: '080 8575 8575',
   website: 'www.cobrother.com',
   addressLines: [
     'Third Floor TF 307 Marvel Artiza',
@@ -607,7 +608,8 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
         <div class="name">${escapeHtml(SELLER.legalName)}</div>
         <p>
           ${sellerAddressHtml}<br/>
-          ${escapeHtml(SELLER.email)}
+          ${escapeHtml(SELLER.email)}<br/>
+          ${SELLER.phone ? `Phone: ${escapeHtml(SELLER.phone)}` : ''}
         </p>
       </div>
       <div class="address-block">
@@ -617,7 +619,7 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
           ${buyerAddressHtml ? `${buyerAddressHtml}<br/>` : ''}
           ${buyerEmail ? `${escapeHtml(buyerEmail)}<br/>` : ''}
           ${buyerPhone ? `Phone: ${escapeHtml(buyerPhone)}<br/>` : ''}
-          ${buyerGstin ? `GSTIN: ${escapeHtml(buyerGstin)}` : ''}
+          ${buyerGstin ? `GSTIN: ${escapeHtml(buyerGstin)}` : '<span style="color:#9ca3af;">GSTIN: —</span>'}
         </p>
       </div>
     </div>

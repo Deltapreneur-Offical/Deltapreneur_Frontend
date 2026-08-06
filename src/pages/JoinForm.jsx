@@ -192,6 +192,7 @@ const JoinForm = () => {
         setOpenDropdown={setOpenDropdown}
         navigate={navigate}
         isScrolled={isScrolled}
+        hideJoinCta
       />
       <Confetti show={showConfetti} />
       {/* Header */}

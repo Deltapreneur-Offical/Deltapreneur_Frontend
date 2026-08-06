@@ -8,10 +8,10 @@
   flex: 1 1 auto; /* Ensure it grows to fill flex parent (ListingCardShell) */
   min-height: 0;
   overflow: visible;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  border-radius: 1.5rem !important;
+  border: 1px solid #bae6fd !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%) !important;
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.15) !important;
   transition:
     transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.28s ease,
@@ -20,6 +20,13 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   width: 100%;
+}
+
+.creator-profile-card:not(.virtual-assistant-listing-card):hover {
+  transform: translateY(-2px) translateZ(0);
+  border-color: #38bdf8 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%) !important;
+  box-shadow: 0 12px 28px rgba(56, 189, 248, 0.22) !important;
 }
 
 /* iOS WebKit: avoid promoting every creator card to its own GPU layer —
@@ -103,6 +110,83 @@
   padding: 1.25rem 1.25rem 1.25rem; 
   position: relative;
   z-index: 1;
+}
+
+/* Compact adjustments for Creator Listing Cards (non-VA) */
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__body {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__top-section {
+  flex-shrink: 0;
+  min-height: 5.25rem;
+  max-height: 5.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__stats-grid {
+  display: flex;
+  align-items: stretch;
+  padding: 0.65rem 0;
+  flex-shrink: 0;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.2rem;
+  min-height: 3.8rem;
+  max-height: 3.8rem;
+  overflow: hidden;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1E293B;
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.2rem;
+  box-sizing: border-box;
+  line-height: 1.25;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  word-break: normal;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate {
+  min-height: 3.2rem;
+  max-height: 3.2rem;
+  padding-left: 0.7rem;
+  padding-right: 0.55rem;
+  border: 1px solid #bae6fd !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  margin-top: auto;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__cta {
+  align-self: center;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__footer {
+  margin-top: 0;
+  padding-top: 0.5rem;
+  flex-shrink: 0;
 }
 
 /* TOP SECTION */
@@ -201,13 +285,13 @@
   display: inline-flex;
 }
 
-.creator-profile-card__badge {
+.creator-profile-card:not(.virtual-assistant-listing-card) .creator-profile-card__badge {
   display: inline-flex;
   padding: 0.12rem 0.5rem;
   border-radius: 9999px;
-  background: #faf5ff;
-  color: #7e22ce;
-  border: 1px solid #f3e8ff;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -220,7 +304,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   width: 100%;
-  margin: 0.45rem 0 0.8rem;
+  margin: 0.35rem 0 0.65rem;
   padding: 0.5rem 0.55rem 0.5rem 0.7rem;
   border: 1px solid transparent;
   border-radius: 0.9rem;
@@ -229,6 +313,13 @@
     linear-gradient(90deg, #a78bfa 0%, #818cf8 50%, #6d28d9 100%) border-box;
   box-shadow: -6px 0 14px -10px rgba(129, 140, 248, 0.55), 6px 0 14px -10px rgba(109, 40, 217, 0.45);
   text-align: left;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate {
+  min-height: 3.2rem;
+  max-height: 3.2rem;
+  padding-left: 0.7rem;
+  padding-right: 0.55rem;
 }
 
 /* Virtual Assistance cards — warm dark-brown borders (no sky blue) */
@@ -261,27 +352,27 @@
   gap: 0.12rem;
 }
 
-.creator-expected-rate__label {
+.creator-profile-card:not(.virtual-assistant-listing-card) .creator-expected-rate__label {
   display: block;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #8B5CF6;
+  color: #0369a1 !important;
   line-height: 1;
 }
 
-.creator-expected-rate__amount-row {
+.creator-profile-card:not(.virtual-assistant-listing-card) .creator-expected-rate__amount-row {
   display: flex;
   align-items: baseline;
   min-width: 0;
   gap: 0.3rem;
 }
 
-.creator-expected-rate__value {
+.creator-profile-card:not(.virtual-assistant-listing-card) .creator-expected-rate__value {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #6D28D9;
+  color: #0284c7 !important;
   line-height: 1.1;
   white-space: nowrap;
 }
@@ -450,8 +541,8 @@
   border-right: 1px solid #F1F5F9;
 }
 
-.stat-icon {
-  color: #8B5CF6;
+.creator-profile-card:not(.virtual-assistant-listing-card) .stat-icon {
+  color: #0284c7 !important;
   margin-bottom: 0.15rem;
 }
 
@@ -788,8 +879,7 @@
   max-height: 1.5rem;
 }
 
-.featured-va-grid .stat-value,
-.listing-card-glow-grid .creator-profile-card .stat-value {
+.featured-va-grid .stat-value {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -798,6 +888,91 @@
   min-height: 2.2em;
   max-height: 2.2em;
   line-height: 1.1;
+}
+
+.listing-card-glow-grid .creator-profile-card:not(.virtual-assistant-listing-card) .stat-value,
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-value {
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+  word-break: normal !important;
+  min-height: auto !important;
+  max-height: auto !important;
+  width: 100% !important;
+}
+
+/* Fixed compact layout adjustments for Dashboard Creator Cards (non-VA) */
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) {
+  --creator-card-height: 17.2rem; /* spacious height for exact 12px bottom padding */
+  height: var(--creator-card-height) !important;
+  max-height: var(--creator-card-height) !important;
+  border-radius: 1.5rem !important;
+  overflow: hidden !important; /* Fully wrap footer & content inside card border */
+}
+
+@media (max-width: 1024px) {
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) {
+    --creator-card-height: 17.2rem;
+    height: var(--creator-card-height) !important;
+    max-height: var(--creator-card-height) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) {
+    --creator-card-height: 17.8rem;
+    height: var(--creator-card-height) !important;
+    max-height: var(--creator-card-height) !important;
+  }
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__body {
+  padding: 1rem 1.25rem 12px !important; /* exact 12px bottom padding matching Business Solutions spacing */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__description-section,
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__skills-section {
+  display: none !important;
+}
+
+/* Keep the three stats on a single horizontal row */
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__stats-grid {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+}
+
+/* Alignment for compensation container — pushed to bottom of flex body */
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate {
+  margin-top: auto !important;
+  margin-bottom: 0.4rem !important;
+  min-height: 3.2rem;
+  max-height: 3.2rem;
+  flex-shrink: 0;
+}
+
+/* Footer completely inside card border with 12px bottom spacing */
+.creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__footer {
+  margin-top: 0 !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0 !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 @media (max-width: 640px) {

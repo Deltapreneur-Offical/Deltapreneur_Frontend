@@ -135,7 +135,7 @@
   color: #0369a1 !important;
 }
 
-/* ─── 5. Creators — cool premium ─── */
+/* ─── 5. Creators — cool premium (Co-Venture theme) ─── */
 .home-preview-card-border--community .creator-profile-card__badge,
 .home-preview-card-border--community .skill-pill:not(.skill-pill--more) {
   border: 1px solid #bae6fd !important;
@@ -144,16 +144,20 @@
 }
 
 .home-preview-card-border--community .creator-expected-rate {
-  border-color: #93c5fd !important;
+  border-color: #bae6fd !important;
   background: #ffffff !important;
 }
 
 .home-preview-card-border--community:hover .creator-expected-rate {
-  border-color: #1ea7fd !important;
+  border-color: #38bdf8 !important;
 }
 
 .home-preview-card-border--community .creator-expected-rate__label {
   color: #0369a1 !important;
+}
+
+.home-preview-card-border--community .creator-expected-rate__value {
+  color: #0284c7 !important;
 }
 
 /* ─── 6. Ventures — warm premium, very light header ─── */

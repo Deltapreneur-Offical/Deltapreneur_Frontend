@@ -1660,6 +1660,89 @@
   display: inline-flex !important;
 }
 
+/* Home-specific consistency fixes for Creator Cards (non-VA only). Ensures
+   every Creator Card in the Home preview rows shares the same height,
+   alignment, and truncation rules without affecting Virtual Assistant cards. */
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card),
+.home-auto-scroll-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) {
+  /* Fill the shell and use flex to pin footer */
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__body,
+.home-auto-scroll-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: 0.9rem; /* slightly compact */
+  padding-bottom: 0.9rem;
+}
+
+/* Reserve fixed space for the top info and stats so compensation aligns */
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__top-section {
+  flex: 0 0 auto;
+}
+
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__details-row {
+  display: none; /* Location & Languages removed from listing cards */
+}
+
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__description-section,
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__skills-section {
+  display: none; /* Short bio and skills removed from listing cards on Home */
+}
+
+/* Keep the three stats in one horizontal row and truncate long text */
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__stats-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-col .stat-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 6.5rem;
+}
+
+/* Ensure compensation box is fixed height and vertically aligned at bottom */
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate {
+  min-height: 3.2rem;
+  max-height: 3.2rem;
+  margin-top: auto;
+  margin-bottom: 0.65rem;
+}
+
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__cta {
+  align-self: center; /* keeps arrow vertically centered */
+}
+
+/* Footer pinned to bottom so all footers align */
+.home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__footer {
+  margin-top: 0;
+  padding-top: 0.6rem;
+}
+
+/* Small responsive tweaks — keep compact layout on small screens */
+@media (max-width: 640px) {
+  .home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-col .stat-value {
+    max-width: 4.5rem;
+  }
+  .home-preview-row .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate {
+    min-height: 2.8rem;
+    max-height: 2.8rem;
+  }
+}
+
 
 
 .home-preview-row .listing-browse-footer {

@@ -260,7 +260,7 @@ export default function HomeFooter() {
 
             <ScrollLink to="/join-form" className={linkClass}>
 
-              {t('joinCoBrother')}
+              {t('joinCoBrother', { defaultValue: 'Join Us' })}
 
             </ScrollLink>
 
@@ -284,6 +284,24 @@ export default function HomeFooter() {
             <ScrollLink to="/terms-and-conditions" className={linkClass}>
 
               {t('Terms & Conditions')}
+
+            </ScrollLink>
+
+            <ScrollLink to="/refund-policy" className={linkClass}>
+
+              {t('Refund Policy', { defaultValue: 'Refund Policy' })}
+
+            </ScrollLink>
+
+            <ScrollLink to="/cancellation-policy" className={linkClass}>
+
+              {t('Cancellation Policy', { defaultValue: 'Cancellation Policy' })}
+
+            </ScrollLink>
+
+            <ScrollLink to="/shipping-and-exchange" className={linkClass}>
+
+              {t('Shipping & Exchange', { defaultValue: 'Shipping & Exchange' })}
 
             </ScrollLink>
 

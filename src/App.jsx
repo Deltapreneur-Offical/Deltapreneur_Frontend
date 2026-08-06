@@ -64,6 +64,9 @@ const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const DataDeletionPage = lazy(() => import('./pages/DataDeletionPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
+const RefundPolicyPage = lazy(() => import('./pages/RefundPolicyPage'));
+const CancellationPolicyPage = lazy(() => import('./pages/CancellationPolicyPage'));
+const ShippingAndExchangePage = lazy(() => import('./pages/ShippingAndExchangePage'));
 const VirtualAssistantPage = lazy(() => import('./pages/VirtualAssistantPage'));
 const VirtualAssistantSuccessPage = lazy(() => import('./pages/VirtualAssistantSuccessPage'));
 const VirtualAssistantMarketplacePage = lazy(() => import('./pages/VirtualAssistantMarketplacePage'));
@@ -204,6 +207,9 @@ export default function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="/data-deletion" element={<DataDeletionPage />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+                <Route path="/refund-policy" element={<RefundPolicyPage />} />
+                <Route path="/cancellation-policy" element={<CancellationPolicyPage />} />
+                <Route path="/shipping-and-exchange" element={<ShippingAndExchangePage />} />
                 <Route path="/auth/callback" element={<OAuthCallbackPage />} />
                 <Route
                   path="/virtual-assistant"

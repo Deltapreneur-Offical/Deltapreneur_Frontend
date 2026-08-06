@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
 import { technologyServicesAPI } from '../api/technologyServicesApi';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import {
   Cpu,
   Layout,
@@ -56,6 +57,11 @@ export default function TechnologyServiceDetailPage() {
   const params = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { formatPrice, convertToInr } = useCurrency();
+
+  /** Tech catalogue prices are stored in USD; convert via INR for the selected header currency. */
+  const formatTechPrice = (usdAmount) =>
+    formatPrice(convertToInr(Number(usdAmount) || 0, 'USD'));
 
   // Extract slug from route params or current URL path
   const slug = params.slug || window.location.pathname.split('/').pop();
@@ -285,7 +291,7 @@ export default function TechnologyServiceDetailPage() {
                   <div>
                     <span className="text-xs text-gray-300 font-medium">Starting from</span>
                     <div className="text-4xl font-extrabold text-white my-1">
-                      ${service.starting_price || 15}
+                      {formatTechPrice(service.starting_price || 15)}
                       <span className="text-sm font-normal text-gray-400">/mo</span>
                     </div>
                     <p className="text-xs text-gray-300 mb-5">
@@ -395,7 +401,9 @@ export default function TechnologyServiceDetailPage() {
                       <div>
                         <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
                         <div className="mt-4 flex items-baseline gap-1">
-                          <span className="text-4xl font-extrabold tracking-tight text-gray-900">${price}</span>
+                          <span className="text-4xl font-extrabold tracking-tight text-gray-900">
+                            {formatTechPrice(price)}
+                          </span>
                           <span className="text-sm font-semibold text-gray-500">
                             /{billingCycle === 'annually' ? 'year' : 'month'}
                           </span>
@@ -483,13 +491,17 @@ export default function TechnologyServiceDetailPage() {
               <div className="flex justify-between text-gray-600">
                 <span>Service Fee:</span>
                 <span className="font-semibold text-gray-900">
-                  ${billingCycle === 'annually' ? purchasingPlan.price_annually : purchasingPlan.price_monthly}
+                  {formatTechPrice(
+                    billingCycle === 'annually' ? purchasingPlan.price_annually : purchasingPlan.price_monthly
+                  )}
                 </span>
               </div>
               <div className="flex justify-between text-gray-600 pt-2 border-t border-gray-200 font-bold text-gray-900">
                 <span>Total Due Today:</span>
                 <span className="text-indigo-600 text-base">
-                  ${billingCycle === 'annually' ? purchasingPlan.price_annually : purchasingPlan.price_monthly}
+                  {formatTechPrice(
+                    billingCycle === 'annually' ? purchasingPlan.price_annually : purchasingPlan.price_monthly
+                  )}
                 </span>
               </div>
             </div>

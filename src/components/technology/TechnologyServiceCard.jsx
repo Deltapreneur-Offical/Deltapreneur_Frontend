@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../../context/CurrencyContext';
 import {
   Cpu,
   Layout,
@@ -44,7 +45,12 @@ const ICON_MAP = {
 
 export default function TechnologyServiceCard({ service, compact = false }) {
   const navigate = useNavigate();
+  const { formatPrice, convertToInr } = useCurrency();
   const IconComponent = (service.icon && ICON_MAP[service.icon]) || Box;
+
+  /** Tech catalogue prices are stored in USD; convert via INR for the selected header currency. */
+  const formatTechPrice = (usdAmount) =>
+    formatPrice(convertToInr(Number(usdAmount) || 0, 'USD'));
 
   const handleCardClick = () => {
     navigate(`/technologies/${service.slug}`);
@@ -105,7 +111,9 @@ export default function TechnologyServiceCard({ service, compact = false }) {
         <div>
           <span className="text-xs text-gray-400 font-medium">Starting at</span>
           <div className="flex items-baseline gap-1">
-            <span className="text-xl font-extrabold text-gray-900">${service.starting_price || 15}</span>
+            <span className="text-xl font-extrabold text-gray-900">
+              {formatTechPrice(service.starting_price || 15)}
+            </span>
             <span className="text-xs text-gray-500 font-medium">/mo</span>
           </div>
         </div>

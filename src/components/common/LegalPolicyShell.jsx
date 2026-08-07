@@ -11,7 +11,12 @@ import useDocumentMeta from '../../hooks/useDocumentMeta';
 import {
   BUSINESS_ADDRESS_LINES,
   BUSINESS_BRAND_NAME,
+  BUSINESS_GSTIN,
   BUSINESS_LEGAL_NAME,
+  GRIEVANCE_ACKNOWLEDGMENT_HOURS,
+  GRIEVANCE_OFFICER_TITLE,
+  GRIEVANCE_RESOLUTION_DAYS,
+  SUPPORT_BUSINESS_HOURS,
   SUPPORT_EMAIL,
   SUPPORT_PHONE_DISPLAY,
 } from '../../config/contactLinks';
@@ -181,10 +186,28 @@ export function PolicyContactCard() {
           </span>
         </p>
         <p className="text-sm text-slate-600 mt-2">
+          GSTIN: <span className="font-medium text-slate-900">{BUSINESS_GSTIN}</span>
+        </p>
+        <p className="text-sm text-slate-600 mt-2">
+          Business hours: <span className="font-medium text-slate-900">{SUPPORT_BUSINESS_HOURS}</span>
+        </p>
+        <p className="text-sm text-slate-600 mt-2">
           Contact page:{' '}
           <a href="/contact" className="font-medium text-indigo-600 hover:underline">
             https://cobrother.com/contact
           </a>
+        </p>
+      </div>
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5">
+        <h3 className="text-sm font-semibold text-slate-900 mb-2">{GRIEVANCE_OFFICER_TITLE}</h3>
+        <p className="text-sm text-slate-600 leading-relaxed">
+          In line with the Consumer Protection (E-Commerce) Rules, 2020, {BUSINESS_LEGAL_NAME} has appointed a{' '}
+          {GRIEVANCE_OFFICER_TITLE}. For complaints about orders, refunds, or cancellations, email{' '}
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-slate-900 hover:underline">
+            {SUPPORT_EMAIL}
+          </a>{' '}
+          or call +91 {SUPPORT_PHONE_DISPLAY}. We acknowledge grievances within{' '}
+          {GRIEVANCE_ACKNOWLEDGMENT_HOURS} hours and aim to resolve them within {GRIEVANCE_RESOLUTION_DAYS} days.
         </p>
       </div>
     </div>

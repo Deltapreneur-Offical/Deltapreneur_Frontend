@@ -17,6 +17,12 @@ export const BUSINESS_ADDRESS_LINES = [
 ];
 export const BUSINESS_ADDRESS_TEXT = BUSINESS_ADDRESS_LINES.join(', ');
 
+/** Consumer Protection (E-Commerce) Rules — grievance redressal on policy pages. */
+export const GRIEVANCE_OFFICER_TITLE = 'Grievance Officer';
+export const GRIEVANCE_ACKNOWLEDGMENT_HOURS = 48;
+export const GRIEVANCE_RESOLUTION_DAYS = 30;
+export const SUPPORT_BUSINESS_HOURS = 'Monday to Saturday, 10:00 AM to 6:00 PM IST (excluding public holidays)';
+
 export const EXTERNAL_LINK_PROPS = {
   target: '_blank',
   rel: 'noopener noreferrer',

@@ -142,7 +142,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
         }`
     : (active) =>
         `w-full px-4 py-2.5 bg-transparent border-none text-left text-sm cursor-pointer transition-colors duration-200 font-body ${
-          active ? 'bg-purple-50 text-purple font-semibold' : 'text-gray-700 hover:bg-gray-100'
+          active ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'
         }`;
 
   const panel = open && coords

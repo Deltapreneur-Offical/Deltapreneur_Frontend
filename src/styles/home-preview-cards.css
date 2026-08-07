@@ -2035,12 +2035,12 @@
 }
 
 .home-auction-preview-card--category-technology {
-  --auction-accent: #7c3aed;
-  --auction-accent-strong: #6d28d9;
-  --auction-accent-soft: #f5f3ff;
-  --auction-accent-border: #e9d5ff;
+  --auction-accent: #2563eb;
+  --auction-accent-strong: #1d4ed8;
+  --auction-accent-soft: #eff6ff;
+  --auction-accent-border: #bfdbfe;
   --auction-badge-text: #1d4ed8;
-  --auction-badge-border: #e9d5ff;
+  --auction-badge-border: #bfdbfe;
 }
 
 .home-auction-preview-card--category-community {
@@ -2092,7 +2092,7 @@
 }
 
 .home-auction-preview-card--category-technology .home-auction-preview-card__hero-fallback {
-  background: linear-gradient(145deg, #eef2ff 0%, #e0e7ff 100%);
+  background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
 }
 
 .home-auction-preview-card__verified-icon {

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 
-const TOOLTIP_MAX_WIDTH = 260;
+const TOOLTIP_MAX_WIDTH = 280;
 const VIEWPORT_PAD = 12;
-const GAP = 8;
+const GAP = 7;
 const TOOLTIP_OPEN_EVENT = 'tooltip:open';
 
 function isMobile() {
@@ -16,7 +16,7 @@ export default function TruncatedTextTooltip({ text, className = '', children })
   const [isTruncated, setIsTruncated] = useState(false);
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [style, setStyle] = useState(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, placeBelow: false, maxWidth: TOOLTIP_MAX_WIDTH });
   const triggerRef = useRef(null);
   const tooltipRef = useRef(null);
   const hideTimerRef = useRef(null);
@@ -44,18 +44,16 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const maxWidth = Math.min(TOOLTIP_MAX_WIDTH, window.innerWidth - VIEWPORT_PAD * 2);
-    let left = rect.left + rect.width / 2 - maxWidth / 2;
-    left = Math.max(VIEWPORT_PAD, Math.min(left, window.innerWidth - maxWidth - VIEWPORT_PAD));
-    const top = rect.top - GAP;
-    setStyle({
-      position: 'fixed',
-      top,
-      left,
-      maxWidth,
-      width: maxWidth,
-      transform: 'translateY(-100%)',
-      zIndex: 10050,
-    });
+
+    // Check vertical space above trigger
+    const placeBelow = rect.top < 65;
+    const top = placeBelow ? rect.bottom + GAP : rect.top - GAP;
+
+    // Center horizontal position on title trigger element, clamped within viewport bounds
+    const centerX = rect.left + rect.width / 2;
+    const left = Math.max(VIEWPORT_PAD + 40, Math.min(centerX, window.innerWidth - VIEWPORT_PAD - 40));
+
+    setPos({ top, left, placeBelow, maxWidth });
   }, []);
 
   const openTooltip = useCallback(() => {
@@ -131,27 +129,46 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     return () => document.removeEventListener('touchstart', onTouchStart);
   }, [open]);
 
+  const tooltipStyle = {
+    position: 'fixed',
+    top: pos.top,
+    left: pos.left,
+    maxWidth: pos.maxWidth,
+    width: 'max-content',
+    transform: pos.placeBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+    zIndex: 10050,
+  };
+
   const tooltip =
     open &&
-    style &&
     createPortal(
       <div
         ref={tooltipRef}
         id={tooltipId}
         role="tooltip"
-        style={style}
+        style={tooltipStyle}
         className="pointer-events-auto"
         onMouseEnter={clearHideTimer}
         onMouseLeave={closeTooltip}
       >
         <div
-          className={`rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-xs leading-relaxed text-gray-700 shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-150 ease-out ${
-            visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-[0.96]'
+          className={`relative rounded-[8px] border border-[#90CAF9] bg-[#E6F4FF] px-[10px] py-[6px] text-[13px] font-medium leading-snug text-[#1565C0] shadow-[0_4px_14px_rgba(21,101,192,0.14)] transition-all duration-150 ease-out ${
+            visible
+              ? 'opacity-100 translate-y-0 scale-100'
+              : pos.placeBelow
+              ? 'opacity-0 -translate-y-1 scale-95'
+              : 'opacity-0 translate-y-1 scale-95'
           }`}
         >
-          <span className="block break-words whitespace-normal">{text || children}</span>
+          <span className="block break-words whitespace-normal text-center max-w-[260px]">
+            {text || children}
+          </span>
           <span
-            className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-r border-b border-gray-200 bg-white"
+            className={`absolute left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-[#E6F4FF] ${
+              pos.placeBelow
+                ? 'bottom-full translate-y-1 border-l border-t border-[#90CAF9]'
+                : 'top-full -translate-y-1 border-r border-b border-[#90CAF9]'
+            }`}
             aria-hidden="true"
           />
         </div>

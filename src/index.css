@@ -3452,7 +3452,7 @@ input[type="checkbox"] {
 }
 
 .cocreation-btn {
-  border: 1px solid #9333ea;
+  border: 1px solid #2563eb;
   color: #111827;
   background: #ffffff;
 }
@@ -3460,7 +3460,7 @@ input[type="checkbox"] {
 .cocreation-btn:hover {
   color: #ffffff;
   border-color: transparent;
-  background: linear-gradient(135deg, #7e22ce, #9333ea);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
 .cocreation-btn-primary {
@@ -3487,8 +3487,8 @@ input[type="checkbox"] {
 
 .cocreation-page .filter-tab.active,
 .cocreation-dashboard-page .filter-tab.active {
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .cocreation-result-count {
@@ -3525,9 +3525,9 @@ input[type="checkbox"] {
 }
 
 .cocreation-page .venture-type {
-  background: #f5f3ff;
-  border: 1px solid #ddd6fe;
-  color: #6d28d9;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
 }
 
 .cocreation-page .community-form-card {
@@ -3626,7 +3626,7 @@ input[type="checkbox"] {
 
 .cocreation-tab-badge {
   margin-left: 0.4rem;
-  background: #7e22ce;
+  background: #2563eb;
   color: #fff;
   font-size: 0.65rem;
   font-weight: 700;

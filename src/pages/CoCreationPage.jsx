@@ -384,7 +384,7 @@ export default function CoCreationPage() {
             <div className="mt-16 pt-12 border-t border-gray-200">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 px-3 py-1 text-xs font-semibold text-indigo-600 mb-2 border border-indigo-100">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-2 border border-blue-100">
                     <Sparkles className="h-3.5 w-3.5" />
                     CoBrother Enterprise Catalogue
                   </div>
@@ -404,7 +404,7 @@ export default function CoCreationPage() {
                       onClick={() => setServiceCategory(cat)}
                       className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
                         serviceCategory === cat
-                          ? 'bg-indigo-600 text-white shadow-md'
+                          ? 'bg-blue-600 text-white shadow-md'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -983,8 +983,8 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
             </div>
             {/* Commission breakdown for One-Time Purchase */}
             {form.pricingPlans.find(p => p.key === 'ONE_TIME')?.enabled && commissionBreakdown && (
-              <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-                <div className="text-xs text-purple-500 font-semibold mb-1 uppercase tracking-wide">
+              <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 text-sm text-gray-700 space-y-1">
+                <div className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wide">
                   Commission preview · One-Time Purchase
                 </div>
                 <div className="flex justify-between"><span>Listing price (buyer pays)</span><span>{formatCurrency(commissionBreakdown.finalListingPrice, form.currency)}</span></div>
@@ -1202,11 +1202,11 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
         {/* ── Terms Agreement ── */}
         {!isEdit && (
-          <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
+          <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-blue-100 bg-blue-50/60 px-3.5 py-2.5 max-w-full">
             <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
               onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
               required />
-            <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
+            <span className="relative w-5 h-5 rounded-[7px] border-2 border-blue-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#2563eb' : 'white', borderColor: form.agreement.terms ? '#2563eb' : '#bfdbfe' }}>
               {form.agreement.terms && (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -1444,18 +1444,18 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
               {/* ── CoBrother opt-in card only (no VA / Compliance) ── */}
               <div
                 onClick={() => setCoBrotherOptIn(v => !v)}
-                className={`flex flex-col gap-3 p-4 cursor-pointer rounded-xl border-2 transition-all shadow-sm ${coBrotherOptIn ? 'bg-purple-50/50 border-purple-400 shadow-md' : 'bg-white border-gray-200 hover:border-purple-300'}`}
+                className={`flex flex-col gap-3 p-4 cursor-pointer rounded-xl border-2 transition-all shadow-sm ${coBrotherOptIn ? 'bg-blue-50/50 border-blue-500 shadow-md' : 'bg-white border-gray-200 hover:border-blue-300'}`}
               >
                 <div className="flex items-start gap-3.5">
-                  <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'}`}>
+                  <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'}`}>
                     {coBrotherOptIn && (
                       <span className="text-white text-[0.65rem] font-bold">✓</span>
                     )}
                   </div>
                   <div>
-                    <div className={`font-semibold text-[0.95rem] mb-1 flex items-center gap-2 ${coBrotherOptIn ? 'text-purple-900' : 'text-gray-800'}`}>
+                    <div className={`font-semibold text-[0.95rem] mb-1 flex items-center gap-2 ${coBrotherOptIn ? 'text-blue-900' : 'text-gray-800'}`}>
                       <span>Co-Creator Assistance</span>
-                      <span className={`font-display text-[0.9rem] font-bold ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-500'}`}>
+                      <span className={`font-display text-[0.9rem] font-bold ${coBrotherOptIn ? 'text-blue-700' : 'text-gray-500'}`}>
                         +{formatPrice(1000)}
                       </span>
                     </div>
@@ -1564,8 +1564,8 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
 function BillingLine({ label, value, accent }) {
   return (
     <div className="flex justify-between items-center py-1 text-[0.84rem]">
-      <span className={accent ? 'text-purple-600' : 'text-gray-500'}>{label}</span>
-      <span className={`font-medium ${accent ? 'text-purple-700' : 'text-gray-700'}`}>{value}</span>
+      <span className={accent ? 'text-blue-600' : 'text-gray-500'}>{label}</span>
+      <span className={`font-medium ${accent ? 'text-blue-700' : 'text-gray-700'}`}>{value}</span>
     </div>
   );
 }

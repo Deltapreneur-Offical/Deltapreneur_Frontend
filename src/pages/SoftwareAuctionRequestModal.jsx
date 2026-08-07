@@ -137,13 +137,13 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
             <label className="flex items-center gap-2 md:gap-3 text-sm text-gray-700 cursor-pointer hover:text-gray-900 transition-colors">
               <input type="checkbox" checked={form.sourceCodeIncluded}
                 onChange={e => set('sourceCodeIncluded', e.target.checked)}
-                className="w-4 h-4 md:w-5 md:h-5 rounded border-2 border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer accent-indigo-600" />
+                className="w-4 h-4 md:w-5 md:h-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer accent-blue-600" />
               <span className="font-medium">{t('softwareAuctionSourceCodeIncluded')}</span>
             </label>
             <label className="flex items-center gap-2 md:gap-3 text-sm text-gray-700 cursor-pointer hover:text-gray-900 transition-colors">
               <input type="checkbox" checked={form.supportIncluded}
                 onChange={e => set('supportIncluded', e.target.checked)}
-                className="w-4 h-4 md:w-5 md:h-5 rounded border-2 border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer accent-indigo-600" />
+                className="w-4 h-4 md:w-5 md:h-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer accent-blue-600" />
               <span className="font-medium">{t('softwareAuctionSupportIncluded')}</span>
             </label>
           </div>

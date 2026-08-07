@@ -110,7 +110,7 @@ export default function TechnologySection() {
         <div>
           <div className="flex items-center justify-between mb-6 px-4 sm:px-6 lg:px-8">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 px-3 py-1 text-xs font-semibold text-indigo-600 mb-1 border border-indigo-100">
+              <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-1 border border-blue-100">
                 <Sparkles className="h-3.5 w-3.5" />
                 Featured CoBrother Services
               </div>
@@ -120,7 +120,7 @@ export default function TechnologySection() {
             </div>
             <button
               onClick={() => navigate('/technology')}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
             >
               View All Services
               <ArrowRight className="h-4 w-4" />

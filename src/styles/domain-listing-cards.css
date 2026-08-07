@@ -871,9 +871,9 @@
 }
 
 .domain-listing-card__chip--premium {
-  color: #7c3aed;
-  background: #f5f3ff;
-  border: 1px solid #ddd6fe;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
 }
 
 .domain-listing-card__chip--owner {

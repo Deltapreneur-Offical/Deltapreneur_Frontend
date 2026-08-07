@@ -6,13 +6,13 @@ export default function FormCheckbox({
   onChange,
   children,
   disabled = false,
-  accent = '#9333ea',
-  borderAccent = '#d8b4fe',
+  accent = '#2563eb',
+  borderAccent = '#bfdbfe',
   className = '',
 }) {
   return (
     <label
-      className={`inline-flex items-start gap-3 text-sm text-gray-600 cursor-pointer max-w-full rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className}`}
+      className={`inline-flex items-start gap-3 text-sm text-gray-600 cursor-pointer max-w-full rounded-[12px] border border-blue-100 bg-blue-50/60 px-3.5 py-2.5 ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className}`}
     >
       <input
         type="checkbox"

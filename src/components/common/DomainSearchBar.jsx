@@ -1719,21 +1719,21 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               {filteredPremiumDomains.map((item) => (
                 <div
                   key={item.id}
-                  className="domain-search-card bg-white border border-indigo-200 ring-1 ring-indigo-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
+                  className="domain-search-card bg-white border border-blue-200 ring-1 ring-blue-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
                 >
-                  <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-700">
+                  <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-blue-100 text-blue-700">
                     LISTED DOMAIN
                   </span>
                   <h2 className="text-xl font-extrabold mb-3 text-gray-900">
-                    {item.domainName}<span className="text-purple-500">{item.domainExtension}</span>
+                    {item.domainName}<span className="text-blue-600">{item.domainExtension}</span>
                   </h2>
-                  <p className="text-indigo-600 text-sm font-semibold mb-4">
+                  <p className="text-blue-600 text-sm font-semibold mb-4">
                     Asking {formatPrice(item.askingPrice || 0)}
                   </p>
                   <button
                     type="button"
                     onClick={() => navigate(`/domains?highlight=${item.id}`)}
-                    className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-indigo-600 text-white hover:bg-indigo-700"
+                    className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-blue-600 text-white hover:bg-blue-700"
                   >
                     View on Marketplace →
                   </button>

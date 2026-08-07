@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../../context/CurrencyContext';
+import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import {
   Cpu,
   Layout,
@@ -59,30 +60,32 @@ export default function TechnologyServiceCard({ service, compact = false }) {
   return (
     <div
       onClick={handleCardClick}
-      className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer overflow-hidden"
+      className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer overflow-hidden"
     >
       {/* Top Accent Glow */}
-      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:from-indigo-500/20 group-hover:to-purple-500/20" />
+      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-600/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:from-sky-500/20 group-hover:to-blue-600/20" />
 
       <div>
         {/* Header Row */}
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 transition-all duration-300 group-hover:scale-110 group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:text-white shadow-inner">
+        <div className="flex items-start justify-between gap-2 mb-4 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-50 to-blue-50 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white shadow-inner shrink-0">
               <IconComponent className="h-6 w-6" />
             </div>
-            <div>
-              <span className="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+            <div className="min-w-0 flex-1">
+              <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-600 uppercase tracking-wider mb-1 truncate max-w-full">
                 {service.category}
               </span>
-              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
-                {service.name}
-              </h3>
+              <TruncatedTextTooltip text={service.name} className="block min-w-0 max-w-full">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                  {service.name}
+                </h3>
+              </TruncatedTextTooltip>
             </div>
           </div>
 
           {service.badge && (
-            <span className="shrink-0 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 px-3 py-1 text-xs font-bold text-amber-700 border border-amber-200/50">
+            <span className="shrink-0 max-w-[45%] inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-700 border border-amber-200/50 whitespace-nowrap overflow-hidden text-ellipsis leading-tight">
               {service.badge}
             </span>
           )}
@@ -107,14 +110,14 @@ export default function TechnologyServiceCard({ service, compact = false }) {
       </div>
 
       {/* Footer / Price & CTA */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
-        <div>
-          <span className="text-xs text-gray-400 font-medium">Starting at</span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl font-extrabold text-gray-900">
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 pt-3.5 mt-2 min-w-0">
+        <div className="min-w-max shrink-0">
+          <span className="block text-[11px] text-gray-400 font-medium leading-none mb-1">Starting at</span>
+          <div className="inline-flex items-baseline gap-1 whitespace-nowrap">
+            <span className="text-sm sm:text-base md:text-lg xl:text-xl font-extrabold text-gray-900 leading-none whitespace-nowrap">
               {formatTechPrice(service.starting_price || 15)}
             </span>
-            <span className="text-xs text-gray-500 font-medium">/mo</span>
+            <span className="text-xs text-gray-500 font-semibold leading-none shrink-0 whitespace-nowrap">/mo</span>
           </div>
         </div>
 
@@ -123,10 +126,10 @@ export default function TechnologyServiceCard({ service, compact = false }) {
             e.stopPropagation();
             handleCardClick();
           }}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-300 group-hover:bg-indigo-600 group-hover:shadow-md group-hover:shadow-indigo-600/30"
+          className="shrink inline-flex items-center gap-1 sm:gap-1.5 rounded-xl bg-gray-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition-all duration-300 group-hover:bg-blue-600 group-hover:shadow-md group-hover:shadow-blue-600/30 whitespace-nowrap min-w-0"
         >
-          Explore Service
-          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+          <span className="truncate">Explore Service</span>
+          <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
         </button>
       </div>
     </div>

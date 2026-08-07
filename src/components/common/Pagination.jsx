@@ -73,7 +73,7 @@ export default function Pagination({ page, totalPages, onPage, totalCount, pageS
         disabled={disabled}
         className={`w-9 h-9 rounded-lg border text-[0.85rem] transition-all duration-150 flex items-center justify-center ${
           active
-            ? 'border-purple-400 bg-purple-50 text-purple-600 font-bold'
+            ? 'border-blue-500 bg-blue-50 text-blue-600 font-bold'
             : disabled
             ? 'border-gray-200 bg-transparent text-gray-400 cursor-not-allowed'
             : 'border-gray-200 bg-white text-gray-600 cursor-pointer hover:bg-gray-50'

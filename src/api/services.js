@@ -347,6 +347,10 @@ export const adminAPI = {
   getTrackRecords: (params) => api.get('/api/v1/admin/track-records', { params }),
   syncTrackRecords: () => api.post('/api/v1/admin/track-records/sync'),
   getTrackRecordDetail: (id) => api.get(`/api/v1/admin/track-records/${id}`),
+  updateDomainTaxInvoice: (orderId, taxInvoiceNumber) =>
+    api.patch(`/api/v1/admin/domain-registrations/${orderId}/tax-invoice`, {
+      taxInvoiceNumber,
+    }),
   markDomainVerified:   (id)    => api.post(`/api/v1/admin/domains/${id}/mark-verified`),
   markDomainUnverified: (id)    => api.post(`/api/v1/admin/domains/${id}/mark-unverified`),
   getDomainVerificationReview: (id) => api.get(`/api/v1/admin/domains/${id}/verification-review`),

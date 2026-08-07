@@ -20,6 +20,8 @@ import {
   Calendar,
   Layers,
   Copy,
+  Pencil,
+  Save,
 } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { formatInr } from '../../utils/money';
@@ -70,6 +72,15 @@ export default function AdminTrackRecordsTab() {
   const [authExpired, setAuthExpired] = useState(false);
   const [fetchError, setFetchError] = useState('');
   const authExpiredRef = useRef(false);
+  /** recordId -> draft invoice string while editing */
+  const [invoiceDrafts, setInvoiceDrafts] = useState({});
+  /** recordId currently in edit mode */
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  /** recordId -> saving */
+  const [savingInvoiceId, setSavingInvoiceId] = useState(null);
+  /** recordId -> short success message for admin (what user will see) */
+  const [invoiceSavedMsg, setInvoiceSavedMsg] = useState({});
+  const [invoiceErrorById, setInvoiceErrorById] = useState({});
 
   const isAuthError = (err) => {
     const status = err?.response?.status;
@@ -192,6 +203,97 @@ export default function AdminTrackRecordsTab() {
     if (!s) return '—';
     if (s.length <= keep + 4) return s;
     return `${s.slice(0, keep)}…`;
+  };
+
+  const canEditInvoice = (r) => {
+    const cat = String(r.category || '').toLowerCase();
+    if (!cat.includes('domain registration')) return false;
+    return Boolean(r.registrationOrderId);
+  };
+
+  const startEditInvoice = (r) => {
+    if (!canEditInvoice(r)) return;
+    setEditingInvoiceId(r.id);
+    setInvoiceDrafts((prev) => ({
+      ...prev,
+      [r.id]: r.taxInvoiceNumber || r.invoiceNumber || '',
+    }));
+    setInvoiceErrorById((prev) => {
+      const next = { ...prev };
+      delete next[r.id];
+      return next;
+    });
+    setInvoiceSavedMsg((prev) => {
+      const next = { ...prev };
+      delete next[r.id];
+      return next;
+    });
+  };
+
+  const cancelEditInvoice = (recordId) => {
+    setEditingInvoiceId(null);
+    setInvoiceDrafts((prev) => {
+      const next = { ...prev };
+      delete next[recordId];
+      return next;
+    });
+  };
+
+  const saveInvoiceNumber = async (r) => {
+    const orderId = r.registrationOrderId;
+    if (!orderId) return;
+    const draft = String(invoiceDrafts[r.id] ?? '').trim().toUpperCase();
+    if (!/^AI\d{7}$/.test(draft)) {
+      setInvoiceErrorById((prev) => ({
+        ...prev,
+        [r.id]: 'Use format AI + year + 5 digits (e.g. AI2600001).',
+      }));
+      return;
+    }
+    setSavingInvoiceId(r.id);
+    setInvoiceErrorById((prev) => {
+      const next = { ...prev };
+      delete next[r.id];
+      return next;
+    });
+    try {
+      const { data } = await adminAPI.updateDomainTaxInvoice(orderId, draft);
+      const saved =
+        data?.taxInvoiceNumber || data?.invoiceNumber || draft;
+      setRecords((prev) =>
+        prev.map((row) =>
+          row.id === r.id
+            ? { ...row, taxInvoiceNumber: saved, invoiceNumber: saved }
+            : row,
+        ),
+      );
+      setSelectedRecord((prev) =>
+        prev && prev.id === r.id
+          ? { ...prev, taxInvoiceNumber: saved, invoiceNumber: saved }
+          : prev,
+      );
+      setInvoiceSavedMsg((prev) => ({
+        ...prev,
+        [r.id]: `Updated — user will see ${saved}`,
+      }));
+      setEditingInvoiceId(null);
+      window.setTimeout(() => {
+        setInvoiceSavedMsg((prev) => {
+          const next = { ...prev };
+          delete next[r.id];
+          return next;
+        });
+      }, 6000);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
+        'Could not update invoice number.';
+      setInvoiceErrorById((prev) => ({ ...prev, [r.id]: String(msg) }));
+    } finally {
+      setSavingInvoiceId(null);
+    }
   };
 
   const copyDiagnostics = async (r) => {
@@ -487,6 +589,7 @@ export default function AdminTrackRecordsTab() {
                   <th className="py-3.5 px-4">Registration</th>
                   <th className="py-3.5 px-4">Error</th>
                   <th className="py-3.5 px-4">Overall</th>
+                  <th className="py-3.5 px-4">Invoice No</th>
                   <th className="py-3.5 px-4 text-right">Action</th>
                 </tr>
               </thead>
@@ -592,6 +695,81 @@ export default function AdminTrackRecordsTab() {
                       )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">{renderStatusBadge(r.overallStatus)}</td>
+                    <td className="py-3.5 px-4 min-w-[160px] max-w-[220px] align-top">
+                      {!canEditInvoice(r) ? (
+                        <span className="text-slate-400">—</span>
+                      ) : editingInvoiceId === r.id ? (
+                        <div className="space-y-1.5">
+                          <input
+                            type="text"
+                            value={invoiceDrafts[r.id] ?? ''}
+                            onChange={(e) =>
+                              setInvoiceDrafts((prev) => ({
+                                ...prev,
+                                [r.id]: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9),
+                              }))
+                            }
+                            className="w-full rounded-lg border border-indigo-300 bg-white px-2 py-1 font-mono text-[11px] font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-200"
+                            placeholder="AI2600001"
+                            disabled={savingInvoiceId === r.id}
+                            autoFocus
+                          />
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              disabled={savingInvoiceId === r.id}
+                              onClick={() => saveInvoiceNumber(r)}
+                              className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+                            >
+                              <Save size={11} />
+                              {savingInvoiceId === r.id ? 'Saving…' : 'Save'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={savingInvoiceId === r.id}
+                              onClick={() => cancelEditInvoice(r.id)}
+                              className="rounded-md px-2 py-1 text-[10px] font-semibold text-slate-500 hover:bg-slate-100"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                          {invoiceErrorById[r.id] && (
+                            <p className="text-[10px] font-semibold text-rose-600 leading-snug">
+                              {invoiceErrorById[r.id]}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[11px] font-bold text-slate-900">
+                              {r.taxInvoiceNumber || r.invoiceNumber || (
+                                <span className="font-sans font-semibold text-slate-400">None</span>
+                              )}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => startEditInvoice(r)}
+                              className="inline-flex items-center gap-0.5 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"
+                              title="Edit invoice number"
+                            >
+                              <Pencil size={11} />
+                              Edit
+                            </button>
+                          </div>
+                          {invoiceSavedMsg[r.id] && (
+                            <p className="text-[10px] font-semibold text-emerald-700 leading-snug">
+                              {invoiceSavedMsg[r.id]}
+                            </p>
+                          )}
+                          {invoiceErrorById[r.id] && (
+                            <p className="text-[10px] font-semibold text-rose-600 leading-snug">
+                              {invoiceErrorById[r.id]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => openRecordDetails(r)}
@@ -797,6 +975,17 @@ export default function AdminTrackRecordsTab() {
                     <div className="col-span-2">
                       <span className="text-slate-500">Item Name:</span>{' '}
                       <span className="font-bold text-slate-900">{selectedRecord.itemName}</span>
+                    </div>
+                    <div className="col-span-2 rounded-lg border border-emerald-100 bg-emerald-50/80 px-3 py-2">
+                      <span className="text-slate-500">Tax invoice (user sees):</span>{' '}
+                      <span className="font-mono font-bold text-emerald-800">
+                        {selectedRecord.taxInvoiceNumber || selectedRecord.invoiceNumber || 'None yet'}
+                      </span>
+                      {selectedRecord.registrationOrderId ? (
+                        <div className="text-[10px] text-slate-500 mt-0.5">
+                          Edit from the Invoice No column in the table. Purchases page uses this same value.
+                        </div>
+                      ) : null}
                     </div>
                     <div>
                       <span className="text-slate-500">Category:</span>{' '}

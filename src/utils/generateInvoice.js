@@ -9,7 +9,7 @@ import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 
 const SELLER = {
-  legalName: 'Aultum International',
+  legalName: 'Aultum International (Proprietor: Neminath Surendra Akkole)',
   gstin: '29DXMPA9959L2ZF',
   email: 'support@cobrother.com',
   phone: '080 8575 8575',

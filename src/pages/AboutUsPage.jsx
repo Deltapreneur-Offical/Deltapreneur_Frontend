@@ -624,6 +624,15 @@ export default function AboutUsPage() {
         </div>
       </section>
 
+      <section className="px-4 py-10 bg-slate-950 text-slate-100">
+        <div className="max-w-5xl mx-auto rounded-3xl border border-slate-800 bg-slate-900/95 p-8 text-center shadow-xl shadow-slate-900/20">
+          <p className="text-sm uppercase tracking-[0.24em] text-slate-400 mb-3">Ownership disclosure</p>
+          <p className="text-base sm:text-lg font-medium leading-relaxed">
+            Proprietor: <span className="font-semibold text-white">Neminath Surendra Akkole</span>
+          </p>
+        </div>
+      </section>
+
       <HomeFooter />
     </div>
   );

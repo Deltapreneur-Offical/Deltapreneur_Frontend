@@ -203,6 +203,15 @@ export default function ContactPage() {
         </div>
       </section>
 
+      <section className="py-8 px-4 max-md:py-6">
+        <div className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-700">
+          <p className="text-sm sm:text-base">
+            <span className="font-semibold text-slate-900">Proprietor:</span>{' '}
+            Neminath Surendra Akkole
+          </p>
+        </div>
+      </section>
+
       <section className="py-12 px-4 max-md:py-8">
         <PageReveal className="max-w-4xl mx-auto">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 max-md:p-6">

@@ -194,6 +194,10 @@ export default function TermsAndConditionsPage() {
                         <span className="font-medium text-slate-900">{BUSINESS_ADDRESS_LINES.join(', ')}</span>
                       </span>
                     </p>
+                    <p className="text-sm text-slate-600 mt-4">
+                      <span className="font-semibold text-slate-900">Proprietor:</span>{' '}
+                      Neminath Surendra Akkole
+                    </p>
                     <p className="text-sm text-slate-600 mt-2">
                       Contact Us:{' '}
                       <a href="/contact" className="font-medium text-indigo-600 hover:underline">

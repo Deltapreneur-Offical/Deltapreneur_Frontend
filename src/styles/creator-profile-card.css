@@ -921,14 +921,6 @@
   }
 }
 
-@media (max-width: 640px) {
-  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) {
-    --creator-card-height: 17.8rem;
-    height: var(--creator-card-height) !important;
-    max-height: var(--creator-card-height) !important;
-  }
-}
-
 .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__body {
   padding: 1rem 1.25rem 12px !important; /* exact 12px bottom padding matching Business Solutions spacing */
   display: flex;
@@ -974,6 +966,257 @@
   justify-content: space-between;
   width: 100%;
 }
+
+/* Mobile Responsive Adjustments (<=768px) for Creator Cards Only */
+@media (max-width: 768px) {
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) {
+    --creator-card-height: 18.2rem;
+    height: var(--creator-card-height) !important;
+    max-height: var(--creator-card-height) !important;
+    min-height: var(--creator-card-height) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 1.5rem !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__body {
+    padding: 0.875rem 1rem 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    justify-content: space-between !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__top-section {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    min-height: 4.75rem !important;
+    max-height: 4.75rem !important;
+    margin-bottom: 0.25rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__avatar-container {
+    flex-shrink: 0 !important;
+    width: 4.25rem !important;
+    height: 4.25rem !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__avatar {
+    width: 4.25rem !important;
+    height: 4.25rem !important;
+    border-width: 3px !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__header-right {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 0.25rem !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__name-section {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__name {
+    font-size: 1.05rem !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .domain-listing-card__verified-badge {
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__badge-slot {
+    margin-top: 0.2rem !important;
+    display: inline-flex !important;
+    max-width: 100% !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__badge {
+    font-size: 0.6rem !important;
+    padding: 0.1rem 0.45rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__divider {
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__stats-grid {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.35rem !important;
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 0.35rem 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-col {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 0.15rem !important;
+    min-height: 3.5rem !important;
+    max-height: 3.5rem !important;
+    overflow: hidden !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-icon {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-value {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100% !important;
+    text-align: center !important;
+    padding: 0 0.1rem !important;
+    box-sizing: border-box !important;
+    line-height: 1.2 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .stat-label {
+    font-size: 0.625rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    min-height: 3.1rem !important;
+    max-height: 3.1rem !important;
+    padding: 0.4rem 0.5rem 0.4rem 0.65rem !important;
+    margin-top: auto !important;
+    margin-bottom: 0.35rem !important;
+    flex-shrink: 0 !important;
+    gap: 0.5rem !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__text {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__label {
+    font-size: 0.6rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__amount-row {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 0.25rem !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__value {
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__period {
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__cta {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    min-width: 1.75rem !important;
+    min-height: 1.75rem !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-profile-card__footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0.35rem !important;
+    padding-bottom: 0 !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .footer-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+  }
+
+  .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .footer-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+}
+
 
 @media (max-width: 640px) {
   .featured-va-grid {

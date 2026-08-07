@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
-  ArrowRight, Rocket, Palette, Users, Cpu, Globe,
+  Rocket, Palette, Users, Cpu, Globe,
   CheckCircle, Zap, Target, Shield, TrendingUp,
   ChevronRight, Building2, Sparkles,
 } from 'lucide-react';
@@ -175,13 +175,6 @@ export default function AboutUsPage() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.34 }}
             className="mt-10 flex flex-wrap items-center gap-4"
           >
-            <motion.a
-              href="/join-form"
-              whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
-              className="cb-display inline-flex items-center gap-2 rounded-xl bg-[#9440dd] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 no-underline transition-all duration-200 hover:bg-[#7c3aed] hover:shadow-[0_10px_28px_rgba(124,58,237,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400"
-            >
-              Join CoBrother <ArrowRight className="h-4 w-4" />
-            </motion.a>
             <motion.a
               href="/contact"
               whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
@@ -619,13 +612,6 @@ export default function AboutUsPage() {
           </Reveal>
           <Reveal delay={0.26}>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <motion.a
-                href="/join-form"
-                whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                className="cb-display inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#9440dd] px-9 py-4 text-base font-semibold text-white shadow-2xl shadow-purple-900/40 hover:bg-[#7c3aed] transition-colors no-underline w-full sm:w-auto"
-              >
-                Join CoBrother <ArrowRight className="h-4 w-4" />
-              </motion.a>
               <motion.a
                 href="/contact"
                 whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}

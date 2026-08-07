@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { technologyServicesAPI } from '../../api/technologyServicesApi';
+import { useCurrency } from '../../context/CurrencyContext';
 import {
   Cpu,
   ShieldCheck,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function MyTechnologiesTab() {
+  const { formatPrice, convertToInr } = useCurrency();
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +25,10 @@ export default function MyTechnologiesTab() {
   const [selectedInvoices, setSelectedInvoices] = useState(null);
   const [actionModal, setActionModal] = useState(null); // { type: 'renew'|'upgrade'|'cancel', sub: ... }
   const [actionLoading, setActionLoading] = useState(false);
+
+  /** Subscription amounts are stored in their billing currency (default USD). */
+  const formatStoredPrice = (amount, currency = 'USD') =>
+    formatPrice(convertToInr(Number(amount) || 0, currency || 'USD'));
 
   const fetchSubscriptions = async () => {
     try {
@@ -165,7 +171,9 @@ export default function MyTechnologiesTab() {
                   <div className="space-y-1.5 text-xs text-gray-600 my-4 border-t border-b border-gray-50 py-3">
                     <div className="flex justify-between">
                       <span>Price:</span>
-                      <span className="font-bold text-gray-900">${sub.price} / {sub.billing_cycle}</span>
+                      <span className="font-bold text-gray-900">
+                        {formatStoredPrice(sub.price, sub.currency)} / {sub.billing_cycle}
+                      </span>
                     </div>
                     {sub.current_period_end && (
                       <div className="flex justify-between">
@@ -281,7 +289,9 @@ export default function MyTechnologiesTab() {
                       <div className="text-[10px] text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</div>
                     </div>
                     <div className="text-right">
-                      <span className="font-extrabold text-gray-900">${inv.amount} {inv.currency}</span>
+                      <span className="font-extrabold text-gray-900">
+                        {formatStoredPrice(inv.amount, inv.currency)}
+                      </span>
                       <span className="block text-[10px] text-emerald-600 font-bold">{inv.status}</span>
                     </div>
                   </div>

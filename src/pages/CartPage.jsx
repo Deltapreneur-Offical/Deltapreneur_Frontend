@@ -19,6 +19,8 @@ import { useCurrency } from '../context/CurrencyContext';
 import { cartAPI } from '../api/services';
 import { openRazorpayCheckout, buildCartPaymentDescription } from '../utils/razorpayCheckout';
 import { PREMIUM_DOMAIN_MIN_PRICE } from '../utils/domainPricing';
+import { notifyCartChanged } from '../utils/cartEvents';
+import PaymentProcessingOverlay from '../components/cart/PaymentProcessingOverlay';
 
 const EMPTY_REDEMPTION = {
   redeem: false,
@@ -83,6 +85,8 @@ export default function CartPage() {
   const { currency: selectedCurrency } = useCurrency();
   const [loading, setLoading] = useState(!cart);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  /** idle | starting | razorpay | verifying — drives post-pay overlay */
+  const [checkoutPhase, setCheckoutPhase] = useState('idle');
   const [removingId, setRemovingId] = useState(null);
   const [clearing, setClearing] = useState(false);
   const [error, setError] = useState('');
@@ -101,7 +105,15 @@ export default function CartPage() {
     buyerPhone: String(user?.phoneNumber || user?.phone || '').replace(/\D/g, '').slice(-10),
   }));
   const pendingCheckoutOrderId = useRef(null);
+  const paymentSucceededRef = useRef(false);
+  const verifyInFlightRef = useRef(false);
   const bumpedMinPeriodItems = useRef(new Set());
+
+  const resetCheckoutUi = useCallback(() => {
+    setCheckoutLoading(false);
+    setCheckoutPhase('idle');
+    verifyInFlightRef.current = false;
+  }, []);
 
   useEffect(() => {
     setRegistrant((prev) => {
@@ -153,6 +165,7 @@ export default function CartPage() {
   }, []);
 
   const handleRemove = async (itemId) => {
+    if (checkoutLoading || verifyInFlightRef.current) return;
     setRemovingId(itemId);
     setError('');
     try {
@@ -166,6 +179,7 @@ export default function CartPage() {
   };
 
   const handleClear = async () => {
+    if (checkoutLoading || verifyInFlightRef.current) return;
     if (!window.confirm('Remove all items from your cart?')) return;
     setClearing(true);
     setError('');
@@ -275,6 +289,7 @@ export default function CartPage() {
   }, [cart?.items, periodUpdatingId, hasDomainRegistration]);
 
   const handleCheckout = async () => {
+    if (checkoutLoading || verifyInFlightRef.current) return;
     setError('');
     if (isManagedAcquisitionOnly) {
       setConfirmPremiumOpen(true);
@@ -323,7 +338,10 @@ export default function CartPage() {
       return;
     }
 
+    paymentSucceededRef.current = false;
+    verifyInFlightRef.current = false;
     setCheckoutLoading(true);
+    setCheckoutPhase('starting');
     try {
       const payload = {
         redeemPoints: redemption.redeem,
@@ -362,10 +380,11 @@ export default function CartPage() {
           }
         }
         pendingCheckoutOrderId.current = null;
-        setCheckoutLoading(false);
+        resetCheckoutUi();
         return;
       }
 
+      setCheckoutPhase('razorpay');
       openRazorpayCheckout({
         orderData: {
           ...orderData,
@@ -378,7 +397,12 @@ export default function CartPage() {
           orderData?.paymentDescription
           || buildCartPaymentDescription(cart?.items || [], orderData?.itemCount),
         onSuccess: async (response) => {
+          // Mark before any await so ondismiss cannot cancel a paid session.
+          paymentSucceededRef.current = true;
+          verifyInFlightRef.current = true;
           pendingCheckoutOrderId.current = null;
+          setCheckoutPhase('verifying');
+          setCheckoutLoading(true);
           try {
             const { data: verifyData } = await cartAPI.verifyCheckout({
               razorpayOrderId: response.razorpay_order_id,
@@ -386,6 +410,7 @@ export default function CartPage() {
               razorpaySignature: response.razorpay_signature,
             });
             await fetchCart();
+            notifyCartChanged();
             const purchased = verifyData?.purchasedCount ?? 0;
             const total = verifyData?.totalItems ?? purchased;
             const needsAttention = Boolean(verifyData?.needsAttention) || verifyData?.success === false;
@@ -420,18 +445,23 @@ export default function CartPage() {
               setError(detail || err?.response?.data?.message || 'Payment verification failed.');
             }
           } finally {
-            setCheckoutLoading(false);
+            resetCheckoutUi();
           }
         },
         onFailure: () => {
           pendingCheckoutOrderId.current = null;
+          paymentSucceededRef.current = false;
           setError('Payment failed. Please try again.');
-          setCheckoutLoading(false);
+          resetCheckoutUi();
         },
         onDismiss: async () => {
+          // Razorpay often fires dismiss before/alongside success — never cancel a paid flow.
+          if (paymentSucceededRef.current || verifyInFlightRef.current) {
+            return;
+          }
           const staleOrderId = pendingCheckoutOrderId.current;
           pendingCheckoutOrderId.current = null;
-          setCheckoutLoading(false);
+          resetCheckoutUi();
           if (staleOrderId) {
             try {
               await cartAPI.cancelCheckout({ razorpayOrderId: staleOrderId });
@@ -448,7 +478,7 @@ export default function CartPage() {
       const code = err?.response?.data?.code;
       if (code === 'MANAGED_ACQUISITION_CONFIRM' || code === 'PREMIUM_CART_ALONE') {
         setConfirmPremiumOpen(true);
-        setCheckoutLoading(false);
+        resetCheckoutUi();
         return;
       }
       const failed = err?.response?.data?.failedDomains;
@@ -463,7 +493,7 @@ export default function CartPage() {
       } else {
         setError(msg);
       }
-      setCheckoutLoading(false);
+      resetCheckoutUi();
     }
   };
 
@@ -522,6 +552,7 @@ export default function CartPage() {
   return (
     <AppLayout>
       <Confetti show={showConfetti} />
+      <PaymentProcessingOverlay open={checkoutPhase === 'verifying'} />
       {confirmPremiumOpen && (
         <div
           className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm px-4 py-8 sm:px-6 sm:py-12 md:py-16"

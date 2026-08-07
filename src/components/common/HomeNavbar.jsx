@@ -7,7 +7,6 @@ import { useAuth } from '../../context/AuthContext';
 import BackToHomeButton from './BackToHomeButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import HomeTopNavActions from './HomeTopNavActions';
-import JoinCoBrotherGradientButton from './JoinCoBrotherGradientButton';
 import LanguageDropdown from './LanguageDropdown';
 import { ventureListChooseUrl } from '../../constants/ventureListingTypeContent';
 
@@ -104,7 +103,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, hideJoinCta = false, isScrolled = false }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { user, hasAccessToken, loading: authLoading } = useAuth();
@@ -157,20 +156,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const suppressJoinCta = hideJoinCta || showBack;
-
-  const authButtons = !authLoading && !user && !suppressJoinCta ? (
-    <>
-      <JoinCoBrotherGradientButton variant="nav" onClick={() => navigate('/join-form')}>
-        {t('joinCoBrother')}
-      </JoinCoBrotherGradientButton>
-      {!user && (
-        <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
-          {t('signIn')}
-        </button>
-      )}
-    </>
-  ) : !authLoading && !user ? (
+  const authButtons = !authLoading && !user ? (
     <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login', { state: { showLoginForm: true } })}>
       {t('signIn')}
     </button>
@@ -356,11 +342,6 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               ) : null}
               {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">
-                  {!suppressJoinCta ? (
-                    <JoinCoBrotherGradientButton variant="full" className="w-full" onClick={() => go('/join-form')}>
-                      {t('joinCoBrother')}
-                    </JoinCoBrotherGradientButton>
-                  ) : null}
                   {!user && (
                     <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login', { showLoginForm: true })}>
                       {t('signIn')}

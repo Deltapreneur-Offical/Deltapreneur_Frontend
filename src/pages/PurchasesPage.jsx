@@ -30,6 +30,7 @@ export default function PurchasesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState('all');
+  const [registrationFilter, setRegistrationFilter] = useState('success');
   const [domains, setDomains] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [swPurchases, setSwPurchases] = useState([]);
@@ -50,7 +51,7 @@ export default function PurchasesPage() {
     ]).then(([d, reg, s, transfers, ventureDeals]) => {
       setDomains(extractDomainList(d.data));
       const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
-      setRegistrations(regList.filter(isRegistrationPurchase));
+      setRegistrations(regList);
       setSwPurchases(asArray(s.data));
       setDomainTransfers(transfers.data?.items || []);
       const deals = asArray(unwrapApiData(ventureDeals.data) || ventureDeals.data);
@@ -66,7 +67,26 @@ export default function PurchasesPage() {
     d.purchasedByUserId ||
     d.purchased_by_user_id
   );
-  const completedRegistrations = asArray(registrations).filter(isRegistrationPurchase);
+  const filteredRegistrations = asArray(registrations).filter((order) => {
+    if (!isRegistrationPurchase(order)) return false;
+    const status = (order.status || '').toUpperCase();
+    const life = (order.lifecycleStatus || '').toLowerCase();
+    const message = String(order.provisionMessage || order.message || '').toLowerCase();
+    const cancelled = life === 'checkout_cancelled' || status === 'EXPIRED' || message.includes('checkout cancelled before payment') || message.includes('pending registration order expired');
+    const success = status === 'ACTIVE' || status === 'PAYMENT_COMPLETED' || life === 'registration_confirmed';
+    const failed = status === 'FAILED' || status === 'PROVISION_FAILED' || status === 'PAYMENT_FAILED' || life === 'registration_failed';
+    if (registrationFilter === 'success') {
+      return success;
+    }
+    if (registrationFilter === 'failed') {
+      return failed && !cancelled;
+    }
+    if (registrationFilter === 'cancelled') {
+      return cancelled;
+    }
+    return true;
+  });
+  const completedRegistrations = filteredRegistrations;
 
   const normalizeDomainKey = (item) => {
     if (item.domain) return String(item.domain).toLowerCase().trim();
@@ -107,6 +127,13 @@ export default function PurchasesPage() {
     : tab === 'ventures' ? ventureItems
     : tab === 'technology' ? technologyTabItems
     : [...domainTabItems, ...ventureItems, ...technologyTabItems];
+
+  const registrationFilterOptions = [
+    { value: 'success', label: t('purchasesFilterSuccess', { defaultValue: 'Success' }) },
+    { value: 'failed', label: t('purchasesFilterFailed', { defaultValue: 'Failed' }) },
+    { value: 'cancelled', label: t('purchasesFilterCancelled', { defaultValue: 'Cancelled' }) },
+    { value: 'all', label: t('purchasesFilterAll', { defaultValue: 'All' }) },
+  ];
 
   const purchaseTabs = [
     { id: 'all', label: `${t('purchasesTabAll', { defaultValue: 'All' })} (${totalItems})` },
@@ -159,17 +186,35 @@ export default function PurchasesPage() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-6">
-          {purchaseTabs.map((tabItem) => (
-            <button
-              key={tabItem.id}
-              type="button"
-              className={`btn-glow btn-glow-sm ${tab === tabItem.id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-              onClick={() => setTab(tabItem.id)}
+        <div className="flex flex-wrap gap-2 mb-6 items-center justify-between">
+          <div className="flex flex-wrap gap-2">
+            {purchaseTabs.map((tabItem) => (
+              <button
+                key={tabItem.id}
+                type="button"
+                className={`btn-glow btn-glow-sm ${tab === tabItem.id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                onClick={() => setTab(tabItem.id)}
+              >
+                {tabItem.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <label htmlFor="registrationFilter" className="text-sm text-gray-600">
+              {t('purchasesFilterLabel', { defaultValue: 'Registration filter:' })}
+            </label>
+            <select
+              id="registrationFilter"
+              value={registrationFilter}
+              onChange={(event) => setRegistrationFilter(event.target.value)}
+              className="rounded-lg border border-gray-200 bg-white text-sm text-gray-700 px-3 py-2"
             >
-              {tabItem.label}
-            </button>
-          ))}
+              <option value="success">{t('purchasesFilterSuccess', { defaultValue: 'Success' })}</option>
+              <option value="failed">{t('purchasesFilterFailed', { defaultValue: 'Failed' })}</option>
+              <option value="cancelled">{t('purchasesFilterCancelled', { defaultValue: 'Cancelled' })}</option>
+              <option value="all">{t('purchasesFilterAll', { defaultValue: 'All' })}</option>
+            </select>
+          </div>
         </div>
 
         {loading ? (
@@ -328,8 +373,11 @@ function DomainPurchaseRow({ domain, user }) {
 function RegistrationPurchaseRow({ order, user, t }) {
   const { formatPrice } = useCurrency();
   const amount = Number(order.priceInr || 0);
-  const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus);
-  const label = registrationStatusLabel(order.status, order.lifecycleStatus, t);
+  const subtotal = Number((order.subtotalInr ?? order.priceInr) || 0);
+  const gstRate = Number(order.gstRate ?? 0);
+  const hasGst = gstRate > 0 && Number(order.gstInr ?? 0) > 0;
+  const badge = registrationStatusBadgeClass(order.status, order.lifecycleStatus, order.provisionMessage || order.message);
+  const label = registrationStatusLabel(order.status, order.lifecycleStatus, t, order.provisionMessage || order.message);
   const taxInvoiceNumber = order.taxInvoiceNumber || order.invoiceNumber || null;
 
   const invoiceUser = {
@@ -371,12 +419,9 @@ function RegistrationPurchaseRow({ order, user, t }) {
           ) : null}
           <div className="text-xs text-gray-500 mt-0.5">
             Price source: {order.registryTier === 'premium' || order.isPremium ? 'Premium' : 'Standard'}
-            {order.providerUnitPriceInr != null
-              ? ` · Provider ${formatPrice(order.providerUnitPriceInr)}`
-              : ''}
-            {order.customerUnitPriceInr != null
-              ? ` · Customer ${formatPrice(order.customerUnitPriceInr)}/yr`
-              : ''}
+            {hasGst
+              ? ` · ${formatPrice(subtotal)} + ${gstRate}% GST`
+              : ` · ${formatPrice(amount)}`}
           </div>
           <div className="text-xs text-gray-600">
             {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : ''}

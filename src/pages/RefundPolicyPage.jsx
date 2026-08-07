@@ -24,6 +24,8 @@ export default function RefundPolicyPage() {
       intro="This Refund Policy explains when and how CoBrother issues refunds for payments made on cobrother.com for domain registrations, marketplace purchases, technology products, and related digital services."
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
+      documentTitle="Refund Policy | CoBrother"
+      documentDescription="CoBrother Refund Policy — eligibility, non-refundable items, how to request a refund, and timelines for payments on cobrother.com."
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">

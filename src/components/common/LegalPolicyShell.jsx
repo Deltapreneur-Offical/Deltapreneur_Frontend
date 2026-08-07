@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { motion } from '../../utils/simpleMotion';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Mail, Clock, ChevronRight } from 'lucide-react';
+import { FileText, Mail, Clock, ChevronRight, MapPin, Phone } from 'lucide-react';
 import TopNavbar from './TopNavbar';
 import HomeNavbar from './HomeNavbar';
 import HomeFooter from './HomeFooter';
 import BackToHomeButton from './BackToHomeButton';
 import useHomePageScrollNav from '../../hooks/useHomePageScrollNav';
+import useDocumentMeta from '../../hooks/useDocumentMeta';
+import {
+  BUSINESS_ADDRESS_LINES,
+  BUSINESS_BRAND_NAME,
+  BUSINESS_LEGAL_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_DISPLAY,
+} from '../../config/contactLinks';
 
 /** Shared chrome matching PrivacyPolicyPage / TermsAndConditionsPage. */
 export default function LegalPolicyShell({
@@ -18,11 +26,19 @@ export default function LegalPolicyShell({
   lastUpdated,
   readTime = 'Read time: ~4 minutes',
   sections = [],
+  documentTitle,
+  documentDescription,
   children,
 }) {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
   const { isScrolled, navRef } = useHomePageScrollNav();
+
+  const resolvedTitle = documentTitle || `${titleLead} ${titleAccent} | CoBrother`.replace(/\s+/g, ' ').trim();
+  useDocumentMeta({
+    title: resolvedTitle,
+    description: documentDescription || intro,
+  });
 
   const scrollTo = (id) => {
     const el = document.getElementById(id);
@@ -139,22 +155,35 @@ export function PolicySection({ id, title, children }) {
 
 export function PolicyContactCard() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+    <div className="grid grid-cols-1 gap-4 mt-2">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <div className="flex items-center gap-2 mb-2">
           <Mail className="h-4 w-4 text-indigo-600" />
-          <h3 className="text-sm font-semibold text-slate-900">CoBrother Support</h3>
+          <h3 className="text-sm font-semibold text-slate-900">
+            {BUSINESS_BRAND_NAME} Support ({BUSINESS_LEGAL_NAME})
+          </h3>
         </div>
         <p className="text-sm text-slate-600">
-          Email: <span className="font-medium text-slate-900">support@cobrother.com</span>
+          Email:{' '}
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-slate-900 hover:underline">
+            {SUPPORT_EMAIL}
+          </a>
         </p>
-        <p className="text-sm text-slate-600 mt-1">
-          Phone: <span className="font-medium text-slate-900">+91 80 8575 8575</span>
+        <p className="text-sm text-slate-600 mt-1 inline-flex items-center gap-1.5">
+          <Phone className="h-3.5 w-3.5 text-indigo-600" />
+          Phone: <span className="font-medium text-slate-900">+91 {SUPPORT_PHONE_DISPLAY}</span>
         </p>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="text-sm text-slate-600 mt-2 flex items-start gap-1.5">
+          <MapPin className="h-3.5 w-3.5 text-indigo-600 mt-0.5 shrink-0" />
+          <span>
+            Address:{' '}
+            <span className="font-medium text-slate-900">{BUSINESS_ADDRESS_LINES.join(', ')}</span>
+          </span>
+        </p>
+        <p className="text-sm text-slate-600 mt-2">
           Contact page:{' '}
           <a href="/contact" className="font-medium text-indigo-600 hover:underline">
-            cobrother.com/contact
+            https://cobrother.com/contact
           </a>
         </p>
       </div>

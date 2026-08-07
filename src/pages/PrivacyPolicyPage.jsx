@@ -2,12 +2,19 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from '../utils/simpleMotion';
 import { useNavigate } from 'react-router-dom';
-import { Shield, FileText, Mail, Clock, ChevronRight } from 'lucide-react';
+import { Shield, FileText, Mail, Clock, ChevronRight, MapPin, Phone } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
 import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
+import useDocumentMeta from '../hooks/useDocumentMeta';
+import {
+  BUSINESS_ADDRESS_LINES,
+  BUSINESS_LEGAL_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_DISPLAY,
+} from '../config/contactLinks';
 
 export default function PrivacyPolicyPage() {
   const { t } = useTranslation();
@@ -15,6 +22,12 @@ export default function PrivacyPolicyPage() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const { isScrolled, navRef } = useHomePageScrollNav();
   const lastUpdated = '15th July 2026';
+
+  useDocumentMeta({
+    title: 'Privacy Policy | CoBrother',
+    description:
+      'CoBrother Privacy Policy — how we collect, use, store, and protect personal data on cobrother.com.',
+  });
 
   const sections = [
     { id: 'scope', title: t('privacySection1Title') },
@@ -176,12 +189,34 @@ export default function PrivacyPolicyPage() {
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">{t('privacySection12Body')}</p>
                 </PolicySection>
                 <PolicySection id="contact" title={t('privacySection13Title')}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                      <div className="flex items-center gap-2 mb-2"><Mail className="h-4 w-4 text-indigo-600" /><h3 className="text-sm font-semibold text-slate-900">{t('privacyPageTeam')}</h3></div>
-                      <p className="text-sm text-slate-600">{t('privacyPageEmail')} <span className="font-medium text-slate-900">support@cobrother.com</span></p>
-                      <p className="text-sm text-slate-600 mt-1">{t('privacyPagePhone')} <span className="font-medium text-slate-900">+91 80 8575 8575</span></p>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Mail className="h-4 w-4 text-indigo-600" />
+                      <h3 className="text-sm font-semibold text-slate-900">{t('privacyPageTeam')}</h3>
                     </div>
+                    <p className="text-sm text-slate-600">
+                      {t('privacyPageEmail')}{' '}
+                      <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-slate-900 hover:underline">
+                        {SUPPORT_EMAIL}
+                      </a>
+                    </p>
+                    <p className="text-sm text-slate-600 mt-1 inline-flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-indigo-600" />
+                      {t('privacyPagePhone')} <span className="font-medium text-slate-900">+91 {SUPPORT_PHONE_DISPLAY}</span>
+                    </p>
+                    <p className="text-sm text-slate-600 mt-2 flex items-start gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-indigo-600 mt-0.5 shrink-0" />
+                      <span>
+                        Address ({BUSINESS_LEGAL_NAME}):{' '}
+                        <span className="font-medium text-slate-900">{BUSINESS_ADDRESS_LINES.join(', ')}</span>
+                      </span>
+                    </p>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Contact Us:{' '}
+                      <a href="/contact" className="font-medium text-indigo-600 hover:underline">
+                        https://cobrother.com/contact
+                      </a>
+                    </p>
                   </div>
                 </PolicySection>
               </div>

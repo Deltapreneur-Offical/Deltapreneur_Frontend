@@ -23,6 +23,8 @@ export default function CancellationPolicyPage() {
       intro="This Cancellation Policy explains how you can cancel an order or request before or after payment on CoBrother, and what happens next for digital products and domain services."
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
+      documentTitle="Cancellation Policy | CoBrother"
+      documentDescription="CoBrother Cancellation Policy — cancel before or after payment for domain registration, marketplace, technology, and related digital services on cobrother.com."
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">

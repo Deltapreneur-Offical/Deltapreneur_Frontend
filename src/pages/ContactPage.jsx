@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Mail, Phone, MessageCircle, Clock, Send } from 'lucide-react';
+import { Mail, Phone, MessageCircle, Clock, Send, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -15,7 +15,14 @@ import {
   PageStaggerItem,
 } from '../components/motion/PageMotion';
 import { HOME_EASE_OUT } from '../components/motion/motionPresets';
+import useDocumentMeta from '../hooks/useDocumentMeta';
 import {
+  BUSINESS_ADDRESS_LINES,
+  BUSINESS_BRAND_NAME,
+  BUSINESS_GSTIN,
+  BUSINESS_LEGAL_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_EMAIL_MAILTO,
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_PHONE_TEL,
   WHATSAPP_URL,
@@ -26,34 +33,40 @@ export default function ContactPage() {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
 
+  useDocumentMeta({
+    title: 'Contact Us | CoBrother',
+    description:
+      'Contact Us — CoBrother (Aultum International) support email, phone, WhatsApp, and business address in Hubballi, Karnataka, India.',
+  });
+
   const contactInfo = useMemo(
     () => [
       {
         icon: Mail,
-        title: t('emailUs'),
-        details: 'support@cobrother.com',
-        link: 'mailto:support@cobrother.com',
+        title: 'Email',
+        details: SUPPORT_EMAIL,
+        link: SUPPORT_EMAIL_MAILTO,
         color: 'text-purple-600',
         bgColor: 'bg-purple-50',
       },
       {
         icon: Phone,
-        title: t('callUs'),
-        details: SUPPORT_PHONE_DISPLAY,
+        title: 'Phone',
+        details: `+91 ${SUPPORT_PHONE_DISPLAY}`,
         link: SUPPORT_PHONE_TEL,
         color: 'text-indigo-600',
         bgColor: 'bg-indigo-50',
       },
       {
         icon: MessageCircle,
-        title: t('whatsapp'),
-        details: SUPPORT_PHONE_DISPLAY,
+        title: 'WhatsApp',
+        details: `+91 ${SUPPORT_PHONE_DISPLAY}`,
         link: WHATSAPP_URL,
         color: 'text-green-600',
         bgColor: 'bg-green-50',
       },
     ],
-    [t],
+    [],
   );
 
   const businessHours = useMemo(
@@ -91,20 +104,67 @@ export default function ContactPage() {
           <PageHeroItem>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 rounded-full text-sm font-semibold text-purple-700 mb-6">
               <Send size={16} />
-              {t('contactHeroBadge')}
+              Contact Us
             </div>
           </PageHeroItem>
           <PageHeroItem>
             <h1 className="font-display text-5xl md:text-6xl font-bold text-gray-900 mb-6 max-md:text-4xl">
-              {t('contactHeroTitle')}
+              Contact Us
             </h1>
           </PageHeroItem>
           <PageHeroItem>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto max-md:text-lg">
-              {t('contactHeroSubtitle')}
+              Reach {BUSINESS_BRAND_NAME} ({BUSINESS_LEGAL_NAME}) for support, billing, refunds,
+              cancellations, and partnership questions. We respond during business hours.
             </p>
           </PageHeroItem>
         </PageHero>
+      </section>
+
+      <section className="px-4 pb-4">
+        <PageReveal className="max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-indigo-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-4">Business contact details</h2>
+            <div className="space-y-3 text-sm sm:text-base text-gray-700">
+              <p>
+                <span className="font-semibold text-gray-900">Company:</span>{' '}
+                {BUSINESS_LEGAL_NAME} (operating as {BUSINESS_BRAND_NAME})
+              </p>
+              <p>
+                <span className="font-semibold text-gray-900">Email:</span>{' '}
+                <a href={SUPPORT_EMAIL_MAILTO} className="text-indigo-600 hover:underline font-medium">
+                  {SUPPORT_EMAIL}
+                </a>
+              </p>
+              <p>
+                <span className="font-semibold text-gray-900">Phone:</span>{' '}
+                <a href={SUPPORT_PHONE_TEL} className="text-indigo-600 hover:underline font-medium">
+                  +91 {SUPPORT_PHONE_DISPLAY}
+                </a>
+              </p>
+              <p>
+                <span className="font-semibold text-gray-900">GSTIN:</span> {BUSINESS_GSTIN}
+              </p>
+              <p className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-indigo-600 mt-1 shrink-0" />
+                <span>
+                  <span className="font-semibold text-gray-900">Address:</span>{' '}
+                  {BUSINESS_ADDRESS_LINES.join(', ')}
+                </span>
+              </p>
+              <p className="text-gray-500 text-sm pt-1">
+                Related policies:{' '}
+                <a href="/privacy-policy" className="text-indigo-600 hover:underline">Privacy Policy</a>
+                {' · '}
+                <a href="/terms-and-conditions" className="text-indigo-600 hover:underline">Terms and Conditions</a>
+                {' · '}
+                <a href="/refund-policy" className="text-indigo-600 hover:underline">Refund Policy</a>
+                {' · '}
+                <a href="/cancellation-policy" className="text-indigo-600 hover:underline">Cancellation Policy</a>
+              </p>
+            </div>
+          </div>
+        </PageReveal>
       </section>
 
       <section className="py-12 px-4 max-md:py-8">

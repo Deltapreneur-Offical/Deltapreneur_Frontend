@@ -40,6 +40,10 @@ export function domainManagementHref(order) {
 
 export function canManageRegisteredDomain(order) {
   if (!order) return false;
+  const s = (order.status || '').toUpperCase();
+  const life = (order.lifecycleStatus || '').toLowerCase();
+  const isConfirmed = life === 'registration_confirmed' || s === 'ACTIVE';
+  if (!isConfirmed) return false;
   if (order.canManageDomain) return true;
   return Boolean(order.domainManagement?.available);
 }

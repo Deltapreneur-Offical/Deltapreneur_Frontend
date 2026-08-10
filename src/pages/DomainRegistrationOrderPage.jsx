@@ -703,6 +703,12 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
   const [recPriority, setRecPriority] = useState(10);
   const [addingRecord, setAddingRecord] = useState(false);
 
+  // States for inline editing and deleting
+  const [editingRecordId, setEditingRecordId] = useState(null);
+  const [editingData, setEditingData] = useState({});
+  const [updatingRecord, setUpdatingRecord] = useState(false);
+  const [deletingRecordId, setDeletingRecordId] = useState(null);
+
   // Ref + brief highlight for the DNS Zone Records section (Open DNS Panel
   // now scrolls here instead of opening the external registrar panel).
   const dnsZoneRef = useRef(null);
@@ -787,12 +793,58 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
 
   const handleDeleteRecord = async (recordId) => {
     setDnsError(''); setDnsSuccess('');
+    setDeletingRecordId(recordId);
     try {
       await domainStorefrontAPI.deleteDnsRecord(orderId, recordId);
       setDnsSuccess('DNS record deleted.');
       await fetchDnsRecords();
     } catch (err) {
       setDnsError(readApiError(err, 'Could not delete DNS record.'));
+    } finally {
+      setDeletingRecordId(null);
+    }
+  };
+
+  const handleEditClick = (record) => {
+    setEditingRecordId(record.id);
+    setEditingData({
+      type: record.type,
+      name: record.name,
+      value: record.value,
+      ttl: record.ttl,
+      priority: record.priority ?? 10
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRecordId(null);
+  };
+
+  const handleUpdateRecord = async (recordId) => {
+    setDnsError(''); setDnsSuccess('');
+    if (!editingData.name?.trim() || !editingData.value?.trim()) {
+      setDnsError('Name and Target/Value fields are required.');
+      return;
+    }
+    setUpdatingRecord(true);
+    try {
+      const payload = {
+        type: editingData.type,
+        name: editingData.name.trim(),
+        value: editingData.value.trim(),
+        ttl: Number(editingData.ttl),
+      };
+      if (editingData.type === 'MX') {
+        payload.priority = Number(editingData.priority);
+      }
+      await domainStorefrontAPI.updateDnsRecord(orderId, recordId, payload);
+      setDnsSuccess('DNS record updated.');
+      setEditingRecordId(null);
+      await fetchDnsRecords();
+    } catch (err) {
+      setDnsError(readApiError(err, 'Could not update DNS record.'));
+    } finally {
+      setUpdatingRecord(false);
     }
   };
 
@@ -952,21 +1004,111 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                       ]
                         .filter((part) => part !== undefined && part !== null && part !== '')
                         .join('|');
+                      const isSystemRecord = ['SOA', 'NS'].includes(r.type);
+                      const isEditing = editingRecordId === r.id;
+
+                      if (isEditing) {
+                        return (
+                          <tr key={rowKey} className="bg-indigo-50/30">
+                            <td className="px-4 py-3">
+                              <select
+                                value={editingData.type}
+                                onChange={(e) => setEditingData({ ...editingData, type: e.target.value })}
+                                className="w-full bg-white border border-gray-200 rounded px-2 py-1 text-xs outline-none focus:border-indigo-400"
+                              >
+                                {['A', 'CNAME', 'TXT', 'MX'].map((t) => (
+                                  <option key={t} value={t}>{t}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="text"
+                                value={editingData.name}
+                                onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
+                                className="w-full bg-white border border-gray-200 rounded px-2 py-1 text-xs font-mono outline-none focus:border-indigo-400"
+                                placeholder="@"
+                              />
+                            </td>
+                            <td className="px-4 py-3 space-y-2">
+                              <input
+                                type="text"
+                                value={editingData.value}
+                                onChange={(e) => setEditingData({ ...editingData, value: e.target.value })}
+                                className="w-full bg-white border border-gray-200 rounded px-2 py-1 text-xs font-mono outline-none focus:border-indigo-400"
+                                placeholder="Target"
+                              />
+                              {editingData.type === 'MX' && (
+                                <input
+                                  type="number"
+                                  value={editingData.priority}
+                                  onChange={(e) => setEditingData({ ...editingData, priority: e.target.value })}
+                                  className="w-full bg-white border border-gray-200 rounded px-2 py-1 text-xs outline-none focus:border-indigo-400"
+                                  placeholder="Priority (e.g. 10)"
+                                />
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="number"
+                                value={editingData.ttl}
+                                onChange={(e) => setEditingData({ ...editingData, ttl: e.target.value })}
+                                className="w-20 bg-white border border-gray-200 rounded px-2 py-1 text-xs outline-none focus:border-indigo-400"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                              <button
+                                onClick={() => handleUpdateRecord(r.id)}
+                                disabled={updatingRecord}
+                                className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-bold disabled:opacity-50"
+                              >
+                                {updatingRecord && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                {updatingRecord ? 'Saving...' : 'Save'}
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                disabled={updatingRecord}
+                                className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      }
+
                       return (
                       <tr key={rowKey} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-3 font-bold text-indigo-700">{r.type}</td>
+                        <td className="px-4 py-3 font-bold text-indigo-700">
+                          {r.type}
+                          {isSystemRecord && <span className="ml-2 text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase">System</span>}
+                        </td>
                         <td className="px-4 py-3 font-mono text-gray-800">{r.name}</td>
                         <td className="px-4 py-3 font-mono text-gray-800 break-all max-w-xs">{r.value} {r.priority != null && `(Priority: ${r.priority})`}</td>
                         <td className="px-4 py-3 text-gray-400">{r.ttl}s</td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => handleDeleteRecord(r.id)}
-                            type="button"
-                            className="text-gray-400 hover:text-rose-600 transition-colors p-1"
-                            title="Delete Record"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        <td className="px-4 py-3 text-right space-x-1 whitespace-nowrap">
+                          {!isSystemRecord && (
+                            <>
+                              <button
+                                onClick={() => handleEditClick(r)}
+                                type="button"
+                                className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
+                                title="Edit Record"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRecord(r.id)}
+                                type="button"
+                                disabled={deletingRecordId === r.id}
+                                className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-600 transition-colors p-1 disabled:opacity-50 disabled:hover:text-gray-400"
+                                title="Delete Record"
+                              >
+                                {deletingRecordId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                {deletingRecordId === r.id && <span className="text-[10px] font-bold">Deleting...</span>}
+                              </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                       );
@@ -1049,7 +1191,7 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                   className="inline-flex h-9 items-center justify-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-4 rounded-lg shadow-sm"
                 >
                   {addingRecord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                  Add DNS Record
+                  {addingRecord ? 'Adding...' : 'Add DNS Record'}
                 </button>
               </div>
             </form>

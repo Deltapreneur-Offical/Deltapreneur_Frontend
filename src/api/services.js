@@ -244,6 +244,8 @@ export const domainStorefrontAPI = {
     api.post(`/api/v1/domain/storefront/orders/${orderId}/dns/records`, body),
   deleteDnsRecord: (orderId, recordId) =>
     api.delete(`/api/v1/domain/storefront/orders/${orderId}/dns/records/${recordId}`),
+  updateDnsRecord: (orderId, recordId, body) =>
+    api.put(`/api/v1/domain/storefront/orders/${orderId}/dns/records/${recordId}`, body),
   toggleDnssec: (orderId, enabled) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/dnssec`, { enabled }),
   updateMailboxPassword: (orderId, mailbox, password) =>

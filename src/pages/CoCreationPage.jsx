@@ -1397,184 +1397,188 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[920px] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-4 sm:p-6 md:p-8">
-        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full h-[100dvh] sm:h-auto max-w-[960px] sm:max-h-[90vh] flex flex-col min-h-0 bg-white sm:border sm:border-gray-200 sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
+        {/* Header Gradient */}
+        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-br from-indigo-50/90 to-blue-50/50 pointer-events-none" />
+        
+        <button className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 border border-gray-200 text-gray-500 hover:text-gray-900 shadow-sm transition-colors" onClick={onClose}>✕</button>
 
-        <div className="mb-6 text-center">
-          <div className="inline-flex items-center px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-md text-[0.7rem] font-bold text-indigo-700 uppercase tracking-widest mb-3">Complete Your Purchase</div>
-          <h2 className="font-display text-[2rem] leading-tight font-bold text-gray-900 mb-1">{item.name}</h2>
-          <p className="text-sm text-gray-500 font-medium">{item.category?.replace(/_/g, ' ')}</p>
+        <div className="relative z-10 flex-shrink-0 px-6 sm:px-10 pt-8 pb-5 border-b border-indigo-100/50">
+          <div className="inline-flex items-center justify-center px-2.5 py-1 bg-indigo-100/60 text-indigo-700 text-xs font-bold rounded-md mb-3 tracking-wide">
+            COMPLETE PURCHASE
+          </div>
+          <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight m-0 mb-1 pr-10">{item.name}</h2>
+          <p className="text-sm font-medium text-gray-600 m-0">{item.category?.replace(/_/g, ' ')}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] gap-6 lg:gap-8 items-start">
-          {/* Left Column: Form and Selection */}
-          <div className="flex flex-col gap-6">
-            {/* Buyer details */}
-            <div className="flex flex-col gap-4">
-              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Buyer Information</div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-gray-500 font-semibold">Full Name</label>
-                <input className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm" value={form.buyerFullName}
-                  onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
-                  placeholder="Your full name" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="relative z-10 flex-1 overflow-y-auto overscroll-contain px-6 sm:px-10 py-6 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(320px,360px)] gap-8 lg:gap-10 items-start">
+            
+            {/* Left Column: Form and Selection */}
+            <div className="flex flex-col gap-8">
+              {/* Buyer details */}
+              <div className="flex flex-col gap-5">
+                <div className="text-sm font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Buyer Information</div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-gray-500 font-semibold">Email</label>
-                  <input className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm" type="email" value={form.buyerEmail}
-                    onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
-                    placeholder="your@email.com" />
+                  <label className="text-sm font-bold text-gray-900">Full Name</label>
+                  <input className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[12px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] shadow-sm" value={form.buyerFullName}
+                    onChange={e => setForm(f => ({ ...f, buyerFullName: e.target.value }))}
+                    placeholder="Your full name" />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-gray-500 font-semibold">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    className="px-3.5 py-2.5 border border-gray-200 rounded-[10px] text-gray-900 bg-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm"
-                    value={form.buyerPhone}
-                    onChange={handlePhoneChange}
-                    placeholder="10-digit number"
-                    maxLength={10}
-                    inputMode="numeric"
-                    required
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-bold text-gray-900">Email</label>
+                    <input className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[12px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] shadow-sm" type="email" value={form.buyerEmail}
+                      onChange={e => setForm(f => ({ ...f, buyerEmail: e.target.value }))}
+                      placeholder="your@email.com" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-bold text-gray-900">
+                      Phone <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[12px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] shadow-sm"
+                      value={form.buyerPhone}
+                      onChange={handlePhoneChange}
+                      placeholder="10-digit number"
+                      maxLength={10}
+                      inputMode="numeric"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Plan Selection */}
-            {hasPlans && (
-              <div className="flex flex-col gap-3">
-                <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">
-                  Pricing Plan
-                  {multiplePlans && !planTouched && (
-                    <span className="ml-2 text-[11px] font-semibold normal-case text-amber-600">Select a plan to continue</span>
-                  )}
-                </div>
-                <TechnologyPlanPicker
-                  plans={enabledPlans}
-                  selectedKey={currentPlanKey}
-                  onSelect={handlePlanSelect}
-                  formatPrice={formatPrice}
-                />
-              </div>
-            )}
-
-            <div className="flex flex-col gap-4">
-              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider">Optional Services</div>
-              {/* ── CoBrother opt-in card only (no VA / Compliance) ── */}
-              <div
-                onClick={() => setCoBrotherOptIn(v => !v)}
-                className={`flex flex-col gap-3 p-4 cursor-pointer rounded-xl border-2 transition-all shadow-sm ${coBrotherOptIn ? 'bg-blue-50/50 border-blue-500 shadow-md' : 'bg-white border-gray-200 hover:border-blue-300'}`}
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'}`}>
-                    {coBrotherOptIn && (
-                      <span className="text-white text-[0.65rem] font-bold">✓</span>
+              {/* Plan Selection */}
+              {hasPlans && (
+                <div className="flex flex-col gap-4">
+                  <div className="text-sm font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">
+                    Pricing Plan
+                    {multiplePlans && !planTouched && (
+                      <span className="ml-3 text-[11px] font-semibold normal-case text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Select a plan to continue</span>
                     )}
                   </div>
-                  <div>
-                    <div className={`font-semibold text-[0.95rem] mb-1 flex items-center gap-2 ${coBrotherOptIn ? 'text-blue-900' : 'text-gray-800'}`}>
-                      <span>Co-Creator Assistance</span>
-                      <span className={`font-display text-[0.9rem] font-bold ${coBrotherOptIn ? 'text-blue-700' : 'text-gray-500'}`}>
-                        +{formatPrice(1000)}
-                      </span>
+                  <TechnologyPlanPicker
+                    plans={enabledPlans}
+                    selectedKey={currentPlanKey}
+                    onSelect={handlePlanSelect}
+                    formatPrice={formatPrice}
+                  />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-4">
+                <div className="text-sm font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Optional Services</div>
+                {/* ── CoBrother opt-in card only (no VA / Compliance) ── */}
+                <div
+                  onClick={() => setCoBrotherOptIn(v => !v)}
+                  className={`flex flex-col gap-3 p-5 cursor-pointer rounded-2xl border-2 transition-all duration-200 ${coBrotherOptIn ? 'bg-indigo-50/50 border-indigo-500 shadow-md' : 'bg-white border-gray-200 hover:border-indigo-300 shadow-sm'}`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`w-6 h-6 rounded-md flex-shrink-0 mt-0.5 flex items-center justify-center border-2 transition-all ${coBrotherOptIn ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300'}`}>
+                      {coBrotherOptIn && (
+                        <span className="text-white text-xs font-bold">✓</span>
+                      )}
                     </div>
-                    <div className="text-gray-500 text-[0.8rem] leading-relaxed pr-2">
-                      Get a dedicated CoBrother to help you set up, deploy, and get the most out of
-                      this software. They'll reach out within 24 hours.
+                    <div>
+                      <div className={`font-extrabold text-base mb-1 flex flex-wrap items-center gap-2 ${coBrotherOptIn ? 'text-indigo-950' : 'text-gray-900'}`}>
+                        <span>Co-Creator Assistance</span>
+                        <span className={`font-display text-[0.95rem] font-black ${coBrotherOptIn ? 'text-indigo-700' : 'text-gray-500'}`}>
+                          +{formatPrice(1000)}
+                        </span>
+                      </div>
+                      <div className="text-gray-500 text-sm font-medium leading-relaxed pr-2">
+                        Get a dedicated CoBrother to help you set up, deploy, and get the most out of
+                        this software. They'll reach out within 24 hours.
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
             </div>
 
-          </div>
+            {/* Right Column: Sticky Summary */}
+            <div className="lg:sticky lg:top-0">
+              <div className="bg-gray-50/80 border border-gray-200 rounded-[20px] p-5 sm:p-7 shadow-sm">
+                <div className="text-sm font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-200 pb-3 mb-5">
+                  Order Summary
+                </div>
 
-          {/* Right Column: Sticky Summary */}
-          <div className="lg:sticky lg:top-0">
-            <div className="bg-gray-50 border border-gray-200 rounded-[14px] p-4 sm:p-5 shadow-sm">
-              <div className="text-[0.8rem] font-bold text-gray-800 uppercase tracking-wider mb-4">
-                Order Summary
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
-                  value={formatPrice(basePrice)} />
-                {coBrotherOptIn && (
-                  <BillingLine label="Co-Creator Assistance" value={formatPrice(1000)} accent />
-                )}
-              </div>
-
-              <div className="h-px bg-gray-200 my-4" />
-
-              <div className="flex justify-between items-center mb-3">
-                <span className="font-semibold text-gray-500 text-[0.85rem]">GST (18%)</span>
-                <span className="font-semibold text-gray-700 text-[0.85rem]">
-                  {formatPrice(gstAmount)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center mb-5 border-t border-gray-200 pt-3">
-                <span className="font-semibold text-gray-900 text-[1rem]">Total</span>
-                <span className="font-display text-[1.75rem] font-black text-green-600">
-                  {formatPrice(totalPrice)}
-                </span>
-              </div>
-
-              <EdgePointsRedeemToggle
-                originalAmount={totalPrice}
-                onChange={(redeem, discount, final) => {
-                  setRedeemPoints(redeem);
-                  setFinalPayable(final);
-                }}
-              />
-
-              {error && <div className="text-sm text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-100">{error}</div>}
-
-              <div className="flex flex-col gap-2.5">
-                <button
-                  type="button"
-                  className="btn-glow w-full py-3 sm:py-3.5 text-sm sm:text-base shadow-md hover:shadow-lg transition-all"
-                  onClick={handlePay}
-                  disabled={loading || !canAddToCart}
-                >
-                  {loading ? (
-                    <span className="w-5 h-5 border-2 border-gray-400 border-t-white rounded-full animate-spin inline-block" />
-                  ) : (
-                     `Pay ${formatPrice(finalPayable ?? totalPrice)} Securely →`
+                <div className="flex flex-col gap-3">
+                  <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
+                    value={formatPrice(basePrice)} />
+                  {coBrotherOptIn && (
+                    <BillingLine label="Co-Creator Assistance" value={formatPrice(1000)} accent />
                   )}
-                </button>
-                <AddToCartButton
-                  productType="TECHNOLOGY"
-                  productId={item.id}
-                  selectedPlan={currentPlanKey}
-                  coBrotherOptIn={coBrotherOptIn}
-                  size="md"
-                  label="Add to Cart"
-                  disabled={!canAddToCart}
-                  goToCartWhenInCart
-                  className="w-full justify-center"
-                />
-                <button
-                  type="button"
-                  className="w-full py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
+                </div>
+
+                <div className="h-px bg-gray-200 my-5" />
+
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-gray-500 text-sm">GST (18%)</span>
+                  <span className="font-bold text-gray-700 text-sm">
+                    {formatPrice(gstAmount)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-end mb-6 border-t border-gray-200 pt-4">
+                  <span className="font-bold text-gray-900 text-base mb-1">Total Amount</span>
+                  <span className="font-display text-4xl font-black text-emerald-600 tracking-tight">
+                    {formatPrice(totalPrice)}
+                  </span>
+                </div>
+
+                <div className="mb-6">
+                  <EdgePointsRedeemToggle
+                    originalAmount={totalPrice}
+                    onChange={(redeem, discount, final) => {
+                      setRedeemPoints(redeem);
+                      setFinalPayable(final);
+                    }}
+                  />
+                </div>
+
+                {error && <div className="text-sm text-red-600 mb-5 p-3.5 bg-red-50/80 rounded-xl border border-red-200 font-medium">{error}</div>}
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[14px] text-lg font-extrabold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                    onClick={handlePay}
+                    disabled={loading || !canAddToCart}
+                  >
+                    {loading ? (
+                      <span className="w-6 h-6 border-2 border-indigo-200 border-t-white rounded-full animate-spin inline-block align-middle" />
+                    ) : (
+                       `Pay ${formatPrice(finalPayable ?? totalPrice)} Securely →`
+                    )}
+                  </button>
+                  <div className="relative group">
+                    <AddToCartButton
+                      productType="TECHNOLOGY"
+                      productId={item.id}
+                      selectedPlan={currentPlanKey}
+                      coBrotherOptIn={coBrotherOptIn}
+                      size="md"
+                      label="Add to Cart"
+                      disabled={!canAddToCart}
+                      goToCartWhenInCart
+                      className="!w-full !justify-center !bg-white !text-gray-700 !border-gray-200 hover:!bg-gray-50 hover:!text-gray-900 hover:!border-gray-300 font-bold transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-gray-200/60 flex items-center justify-center gap-2 text-[0.65rem] text-gray-400 font-bold uppercase tracking-widest">
+                  <span>🔒 Secure payment via Razorpay</span>
+                </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-center gap-1.5 text-[0.7rem] text-gray-400 font-medium uppercase tracking-wider">
-                🔒 Secure payment via Razorpay
+              <div className="mt-5 p-4 sm:p-5 bg-amber-50/80 border border-amber-200/80 rounded-[20px] text-[0.8rem] text-amber-900 font-semibold shadow-sm leading-relaxed">
+                🔒 GitHub/Resources link will be shared after purchase verification.
+                {coBrotherOptIn && ' Your CoBrother will reach out within 24 hours.'}
               </div>
-            </div>
-
-            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-[14px] text-xs text-amber-800 font-medium shadow-sm leading-relaxed">
-              🔒 GitHub/Resources link will be shared after purchase verification.
-              {coBrotherOptIn && ' Your CoBrother will reach out within 24 hours.'}
             </div>
           </div>
         </div>

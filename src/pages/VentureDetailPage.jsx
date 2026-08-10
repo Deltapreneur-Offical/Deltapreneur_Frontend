@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { 
+  ArrowLeft, ExternalLink, DollarSign, PieChart, Eye, Users, 
+  BarChart2, Target, AlertCircle, User, Mail, Phone, Briefcase, PlayCircle, MapPin
+} from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EditActionLabel from '../components/common/EditActionLabel';
@@ -28,21 +31,31 @@ import {
 import { asArray } from '../utils/asArray';
 import verifiedIcon from '../assets/Verified_Icon.png';
 
-function DetailSection({ title, children }) {
+function DetailSection({ title, children, icon: Icon, accentClass = "text-indigo-500" }) {
   return (
-    <section className="rounded-[18px] border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-      <h2 className="font-display text-lg font-semibold text-gray-900 m-0 mb-4">{title}</h2>
+    <section className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-7 shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-50">
+        {Icon && <Icon className={`w-5 h-5 ${accentClass}`} />}
+        <h2 className="font-display text-lg font-semibold text-gray-900 m-0">{title}</h2>
+      </div>
       {children}
     </section>
   );
 }
 
-function DetailField({ label, value }) {
+function DetailField({ label, value, icon: Icon }) {
   if (!value) return null;
   return (
-    <div className="min-w-0">
-      <div className="text-[0.68rem] font-semibold uppercase tracking-wide text-gray-500 mb-1">{label}</div>
-      <div className="text-sm font-medium text-gray-900 break-words">{value}</div>
+    <div className="flex gap-3">
+      {Icon && (
+        <div className="mt-0.5 flex-shrink-0">
+          <Icon className="w-4 h-4 text-gray-400" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="text-[0.68rem] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">{label}</div>
+        <div className="text-sm font-medium text-gray-900 break-words">{value}</div>
+      </div>
     </div>
   );
 }
@@ -231,154 +244,204 @@ export default function VentureDetailPage() {
     ? t('listingCardApply', 'Apply')
     : (isFullAcquisition ? t('listingCardOffer', 'Offer') : t('listingCardPitch', 'Pitch'));
 
+  const accentColor = isCoVenture ? 'teal' : 'indigo';
+  const themeClasses = {
+    bgLight: isCoVenture ? 'bg-teal-50' : 'bg-indigo-50',
+    bgLightFaint: isCoVenture ? 'bg-teal-50/50' : 'bg-indigo-50/50',
+    bgBorder: isCoVenture ? 'border-teal-100' : 'border-indigo-100',
+    textDark: isCoVenture ? 'text-teal-900' : 'text-indigo-900',
+    textMain: isCoVenture ? 'text-teal-600' : 'text-indigo-600',
+    textMainDark: isCoVenture ? 'text-teal-700' : 'text-indigo-700',
+    gradient: isCoVenture ? 'from-teal-50/60 to-green-50/30' : 'from-indigo-50/60 to-blue-50/30',
+    accentClass: isCoVenture ? 'text-teal-500' : 'text-indigo-500',
+  };
+
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto pb-24 sm:pb-8">
-        <button
-          onClick={handleBackToBrowse}
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 mb-5 transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-          {t('ventureDetailBackToBrowse', 'Back to ventures')}
-        </button>
+      <div className="max-w-6xl mx-auto pb-24 sm:pb-12">
+        <div className="px-4 sm:px-0 mb-6 mt-4">
+          <button
+            onClick={handleBackToBrowse}
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            {t('ventureDetailBackToBrowse', 'Back to ventures')}
+          </button>
+        </div>
 
-        <div className="rounded-[24px] border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="flex flex-col gap-5 border-b border-gray-100 p-5 sm:p-6 lg:flex-row lg:items-center lg:gap-6">
-            <div className="relative mx-auto aspect-square w-28 overflow-hidden rounded-[22px] border border-gray-200 bg-slate-100 shadow-sm sm:w-32 lg:mx-0 lg:w-36">
-              {b.ventureImageUrl ? (
-                <img
-                  src={b.ventureImageUrl}
-                  alt={brandName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center px-3 text-center">
-                  <span className="text-lg font-semibold text-slate-400 break-words leading-tight">
-                    {brandName}
-                  </span>
-                </div>
-              )}
-              {isGstinVerified ? (
-                <img
-                  src={verifiedIcon}
-                  alt=""
-                  className="absolute right-2 top-2 h-10 w-10 object-contain drop-shadow-md"
-                  aria-hidden
-                />
-              ) : null}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <VentureListingTypeBadge venture={venture} />
-                {b.industry && (
-                  <span className="px-2.5 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
-                    {b.industry.replace(/_/g, ' ')}
-                  </span>
+        <div className="rounded-3xl border border-gray-100 bg-white shadow-xl shadow-gray-200/40 overflow-hidden">
+          
+          {/* Hero Section */}
+          <div className={`relative p-6 sm:p-10 lg:p-12 border-b border-gray-100 bg-gradient-to-br ${themeClasses.gradient}`}>
+            {/* Background subtle elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 blur-3xl rounded-full -mr-20 -mt-20 pointer-events-none" />
+            
+            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10">
+              <div className="relative mx-auto aspect-square w-32 overflow-hidden rounded-[28px] border-4 border-white bg-white shadow-lg sm:w-40 lg:mx-0 lg:w-44 shrink-0">
+                {b.ventureImageUrl ? (
+                  <img
+                    src={b.ventureImageUrl}
+                    alt={brandName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className={`flex h-full w-full items-center justify-center p-4 text-center ${themeClasses.bgLight}`}>
+                    <span className={`text-xl font-bold ${themeClasses.textMainDark} break-words leading-tight opacity-70`}>
+                      {brandName}
+                    </span>
+                  </div>
                 )}
-                {equityPctLabel && isCoVenture && (
-                  <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-semibold rounded-full">
-                    {equityPctLabel} {t('ventureDetailEquityOffered', 'equity offered')}
-                  </span>
-                )}
+                {isGstinVerified ? (
+                  <img
+                    src={verifiedIcon}
+                    alt="Verified"
+                    className="absolute right-2 top-2 h-10 w-10 object-contain drop-shadow-md"
+                    title="GSTIN Verified"
+                  />
+                ) : null}
               </div>
 
-              <h1 className="mt-2 font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-950 m-0 break-words">
-                {brandName}
-              </h1>
+              <div className="min-w-0 flex-1 text-center lg:text-left flex flex-col items-center lg:items-start">
+                <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2.5 mb-4">
+                  <VentureListingTypeBadge venture={venture} />
+                  {b.industry && (
+                    <span className="px-3 py-1 bg-white/60 text-gray-800 text-[0.7rem] uppercase tracking-wider font-bold rounded-full border border-gray-200/50 shadow-sm">
+                      {b.industry.replace(/_/g, ' ')}
+                    </span>
+                  )}
+                </div>
 
-              {b.description && (
-                <p className="mt-3 max-w-3xl text-sm sm:text-base leading-relaxed text-gray-600 m-0">
-                  {b.description}
-                </p>
-              )}
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-950 m-0 tracking-tight break-words mb-4">
+                  {brandName}
+                </h1>
+
+                {b.description && (
+                  <p className="max-w-3xl text-sm sm:text-base leading-relaxed text-gray-700 m-0 font-medium">
+                    {b.description}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 lg:gap-0">
-            <div className="lg:col-span-2 p-5 sm:p-8 flex flex-col gap-5 border-b lg:border-b-0 lg:border-r border-gray-100">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-0 relative">
+            <div className="lg:col-span-8 p-6 sm:p-10 flex flex-col gap-8 border-b lg:border-b-0 lg:border-r border-gray-100">
+              
+              {/* Metrics Row */}
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-sm font-medium text-gray-700 shadow-sm">
+                  <span>{t('venturesPageViewsLabel', { count: venture.views || 0 })}</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-100 text-sm font-medium text-amber-800 shadow-sm">
+                  <Users className="w-4 h-4 text-amber-500" />
+                  <span>{interestCount} {interestLabel}</span>
+                </div>
+                {venture.stage && (
+                  <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl ${themeClasses.bgLight} ${themeClasses.bgBorder} border text-sm font-medium ${themeClasses.textMainDark} shadow-sm`}>
+                    <BarChart2 className={`w-4 h-4 ${themeClasses.textMain}`} />
+                    <span>{STAGE_LABELS[venture.stage] || venture.stage}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Price & Equity Cards */}
               {(sellerAsk.price || sellerAsk.equityLabel) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {sellerAsk.price ? (
-                    <div className="rounded-[16px] border border-sky-100 bg-sky-50 px-4 py-4">
-                      <div className="text-[0.68rem] font-bold uppercase tracking-wide text-sky-700">
-                        {t('ventureDetailAskingPrice', 'Asking price')}
+                    <div className="relative overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/50 p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <DollarSign className="w-24 h-24 text-sky-600" />
                       </div>
-                      <div className="text-2xl font-bold text-sky-900 mt-1">
-                        {formatVentureAskingPrice(sellerAsk.price, formatPrice)}
+                      <div className="relative">
+                        <div className="flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-sky-600 mb-2">
+                          <DollarSign className="w-4 h-4" />
+                          {t('ventureDetailAskingPrice', 'Asking price')}
+                        </div>
+                        <div className="text-3xl sm:text-4xl font-extrabold text-sky-950 tracking-tight">
+                          {formatVentureAskingPrice(sellerAsk.price, formatPrice)}
+                        </div>
                       </div>
                     </div>
                   ) : null}
+                  
                   {sellerAsk.equityLabel ? (
-                    <div className="rounded-[16px] border border-purple-100 bg-purple-50 px-4 py-4">
-                      <div className="text-[0.68rem] font-bold uppercase tracking-wide text-purple-700">
-                        {t('ventureDetailEquityOffered', 'Equity offered')}
+                    <div className="relative overflow-hidden rounded-2xl border border-purple-100 bg-gradient-to-br from-white to-purple-50/50 p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <PieChart className="w-24 h-24 text-purple-600" />
                       </div>
-                      <div className="text-2xl font-bold text-purple-900 mt-1">{sellerAsk.equityLabel}</div>
-                      {sellerAsk.dealTypeLabel ? (
-                        <div className="text-sm text-purple-700 mt-1">{sellerAsk.dealTypeLabel}</div>
-                      ) : null}
+                      <div className="relative">
+                        <div className="flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-purple-600 mb-2">
+                          <PieChart className="w-4 h-4" />
+                          {t('ventureDetailEquityOffered', 'Equity offered')}
+                        </div>
+                        <div className="text-3xl sm:text-4xl font-extrabold text-purple-950 tracking-tight mb-1">
+                          {sellerAsk.equityLabel}
+                        </div>
+                        {sellerAsk.dealTypeLabel ? (
+                          <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 text-xs font-semibold">
+                            {sellerAsk.dealTypeLabel}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
-                  {t('venturesPageViewsLabel', { count: venture.views || 0 })}
-                </span>
-                <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800">
-                  {interestCount} {interestLabel}
-                </span>
-                {venture.stage && (
-                  <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                    {STAGE_LABELS[venture.stage] || venture.stage}
-                  </span>
-                )}
-              </div>
-
+              {/* Content Sections */}
               {venture.lookingFor && (
-                <DetailSection title={t('venturesPageLookingForSection')}>
-                  <p className="text-gray-700 leading-relaxed text-sm m-0">{venture.lookingFor}</p>
+                <DetailSection title={t('venturesPageLookingForSection')} icon={Target} accentClass={themeClasses.accentClass}>
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base m-0 whitespace-pre-line">{venture.lookingFor}</p>
                 </DetailSection>
               )}
 
               {venture.currentProblem && (
-                <DetailSection title={t('venturesPageChallengeSection')}>
-                  <p className="text-gray-700 leading-relaxed text-sm m-0">{venture.currentProblem}</p>
+                <DetailSection title={t('venturesPageChallengeSection')} icon={AlertCircle} accentClass="text-amber-500">
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base m-0 whitespace-pre-line">{venture.currentProblem}</p>
                 </DetailSection>
               )}
 
               {companyProfile && (
-                <DetailSection title={t('ventureDetailCompanyProfile', 'Company profile')}>
+                <DetailSection title={t('ventureDetailCompanyProfile', 'Company profile')} icon={Briefcase} accentClass={themeClasses.accentClass}>
                   <VentureCompanyProfileSummary profile={companyProfile} formatPrice={formatPrice} />
                 </DetailSection>
               )}
             </div>
 
-            <aside className="p-5 sm:p-8 flex flex-col gap-5 bg-gray-50/70">
+            <aside className={`lg:col-span-4 p-6 sm:p-10 flex flex-col gap-6 ${themeClasses.bgLightFaint} bg-opacity-30`}>
               {(publicContact.email || publicContact.phone || publicContact.contactPerson) && (
-                <DetailSection title={t('venturesPageContactSection')}>
-                  <div className="grid grid-cols-1 gap-4">
-                    <DetailField label={t('ventureDetailContactPerson', 'Contact person')} value={publicContact.contactPerson} />
-                    <DetailField label={t('emailLabel')} value={publicContact.email} />
-                    <DetailField label={t('domainsPagePhoneLabel')} value={publicContact.phone} />
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <div className={`px-5 py-4 border-b border-gray-100 ${themeClasses.bgLight} bg-opacity-50`}>
+                    <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gray-900 m-0">
+                      {t('venturesPageContactSection')}
+                    </h3>
                   </div>
-                </DetailSection>
+                  <div className="p-5 flex flex-col gap-4">
+                    <DetailField label={t('ventureDetailContactPerson', 'Contact person')} value={publicContact.contactPerson} icon={User} />
+                    <DetailField label={t('emailLabel')} value={publicContact.email} icon={Mail} />
+                    <DetailField label={t('domainsPagePhoneLabel')} value={publicContact.phone} icon={Phone} />
+                  </div>
+                </div>
               )}
 
               {(b.website || b.videoUrl) && (
-                <DetailSection title={t('venturesPageLinksSection')}>
-                  <div className="flex flex-col gap-2">
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <div className={`px-5 py-4 border-b border-gray-100 ${themeClasses.bgLight} bg-opacity-50`}>
+                    <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gray-900 m-0">
+                      {t('venturesPageLinksSection')}
+                    </h3>
+                  </div>
+                  <div className="p-3 flex flex-col gap-1">
                     {b.website && (
                       <a
                         href={b.website}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                        className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors group"
                       >
-                        {t('venturesPageWebsiteLink')}
-                        <ExternalLink size={14} />
+                        <Globe className="w-4 h-4 text-gray-400 group-hover:text-indigo-500" />
+                        <span className="flex-1">{t('venturesPageWebsiteLink')}</span>
+                        <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-400" />
                       </a>
                     )}
                     {b.videoUrl && (
@@ -386,30 +449,36 @@ export default function VentureDetailPage() {
                         href={b.videoUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                        className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors group"
                       >
-                        {t('venturesPageVideoLink')}
-                        <ExternalLink size={14} />
+                        <PlayCircle className="w-4 h-4 text-gray-400 group-hover:text-indigo-500" />
+                        <span className="flex-1">{t('venturesPageVideoLink')}</span>
+                        <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-400" />
                       </a>
                     )}
                   </div>
-                </DetailSection>
+                </div>
               )}
 
               {venture.listedBy && (
-                <DetailSection title={t('venturesPageListedBySection')}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600 text-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <div className={`px-5 py-4 border-b border-gray-100 ${themeClasses.bgLight} bg-opacity-50`}>
+                    <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gray-900 m-0">
+                      {t('venturesPageListedBySection')}
+                    </h3>
+                  </div>
+                  <div className="p-5 flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-full ${themeClasses.bgLight} ${themeClasses.bgBorder} border flex items-center justify-center font-bold ${themeClasses.textMainDark} text-lg shadow-sm`}>
                       {venture.listedBy.firstname?.[0]?.toUpperCase() || '?'}
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-gray-900 text-sm truncate">
                         {venture.listedBy.firstname} {venture.listedBy.lastname}
                       </div>
-                      <div className="text-xs text-gray-600 break-all">{venture.listedBy.email}</div>
+                      <div className="text-xs font-medium text-gray-500 truncate mt-0.5">{venture.listedBy.email}</div>
                     </div>
                   </div>
-                </DetailSection>
+                </div>
               )}
             </aside>
           </div>
@@ -445,10 +514,12 @@ export default function VentureDetailPage() {
                 type="button"
                 className={
                   hasApplied
-                    ? 'w-full sm:w-auto px-5 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-sm font-semibold cursor-not-allowed'
+                    ? 'w-full sm:w-auto px-6 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-[0.95rem] font-bold cursor-not-allowed shadow-sm'
                     : canSubmit
-                      ? 'btn-glow btn-glow-sm w-full sm:w-auto'
-                      : 'w-full sm:w-auto px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-sm font-semibold cursor-not-allowed'
+                      ? isCoVenture
+                        ? 'w-full sm:w-auto px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-full text-[0.95rem] font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-teal-500'
+                        : 'w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[0.95rem] font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-indigo-500'
+                      : 'w-full sm:w-auto px-6 py-3 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-[0.95rem] font-bold cursor-not-allowed shadow-sm'
                 }
                 onClick={canSubmit && !hasApplied ? handleBuyerAction : undefined}
                 disabled={!canSubmit || hasApplied}

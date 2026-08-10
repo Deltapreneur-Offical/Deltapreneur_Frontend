@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from '
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import greenFavicon from './assets/favicon.png';
-import purpleFavicon from './assets/Cobrother_Profile_Purplegradiant.png';
+import purpleFavicon from './assets/Cobrother_Profile_skyblue.png';
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';

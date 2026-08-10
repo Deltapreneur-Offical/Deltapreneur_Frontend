@@ -8,6 +8,7 @@ export default function LikeButton({
   size = 'sm',
   forceRed = false,
   variant = 'light',
+  className = '',
 }) {
   const [animating, setAnimating] = useState(false);
   const isActive = liked || forceRed;
@@ -25,7 +26,7 @@ export default function LikeButton({
   if (!onToggle) {
     return (
       <span
-        className={`listing-like-btn listing-like-btn--readonly ${size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'}`}
+        className={`listing-like-btn listing-like-btn--readonly ${size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'} ${className}`.trim()}
         aria-label={`${count || 0} likes`}
       >
         <span className="listing-like-btn__count">
@@ -60,7 +61,7 @@ export default function LikeButton({
       title={liked ? 'Unlike' : 'Like'}
       className={`listing-like-btn listing-like-btn--interactive ${
         size === 'sm' ? 'listing-like-btn--sm' : 'listing-like-btn--md'
-      } listing-like-btn--light ${animating ? 'listing-like-btn--animating' : ''}`}
+      } listing-like-btn--light ${animating ? 'listing-like-btn--animating' : ''} ${className}`.trim()}
     >
       <span className="listing-like-btn__count">
         {count || 0}

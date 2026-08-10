@@ -3,7 +3,7 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown, Eye } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
@@ -1605,15 +1605,18 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
 
   return (
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
       onClick={e => e.target === e.currentTarget && onClose?.()}
     >
-      <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
-        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+      <div className="relative w-full h-[100dvh] sm:h-auto max-w-[600px] sm:max-h-[90vh] flex flex-col min-h-0 bg-white sm:border sm:border-gray-200 sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
+        {/* Ambient background glow */}
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-br from-indigo-50/80 to-blue-50/40 pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-200/20 blur-3xl pointer-events-none" />
+
         <button
           type="button"
           aria-label="Close"
-          className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 border border-gray-200 text-gray-500 hover:text-gray-900 shadow-sm transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             onClose?.();
@@ -1622,166 +1625,198 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
           ✕
         </button>
 
-        {loading ? (
-          <div className="flex justify-center p-12">
-            <div className="w-7 h-7 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
-          </div>
-        ) : (
-          <>
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide">{isAuction ? t('domainsPageDetailAuctionBadge') : t('domainsPageDetailDomainBadge')}</div>
+        <div className="relative z-10 flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5 sm:py-6">
+          {loading ? (
+            <div className="flex justify-center items-center h-48">
+              <div className="w-8 h-8 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="flex flex-col h-full">
+              {/* Badges Section */}
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <div className="inline-flex items-center px-3 py-1 bg-indigo-600 rounded-md text-[0.7rem] font-bold text-white uppercase tracking-widest shadow-sm">
+                  {isAuction ? t('domainsPageDetailAuctionBadge') : t('domainsPageDetailDomainBadge')}
+                </div>
                 {d.verified && (
-                  <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-green-600 bg-green-50 border border-green-300">
-                    {t('domainsPageVerifiedBadge')}
+                  <span className="px-2.5 py-1 rounded-md text-[0.7rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 uppercase tracking-widest">
+                    ✓ {t('domainsPageVerifiedBadge')}
                   </span>
                 )}
                 {isHighValue && (
-                  <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200">
-                    {t('domainsPagePremiumBadge')}
+                  <span className="px-2.5 py-1 rounded-md text-[0.7rem] font-bold text-purple-700 bg-purple-50 border border-purple-200 uppercase tracking-widest">
+                    ✦ {t('domainsPagePremiumBadge')}
+                  </span>
+                )}
+                {!isAuction && (
+                  <span className="px-2.5 py-1 rounded-md text-[0.7rem] font-bold uppercase tracking-widest" style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
+                    {d.domainStatus}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                {display.ext && (
-                  <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
-                    {display.ext.label}
-                  </span>
-                )}
-                <h2
-                  className="font-display text-[1.75rem] font-semibold text-gray-900 m-0 min-w-0 flex-1 overflow-hidden"
-                  style={{ textOverflow: 'clip', whiteSpace: 'nowrap', display: 'block' }}
-                >
-                  <OverflowMarqueeText text={display.name} />
+
+              {/* Domain Name Section */}
+              <div className="mb-4">
+                <h2 className="font-display text-[2.25rem] sm:text-[2.5rem] font-extrabold text-gray-900 m-0 tracking-tight flex items-baseline flex-wrap leading-none">
+                  <span>{display.name}</span>
+                  {display.ext && (
+                    <span className="text-indigo-600 font-bold ml-1">
+                      {display.ext.label.toLowerCase()}
+                    </span>
+                  )}
                 </h2>
+                <div className="text-sm font-medium text-gray-500 mt-2">
+                  {d.pricingDemand === 'NEGOTIABLE' ? t('domainsPageNegotiable') : t('domainsPageFixedPrice')}
+                </div>
               </div>
-              {display.ext && (
-                <p className="text-sm text-slate-500 mb-1">{display.fullDomain}</p>
-              )}
-              <p className="text-sm text-gray-500">{d.pricingDemand === 'NEGOTIABLE' ? t('domainsPageNegotiable') : t('domainsPageFixedPrice')}</p>
-            </div>
 
-            <div className="flex gap-2 flex-wrap mb-4">
-              {isAuction && auction ? (
-                <>
-                  <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
-                    {auction.currentHighestBid > 0
-                      ? t('domainsPageHighestBidChip', { amount: formatPrice(auction.currentHighestBid) })
-                      : t('domainsPageMinBidChip', { amount: formatPrice(auction.minBidPrice) })}
+              {/* Price & Stats Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                {isAuction && auction ? (
+                  <>
+                    <div className="flex flex-col justify-center p-4 rounded-[16px] bg-emerald-50/80 border border-emerald-100">
+                      <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">
+                        {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Minimum Bid'}
+                      </div>
+                      <div className="text-2xl font-black text-emerald-700">
+                        {auction.currentHighestBid > 0
+                          ? formatPrice(auction.currentHighestBid)
+                          : formatPrice(auction.minBidPrice)}
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-center p-4 rounded-[16px] bg-gray-50/80 border border-gray-200">
+                      <div className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Bids</div>
+                      <div className="text-xl font-bold text-gray-900">{auction.totalBids}</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col justify-center p-4 rounded-[16px] bg-emerald-50/80 border border-emerald-100 sm:col-span-2">
+                    <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">Asking Price</div>
+                    <div className="text-3xl font-black text-emerald-700">
+                      {formatPrice(Number(d.askingPrice) * 1.18)}
+                      <span className="text-sm font-semibold text-emerald-600/70 ml-2">(inc. 18% GST)</span>
+                    </div>
                   </div>
-                  <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">
-                    {t('domainsPageBidsChip', { count: auction.totalBids })}
-                  </div>
-                </>
-              ) : (
-                <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
-                  {t('domainsPagePriceChip', { amount: formatPrice(Number(d.askingPrice) * 1.18) })} (inc. 18% GST)
-                </div>
-              )}
-              <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">
-                {t('domainsPageViewsChip', { count: d.views || 0 })}
+                )}
               </div>
-              {!isAuction && (
-                <span className="px-2.5 py-1 rounded-md text-xs font-semibold" style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
-                  {d.domainStatus}
-                </span>
-              )}
-            </div>
 
-            {isAuction && auction && (
-              <Section title={t('domainsPageAuctionInfoSection')}>
-                <div className="grid grid-cols-2 gap-3">
-                  <DetailItem label={t('domainsPageStatusLabel')}
-                    value={auction.status === 'ACTIVE' ? t('domainsPageStatusLive') :
-                      auction.status === 'EXTENDED' ? t('domainsPageStatusExtended') :
-                        auction.status === 'DRAFT' ? t('domainsPageStatusPendingVerification') :
-                          auction.status} />
-                  <DetailItem label={t('domainsPageDurationLabel')} value={auction.duration?.replace(/_/g, ' ')} />
-                  {auction.endTime && (
-                    <DetailItem label={t('domainsPageEndsLabel')}
-                      value={formatAuctionDateTime(auction.endTime, {
-                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                      })} />
-                  )}
-                  {auction.currentHighestBid > 0 && (
-                    <DetailItem label={t('domainsPageNextMinBidLabel')}
-                      value={formatPrice(auction.currentHighestBid * 1.05)} />
-                  )}
-                </div>
-              </Section>
-            )}
-
-            {isHighValue && !isOwner && d.domainStatus === 'AVAILABLE' && (
-              <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-lg mb-5 text-[0.83rem] text-purple-700">
-                {t('domainsPagePremiumEnquiryNotice')}
+              {/* Views Card */}
+              <div className="p-3.5 bg-gray-50/80 border border-gray-100 rounded-[12px] mb-4">
+                <div className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-widest mb-1">Listing Views</div>
+                <div className="text-sm font-semibold text-gray-900">{t('domainsPageViewsChip', { count: d.views || 0 })}</div>
               </div>
-            )}
 
-            {isAdmin && (c.email || c.phoneNumber) && (
-              <Section title={t('domainsPageContactSection')}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {c.email && (
-                    <DetailItem
-                      label={t('emailLabel')}
-                      value={c.email}
-                      className="sm:col-span-2"
-                    />
-                  )}
-                  {c.phoneNumber && (
-                    <DetailItem label={t('domainsPagePhoneLabel')} value={c.phoneNumber} />
-                  )}
-                </div>
-              </Section>
-            )}
-
-            {d.listedBy && (
-              <Section title={t('domainsPageListedBySection')}>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600">
-                    {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
+              {isAuction && auction && (
+                <div className="mb-4 p-4 rounded-[12px] border border-gray-200 bg-white shadow-sm">
+                  <div className="text-xs font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2 mb-4">
+                    {t('domainsPageAuctionInfoSection')}
                   </div>
-                  <div className="font-semibold text-gray-900 text-[0.9rem]">
-                    {d.listedBy.firstname} {d.listedBy.lastname}
+                  <div className="grid grid-cols-2 gap-4">
+                    <DetailItem label={t('domainsPageStatusLabel')}
+                      value={auction.status === 'ACTIVE' ? t('domainsPageStatusLive') :
+                        auction.status === 'EXTENDED' ? t('domainsPageStatusExtended') :
+                          auction.status === 'DRAFT' ? t('domainsPageStatusPendingVerification') :
+                            auction.status} />
+                    <DetailItem label={t('domainsPageDurationLabel')} value={auction.duration?.replace(/_/g, ' ')} />
+                    {auction.endTime && (
+                      <DetailItem label={t('domainsPageEndsLabel')}
+                        value={formatAuctionDateTime(auction.endTime, {
+                          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                        })} />
+                    )}
+                    {auction.currentHighestBid > 0 && (
+                      <DetailItem label={t('domainsPageNextMinBidLabel')}
+                        value={formatPrice(auction.currentHighestBid * 1.05)} />
+                    )}
                   </div>
                 </div>
-              </Section>
-            )}
-
-            <div className="flex gap-3 mt-6 flex-wrap items-center">
-              {isOwner && onEdit && (
-                <button type="button" className="btn-glow btn-glow-sm inline-flex items-center gap-1.5" onClick={onEdit}>
-                  <EditActionLabel iconSize={16}>{t('domainsPageEditListing')}</EditActionLabel>
-                </button>
               )}
-              {!isOwner && (
-                isAuction ? (
-                  <button
-                    onClick={onViewAuction}
-                    className="btn-glow btn-glow-sm inline-flex items-center gap-1">
-                    <Gavel size={14} className="shrink-0" />
-                    <span>{auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')} →</span>
+
+              {isHighValue && !isOwner && d.domainStatus === 'AVAILABLE' && (
+                <div className="p-3 bg-purple-50/80 border border-purple-200 rounded-[10px] mb-4 text-sm font-medium text-purple-900 shadow-sm leading-relaxed">
+                  {t('domainsPagePremiumEnquiryNotice')}
+                </div>
+              )}
+
+              {isAdmin && (c.email || c.phoneNumber) && (
+                <div className="mb-4">
+                  <div className="text-xs font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2 mb-4">
+                    {t('domainsPageContactSection')}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {c.email && (
+                      <DetailItem
+                        label={t('emailLabel')}
+                        value={c.email}
+                        className="sm:col-span-2"
+                      />
+                    )}
+                    {c.phoneNumber && (
+                      <DetailItem label={t('domainsPagePhoneLabel')} value={c.phoneNumber} />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {d.listedBy && (
+                <div className="mb-4">
+                  <div className="text-xs font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2 mb-4">
+                    {t('domainsPageListedBySection')}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600 shadow-sm">
+                      {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div className="font-bold text-gray-900 text-sm">
+                      {d.listedBy.firstname} {d.listedBy.lastname}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="mt-auto pt-3 flex gap-3 flex-col sm:flex-row items-center border-t border-gray-100">
+                {isOwner && onEdit && (
+                  <button type="button" className="btn-glow w-full sm:flex-1 py-3 justify-center shadow-sm" onClick={onEdit}>
+                    <EditActionLabel iconSize={16}>{t('domainsPageEditListing')}</EditActionLabel>
                   </button>
-                ) : d.domainStatus === 'UNDER_REVIEW' ? (
-                  <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-3 py-2 text-sm font-semibold text-amber-800">
-                    {t('listingCardPremiumAcquisitionInProgress', 'Premium Acquisition in Progress')}
-                  </span>
-                ) : d.domainStatus === 'AVAILABLE' ? (
-                  <AddToCartButton
-                    productType="DOMAIN_LISTING"
-                    productId={d.id}
-                    size="md"
-                    tone="blue"
-                    className="btn-glow btn-glow-sm hover:!bg-blue-700 hover:!border-blue-700 hover:!text-white"
-                    label={t('listingCardAddToCart', 'Add to Cart')}
-                  />
-                ) : null
-              )}
-              <LikeButton liked={likeState?.liked} count={likeState?.count}
-                onToggle={onLike} size="md" />
-              <button className="btn-glow btn-glow-sm" onClick={onClose}>{t('close')}</button>
+                )}
+                {!isOwner && (
+                  isAuction ? (
+                    <button
+                      onClick={onViewAuction}
+                      className="btn-glow w-full sm:flex-1 py-3 justify-center shadow-md hover:-translate-y-0.5 transition-all">
+                      <Gavel size={16} className="shrink-0 mr-1.5" />
+                      <span className="font-bold">{auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')} →</span>
+                    </button>
+                  ) : d.domainStatus === 'UNDER_REVIEW' ? (
+                    <span className="w-full sm:flex-1 flex justify-center rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm font-bold text-amber-800 text-center">
+                      {t('listingCardPremiumAcquisitionInProgress', 'Premium Acquisition in Progress')}
+                    </span>
+                  ) : d.domainStatus === 'AVAILABLE' ? (
+                    <div className="w-full sm:flex-1 relative group">
+                      <AddToCartButton
+                        productType="DOMAIN_LISTING"
+                        productId={d.id}
+                        size="md"
+                        tone="blue"
+                        className="btn-glow w-full py-3 justify-center shadow-md hover:-translate-y-0.5 transition-all !bg-indigo-600 hover:!bg-indigo-700 hover:!border-indigo-700 !text-white font-extrabold text-base"
+                        label={t('listingCardAddToCart', 'Add to Cart')}
+                      />
+                    </div>
+                  ) : null
+                )}
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="flex-1 sm:flex-none">
+                    <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} size="lg" className="!w-full sm:!w-auto !min-w-[80px] !h-[48px] !px-4 !justify-center !rounded-xl !border !border-gray-200 !bg-white !shadow-sm hover:!bg-gray-50" />
+                  </div>
+                  <button className="w-full sm:w-auto px-6 rounded-xl text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 hover:text-gray-800 transition-colors h-[48px]" onClick={onClose}>
+                    {t('close')}
+                  </button>
+                </div>
+              </div>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

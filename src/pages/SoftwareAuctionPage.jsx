@@ -270,6 +270,11 @@ export default function SoftwareAuctionPage() {
   };
 
   const handleBid = async () => {
+    if (!user) {
+      const returnUrl = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
     const amt = parseFloat(bidAmount);
     if (isNaN(amt) || amt <= 0) { setBidError(t('auctionDetailEnterValidAmount')); return; }
     const bidAmountInrValue = Number(bidAmountInr) || convertToInr(amt, bidCurrency);

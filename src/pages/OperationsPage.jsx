@@ -1,8 +1,9 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Headset, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate, useLocation } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
+import ListingBackLink from '../components/common/ListingBackLink';
 import FilterBar from '../components/common/FilterBar';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import OperationsRequestModal from '../components/operations/OperationsRequestModal';
@@ -266,6 +267,7 @@ export default function OperationsPage() {
   return (
     <AppLayout>
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 min-w-0">
+        <ListingBackLink />
         <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
           <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 px-5 py-5 sm:px-7 sm:py-6 text-white">
             <div className="flex items-start gap-3.5">
@@ -369,7 +371,13 @@ export default function OperationsPage() {
                     <OperationsServiceCard
                       key={service.id}
                       service={service}
-                      onHire={() => setRequestTarget(service)}
+                      onHire={() => {
+                        if (!user) {
+                          navigate('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+                          return;
+                        }
+                        setRequestTarget(service);
+                      }}
                     />
                   ))}
                 </div>

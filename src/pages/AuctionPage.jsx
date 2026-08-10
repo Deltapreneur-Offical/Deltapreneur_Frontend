@@ -294,6 +294,11 @@ export default function AuctionPage() {
   };
 
   const handleBid = async () => {
+    if (!user) {
+      const returnUrl = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
     const displayAmount = parseFloat(bidAmount);
     if (isNaN(displayAmount) || displayAmount <= 0) {
       setBidError(t('auctionDetailEnterValidAmount'));

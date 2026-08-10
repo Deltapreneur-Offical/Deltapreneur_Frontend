@@ -233,11 +233,7 @@ export default function App() {
                 {/* Auctions */}
                 <Route
                   path="/auction/:auctionId"
-                  element={
-                    <ProfileGuard>
-                      <AuctionPage />
-                    </ProfileGuard>
-                  }
+                  element={<AuctionPage />}
                 />
 
                 <Route
@@ -247,11 +243,7 @@ export default function App() {
 
                 <Route
                   path="/creator-auction/:auctionId"
-                  element={
-                    <ProfileGuard>
-                      <CommunityAuctionPage />
-                    </ProfileGuard>
-                  }
+                  element={<CommunityAuctionPage />}
                 />
 
                 <Route
@@ -327,29 +319,17 @@ export default function App() {
 
                 <Route
                   path="/operations/:id"
-                  element={
-                    <ProfileGuard>
-                      <OperationsPage />
-                    </ProfileGuard>
-                  }
+                  element={<OperationsPage />}
                 />
                 <Route
                   path="/operations"
-                  element={
-                    <ProfileGuard>
-                      <OperationsPage />
-                    </ProfileGuard>
-                  }
+                  element={<OperationsPage />}
                 />
 
                 {/* Ventures */}
                 <Route
                   path="/ventures"
-                  element={
-                    <ProfileGuard>
-                      <VenturesPage />
-                    </ProfileGuard>
-                  }
+                  element={<VenturesPage />}
                 />
 
                 <Route path="/co-ventures" element={<Navigate to="/ventures" replace />} />
@@ -365,11 +345,7 @@ export default function App() {
 
                 <Route
                   path="/ventures/deals/:dealId"
-                  element={
-                    <ProfileGuard>
-                      <VentureDealPage />
-                    </ProfileGuard>
-                  }
+                  element={<VentureDealPage />}
                 />
 
                 <Route
@@ -410,29 +386,17 @@ export default function App() {
 
                 <Route
                   path="/ventures/:id"
-                  element={
-                    <ProfileGuard>
-                      <VentureDetailPage />
-                    </ProfileGuard>
-                  }
+                  element={<VentureDetailPage />}
                 />
 
                 {/* Creator */}
                 <Route
                   path="/creator"
-                  element={
-                    <ProfileGuard>
-                      <CommunityPage />
-                    </ProfileGuard>
-                  }
+                  element={<CommunityPage />}
                 />
                 <Route
                   path="/creator/:id"
-                  element={
-                    <ProfileGuard>
-                      <CommunityPage />
-                    </ProfileGuard>
-                  }
+                  element={<CommunityPage />}
                 />
 
                 {/* Legacy Community / Disruptor URLs → Creator */}
@@ -442,19 +406,15 @@ export default function App() {
                 {/* Domains */}
                 <Route
                   path="/domains"
-                  element={
-                    <ProfileGuard>
-                      <DomainsPage />
-                    </ProfileGuard>
-                  }
+                  element={<DomainsPage />}
+                />
+                <Route
+                  path="/alldomains"
+                  element={<DomainsPage />}
                 />
                 <Route
                   path="/domains/:id"
-                  element={
-                    <ProfileGuard>
-                      <DomainsPage />
-                    </ProfileGuard>
-                  }
+                  element={<DomainsPage />}
                 />
 
                 <Route
@@ -486,11 +446,7 @@ export default function App() {
 
                 <Route
                   path="/storefront"
-                  element={
-                    <ProfileGuard>
-                      <DomainStorefrontPage />
-                    </ProfileGuard>
-                  }
+                  element={<DomainStorefrontPage />}
                 />
 
                 <Route
@@ -507,19 +463,11 @@ export default function App() {
 
                 <Route
                   path="/technology/services/:slug"
-                  element={
-                    <ProfileGuard>
-                      <TechnologyServiceDetailPage />
-                    </ProfileGuard>
-                  }
+                  element={<TechnologyServiceDetailPage />}
                 />
                 <Route
                   path="/technologies/services/:slug"
-                  element={
-                    <ProfileGuard>
-                      <TechnologyServiceDetailPage />
-                    </ProfileGuard>
-                  }
+                  element={<TechnologyServiceDetailPage />}
                 />
 
                 {[
@@ -531,11 +479,7 @@ export default function App() {
                   <Route
                     key={serviceSlug}
                     path={`/technology/${serviceSlug}`}
-                    element={
-                      <ProfileGuard>
-                        <TechnologyServiceDetailPage />
-                      </ProfileGuard>
-                    }
+                    element={<TechnologyServiceDetailPage />}
                   />
                 ))}
 
@@ -548,39 +492,23 @@ export default function App() {
                   <Route
                     key={`plural-${serviceSlug}`}
                     path={`/technologies/${serviceSlug}`}
-                    element={
-                      <ProfileGuard>
-                        <TechnologyServiceDetailPage />
-                      </ProfileGuard>
-                    }
+                    element={<TechnologyServiceDetailPage />}
                   />
                 ))}
 
                 <Route path="/technologies" element={<Navigate to="/technology" replace />} />
                 <Route
                   path="/technology"
-                  element={
-                    <ProfileGuard>
-                      <CoCreationPage />
-                    </ProfileGuard>
-                  }
+                  element={<CoCreationPage />}
                 />
                 <Route
                   path="/technology/:id"
-                  element={
-                    <ProfileGuard>
-                      <CoCreationPage />
-                    </ProfileGuard>
-                  }
+                  element={<CoCreationPage />}
                 />
 
                 <Route
                   path="/technology/auction/:auctionId"
-                  element={
-                    <ProfileGuard>
-                      <SoftwareAuctionPage />
-                    </ProfileGuard>
-                  }
+                  element={<SoftwareAuctionPage />}
                 />
 
                 <Route
@@ -635,11 +563,7 @@ export default function App() {
                 {/* Auctions */}
                 <Route
                   path="/auctions"
-                  element={
-                    <ProfileGuard>
-                      <AuctionsPage />
-                    </ProfileGuard>
-                  }
+                  element={<AuctionsPage />}
                 />
 
                 {/* Cart */}

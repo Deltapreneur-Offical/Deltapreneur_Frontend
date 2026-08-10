@@ -220,12 +220,16 @@ export default function DomainsPage() {
 
   useEffect(() => {
     if (location.state?.openListDomainForm) {
+      if (!user) {
+        navigate('/login?redirect=' + encodeURIComponent('/domains'), { replace: true });
+        return;
+      }
       setFilterTab('all');
       setShowForm(true);
       setEditTarget(null);
       navigate('/domains', { replace: true, state: {} });
     }
-  }, [location.state, navigate]);
+  }, [location.state, navigate, user]);
 
   const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: domainRows,
@@ -328,6 +332,7 @@ export default function DomainsPage() {
           </>
         ) : (
           <>
+            <ListingBackLink />
             <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6 min-w-0">
               <div className="min-w-0 w-full md:w-auto">
                 <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
@@ -365,7 +370,13 @@ export default function DomainsPage() {
                 <button
                   type="button"
                   className="btn-glow btn-glow-sm !px-3 !py-2 flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
-                  onClick={() => { setShowForm(true); setEditTarget(null); }}
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                      return;
+                    }
+                    setShowForm(true); setEditTarget(null);
+                  }}
                 >
                   <Plus className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
                   <span className="truncate">{t('listDomain')}</span>
@@ -439,7 +450,13 @@ export default function DomainsPage() {
                 </p>
                 {activeFilterCount > 0
                   ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('filterClear')}</button>
-                  : <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(true)}>
+                  : <button className="btn-glow btn-glow-sm" onClick={() => {
+                    if (!user) {
+                      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                      return;
+                    }
+                    setShowForm(true);
+                  }}>
                     {t('domainsPageListDomainCta')}
                   </button>
                 }
@@ -456,7 +473,13 @@ export default function DomainsPage() {
                         onLike={() => toggleLike(d.id)}
                         onView={() => openDetailIfAllowed(d)}
                         onEdit={() => { setEditTarget(d); setShowForm(false); }}
-                        onBuy={() => setBuyTarget(d)}
+                        onBuy={() => {
+                          if (!user) {
+                            navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                            return;
+                          }
+                          setBuyTarget(d);
+                        }}
                         onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
                         onDelete={() => setDeleteTarget(d.id)}
                         onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
@@ -501,7 +524,13 @@ export default function DomainsPage() {
             setAllDomains((prev) => prev.map((row) => (row.id === id ? { ...row, views } : row)));
           }}
           onClose={() => { closeListingDetail(); refreshDomains(); }}
-          onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
+          onBuy={() => {
+            if (!user) {
+              navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+              return;
+            }
+            setBuyTarget(detailTarget); closeListingDetail();
+          }}
           onViewAuction={() => {
             navigate(detailTarget.auction?.id ? `/auction/${detailTarget.auction.id}` : '/auctions');
             closeListingDetail();

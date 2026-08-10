@@ -26,6 +26,8 @@ import { SUPPORT_PHONE_DISPLAY, SUPPORT_PHONE_TEL } from '../../config/contactLi
 import { useDomainPendingVerification } from '../../hooks/useDomainPendingVerification';
 import { PendingVerificationDot } from '../domains/DomainVerificationPendingBanner';
 import ConfirmationModal from '../common/ConfirmationModal';
+import TopNavbar from '../common/TopNavbar';
+import HomeNavbar from '../common/HomeNavbar';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
@@ -181,6 +183,7 @@ export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('sidebarCollapsed');
@@ -469,6 +472,29 @@ export default function AppLayout({ children }) {
     return `${Math.floor(diff / 86400)}d ago`;
   };
 
+  // ─── PUBLIC LAYOUT (unauthenticated visitors) ─────────────────────────────
+  // When no user is logged in, render the same public header/footer as the
+  // home page instead of the dashboard sidebar + authenticated shell.
+  if (!user) {
+    return (
+      <div className="relative min-w-0 bg-white overflow-visible">
+        <TopNavbar isScrolled={false} />
+        <HomeNavbar
+          navRef={{ current: null }}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+          navigate={navigate}
+          isScrolled={false}
+        />
+        <main className="min-w-0 w-full px-4 py-6 sm:px-6 lg:px-8">
+          {children}
+        </main>
+        <HomeFooter />
+      </div>
+    );
+  }
+
+  // ─── AUTHENTICATED DASHBOARD LAYOUT ───────────────────────────────────────
   return (
     <div
       className="flex min-h-screen flex-col overflow-x-hidden overflow-y-auto bg-gray-50"

@@ -420,7 +420,13 @@ export default function TechnologyServiceDetailPage() {
                       </div>
 
                       <button
-                        onClick={() => setPurchasingPlan(plan)}
+                        onClick={() => {
+                          if (!user) {
+                            navigate('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+                            return;
+                          }
+                          setPurchasingPlan(plan);
+                        }}
                         className={`mt-8 w-full rounded-xl py-3 text-sm font-bold shadow-md transition-all ${
                           isPro
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/30'

@@ -188,7 +188,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   onToggle={() => toggleDesktopDropdown('domains')}
                 >
                   <DropdownLink onClick={() => go('/domains')}>{t('exploreDomains')}</DropdownLink>
-                  <DropdownLink onClick={() => go('/domains', { openListDomainForm: true })}>{t('listDomains')}</DropdownLink>
+                  <DropdownLink onClick={() => { if (!user) go('/login'); else go('/domains', { openListDomainForm: true }); }}>{t('listDomains')}</DropdownLink>
                 </NavDropdown>
 
                 <NavDropdown
@@ -197,8 +197,8 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   onToggle={() => toggleDesktopDropdown('venture')}
                 >
                   <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
-                  <DropdownLink onClick={() => go(ventureListChooseUrl('co-venture'))}>List Co-Venture</DropdownLink>
-                  <DropdownLink onClick={() => go(ventureListChooseUrl('venture'))}>{t('listVenture')}</DropdownLink>
+                  <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('co-venture')); }}>List Co-Venture</DropdownLink>
+                  <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('venture')); }}>{t('listVenture')}</DropdownLink>
                 </NavDropdown>
 
                 <NavDropdown
@@ -218,7 +218,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   onToggle={() => toggleDesktopDropdown('technology')}
                 >
                   <DropdownLink onClick={() => go('/technology')}>{t('exploreTechnology')}</DropdownLink>
-                  <DropdownLink onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                  <DropdownLink onClick={() => { if (!user) go('/login'); else go('/technology', { openListTechnologyForm: true }); }}>
                     {t('listTechnology')}
                   </DropdownLink>
                 </NavDropdown>
@@ -288,7 +288,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'domains' ? null : 'domains'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/domains')}>{t('exploreDomains')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/domains', { openListDomainForm: true })}>{t('listDomains')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => { if (!user) go('/login'); else go('/domains', { openListDomainForm: true }); }}>{t('listDomains')}</button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -297,7 +297,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'venture' ? null : 'venture'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/ventures')}>{t('exploreVenture')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go(ventureListChooseUrl('venture'))}>{t('listVenture')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('venture')); }}>{t('listVenture')}</button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -317,7 +317,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/technology')}>{t('exploreTechnology')}</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/technology', { openListTechnologyForm: true })}>
+                <button type="button" className="home-mobile-link" onClick={() => { if (!user) go('/login'); else go('/technology', { openListTechnologyForm: true }); }}>
                   {t('listTechnology')}
                 </button>
               </MobileAccordion>

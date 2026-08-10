@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
@@ -50,9 +50,19 @@ function DetailField({ label, value }) {
 export default function VentureDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { formatPrice } = useCurrency();
+
+  const handleBackToBrowse = (e) => {
+    e.preventDefault();
+    if (window.history.state?.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/ventures', { replace: true });
+    }
+  };
 
   useReferralTracker(id, 'venture');
 
@@ -160,6 +170,10 @@ export default function VentureDetailPage() {
   };
 
   const handleBuyerAction = () => {
+    if (!user) {
+      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+      return;
+    }
     if (activeDealId) {
       navigate(`/ventures/deals/${activeDealId}`);
       return;
@@ -187,10 +201,10 @@ export default function VentureDetailPage() {
               : t('listingDetailAccessDenied', 'This listing is not available to view yet.')}
           </p>
           <div className="mt-6">
-            <Link to="/ventures" className="btn-glow btn-glow-sm inline-flex items-center gap-2">
+            <button onClick={handleBackToBrowse} className="btn-glow btn-glow-sm inline-flex items-center gap-2">
               <ArrowLeft size={16} />
               {t('ventureDetailBackToBrowse', 'Back to ventures')}
-            </Link>
+            </button>
           </div>
         </div>
       </AppLayout>
@@ -220,13 +234,13 @@ export default function VentureDetailPage() {
   return (
     <AppLayout>
       <div className="max-w-6xl mx-auto pb-24 sm:pb-8">
-        <Link
-          to="/ventures"
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 mb-5 transition-colors"
+        <button
+          onClick={handleBackToBrowse}
+          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 mb-5 transition-colors cursor-pointer"
         >
           <ArrowLeft size={16} />
           {t('ventureDetailBackToBrowse', 'Back to ventures')}
-        </Link>
+        </button>
 
         <div className="rounded-[24px] border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="flex flex-col gap-5 border-b border-gray-100 p-5 sm:p-6 lg:flex-row lg:items-center lg:gap-6">

@@ -46,7 +46,7 @@ export default function FilterBar({
   const isLight = theme === 'light';
   const searchPlaceholder = placeholder || t('filterSearchPlaceholder');
 
-  const selectClass = `w-full pl-2.5 md:pl-3 pr-9 py-1.5 md:py-2 text-sm md:text-base rounded-[8px] md:rounded-[10px] border outline-none transition-all cursor-pointer appearance-none ${
+  const selectClass = `w-full pl-2.5 md:pl-3 pr-9 py-1.5 md:py-2 text-sm md:text-base rounded-[8px] md:rounded-[10px] border outline-none transition-all cursor-pointer appearance-none bg-none ${
     isLight
       ? 'bg-white border-gray-300 text-gray-900 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
       : 'bg-bg-input border-border-dark text-text focus:border-gold'

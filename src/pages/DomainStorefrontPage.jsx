@@ -10,6 +10,7 @@ import { fetchStorefrontAvailableTldsPage } from '../utils/storefrontTlds';
 import { registrationOrderDetailPath } from '../utils/domainRegistrationOrder';
 import { readApiError } from '../utils/apiError';
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
+import ListingBackLink from '../components/common/ListingBackLink';
 import DomainServices from '../components/storefront/DomainServices';
 import DomainCard, { DomainCardGrid } from '../components/domain/DomainCard';
 import RegistryPremiumSegment from '../components/domain/RegistryPremiumSegment';
@@ -604,6 +605,8 @@ export default function DomainStorefrontPage() {
       <div className="min-h-screen bg-gray-50/50 pb-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           
+          <ListingBackLink />
+
           {/* Header info */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">

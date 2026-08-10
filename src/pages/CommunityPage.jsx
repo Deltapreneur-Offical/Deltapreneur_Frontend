@@ -450,6 +450,10 @@ export default function CommunityPage() {
   }, [detailProfile?.id, authLoading, user]);
 
   const handleConnectLinkedIn = async () => {
+    if (!user) {
+      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+      return;
+    }
     setLinkedInError('');
     setLinkedInSuccess('');
     clearLinkedInOAuthSession();
@@ -602,6 +606,7 @@ export default function CommunityPage() {
           </>
         ) : (
           <>
+            <ListingBackLink />
             {/* ── Header ── */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
               <div>

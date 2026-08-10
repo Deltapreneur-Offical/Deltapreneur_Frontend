@@ -28,6 +28,7 @@ import { isCoVentureListing, isVentureBidListing } from '../utils/ventureListing
 import { unwrapApiData } from '../utils/apiResponse';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
+import ListingBackLink from '../components/common/ListingBackLink';
 import VenturesSplitColumns from '../components/venture/VenturesSplitColumns';
 
 export default function VenturesPage() {
@@ -219,6 +220,10 @@ export default function VenturesPage() {
   }, []);
 
   const handleBuyerAction = (venture) => {
+    if (!user) {
+      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+      return;
+    }
     const existingDeal = ventureDealByVentureId.get(venture.id);
     if (existingDeal?.id) {
       navigate(`/ventures/deals/${existingDeal.id}`);
@@ -249,6 +254,7 @@ export default function VenturesPage() {
 
   return (
     <AppLayout>
+      <ListingBackLink />
       <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between min-w-0">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">

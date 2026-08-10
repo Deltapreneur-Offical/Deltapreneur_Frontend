@@ -22,6 +22,7 @@ import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/auctions-page.css';
 
 const VIEW_IDS = new Set(['browse', 'yours', 'bids']);
@@ -614,6 +615,7 @@ export default function AuctionsPage() {
 
   return (
     <AppLayout>
+      <ListingBackLink />
       <div className="auctions-page">
         <div className="auctions-page-toolbar !overflow-visible">
           <div className="auctions-page-toolbar-top">

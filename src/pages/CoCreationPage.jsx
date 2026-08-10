@@ -148,11 +148,15 @@ export default function CoCreationPage() {
 
   useEffect(() => {
     if (location.state?.openListTechnologyForm) {
+      if (!user) {
+        navigate('/login?redirect=' + encodeURIComponent('/technology'), { replace: true });
+        return;
+      }
       setFilterTab('all');
       setShowForm(true);
       navigate('/technology', { replace: true, state: {} });
     }
-  }, [location.state, navigate]);
+  }, [location.state, navigate, user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -270,6 +274,7 @@ export default function CoCreationPage() {
           </>
         ) : (
           <>
+            <ListingBackLink />
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-1">
@@ -285,11 +290,15 @@ export default function CoCreationPage() {
                 <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/technology/dashboard')}>
                   <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
                 </button>
-                {user && (
-                  <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setEditTarget(null); setShowForm(true); }}>
-                    <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
-                  </button>
-                )}
+                <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => {
+                  if (!user) {
+                    navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                    return;
+                  }
+                  setEditTarget(null); setShowForm(true);
+                }}>
+                  <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
+                </button>
               </div>
             </div>
 
@@ -360,7 +369,13 @@ export default function CoCreationPage() {
                         likeState={getLike(s.id)}
                         onLike={() => toggleLike(s.id)}
                         onView={() => openDetailIfAllowed(s)}
-                        onBuy={() => setBuyTarget(s)}
+                        onBuy={() => {
+                      if (!user) {
+                        navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                        return;
+                      }
+                      setBuyTarget(s);
+                    }}
                         onEdit={user ? () => { setEditTarget(s); setShowForm(false); setDetailTarget(null); } : undefined}
                         onDelete={() => setDeleteTarget(s.id)}
                         onAuction={() => setAuctionTarget(s)}
@@ -450,7 +465,15 @@ export default function CoCreationPage() {
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onClose={() => { closeListingDetail(); refreshSoftware(); }}
-          onBuy={(plan) => { setBuyTarget(detailTarget); setBuyTargetPlan(plan); closeListingDetail(); }}
+          onBuy={(plan) => {
+            if (!user) {
+              navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+              return;
+            }
+            setBuyTarget(detailTarget);
+            setBuyTargetPlan(plan || null);
+            closeListingDetail();
+          }}
           onEdit={user ? () => {
             setEditTarget(detailTarget);
             setShowForm(false);

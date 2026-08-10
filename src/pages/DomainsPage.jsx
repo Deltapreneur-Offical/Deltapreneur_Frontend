@@ -1639,7 +1639,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                 </div>
                 {d.verified && (
                   <span className="px-2.5 py-1 rounded-md text-[0.7rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 uppercase tracking-widest">
-                    ✓ {t('domainsPageVerifiedBadge')}
+                    {t('domainsPageVerifiedBadge')}
                   </span>
                 )}
                 {isHighValue && (
@@ -1799,7 +1799,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                         productId={d.id}
                         size="md"
                         tone="blue"
-                        className="btn-glow w-full py-3 justify-center shadow-md hover:-translate-y-0.5 transition-all !bg-indigo-600 hover:!bg-indigo-700 hover:!border-indigo-700 !text-white font-extrabold text-base"
+                        className="btn-glow w-auto min-w-[140px] py-3 justify-center shadow-md hover:-translate-y-0.5 transition-all !bg-indigo-600 hover:!bg-indigo-700 hover:!border-indigo-700 !text-white font-extrabold text-base"
                         label={t('listingCardAddToCart', 'Add to Cart')}
                       />
                     </div>

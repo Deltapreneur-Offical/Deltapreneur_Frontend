@@ -972,42 +972,60 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
             )}
 
             {/* List Table */}
-            {recordsLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              </div>
-            ) : records.length === 0 ? (
-              <p className="text-xs text-gray-400 font-semibold italic text-center py-4 bg-gray-50/50 rounded-xl">
-                No DNS records configured. Set nameservers to default to manage zone files.
-              </p>
-            ) : (
-              <div className="overflow-x-auto border border-gray-150 rounded-xl">
-                <table className="min-w-full text-xs text-left">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-150 uppercase tracking-wider text-gray-400 font-bold">
-                      <th className="px-4 py-2.5">Type</th>
-                      <th className="px-4 py-2.5">Name / Host</th>
-                      <th className="px-4 py-2.5">Value / Target</th>
-                      <th className="px-4 py-2.5">TTL</th>
-                      <th className="px-4 py-2.5 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 font-medium">
-                    {records.map((r, idx) => {
-                      const rowKey = [
-                        r.id,
-                        r.type,
-                        r.name,
-                        r.value,
-                        r.priority,
-                        idx,
-                      ]
-                        .filter((part) => part !== undefined && part !== null && part !== '')
-                        .join('|');
-                      const isSystemRecord = ['SOA', 'NS'].includes(r.type);
-                      const isEditing = editingRecordId === r.id;
+            {(() => {
+              const displayRecords = records.filter(r => !['SOA', 'NS'].includes(r.type));
+              const hasSystemRecords = records.length > displayRecords.length;
 
-                      if (isEditing) {
+              return (
+                <div className="space-y-4">
+                  {hasSystemRecords && (
+                    <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 flex items-start gap-3">
+                      <div className="text-indigo-600 mt-0.5">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-indigo-900">System-managed DNS</h4>
+                        <p className="text-xs text-indigo-700 mt-0.5">Core DNS infrastructure is managed automatically by CoBrother.</p>
+                      </div>
+                    </div>
+                  )}
+                  {recordsLoading ? (
+                    <div className="flex justify-center py-6">
+                      <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                    </div>
+                  ) : displayRecords.length === 0 ? (
+                    <p className="text-xs text-gray-400 font-semibold italic text-center py-4 bg-gray-50/50 rounded-xl">
+                      No custom DNS records configured. Add an A, CNAME, TXT, or MX record to configure your domain.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto border border-gray-150 rounded-xl">
+                      <table className="min-w-full text-xs text-left">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-150 uppercase tracking-wider text-gray-400 font-bold">
+                            <th className="px-4 py-2.5">Type</th>
+                            <th className="px-4 py-2.5">Name / Host</th>
+                            <th className="px-4 py-2.5">Value / Target</th>
+                            <th className="px-4 py-2.5">TTL</th>
+                            <th className="px-4 py-2.5 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 font-medium">
+                          {displayRecords.map((r, idx) => {
+                            const rowKey = [
+                              r.id,
+                              r.type,
+                              r.name,
+                              r.value,
+                              r.priority,
+                              idx,
+                            ]
+                              .filter((part) => part !== undefined && part !== null && part !== '')
+                              .join('|');
+                            const isEditing = editingRecordId === r.id;
+
+                            if (isEditing) {
                         return (
                           <tr key={rowKey} className="bg-indigo-50/30">
                             <td className="px-4 py-3">
@@ -1081,34 +1099,29 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                       <tr key={rowKey} className="hover:bg-gray-50/50">
                         <td className="px-4 py-3 font-bold text-indigo-700">
                           {r.type}
-                          {isSystemRecord && <span className="ml-2 text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase">System</span>}
                         </td>
                         <td className="px-4 py-3 font-mono text-gray-800">{r.name}</td>
                         <td className="px-4 py-3 font-mono text-gray-800 break-all max-w-xs">{r.value} {r.priority != null && `(Priority: ${r.priority})`}</td>
                         <td className="px-4 py-3 text-gray-400">{r.ttl}s</td>
                         <td className="px-4 py-3 text-right space-x-1 whitespace-nowrap">
-                          {!isSystemRecord && (
-                            <>
-                              <button
-                                onClick={() => handleEditClick(r)}
-                                type="button"
-                                className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
-                                title="Edit Record"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteRecord(r.id)}
-                                type="button"
-                                disabled={deletingRecordId === r.id}
-                                className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-600 transition-colors p-1 disabled:opacity-50 disabled:hover:text-gray-400"
-                                title="Delete Record"
-                              >
-                                {deletingRecordId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                {deletingRecordId === r.id && <span className="text-[10px] font-bold">Deleting...</span>}
-                              </button>
-                            </>
-                          )}
+                          <button
+                            onClick={() => handleEditClick(r)}
+                            type="button"
+                            className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
+                            title="Edit Record"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRecord(r.id)}
+                            type="button"
+                            disabled={deletingRecordId === r.id}
+                            className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-600 transition-colors p-1 disabled:opacity-50 disabled:hover:text-gray-400"
+                            title="Delete Record"
+                          >
+                            {deletingRecordId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                            {deletingRecordId === r.id && <span className="text-[10px] font-bold">Deleting...</span>}
+                          </button>
                         </td>
                       </tr>
                       );
@@ -1117,6 +1130,9 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                 </table>
               </div>
             )}
+          </div>
+        );
+      })()}
 
             {/* Add Record Form */}
             <form onSubmit={handleAddRecord} className="border-t border-gray-100 pt-5 space-y-4">

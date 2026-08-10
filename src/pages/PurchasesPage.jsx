@@ -380,6 +380,15 @@ function RegistrationPurchaseRow({ order, user, t }) {
   const label = registrationStatusLabel(order.status, order.lifecycleStatus, t, order.provisionMessage || order.message);
   const taxInvoiceNumber = order.taxInvoiceNumber || order.invoiceNumber || null;
 
+  const status = (order.status || '').toUpperCase();
+  const life = (order.lifecycleStatus || '').toLowerCase();
+  const message = String(order.provisionMessage || order.message || '').toLowerCase();
+  const isCancelled =
+    life === 'checkout_cancelled' ||
+    status === 'EXPIRED' ||
+    message.includes('checkout cancelled before payment') ||
+    message.includes('pending registration order expired');
+
   const invoiceUser = {
     ...user,
     name:
@@ -401,10 +410,12 @@ function RegistrationPurchaseRow({ order, user, t }) {
       <div className="flex justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
-              ◇ {t('purchasesBadgeRegistration', { defaultValue: 'Registration' })}
-            </span>
-            {order.isPremium ? (
+            {!isCancelled && (
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
+                ◇ {t('purchasesBadgeRegistration', { defaultValue: 'Registration' })}
+              </span>
+            )}
+            {order.isPremium && !isCancelled ? (
               <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
                 ✦ Premium
               </span>
@@ -428,10 +439,12 @@ function RegistrationPurchaseRow({ order, user, t }) {
           </div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
-          <div className="font-display text-xl font-bold text-emerald-700">
-            {formatPrice(amount)}
-          </div>
-          {canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+          {!isCancelled && (
+            <div className="font-display text-xl font-bold text-emerald-700">
+              {formatPrice(amount)}
+            </div>
+          )}
+          {!isCancelled && canManageRegisteredDomain(order) && domainManagementHref(order) ? (
             <Link
               to={domainManagementHref(order)}
               className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
@@ -439,13 +452,15 @@ function RegistrationPurchaseRow({ order, user, t }) {
               Manage DNS →
             </Link>
           ) : null}
-          <Link
-            to={registrationOrderDetailPath(order.id)}
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
-          >
-            View order →
-          </Link>
-          {taxInvoiceNumber ? (
+          {!isCancelled && (
+            <Link
+              to={registrationOrderDetailPath(order.id)}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+            >
+              View order →
+            </Link>
+          )}
+          {!isCancelled && taxInvoiceNumber ? (
             <InvoiceDownloadButton
               onClick={() =>
                 generateInvoice({

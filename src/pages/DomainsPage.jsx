@@ -1529,6 +1529,9 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
   onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
+  const roleText = String(user?.role || '').toUpperCase().replace(/^ROLE_/, '');
+  const isAdmin = roleText === 'ADMIN' || roleText === 'SUPER_ADMIN' || Boolean(user?.isAdmin);
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const hasFetched = useRef(false);
@@ -1685,7 +1688,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
               </div>
             )}
 
-            {(c.email || c.phoneNumber) && (
+            {isAdmin && (c.email || c.phoneNumber) && (
               <Section title={t('domainsPageContactSection')}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {c.email && (

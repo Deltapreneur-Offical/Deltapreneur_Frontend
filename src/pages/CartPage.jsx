@@ -438,6 +438,8 @@ export default function CartPage() {
               setTimeout(() => setShowConfetti(false), 4500);
             }
           } catch (err) {
+            await fetchCart().catch(() => {});
+            notifyCartChanged();
             const detail = err?.response?.data?.detail || '';
             if (detail.includes('No cart items found')) {
               setError('This payment session expired. Please checkout again.');

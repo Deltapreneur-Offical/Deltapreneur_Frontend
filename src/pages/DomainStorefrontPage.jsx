@@ -61,6 +61,13 @@ function statusLabel(status, lifecycleStatus, t) {
   return status || life;
 }
 
+function isOrderConfirmed(order) {
+  if (!order) return false;
+  const life = (order.lifecycleStatus || '').toLowerCase();
+  const s = (order.status || '').toUpperCase();
+  return life === 'registration_confirmed' || s === 'ACTIVE';
+}
+
 /* ─── Premium Copy Button ─── */
 function CopyBtn({ text, label = 'Copy' }) {
   const [copied, setCopied] = useState(false);
@@ -184,6 +191,11 @@ export default function DomainStorefrontPage() {
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
+
+  const confirmedOrders = useMemo(
+    () => orders.filter(isOrderConfirmed),
+    [orders],
+  );
 
   const standardTldItems = useMemo(
     () => tldItems.filter((it) => !isRegistryPremium(it)),
@@ -1132,7 +1144,7 @@ export default function DomainStorefrontPage() {
 
             {ordersLoading ? (
               <p className="text-xs text-gray-400 font-semibold">{t('storefrontOrdersLoading')}</p>
-            ) : orders.length === 0 ? (
+            ) : confirmedOrders.length === 0 ? (
               <p className="text-xs text-gray-400 font-semibold">{t('storefrontOrdersEmpty')}</p>
             ) : (
               <div className="overflow-x-auto">
@@ -1146,7 +1158,7 @@ export default function DomainStorefrontPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order) => (
+                    {confirmedOrders.map((order) => (
                       <tr key={order.id} className="border-b border-gray-100/50 hover:bg-gray-50/50 transition-colors">
                         <td className="py-4 pr-4 font-bold text-gray-950">
                           <Link
@@ -1173,19 +1185,6 @@ export default function DomainStorefrontPage() {
                           >
                             Manage Domain
                           </Link>
-                          {(order.lifecycleStatus === 'registration_failed' ||
-                            String(order.status || '').toUpperCase().includes('FAIL') ||
-                            order.lifecycleStatus === 'payment_success' ||
-                            order.lifecycleStatus === 'registration_pending' ||
-                            order.status === 'PAYMENT_COMPLETED') && (
-                            <button
-                              type="button"
-                              className="text-indigo-600 hover:text-indigo-800 font-bold"
-                              onClick={() => handleRetry(order.id)}
-                            >
-                              Retry Provision
-                            </button>
-                          )}
                         </td>
                       </tr>
                     ))}

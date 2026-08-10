@@ -198,6 +198,11 @@ export default function DomainStorefrontPage() {
     [orders],
   );
 
+  const transferOrders = useMemo(
+    () => orders.filter(o => o.isTransfer),
+    [orders]
+  );
+
   const standardTldItems = useMemo(
     () => tldItems.filter((it) => !isRegistryPremium(it)),
     [tldItems],
@@ -551,6 +556,17 @@ export default function DomainStorefrontPage() {
       setTransferError('Please log in to transfer a domain.');
       return;
     }
+    
+    // Form Safety: prevent duplicate transfer submission
+    const existingTransfer = transferOrders.find(o => 
+      o.domain.toLowerCase() === transferDomain.trim().toLowerCase() &&
+      !['FAILED', 'EXPIRED', 'REFUNDED'].includes(o.status)
+    );
+    if (existingTransfer) {
+      setTransferError('You already have an active or pending transfer request for this domain. Check Your Transfers history below.');
+      return;
+    }
+
     setTransferLoading(true);
     try {
       const { payDomainTransfer } = await import('../utils/domainTransferCheckout');
@@ -1041,6 +1057,60 @@ export default function DomainStorefrontPage() {
                       </button>
                     </div>
                   </form>
+                </section>
+              )}
+
+              {transferSubMode === 'in' && transferOrders.length > 0 && (
+                <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mt-8 space-y-4">
+                  <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider border-b border-gray-100 pb-3">
+                    Your Transfers
+                  </h2>
+                  <div className="space-y-3">
+                    {transferOrders.map(order => {
+                      const isComplete = (order.status || '').toUpperCase() === 'ACTIVE';
+                      const isPending = (order.status || '').toUpperCase() === 'REGISTRATION_PENDING';
+                      const isPaidFailed = ['PAYMENT_COMPLETED', 'PROVISION_FAILED'].includes((order.status || '').toUpperCase());
+                      
+                      let uiMsg = order.status;
+                      let badgeColor = 'bg-gray-50 text-gray-600 border-gray-200';
+                      
+                      if (isComplete) {
+                        uiMsg = 'Transfer completed.';
+                        badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                      } else if (isPending) {
+                        uiMsg = 'Transfer pending — your domain transfer has been submitted and is being processed.';
+                        badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                      } else if (isPaidFailed) {
+                        uiMsg = 'Payment received — your domain transfer needs processing.';
+                        badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                      } else if (order.status === 'CREATED' || order.status === 'PAYMENT_PENDING') {
+                        uiMsg = 'Payment pending.';
+                        badgeColor = 'bg-gray-50 text-gray-600 border-gray-200';
+                      }
+
+                      return (
+                        <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-150 bg-gray-50/50 gap-4">
+                          <div>
+                            <div className="font-bold text-gray-900">{order.domain}</div>
+                            <div className="text-xs text-gray-500 mt-0.5">
+                              Ordered: {new Date(order.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${badgeColor}`}>
+                              {uiMsg}
+                            </span>
+                            <Link 
+                              to={registrationOrderDetailPath(order)}
+                              className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </section>
               )}
 

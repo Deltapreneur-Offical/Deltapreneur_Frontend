@@ -626,7 +626,7 @@ return (
           ? 'gap-2.5 p-3.5'
           : compact
             ? 'justify-between gap-2.5 p-3.5'
-            : 'justify-between gap-3 p-4'
+            : 'justify-between gap-2.5 p-4'
         }`}>
 
         <div className="flex flex-col gap-2.5">
@@ -703,7 +703,7 @@ return (
           )}
 
           {/* Key Metrics / Details Grid - Standout Equity Pill Badge */}
-          <div className="venture-listing-card__metrics flex flex-nowrap items-center justify-between gap-2 mt-1 min-w-0 w-full">
+          <div className="venture-listing-card__metrics flex flex-wrap items-center justify-start gap-2 mt-1 min-w-0 w-full">
             {sellerAsk.equityLabel ? (
               <div className="venture-listing-card__equity-badge">
                 <PieChart size={15} className="venture-listing-card__equity-badge-icon shrink-0" aria-hidden />
@@ -722,23 +722,23 @@ return (
               </span>
             )}
 
-            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+            <div className="flex flex-wrap items-center gap-1 shrink-0">
               {isCoVenture && roleOffer && !compact ? (
-                <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full text-slate-600 font-medium text-[11px] shrink-0">
+                <div className="inline-flex items-center gap-1 px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-600 font-medium text-[10px] shrink-0">
                   <Briefcase size={12} className="text-slate-400 shrink-0" />
                   <span className="truncate max-w-[110px]" title={roleOffer}>{roleOffer}</span>
                 </div>
               ) : null}
 
-              <div className="inline-flex items-center px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full text-slate-500 font-medium text-[11px] shrink-0">
-                <span className="truncate text-slate-600 font-semibold">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
+              <div className="inline-flex items-center px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-500 font-medium text-[10px] shrink-0">
+                <span className="text-slate-600 font-semibold">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
               </div>
             </div>
           </div>
 
         </div>
 
-        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-2.5 mt-2'}`}>
+        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-2 mt-1.5'}`}>
 
           {/* Price Box */}
 

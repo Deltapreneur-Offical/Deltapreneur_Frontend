@@ -1101,7 +1101,7 @@ export default function DomainStorefrontPage() {
                               {uiMsg}
                             </span>
                             <Link 
-                              to={registrationOrderDetailPath(order)}
+                              to={registrationOrderDetailPath(order.id)}
                               className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
                             >
                               View Details

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  Activity,
   RefreshCw,
   FileText,
   Mail,
@@ -328,7 +329,7 @@ export default function DomainRegistrationOrderPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <p className="text-[0.7rem] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">
-                  Active Domain
+                  {order.isTransfer ? "Domain Transfer" : "Active Domain"}
                 </p>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{order.domain}</h1>
@@ -474,107 +475,189 @@ export default function DomainRegistrationOrderPage() {
 
           {/* ══ OVERVIEW TAB ══ */}
           {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-              {/* Main summary */}
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
-                  <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Domain Information</h2>
-                    <Globe className="w-4 h-4 text-gray-400" />
-                  </div>
-                  <div className="divide-y divide-gray-100/70">
-                    <InfoRow icon={Globe} label="Domain" value={order.domain} />
-                    <InfoRow
-                      icon={Calendar}
-                      label="Registration Period"
-                      value={`${order.periodYears || 1} ${(order.periodYears || 1) === 1 ? 'Year' : 'Years'}`}
-                    />
-                    <InfoRow icon={Calendar} label="Registered On" value={fmtDateShort(order.completedAt || order.createdAt)} />
-                    {expiresAt && (
-                      <InfoRow icon={Calendar} label="Expires On"
-                        value={<span className={expiringSoon ? 'text-rose-600 font-bold' : ''}>{fmtDateShort(order.expiresAt)}</span>}
-                      />
-                    )}
-                    {order.buyerEmail && (
-                      <InfoRow icon={Mail} label="Registered Email" value={order.buyerEmail} />
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions Grid */}
-                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
-                  <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Actions</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" onClick={handleSync} disabled={syncing}
-                      className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm">
-                      <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-                      Refresh Domain Status
-                    </button>
-
-                    {isActive && (
-                      <div className="flex flex-col gap-1.5">
-                        <button
-                          type="button"
-                          onClick={handleRenew}
-                          disabled={syncing || (daysLeft !== null && daysLeft > 7)}
-                          className="w-full inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed transition-all rounded-xl shadow-sm"
-                          title={daysLeft !== null && daysLeft > 7 ? "Domain renewal is only available within 7 days of expiration." : undefined}
-                        >
-                          {daysLeft !== null && daysLeft > 7 ? "Renew (Unavailable)" : "Renew Domain"}
-                        </button>
-                        {daysLeft !== null && daysLeft > 7 && (
-                          <span className="text-[10px] text-gray-500 text-center font-medium">
-                            Available {daysLeft - 7} days from now
-                          </span>
+            <>
+              {order.isTransfer ? (
+                /* ── TRANSFER DETAILS UI ── */
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  
+                  {/* Main summary */}
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+                      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Transfer Information</h2>
+                        <Globe className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="divide-y divide-gray-100/70">
+                        <InfoRow icon={Globe} label="Domain" value={order.domain} />
+                        <InfoRow 
+                          icon={Calendar} 
+                          label="Transfer Requested" 
+                          value={fmtDateShort(order.createdAt)} 
+                        />
+                        <InfoRow 
+                          icon={Activity} 
+                          label="Transfer Status" 
+                          value={
+                            order.transferStatus === 'PAYMENT_PENDING' ? 'Payment Received / Pending Processing' :
+                            order.transferStatus === 'PROCESSING' ? 'Processing Transfer' :
+                            order.transferStatus === 'COMPLETED' ? 'Transfer Completed' :
+                            order.transferStatus === 'FAILED' ? 'Transfer Failed' :
+                            (order.transferStatus || 'Pending')
+                          } 
+                        />
+                        {order.buyerEmail && (
+                          <InfoRow icon={Mail} label="Registered Email" value={order.buyerEmail} />
                         )}
                       </div>
-                    )}
+                    </div>
 
-                    {order.canRetry && (
-                      <button type="button" onClick={handleRetry}
-                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all rounded-xl shadow-sm">
-                        Retry Registration
-                      </button>
-                    )}
+                    {/* Actions Grid */}
+                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Actions</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" onClick={handleSync} disabled={syncing}
+                          className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm">
+                          <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                          Refresh Transfer Status
+                        </button>
 
-                    {order.canResendVerification && (
-                      <button type="button" onClick={handleResend}
-                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
-                        <Mail className="w-4 h-4 text-gray-500" />
-                        Resend Verification Email
-                      </button>
-                    )}
+                        {order.canRetry && (
+                          <button type="button" onClick={handleRetry}
+                            className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all rounded-xl shadow-sm">
+                            Retry Transfer
+                          </button>
+                        )}
 
-                    {(order.taxInvoiceNumber || order.invoiceNumber) && (
-                      <button type="button" onClick={handleInvoice}
-                        className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
-                        <FileText className="w-4 h-4 text-gray-500" />
-                        Download Invoice Receipt
-                      </button>
-                    )}
+                        {(order.taxInvoiceNumber || order.invoiceNumber) && (
+                          <button type="button" onClick={handleInvoice}
+                            className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                            <FileText className="w-4 h-4 text-gray-500" />
+                            Download Invoice Receipt
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Sidebar stats/info */}
-              <div className="space-y-6">
-                <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
-                  <div className="flex items-center gap-2 text-indigo-600">
-                    <Shield className="w-5 h-5" />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Security & DNS</h3>
+                  {/* Sidebar stats/info */}
+                  <div className="space-y-6">
+                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                      <div className="flex items-center gap-2 text-indigo-600">
+                        <Activity className="w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Transfer Progress</h3>
+                      </div>
+                      <p className="text-xs text-gray-500 leading-relaxed">
+                        Domain transfers typically take 5-7 days to complete after initiation. Ensure you have unlocked the domain at your previous registrar and provided the correct EPP/Auth code.
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    Make sure to keep your nameservers updated. Any DNS updates will automatically propagate globally within 24-48 hours.
-                  </p>
-                  <button type="button" onClick={() => setActiveTab('dns')}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Manage DNS Setup <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
 
-            </div>
+                </div>
+              ) : (
+                /* ── REGISTRATION DETAILS UI ── */
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  
+                  {/* Main summary */}
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+                      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Domain Information</h2>
+                        <Globe className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="divide-y divide-gray-100/70">
+                        <InfoRow icon={Globe} label="Domain" value={order.domain} />
+                        <InfoRow
+                          icon={Calendar}
+                          label="Registration Period"
+                          value={`${order.periodYears || 1} ${(order.periodYears || 1) === 1 ? 'Year' : 'Years'}`}
+                        />
+                        <InfoRow icon={Calendar} label="Registered On" value={fmtDateShort(order.completedAt || order.createdAt)} />
+                        {expiresAt && (
+                          <InfoRow icon={Calendar} label="Expires On"
+                            value={<span className={expiringSoon ? 'text-rose-600 font-bold' : ''}>{fmtDateShort(order.expiresAt)}</span>}
+                          />
+                        )}
+                        {order.buyerEmail && (
+                          <InfoRow icon={Mail} label="Registered Email" value={order.buyerEmail} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions Grid */}
+                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Actions</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" onClick={handleSync} disabled={syncing}
+                          className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm">
+                          <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                          Refresh Domain Status
+                        </button>
+
+                        {isActive && (
+                          <div className="flex flex-col gap-1.5">
+                            <button
+                              type="button"
+                              onClick={handleRenew}
+                              disabled={syncing || (daysLeft !== null && daysLeft > 7)}
+                              className="w-full inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed transition-all rounded-xl shadow-sm"
+                              title={daysLeft !== null && daysLeft > 7 ? "Domain renewal is only available within 7 days of expiration." : undefined}
+                            >
+                              {daysLeft !== null && daysLeft > 7 ? "Renew (Unavailable)" : "Renew Domain"}
+                            </button>
+                            {daysLeft !== null && daysLeft > 7 && (
+                              <span className="text-[10px] text-gray-500 text-center font-medium">
+                                Available {daysLeft - 7} days from now
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {order.canRetry && (
+                          <button type="button" onClick={handleRetry}
+                            className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all rounded-xl shadow-sm">
+                            Retry Registration
+                          </button>
+                        )}
+
+                        {order.canResendVerification && (
+                          <button type="button" onClick={handleResend}
+                            className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                            <Mail className="w-4 h-4 text-gray-500" />
+                            Resend Verification Email
+                          </button>
+                        )}
+
+                        {(order.taxInvoiceNumber || order.invoiceNumber) && (
+                          <button type="button" onClick={handleInvoice}
+                            className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                            <FileText className="w-4 h-4 text-gray-500" />
+                            Download Invoice Receipt
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sidebar stats/info */}
+                  <div className="space-y-6">
+                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                      <div className="flex items-center gap-2 text-indigo-600">
+                        <Shield className="w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Security & DNS</h3>
+                      </div>
+                      <p className="text-xs text-gray-500 leading-relaxed">
+                        Make sure to keep your nameservers updated. Any DNS updates will automatically propagate globally within 24-48 hours.
+                      </p>
+                      <button type="button" onClick={() => setActiveTab('dns')}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                        Manage DNS Setup <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </>
           )}
 
           {/* ══ DNS TAB ══ */}

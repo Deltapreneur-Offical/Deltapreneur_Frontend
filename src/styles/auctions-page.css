@@ -398,6 +398,109 @@
     0 10px 32px rgba(15, 23, 42, 0.05);
 }
 
+/* Auction detail right-column card adjustments to match reference design */
+.auction-place-bid-card {
+  border-radius: 18px;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+.auction-place-bid-card .inline-flex.h-9.w-9 {
+  background: #f3f4f6;
+}
+
+.quick-bid-grid button {
+  min-height: 38px;
+  border-radius: 10px;
+  padding: 0.45rem 0.5rem;
+  font-weight: 700;
+  transition: all .15s ease;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #374151;
+}
+
+.quick-bid-grid button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79,70,229,0.06);
+}
+
+/* Quick-bid selected state: subtle elevated white pill with strong text */
+.quick-bid-grid button[data-selected="true"] {
+  background: #fff;
+  color: #0f172a;
+  border-color: rgba(15,23,42,0.06);
+  box-shadow: 0 6px 18px rgba(79,70,229,0.06);
+  font-weight: 800;
+}
+
+/* Make quick-bids centered and slightly larger for visual parity */
+.quick-bid-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.92rem;
+}
+
+/* Place bid primary style — purple solid to match reference */
+.place-bid-btn {
+  background: linear-gradient(180deg,#4b1fb8,#6d28d9);
+  border: 0;
+  color: #fff !important;
+  box-shadow: 0 14px 30px rgba(99,102,241,0.12);
+  border-radius: 14px;
+  padding: 0.9rem 1.25rem;
+  font-size: 1rem;
+}
+.place-bid-btn:hover { transform: translateY(-2px); filter: brightness(1.02); }
+
+/* Light gray commit disclaimer */
+.auction-place-bid-card .bg-slate-50 {
+  background: #fbfbfd !important;
+}
+
+/* Countdown badge on the header (right) */
+
+.auction-countdown-badge {
+  min-width: 160px;
+  padding: 0.9rem 1.4rem;
+  border-radius: 18px;
+  display: inline-block;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 12px 40px rgba(15,23,42,0.07);
+  border: 1px solid rgba(15,23,42,0.04);
+}
+.auction-countdown-badge .auction-countdown-label {
+  font-size: 0.67rem;
+  font-weight: 800;
+  color: #9ca3af;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.auction-countdown-badge .auction-countdown-value {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #4f2ad6;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+
+
+/* Domain title tuning */
+.auction-domain-title {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  color: #de8924;
+  text-transform: lowercase;
+  letter-spacing: -0.03em;
+}
+
+
 @media (max-width: 767px) {
   /* Tighten toolbar padding on mobile */
   .auctions-page-toolbar {

@@ -71,7 +71,30 @@ function CopyBtn({ text, label = 'Copy' }) {
 }
 
 /* ─── Premium Status Badge ─── */
-function StatusBadge({ status, lifecycleStatus }) {
+function StatusBadge({ status, lifecycleStatus, isTransfer, transferStatus }) {
+  if (isTransfer) {
+    const ts = (transferStatus || '').toUpperCase();
+    if (ts === 'COMPLETED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50/70 border border-emerald-200/80 px-3 py-1 rounded-full shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" /> TRANSFER COMPLETED
+        </span>
+      );
+    }
+    if (ts === 'FAILED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-800 bg-rose-50/70 border border-rose-200/80 px-3 py-1 rounded-full shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block" /> TRANSFER FAILED
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] px-3 py-1 rounded-full shadow-sm">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] inline-block animate-pulse" /> TRANSFER {ts ? ts.replace(/_/g, ' ') : 'PENDING'}
+      </span>
+    );
+  }
+
   const life = (lifecycleStatus || '').toLowerCase();
   const s    = (status || '').toUpperCase();
 
@@ -338,7 +361,7 @@ export default function DomainRegistrationOrderPage() {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge status={order.status} lifecycleStatus={order.lifecycleStatus} />
+              <StatusBadge status={order.status} lifecycleStatus={order.lifecycleStatus} isTransfer={order.isTransfer} transferStatus={order.transferStatus} />
             </div>
           </div>
 
@@ -457,20 +480,28 @@ export default function DomainRegistrationOrderPage() {
 
           {/* Tab Selector */}
           <div className="bg-gray-100 p-1 rounded-xl flex items-center overflow-x-auto gap-1 mb-8 max-w-fit shadow-inner">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setActiveTab(t.id)}
-                className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap select-none ${
-                  activeTab === t.id
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+            {TABS.map((t) => {
+              const isLocked = order.isTransfer && order.transferStatus !== 'COMPLETED' && (t.id === 'dns' || t.id === 'products');
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  disabled={isLocked}
+                  onClick={() => !isLocked && setActiveTab(t.id)}
+                  title={isLocked ? "Available after transfer completes" : undefined}
+                  className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap select-none flex items-center gap-1.5 ${
+                    activeTab === t.id
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : isLocked
+                        ? 'text-gray-400 opacity-60 cursor-not-allowed'
+                        : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  {isLocked && <Lock className="w-3.5 h-3.5" />}
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* ══ OVERVIEW TAB ══ */}
@@ -521,7 +552,7 @@ export default function DomainRegistrationOrderPage() {
                           Refresh Transfer Status
                         </button>
 
-                        {order.canRetry && (
+                        {order.canRetry && order.transferStatus === 'FAILED' && (
                           <button type="button" onClick={handleRetry}
                             className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all rounded-xl shadow-sm">
                             Retry Transfer
@@ -717,7 +748,7 @@ export default function DomainRegistrationOrderPage() {
                     {order.registrarOrderId && (
                       <MonoDetailRow label="Registrar Order ID" value={order.registrarOrderId} />
                     )}
-                    <DetailRow label="Status" value={<StatusBadge status={order.status} lifecycleStatus={order.lifecycleStatus} />} />
+                    <DetailRow label="Status" value={<StatusBadge status={order.status} lifecycleStatus={order.lifecycleStatus} isTransfer={order.isTransfer} transferStatus={order.transferStatus} />} />
                   </div>
                 </div>
               </div>

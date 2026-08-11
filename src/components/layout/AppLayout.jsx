@@ -478,7 +478,7 @@ export default function AppLayout({ children }) {
   if (!user) {
     return (
       <div className="relative min-w-0 bg-white overflow-visible">
-        <TopNavbar isScrolled={false} />
+        <div className="hidden lg:block"><TopNavbar isScrolled={false} /></div>
         <HomeNavbar
           navRef={{ current: null }}
           openDropdown={openDropdown}

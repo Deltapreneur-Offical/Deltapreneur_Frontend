@@ -483,7 +483,7 @@ export default function VentureDetailPage() {
             </aside>
           </div>
 
-          <div className="border-t border-gray-100 px-5 sm:px-8 py-4 bg-white flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end">
+          <div className="border-t border-gray-100 px-5 sm:px-8 py-4 bg-white flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-start">
             {isOwner ? (
               <>
                 <button

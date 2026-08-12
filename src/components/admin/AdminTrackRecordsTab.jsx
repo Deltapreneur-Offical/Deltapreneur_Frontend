@@ -261,7 +261,16 @@ export default function AdminTrackRecordsTab() {
     return `${s.slice(0, keep)}…`;
   };
 
+  /** Refunded/reversed records keep their invoice number in the DB for
+   * finance/audit but it must not be displayed (or edited) in the admin UI. */
+  const isRefundedRecord = (r) => {
+    const o = String(r.overallStatus || '').toUpperCase();
+    const p = String(r.paymentStatus || '').toUpperCase();
+    return o.includes('REFUND') || p.includes('REFUND');
+  };
+
   const canEditInvoice = (r) => {
+    if (isRefundedRecord(r)) return false;
     const cat = String(r.category || '').toLowerCase();
     if (!cat.includes('domain registration') && !cat.includes('domain transfer')) return false;
     return Boolean(r.registrationOrderId);
@@ -449,7 +458,6 @@ export default function AdminTrackRecordsTab() {
   // Dedicated operation columns only appear when records of that operation are
   // present in the current view (Transfer / Renewal), keeping the table compact.
   const showTransferColumn = records.some((r) => operationOf(r).type === 'transfer');
-  const showRenewalColumn = records.some((r) => operationOf(r).type === 'renewal');
 
   return (
     <div className="space-y-6 text-slate-800">
@@ -663,9 +671,10 @@ export default function AdminTrackRecordsTab() {
                   <th className="py-3.5 px-4">RZP Pay</th>
                   <th className="py-3.5 px-4">OP ID</th>
                   <th className="py-3.5 px-4">Payment</th>
+                  <th className="py-3.5 px-4">Payment Mode</th>
                   <th className="py-3.5 px-4">Registration</th>
                   {showTransferColumn && <th className="py-3.5 px-4">Transfer</th>}
-                  {showRenewalColumn && <th className="py-3.5 px-4">Renewal</th>}
+                  <th className="py-3.5 px-4">Renewal</th>
                   <th className="py-3.5 px-4">Error</th>
                   <th className="py-3.5 px-4">Overall</th>
                   <th className="py-3.5 px-4">Invoice No</th>
@@ -754,6 +763,23 @@ export default function AdminTrackRecordsTab() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
+                      {r.paymentMode ? (
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                            r.paymentMode === 'TEST'
+                              ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                              : r.paymentMode === 'LIVE'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}
+                        >
+                          {r.paymentMode}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       {operationOf(r).type === 'registration' || !operationOf(r).type ? (
                         <span
                           className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
@@ -789,25 +815,23 @@ export default function AdminTrackRecordsTab() {
                         )}
                       </td>
                     )}
-                    {showRenewalColumn && (
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        {operationOf(r).type === 'renewal' ? (
-                          <span
-                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
-                              operationLabelOf(r) === 'OK'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : operationLabelOf(r) === 'FAIL'
-                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}
-                          >
-                            {operationLabelOf(r)}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                    )}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {r.renewalState && r.renewalState !== 'N/A' ? (
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                            r.renewalState === 'OK'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : r.renewalState === 'FAILED'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
+                        >
+                          {r.renewalState}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">N/A</span>
+                      )}
+                    </td>
                     <td className="py-3.5 px-4 whitespace-nowrap max-w-[140px]">
                       {r.errorCode ? (
                         <span
@@ -823,7 +847,11 @@ export default function AdminTrackRecordsTab() {
                     <td className="py-3.5 px-4 whitespace-nowrap">{renderStatusBadge(r.overallStatus)}</td>
                     <td className="py-3.5 px-4 min-w-[160px] max-w-[220px] align-top">
                       {!canEditInvoice(r) ? (
-                        <span className="text-slate-400">—</span>
+                        isRefundedRecord(r) ? (
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Voided (refunded)</span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )
                       ) : editingInvoiceId === r.id ? (
                         <div className="space-y-1.5">
                           <input
@@ -1117,10 +1145,14 @@ export default function AdminTrackRecordsTab() {
                     </div>
                     <div className="col-span-2 rounded-lg border border-emerald-100 bg-emerald-50/80 px-3 py-2">
                       <span className="text-slate-500">Tax invoice (user sees):</span>{' '}
-                      <span className="font-mono font-bold text-emerald-800">
-                        {selectedRecord.taxInvoiceNumber || selectedRecord.invoiceNumber || 'None yet'}
-                      </span>
-                      {selectedRecord.registrationOrderId ? (
+                      {isRefundedRecord(selectedRecord) ? (
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Voided (refunded) — kept for finance/audit</span>
+                      ) : (
+                        <span className="font-mono font-bold text-emerald-800">
+                          {selectedRecord.taxInvoiceNumber || selectedRecord.invoiceNumber || 'None yet'}
+                        </span>
+                      )}
+                      {!isRefundedRecord(selectedRecord) && selectedRecord.registrationOrderId ? (
                         <div className="text-[10px] text-slate-500 mt-0.5">
                           Edit from the Invoice No column in the table. Purchases page uses this same value.
                         </div>

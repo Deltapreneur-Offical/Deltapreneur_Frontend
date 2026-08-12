@@ -48,6 +48,8 @@ const OVERALL_STATUSES = [
   'Pending',
   'Partial',
   'Refunded',
+  'Expired',
+  'Cancelled',
 ];
 
 export default function AdminTrackRecordsTab() {
@@ -153,6 +155,22 @@ export default function AdminTrackRecordsTab() {
     fetchTrackRecords();
   }, [fetchTrackRecords]);
 
+  // Standard modal behavior: close the details dialog on Escape and lock page
+  // scrolling while it is open (only the modal content scrolls).
+  useEffect(() => {
+    if (!drawerOpen) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setDrawerOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [drawerOpen]);
+
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('All Categories');
@@ -188,6 +206,44 @@ export default function AdminTrackRecordsTab() {
     if (overall === 'FAILED' || fulfill.includes('FAIL')) return 'FAIL';
     if ((overall === 'SUCCESS' || fulfill.includes('PROVISION')) && (!isDomainReg || opId)) return 'OK';
     return 'PENDING';
+  };
+
+  /** Status shown in the dedicated operation column (Transfer / Renewal):
+   *  prefers the backend-computed operationStatus (e.g. EXPIRED for an
+   *  abandoned unpaid attempt), falls back to the registration label. */
+  const operationLabelOf = (r) => {
+    const op = String(r.operationStatus || r.operation_status || '');
+    if (op) return op.toUpperCase();
+    return registrationLabelOf(r);
+  };
+
+  /** Operation-aware: domain transfers / renewals are not registrations, so the
+   *  UI shows a dedicated operation column (Transfer / Renewal) and "—" under
+   *  the Registration column for them. Falls back to deriving from the category
+   *  for older API responses without operationType. */
+  const operationOf = (r) => {
+    const t = String(r.operationType || '').toLowerCase();
+    if (t === 'transfer' || t === 'renewal') {
+      return { type: t, title: t === 'transfer' ? 'Transfer' : 'Renewal' };
+    }
+    const cat = String(r.category || '').toLowerCase();
+    if (cat.includes('domain transfer')) return { type: 'transfer', title: 'Transfer' };
+    if (cat.includes('renewal')) return { type: 'renewal', title: 'Renewal' };
+    return { type: null, title: null };
+  };
+
+  /** Unpaid/abandoned domain attempt: a domain operation with no captured payment
+   *  and no Razorpay payment id (e.g. an expired duplicate checkout). Kept as a
+   *  distinct record for audit — clearly labeled, never merged with the paid one. */
+  const isUnpaidAttempt = (r) => {
+    const cat = String(r.category || '').toLowerCase();
+    const isDomainOp =
+      cat.includes('domain registration') ||
+      cat.includes('domain transfer') ||
+      cat.includes('renewal');
+    if (!isDomainOp) return false;
+    if (paymentOkOf(r)) return false;
+    return !String(r.razorpayPaymentId || '').trim();
   };
 
   const domainOf = (r) => {
@@ -307,7 +363,7 @@ export default function AdminTrackRecordsTab() {
         `RazorpayOrderId: ${r.razorpayOrderId || 'n/a'}`,
         `Domain/Item: ${r.itemName || 'n/a'}`,
         `Payment: ${paymentOkOf(r) ? 'OK' : 'FAIL'} (${r.paymentStatus || 'n/a'})`,
-        `Registration: ${registrationLabelOf(r)}`,
+        `${operationOf(r).title || 'Registration'}: ${operationLabelOf(r)}`,
         `OpenProviderDomainId: ${r.openproviderDomainId || '(none)'}`,
         `ErrorSource: ${r.errorSource || 'n/a'}`,
         `ErrorCode: ${r.errorCode || 'n/a'}`,
@@ -362,6 +418,22 @@ export default function AdminTrackRecordsTab() {
         </span>
       );
     }
+    if (s === 'EXPIRED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">
+          <Clock size={13} className="text-orange-600" />
+          Expired
+        </span>
+      );
+    }
+    if (s === 'CANCELLED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-300">
+          <X size={13} className="text-slate-500" />
+          Cancelled
+        </span>
+      );
+    }
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700">
         {status}
@@ -373,6 +445,11 @@ export default function AdminTrackRecordsTab() {
   const successCount = records.filter((r) => (r.overallStatus || '').toUpperCase() === 'SUCCESS').length;
   const failedCount = records.filter((r) => (r.overallStatus || '').toUpperCase() === 'FAILED').length;
   const totalVolume = records.reduce((sum, r) => sum + (Number(r.amountCharged) || 0), 0);
+
+  // Dedicated operation columns only appear when records of that operation are
+  // present in the current view (Transfer / Renewal), keeping the table compact.
+  const showTransferColumn = records.some((r) => operationOf(r).type === 'transfer');
+  const showRenewalColumn = records.some((r) => operationOf(r).type === 'renewal');
 
   return (
     <div className="space-y-6 text-slate-800">
@@ -587,6 +664,8 @@ export default function AdminTrackRecordsTab() {
                   <th className="py-3.5 px-4">OP ID</th>
                   <th className="py-3.5 px-4">Payment</th>
                   <th className="py-3.5 px-4">Registration</th>
+                  {showTransferColumn && <th className="py-3.5 px-4">Transfer</th>}
+                  {showRenewalColumn && <th className="py-3.5 px-4">Renewal</th>}
                   <th className="py-3.5 px-4">Error</th>
                   <th className="py-3.5 px-4">Overall</th>
                   <th className="py-3.5 px-4">Invoice No</th>
@@ -620,6 +699,11 @@ export default function AdminTrackRecordsTab() {
                         <>
                           <div className="font-bold text-slate-900 truncate">{domainOf(r)}</div>
                           <div className="text-[10px] text-slate-400">Qty/Years: {r.quantityYears}</div>
+                          {isUnpaidAttempt(r) && (
+                            <div className="text-[10px] font-bold text-amber-700 mt-0.5 inline-flex items-center gap-1">
+                              <AlertTriangle size={10} /> Unpaid / abandoned attempt
+                            </div>
+                          )}
                         </>
                       ) : (
                         <>
@@ -670,18 +754,60 @@ export default function AdminTrackRecordsTab() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
-                          registrationLabelOf(r) === 'OK'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : registrationLabelOf(r) === 'FAIL'
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}
-                      >
-                        {registrationLabelOf(r)}
-                      </span>
+                      {operationOf(r).type === 'registration' || !operationOf(r).type ? (
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                            registrationLabelOf(r) === 'OK'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : registrationLabelOf(r) === 'FAIL'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
+                        >
+                          {registrationLabelOf(r)}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
+                    {showTransferColumn && (
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {operationOf(r).type === 'transfer' ? (
+                          <span
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                              operationLabelOf(r) === 'OK'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : operationLabelOf(r) === 'FAIL'
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}
+                          >
+                            {operationLabelOf(r)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                    )}
+                    {showRenewalColumn && (
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {operationOf(r).type === 'renewal' ? (
+                          <span
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
+                              operationLabelOf(r) === 'OK'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : operationLabelOf(r) === 'FAIL'
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}
+                          >
+                            {operationLabelOf(r)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="py-3.5 px-4 whitespace-nowrap max-w-[140px]">
                       {r.errorCode ? (
                         <span
@@ -812,12 +938,20 @@ export default function AdminTrackRecordsTab() {
         )}
       </div>
 
-      {/* Details Drawer / Modal */}
+      {/* Details Modal — centered dialog with dimmed overlay */}
       {drawerOpen && selectedRecord && (
-        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex justify-end transition-opacity">
-          <div className="w-full max-w-2xl bg-white h-full shadow-2xl overflow-y-auto flex flex-col justify-between">
-            {/* Drawer Header */}
-            <div>
+        <div
+          className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-opacity"
+          onClick={() => setDrawerOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="w-full max-w-2xl max-h-[88vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header — fixed at the top of the dialog */}
+            <div className="shrink-0">
               <div className="p-6 bg-slate-900 text-white flex items-start justify-between border-b border-slate-800">
                 <div>
                   <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-widest">
@@ -833,6 +967,8 @@ export default function AdminTrackRecordsTab() {
                 <button
                   onClick={() => setDrawerOpen(false)}
                   className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  aria-label="Close details"
+                  title="Close"
                 >
                   <X size={18} />
                 </button>
@@ -854,14 +990,15 @@ export default function AdminTrackRecordsTab() {
                   </span>
                   <span
                     className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                      registrationLabelOf(selectedRecord) === 'OK'
+                      operationLabelOf(selectedRecord) === 'OK'
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : registrationLabelOf(selectedRecord) === 'FAIL'
+                        : operationLabelOf(selectedRecord) === 'FAIL'
                         ? 'bg-rose-50 text-rose-700 border border-rose-200'
                         : 'bg-amber-50 text-amber-700 border border-amber-200'
                     }`}
                   >
-                    Registration {registrationLabelOf(selectedRecord)}
+                    {operationOf(selectedRecord).title || 'Registration'}{' '}
+                    {operationLabelOf(selectedRecord)}
                   </span>
                 </div>
                 <button
@@ -873,8 +1010,9 @@ export default function AdminTrackRecordsTab() {
                 </button>
               </div>
 
-              {/* Drawer Content Body */}
-              <div className="p-6 space-y-6 text-xs text-slate-700">
+              {/* Modal Content Body — only this area scrolls */}
+              <div className="flex-1 overflow-y-auto overscroll-contain">
+                <div className="p-6 space-y-6 text-xs text-slate-700">
                 {/* Always-visible developer diagnostics (false Success rows need this too) */}
                 <div className="bg-slate-900 text-slate-100 border border-slate-700 rounded-2xl p-4 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -896,7 +1034,7 @@ export default function AdminTrackRecordsTab() {
                         `RazorpayPaymentId: ${selectedRecord.razorpayPaymentId || 'n/a'}`,
                         `Domain/Item: ${selectedRecord.itemName || 'n/a'}`,
                         `Payment: ${paymentOkOf(selectedRecord) ? 'OK' : 'FAIL'} (${selectedRecord.paymentStatus || 'n/a'})`,
-                        `Registration: ${registrationLabelOf(selectedRecord)}`,
+                        `${operationOf(selectedRecord).title || 'Registration'}: ${operationLabelOf(selectedRecord)}`,
                         `OpenProviderDomainId: ${selectedRecord.openproviderDomainId || '(none)'}`,
                         `Overall: ${selectedRecord.overallStatus || 'n/a'}`,
                         `Fulfillment: ${selectedRecord.fulfillmentStatus || 'n/a'}`,
@@ -907,8 +1045,9 @@ export default function AdminTrackRecordsTab() {
                   </pre>
                 </div>
 
-                {/* Error Diagnostics — show whenever registration is not OK */}
-                {registrationLabelOf(selectedRecord) !== 'OK' && (
+                {/* Error Diagnostics — show only when there is an actual error
+                    (a pending transfer is not an error, so no empty red box) */}
+                {(selectedRecord.errorCode || registrationLabelOf(selectedRecord) === 'FAIL') && (
                   <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2">
                     <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
                       <ShieldAlert size={16} /> Provisioning / Fulfillment Error Diagnostics
@@ -1061,17 +1200,18 @@ export default function AdminTrackRecordsTab() {
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
 
-            {/* Drawer Footer */}
-            <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
+            {/* Modal Footer — fixed at the bottom of the dialog */}
+            <div className="shrink-0 p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
               <span className="text-slate-500 text-xs">Read-Only Audit Record</span>
               <button
                 onClick={() => setDrawerOpen(false)}
                 className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors"
               >
-                Close Drawer
+                Close
               </button>
             </div>
           </div>

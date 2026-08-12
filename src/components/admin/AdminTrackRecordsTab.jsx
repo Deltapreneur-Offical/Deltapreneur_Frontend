@@ -207,7 +207,7 @@ export default function AdminTrackRecordsTab() {
 
   const canEditInvoice = (r) => {
     const cat = String(r.category || '').toLowerCase();
-    if (!cat.includes('domain registration')) return false;
+    if (!cat.includes('domain registration') && !cat.includes('domain transfer')) return false;
     return Boolean(r.registrationOrderId);
   };
 

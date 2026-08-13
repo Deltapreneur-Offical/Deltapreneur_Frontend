@@ -98,6 +98,11 @@
       rgba(14, 165, 233, 0.28) 100%);
 }
 
+.listing-card-glow-shell:has(.technology-listing-card)::before,
+.technology-listing-card-shell::before {
+  transition: opacity 0.15s ease;
+}
+
 .listing-card-glow-shell.community-listing-card-shell {
   padding: 0;
 }

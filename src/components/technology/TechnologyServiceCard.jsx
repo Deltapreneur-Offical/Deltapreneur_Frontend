@@ -60,16 +60,16 @@ export default function TechnologyServiceCard({ service, compact = false }) {
   return (
     <div
       onClick={handleCardClick}
-      className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer overflow-hidden"
+      className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-150 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer overflow-hidden"
     >
       {/* Top Accent Glow */}
-      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-600/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:from-sky-500/20 group-hover:to-blue-600/20" />
+      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-600/10 blur-xl transition-all duration-150 group-hover:scale-150 group-hover:from-sky-500/20 group-hover:to-blue-600/20" />
 
       <div>
         {/* Header Row */}
         <div className="flex items-start justify-between gap-2 mb-4 min-w-0">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-50 to-blue-50 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white shadow-inner shrink-0">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-50 to-blue-50 text-blue-600 transition-all duration-150 group-hover:scale-110 group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white shadow-inner shrink-0">
               <IconComponent className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
@@ -126,10 +126,10 @@ export default function TechnologyServiceCard({ service, compact = false }) {
             e.stopPropagation();
             handleCardClick();
           }}
-          className="shrink inline-flex items-center gap-1 sm:gap-1.5 rounded-xl bg-gray-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition-all duration-300 group-hover:bg-blue-600 group-hover:shadow-md group-hover:shadow-blue-600/30 whitespace-nowrap min-w-0"
+          className="shrink inline-flex items-center gap-1 sm:gap-1.5 rounded-xl bg-gray-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition-all duration-150 group-hover:bg-blue-600 group-hover:shadow-md group-hover:shadow-blue-600/30 whitespace-nowrap min-w-0"
         >
           <span className="truncate">Explore Service</span>
-          <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+          <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:translate-x-1" />
         </button>
       </div>
     </div>

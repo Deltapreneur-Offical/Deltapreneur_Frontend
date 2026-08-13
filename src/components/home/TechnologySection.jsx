@@ -120,20 +120,20 @@ export default function TechnologySection() {
             </div>
             <button
               onClick={() => navigate('/technology')}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100 hover:border-blue-400 hover:text-blue-800 transition-all duration-200"
             >
-              View All Services
+              View All
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredServices.map((service) => (
-                <TechnologyServiceCard key={service.id || service.slug} service={service} compact />
-              ))}
-            </div>
-          </div>
+          <HomeAutoScrollRow durationSec={50} ariaLabel={t('technologySoftware')}>
+            {featuredServices.map((service) => (
+              <HomeAutoScrollRowItem key={service.id || service.slug}>
+                <TechnologyServiceCard service={service} compact />
+              </HomeAutoScrollRowItem>
+            ))}
+          </HomeAutoScrollRow>
         </div>
 
       </div>

@@ -1525,7 +1525,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           )}
 
           {hasSearchQuery && searchMode === 'ai' && !aiError && aiDomains.length > 0 && (
-            <AIDomainGrid results={aiDomains} />
+            <AIDomainGrid
+              results={aiDomains}
+              shareContext={{ shareType: 'AI_BRAND_DOMAIN', originalQuery: query }}
+            />
           )}
 
           {hasSearchQuery && searchMode === 'ai' && !aiLoading && !aiError && aiDomains.length === 0 && (
@@ -1580,6 +1583,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                       <DomainCardGrid
                         items={visibleNewResults}
                         featuredFirst
+                        shareContext={{ shareType: 'DOMAIN_SEARCH', originalQuery: query }}
                         skeletonCount={
                           registrySegment === REGISTRY_PREMIUM_SEGMENT.STANDARD && tldLoading
                             ? tldSkeletonCount

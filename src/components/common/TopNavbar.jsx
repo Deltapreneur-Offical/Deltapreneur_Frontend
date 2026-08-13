@@ -21,7 +21,7 @@ export default function TopNavbar({ homeMobileMenu = false, hideContactUs = fals
 
   return (
     <div
-      className={`home-top-nav md:sticky top-0 z-[1001] w-full min-w-0 border-b border-slate-200/70 bg-white/85 font-body backdrop-blur-md backdrop-saturate-150 ${
+      className={`home-top-nav sticky top-0 z-[1001] w-full min-w-0 border-b border-slate-200/70 bg-white/85 font-body backdrop-blur-md backdrop-saturate-150 ${
         stackedWithMainNav ? 'home-top-nav-stacked' : 'home-top-nav-standalone'
       }${isScrolled ? ' is-scrolled' : ''}`}
     >

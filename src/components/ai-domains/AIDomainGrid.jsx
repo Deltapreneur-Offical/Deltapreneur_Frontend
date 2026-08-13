@@ -35,7 +35,7 @@ function mapAiResultToCards(item) {
   return cards;
 }
 
-export default function AIDomainGrid({ results }) {
+export default function AIDomainGrid({ results, shareContext = null }) {
   if (!results?.length) return null;
 
   const cards = results.flatMap(mapAiResultToCards);
@@ -49,7 +49,7 @@ export default function AIDomainGrid({ results }) {
 
   return (
     <div className="mt-3">
-      <DomainCardGrid items={cards} featuredFirst={false} showStyleBadge />
+      <DomainCardGrid items={cards} featuredFirst={false} showStyleBadge shareContext={shareContext} />
     </div>
   );
 }

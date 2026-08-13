@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
 import { technologyServicesAPI } from '../api/technologyServicesApi';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import {
   Cpu,
@@ -57,6 +58,7 @@ export default function TechnologyServiceDetailPage() {
   const params = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addItem } = useCart();
   const { formatPrice, convertToInr } = useCurrency();
 
   /** Tech catalogue prices are stored in USD; convert via INR for the selected header currency. */
@@ -161,27 +163,33 @@ export default function TechnologyServiceDetailPage() {
     }
     if (!purchasingPlan || !service) return;
 
+    const planCode = purchasingPlan.code || purchasingPlan.key || 'starter';
+    const metadata = {
+      productName: service.name,
+      serviceSlug: service.slug,
+      billingCycle,
+      planCode,
+    };
+
+    if (service.provider_product_key) {
+      metadata.providerProductKey = service.provider_product_key;
+    }
+    if (service.provider_specific_params) {
+      Object.assign(metadata, service.provider_specific_params);
+    }
+
     try {
       setSubmitting(true);
-      const res = await technologyServicesAPI.subscribe({
-        service_slug: service.slug,
-        plan_code: purchasingPlan.code,
-        billing_cycle: billingCycle,
-      });
 
-      const resData = res.data || res;
-      setPurchasedSuccess(resData);
-      setPurchasingPlan(null);
-      
-      setMySubscription({
-        service_slug: service.slug,
-        service_name: service.name,
-        plan_code: purchasingPlan.code,
-        status: 'ACTIVE',
-        credentials: resData.credentials,
+      await addItem('TECHNOLOGY', service.id, {
+        selectedPlan: planCode,
+        coBrotherOptIn: false,
+        metadata,
       });
+      setPurchasingPlan(null);
+      navigate('/cart');
     } catch (err) {
-      alert(err?.response?.data?.detail || 'Failed to complete subscription. Please try again.');
+      alert(err?.response?.data?.detail || 'Failed to add to cart. Please try again.');
     } finally {
       setSubmitting(false);
     }

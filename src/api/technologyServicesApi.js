@@ -49,6 +49,9 @@ export const technologyServicesAPI = {
   /** Admin Panel: Fetch orders history. */
   getOrders: () => api.get('/api/v1/technology-services/admin/orders'),
 
+  /** Admin Panel: Fetch subscriptions history. */
+  getAdminSubscriptions: () => api.get('/api/v1/technology-services/admin/subscriptions'),
+
   /** Admin Panel: Fetch renewals list. */
   getRenewals: () => api.get('/api/v1/technology-services/admin/renewals'),
 
@@ -60,4 +63,7 @@ export const technologyServicesAPI = {
 
   /** Admin Panel: Get provider API service status & health. */
   getServiceStatus: () => api.get('/api/v1/technology-services/admin/service-status'),
+
+  /** Admin Panel: Fetch provisioning and renewal audit logs. */
+  getAdminLogs: () => api.get('/api/v1/technology-services/admin/logs'),
 };

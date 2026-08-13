@@ -63,6 +63,7 @@ import AdminFeesAndChargesTab from '../components/admin/AdminFeesAndChargesTab';
 import AdminBlacklistUsersTab from '../components/admin/AdminBlacklistUsersTab';
 import AdminOpenProviderCommissionTab from '../components/admin/AdminOpenProviderCommissionTab';
 import AdminTrackRecordsTab from '../components/admin/AdminTrackRecordsTab';
+import AdminPremiumTechTab from '../components/admin/AdminPremiumTechTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -489,7 +490,7 @@ export default function AdminDashboardPage() {
       'addon-orders':      adminAPI.getAddonOrders,
     };
   
-    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals' || currentTab === 'openprovider-pricing' || currentTab === 'blacklist-users' || currentTab === 'track-records') {
+    if (currentTab === 'fees-charges' || currentTab === 'domain-transfers' || currentTab === 'venture-deals' || currentTab === 'openprovider-pricing' || currentTab === 'blacklist-users' || currentTab === 'track-records' || currentTab === 'reseller-portal') {
       setLoading(false);
       setData([]);
       return;
@@ -570,6 +571,7 @@ export default function AdminDashboardPage() {
       'domain-transfers',
       'venture-deals',
       'premium-tech',
+      'reseller-portal',
     ]);
     if (requestedTab && allowedTabs.has(requestedTab)) {
       setTab(requestedTab);
@@ -639,6 +641,7 @@ export default function AdminDashboardPage() {
     { id: 'domain-enquiries',   label: t('adminTabDomainEnquiries'),   icon: EnquireIcon    },
     { id: 'op-managed-acquisitions', label: 'OpenProvider Acquisition Requests', icon: DomainsIcon },
     { id: 'cocreations',        label: t('adminTabTechnology'),        icon: TechnologyIcon },
+    { id: 'reseller-portal',    label: 'Reseller Portal',              icon: null, Icon: Activity },
     { id: 'requests',           label: t('adminTabCoBrotherRequests'), icon: RequestIcon    },
     { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
@@ -895,11 +898,15 @@ export default function AdminDashboardPage() {
             <AdminOpenProviderCommissionTab />
           )}
 
+          {tab === 'reseller-portal' && (
+            <AdminPremiumTechTab />
+          )}
+
           {tab === 'venture-deals' && (
             <VentureDealsAdminTab />
           )}
 
-          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && (
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && tab !== 'reseller-portal' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

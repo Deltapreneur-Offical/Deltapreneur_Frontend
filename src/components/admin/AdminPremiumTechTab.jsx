@@ -368,6 +368,7 @@ export default function AdminPremiumTechTab() {
               <tr>
                 <th className="p-4">Service</th>
                 <th className="p-4">Category</th>
+                <th className="p-4">Provider Product Key</th>
                 <th className="p-4">Base Cost</th>
                 <th className="p-4">Customer Price (+{config.global_margin_percent}% Margin)</th>
                 <th className="p-4">Price Override</th>
@@ -389,6 +390,13 @@ export default function AdminPremiumTechTab() {
                       <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold text-indigo-600">
                         {s.category}
                       </span>
+                    </td>
+                    <td className="p-4 font-mono text-gray-500">
+                      {s.provider_product_key ? (
+                        <span className="text-indigo-600">{s.provider_product_key}</span>
+                      ) : (
+                        <span className="text-gray-400">Not mapped</span>
+                      )}
                     </td>
                     <td className="p-4 font-mono text-gray-500">
                       ${s.base_starting_price || 15}/mo

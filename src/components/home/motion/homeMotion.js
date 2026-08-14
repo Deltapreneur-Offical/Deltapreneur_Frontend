@@ -65,7 +65,7 @@ export const homeHeaderReveal = {
 export const homeCardHover = {
   y: -5,
   transition: {
-    duration: 0.28,
+    duration: 0.08,
     ease: HOME_EASE_OUT,
   },
 };

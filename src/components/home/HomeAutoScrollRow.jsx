@@ -46,6 +46,10 @@ export default function HomeAutoScrollRow({
   const [reduceMotion, setReduceMotion] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(!onlyWhenOverflow);
   const [isPaused, setIsPaused] = useState(false);
+  // True only while the user is actively dragging/swiping (touch) or
+  // horizontal-wheeling — enables the scrollable viewport + teleport loop.
+  // Hover-pause alone must NOT enable this (it would shift the track by a set).
+  const [isScrolling, setIsScrolling] = useState(false);
   const [isOffscreen, setIsOffscreen] = useState(false);
   const [isPageHidden, setIsPageHidden] = useState(
     () => typeof document !== 'undefined' && document.visibilityState === 'hidden',
@@ -151,34 +155,51 @@ export default function HomeAutoScrollRow({
   }, []);
 
   // ── Pause / resume helpers ───────────────────────────────────────────────
+  // Hover: freeze the CSS animation only (animation-play-state). The track
+  // stays exactly where it is — no scrollLeft shift, no DOM copy swap — so the
+  // hovered card is perfectly stable and leaving resumes from the same spot.
   const pauseAnim = useCallback(() => {
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
     setIsPaused(true);
+  }, []);
+
+  // Touch drag / horizontal wheel: enter manual-scroll mode on top of the
+  // paused animation (scrollable viewport + teleport loop).
+  const beginManualScroll = useCallback(() => {
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    setIsPaused(true);
+    setIsScrolling(true);
   }, []);
 
   const resumeAnim = useCallback((delayMs = 0) => {
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
     resumeTimer.current = setTimeout(() => {
       setIsPaused(false);
+      setIsScrolling(false);
       stopInfiniteLoop();
     }, delayMs);
   }, [stopInfiniteLoop]);
 
-  // When isPaused switches on, initialise viewport scroll position + start loop
+  // When manual scrolling starts, initialise viewport scroll position + loop.
+  // Hover-pause alone never reaches here, so the track never shifts by a set
+  // while the cursor is over a card.
   useEffect(() => {
-    if (!isPaused) return undefined;
+    if (!isScrolling) return undefined;
     const viewport = viewportRef.current;
     if (!viewport) return undefined;
 
     const oneSet = measureOneSet();
     oneSetWidthRef.current = oneSet;
 
-    // Centre on the middle copy so user can swipe either direction
-    viewport.scrollLeft = oneSet;
+    // Centre on the middle copy so user can swipe either direction — unless a
+    // wheel delta was already applied synchronously this tick.
+    if (viewport.scrollLeft < oneSet * 0.5 || viewport.scrollLeft > oneSet * 1.5) {
+      viewport.scrollLeft = oneSet;
+    }
 
     startInfiniteLoop();
     return () => stopInfiniteLoop();
-  }, [isPaused, measureOneSet, startInfiniteLoop, stopInfiniteLoop]);
+  }, [isScrolling, measureOneSet, startInfiniteLoop, stopInfiniteLoop]);
 
   // ── Mouse wheel → horizontal scroll ─────────────────────────────────────
   const handleWheel = useCallback(
@@ -187,12 +208,12 @@ export default function HomeAutoScrollRow({
       if (!viewport) return;
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
-        pauseAnim();
+        beginManualScroll();
         viewport.scrollLeft += e.deltaX;
         resumeAnim(1500);
       }
     },
-    [pauseAnim, resumeAnim],
+    [beginManualScroll, resumeAnim],
   );
 
   useEffect(() => {
@@ -205,12 +226,12 @@ export default function HomeAutoScrollRow({
   // ── Touch events ─────────────────────────────────────────────────────────
   const handleTouchStart = useCallback(
     (e) => {
-      pauseAnim();
+      beginManualScroll();
       isDragging.current = true;
       touchStartX.current = e.touches[0].clientX;
       touchLastX.current = e.touches[0].clientX;
     },
-    [pauseAnim],
+    [beginManualScroll],
   );
 
   const handleTouchMove = useCallback((e) => {
@@ -272,7 +293,7 @@ export default function HomeAutoScrollRow({
 
   const viewportClassName = [
     'home-auto-scroll-row__viewport',
-    isPaused && shouldAnimate ? 'home-auto-scroll-row__viewport--scrollable' : '',
+    isScrolling && shouldAnimate ? 'home-auto-scroll-row__viewport--scrollable' : '',
   ]
     .filter(Boolean)
     .join(' ');

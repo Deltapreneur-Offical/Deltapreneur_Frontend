@@ -78,6 +78,12 @@ export default function TechnologyServiceDetailPage() {
   const [purchasedSuccess, setPurchasedSuccess] = useState(null);
   const [mySubscription, setMySubscription] = useState(null);
 
+  // Provisioning input required for specific provider-powered services:
+  // Business Phone needs an area code; Web Hosting needs a primary domain.
+  const [areaCode, setAreaCode] = useState('');
+  const [primaryDomain, setPrimaryDomain] = useState('');
+  const [inputError, setInputError] = useState(null);
+
   useEffect(() => {
     let isMounted = true;
     const targetSlug = slug || window.location.pathname.split('/').pop();
@@ -176,6 +182,26 @@ export default function TechnologyServiceDetailPage() {
     }
     if (service.provider_specific_params) {
       Object.assign(metadata, service.provider_specific_params);
+    }
+
+    // Collect the provisioning input required for Business Phone / Web Hosting
+    // before adding to cart, so the paid purchase is never stuck awaiting input.
+    const slug = String(service.slug || '').toLowerCase();
+    if (slug === 'business-phone') {
+      const code = String(areaCode || '').trim();
+      if (!code) {
+        setInputError('Please enter the area code for your Business Phone number.');
+        return;
+      }
+      metadata.areaCode = code;
+    }
+    if (slug === 'web-hosting') {
+      const domain = String(primaryDomain || '').trim().toLowerCase();
+      if (!domain || !domain.includes('.')) {
+        setInputError('Please enter the primary domain for your hosting account (e.g. example.com).');
+        return;
+      }
+      metadata.primaryDomain = domain;
     }
 
     try {
@@ -433,6 +459,7 @@ export default function TechnologyServiceDetailPage() {
                             navigate('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
                             return;
                           }
+                          setInputError(null);
                           setPurchasingPlan(plan);
                         }}
                         className={`mt-8 w-full rounded-xl py-3 text-sm font-bold shadow-md transition-all ${
@@ -493,9 +520,57 @@ export default function TechnologyServiceDetailPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Confirm Subscription
             </h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600 mb-4">
               You are subscribing to <strong className="text-gray-900">{service.name}</strong> on the <strong className="text-indigo-600">{purchasingPlan.name}</strong> plan.
             </p>
+
+            {String(service.slug || '').toLowerCase() === 'business-phone' && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Area Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={areaCode}
+                  onChange={(e) => {
+                    setAreaCode(e.target.value);
+                    setInputError(null);
+                  }}
+                  placeholder="e.g. 415"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Your Business Phone number will be assigned to this area code.
+                </p>
+              </div>
+            )}
+
+            {String(service.slug || '').toLowerCase() === 'web-hosting' && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Primary Domain <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={primaryDomain}
+                  onChange={(e) => {
+                    setPrimaryDomain(e.target.value);
+                    setInputError(null);
+                  }}
+                  placeholder="e.g. example.com"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This domain will be used to create your hosting account (e.g. example.com → cpanel username 'example').
+                </p>
+              </div>
+            )}
+
+            {inputError && (
+              <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 text-sm text-red-700">
+                {inputError}
+              </div>
+            )}
 
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3 mb-6 border border-gray-100 text-sm">
               <div className="flex justify-between text-gray-600">

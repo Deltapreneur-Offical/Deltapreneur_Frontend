@@ -3,6 +3,15 @@ set -x
 
 CONFIG_PATH="/etc/nginx/sites-available/cobrother"
 BACKUP_PATH="/etc/nginx/sites-available/cobrother.save"
+# The file nginx ACTUALLY loads. Ubuntu convention is a symlink into
+# sites-available; on this production box it is a SEPARATE physical file that
+# nginx loads while the deploy only ever patched sites-available. Both files
+# are kept in sync so deploy updates always reach the active config.
+ACTIVE_PATH="/etc/nginx/sites-enabled/cobrother"
+# Pre-deploy snapshot of the active file, kept OUTSIDE sites-enabled so nginx
+# never includes it (sites-enabled/* glob). Used to roll back the exact
+# previously-loaded config if `nginx -t` fails.
+ACTIVE_PREDEPLOY="/etc/nginx/sites-available/cobrother.active-predeploy"
 DEST="/opt/cobrother/frontend/dist"
 
 echo "=== START NGINX DEPLOYMENT ==="
@@ -15,6 +24,14 @@ echo "Using Nginx binary: ${NGINX_BIN}"
 if [ -f "${CONFIG_PATH}" ] && [ ! -f "${BACKUP_PATH}" ]; then
     echo "Creating secure backup of cobrother config..."
     cp "${CONFIG_PATH}" "${BACKUP_PATH}"
+fi
+
+# 1b. Snapshot the ACTIVE config (what nginx loads) before patching, so a
+# failed `nginx -t` can restore the exact previously-loaded config.
+# Only when it is a separate physical file (not a symlink to CONFIG_PATH).
+if [ -f "${ACTIVE_PATH}" ] && [ ! -L "${ACTIVE_PATH}" ] && ! [ "${ACTIVE_PATH}" -ef "${CONFIG_PATH}" ]; then
+    echo "Snapshotting active config for rollback: ${ACTIVE_PATH}"
+    cp "${ACTIVE_PATH}" "${ACTIVE_PREDEPLOY}"
 fi
 
 # 2. Remove conflicting configs
@@ -49,6 +66,12 @@ if ! "${NGINX_BIN}" -t > /tmp/nginx_error.log 2>&1; then
     if [ -f "${BACKUP_PATH}" ]; then
         cp "${BACKUP_PATH}" "${CONFIG_PATH}"
     fi
+
+    # Restore the exact previously-loaded active config if it was snapshotted
+    if [ -f "${ACTIVE_PREDEPLOY}" ]; then
+        cp "${ACTIVE_PREDEPLOY}" "${ACTIVE_PATH}"
+        rm -f "${ACTIVE_PREDEPLOY}"
+    fi
     
     # Clean up conflicting files again
     rm -f /etc/nginx/sites-enabled/cobrother-frontend
@@ -57,7 +80,12 @@ if ! "${NGINX_BIN}" -t > /tmp/nginx_error.log 2>&1; then
     # Write error log to web directory
     mkdir -p "${DEST}"
     cp /tmp/nginx_error.log "${DEST}/debug-nginx.txt"
-    cp "${CONFIG_PATH}" "${DEST}/debug-active-cobrother.conf"
+    # debug-active-* must reflect what nginx actually loads (sites-enabled)
+    if [ -f "${ACTIVE_PATH}" ]; then
+        cp "${ACTIVE_PATH}" "${DEST}/debug-active-cobrother.conf"
+    else
+        cp "${CONFIG_PATH}" "${DEST}/debug-active-cobrother.conf"
+    fi
     chown -R ubuntu:ubuntu "${DEST}"
     
     # Restart Nginx to restore origin status
@@ -77,8 +105,16 @@ else
     # Write success log to web directory
     mkdir -p "${DEST}"
     echo "SUCCESS: Nginx updated and restarted successfully." > "${DEST}/debug-nginx.txt"
-    cp "${CONFIG_PATH}" "${DEST}/debug-active-cobrother.conf"
+    # debug-active-* must reflect what nginx actually loads (sites-enabled)
+    if [ -f "${ACTIVE_PATH}" ]; then
+        cp "${ACTIVE_PATH}" "${DEST}/debug-active-cobrother.conf"
+    else
+        cp "${CONFIG_PATH}" "${DEST}/debug-active-cobrother.conf"
+    fi
     chown -R ubuntu:ubuntu "${DEST}"
+
+    # Deployment succeeded - drop the rollback snapshot
+    rm -f "${ACTIVE_PREDEPLOY}"
     
     echo "=== DEPLOYMENT SUCCESSFUL ==="
 fi

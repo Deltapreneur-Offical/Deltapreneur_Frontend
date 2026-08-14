@@ -5,6 +5,7 @@ import { DomainCardSkeleton } from '../common/DomainExtensionsLoader';
 import RegistryPremiumBadge from './RegistryPremiumBadge';
 import RegistryStandardBadge from './RegistryStandardBadge';
 import { isRegistryPremium } from '../../utils/registryPremium';
+import ShareButton from '../share/ShareButton';
 
 /**
  * Normalize any discovery-source item into the shared DomainCard shape.
@@ -91,6 +92,8 @@ export default function DomainCard({
   featured = false,
   showStyleBadge = false,
   className = '',
+  /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
+  shareContext = null,
 }) {
   const { formatDomainPrice } = useCurrency();
   const item = normalizeDomainCardItem(rawItem);
@@ -176,7 +179,7 @@ export default function DomainCard({
             <p className="text-xs text-gray-400">Renewal price unavailable</p>
           ) : null}
         </div>
-        <div className="mt-3.5 flex justify-start">
+        <div className="mt-3.5 flex flex-wrap items-center gap-2">
           {cartProps ? (
             <AddToCartButton
               {...cartProps}
@@ -194,6 +197,15 @@ export default function DomainCard({
               {item.status === 'error' ? 'Could not check' : 'Taken'}
             </button>
           )}
+          {shareContext && item.available ? (
+            <ShareButton
+              shareType={shareContext.shareType}
+              domain={item.domain}
+              originalQuery={shareContext.originalQuery}
+              availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
+              compact
+            />
+          ) : null}
         </div>
       </div>
     );
@@ -252,7 +264,7 @@ export default function DomainCard({
           <p className="text-[11px] text-gray-400">Renewal price unavailable</p>
         ) : null}
       </div>
-      <div className="mt-3 flex justify-start">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         {cartProps ? (
           <AddToCartButton
             {...cartProps}
@@ -270,6 +282,15 @@ export default function DomainCard({
             {item.status === 'error' ? 'Could not check' : 'Taken'}
           </button>
         )}
+        {shareContext && item.available ? (
+          <ShareButton
+            shareType={shareContext.shareType}
+            domain={item.domain}
+            originalQuery={shareContext.originalQuery}
+            availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
+            compact
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -281,6 +302,8 @@ export function DomainCardGrid({
   showStyleBadge = false,
   /** Skeleton slots rendered in the grid after loaded secondary cards. */
   skeletonCount = 0,
+  /** { shareType, originalQuery } — enables Share & Earn on rendered cards. */
+  shareContext = null,
 }) {
   const list = (items || []).map(normalizeDomainCardItem).filter((it) => it.domain);
   const featured = featuredFirst && list.length ? list[0] : null;
@@ -289,12 +312,12 @@ export function DomainCardGrid({
   return (
     <div className="space-y-4">
       {featured ? (
-        <DomainCard item={featured} featured showStyleBadge={showStyleBadge} />
+        <DomainCard item={featured} featured showStyleBadge={showStyleBadge} shareContext={shareContext} />
       ) : null}
       {(rest.length > 0 || skeletonCount > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {rest.map((it) => (
-            <DomainCard key={it.domain} item={it} showStyleBadge={showStyleBadge} />
+            <DomainCard key={it.domain} item={it} showStyleBadge={showStyleBadge} shareContext={shareContext} />
           ))}
           {Array.from({ length: skeletonCount }).map((_, i) => (
             <DomainCardSkeleton key={`sk-${i}`} />

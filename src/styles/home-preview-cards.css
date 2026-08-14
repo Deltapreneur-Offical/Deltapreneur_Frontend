@@ -336,13 +336,13 @@
   box-sizing: border-box;
   transform: none;
   transition:
-    transform 0.2s ease-out,
-    border-color 0.2s ease-out,
-    box-shadow 0.2s ease-out;
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.12s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-preview-card-border:hover {
-  transform: translateY(-2px);
+  transform: translateY(-5px);
   border: 1px solid var(--home-card-border-hover) !important;
   background: #ffffff !important;
   box-shadow: 0 12px 28px var(--home-card-shadow-hover) !important;
@@ -407,7 +407,7 @@
   background: var(--home-card-price-bg) !important;
   box-shadow: none !important;
   border-radius: 0.75rem;
-  transition: all 0.2s ease;
+  transition: all 0.08s ease;
 }
 
 .home-preview-card-border:hover .domain-listing-card__price-box,
@@ -2686,6 +2686,14 @@
   }
   .home-auto-scroll-row__item:has(.community-listing-card) {
     width: 380px; /* Desktop: 3 full cards */
+  }
+}
+
+/* Technology Services catalogue cards (home page) — wider so the full service
+   name, vertically stacked badges, and the Explore Service button all fit. */
+@media (min-width: 1024px) {
+  .home-auto-scroll-row__item:has(.tech-service-card) {
+    width: min(28vw, 340px);
   }
 }
 

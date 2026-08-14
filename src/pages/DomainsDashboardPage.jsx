@@ -478,7 +478,7 @@ export default function DomainsDashboardPage() {
                         ) : (
                           <Link
                             to={registrationOrderDetailPath(order.id)}
-                            className="shrink-0 text-sm font-bold text-white bg-gray-900 hover:bg-gray-700 px-4 py-1.5 rounded-md transition-colors"
+                            className="shrink-0 text-sm font-bold text-white bg-gray-900 hover:bg-gray-700 hover:text-white px-4 py-1.5 rounded-md transition-colors"
                           >
                             Renew
                           </Link>

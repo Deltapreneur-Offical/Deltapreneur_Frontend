@@ -8010,12 +8010,9 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   gap: 0.5rem;
 }
 
-/* Stacked pages: hide top bar on mobile — utilities live in main nav toolbar */
-@media (max-width: 1279px) {
-  .home-top-nav-stacked {
-    display: none !important;
-  }
-}
+/* Stacked pages: top bar stays visible on mobile — it carries the compact
+   scroll-in logo so the CoBrother mark remains on screen when the main nav
+   collapses after scrolling. */
 
 /* Standalone top bar pages (no HomeNavbar): keep full-width top row on mobile */
 @media (max-width: 1279px) {
@@ -8025,17 +8022,31 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   }
 }
 
-/* Mobile + small tablet (< 1280px): single full-width main nav row */
+/* Mobile + small tablet (< 1280px): top bar + single full-width main nav row.
+   The top bar stays sticky with the compact logo; the main nav (big logo +
+   hamburger) collapses on scroll so the compact mark remains visible. */
 @media (max-width: 1279px) {
   body.home-page-body {
-    --home-topbar-height: 0px;
+    --home-topbar-height: 2.5rem;
     --home-main-nav-height: 3.5rem;
-    --home-nav-stack-height: var(--home-main-nav-height);
+    --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
+  }
+
+  @media (min-width: 768px) {
+    body.home-page-body {
+      --home-topbar-height: 2.75rem;
+    }
   }
 
   .home-main-nav {
-    top: 0 !important;
+    top: var(--home-topbar-height) !important;
     overflow: visible;
+  }
+
+  /* Utilities/profile live in the top bar on mobile — avoid duplicate icons
+     in the main nav toolbar (keep the hamburger only). */
+  .home-main-nav-toolbar .home-top-nav-actions {
+    display: none !important;
   }
 
   .home-top-nav-inner,

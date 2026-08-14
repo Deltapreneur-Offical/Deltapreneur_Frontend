@@ -92,6 +92,7 @@ const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSeller
 const DomainTransferBuyerPage = lazy(() => import('./pages/DomainTransferBuyerPage'));
 const EdgePointsPage = lazy(() => import('./pages/EdgePointsPage'));
 const CartPage = lazy(() => import('./pages/CartPage'));
+const SharedDomainPage = lazy(() => import('./pages/SharedDomainPage'));
 
 function preloadPostLoginRoutes() {
   void loadDashboardPage();
@@ -549,6 +550,9 @@ export default function App() {
                     </ProfileGuard>
                   }
                 />
+
+                {/* Shared domain preview (public) */}
+                <Route path="/s/:token" element={<SharedDomainPage />} />
 
                 {/* Edge Points */}
                 <Route

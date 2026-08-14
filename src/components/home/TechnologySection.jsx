@@ -130,7 +130,7 @@ export default function TechnologySection() {
           <HomeAutoScrollRow durationSec={50} ariaLabel={t('technologySoftware')}>
             {featuredServices.map((service) => (
               <HomeAutoScrollRowItem key={service.id || service.slug}>
-                <TechnologyServiceCard service={service} compact />
+                <TechnologyServiceCard service={service} compact homeLayout />
               </HomeAutoScrollRowItem>
             ))}
           </HomeAutoScrollRow>

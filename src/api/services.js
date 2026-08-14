@@ -186,6 +186,16 @@ export const aiDomainsAPI = {
     api.post('/api/ai-domains/generate', { idea }, options),
 };
 
+/** Share & Earn — tokenized share links (Domain Search / AI Brand Names). */
+export const sharesAPI = {
+  create: (body) => api.post('/api/v1/shares', body),
+  getPreview: (token) => api.get(`/api/v1/shares/${token}`),
+};
+
+export const referralsAPI = {
+  track: (body) => api.post('/api/v1/referrals/track', body),
+};
+
 /** Domain registration storefront (new domain checkout) */
 export const domainStorefrontAPI = {
   getConfig: () => api.get('/api/v1/domain/storefront/config'),

@@ -1806,3 +1806,42 @@
   box-shadow: none !important;
   transform: none !important;
 }
+
+/* ─── Venture / Co-Venture listing pages — mobile single column ─────────────
+   Home → Venture / Co-Venture → View All opens /ventures?mode=venture|co-venture.
+   On phones the old two-across grid crushed card content and broke the page
+   width. These rules are mobile-only (max-width: 639px) and scoped to the
+   venture listing grid, so no other marketplace layout is affected and the
+   desktop grid (md and up) stays exactly as it was. */
+@media (max-width: 639px) {
+  .venture-listing-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1rem !important;
+  }
+
+  .venture-listing-grid .listing-card-glow-shell {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Fixed cover height on every card so all rows stay consistent */
+  .venture-listing-grid .venture-listing-card .domain-listing-card__cover {
+    height: 8.25rem !important;
+    min-height: 8.25rem !important;
+    max-height: 8.25rem !important;
+  }
+
+  /* Price box, stats and CTA must never exceed the card width */
+  .venture-listing-grid .domain-listing-card__price-box,
+  .venture-listing-grid .domain-listing-card__actions,
+  .venture-listing-grid .venture-listing-card__pitch-cta {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .venture-listing-grid .domain-listing-card__body {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+}

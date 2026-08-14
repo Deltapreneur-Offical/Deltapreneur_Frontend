@@ -478,7 +478,10 @@ export default function AppLayout({ children }) {
   if (!user) {
     return (
       <div className="relative min-w-0 bg-white overflow-visible">
-        <div className="hidden lg:block"><TopNavbar isScrolled={false} /></div>
+        {/* Top bar is shown on every breakpoint (same as the Home page) so the
+            profile avatar → Sign In / Sign Out control is available on mobile
+            listing pages, not just inside the hamburger drawer. */}
+        <TopNavbar hideContactUs isScrolled={false} />
         <HomeNavbar
           navRef={{ current: null }}
           openDropdown={openDropdown}

@@ -136,9 +136,9 @@ export default function VenturesPage() {
 
   const renderVentureCards = (ventures, { compact = false } = {}) => (
     <div
-      className={`listing-card-glow-grid grid gap-4 md:gap-5 ${compact
+      className={`listing-card-glow-grid venture-listing-grid grid gap-4 md:gap-5 ${compact
           ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 min-[1400px]:grid-cols-2'
-          : 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+          : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
         }`}
     >
       {ventures.map((v) => (

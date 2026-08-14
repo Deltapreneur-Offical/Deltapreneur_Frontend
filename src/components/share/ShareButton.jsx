@@ -21,6 +21,7 @@ export default function ShareButton({
   shareType,
   domain,
   originalQuery,
+  availability = null,
   className = '',
   compact = false,
 }) {
@@ -114,6 +115,7 @@ export default function ShareButton({
                 shareType={shareType}
                 domain={domain}
                 originalQuery={originalQuery}
+                availability={availability}
                 onClose={() => setOpen(false)}
               />
             </div>,

@@ -405,6 +405,7 @@ export default function SharedDomainPage() {
                             shareType={data.share_type || 'DOMAIN_SEARCH'}
                             domain={data.domain}
                             originalQuery={data.original_query}
+                            availability={availability}
                           />
                         ) : null}
                       </div>

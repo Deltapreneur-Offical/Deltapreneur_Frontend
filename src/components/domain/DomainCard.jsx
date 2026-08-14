@@ -202,6 +202,7 @@ export default function DomainCard({
               shareType={shareContext.shareType}
               domain={item.domain}
               originalQuery={shareContext.originalQuery}
+              availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
               compact
             />
           ) : null}
@@ -286,6 +287,7 @@ export default function DomainCard({
             shareType={shareContext.shareType}
             domain={item.domain}
             originalQuery={shareContext.originalQuery}
+            availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
             compact
           />
         ) : null}

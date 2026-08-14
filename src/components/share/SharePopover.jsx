@@ -2,19 +2,71 @@ import { useCallback, useEffect, useState } from 'react';
 import { Check, Copy, Loader2, X } from 'lucide-react';
 import { sharesAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { formatInr } from '../../utils/money';
 
-export function buildSocialLinks(shareUrl, domain, originalQuery) {
+/**
+ * Pre-written CoBrother share message with the CURRENT domain state.
+ *
+ * `availability` mirrors the share-preview payload shape:
+ *   { status: 'available' | 'taken' | 'check_failed' | ..., is_premium: bool, price_inr: number|null }
+ * Unknown/missing fields degrade gracefully — the message never invents data.
+ */
+export function buildShareMessage({ domain, shareUrl, availability }) {
+  const a = availability || {};
+  const status = a.status;
+  const isPremium = Boolean(a.is_premium);
+  const isAvailable = status === 'available';
+  const priceInr = Number(a.price_inr);
+  const price = Number.isFinite(priceInr) && priceInr > 0 ? formatInr(priceInr) : null;
+
+  const details = [];
+  if (isPremium) {
+    details.push('✦ Premium Domain');
+  } else if (isAvailable) {
+    details.push('🌐 Standard Domain');
+  } else if (status) {
+    details.push('🌐 Domain');
+  }
+  if (isAvailable) {
+    details.push('✅ Available');
+  } else if (status) {
+    details.push('❌ Currently unavailable');
+  }
+  if (price && isAvailable) {
+    details.push(isPremium ? `💰 ${price} (1st Year)` : `💰 ${price}/yr`);
+  }
+
+  const lines = [`🚀 Check out ${domain} on CoBrother!`];
+  if (details.length) lines.push('', ...details);
+  lines.push('', `🔗 ${shareUrl}`);
+  return lines.join('\n');
+}
+
+/**
+ * Builds the platform share links for a tokenized /s/{token} share.
+ *
+ * Composer-prefill support (current official mechanisms):
+ *  - WhatsApp (wa.me/?text=), X (x.com/intent/tweet?text=), Telegram
+ *    (t.me/share/url?url=&text=), Gmail (mail.google.com su/body) and Email
+ *    (mailto: subject/body) support a prefilled message — they get the full
+ *    buildShareMessage text with the current domain state.
+ *  - Facebook (sharer/sharer.php?u=) shares only the URL: Facebook removed
+ *    prefilled composer text support, so the URL alone is passed (the OG card
+ *    is fetched by the platform).
+ *  - LinkedIn (share-offsite/?url=&title=) attaches only the URL as a link
+ *    card; the modern share-offsite API does not prefill composer text.
+ */
+export function buildSocialLinks(shareUrl, domain, availability) {
   const url = encodeURIComponent(shareUrl);
-  const text = encodeURIComponent(originalQuery
-    ? `Found ${domain} on CoBrother — "${originalQuery}"`
-    : `Check out ${domain} on CoBrother!`);
+  const message = buildShareMessage({ domain, shareUrl, availability });
+  const text = encodeURIComponent(message);
   const subject = encodeURIComponent(`Check out ${domain} on CoBrother!`);
-  const body = encodeURIComponent(`${domain} on CoBrother\n\n${shareUrl}`);
+  const body = encodeURIComponent(message);
   return [
-    { label: 'WhatsApp', href: `https://wa.me/?text=${text}%20${url}`, tone: 'bg-emerald-600 hover:bg-emerald-500' },
+    { label: 'WhatsApp', href: `https://wa.me/?text=${text}`, tone: 'bg-emerald-600 hover:bg-emerald-500' },
     { label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, tone: 'bg-blue-700 hover:bg-blue-600' },
     { label: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${subject}`, tone: 'bg-sky-800 hover:bg-sky-700' },
-    { label: 'X', href: `https://x.com/intent/tweet?text=${text}%20${url}`, tone: 'bg-slate-900 hover:bg-slate-700' },
+    { label: 'X', href: `https://x.com/intent/tweet?text=${text}`, tone: 'bg-slate-900 hover:bg-slate-700' },
     { label: 'Telegram', href: `https://t.me/share/url?url=${url}&text=${text}`, tone: 'bg-sky-500 hover:bg-sky-400' },
     { label: 'Gmail', href: `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, tone: 'bg-red-600 hover:bg-red-500' },
     { label: 'Email', href: `mailto:?subject=${subject}&body=${body}`, tone: 'bg-gray-600 hover:bg-gray-500' },
@@ -29,7 +81,7 @@ export function buildSocialLinks(shareUrl, domain, originalQuery) {
  * anonymous share (no referrer, no reward). Login is only required for
  * Add to Cart / Like, which is handled by those buttons.
  */
-export default function SharePopover({ shareType, domain, originalQuery, onClose }) {
+export default function SharePopover({ shareType, domain, originalQuery, availability, onClose }) {
   const { user } = useAuth();
   const [shareUrl, setShareUrl] = useState('');
   const [error, setError] = useState('');
@@ -97,7 +149,7 @@ export default function SharePopover({ shareType, domain, originalQuery, onClose
       try {
         await navigator.share({
           title: domain || 'CoBrother',
-          text: originalQuery ? `Found ${domain} on CoBrother — "${originalQuery}"` : `Check out ${domain} on CoBrother!`,
+          text: buildShareMessage({ domain, shareUrl, availability }),
           url: shareUrl,
         });
       } catch {
@@ -106,9 +158,9 @@ export default function SharePopover({ shareType, domain, originalQuery, onClose
     } else {
       copyToClipboard();
     }
-  }, [shareUrl, domain, originalQuery, copyToClipboard]);
+  }, [shareUrl, domain, availability, copyToClipboard]);
 
-  const socials = shareUrl ? buildSocialLinks(shareUrl, domain, originalQuery) : [];
+  const socials = shareUrl ? buildSocialLinks(shareUrl, domain, availability) : [];
 
   return (
     <div

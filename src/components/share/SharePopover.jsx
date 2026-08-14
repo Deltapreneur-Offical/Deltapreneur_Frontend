@@ -3,18 +3,21 @@ import { Check, Copy, Loader2, X } from 'lucide-react';
 import { sharesAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 
-function buildSocialLinks(shareUrl, domain, originalQuery) {
+export function buildSocialLinks(shareUrl, domain, originalQuery) {
   const url = encodeURIComponent(shareUrl);
   const text = encodeURIComponent(originalQuery
     ? `Found ${domain} on CoBrother — "${originalQuery}"`
     : `Check out ${domain} on CoBrother!`);
+  const subject = encodeURIComponent(`Check out ${domain} on CoBrother!`);
+  const body = encodeURIComponent(`${domain} on CoBrother\n\n${shareUrl}`);
   return [
     { label: 'WhatsApp', href: `https://wa.me/?text=${text}%20${url}`, tone: 'bg-emerald-600 hover:bg-emerald-500' },
     { label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, tone: 'bg-blue-700 hover:bg-blue-600' },
-    { label: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`, tone: 'bg-sky-800 hover:bg-sky-700' },
-    { label: 'X', href: `https://twitter.com/intent/tweet?url=${url}&text=${text}`, tone: 'bg-slate-900 hover:bg-slate-700' },
+    { label: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${subject}`, tone: 'bg-sky-800 hover:bg-sky-700' },
+    { label: 'X', href: `https://x.com/intent/tweet?text=${text}%20${url}`, tone: 'bg-slate-900 hover:bg-slate-700' },
     { label: 'Telegram', href: `https://t.me/share/url?url=${url}&text=${text}`, tone: 'bg-sky-500 hover:bg-sky-400' },
-    { label: 'Email', href: `mailto:?subject=${text}&body=${url}`, tone: 'bg-gray-600 hover:bg-gray-500' },
+    { label: 'Gmail', href: `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, tone: 'bg-red-600 hover:bg-red-500' },
+    { label: 'Email', href: `mailto:?subject=${subject}&body=${body}`, tone: 'bg-gray-600 hover:bg-gray-500' },
   ];
 }
 
@@ -80,6 +83,13 @@ export default function SharePopover({ shareType, domain, originalQuery, onClose
       setError('Could not copy the link. Select it manually below.');
     }
   }, [shareUrl]);
+
+  const openSocial = useCallback((href) => {
+    if (!href) return;
+    // Match the Marketplace share behavior: open the platform's own
+    // Share/Post/Compose flow in a sized popup window.
+    window.open(href, '_blank', 'width=600,height=400');
+  }, []);
 
   const nativeShare = useCallback(async () => {
     if (!shareUrl) return;
@@ -175,15 +185,14 @@ export default function SharePopover({ shareType, domain, originalQuery, onClose
 
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             {socials.map((s) => (
-              <a
+              <button
                 key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                type="button"
+                onClick={() => openSocial(s.href)}
                 className={`inline-flex items-center rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors ${s.tone}`}
               >
                 {s.label}
-              </a>
+              </button>
             ))}
           </div>
         </>

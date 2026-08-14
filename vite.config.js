@@ -41,7 +41,26 @@ export default defineConfig(({ mode }) => {
               
               let listingType = null;
               let listingId = null;
-              
+
+              // Tokenized domain shares (/s/{token}) — mirrors the nginx
+              // bot-rewrite so crawlers get the rich OG page locally too.
+              const shareTokenMatch = pathname.match(/^\/s\/([A-Za-z0-9_-]+)$/);
+              if (shareTokenMatch) {
+                try {
+                  const targetUrl = `${backendTarget}/api/v1/public/share-preview/s/${shareTokenMatch[1]}`;
+                  const response = await fetch(targetUrl);
+                  if (response.ok) {
+                    const html = await response.text();
+                    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                    res.statusCode = 200;
+                    res.end(html);
+                    return;
+                  }
+                } catch (err) {
+                  console.error('[vite-bot-preview] /s/ error:', err);
+                }
+              }
+
               if (pathname.startsWith('/ventures/deals/')) {
                 listingType = 'deals';
                 listingId = pathname.split('/').pop();

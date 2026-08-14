@@ -32,6 +32,7 @@ const CATEGORIES = [
   'Domain Registration (Reseller)',
   'Domain Marketplace',
   'Technology Purchase',
+  'Technology Services',
   'Venture / Deal Payment',
   'Domain Addon (Email)',
   'Domain Addon (SSL)',
@@ -93,22 +94,20 @@ export default function AdminTrackRecordsTab() {
     setLoading(true);
     setFetchError('');
     try {
-      // Avoid hammering sync when the session is already known-expired.
+      // Fire-and-forget the historical backfill: the page must render from
+      // existing records immediately — never wait on the full-table sync (or
+      // its Razorpay calls) before showing data. The backend also runs the
+      // sync as a background task and returns instantly.
       if (!authExpiredRef.current) {
-        try {
-          await adminAPI.syncTrackRecords();
-        } catch (syncErr) {
+        adminAPI.syncTrackRecords().catch((syncErr) => {
           if (isAuthError(syncErr)) {
             authExpiredRef.current = true;
             setAuthExpired(true);
             setFetchError('Session expired. Please sign in again to load Track Records.');
-            setRecords([]);
-            setTotalCount(0);
-            setTotalPages(1);
-            return;
+          } else {
+            console.warn('Track Records sync skipped:', syncErr);
           }
-          console.warn('Track Records sync skipped:', syncErr);
-        }
+        });
       }
 
       const params = {
@@ -192,44 +191,97 @@ export default function AdminTrackRecordsTab() {
           String(r.paymentStatus || '').toUpperCase(),
         );
 
-  const registrationLabelOf = (r) => {
-    if (r.registrationLabel) return String(r.registrationLabel).toUpperCase();
-    if (r.registrationOk === true) return 'OK';
-    const overall = String(r.overallStatus || '').toUpperCase();
-    const fulfill = String(r.fulfillmentStatus || '').toUpperCase();
-    const isDomainReg = String(r.category || '').toLowerCase().includes('domain registration');
-    const opId = String(r.openproviderDomainId || '').trim();
-    if (isDomainReg && (!opId || opId.toUpperCase().startsWith('DEMO-'))) {
-      if (overall === 'FAILED' || fulfill.includes('FAIL') || paymentOkOf(r)) return 'FAIL';
-      return 'PENDING';
-    }
-    if (overall === 'FAILED' || fulfill.includes('FAIL')) return 'FAIL';
-    if ((overall === 'SUCCESS' || fulfill.includes('PROVISION')) && (!isDomainReg || opId)) return 'OK';
-    return 'PENDING';
-  };
-
-  /** Status shown in the dedicated operation column (Transfer / Renewal):
-   *  prefers the backend-computed operationStatus (e.g. EXPIRED for an
-   *  abandoned unpaid attempt), falls back to the registration label. */
-  const operationLabelOf = (r) => {
-    const op = String(r.operationStatus || r.operation_status || '');
-    if (op) return op.toUpperCase();
-    return registrationLabelOf(r);
-  };
-
-  /** Operation-aware: domain transfers / renewals are not registrations, so the
-   *  UI shows a dedicated operation column (Transfer / Renewal) and "—" under
-   *  the Registration column for them. Falls back to deriving from the category
-   *  for older API responses without operationType. */
+  /** Category-aware operation. The backend sends operationType for every
+   *  category (registration / transfer / renewal / fulfillment / provisioning /
+   *  acquisition / deal / service) so a technology purchase is never shown a
+   *  Registration status. Falls back to deriving from the category for older
+   *  API responses without operationType. */
   const operationOf = (r) => {
-    const t = String(r.operationType || '').toLowerCase();
-    if (t === 'transfer' || t === 'renewal') {
-      return { type: t, title: t === 'transfer' ? 'Transfer' : 'Renewal' };
-    }
+    const t = String(r.operationType || r.operation_type || '').toLowerCase();
+    const titles = {
+      registration: 'Registration',
+      transfer: 'Transfer',
+      renewal: 'Renewal',
+      fulfillment: 'Fulfillment',
+      provisioning: 'Provisioning',
+      acquisition: 'Acquisition',
+      deal: 'Deal',
+      service: 'Service',
+    };
+    if (titles[t]) return { type: t, title: titles[t] };
     const cat = String(r.category || '').toLowerCase();
     if (cat.includes('domain transfer')) return { type: 'transfer', title: 'Transfer' };
     if (cat.includes('renewal')) return { type: 'renewal', title: 'Renewal' };
+    if (cat.includes('domain registration')) return { type: 'registration', title: 'Registration' };
+    if (cat.includes('technology services')) return { type: 'provisioning', title: 'Provisioning' };
+    if (cat.includes('technology purchase')) return { type: 'fulfillment', title: 'Fulfillment' };
+    if (cat.includes('marketplace') || cat.includes('managed acquisition')) return { type: 'acquisition', title: 'Acquisition' };
+    if (cat.includes('venture')) return { type: 'deal', title: 'Deal' };
+    if (cat.includes('addon')) return { type: 'service', title: 'Service' };
     return { type: null, title: null };
+  };
+
+  /** Raw status token for the category's own operation (OK / FAIL / PENDING /
+   *  EXPIRED / CANCELLED / REFUNDED). Prefers the backend operationStatus;
+   *  falls back to the registration label for domain ops. Used for badge
+   *  coloring and the full "Operation — Status" label. */
+  const operationStatusOf = (r) => {
+    const op = String(r.operationStatus || r.operation_status || '');
+    if (op && op !== '—') return op.toUpperCase();
+    return registrationLabelOf(r);
+  };
+
+  /** Status word for the operation label — success is worded per category:
+   *  provider-powered subscriptions are "Active", everything else "Success". */
+  const operationStatusWordOf = (status, type) => {
+    const s = String(status || '').toUpperCase();
+    if (['OK', 'PROVISIONED', 'ACTIVE', 'SUCCESS'].includes(s)) {
+      return type === 'provisioning' ? 'Active' : 'Success';
+    }
+    if (s === 'FAIL' || s === 'FAILED') return 'Failed';
+    if (['PENDING', 'IN_PROGRESS', 'NOT_STARTED'].includes(s)) return 'Pending';
+    if (s === 'EXPIRED') return 'Expired';
+    if (s === 'CANCELLED') return 'Cancelled';
+    if (s === 'REFUNDED') return 'Refunded';
+    return null;
+  };
+
+  /** Full category-aware operation label, e.g. "Provisioning — Active",
+   *  "Fulfillment — Success", "Registration — Pending". Prefers the backend
+   *  operationLabel; composes it locally for older API responses. */
+  const operationLabelOf = (r) => {
+    const raw = r.operationLabel || r.operation_label;
+    if (raw && raw !== '—') return String(raw);
+    const op = operationOf(r);
+    if (!op.type) return '—';
+    const word = operationStatusWordOf(operationStatusOf(r), op.type);
+    return word ? `${op.title} — ${word}` : '—';
+  };
+
+  /** True only for real domain operation categories (registration / transfer /
+   *  renewal). Non-domain categories have no registration operation at all. */
+  const isDomainOperation = (r) => {
+    const t = operationOf(r).type;
+    return t === 'registration' || t === 'transfer' || t === 'renewal';
+  };
+
+  /** Registration label is only meaningful for domain operations — everything
+   *  else must render '—', never a guessed OK/FAIL/PENDING registration. */
+  const registrationLabelOf = (r) => {
+    if (!isDomainOperation(r)) return '—';
+    if (r.registrationLabel && r.registrationLabel !== '—') return String(r.registrationLabel).toUpperCase();
+    if (r.registrationOk === true) return 'OK';
+    const overall = String(r.overallStatus || '').toUpperCase();
+    const fulfill = String(r.fulfillmentStatus || '').toUpperCase();
+    const isDomainReg = operationOf(r).type === 'registration';
+    const opId = String(r.openproviderDomainId || '').trim();
+    // The label follows the real fulfillment state — an in-progress domain
+    // (payment captured, provider processing) is PENDING, never FAIL just
+    // because the provider id is not stamped yet.
+    if (overall === 'FAILED' || fulfill.includes('FAIL')) return 'FAIL';
+    if (overall === 'SUCCESS' && isDomainReg && (!opId || opId.toUpperCase().startsWith('DEMO-'))) return 'FAIL';
+    if ((overall === 'SUCCESS' || fulfill.includes('PROVISION')) && (!isDomainReg || opId)) return 'OK';
+    return 'PENDING';
   };
 
   /** Unpaid/abandoned domain attempt: a domain operation with no captured payment
@@ -372,7 +424,7 @@ export default function AdminTrackRecordsTab() {
         `RazorpayOrderId: ${r.razorpayOrderId || 'n/a'}`,
         `Domain/Item: ${r.itemName || 'n/a'}`,
         `Payment: ${paymentOkOf(r) ? 'OK' : 'FAIL'} (${r.paymentStatus || 'n/a'})`,
-        `${operationOf(r).title || 'Registration'}: ${operationLabelOf(r)}`,
+        `Operation: ${operationLabelOf(r)}`,
         `OpenProviderDomainId: ${r.openproviderDomainId || '(none)'}`,
         `ErrorSource: ${r.errorSource || 'n/a'}`,
         `ErrorCode: ${r.errorCode || 'n/a'}`,
@@ -454,10 +506,6 @@ export default function AdminTrackRecordsTab() {
   const successCount = records.filter((r) => (r.overallStatus || '').toUpperCase() === 'SUCCESS').length;
   const failedCount = records.filter((r) => (r.overallStatus || '').toUpperCase() === 'FAILED').length;
   const totalVolume = records.reduce((sum, r) => sum + (Number(r.amountCharged) || 0), 0);
-
-  // Dedicated operation columns only appear when records of that operation are
-  // present in the current view (Transfer / Renewal), keeping the table compact.
-  const showTransferColumn = records.some((r) => operationOf(r).type === 'transfer');
 
   return (
     <div className="space-y-6 text-slate-800">
@@ -664,17 +712,15 @@ export default function AdminTrackRecordsTab() {
                   <th className="py-3.5 px-4">Timestamp</th>
                   <th className="py-3.5 px-4">Internal Order ID</th>
                   <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">Domain</th>
+                  <th className="py-3.5 px-4">Item / Domain</th>
                   <th className="py-3.5 px-4">Buyer</th>
                   <th className="py-3.5 px-4">Phone</th>
                   <th className="py-3.5 px-4">Amount</th>
+                  <th className="py-3.5 px-4">RZP Order</th>
                   <th className="py-3.5 px-4">RZP Pay</th>
-                  <th className="py-3.5 px-4">OP ID</th>
                   <th className="py-3.5 px-4">Payment</th>
                   <th className="py-3.5 px-4">Payment Mode</th>
-                  <th className="py-3.5 px-4">Registration</th>
-                  {showTransferColumn && <th className="py-3.5 px-4">Transfer</th>}
-                  <th className="py-3.5 px-4">Renewal</th>
+                  <th className="py-3.5 px-4">Operation</th>
                   <th className="py-3.5 px-4">Error</th>
                   <th className="py-3.5 px-4">Overall</th>
                   <th className="py-3.5 px-4">Invoice No</th>
@@ -703,7 +749,7 @@ export default function AdminTrackRecordsTab() {
                         {r.category}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 max-w-[220px]" title={domainOf(r) || r.itemName}>
+                    <td className="py-3.5 px-4 max-w-[240px]" title={domainOf(r) || r.itemName}>
                       {domainOf(r) ? (
                         <>
                           <div className="font-bold text-slate-900 truncate">{domainOf(r)}</div>
@@ -716,12 +762,14 @@ export default function AdminTrackRecordsTab() {
                         </>
                       ) : (
                         <>
-                          <div className="font-semibold text-amber-700 truncate">
-                            {r.itemName || 'Domain not recovered'}
+                          <div className="font-semibold text-slate-900 truncate">
+                            {r.itemName || (isDomainOperation(r) ? 'Domain not recovered' : '—')}
                           </div>
-                          <div className="text-[10px] text-amber-600">
-                            Open Details / re-sync to recover from Razorpay
-                          </div>
+                          {isDomainOperation(r) && (
+                            <div className="text-[10px] text-amber-600">
+                              Open Details / re-sync to recover from Razorpay
+                            </div>
+                          )}
                         </>
                       )}
                     </td>
@@ -735,19 +783,11 @@ export default function AdminTrackRecordsTab() {
                     <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                       {formatInr(r.amountCharged)}
                     </td>
-                    <td
-                      className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-700"
-                      title={r.razorpayPaymentId || ''}
-                    >
-                      {shortId(r.razorpayPaymentId, 12)}
+                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-700" title={r.razorpayOrderId || undefined}>
+                      {r.razorpayOrderId ? shortId(r.razorpayOrderId, 12) : '—'}
                     </td>
-                    <td
-                      className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-700"
-                      title={r.openproviderDomainId || ''}
-                    >
-                      {r.openproviderDomainId ? shortId(r.openproviderDomainId, 10) : (
-                        <span className="text-rose-600 font-semibold">none</span>
-                      )}
+                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-700" title={r.razorpayPaymentId || undefined}>
+                      {r.razorpayPaymentId ? shortId(r.razorpayPaymentId, 12) : '—'}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
@@ -780,56 +820,23 @@ export default function AdminTrackRecordsTab() {
                       )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      {operationOf(r).type === 'registration' || !operationOf(r).type ? (
+                      {operationOf(r).type ? (
                         <span
                           className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
-                            registrationLabelOf(r) === 'OK'
+                            operationStatusOf(r) === 'OK'
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : registrationLabelOf(r) === 'FAIL'
+                              : operationStatusOf(r) === 'FAIL'
                               ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : ['EXPIRED', 'CANCELLED', 'REFUNDED'].includes(operationStatusOf(r))
+                              ? 'bg-slate-100 text-slate-600 border border-slate-300'
                               : 'bg-amber-50 text-amber-700 border border-amber-200'
                           }`}
+                          title={operationLabelOf(r)}
                         >
-                          {registrationLabelOf(r)}
+                          {operationLabelOf(r)}
                         </span>
                       ) : (
                         <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    {showTransferColumn && (
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        {operationOf(r).type === 'transfer' ? (
-                          <span
-                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
-                              operationLabelOf(r) === 'OK'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : operationLabelOf(r) === 'FAIL'
-                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}
-                          >
-                            {operationLabelOf(r)}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                    )}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      {r.renewalState && r.renewalState !== 'N/A' ? (
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${
-                            r.renewalState === 'OK'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : r.renewalState === 'FAILED'
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}
-                        >
-                          {r.renewalState}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">N/A</span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap max-w-[140px]">
@@ -1018,14 +1025,13 @@ export default function AdminTrackRecordsTab() {
                   </span>
                   <span
                     className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                      operationLabelOf(selectedRecord) === 'OK'
+                      operationStatusOf(selectedRecord) === 'OK'
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : operationLabelOf(selectedRecord) === 'FAIL'
+                        : operationStatusOf(selectedRecord) === 'FAIL'
                         ? 'bg-rose-50 text-rose-700 border border-rose-200'
                         : 'bg-amber-50 text-amber-700 border border-amber-200'
                     }`}
                   >
-                    {operationOf(selectedRecord).title || 'Registration'}{' '}
                     {operationLabelOf(selectedRecord)}
                   </span>
                 </div>
@@ -1062,7 +1068,7 @@ export default function AdminTrackRecordsTab() {
                         `RazorpayPaymentId: ${selectedRecord.razorpayPaymentId || 'n/a'}`,
                         `Domain/Item: ${selectedRecord.itemName || 'n/a'}`,
                         `Payment: ${paymentOkOf(selectedRecord) ? 'OK' : 'FAIL'} (${selectedRecord.paymentStatus || 'n/a'})`,
-                        `${operationOf(selectedRecord).title || 'Registration'}: ${operationLabelOf(selectedRecord)}`,
+                        `Operation: ${operationLabelOf(selectedRecord)}`,
                         `OpenProviderDomainId: ${selectedRecord.openproviderDomainId || '(none)'}`,
                         `Overall: ${selectedRecord.overallStatus || 'n/a'}`,
                         `Fulfillment: ${selectedRecord.fulfillmentStatus || 'n/a'}`,
@@ -1134,14 +1140,10 @@ export default function AdminTrackRecordsTab() {
                   </h4>
                   <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
                     <div className="col-span-2">
-                      <span className="text-slate-500">Domain:</span>{' '}
+                      <span className="text-slate-500">Item / Domain:</span>{' '}
                       <span className="font-bold text-slate-900">
-                        {domainOf(selectedRecord) || selectedRecord.domainName || 'Not recovered'}
+                        {domainOf(selectedRecord) || selectedRecord.domainName || selectedRecord.itemName || 'Not recovered'}
                       </span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-slate-500">Item Name:</span>{' '}
-                      <span className="font-bold text-slate-900">{selectedRecord.itemName}</span>
                     </div>
                     <div className="col-span-2 rounded-lg border border-emerald-100 bg-emerald-50/80 px-3 py-2">
                       <span className="text-slate-500">Tax invoice (user sees):</span>{' '}
@@ -1185,6 +1187,109 @@ export default function AdminTrackRecordsTab() {
                   </div>
                 </div>
 
+                {/* Category Business Details Section — real per-category fields,
+                    never domain-registration status for non-domain transactions */}
+                {selectedRecord.businessDetails && (
+                  <div className="space-y-3">
+                    <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-400 flex items-center gap-1.5">
+                      <PackageCheck size={14} className="text-indigo-600" />{' '}
+                      {selectedRecord.businessDetails.type === 'technology_purchase' && 'Technology Purchase Details'}
+                      {selectedRecord.businessDetails.type === 'technology_service' && 'Technology Service / Subscription Details'}
+                      {selectedRecord.businessDetails.type === 'venture' && 'Venture / Deal Details'}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                      {selectedRecord.businessDetails.type === 'technology_purchase' && (
+                        <>
+                          <div className="col-span-2">
+                            <span className="text-slate-500">Product:</span>{' '}
+                            <span className="font-bold text-slate-900">{selectedRecord.businessDetails.product || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Plan:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.plan || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Completion:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.completionStatus || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Expiry:</span>{' '}
+                            <span className="font-semibold text-slate-800">
+                              {selectedRecord.businessDetails.expiryDate
+                                ? new Date(selectedRecord.businessDetails.expiryDate).toLocaleDateString()
+                                : '—'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Sold At:</span>{' '}
+                            <span className="font-semibold text-slate-800">
+                              {selectedRecord.businessDetails.soldAt
+                                ? new Date(selectedRecord.businessDetails.soldAt).toLocaleDateString()
+                                : '—'}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                      {selectedRecord.businessDetails.type === 'technology_service' && (
+                        <>
+                          <div className="col-span-2">
+                            <span className="text-slate-500">Service:</span>{' '}
+                            <span className="font-bold text-slate-900">{selectedRecord.businessDetails.service || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Plan:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.plan || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Billing Cycle:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.billingCycle || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Subscription Status:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.subscriptionStatus || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Period Start:</span>{' '}
+                            <span className="font-semibold text-slate-800">
+                              {selectedRecord.businessDetails.periodStart
+                                ? new Date(selectedRecord.businessDetails.periodStart).toLocaleDateString()
+                                : '—'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Period End:</span>{' '}
+                            <span className="font-semibold text-slate-800">
+                              {selectedRecord.businessDetails.periodEnd
+                                ? new Date(selectedRecord.businessDetails.periodEnd).toLocaleDateString()
+                                : '—'}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                      {selectedRecord.businessDetails.type === 'venture' && (
+                        <>
+                          <div className="col-span-2">
+                            <span className="text-slate-500">Venture:</span>{' '}
+                            <span className="font-bold text-slate-900">{selectedRecord.businessDetails.venture || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Deal Status:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.dealStatus || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Escrow Status:</span>{' '}
+                            <span className="font-semibold text-slate-800">{selectedRecord.businessDetails.escrowStatus || '—'}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-slate-500">Seller ID:</span>{' '}
+                            <span className="font-mono text-[11px] text-slate-800">{selectedRecord.businessDetails.sellerId || '—'}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Payment Information Section */}
                 <div className="space-y-3">
                   <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-400 flex items-center gap-1.5">
@@ -1210,10 +1315,10 @@ export default function AdminTrackRecordsTab() {
                   </div>
                 </div>
 
-                {/* Fulfillment / Registrar Section */}
+                {/* Fulfillment / Provider Section */}
                 <div className="space-y-3">
                   <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-400 flex items-center gap-1.5">
-                    <Layers size={14} className="text-indigo-600" /> Registrar & Provisioning Details
+                    <Layers size={14} className="text-indigo-600" /> Fulfillment & Provider Details
                   </h4>
                   <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
                     <div>
@@ -1224,12 +1329,20 @@ export default function AdminTrackRecordsTab() {
                       <span className="text-slate-500">Provision Attempts:</span>{' '}
                       <span className="font-bold text-slate-900">{selectedRecord.provisionAttempts}</span>
                     </div>
-                    <div className="col-span-2">
-                      <span className="text-slate-500">OpenProvider Domain ID:</span>{' '}
-                      <span className="font-mono text-[11px] font-bold text-slate-900">
-                        {selectedRecord.openproviderDomainId || 'N/A'}
-                      </span>
-                    </div>
+                    {isDomainOperation(selectedRecord) && (
+                      <div className="col-span-2">
+                        <span className="text-slate-500">OpenProvider Domain ID:</span>{' '}
+                        <span className="font-mono text-[11px] font-bold text-slate-900">
+                          {selectedRecord.openproviderDomainId || 'N/A'}
+                        </span>
+                      </div>
+                    )}
+                    {selectedRecord.renewalState && selectedRecord.renewalState !== 'N/A' && (
+                      <div>
+                        <span className="text-slate-500">Renewal State:</span>{' '}
+                        <span className="font-semibold text-slate-800">{selectedRecord.renewalState}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 </div>

@@ -39,6 +39,9 @@ def main():
         if ($uri ~* "^/(ventures|domains|technology|auction|creator-auction|technology/auction|software-auction)/[0-9a-fA-F-]+/?$") {
             set $is_listing "Y";
         }
+        if ($uri ~* "^/s/[A-Za-z0-9_-]+/?$") {
+            set $is_listing "Y";
+        }
         if ($uri ~* "^/ventures/deals/[0-9a-fA-F-]+/?$") {
             set $is_listing "Y";
         }
@@ -54,6 +57,7 @@ def main():
         
         set $bot_listing "$is_bot$is_listing";
         if ($bot_listing = "YY") {
+            rewrite ^/s/([A-Za-z0-9_-]+)/?$ /api/v1/public/share-preview/s/$1 last;
             rewrite ^/ventures/deals/([0-9a-f-]+)/?$ /api/v1/public/share-preview/deals/$1 last;
             rewrite ^/ventures/([0-9a-f-]+)/?$ /api/v1/public/share-preview/ventures/$1 last;
             rewrite ^/domains/([0-9a-f-]+)/?$ /api/v1/public/share-preview/domains/$1 last;
@@ -84,16 +88,54 @@ def main():
     if re.search(pattern, content):
         content = re.sub(pattern, replacement, content)
         print("Updated Nginx location block via regex.")
+    elif "facebookexternalhit" in content:
+        # Config already contains the bot rules from an earlier deploy (the
+        # regex target no longer exists). Idempotently inject the /s/{token}
+        # share-preview rules so tokenized share links also get the rich OG
+        # page — this covers servers patched before the /s/ rule existed.
+        print("Config already contains bot rules; injecting /s/ share-preview rules.")
+        content = inject_share_s_rules(content)
     else:
-        print("Target location block not found via regex.")
-        if "facebookexternalhit" in content:
-            print("Config already contains bot rules.")
-        else:
-            print("Config does not contain target block. Writing unmodified backup.")
+        print("Config does not contain target block. Writing unmodified backup.")
 
     with open(config_path, "w") as f:
         f.write(content)
     print("Nginx config file written successfully.")
+
+
+def inject_share_s_rules(content: str) -> str:
+    """Insert the /s/{token} crawler rules into an already-patched nginx config.
+
+    Idempotent: a no-op when the rules are already present, so running the
+    updater repeatedly never duplicates them.
+    """
+    if "share-preview/s/" in content:
+        print("  /s/ share-preview rules already present — skipping.")
+        return content
+
+    # 1) is_listing check for /s/{token} (inserted before the bot_listing flag)
+    listing_anchor = 'set $bot_listing "$is_bot$is_listing";'
+    if listing_anchor not in content:
+        print("  WARNING: could not find $bot_listing anchor; /s/ listing check NOT injected.")
+    else:
+        s_listing = (
+            '        if ($uri ~* "^/s/[A-Za-z0-9_-]+/?$") {\n'
+            '            set $is_listing "Y";\n'
+            '        }\n'
+            '        \n'
+        )
+        content = content.replace(listing_anchor, s_listing + "        " + listing_anchor, 1)
+
+    # 2) rewrite rule inside the bot_listing block
+    rewrite_anchor = 'if ($bot_listing = "YY") {'
+    if rewrite_anchor not in content:
+        print("  WARNING: could not find $bot_listing=YY anchor; /s/ rewrite NOT injected.")
+    else:
+        s_rewrite = '            rewrite ^/s/([A-Za-z0-9_-]+)/?$ /api/v1/public/share-preview/s/$1 last;\n'
+        content = content.replace(rewrite_anchor, rewrite_anchor + "\n" + s_rewrite, 1)
+
+    print("  /s/ share-preview rules injected.")
+    return content
 
 if __name__ == "__main__":
     main()

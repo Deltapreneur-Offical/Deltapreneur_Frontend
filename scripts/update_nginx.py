@@ -2,13 +2,49 @@ import re
 import sys
 import os
 
+# Canonical config maintained by this deploy (site definition + all routes).
+CONFIG_PATH = "/etc/nginx/sites-available/cobrother"
+# The file nginx actually loads. Ubuntu convention is a symlink into
+# sites-available; on this production box it is a SEPARATE physical file, so
+# nginx was loading a stale copy that never received deploy updates.
+ACTIVE_PATH = "/etc/nginx/sites-enabled/cobrother"
+BACKUP_PATH = "/etc/nginx/sites-available/cobrother.save"
+
+
+def sync_active_config(content: str, config_path: str, active_path: str) -> None:
+    """Make the config nginx loads match the freshly patched canonical config.
+
+    Idempotent by construction: the patching logic never duplicates rules and
+    writing identical content is a no-op for nginx. Never creates files and
+    never overwrites anything that is not clearly the cobrother active config
+    (a symlink to the canonical file, or a separate physical file).
+    """
+    if os.path.islink(active_path):
+        target = os.path.realpath(active_path)
+        if os.path.abspath(target) == os.path.abspath(config_path):
+            print(f"Active config {active_path} -> {target}: already in sync (symlink).")
+        else:
+            print(f"WARNING: active config {active_path} is a symlink to {target}; not modified.")
+        return
+    if not os.path.exists(active_path):
+        print(f"WARNING: active config {active_path} does not exist - config is not enabled in nginx.")
+        return
+    if os.path.exists(config_path) and os.path.samefile(config_path, active_path):
+        print(f"Active config {active_path} is the same file as {config_path}: already in sync.")
+        return
+    with open(active_path, "w") as f:
+        f.write(content)
+    print(f"Active config updated: {active_path}")
+
+
 def main():
-    config_path = "/etc/nginx/sites-available/cobrother"
-    backup_path = "/etc/nginx/sites-available/cobrother.save"
-    
+    config_path = CONFIG_PATH
+    backup_path = BACKUP_PATH
+    active_path = ACTIVE_PATH
+
     # Always read from the clean backup if it exists, to ensure we have a clean source configuration
     source_path = backup_path if os.path.exists(backup_path) else config_path
-    
+
     print(f"Reading configuration source from: {source_path}")
     try:
         with open(source_path, "r") as f:
@@ -84,7 +120,7 @@ def main():
 
     # Robust regex matching location / block with try_files to index.html
     pattern = r"location\s+/\s*\{[^{}]*try_files[^{}]+/index.html;[^{}]*\}"
-    
+
     if re.search(pattern, content):
         content = re.sub(pattern, replacement, content)
         print("Updated Nginx location block via regex.")
@@ -102,6 +138,10 @@ def main():
         f.write(content)
     print("Nginx config file written successfully.")
 
+    # Keep the config nginx actually loads in sync with the canonical file so
+    # deploy updates always reach the ACTIVE configuration (sites-enabled).
+    sync_active_config(content, config_path, active_path)
+
 
 def inject_share_s_rules(content: str) -> str:
     """Insert the /s/{token} crawler rules into an already-patched nginx config.
@@ -110,7 +150,7 @@ def inject_share_s_rules(content: str) -> str:
     updater repeatedly never duplicates them.
     """
     if "share-preview/s/" in content:
-        print("  /s/ share-preview rules already present — skipping.")
+        print("  /s/ share-preview rules already present - skipping.")
         return content
 
     # 1) is_listing check for /s/{token} (inserted before the bot_listing flag)

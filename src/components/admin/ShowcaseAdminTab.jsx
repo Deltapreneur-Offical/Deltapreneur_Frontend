@@ -772,8 +772,8 @@ export default function ShowcaseAdminTab() {
                         ) : (
                           <button
                             onClick={() => toggleSelect(it, true)}
-                            disabled={busy || !it.available || readOnly}
-                            title={readOnly ? 'Disabled — read-only preview' : (!it.available ? 'Unavailable domains cannot be published' : 'Publish to Marketplace')}
+                            disabled={busy || readOnly}
+                            title={readOnly ? 'Disabled — read-only preview' : 'Publish to Marketplace (revalidated live before publishing)'}
                             className="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                           >
                             Tick

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, RefreshCw, CheckCircle2, AlertCircle, Globe, ArrowRight, Loader2, Lock, ShieldAlert, Key, Plus, ChevronRight, X, ShoppingCart } from 'lucide-react';
+import { Search, RefreshCw, CheckCircle2, AlertCircle, AlertTriangle, Globe, ArrowRight, Loader2, Lock, ShieldAlert, Key, Plus, ChevronRight, X, ShoppingCart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
@@ -169,6 +169,7 @@ export default function DomainStorefrontPage() {
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState('');
   const [transferSuccess, setTransferSuccess] = useState('');
+  const [showTransferConfirm, setShowTransferConfirm] = useState(false);
 
   /* ─ Transfer-Out states ─ */
   const [outDomain, setOutDomain] = useState('');
@@ -557,16 +558,32 @@ export default function DomainStorefrontPage() {
       return;
     }
     
-    // Form Safety: prevent duplicate transfer submission
-    const existingTransfer = transferOrders.find(o => 
+    // Form Safety: prevent duplicate submission only for genuinely active/paid
+    // transfers. An unpaid/cancelled checkout (no captured Razorpay payment) is
+    // NOT a blocker — the customer may retry payment for the same attempt.
+    const blockedTransfer = transferOrders.find(o =>
       o.domain.toLowerCase() === transferDomain.trim().toLowerCase() &&
-      !['FAILED', 'EXPIRED', 'REFUNDED'].includes(o.status)
+      (
+        o.razorpayPaymentId ||
+        ['ACTIVE', 'REGISTRATION_PENDING', 'PAYMENT_COMPLETED'].includes((o.status || '').toUpperCase()) ||
+        (o.transferStatus || '').toUpperCase() === 'PENDING'
+      )
     );
-    if (existingTransfer) {
+    if (blockedTransfer) {
       setTransferError('You already have an active or pending transfer request for this domain. Check Your Transfers history below.');
       return;
     }
 
+    // Step 1: show the EPP/Auth Code confirmation. Razorpay is NOT opened here
+    // and NO payment order is created — the user must explicitly choose CONTINUE.
+    setShowTransferConfirm(true);
+  };
+
+  const handleTransferConfirmContinue = async () => {
+    // Step 2: user confirmed the EPP/Auth Code — now proceed to the existing
+    // payment flow (create Razorpay order + open checkout).
+    setShowTransferConfirm(false);
+    setTransferError(''); setTransferSuccess('');
     setTransferLoading(true);
     try {
       const { payDomainTransfer } = await import('../utils/domainTransferCheckout');
@@ -1038,11 +1055,6 @@ export default function DomainStorefrontPage() {
                       />
                     </div>
 
-                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      Make sure your EPP / Authorization Code is correct. The code
-                      will be verified when the transfer is submitted.
-                    </p>
-
                     <div className="pt-2">
                       <button
                         type="submit"
@@ -1065,6 +1077,116 @@ export default function DomainStorefrontPage() {
                 </section>
               )}
 
+              {/* ══ EPP / Auth Code confirmation — shown only after Submit ══ */}
+              {showTransferConfirm && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+                  style={{ background: 'rgba(15, 23, 42, 0.55)' }}
+                  onClick={() => setShowTransferConfirm(false)}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="transfer-confirm-title"
+                >
+                  <div
+                    className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl p-6 sm:p-7 space-y-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <h3
+                          id="transfer-confirm-title"
+                          className="text-sm font-bold text-amber-900 uppercase tracking-wide"
+                        >
+                          Important: Please Check Your EPP/Auth Code Carefully
+                        </h3>
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          Confirm your transfer details before proceeding to payment.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Entered details for the final double-check */}
+                    <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 space-y-1.5">
+                      <div className="flex items-center justify-between gap-3 text-xs">
+                        <span className="font-bold text-gray-500 uppercase tracking-wide">Domain</span>
+                        <span className="font-bold text-gray-900 break-all">{transferDomain.trim()}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 text-xs">
+                        <span className="font-bold text-gray-500 uppercase tracking-wide">EPP / Auth Code</span>
+                        <span className="font-mono font-bold text-gray-900 break-all">{transferAuthCode.trim()}</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3.5 space-y-2.5">
+                      <p className="text-xs text-amber-800/90 leading-relaxed">
+                        Before proceeding with payment, please make sure your EPP/Auth Code is entered exactly as provided by your current registrar.
+                      </p>
+                      <p className="text-xs text-amber-800/90 leading-relaxed">
+                        Some characters can look very similar and are easy to confuse, for example:
+                      </p>
+                      <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        <li className="flex items-center gap-1.5 text-xs text-amber-900">
+                          <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">I</code>
+                          <span>— uppercase letter “i”</span>
+                        </li>
+                        <li className="flex items-center gap-1.5 text-xs text-amber-900">
+                          <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">l</code>
+                          <span>— lowercase letter “L”</span>
+                        </li>
+                        <li className="flex items-center gap-1.5 text-xs text-amber-900">
+                          <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">1</code>
+                          <span>— number one</span>
+                        </li>
+                        <li className="flex items-center gap-1.5 text-xs text-amber-900">
+                          <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">O</code>
+                          <span>— uppercase letter “o”</span>
+                        </li>
+                        <li className="flex items-center gap-1.5 text-xs text-amber-900">
+                          <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">0</code>
+                          <span>— number zero</span>
+                        </li>
+                      </ul>
+                      <p className="text-xs text-amber-800/90 leading-relaxed">
+                        Please copy and paste the EPP/Auth Code directly from your current registrar whenever possible. Avoid adding extra spaces before or after the code.
+                      </p>
+                      <p className="text-xs text-amber-800/90 leading-relaxed">
+                        The EPP/Auth Code is verified during the transfer process. If the code is incorrect, the transfer will fail and your payment will be automatically refunded.
+                      </p>
+                      <p className="text-xs font-semibold text-amber-900">
+                        Please double-check the code before making the payment.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row-reverse gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleTransferConfirmContinue}
+                        disabled={transferLoading}
+                        className="inline-flex h-11 items-center justify-center gap-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 rounded-xl transition-all shadow-sm select-none"
+                      >
+                        {transferLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Opening Checkout...
+                          </>
+                        ) : (
+                          <>Continue <ArrowRight className="w-4 h-4" /></>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowTransferConfirm(false)}
+                        disabled={transferLoading}
+                        className="inline-flex h-11 items-center justify-center gap-2 px-6 text-sm font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-200 rounded-xl disabled:opacity-50 transition-all shadow-sm select-none"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {transferSubMode === 'in' && transferOrders.length > 0 && (
                 <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mt-8 space-y-4">
                   <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider border-b border-gray-100 pb-3">
@@ -1075,6 +1197,8 @@ export default function DomainStorefrontPage() {
                       const isComplete = (order.status || '').toUpperCase() === 'ACTIVE';
                       const isPending = (order.status || '').toUpperCase() === 'REGISTRATION_PENDING';
                       const isPaidFailed = ['PAYMENT_COMPLETED', 'PROVISION_FAILED'].includes((order.status || '').toUpperCase());
+                      const isCancelled = !order.razorpayPaymentId &&
+                        ['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((order.status || '').toUpperCase());
                       
                       let uiMsg = order.status;
                       let badgeColor = 'bg-gray-50 text-gray-600 border-gray-200';
@@ -1088,9 +1212,9 @@ export default function DomainStorefrontPage() {
                       } else if (isPaidFailed) {
                         uiMsg = 'Payment received — your domain transfer needs processing.';
                         badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-                      } else if (order.status === 'CREATED' || order.status === 'PAYMENT_PENDING') {
-                        uiMsg = 'Payment pending.';
-                        badgeColor = 'bg-gray-50 text-gray-600 border-gray-200';
+                      } else if (isCancelled) {
+                        uiMsg = 'Payment Cancelled.';
+                        badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
                       }
 
                       return (

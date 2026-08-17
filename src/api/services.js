@@ -223,6 +223,7 @@ export const domainStorefrontAPI = {
   getTransferQuote: (body) => api.post('/api/v1/domain/storefront/transfer/quote', body),
   createTransferPaymentOrder: (body) => api.post('/api/v1/domain/storefront/transfer/payment', body),
   verifyTransferPayment: (body) => api.post('/api/v1/domain/storefront/transfer/payment/verify', body),
+  retryTransferPayment: (orderId) => api.post(`/api/v1/domain/storefront/orders/${orderId}/transfer/payment/retry`),
   purchaseEmail: (orderId, mailbox) =>
     api.post(`/api/v1/domain/storefront/orders/${orderId}/addons/email`, { mailbox }),
   createEmailAddonPayment: (orderId, body) =>

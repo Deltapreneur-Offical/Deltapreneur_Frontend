@@ -88,6 +88,15 @@ function StatusBadge({ status, lifecycleStatus, isTransfer, transferStatus }) {
         </span>
       );
     }
+    // Unpaid/cancelled checkout — the customer never completed payment, so it
+    // is NOT an active/pending transfer and must never read as one.
+    if (ts === 'PAYMENT_PENDING' || ['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((status || '').toUpperCase())) {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50/70 border border-amber-200/80 px-3 py-1 rounded-full shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" /> PAYMENT CANCELLED
+        </span>
+      );
+    }
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] px-3 py-1 rounded-full shadow-sm">
         <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] inline-block animate-pulse" /> TRANSFER {ts ? ts.replace(/_/g, ' ') : 'PENDING'}
@@ -152,6 +161,7 @@ export default function DomainRegistrationOrderPage() {
   const [showRenewCheckout, setShowRenewCheckout] = useState(false);
   const [renewPeriod, setRenewPeriod] = useState(1);
   const [renewPayLoading, setRenewPayLoading] = useState(false);
+  const [retryPayLoading, setRetryPayLoading] = useState(false);
   const [renewQuote, setRenewQuote] = useState(null);
   const [renewQuoteLoading, setRenewQuoteLoading] = useState(false);
   const [config, setConfig] = useState(null);
@@ -239,6 +249,48 @@ export default function DomainRegistrationOrderPage() {
       setActionMessage(body?.message || 'Registration retry started.');
       await loadOrder(false);
     } catch (err) { setActionError(readApiError(err, 'Retry failed.')); }
+  };
+
+  const handleRetryPayment = async () => {
+    setActionError(''); setActionMessage('');
+    setRetryPayLoading(true);
+    try {
+      // Backend reuses the existing unpaid Razorpay order (or mints a fresh one)
+      // for this cancelled attempt — it never touches OpenProvider here.
+      const { data: payPayload } = await domainStorefrontAPI.retryTransferPayment(orderId);
+      const payData = payPayload?.data ?? payPayload;
+      const { openRazorpayCheckout } = await import('../utils/razorpayCheckout');
+      await new Promise((resolve, reject) => {
+        openRazorpayCheckout({
+          orderData: payData,
+          user,
+          description: `Transfer ${order?.domain || 'domain'}`,
+          onSuccess: async (response) => {
+            try {
+              const { data } = await domainStorefrontAPI.verifyTransferPayment({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                registrationOrderId: payData.registrationOrderId,
+              });
+              resolve(data?.data ?? data);
+            } catch (err) { reject(err); }
+          },
+          onFailure: (err) => reject(err),
+          onDismiss: () => reject(new Error('Payment cancelled')),
+        });
+      });
+      setActionMessage('Payment received — your domain transfer is being processed.');
+      await loadOrder(false);
+    } catch (err) {
+      // A plain Razorpay dismissal/cancel is not an error: the order stays
+      // PAYMENT CANCELLED and Retry Payment remains available.
+      if ((err?.message || '').toLowerCase().includes('payment cancelled')) {
+        setActionError('');
+      } else {
+        setActionError(readApiError(err, 'Retry payment failed.'));
+      }
+    } finally { setRetryPayLoading(false); }
   };
 
    const handleRenew = () => {
@@ -329,6 +381,14 @@ export default function DomainRegistrationOrderPage() {
   const isActive     = order.status === 'ACTIVE' || order.lifecycleStatus === 'registration_confirmed';
   const nameservers  = Array.isArray(order.domainManagement?.nameservers) ? order.domainManagement.nameservers : [];
   const legacyResellerClub = Boolean(order.domainManagement?.legacyResellerClub);
+  // Payment was never actually completed (cancelled/abandoned checkout): no
+  // captured Razorpay payment and the order is still in an unpaid state. The
+  // Transfer Progress box must NOT appear for these — it only describes a
+  // transfer that is actually being processed after payment.
+  const paymentNotCompleted =
+    !order.razorpayPaymentId &&
+    (['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((order.status || '').toUpperCase()) ||
+     (order.transferStatus || '').toUpperCase() === 'PAYMENT_PENDING');
   const expiresAt    = order.expiresAt ? new Date(order.expiresAt) : null;
   const daysLeft     = expiresAt ? Math.floor((expiresAt - Date.now()) / 86400000) : null;
   const expiringSoon = daysLeft !== null && daysLeft < 90;
@@ -529,7 +589,7 @@ export default function DomainRegistrationOrderPage() {
                           icon={Activity} 
                           label="Transfer Status" 
                           value={
-                            order.transferStatus === 'PAYMENT_PENDING' ? 'Payment Received / Pending Processing' :
+                            order.transferStatus === 'PAYMENT_PENDING' ? 'Payment Cancelled — the payment was not completed. Use Retry Payment below to try again.' :
                             order.transferStatus === 'PROCESSING' ? 'Processing Transfer' :
                             order.transferStatus === 'COMPLETED' ? 'Transfer Completed' :
                             order.transferStatus === 'FAILED' ? 'Transfer Failed' :
@@ -559,6 +619,13 @@ export default function DomainRegistrationOrderPage() {
                           </button>
                         )}
 
+                        {order.canRetryPayment && (
+                          <button type="button" onClick={handleRetryPayment} disabled={retryPayLoading}
+                            className="inline-flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all rounded-xl shadow-sm disabled:opacity-50">
+                            {retryPayLoading ? 'Opening Checkout...' : 'Retry Payment'}
+                          </button>
+                        )}
+
                         {(order.taxInvoiceNumber || order.invoiceNumber) && (
                           <button type="button" onClick={handleInvoice}
                             className="inline-flex items-center justify-center gap-2 h-11 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
@@ -570,18 +637,21 @@ export default function DomainRegistrationOrderPage() {
                     </div>
                   </div>
 
-                  {/* Sidebar stats/info */}
-                  <div className="space-y-6">
-                    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
-                      <div className="flex items-center gap-2 text-indigo-600">
-                        <Activity className="w-5 h-5" />
-                        <h3 className="text-sm font-bold uppercase tracking-wider">Transfer Progress</h3>
+                  {/* Sidebar stats/info — Transfer Progress only once payment has
+                      actually been completed and the transfer is processing */}
+                  {!paymentNotCompleted && (
+                    <div className="space-y-6">
+                      <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
+                        <div className="flex items-center gap-2 text-indigo-600">
+                          <Activity className="w-5 h-5" />
+                          <h3 className="text-sm font-bold uppercase tracking-wider">Transfer Progress</h3>
+                        </div>
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          Domain transfers typically take 5-7 days to complete after initiation. Ensure you have unlocked the domain at your previous registrar and provided the correct EPP/Auth code.
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">
-                        Domain transfers typically take 5-7 days to complete after initiation. Ensure you have unlocked the domain at your previous registrar and provided the correct EPP/Auth code.
-                      </p>
                     </div>
-                  </div>
+                  )}
 
                 </div>
               ) : (

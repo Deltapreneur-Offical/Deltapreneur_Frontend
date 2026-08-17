@@ -1038,6 +1038,11 @@ export default function DomainStorefrontPage() {
                       />
                     </div>
 
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Make sure your EPP / Authorization Code is correct. The code
+                      will be verified when the transfer is submitted.
+                    </p>
+
                     <div className="pt-2">
                       <button
                         type="submit"

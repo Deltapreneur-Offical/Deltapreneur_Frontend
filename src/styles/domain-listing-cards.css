@@ -1833,12 +1833,32 @@
    venture listing grid, so no other marketplace layout is affected and the
    desktop grid (md and up) stays exactly as it was. */
 @media (max-width: 639px) {
-  .venture-listing-grid {
+  /* One compact, centered column on phones — cards never stretch across the
+     whole viewport. Width caps at 18rem (288px, ~desktop card width);
+     margin-inline: auto keeps the column centered on larger phones. */
+  .venture-listing-grid,
+  .domain-listing-grid,
+  .technology-listing-grid {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 1rem !important;
+    max-width: min(100%, 18rem);
+    margin-inline: auto;
   }
 
-  .venture-listing-grid .listing-card-glow-shell {
+  .venture-listing-grid .listing-card-glow-shell,
+  .domain-listing-grid .listing-card-glow-shell,
+  .technology-listing-grid .listing-card-glow-shell {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Auctions dashboard grids — same compact, centered mobile cards */
+  .cb-mobile-card-grid {
+    max-width: min(100%, 18rem);
+    margin-inline: auto;
+  }
+
+  .cb-mobile-card-grid > * {
     min-width: 0;
     max-width: 100%;
   }

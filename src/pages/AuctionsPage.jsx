@@ -752,7 +752,7 @@ export default function AuctionsPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
               {trackedFiltered.map((auction) => (
                 <TrackedAuctionCard
                   key={`${auction.auctionType || 'x'}-${auction.id}`}
@@ -811,7 +811,7 @@ export default function AuctionsPage() {
                     {shownDomains.length} live
                   </span>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownDomains.map(auction => (
                     <DomainAuctionCard
                       key={auction.id}
@@ -835,7 +835,7 @@ export default function AuctionsPage() {
                     {shownSoftware.length} live
                   </span>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownSoftware.map(auction => (
                     <SoftwareAuctionCard
                       key={auction.id}
@@ -859,7 +859,7 @@ export default function AuctionsPage() {
                     {shownCommunity.length} live
                   </span>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownCommunity.map(auction => (
                     <CommunityAuctionCard
                       key={auction.id}

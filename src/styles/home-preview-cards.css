@@ -22,18 +22,31 @@
   display: none;
 }
 
-/* ─── Mobile < 640px: outer=1rem + inner=1rem = 2rem total each side ───────── */
+/* ─── Mobile < 640px: outer=1rem + inner=1rem = 2rem total each side ─────────
+   Cards are capped at 18rem (288px, ~desktop card width) and centered so they
+   never stretch across the viewport. The row still bleeds edge-to-edge for
+   smooth scrolling; matching padding + scroll-padding keep the first card
+   visually centered. */
 @media (max-width: 639px) {
   .home-preview-row {
     /* negate the 2rem total container padding to bleed edge-to-edge */
     margin-left: -2rem !important;
     margin-right: -2rem !important;
-    padding-inline: 0 !important;
+    padding-inline: max(1.5rem, calc((100vw - 18rem) / 2)) !important;
     gap: 1rem !important;
     width: auto !important;
+    /* keep the capped first card centered instead of snapping it flush */
+    scroll-padding-inline: max(1.5rem, calc((100vw - 18rem) / 2));
   }
-  .home-preview-row__item:first-child { margin-left: 1rem !important; }
-  .home-preview-row__item:last-child  { margin-right: 1rem !important; }
+  .home-preview-row .home-preview-row__item {
+    width: min(calc(100vw - 3rem), 18rem) !important;
+  }
+  /* Operations / Business Solutions cards follow the same compact width */
+  .home-preview-row .home-preview-row__item:has(.home-operations-preview-card) {
+    width: min(calc(100vw - 3rem), 18rem) !important;
+  }
+  .home-preview-row__item:first-child { margin-left: 0 !important; }
+  .home-preview-row__item:last-child  { margin-right: 0 !important; }
   .home-auto-scroll-row {
     margin-left: -2rem !important;
     margin-right: -2rem !important;
@@ -46,19 +59,35 @@
     padding-right: 1rem;
     box-sizing: border-box;
   }
+  /* Compact capped cards in the marquee rows too (base rule lives later) */
+  .home-auto-scroll-row .home-auto-scroll-row__item {
+    width: min(calc(100vw - 2.5rem), 18rem) !important;
+  }
+  .home-auto-scroll-row .home-auto-scroll-row__item:has(.home-operations-preview-card) {
+    width: min(calc(100vw - 1.75rem), 18rem) !important;
+  }
 }
 
-/* ─── Large phone 640–767px: outer=1.5rem + inner=1.5rem = 3rem each side ─── */
+/* ─── Large phone 640–767px: outer=1.5rem + inner=1.5rem = 3rem each side ───
+   Same compact centered cards as below 640px — a single card here would
+   otherwise stretch to nearly the full viewport width. */
 @media (min-width: 640px) and (max-width: 767px) {
   .home-preview-row {
     margin-left: -3rem !important;
     margin-right: -3rem !important;
-    padding-inline: 0 !important;
+    padding-inline: max(1.5rem, calc((100vw - 18rem) / 2)) !important;
     gap: 1rem !important;
     width: auto !important;
+    scroll-padding-inline: max(1.5rem, calc((100vw - 18rem) / 2));
   }
-  .home-preview-row__item:first-child { margin-left: 1rem !important; }
-  .home-preview-row__item:last-child  { margin-right: 1rem !important; }
+  .home-preview-row .home-preview-row__item {
+    width: min(calc(100vw - 3.5rem), 18rem) !important;
+  }
+  .home-preview-row .home-preview-row__item:has(.home-operations-preview-card) {
+    width: min(calc(100vw - 3.5rem), 18rem) !important;
+  }
+  .home-preview-row__item:first-child { margin-left: 0 !important; }
+  .home-preview-row__item:last-child  { margin-right: 0 !important; }
   .home-auto-scroll-row {
     margin-left: -3rem !important;
     margin-right: -3rem !important;
@@ -70,6 +99,12 @@
     padding-left: 1rem;
     padding-right: 1rem;
     box-sizing: border-box;
+  }
+  .home-auto-scroll-row .home-auto-scroll-row__item {
+    width: min(calc(100vw - 2.5rem), 18rem) !important;
+  }
+  .home-auto-scroll-row .home-auto-scroll-row__item:has(.home-operations-preview-card) {
+    width: min(calc(100vw - 2.5rem), 18rem) !important;
   }
 }
 

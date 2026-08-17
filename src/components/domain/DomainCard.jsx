@@ -34,6 +34,12 @@ export function normalizeDomainCardItem(raw = {}) {
   // Display/cart base is always 1-year; minPeriodYears is metadata for checkout only.
   const period = 1;
   const registryPremium = isRegistryPremium(raw);
+  // Aftermarket origin (afternic/sedo) + managed-acquisition flag are carried
+  // through so the shared card keeps routing/metadata intact when reused by the
+  // OP Premium Showcase. Never rendered as text.
+  const premiumProvider = raw.premiumProvider
+    ? String(raw.premiumProvider).toLowerCase()
+    : null;
 
   // [RENEWAL_PRICE_DEBUG] Log raw vs normalized renewal price to trace the pipeline.
   if (raw.isPremium || registryPremium) {
@@ -62,6 +68,8 @@ export function normalizeDomainCardItem(raw = {}) {
     minPeriodYears,
     style: raw.style || raw.brand_category || null,
     listing: raw.listing || null,
+    premiumProvider,
+    managedAcquisition: raw.managedAcquisition === true || raw.managed_acquisition === true,
   };
 }
 
@@ -106,6 +114,9 @@ export default function DomainCard({
         period: item.period,
         minPeriodYears: item.minPeriodYears,
         isPremium: item.isPremium,
+        // Aftermarket origin (Afternic/Sedo) — backend revalidation/confirm uses
+        // this to route through the aftermarket/managed-acquisition path.
+        premiumProvider: item.premiumProvider || undefined,
       })
     : null;
 
@@ -178,6 +189,16 @@ export default function DomainCard({
           ) : item.isPremium ? (
             <p className="text-xs text-gray-400">Renewal price unavailable</p>
           ) : null}
+          {item.managedAcquisition && (
+            <div className="mt-1.5 space-y-0.5">
+              <div className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-200">
+                Managed acquisition
+              </div>
+              <p className="text-xs leading-snug text-amber-700/90">
+                Personalized acquisition — no online payment. Our team guides you through the purchase.
+              </p>
+            </div>
+          )}
         </div>
         <div className="mt-3.5 flex flex-wrap items-center gap-2">
           {cartProps ? (
@@ -263,6 +284,16 @@ export default function DomainCard({
         ) : item.isPremium ? (
           <p className="text-[11px] text-gray-400">Renewal price unavailable</p>
         ) : null}
+        {item.managedAcquisition && (
+          <div className="mt-1.5 space-y-0.5">
+            <div className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-200">
+              Managed acquisition
+            </div>
+            <p className="text-[11px] leading-snug text-amber-700/90">
+              Personalized acquisition — no online payment. Our team guides you through the purchase.
+            </p>
+          </div>
+        )}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {cartProps ? (

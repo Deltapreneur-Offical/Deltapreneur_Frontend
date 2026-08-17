@@ -18,7 +18,7 @@ export function domainToProductId(domain) {
 /**
  * Build cart metadata. Price is always INR (ex-GST **1-year** selling price with commission baked in).
  * Registration period is selected later in Cart/Checkout — do not bake min-period into line price here.
- * @param {{ domain: string, tld?: string, registrationPriceInr?: number, price?: number, period?: number, minPeriodYears?: number, isPremium?: boolean }} item
+ * @param {{ domain: string, tld?: string, registrationPriceInr?: number, price?: number, period?: number, minPeriodYears?: number, isPremium?: boolean, premiumProvider?: string }} item
  */
 export function domainRegistrationCartMetadata(item) {
   const domain = String(item.domain || '').toLowerCase().trim();
@@ -34,7 +34,7 @@ export function domainRegistrationCartMetadata(item) {
   const period = 1;
   const safePrice = Number.isFinite(price) && price > 0 ? price : 0;
   const isPremium = item.isPremium === true || item.is_premium === true;
-  return {
+  const meta = {
     domainName: domain,
     // Storefront/search prices are always 1-year selling totals.
     price: safePrice,
@@ -46,6 +46,12 @@ export function domainRegistrationCartMetadata(item) {
     isPremium,
     registryTier: isPremium ? 'premium' : 'standard',
   };
+  // Aftermarket (Afternic/Sedo) origin — backend revalidation/confirm uses this
+  // to route through the aftermarket/managed-acquisition path (never GetPrice).
+  if (item.premiumProvider) {
+    meta.premiumProvider = String(item.premiumProvider).toLowerCase();
+  }
+  return meta;
 }
 
 export function domainRegistrationCartProps(item) {

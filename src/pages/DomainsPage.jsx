@@ -8,6 +8,7 @@ import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
+import ShowcaseDomainCard from '../components/listings/ShowcaseDomainCard';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
@@ -152,7 +153,9 @@ export default function DomainsPage() {
   const [successDomain, setSuccessDomain] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [filterTab, setFilterTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('premium'); // 'all' | 'premium' | 'standard' | 'mine'
+  const [showcaseDomains, setShowcaseDomains] = useState([]);
+  const [showcaseEnabled, setShowcaseEnabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [globalNotice, setGlobalNotice] = useState('');
   const [auctionTarget, setAuctionTarget] = useState(null);
@@ -164,31 +167,69 @@ export default function DomainsPage() {
 
   const domainRows = asArray(allDomains);
   const visibleDomains = resolveMarketplaceListingRows(domainRows, {
-    tab: filterTab,
+    tab: activeTab,
     user,
     type: 'domain',
   });
 
-  const {
-    paginated, totalCount,
-    search, category, minPrice, maxPrice, sortBy,
-    handleSearch, handleCategory, handleMinPrice, handleMaxPrice, handleSort,
-    clearAll, activeFilterCount,
-    page, totalPages, setPage,
-  } = useFilterSort(visibleDomains, {
+  const marketplaceFilter = useFilterSort(visibleDomains, {
     searchFields: ['domainName', 'domainExtension'],
     priceField: 'askingPrice',
     categoryField: 'pricingDemand',
     dateField: 'createdAt',
   }, 20, {
     getLikeCount: (item) => getLike(item.id).count,
-    resetPageWhen: filterTab,
+    resetPageWhen: activeTab,
   });
+
+  // Showcase domains share the SAME FilterBar state/handlers as the marketplace
+  // grid — one bar drives both lists, no second filter system.
+  const showcaseFilterItems = useMemo(
+    () =>
+      showcaseDomains.map((d) => ({
+        ...d,
+        __source: 'showcase',
+        domainExtension: d.extension || (d.tld ? `.${d.tld}` : ''),
+        pricingDemand: 'Premium',
+        createdAt: d.lastCheckedAt || null,
+      })),
+    [showcaseDomains],
+  );
+
+  const showcaseFilter = useFilterSort(showcaseFilterItems, {
+    searchFields: ['domainName', 'name', 'domainExtension'],
+    priceField: 'askingPrice',
+    categoryField: 'pricingDemand',
+    dateField: 'createdAt',
+  }, 60, {
+    resetPageWhen: activeTab,
+  });
+
+  // Shared FilterBar wiring — values come from the marketplace hook (both stay
+  // in sync because every handler below updates both hooks).
+  const search = marketplaceFilter.search;
+  const category = marketplaceFilter.category;
+  const minPrice = marketplaceFilter.minPrice;
+  const maxPrice = marketplaceFilter.maxPrice;
+  const sortBy = marketplaceFilter.sortBy;
+  const activeFilterCount = marketplaceFilter.activeFilterCount;
+  const handleSearch = (v) => { marketplaceFilter.handleSearch(v); showcaseFilter.handleSearch(v); };
+  const handleCategory = (v) => { marketplaceFilter.handleCategory(v); showcaseFilter.handleCategory(v); };
+  const handleMinPrice = (v) => { marketplaceFilter.handleMinPrice(v); showcaseFilter.handleMinPrice(v); };
+  const handleMaxPrice = (v) => { marketplaceFilter.handleMaxPrice(v); showcaseFilter.handleMaxPrice(v); };
+  const handleSort = (v) => { marketplaceFilter.handleSort(v); showcaseFilter.handleSort(v); };
+  const clearAll = () => { marketplaceFilter.clearAll(); showcaseFilter.clearAll(); };
+
+  const showcaseVisibleInAll =
+    activeTab === 'all' &&
+    showcaseEnabled &&
+    showcaseDomains.length > 0 &&
+    showcaseFilter.filtered.length > 0;
 
   const domainListRef = useRef(null);
 
   const handlePageChange = (newPage) => {
-    setPage(newPage);
+    marketplaceFilter.setPage(newPage);
     requestAnimationFrame(() => {
       domainListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -198,7 +239,7 @@ export default function DomainsPage() {
     let cancelled = false;
     setLoading(true);
 
-    const loadAll = filterTab === 'mine'
+    const loadAll = activeTab === 'mine'
       ? domainAPI.getMyListings().then(({ data }) => extractDomainList(data))
       : fetchAllListPages((params) => domainAPI.getAll(params)).then(
         (items) => extractDomainList({ items, data: items }),
@@ -216,7 +257,25 @@ export default function DomainsPage() {
       });
 
     return () => { cancelled = true; };
-  }, [filterTab]);
+  }, [activeTab]);
+
+  // OpenProvider Premium Showcase (public feed) — fetched once, independent of tab.
+  useEffect(() => {
+    let cancelled = false;
+    domainAPI
+      .getShowcaseDomains()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setShowcaseDomains(data?.items || []);
+        setShowcaseEnabled(!!data?.enabled);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setShowcaseDomains([]);
+        setShowcaseEnabled(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (location.state?.openListDomainForm) {
@@ -224,7 +283,7 @@ export default function DomainsPage() {
         navigate('/login?redirect=' + encodeURIComponent('/domains'), { replace: true });
         return;
       }
-      setFilterTab('all');
+      setActiveTab('all');
       setShowForm(true);
       setEditTarget(null);
       navigate('/domains', { replace: true, state: {} });
@@ -307,7 +366,7 @@ export default function DomainsPage() {
                     setAllDomains(prev => [normalizedSaved, ...prev]);
                     setShowForm(false);
                     setShowConfetti(true);
-                    setFilterTab('mine');
+                    setActiveTab('mine');
                     setGlobalNotice(
                       d?._warning
                       || (isPremiumDomain(normalizedSaved)
@@ -384,24 +443,38 @@ export default function DomainsPage() {
               </div>
             </div>
 
-            <div className="mb-6 flex min-w-0 flex-wrap gap-2">
+            <div className="mb-6 inline-flex flex-wrap items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1">
               <button
                 type="button"
-                className={`btn-glow btn-glow-sm !px-3 !py-2 text-xs md:text-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors md:text-sm ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
+                onClick={() => { setActiveTab('all'); setShowForm(false); setEditTarget(null); }}
               >
-                {t('allDomains')}
+                All
               </button>
               <button
                 type="button"
-                className={`btn-glow btn-glow-sm !px-3 !py-2 text-xs md:text-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors md:text-sm ${activeTab === 'premium' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
+                onClick={() => { setActiveTab('premium'); setShowForm(false); setEditTarget(null); }}
+              >
+                Premium
+              </button>
+              <button
+                type="button"
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors md:text-sm ${activeTab === 'standard' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
+                onClick={() => { setActiveTab('standard'); setShowForm(false); setEditTarget(null); }}
+              >
+                Standard
+              </button>
+              <button
+                type="button"
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors md:text-sm ${activeTab === 'mine' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
+                onClick={() => { setActiveTab('mine'); setShowForm(false); setEditTarget(null); }}
               >
                 {t('myListings')}
               </button>
             </div>
 
-            {filterTab === 'mine' && pendingVerificationCount > 0 ? (
+            {activeTab === 'mine' && pendingVerificationCount > 0 ? (
               <DomainVerificationPendingBanner
                 count={pendingVerificationCount}
                 onVerifyClick={() => navigate('/domains/dashboard')}
@@ -414,6 +487,27 @@ export default function DomainsPage() {
               </div>
             )}
 
+            {/* Premium-results treatment — same stronger glow + staggered entrance
+                as the Main Premium Domain search results (DomainStorefrontPage). */}
+            <style>{`
+              @keyframes registryResultsEnter {
+                from { opacity: 0; transform: translateY(10px) scale(0.985); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              .premium-results-stagger .domain-search-card {
+                animation: registryResultsEnter 300ms ease-out both;
+                box-shadow:
+                  0 0 0 1px rgba(251, 191, 36, 0.2),
+                  0 8px 28px rgba(180, 83, 9, 0.1),
+                  0 0 24px rgba(251, 191, 36, 0.12);
+              }
+              .premium-results-stagger > *:nth-child(1) .domain-search-card { animation-delay: 90ms; }
+              .premium-results-stagger > *:nth-child(2) .domain-search-card { animation-delay: 140ms; }
+              .premium-results-stagger > *:nth-child(3) .domain-search-card { animation-delay: 190ms; }
+              .premium-results-stagger > *:nth-child(n+4) .domain-search-card { animation-delay: 230ms; }
+            `}</style>
+
+            {/* Unified content area — tab-driven: All | Premium | Standard | My Listings */}
             <FilterBar
               search={search} onSearch={handleSearch}
               category={category} onCategory={handleCategory}
@@ -427,20 +521,82 @@ export default function DomainsPage() {
               theme="light"
             />
 
-            {!loading && totalCount > 0 && (
+            {activeTab === 'premium' ? (
+              showcaseEnabled && showcaseDomains.length > 0 ? (
+                <div>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="font-display text-lg font-extrabold text-gray-900">
+                      Premium Domains
+                    </h2>
+                    <span className="text-xs text-gray-500">
+                      {showcaseDomains.length} premium domain{showcaseDomains.length === 1 ? '' : 's'} · prices subject to change
+                    </span>
+                  </div>
+                  {showcaseFilter.paginated.length === 0 ? (
+                    <div className="text-center py-14 text-sm text-gray-500">
+                      {activeFilterCount > 0
+                        ? 'No premium domains match your filters.'
+                        : 'No premium domains are currently showcased.'}
+                    </div>
+                  ) : (
+                    <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {showcaseFilter.paginated.map((d) => (
+                        <ListingCardShell key={d.showcaseId}>
+                          <ShowcaseDomainCard item={d} />
+                        </ListingCardShell>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-14 text-sm text-gray-500">
+                  No premium domains are currently showcased.
+                </div>
+              )
+            ) : (
+            <>
+
+            {!loading && (marketplaceFilter.totalCount + showcaseFilter.filtered.length) > 0 && (
               <div className="text-sm text-gray-600 mb-4">
-                {t('domainsPageResultsFound', { count: totalCount })}
+                {t('domainsPageResultsFound', {
+                  count: marketplaceFilter.totalCount + showcaseFilter.filtered.length,
+                })}
+              </div>
+            )}
+
+            {showcaseVisibleInAll && (
+              <div className="mb-8">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 className="font-display text-lg font-extrabold text-gray-900">
+                    Premium Domains
+                  </h2>
+                  <span className="text-xs text-gray-500">
+                    {showcaseFilter.filtered.length} premium domain{showcaseFilter.filtered.length === 1 ? '' : 's'} · prices subject to change
+                  </span>
+                </div>
+                <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {showcaseFilter.filtered.map((d) => (
+                    <ListingCardShell key={d.showcaseId}>
+                      <ShowcaseDomainCard item={d} />
+                    </ListingCardShell>
+                  ))}
+                </div>
               </div>
             )}
 
             {loading ? (
               <PageContentSkeleton variant="cards" rows={8} />
-            ) : paginated.length === 0 ? (
+            ) : marketplaceFilter.paginated.length === 0 ? (
+              showcaseVisibleInAll ? (
+                <div className="text-center py-10 text-sm text-gray-500">
+                  No marketplace domains found.
+                </div>
+              ) : (
               <div className="text-center py-20">
                 <img src={DomainsIcon} alt={t('domains')} className="mx-auto mb-4 w-16 h-16 object-contain" />
                 <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
                   {activeFilterCount > 0 ? t('domainsPageEmptyFilteredTitle') :
-                    filterTab === 'mine' ? t('domainsPageEmptyMineTitle') :
+                    activeTab === 'mine' ? t('domainsPageEmptyMineTitle') :
                       t('domainsPageEmptyAllTitle')}
                 </h3>
                 <p className="text-gray-600 mb-6">
@@ -461,10 +617,11 @@ export default function DomainsPage() {
                   </button>
                 }
               </div>
+              )
             ) : (
               <>
                 <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {paginated.map(d => (
+                  {marketplaceFilter.paginated.map(d => (
                     <ListingCardShell key={d.id}>
                       <DomainListingCard
                         domain={d}
@@ -487,9 +644,11 @@ export default function DomainsPage() {
                     </ListingCardShell>
                   ))}
                 </div>
-                <Pagination page={page} totalPages={totalPages}
-                  onPage={handlePageChange} totalCount={totalCount} pageSize={20} />
+                <Pagination page={marketplaceFilter.page} totalPages={marketplaceFilter.totalPages}
+                  onPage={handlePageChange} totalCount={marketplaceFilter.totalCount} pageSize={20} />
               </>
+            )}
+            </>
             )}
           </>
         )}

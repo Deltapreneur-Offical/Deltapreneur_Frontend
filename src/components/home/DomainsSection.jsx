@@ -10,6 +10,7 @@ import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import DomainListingCard from '../listings/DomainListingCard';
+import ShowcaseDomainCard from '../listings/ShowcaseDomainCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import '../../styles/domain-listing-cards.css';
@@ -52,17 +53,29 @@ export default function DomainsSection() {
 
   const shouldAutoScroll = useShouldAutoScroll(previewDomains.length);
 
-  const renderDomainCard = (domain) => (
-    <HomePreviewCardShell accent="domain">
-      <DomainListingCard
-        domain={domain}
-        browseMode={true}
-        likeState={getLike(domain.id)}
-        onLike={() => toggleLike(domain.id)}
-        onView={() => handleViewDetails(domain.id)}
-      />
-    </HomePreviewCardShell>
-  );
+  const isShowcaseRow = (domain) =>
+    domain?.source === 'openprovider_showcase' || Boolean(domain?.showcaseId);
+
+  const renderDomainCard = (domain) => {
+    // OP Showcase rows render the PREMIUM Domain card (same component as the
+    // Domains dashboard Premium cards) — never the marketplace card. The card
+    // has its own amber border/glow + hover lift, so it renders bare in the
+    // marquee (no outer shell) to match the premium card exactly.
+    if (isShowcaseRow(domain)) {
+      return <ShowcaseDomainCard item={domain} />;
+    }
+    return (
+      <HomePreviewCardShell accent="domain">
+        <DomainListingCard
+          domain={domain}
+          browseMode={true}
+          likeState={getLike(domain.id)}
+          onLike={() => toggleLike(domain.id)}
+          onView={() => handleViewDetails(domain.id)}
+        />
+      </HomePreviewCardShell>
+    );
+  };
 
   if (loading || !hasFetchedDomains) {
     return <HomeSectionCardSkeleton title={t('domains')} to="/domains" accent="domain" />;

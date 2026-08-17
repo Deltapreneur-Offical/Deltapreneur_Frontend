@@ -44,6 +44,7 @@ import RequestIcon from '../assets/Request.png';
 import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import OpenProviderManagedAcquisitionsTable from '../components/admin/OpenProviderManagedAcquisitionsTable';
+import ShowcaseAdminTab from '../components/admin/ShowcaseAdminTab';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
@@ -640,6 +641,7 @@ export default function AdminDashboardPage() {
     { id: 'domains',            label: t('adminTabDomains'),           icon: DomainsIcon    },
     { id: 'domain-enquiries',   label: t('adminTabDomainEnquiries'),   icon: EnquireIcon    },
     { id: 'op-managed-acquisitions', label: 'OpenProvider Acquisition Requests', icon: DomainsIcon },
+    { id: 'showcase', label: 'OP Premium Showcase', icon: DomainsIcon },
     { id: 'cocreations',        label: t('adminTabTechnology'),        icon: TechnologyIcon },
     { id: 'reseller-portal',    label: 'Reseller Portal',              icon: null, Icon: Activity },
     { id: 'requests',           label: t('adminTabCoBrotherRequests'), icon: RequestIcon    },
@@ -906,7 +908,11 @@ export default function AdminDashboardPage() {
             <VentureDealsAdminTab />
           )}
 
-          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'openprovider-pricing' && tab !== 'reseller-portal' && (
+          {tab === 'showcase' && (
+            <ShowcaseAdminTab />
+          )}
+
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'showcase' && tab !== 'openprovider-pricing' && tab !== 'reseller-portal' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

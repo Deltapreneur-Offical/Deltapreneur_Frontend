@@ -137,6 +137,7 @@ export { domainTransferAPI, domainTransferAdminAPI, payoutProfileAPI } from './d
 
 export const domainAPI = {
   getAll:          (params)  => api.get('/api/v1/domain/all', { params }),
+  getShowcaseDomains: ()     => api.get('/api/v1/domain/showcase'),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
   getMyPurchases:  ()        => api.get('/api/v1/domain/my-purchases'),
   get:             (id)      => api.get(`/api/v1/domain/listings/${id}`),
@@ -356,6 +357,20 @@ export const adminAPI = {
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
   getOpenProviderManagedAcquisitions: () =>
     api.get('/api/v1/openprovider-managed-acquisitions/all'),
+  getShowcaseDomains: (params) => api.get('/api/v1/admin/showcase', { params }),
+  generateShowcaseCandidates: (data) =>
+    api.post('/api/v1/admin/showcase/generate', data),
+  getShowcaseStatus: (generationId) =>
+    api.get('/api/v1/admin/showcase/status', { params: { generation_id: generationId } }),
+  selectShowcaseDomain: (id) =>
+    api.post('/api/v1/admin/showcase/select', { id }),
+  unselectShowcaseDomain: (id) =>
+    api.post('/api/v1/admin/showcase/unselect', { id }),
+  removeShowcaseDomain: (id) =>
+    api.delete(`/api/v1/admin/showcase/${id}`),
+  refreshShowcase: () => api.post('/api/v1/admin/showcase/refresh'),
+  updateShowcaseConfig: (data) =>
+    api.put('/api/v1/admin/showcase/config', data),
   getTrackRecords: (params) => api.get('/api/v1/admin/track-records', { params }),
   syncTrackRecords: () => api.post('/api/v1/admin/track-records/sync'),
   getTrackRecordDetail: (id) => api.get(`/api/v1/admin/track-records/${id}`),

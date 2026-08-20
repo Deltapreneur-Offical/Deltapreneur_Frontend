@@ -417,7 +417,7 @@ export default function AdminTrackRecordsTab() {
     const text =
       r.developerSummary ||
       [
-        'CoBrother Track Record Diagnostics',
+        'HubRegistrar Track Record Diagnostics',
         '---------------------------------',
         `InternalOrderId: ${r.internalOrderId || 'n/a'}`,
         `RazorpayPaymentId: ${r.razorpayPaymentId || 'n/a'}`,

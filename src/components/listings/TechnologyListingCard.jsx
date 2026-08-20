@@ -108,7 +108,7 @@ export default function TechnologyListingCard({
       try {
         await navigator.share({
           title: `Technology: ${item.name || 'Technology'}`,
-          text: `Check out this Technology listed on CoBrother!\n\n${shareUrl}`,
+          text: `Check out this Technology listed on HubRegistrar!\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;
@@ -139,14 +139,14 @@ export default function TechnologyListingCard({
       ? `${window.location.origin}/technology/${item.id}${user?.id ? `?ref=${user.id}` : ''}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/technology/${item.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const shareTechName = item.name || 'Technology Listing';
-  const shareTechDesc = item.description || 'A premium software/technology listing on CoBrother.';
-  const shareSubject = `Premium Technology Listing Available on CoBrother: ${shareTechName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium technology listing currently available on CoBrother.\n\n🌐 Technology: ${shareTechName}\n📝 Description: ${shareTechDesc}\n🔗 View Listing:\n${shareUrl}\n\nCoBrother is a professional marketplace for digital assets, intellectual property, and software transactions.\n\nBest regards,\n[Shared via CoBrother]`;
+  const shareTechDesc = item.description || 'A premium software/technology listing on HubRegistrar.';
+  const shareSubject = `Premium Technology Listing Available on HubRegistrar: ${shareTechName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium technology listing currently available on HubRegistrar.\n\n🌐 Technology: ${shareTechName}\n📝 Description: ${shareTechDesc}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a professional marketplace for digital assets, intellectual property, and software transactions.\n\nBest regards,\n[Shared via HubRegistrar]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Technology listed on CoBrother!\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Technology listed on HubRegistrar!\n\n' + shareUrl)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 

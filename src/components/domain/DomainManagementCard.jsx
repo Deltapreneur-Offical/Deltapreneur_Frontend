@@ -201,7 +201,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <div className="text-center py-10">
               <Globe className="w-10 h-10 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-500 mb-4">
-                Domain forwarding can be configured in the CoBrother domain control panel.
+                Domain forwarding can be configured in the HubRegistrar domain control panel.
               </p>
             </div>
           )}

@@ -1,18 +1,33 @@
-/** Public storefront sections on /operations (legacy monthly roles catalog + business solutions). */
+/** Public storefront sections on /operations. */
 export const OPERATIONS_SECTIONS = [
+  /* HIDDEN — Virtual Assistance section temporarily disabled
   {
     id: 'assistance',
     labelKey: 'operationsSectionVirtualAssistance',
     defaultLabel: 'Virtual Assistance',
+    homeLabel: 'Virtual Assistance',
     hintKey: 'operationsSectionVaHint',
     defaultHint: 'Monthly virtual roles & business support',
     serviceType: 'virtual_assistance',
     theme: 'assistance',
   },
+  */
+  {
+    id: 'offices',
+    labelKey: 'operationsSectionOffices',
+    defaultLabel: 'Hub Registrar and Offices',
+    homeLabel: 'Hub Registrar and Offices',
+    hintKey: 'operationsSectionOfficesHint',
+    defaultHint: 'Find your nearest Hub Registrar office for in-person support.',
+    serviceType: 'offices',
+    theme: 'offices',
+    isPlaceholder: false,
+  },
   {
     id: 'compliance',
     labelKey: 'operationsSectionCompliances',
-    defaultLabel: 'Business Solutions',
+    defaultLabel: 'Hub Registrar',
+    homeLabel: 'Hub Registrars',
     hintKey: 'operationsSectionComplianceHint',
     defaultHint: 'Registration, filings & business services',
     serviceType: 'compliance',

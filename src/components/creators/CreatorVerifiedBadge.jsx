@@ -2,7 +2,7 @@
 
 /**
  * Premium circular green verified badge with a compact SaaS-style tooltip.
- * Tooltip shows only "Verified by CoBrother".
+ * Tooltip shows only "Verified by HubRegistrar".
  *
  * Props:
  *   verified        – boolean – renders nothing when false
@@ -60,7 +60,7 @@ export default function CreatorVerifiedBadge({
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        aria-label="Verified by CoBrother"
+        aria-label="Verified by HubRegistrar"
         role="img"
         className={className}
         style={{ display: "block", flexShrink: 0, pointerEvents: "none" }}
@@ -116,7 +116,7 @@ export default function CreatorVerifiedBadge({
       onBlur={hide}
       tabIndex={0}
       role="img"
-      aria-label="Verified by CoBrother"
+      aria-label="Verified by HubRegistrar"
       style={{ outline: "none", cursor: "default", lineHeight: 0 }}
     >
       {/* Badge SVG */}
@@ -186,7 +186,7 @@ export default function CreatorVerifiedBadge({
               lineHeight: 1,
             }}
           >
-            Verified by CoBrother
+            Verified by HubRegistrar
           </span>
         </span>
       </span>

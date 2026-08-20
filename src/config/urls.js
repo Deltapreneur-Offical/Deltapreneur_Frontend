@@ -2,15 +2,15 @@
  * API / backend origin resolution.
  *
  * **Production defaults** (split architecture):
- *   API:  https://backend.cobrother.com  (requests → /api/v1/... on backend host)
- *   App:  https://cobrother.com
+ *   API:  https://backend.hubregistrar.com  (requests → /api/v1/... on backend host)
+ *   App:  https://hubregistrar.com
  *
  * **Override** — set in `.env.production` or deploy build:
- *   VITE_API_URL=https://backend.cobrother.com
- *   VITE_APP_URL=https://cobrother.com
+ *   VITE_API_URL=https://backend.hubregistrar.com
+ *   VITE_APP_URL=https://hubregistrar.com
  */
-export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
-export const PRODUCTION_APP_URL = 'https://cobrother.com';
+export const PRODUCTION_API_ORIGIN = 'https://backend.hubregistrar.com';
+export const PRODUCTION_APP_URL = 'https://hubregistrar.com';
 
 /** Strip a trailing /api from env URLs; axios paths already include /api/v1/... */
 function siteOriginFromApiEnv(url) {
@@ -51,7 +51,7 @@ const isLocalBackend =
   !remoteApiBase ||
   /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
-/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. backend.cobrother.com). */
+/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. backend.hubregistrar.com). */
 const usesViteRemoteProxy = import.meta.env.DEV && Boolean(devProxyTarget) && isLocalBackend;
 
 function isFrontendOrigin(url) {

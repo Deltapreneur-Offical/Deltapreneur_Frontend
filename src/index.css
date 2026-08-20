@@ -1805,6 +1805,18 @@ input[type="checkbox"] {
     0 4px 10px rgba(99, 102, 241, 0.08);
 }
 
+.admin-dashboard-tab--disabled,
+.admin-dashboard-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #e5e7eb !important;
+  background: #f9fafb !important;
+  color: #9ca3af !important;
+}
+
 .admin-dashboard-tab-icon {
   width: 28px;
   height: 28px;
@@ -7373,15 +7385,15 @@ body.home-page-body {
   overflow: visible;
   opacity: 1;
   transition:
-    height 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.28s ease;
+    height 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.15s ease;
   will-change: height, opacity;
 }
 
-/* Soften the large logo exit so it doesn’t compete with the compact mark */
+/* Main logo exits fast so the compact mark takes over without overlap */
 .home-main-nav .home-nav-logo-btn {
-  transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.13s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
@@ -7462,9 +7474,9 @@ body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
   transform: translate3d(-0.35rem, 0, 0);
   /* Hide quickly when returning to top (before main nav fully returns) */
   transition:
-    opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0.22s;
+    opacity 0.13s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.13s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.13s;
   will-change: opacity, transform;
   backface-visibility: hidden;
 }
@@ -7472,7 +7484,7 @@ body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
 .home-top-nav-scroll-logo.home-nav-logo-btn {
   height: var(--home-top-scroll-logo-height);
   max-height: var(--home-top-scroll-logo-height);
-  max-width: 7.25rem;
+  max-width: 8.5rem;
 }
 
 .home-top-nav-scroll-logo .home-nav-logo-swap {
@@ -7489,7 +7501,7 @@ body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
   object-position: left center;
 }
 
-/* Appear after main nav has mostly slid away — avoids double-logo flash */
+/* Compact mark appears right as the main logo finishes exiting — no gap, no double */
 body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .home-top-nav-scroll-logo.is-visible {
   opacity: 1;
@@ -7497,9 +7509,9 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   pointer-events: auto;
   transform: translate3d(0, 0, 0);
   transition:
-    opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0.14s,
-    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0.14s,
-    visibility 0s linear 0.14s;
+    opacity 0.15s cubic-bezier(0.22, 1, 0.36, 1) 0.1s,
+    transform 0.15s cubic-bezier(0.22, 1, 0.36, 1) 0.1s,
+    visibility 0s linear 0.1s;
 }
 
 .home-nav-logo-btn {
@@ -7528,7 +7540,9 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 .home-nav-logo-swap {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
   flex: 0 0 auto;
   line-height: 0;
   vertical-align: middle;
@@ -7582,6 +7596,45 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .brand-logo-interactive:hover .home-nav-logo-img--hover {
   opacity: 1;
   visibility: visible;
+}
+
+/* ─── HubRegistrar text wordmark (official logo asset pending) ───────────── */
+/* Brand text is always the exact word "HubRegistrar" (no ".com") and is never
+   clipped: nowrap, explicit size per container, overflow visible. */
+.brand-text-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #111c2a;
+  width: auto;
+  height: auto;
+  max-width: none;
+  min-width: 0;
+  overflow: visible;
+  text-rendering: optimizeLegibility;
+}
+
+/* Compact containers — keep the full word visible, never clipped */
+.home-top-nav-scroll-logo .brand-text-logo {
+  font-size: 1.15rem;
+}
+
+.app-sidebar-logo-link .brand-text-logo {
+  font-size: 1.2rem;
+}
+
+.app-layout-collapsed-brand .brand-text-logo {
+  font-size: 1.35rem;
+}
+
+.app-layout-mobile-brand .brand-text-logo {
+  font-size: 1.3rem;
 }
 
 @media (hover: none) {
@@ -12180,6 +12233,236 @@ body.home-menu-open {
   color: #374151;
   background: #f3f4f6;
   border: 1px solid #d1d5db;
+}
+
+/* ─── Hub Registrar Office — Quick Actions ────────────────────────────── */
+
+.hro-quick-actions {
+  margin-top: 0.25rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.hro-quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.hro-quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.hro-quick-action-card:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.hro-quick-action-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hro-quick-action-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hro-quick-action-icon-find {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.hro-quick-action-icon-call {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.hro-quick-action-icon-report {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.hro-quick-action-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hro-quick-action-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hro-quick-action-desc {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.hro-quick-action-arrow {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+}
+
+.hro-quick-action-find:hover {
+  border-color: #93c5fd;
+  background: #f0f7ff;
+}
+
+.hro-quick-action-call:hover {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.hro-quick-action-report:hover {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+@media (max-width: 768px) {
+  .hro-quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Hub Registrar Office — Header + City Filter ──────────────────── */
+
+.hro-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hro-city-filter-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 0.75rem;
+  height: 36px;
+  min-width: 200px;
+  transition: box-shadow 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.hro-city-filter-wrap:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.hro-city-filter-wrap:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.hro-city-filter-icon {
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.hro-city-filter-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  color: #111827;
+  padding: 0 0.5rem;
+  min-width: 0;
+  box-shadow: none !important;
+}
+
+.hro-city-filter-input::placeholder {
+  color: #9ca3af;
+}
+
+.hro-city-filter-clear {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.hro-city-filter-clear:hover {
+  background: #d1d5db;
+  color: #374151;
+}
+
+/* No results message */
+
+.hro-no-results {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+}
+
+.hro-no-results-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.hro-no-results-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.hro-no-results-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .hro-city-filter-wrap {
+    min-width: 140px;
+    width: 100%;
+  }
+
+  .hro-header-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 .operations-admin-toolbar {

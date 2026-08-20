@@ -1,4 +1,3 @@
-import logoBlack from '../../assets/Cobrother_logo.png';
 import BrandLogoImage from '../common/BrandLogoImage';
 import '../../styles/auth.css';
 
@@ -48,8 +47,7 @@ export default function AuthShell({
           )}
 
           <BrandLogoImage
-            src={logoBlack}
-            alt="CoBrother"
+            alt="HubRegistrar"
             className="auth-page__logo"
           />
 

@@ -211,7 +211,7 @@ export default function HomeFooter() {
 
         <div className="home-footer-logo-col flex flex-col items-start justify-start sm:col-span-2 md:col-span-4">
 
-          <Link to="/" className="group mb-4 inline-block" aria-label="CoBrother home">
+          <Link to="/" className="group mb-4 inline-block" aria-label="HubRegistrar home">
             <BrandNavLogo className="h-12 sm:h-12 md:h-14 w-auto max-w-full" imgClassName="!h-12 sm:!h-12 md:!h-14 !w-auto" />
           </Link>
 
@@ -260,7 +260,7 @@ export default function HomeFooter() {
 
             <ScrollLink to="/join-form" className={linkClass}>
 
-              {t('joinCoBrother', { defaultValue: 'Join Us' })}
+              {t('joinHubRegistrar', { defaultValue: 'Join Us' })}
 
             </ScrollLink>
 

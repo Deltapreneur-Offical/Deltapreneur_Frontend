@@ -163,7 +163,7 @@ export default function AboutUsPage() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             className="mt-7 max-w-2xl text-lg sm:text-xl text-slate-600 leading-relaxed"
           >
-            CoBrother is a collaboration-driven ecosystem for founders, entrepreneurs, and
+            HubRegistrar is a collaboration-driven ecosystem for founders, entrepreneurs, and
             organizations who are serious about challenging the status quo — equipped with
             the systems, brand, and technology to back it up.
           </motion.p>
@@ -234,7 +234,7 @@ export default function AboutUsPage() {
             </Reveal>
             <Reveal delay={0.24}>
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                CoBrother exists to bridge these gaps with one unified, execution-first
+                HubRegistrar exists to bridge these gaps with one unified, execution-first
                 ecosystem featuring Domains, Ventures, Creators, and Technology — so founders spend their energy on growth, not setup.
               </p>
             </Reveal>
@@ -387,7 +387,7 @@ export default function AboutUsPage() {
               {
                 num: '02', icon: Palette, title: 'Domains',
                 sub: 'Your domain, your identity',
-                body: "In today's digital market, a strong domain is your foundation. Our Domains pillar helps you register, manage, and leverage domains to build a distinct, market-ready presence — while CoBrother powers the engine behind the scenes. You leverage our ecosystem. You own your domain — completely.",
+                body: "In today's digital market, a strong domain is your foundation. Our Domains pillar helps you register, manage, and leverage domains to build a distinct, market-ready presence — while HubRegistrar powers the engine behind the scenes. You leverage our ecosystem. You own your domain — completely.",
                 points: ['Premium domain registration', 'Domain management systems', 'Identity-ready domains', 'Complete ownership & control'],
                 accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
@@ -462,7 +462,7 @@ export default function AboutUsPage() {
             <Reveal><Chip>Our Difference</Chip></Reveal>
             <Reveal delay={0.1}>
               <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight flex items-center flex-wrap gap-x-2 gap-y-1">
-                <span>What makes CoBrother different?</span>
+                <span>What makes HubRegistrar different?</span>
               </h2>
             </Reveal>
           </div>
@@ -515,7 +515,7 @@ export default function AboutUsPage() {
             </Reveal>
             <Reveal direction="left" delay={0.18}>
               <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed">
-                CoBrother is built for people who are serious about execution — whether
+                HubRegistrar is built for people who are serious about execution — whether
                 you're just starting out or ready to scale what you've already built.
               </p>
             </Reveal>
@@ -607,7 +607,7 @@ export default function AboutUsPage() {
           </Reveal>
           <Reveal delay={0.18}>
             <p className="mt-5 text-slate-400 text-base sm:text-lg leading-relaxed">
-              Join CoBrother. Access technology. Build faster. Disrupt with confidence.
+              Join HubRegistrar. Access technology. Build faster. Disrupt with confidence.
             </p>
           </Reveal>
           <Reveal delay={0.26}>

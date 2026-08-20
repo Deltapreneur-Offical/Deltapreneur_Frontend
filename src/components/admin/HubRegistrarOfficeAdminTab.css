@@ -1,0 +1,241 @@
+.hub-registrar-office-admin-tab {
+  padding: 1rem;
+  color: #111827;
+}
+
+.hub-registrar-office-admin-tab .admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.hub-registrar-office-admin-tab .admin-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hub-registrar-office-admin-tab .office-form-container {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.hub-registrar-office-admin-tab .office-form-container h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.office-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hub-registrar-office-admin-tab .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hub-registrar-office-admin-tab .form-group label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.hub-registrar-office-admin-tab .form-group input,
+.hub-registrar-office-admin-tab .form-group textarea,
+.hub-registrar-office-admin-tab .form-group select {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: #ffffff;
+  color: #111827;
+  transition: border-color 0.2s;
+}
+
+.hub-registrar-office-admin-tab .form-group input:focus,
+.hub-registrar-office-admin-tab .form-group textarea:focus,
+.hub-registrar-office-admin-tab .form-group select:focus {
+  outline: none;
+  border-color: #4f46e5;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.hub-registrar-office-admin-tab .btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.hub-registrar-office-admin-tab .btn-primary {
+  background: #4f46e5 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.hub-registrar-office-admin-tab .btn-primary:hover:not(:disabled) {
+  background: #4338ca !important;
+}
+
+.hub-registrar-office-admin-tab .btn-secondary {
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #93c5fd !important;
+}
+
+.hub-registrar-office-admin-tab .btn-secondary:hover {
+  background: #dbeafe !important;
+  color: #1e3a8a !important;
+}
+
+.hub-registrar-office-admin-tab .btn-success {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.hub-registrar-office-admin-tab .btn-success:hover {
+  background: #059669 !important;
+}
+
+.hub-registrar-office-admin-tab .btn-warning {
+  background: #f59e0b !important;
+  color: white !important;
+}
+
+.hub-registrar-office-admin-tab .btn-warning:hover {
+  background: #d97706 !important;
+}
+
+.hub-registrar-office-admin-tab .btn-danger {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.hub-registrar-office-admin-tab .btn-danger:hover {
+  background: #dc2626 !important;
+}
+
+.hub-registrar-office-admin-tab .btn-sm {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+.hub-registrar-office-admin-tab .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.offices-list {
+  margin-top: 1rem;
+}
+
+.hub-registrar-office-admin-tab .offices-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.hub-registrar-office-admin-tab .offices-table th,
+.hub-registrar-office-admin-tab .offices-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.hub-registrar-office-admin-tab .offices-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #374151;
+}
+
+.hub-registrar-office-admin-tab .offices-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.offices-table tbody tr.deleted {
+  opacity: 0.5;
+}
+
+.address-cell {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.hub-registrar-office-admin-tab .empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .offices-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+  }
+}

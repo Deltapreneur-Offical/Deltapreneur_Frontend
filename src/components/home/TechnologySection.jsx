@@ -75,7 +75,7 @@ export default function TechnologySection() {
   );
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('technologySoftware', { defaultValue: 'Technologies' })} to="/technology" />;
+    return <HomeSectionCardSkeleton title="Technology Register" to="/technology" />;
   }
 
   return (
@@ -85,9 +85,9 @@ export default function TechnologySection() {
         {/* 1. Marketplace Technology Listings */}
         {previewSoftwares.length > 0 && (
           <div>
-            <HomeSectionHeader title={t('technologySoftware', { defaultValue: 'Marketplace Listings' })} to="/technology" />
+            <HomeSectionHeader title="Technology Register" to="/technology" />
             {shouldAutoScroll ? (
-              <HomeAutoScrollRow durationSec={50} ariaLabel={t('technologySoftware')}>
+              <HomeAutoScrollRow durationSec={50} ariaLabel="Technology Register">
                 {previewSoftwares.map((item) => (
                   <HomeAutoScrollRowItem key={item.id}>
                     {renderTechnologyCard(item)}
@@ -112,10 +112,10 @@ export default function TechnologySection() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-1 border border-blue-100">
                 <Sparkles className="h-3.5 w-3.5" />
-                Featured CoBrother Services
+                Featured HubRegistrar Services
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Technology Services Catalogue
+                Technology Register
               </h2>
             </div>
             <button
@@ -127,7 +127,7 @@ export default function TechnologySection() {
             </button>
           </div>
 
-          <HomeAutoScrollRow durationSec={50} ariaLabel={t('technologySoftware')}>
+          <HomeAutoScrollRow durationSec={50} ariaLabel="Technology Register">
             {featuredServices.map((service) => (
               <HomeAutoScrollRowItem key={service.id || service.slug}>
                 <TechnologyServiceCard service={service} compact homeLayout />

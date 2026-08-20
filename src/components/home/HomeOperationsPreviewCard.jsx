@@ -48,6 +48,10 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
   const imageUrl = service.imageUrl || service.image_url || null;
   const views = Number(service.views ?? service.view_count ?? 0);
 
+  // Display-only wording for the homepage Hub Registrars cards: "Registration" → "Register"
+  // in the visible title. Backend/API identifiers (e.g. GST_REGISTRATION) stay untouched.
+  const displayName = (service.name || '').replace(/\bRegistration\b/g, 'Register');
+
   const [liked, setLiked] = useState(Boolean(service.liked));
   const [likeCount, setLikeCount] = useState(Number(service.likeCount ?? service.likes ?? 0));
   const handleLike = () => {
@@ -69,7 +73,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
           {imageUrl && !isCarouselClone ? (
             <img
               src={imageUrl}
-              alt={service.name}
+              alt={displayName}
               className="home-operations-preview-card__avatar"
               width={54}
               height={54}
@@ -91,7 +95,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
         ) : null}
       </div>
 
-      <h3 className="home-operations-preview-card__title">{service.name}</h3>
+      <h3 className="home-operations-preview-card__title">{displayName}</h3>
 
       <p className="home-operations-preview-card__desc">
         {service.description ||

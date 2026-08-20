@@ -44,7 +44,7 @@ export default function CoVenturesSection() {
     navigateToListingDetail(navigate, 'venture', ventureId);
   };
 
-  const sectionTitle = t('coVentureSectionTitle', { defaultValue: 'Co-Ventures' });
+  const sectionTitle = 'Co-Ventures Register';
   const shouldAutoScroll = useShouldAutoScroll(ventures.length);
 
   const renderCoVentureCard = (venture) => (

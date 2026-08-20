@@ -1,14 +1,12 @@
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
-import BrandLogoImage from './BrandLogoImage';
-
-export default function BrandWordmark({ inline = false, className = '', alt = 'CoBrother' }) {
+/**
+ * HubRegistrar text wordmark — official logo asset to be added later.
+ */
+export default function BrandWordmark({ inline = false, className = '' }) {
   const displayClass = inline ? 'brand-wordmark-inline' : 'block';
 
   return (
-    <BrandLogoImage
-      src={coBrotherLogo}
-      alt={alt}
-      className={`${displayClass} ${className}`.trim()}
-    />
+    <span className={`${displayClass} ${className} brand-text-logo`.trim()}>
+      HubRegistrar
+    </span>
   );
 }

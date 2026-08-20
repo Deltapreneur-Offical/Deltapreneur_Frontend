@@ -230,7 +230,7 @@ export default function VentureListingCard({
       try {
         await navigator.share({
           title: `${typeLabel}: ${brandName}`,
-          text: `Check out this ${typeLabel} listed on CoBrother!\n\n${shareUrl}`,
+          text: `Check out this ${typeLabel} listed on HubRegistrar!\n\n${shareUrl}`,
           url: shareUrl,
         });
         return;
@@ -264,8 +264,8 @@ export default function VentureListingCard({
 
   const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
   const desc = b.description || b.tagline || 'No description provided.';
-  const shareSubject = `Exciting ${typeLabel} Opportunity on CoBrother: ${brandName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share an exciting business opportunity currently listed on CoBrother.\n\n🌐 Venture: ${brandName} (${typeLabel})\n📝 Description: ${desc}\n🔗 View Listing:\n${shareUrl}\n\nCoBrother is a professional marketplace and community for business partnerships, co-venturing, and acquisitions.\n\nBest regards,\n[Shared via CoBrother]`;
+  const shareSubject = `Exciting ${typeLabel} Opportunity on HubRegistrar: ${brandName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share an exciting business opportunity currently listed on HubRegistrar.\n\n🌐 Venture: ${brandName} (${typeLabel})\n📝 Description: ${desc}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a professional marketplace and community for business partnerships, co-venturing, and acquisitions.\n\nBest regards,\n[Shared via HubRegistrar]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
 
@@ -273,7 +273,7 @@ export default function VentureListingCard({
 
   const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
 
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this exciting ' + typeLabel + ' opportunity on CoBrother!\n\n' + shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this exciting ' + typeLabel + ' opportunity on HubRegistrar!\n\n' + shareUrl)}`;
 
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 

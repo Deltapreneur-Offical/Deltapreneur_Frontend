@@ -1008,7 +1008,7 @@ function DomainAuctionCard({ auction, onClick }) {
           {domainTitle || 'Unnamed domain'}
         </h3>
         <p className="text-xs text-slate-400 mt-1 m-0">
-          Listed by {resolveAuctionListerName(auction) || 'CoBrother INDIA'}
+          Listed by {resolveAuctionListerName(auction) || 'HubRegistrar INDIA'}
         </p>
       </div>
 

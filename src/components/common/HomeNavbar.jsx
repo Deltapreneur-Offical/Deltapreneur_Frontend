@@ -175,7 +175,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               type="button"
               className="home-nav-logo-btn shrink-0"
               onClick={handleLogoClick}
-              aria-label="CoBrother home"
+              aria-label="HubRegistrar home"
             >
               <BrandNavLogo />
             </button>
@@ -223,6 +223,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   </DropdownLink>
                 </NavDropdown>
 
+                {/* HIDDEN — Creators dropdown temporarily disabled
                 <NavDropdown
                   label={t('disruptors')}
                   open={openDropdown === 'creators'}
@@ -230,6 +231,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 >
                   <DropdownLink onClick={() => go('/creator')}>{t('exploreDisruptors')}</DropdownLink>
                 </NavDropdown>
+                */}
               </div>
             </div>
           </div>
@@ -322,6 +324,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 </button>
               </MobileAccordion>
 
+              {/* HIDDEN — Creators mobile accordion temporarily disabled
               <MobileAccordion
                 title={t('disruptors')}
                 open={mobileAccordion === 'creators'}
@@ -329,6 +332,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/creator')}>{t('exploreDisruptors')}</button>
               </MobileAccordion>
+              */}
             </div>
 
             <div className="home-nav-drawer-footer">

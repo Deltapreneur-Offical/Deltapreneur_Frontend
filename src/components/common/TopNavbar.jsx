@@ -31,7 +31,7 @@ export default function TopNavbar({ homeMobileMenu = false, hideContactUs = fals
           type="button"
           className={`home-top-nav-scroll-logo home-nav-logo-btn${isScrolled ? ' is-visible' : ''}`}
           onClick={handleLogoClick}
-          aria-label="CoBrother home"
+          aria-label="HubRegistrar home"
           tabIndex={isScrolled ? 0 : -1}
         >
           <BrandNavLogo className="home-top-nav-scroll-logo__mark" />

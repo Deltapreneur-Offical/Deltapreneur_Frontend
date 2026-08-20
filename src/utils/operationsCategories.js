@@ -8,7 +8,7 @@ export const OPERATIONS_CATEGORY_OPTIONS = [
   { value: 'creative', label: 'Creative' },
   { value: 'growth', label: 'Growth' },
   { value: 'operations', label: 'Operations' },
-  { value: 'compliance', label: 'Business Solutions' },
+  { value: 'compliance', label: 'Hub Registrar' },
 ];
 
 export const OPERATIONS_CATEGORY_LABELS = Object.fromEntries(

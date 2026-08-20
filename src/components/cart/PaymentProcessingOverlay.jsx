@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import logoBlack from '../../assets/Cobrother_logo.png';
 import BrandLogoImage from '../common/BrandLogoImage';
 
 const STATUS_MESSAGES = [
@@ -100,8 +99,7 @@ export default function PaymentProcessingOverlay({ open = false }) {
               transition={{ duration: 0.35, delay: 0.05 }}
             >
               <BrandLogoImage
-                src={logoBlack}
-                alt="CoBrother"
+                alt="HubRegistrar"
                 className="mb-6 h-10 w-auto object-contain"
               />
               <div

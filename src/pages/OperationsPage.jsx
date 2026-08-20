@@ -12,10 +12,11 @@ import OperationsServiceCard from '../components/operations/OperationsServiceCar
 import OperationsSectionTabs from '../components/operations/OperationsSectionTabs';
 import FeaturedVirtualAssistantsListing, { useFeaturedVirtualAssistants } from '../components/virtual-assistant/FeaturedVirtualAssistantsListing';
 import VirtualAssistantPreviewModal from '../components/virtual-assistant/VirtualAssistantPreviewModal';
+import HubRegistrarOfficeCard from '../components/listings/HubRegistrarOfficeCard';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { operationsAPI, operationsRequestAPI, virtualAssistantAPI } from '../api/services';
+import { operationsAPI, operationsRequestAPI, virtualAssistantAPI, hubRegistrarOfficeAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 import { OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
@@ -47,7 +48,7 @@ export default function OperationsPage() {
   const hireIntent = searchParams.get('intent') === 'hire';
 
   const [services, setServices] = useState([]);
-  const [sectionCounts, setSectionCounts] = useState({ assistance: 0, compliance: 0 });
+  const [sectionCounts, setSectionCounts] = useState({ assistance: 0, compliance: 0, offices: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
@@ -107,6 +108,30 @@ export default function OperationsPage() {
 
   const isCompliance = activeSection.id === 'compliance';
   const isAssistance = activeSection.id === 'assistance';
+  const isOffices = activeSection.id === 'offices';
+
+  const [offices, setOffices] = useState([]);
+  const [officesLoading, setOfficesLoading] = useState(false);
+  const [officeCityFilter, setOfficeCityFilter] = useState('');
+
+  const loadOffices = useCallback(async () => {
+    setOfficesLoading(true);
+    try {
+      const response = await hubRegistrarOfficeAPI.list();
+      setOffices(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load offices:', error);
+      setOffices([]);
+    } finally {
+      setOfficesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOffices) {
+      loadOffices();
+    }
+  }, [isOffices, loadOffices]);
   const { cards: featuredVaCards, count: featuredVaCount, loading: featuredVaLoading, patchProfile } = useFeaturedVirtualAssistants(50);
   const vaDetailId = routeVaId || searchParams.get('id');
 
@@ -163,8 +188,8 @@ export default function OperationsPage() {
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    setSectionCounts((prev) => ({ ...prev, assistance: featuredVaCount }));
-  }, [featuredVaCount]);
+    setSectionCounts((prev) => ({ ...prev, assistance: featuredVaCount, offices: offices.length }));
+  }, [featuredVaCount, offices.length]);
 
   useEffect(() => {
     if (isAssistance) return undefined;
@@ -245,7 +270,9 @@ export default function OperationsPage() {
   }, [search, category, minPrice, maxPrice, sortBy, services]);
 
   const isFiltered = activeFilterCount > 0;
-  const roleCountLabel = isAssistance
+  const roleCountLabel = isOffices
+    ? t('operationsRolesAvailable', { count: offices.length, defaultValue: '{{count}} offices available' })
+    : isAssistance
     ? t('operationsFeaturedVaAvailable', {
         count: featuredVaCount,
         defaultValue: '{{count}} Featured Virtual Assistants',
@@ -257,7 +284,7 @@ export default function OperationsPage() {
         {
           count: services.length,
           defaultValue: isCompliance
-            ? '{{count}} Business Solutions Available'
+            ? '{{count}} Hub Registrar Available'
             : '{{count}} Virtual Roles Available',
         },
       );
@@ -282,7 +309,9 @@ export default function OperationsPage() {
                   {t(activeSection.labelKey, { defaultValue: activeSection.defaultLabel })}
                 </h1>
                 <p className="mt-1.5 text-sm text-white/75 max-w-xl leading-relaxed">
-                  {isCompliance
+                  {isOffices
+                    ? t('operationsSectionOfficesHint', { defaultValue: 'Find your nearest Hub Registrar office for in-person support.' })
+                    : isCompliance
                     ? t('operationsComplianceSubtitle', {
                         defaultValue: 'Registration, filings, and business services for your venture.',
                       })
@@ -307,23 +336,55 @@ export default function OperationsPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-3">
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
-                {isCompliance
-                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Business Solutions' })
+                {isOffices
+                  ? 'Hub Registrar and Offices'
+                  : isCompliance
+                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Hub Registrar' })
                   : t('operationsFeaturedVaHeading', { defaultValue: 'Featured Virtual Assistants' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
-                {isCompliance
-                  ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and business support for your venture.' })
+                {isOffices
+                  ? t('operationsSectionOfficesHint', { defaultValue: 'Find your nearest Hub Registrar office for in-person support.' })
+                  : isCompliance
+                  ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and hub registrar support for your venture.' })
                   : t('operationsFeaturedVaSubtitle', {
                       defaultValue: 'Published virtual assistants selected for the homepage and operations showcase.',
                     })}
               </p>
             </div>
-            <p className="text-sm text-gray-500 shrink-0">
-              <span className="font-medium text-gray-800">{roleCountLabel}</span>
-            </p>
+            <div className="flex items-center gap-3 shrink-0">
+              {isOffices && (
+                <div className="hro-city-filter-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-city-filter-icon">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path strokeLinecap="round" d="m21 21-4.35-4.35"/>
+                  </svg>
+                  <input
+                    type="text"
+                    className="hro-city-filter-input"
+                    placeholder="Search by city..."
+                    value={officeCityFilter}
+                    onChange={(e) => setOfficeCityFilter(e.target.value)}
+                  />
+                  {officeCityFilter && (
+                    <button
+                      type="button"
+                      className="hro-city-filter-clear"
+                      onClick={() => setOfficeCityFilter('')}
+                      aria-label="Clear search"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )}
+              <p className="text-sm text-gray-500">
+                <span className="font-medium text-gray-800">{roleCountLabel}</span>
+              </p>
+            </div>
           </div>
 
+          {/* HIDDEN — Virtual Assistance content temporarily disabled
           {isAssistance ? (
             <FeaturedVirtualAssistantsListing
               layout="grid"
@@ -333,6 +394,57 @@ export default function OperationsPage() {
               onViewProfile={(profileId) => openVaDetailInUrl(profileId)}
               onHireProfile={(profileId) => openVaDetailInUrl(profileId, { intent: 'hire' })}
             />
+          ) : (
+          */}
+          {isOffices ? (
+            officesLoading ? (
+              <PageContentSkeleton variant="grid" rows={3} />
+            ) : offices.length === 0 ? (
+              <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
+                <p className="text-base font-semibold text-gray-900 mb-1">
+                  No offices available yet
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Hub Registrar offices will appear here once added by the admin team.
+                </p>
+              </div>
+            ) : (() => {
+              const filteredOffices = offices.filter((office) => {
+                if (!officeCityFilter.trim()) return true;
+                const searchTerm = officeCityFilter.toLowerCase();
+                return (
+                  (office.city && office.city.toLowerCase().includes(searchTerm)) ||
+                  (office.full_address && office.full_address.toLowerCase().includes(searchTerm)) ||
+                  (office.office_name && office.office_name.toLowerCase().includes(searchTerm))
+                );
+              });
+
+              if (filteredOffices.length === 0) {
+                return (
+                  <div className="hro-no-results">
+                    <div className="hro-no-results-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                        <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="hro-no-results-title">
+                      No offices found in "{officeCityFilter}"
+                    </p>
+                    <p className="hro-no-results-desc">
+                      We will be coming to that city soon! Try searching for a different city.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 min-w-0">
+                  {filteredOffices.map((office) => (
+                    <HubRegistrarOfficeCard key={office.id} office={office} />
+                  ))}
+                </div>
+              );
+            })()
           ) : (
             <>
               <FilterBar
@@ -386,7 +498,86 @@ export default function OperationsPage() {
           )}
         </section>
 
-        {user && (
+        {/* Quick Actions — Hub Registrar & Offices section only */}
+        {isOffices && (
+          <section className="hro-quick-actions">
+            <div className="mb-3">
+              <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
+                Quick Actions
+              </h2>
+              <p className="mt-0.5 text-sm text-gray-500">
+                Quick ways to connect with Hub Registrar offices.
+              </p>
+            </div>
+
+            <div className="hro-quick-actions-grid">
+              <button
+                type="button"
+                className="hro-quick-action-card hro-quick-action-find"
+                onClick={() => {
+                  const section = document.querySelector('.hro-card');
+                  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              >
+                <div className="hro-quick-action-icon hro-quick-action-icon-find">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                    <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="hro-quick-action-content">
+                  <span className="hro-quick-action-title">Find Nearest Office</span>
+                  <span className="hro-quick-action-desc">Browse all available offices</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-quick-action-arrow">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                className="hro-quick-action-card hro-quick-action-call"
+                onClick={() => window.open('tel:+919876543210', '_self')}
+              >
+                <div className="hro-quick-action-icon hro-quick-action-icon-call">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                    <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="hro-quick-action-content">
+                  <span className="hro-quick-action-title">Call Support</span>
+                  <span className="hro-quick-action-desc">Speak with our team</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-quick-action-arrow">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                className="hro-quick-action-card hro-quick-action-report"
+                onClick={() => {
+                  alert('Report an Issue feature coming soon!');
+                }}
+              >
+                <div className="hro-quick-action-icon hro-quick-action-icon-report">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                    <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.753-2.5-2.599-4.5L9.4 3.004zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="hro-quick-action-content">
+                  <span className="hro-quick-action-title">Report an Issue</span>
+                  <span className="hro-quick-action-desc">Coming soon</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-quick-action-arrow">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* My Requests — Virtual Assistance & Hub Registrar sections only (not Offices) */}
+        {user && !isOffices && (
           <section className="operations-my-requests">
             <div className="mb-3">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">

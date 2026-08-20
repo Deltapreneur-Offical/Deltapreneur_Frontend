@@ -180,7 +180,7 @@ export default function PurchasesPage() {
             icon={<Cpu {...PURCHASES_STAT_ICON} />}
           />
           <StatCard
-            label={t('purchasesStatCoBrotherActive', { defaultValue: 'CoBrother Active' })}
+            label={t('purchasesStatHubRegistrarActive', { defaultValue: 'HubRegistrar Active' })}
             value={completedTechnology.filter(p => p.coBrotherHelpPaid).length}
             icon={<BadgeCheck {...PURCHASES_STAT_ICON} />}
           />
@@ -301,7 +301,7 @@ export default function PurchasesPage() {
       </div>
 
       {helpModal && (
-        <CoBrotherHelpModal
+        <HubRegistrarHelpModal
           purchase={helpModal}
           onClose={() => setHelpModal(null)}
           onSuccess={(updated) => {
@@ -318,15 +318,15 @@ export default function PurchasesPage() {
             <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
             <div className="relative z-10 p-8">
               <div className="text-5xl mb-4">◆</div>
-              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-2">{t('purchasesCoBrotherActivated')}</h2>
+              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-2">{t('purchasesHubRegistrarActivated')}</h2>
               <p className="text-gray-500 mb-5 leading-relaxed">
-                {t('purchasesCoBrotherReachOut', {
-                  hours: t('purchasesCoBrotherReachOutHours'),
+                {t('purchasesHubRegistrarReachOut', {
+                  hours: t('purchasesHubRegistrarReachOutHours'),
                   name: helpSuccess.software?.name,
                 })}
               </p>
               <div className="px-3.5 py-3 bg-green-500/8 border border-green-500/20 rounded-[10px] mb-6 text-xs text-green-400">
-                ✓ {t('purchasesCoBrotherPaidSummary', { price: formatPrice(1000) })}
+                ✓ {t('purchasesHubRegistrarPaidSummary', { price: formatPrice(1000) })}
               </div>
               <button type="button" className="btn-glow w-full" onClick={() => setHelpSuccess(null)}>{t('done')}</button>
             </div>
@@ -548,7 +548,7 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
             )}
             {helpPaid && (
               <span className="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md tracking-wider">
-                ◆ CoBrother
+                ◆ HubRegistrar
               </span>
             )}
           </div>
@@ -625,11 +625,11 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
             </div>
           )}
 
-          {/* CoBrother status */}
+          {/* HubRegistrar status */}
           {helpPaid && (
             <div className="px-4 py-3.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-5 text-[0.85rem] text-emerald-800 font-medium shadow-sm flex items-start gap-2">
               <span className="text-emerald-500 text-lg leading-none mt-0.5">◆</span>
-              <span>CoBrother assigned — check your email for introduction details.</span>
+              <span>HubRegistrar assigned — check your email for introduction details.</span>
             </div>
           )}
 
@@ -677,7 +677,7 @@ function InvoiceDownloadButton({ onClick }) {
   );
 }
 
-function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
+function HubRegistrarHelpModal({ purchase, onClose, onSuccess }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency, formatPrice } = useCurrency();
@@ -690,17 +690,17 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
     setLoading(true);
     setError('');
     try {
-      const { data: orderData } = await technologyAPI.payCoBrotherHelp(purchase.id, {
+      const { data: orderData } = await technologyAPI.payHubRegistrarHelp(purchase.id, {
         ...buildOrderCurrencyPayload(currency),
       });
       openRazorpayCheckout({
         orderData,
         user,
-        description: `CoBrother Help — ${sw.name}`,
+        description: `HubRegistrar Help — ${sw.name}`,
         themeColor: '#7c3aed',
         onSuccess: async (response) => {
           try {
-            await technologyAPI.verifyCoBrotherHelp(purchase.id, {
+            await technologyAPI.verifyHubRegistrarHelp(purchase.id, {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
@@ -725,9 +725,9 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
       <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
         <div className="relative z-10 p-8">
-          <div className="modal-badge" style={{ background: '#ede9fe', color: '#7c3aed', border: '1px solid #c4b5fd' }}>◆ {t('purchasesCoBrotherHelpBadge')}</div>
+          <div className="modal-badge" style={{ background: '#ede9fe', color: '#7c3aed', border: '1px solid #c4b5fd' }}>◆ {t('purchasesHubRegistrarHelpBadge')}</div>
           <h2>{sw.name}</h2>
-          <p>{t('purchasesCoBrotherHelpDesc')}</p>
+          <p>{t('purchasesHubRegistrarHelpDesc')}</p>
         </div>
         <div className="p-8">
           <div className="mb-6">

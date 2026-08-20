@@ -4,7 +4,7 @@ export const COBROTHER_ASSISTANCE_FEE_INR = 1000;
 
 /**
  * Shared Technology cart/modal product config:
- * Pricing Plan + Co-Creator Assistance (CoBrother) only.
+ * Pricing Plan + Co-Creator Assistance (HubRegistrar) only.
  * Does not include VA or Compliance/Business Registration.
  */
 export default function TechnologyPurchaseConfig({
@@ -13,7 +13,7 @@ export default function TechnologyPurchaseConfig({
   onPlanSelect,
   plansLoading = false,
   coBrotherOptIn = false,
-  onCoBrotherToggle,
+  onHubRegistrarToggle,
   formatPrice,
   className = '',
 }) {
@@ -36,13 +36,13 @@ export default function TechnologyPurchaseConfig({
           Optional Services
         </p>
         <div
-          onClick={onCoBrotherToggle}
+          onClick={onHubRegistrarToggle}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              onCoBrotherToggle?.();
+              onHubRegistrarToggle?.();
             }
           }}
           className={`flex items-start gap-3 p-3 sm:p-3.5 cursor-pointer rounded-xl border-2 transition-all ${
@@ -66,7 +66,7 @@ export default function TechnologyPurchaseConfig({
               </span>
             </p>
             <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-              Get a dedicated CoBrother to help you set up, deploy, and get the most out of this
+              Get a dedicated HubRegistrar to help you set up, deploy, and get the most out of this
               software. They&apos;ll reach out within 24 hours.
             </p>
           </div>

@@ -153,7 +153,7 @@ export default function DomainsPage() {
   const [successDomain, setSuccessDomain] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [activeTab, setActiveTab] = useState('premium'); // 'all' | 'premium' | 'standard' | 'mine'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'premium' | 'standard' | 'mine'
   const [showcaseDomains, setShowcaseDomains] = useState([]);
   const [showcaseEnabled, setShowcaseEnabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);

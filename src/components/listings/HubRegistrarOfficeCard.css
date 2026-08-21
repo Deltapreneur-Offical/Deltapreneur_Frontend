@@ -13,6 +13,7 @@
 .hro-card:hover {
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   transform: translateY(-2px);
+  border-color: #b4cee7;
 }
 
 /* Top Section */
@@ -162,6 +163,29 @@
   width: 20px;
   height: 20px;
   color: #1e3a8a;
+}
+
+
+
+/* Verified area - badge + zone */
+.hro-card-verified-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.375rem;
+}
+
+.hro-zone-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #86efac;
+  white-space: nowrap;
 }
 
 .hro-card-address {

@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Headset, ShieldCheck } from 'lucide-react';
+import { Headset, Building2, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useParams, useNavigate, useLocation } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
@@ -289,7 +289,7 @@ export default function OperationsPage() {
         },
       );
 
-  const SectionIcon = isCompliance ? ShieldCheck : Headset;
+  const SectionIcon = isCompliance ? ShieldCheck : Building2;
 
   return (
     <AppLayout>
@@ -414,9 +414,7 @@ export default function OperationsPage() {
                 const searchTerm = officeCityFilter.toLowerCase();
                 return (
                   (office.city && office.city.toLowerCase().includes(searchTerm)) ||
-                  (office.full_address && office.full_address.toLowerCase().includes(searchTerm)) ||
-                  (office.office_name && office.office_name.toLowerCase().includes(searchTerm))
-                );
+                  (office.full_address && office.full_address.toLowerCase().includes(searchTerm)) );
               });
 
               if (filteredOffices.length === 0) {
@@ -478,7 +476,7 @@ export default function OperationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 min-w-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 min-w-0">
                   {filtered.map((service) => (
                     <OperationsServiceCard
                       key={service.id}

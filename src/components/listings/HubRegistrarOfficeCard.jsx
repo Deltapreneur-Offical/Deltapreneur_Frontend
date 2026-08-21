@@ -3,7 +3,7 @@ import VerifiedIcon from '../../assets/Verified_Icon.png';
 import OfficeIcon from '../../assets/hubregistrarofficeicon.png';
 import './HubRegistrarOfficeCard.css';
 
-const HubRegistrarOfficeCard = ({ office }) => {
+const HubRegistrarOfficeCard = ({ office, compact = false }) => {
   const handleCall = (e) => {
     e.preventDefault();
     if (office.phone_number) {
@@ -26,19 +26,24 @@ const HubRegistrarOfficeCard = ({ office }) => {
           <img src={OfficeIcon} alt="Hub Registrar Office" className="hro-office-img" />
         </div>
         <div className="hro-card-info">
-          <h3 className="hro-card-name">{office.office_name}</h3>
+          <h3 className="hro-card-name">Hub Registrar</h3>
           <div className="hro-card-subtitle-line">
             <span className="hro-card-dot"></span>
             <span className="hro-card-dot hro-card-dot-sm"></span>
           </div>
-          <p className="hro-card-type">Official Hub Registrar & Office</p>
+          <p className="hro-card-type">Official Hub Registrar Office</p>
         </div>
-        <div className="hro-card-verified-badge">
-          <img src={VerifiedIcon} alt="Verified" className="hro-verified-icon" />
-          <div className="hro-verified-text">
-            <span className="hro-verified-label">VERIFIED</span>
-            <span className="hro-verified-sub">Hub Registrar</span>
+        <div className="hro-card-verified-area">
+          <div className="hro-card-verified-badge">
+            <img src={VerifiedIcon} alt="Verified" className="hro-verified-icon" />
+            <div className="hro-verified-text">
+              <span className="hro-verified-label">VERIFIED</span>
+              <span className="hro-verified-sub">Hub Registrar</span>
+            </div>
           </div>
+          {office.zone > 0 && (
+            <div className="hro-zone-badge">Zone-{office.zone}</div>
+          )}
         </div>
       </div>
 
@@ -66,13 +71,13 @@ const HubRegistrarOfficeCard = ({ office }) => {
           </div>
           <div className="hro-secure-badge">
             <img src={VerifiedIcon} alt="Verified" className="hro-secure-icon" />
-            <span>Verified & Secure</span>
+            <span>Secure & Verified</span>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="hro-card-actions">
+      {/* Action Buttons - hidden in compact mode */}
+      {!compact && (<div className="hro-card-actions">
         <button
           className="hro-action-btn hro-action-call"
           onClick={handleCall}
@@ -110,7 +115,7 @@ const HubRegistrarOfficeCard = ({ office }) => {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </div>
+      </div>)}
     </div>
   );
 };

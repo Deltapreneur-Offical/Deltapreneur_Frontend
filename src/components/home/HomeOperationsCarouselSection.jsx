@@ -144,8 +144,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
       const searchTerm = cityFilter.toLowerCase();
       return (
         (office.city && office.city.toLowerCase().includes(searchTerm)) ||
-        (office.full_address && office.full_address.toLowerCase().includes(searchTerm)) ||
-        (office.office_name && office.office_name.toLowerCase().includes(searchTerm))
+        (office.full_address && office.full_address.toLowerCase().includes(searchTerm))
       );
     });
 
@@ -216,7 +215,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredOffices.map((office) => (
-                <HubRegistrarOfficeCard key={office.id} office={office} />
+                <HubRegistrarOfficeCard key={office.id} office={office} compact />
               ))}
             </div>
           )}

@@ -948,7 +948,7 @@ export default function AdminDashboardPage() {
             ) : tab === 'operations' ? (
               <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
             ) : tab === 'hub-registrar-office' ? (
-              <HubRegistrarOfficeAdminTab />
+              <HubRegistrarOfficeAdminTab toast={toast} />
             ) : tab === 'homepage-features' ? (
               <div className="admin-homepage-features-grid">
                 <HomepageFeatureSelector type="domain" />

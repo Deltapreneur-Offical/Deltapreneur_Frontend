@@ -13,6 +13,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
     phone_number: '',
     full_address: '',
     map_link: '',
+    zone: 0,
     display_order: 0,
     is_active: true,
   });
@@ -42,6 +43,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
       city: '',
       full_address: '',
       map_link: '',
+      zone: 0,
       display_order: 0,
       is_active: true,
     });
@@ -53,8 +55,10 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
     setFormData({
       office_name: office.office_name,
       phone_number: office.phone_number,
+      city: office.city || '',
       full_address: office.full_address,
       map_link: office.map_link || '',
+      zone: office.zone || 0,
       display_order: office.display_order,
       is_active: office.is_active,
     });
@@ -65,7 +69,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.office_name || !formData.phone_number || !formData.full_address) {
-      showToast('Please fill in all required fields', 'error');
+      notify.error('Please fill in all required fields');
       return;
     }
 
@@ -82,7 +86,8 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
       fetchOffices();
     } catch (error) {
       console.error('Failed to save office:', error);
-      notify.error('Failed to save office');
+      const msg = error?.response?.data?.detail || 'Failed to save office';
+      notify.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -152,6 +157,17 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
                 onChange={(e) => setFormData({ ...formData, office_name: e.target.value })}
                 placeholder="Enter office name"
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Zone</label>
+              <input
+                type="number"
+                value={formData.zone}
+                onChange={(e) => setFormData({ ...formData, zone: parseInt(e.target.value) || 0 })}
+                min="0"
+                placeholder="e.g. 1"
               />
             </div>
 
@@ -243,6 +259,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
             <thead>
               <tr>
                 <th>Office Name</th>
+                <th>Zone</th>
                 <th>Phone</th>
                 <th>City</th>
                 <th>Address</th>
@@ -255,6 +272,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
               {offices.map((office) => (
                 <tr key={office.id} className={office.is_deleted ? 'deleted' : ''}>
                   <td>{office.office_name}</td>
+                  <td>{office.zone > 0 ? `Zone-${office.zone}` : '—'}</td>
                   <td>{office.phone_number}</td>
                   <td>{office.city}</td>
                   <td className="address-cell">{office.full_address}</td>

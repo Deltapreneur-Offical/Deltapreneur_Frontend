@@ -98,7 +98,7 @@ function resolveInitialPartition(sectionParam) {
   if (sectionParam === 'compliance') return 'compliance';
   if (sectionParam === 'requests') return 'requests';
   if (sectionParam === 'virtual-assistants' || sectionParam === 'assistance') return 'virtual-assistants';
-  return 'virtual-assistants';
+  return 'compliance';
 }
 
 export default function OperationsAdminTab({ services = [], onRefresh }) {

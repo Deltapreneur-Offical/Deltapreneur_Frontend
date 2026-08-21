@@ -13426,8 +13426,3 @@ body.home-menu-open {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
-
-
-.forbidden-cursor {
-  cursor: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGxpbmUgeDE9IjYiIHkxPSI2IiB4Mj0iMjYiIHkyPSIyNiIgc3Ryb2tlPSIjZGMyNjI2IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==) 16 16, not-allowed;
-}

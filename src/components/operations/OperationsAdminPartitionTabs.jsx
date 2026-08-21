@@ -67,7 +67,7 @@ export default function OperationsAdminPartitionTabs({
                 'operations-section-tab',
                 `operations-section-tab--${tab.theme}`,
                 isActive ? 'is-active' : '',
-                tab.disabled ? 'opacity-50 forbidden-cursor' : '',
+                tab.disabled ? 'opacity-50 cursor-not-allowed' : '',
               ].join(' ')}
               onClick={() => !tab.disabled && onChange(tab.id)}
             >

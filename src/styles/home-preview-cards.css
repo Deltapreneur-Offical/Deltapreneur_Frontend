@@ -1,4 +1,4 @@
-/* Homepage listing previews — full card height, no zoom clipping */
+﻿/* Homepage listing previews — full card height, no zoom clipping */
 
 
 
@@ -367,20 +367,31 @@
   border-radius: 1.5rem;
   border: 1px solid var(--home-card-border) !important;
   background: #ffffff !important;
-  box-shadow: 0 8px 24px var(--home-card-shadow) !important;
+  box-shadow:
+    0 8px 24px var(--home-card-shadow) !important,
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
   box-sizing: border-box;
   transform: none;
+  /* Return to rest is smooth (200ms); the :hover rule below overrides with a
+     fast ~50-70ms enter so the blue highlight appears almost instantly. */
   transition:
-    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.12s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+    border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-preview-card-border:hover {
-  transform: translateY(-5px);
+    /* Card stays in exact position - no translateY to avoid layout shift */
   border: 1px solid var(--home-card-border-hover) !important;
   background: #ffffff !important;
-  box-shadow: 0 12px 28px var(--home-card-shadow-hover) !important;
+  box-shadow:
+    0 12px 28px var(--home-card-shadow-hover) !important,
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  /* Fast, responsive hover entry — border + shadow + lift land in ~50-70ms.
+     box-shadow is the expensive-to-repaint property, so it gets the shortest
+     duration to keep the blue highlight from feeling laggy. */
+  transition:
+    border-color 0.06s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.05s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Domain Essentials — borderless variant inside grid */
@@ -442,7 +453,8 @@
   background: var(--home-card-price-bg) !important;
   box-shadow: none !important;
   border-radius: 0.75rem;
-  transition: all 0.08s ease;
+  /* Remove conflicting transition - child elements inherit parent's instant hover */
+  transition: none !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__price-box,
@@ -694,9 +706,9 @@
 
 .home-preview-row .venture-listing-card--compact .venture-listing-card__title-row,
 .home-auto-scroll-row .venture-listing-card--compact .venture-listing-card__title-row {
-  height: 1.5rem;
-  min-height: 1.5rem;
-  max-height: 1.5rem;
+  height: 1.6rem;
+  min-height: 1.6rem;
+  max-height: 1.6rem;
   overflow: hidden;
 }
 
@@ -718,15 +730,15 @@
 /* Keep asking-price + stats glued; do not push stats to the card bottom */
 .home-preview-row .venture-listing-card--compact .venture-listing-card__footer,
 .home-auto-scroll-row .venture-listing-card--compact .venture-listing-card__footer {
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
   flex: 0 0 auto;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .home-preview-row .venture-listing-card--compact .domain-listing-card__stats.listing-card-stats-footer,
 .home-auto-scroll-row .venture-listing-card--compact .domain-listing-card__stats.listing-card-stats-footer {
   margin-top: 0;
-  padding-top: 0.1rem;
+  padding-top: 0.2rem;
 }
 
 .home-preview-row .venture-listing-card--home-preview .venture-listing-card__badge {
@@ -1397,6 +1409,23 @@
   font-size: 0.9rem;
   font-weight: 700;
   color: #64748b;
+}
+
+/* Government fee notice */
+.home-operations-preview-card__gov-fee {
+  padding: 0.35rem 0.75rem;
+  margin: 0 0.6rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.home-operations-preview-card__gov-fee-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #92400e;
+  letter-spacing: 0.01em;
 }
 
 .home-operations-preview-card__cta {
@@ -2732,6 +2761,28 @@
   }
 }
 
+/* Promote tech-service-card to its own compositor layer so :hover fires
+   immediately even while the parent marquee translateX animation is running. */
+.home-auto-scroll-row .tech-service-card,
+.home-preview-row .tech-service-card {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Same root-cause fix for the homepage card border shells (Technology Register
+   marketplace listings, etc.): promote each shell to its own compositor layer
+   so the hover highlight (border/shadow) repaints instantly instead of being
+   delayed while the parent marquee translateX animation is running. Scoped to
+   devices with a real mouse — touch devices use static rows and get no delay,
+   so no extra layer memory is spent there. */
+@media (hover: hover) and (pointer: fine) {
+  .home-auto-scroll-row .home-preview-card-border,
+  .home-preview-row .home-preview-card-border {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+}
+
 @keyframes home-auto-scroll-row-marquee {
   0% {
     transform: translateX(0);
@@ -3179,3 +3230,5 @@
   padding: 0.75rem !important;
   gap: 0.5rem !important;
 }
+
+

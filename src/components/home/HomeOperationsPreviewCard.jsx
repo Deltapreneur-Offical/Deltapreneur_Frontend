@@ -161,6 +161,14 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
         </button>
       </div>
 
+      {service.governmentFeesApplicable && service.governmentFeeText && (
+        <div className="home-operations-preview-card__gov-fee">
+          <span className="home-operations-preview-card__gov-fee-text">
+            {service.governmentFeeText}
+          </span>
+        </div>
+      )}
+
       <hr className="creator-profile-card__divider" />
       <div className="creator-profile-card__footer">
         <div className="creator-profile-card__views" title={t('operationsViews', { defaultValue: 'Views' })}>

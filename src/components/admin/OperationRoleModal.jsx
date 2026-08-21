@@ -26,6 +26,8 @@ const EMPTY_FORM = {
   price: '',
   isAvailable: true,
   serviceType: 'compliance',
+  governmentFeesApplicable: false,
+  governmentFeeText: 'Government fees applicable',
 };
 
 function parsePriceInput(value) {
@@ -71,6 +73,8 @@ export default function OperationRoleModal({
         price: formatPriceInput(record.price),
         isAvailable: record.isAvailable !== false,
         serviceType: record.serviceType || 'virtual_assistance',
+        governmentFeesApplicable: record.governmentFeesApplicable || false,
+        governmentFeeText: record.governmentFeeText || 'Government fees applicable',
       });
       return;
     }
@@ -110,6 +114,8 @@ export default function OperationRoleModal({
       price,
       isAvailable: form.isAvailable,
       serviceType: form.serviceType,
+      governmentFeesApplicable: form.governmentFeesApplicable,
+      governmentFeeText: form.governmentFeeText.trim() || 'Government fees applicable',
     };
 
     setLoading(true);
@@ -264,6 +270,49 @@ export default function OperationRoleModal({
                 className="operations-role-modal-input operations-role-modal-textarea"
               />
             </div>
+
+            <div className="operations-role-modal-field operations-role-modal-field--full operations-role-modal-status">
+              <div className="operations-role-modal-status-row">
+                <div>
+                  <span className="operations-role-modal-label">
+                    Government Fees Applicable
+                  </span>
+                  <p className="operations-role-modal-hint operations-role-modal-hint--inline">
+                    Show a government fees notice on this service card.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.governmentFeesApplicable}
+                  className={`admin-feature-switch operations-role-switch ${form.governmentFeesApplicable ? 'is-on' : ''}`}
+                  onClick={() => setField('governmentFeesApplicable', !form.governmentFeesApplicable)}
+                >
+                  <span className="admin-feature-switch-track">
+                    <span className="admin-feature-switch-thumb" />
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {form.governmentFeesApplicable && (
+              <div className="operations-role-modal-field operations-role-modal-field--full">
+                <label className="operations-role-modal-label" htmlFor="ops-role-gov-fee-text">
+                  Government Fee Text
+                </label>
+                <input
+                  id="ops-role-gov-fee-text"
+                  type="text"
+                  value={form.governmentFeeText}
+                  onChange={(e) => setField('governmentFeeText', e.target.value)}
+                  placeholder="Government fees applicable"
+                  className="operations-role-modal-input"
+                />
+                <p className="operations-role-modal-hint">
+                  Text displayed on the service card when the toggle is ON.
+                </p>
+              </div>
+            )}
 
             <div className="operations-role-modal-field operations-role-modal-field--full operations-role-modal-status">
               <div className="operations-role-modal-status-row">

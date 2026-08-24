@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
-import '../styles/franchise-page.css';
+import '../styles/franchise-page.css';
+import {
+  PageHero, PageHeroItem, PageReveal, PageStagger, PageStaggerItem,
+} from '../components/motion/PageMotion';
+import { HOME_EASE_OUT } from '../components/motion/motionPresets';
 
 import Confetti from '../components/common/Confetti';
 import BrandNavLogo from '../components/common/BrandNavLogo';
+import BrandLogoImage from '../components/common/BrandLogoImage';
+import BackToHomeButton from '../components/common/BackToHomeButton';
 import HomeFooter from '../components/common/HomeFooter';
 
 const BENEFITS = [

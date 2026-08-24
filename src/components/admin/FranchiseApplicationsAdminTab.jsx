@@ -235,9 +235,17 @@ export default function FranchiseApplicationsAdminTab({ toast }) {
                           style={{ border: 0 }}
                           loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
-                          src={viewApp.map_url.includes('google.com/maps') ?
-                            viewApp.map_url.replace('maps?', 'maps/embed?') :
-                            'https://maps.google.com/maps?q=' + encodeURIComponent(viewApp.map_url) + '&t=&z=15&output=embed'}
+                          src={(() => {
+                              const url = viewApp.map_url;
+                              if (url.includes('google.com/maps')) return url.replace('maps?', 'maps/embed?');
+                              if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps'))
+                                return 'https://maps.google.com/maps?q=' + encodeURIComponent(url) + '&z=15&output=embed';
+                              if (url.includes('@') && url.includes(',')) {
+                                const c = url.match(/@([\d.-]+),([\d.-]+)/);
+                                if (c) return 'https://maps.google.com/maps?q=' + c[1] + ',' + c[2] + '&z=15&output=embed';
+                              }
+                              return 'https://maps.google.com/maps?q=' + encodeURIComponent(url) + '&z=15&output=embed';
+                            })()}
                         />
                       </div>
                     </div>

@@ -7295,7 +7295,7 @@ input[type="checkbox"] {
 }
 
 :root {
-  --brand-nav-logo-height: 2.5rem;
+  --brand-nav-logo-height: 2.75rem;
   --brand-nav-logo-max-width: 18rem;
 }
 
@@ -7523,9 +7523,9 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   border: none;
   background: transparent;
   cursor: pointer;
-  height: var(--brand-nav-logo-height);
+  height: var(--home-main-nav-height, 3.5rem);
   width: auto;
-  max-width: var(--brand-nav-logo-max-width);
+  max-width: none;
   overflow: visible;
 }
 
@@ -7547,7 +7547,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   line-height: 0;
   vertical-align: middle;
   overflow: visible;
-  max-width: var(--brand-nav-logo-max-width);
+  max-width: none;
 }
 
 .brand-nav-logo,
@@ -7555,7 +7555,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   display: block;
   height: var(--brand-nav-logo-height);
   width: auto;
-  max-width: var(--brand-nav-logo-max-width);
+  max-width: 100%;
   object-fit: contain;
   object-position: left center;
 }
@@ -8276,7 +8276,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 @media (max-width: 639px) {
   :root {
-    --brand-nav-logo-height: 1.5rem;
+    --brand-nav-logo-height: 1.75rem;
     --brand-nav-logo-max-width: 7.5rem;
   }
 

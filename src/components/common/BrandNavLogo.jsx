@@ -12,7 +12,7 @@ export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav
         src={hubregistrarLogo}
         alt="HubRegistrar"
         className={`${base} home-nav-logo-img--default`.trim()}
-        style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+        style={{ height: '100%', width: 'auto', objectFit: 'contain', maxHeight: '100%' }}
       />
     </span>
   );

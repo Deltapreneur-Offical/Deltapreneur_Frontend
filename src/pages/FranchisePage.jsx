@@ -204,7 +204,7 @@ export default function FranchisePage() {
               </div>
               <div className="franchise-field franchise-field-full">
                 <label className="franchise-label-with-icon">
-                  <MapPin size={16} /> Premises Location on Map
+                  Premises Location on Map
                   <span className="franchise-map-tooltip-wrapper">
                     <Info size={14} className="franchise-map-info-icon" />
                     <span className="franchise-map-tooltip">

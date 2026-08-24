@@ -309,9 +309,17 @@ export default function FranchisePage() {
                       style={{ border: 0, borderRadius: '8px' }}
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
-                      src={form.map_url.includes('google.com/maps') ?
-                        form.map_url.replace('maps?', 'maps/embed?') :
-                        `https://maps.google.com/maps?q=${encodeURIComponent(form.map_url)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                      src={(() => {
+                          const url = form.map_url;
+                          if (url.includes('google.com/maps')) return url.replace('maps?', 'maps/embed?');
+                          if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps'))
+                            return 'https://maps.google.com/maps?q=' + encodeURIComponent(url) + '&z=15&output=embed';
+                          if (url.includes('@') && url.includes(',')) {
+                            const c = url.match(/@([\d.-]+),([\d.-]+)/);
+                            if (c) return 'https://maps.google.com/maps?q=' + c[1] + ',' + c[2] + '&z=15&output=embed';
+                          }
+                          return 'https://maps.google.com/maps?q=' + encodeURIComponent(url) + '&z=15&output=embed';
+                        })()}
                     />
                     <a href={form.map_url} target="_blank" rel="noopener noreferrer" className="franchise-map-link">
                       <ExternalLink size={14} /> Open in Google Maps

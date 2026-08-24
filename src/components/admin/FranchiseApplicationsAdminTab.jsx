@@ -150,7 +150,13 @@ export default function FranchiseApplicationsAdminTab({ toast }) {
                   <td>{a.city || "—"}</td>
                   <td>{a.state || "—"}</td>
                   <td className="fa-biz-td">{a.existing_business_name || "—"}</td>
-                  <td>{a.preferred_location || "—"}</td>
+                  <td>
+                    {a.map_url ? (
+                      <a href={a.map_url} target="_blank" rel="noopener noreferrer" className="fa-map-link-inline" title="Open in Google Maps">
+                        <MapPin size={12} /> View Map
+                      </a>
+                    ) : a.preferred_location || "—"}
+                  </td>
                   <td className="fa-date-td">{fmt(a.created_at)}</td>
                   <td>
                     {bl ? (
@@ -213,24 +219,27 @@ export default function FranchiseApplicationsAdminTab({ toast }) {
                   <p className="fa-detail-val">{viewApp.full_address || "—"}</p>
                 </div>
                 {viewApp.map_url && (
-                  <div className="fa-detail-full">
-                    <span className="fa-detail-lbl"><MapPin size={14} /> Premises Location</span>
-                    <p className="fa-detail-val">
-                      <a href={viewApp.map_url} target="_blank" rel="noopener noreferrer" className="fa-map-link">
-                        Open in Google Maps
-                      </a>
-                    </p>
-                    <div className="fa-map-embed">
-                      <iframe
-                        title="Location"
-                        width="100%"
-                        height="250"
-                        style={{ border: 0, borderRadius: '8px' }}
-                        loading="lazy"
-                        src={viewApp.map_url.includes('google.com/maps') ?
-                          viewApp.map_url.replace('maps?', 'maps/embed?') :
-                          'https://maps.google.com/maps?q=' + encodeURIComponent(viewApp.map_url) + '&t=&z=15&output=embed'}
-                      />
+                  <div className="fa-detail-full fa-detail-map">
+                    <span className="fa-detail-lbl"><MapPin size={14} /> Premises Location on Map</span>
+                    <div className="fa-map-card">
+                      <div className="fa-map-card-header">
+                        <a href={viewApp.map_url} target="_blank" rel="noopener noreferrer" className="fa-map-link">
+                          <ExternalLink size={14} /> Open in Google Maps
+                        </a>
+                      </div>
+                      <div className="fa-map-embed">
+                        <iframe
+                          title="Location"
+                          width="100%"
+                          height="280"
+                          style={{ border: 0 }}
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          src={viewApp.map_url.includes('google.com/maps') ?
+                            viewApp.map_url.replace('maps?', 'maps/embed?') :
+                            'https://maps.google.com/maps?q=' + encodeURIComponent(viewApp.map_url) + '&t=&z=15&output=embed'}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

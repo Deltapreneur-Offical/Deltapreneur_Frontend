@@ -1,15 +1,19 @@
 /**
- * HubRegistrar text wordmark — official logo asset to be added later.
- * Renders the brand word as styled text ("HubRegistrar", no ".com").
+ * HubRegistrar logo — uses official logo image.
  */
+import hubregistrarLogo from '../../assets/hubregistrarlogo_main.png';
+
 export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav-logo' }) {
-  const base = `${imgClassName} home-nav-logo-text`.trim();
+  const base = imgClassName || 'brand-nav-logo';
 
   return (
     <span className={`home-nav-logo-swap group h-full ${className}`.trim()}>
-      <span className={`${base} home-nav-logo-text--default brand-text-logo`.trim()}>
-        HubRegistrar
-      </span>
+      <img
+        src={hubregistrarLogo}
+        alt="HubRegistrar"
+        className={`${base} home-nav-logo-img--default`.trim()}
+        style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+      />
     </span>
   );
 }

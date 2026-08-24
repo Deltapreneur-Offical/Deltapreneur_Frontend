@@ -1,7 +1,9 @@
 /**
- * HubRegistrar wordmark (text) — official logo asset to be added later.
- * Renders the brand word "HubRegistrar" (no ".com") instead of the old logo image.
+ * HubRegistrar logo — uses official logo image.
+ * Renders the brand logo image instead of the old text placeholder.
  */
+import hubregistrarLogo from '../../assets/hubregistrarlogo_main.png';
+
 export default function BrandLogoImage({
   src: _src,
   className = '',
@@ -10,14 +12,13 @@ export default function BrandLogoImage({
   ...rest
 }) {
   return (
-    <span
-      className={`brand-text-logo ${className}`.trim()}
-      role={ariaHidden ? undefined : 'img'}
-      aria-label={ariaHidden ? undefined : alt}
+    <img
+      src={hubregistrarLogo}
+      alt={alt}
+      className={className}
       aria-hidden={ariaHidden || undefined}
+      style={{ height: 'auto', width: 'auto', objectFit: 'contain' }}
       {...rest}
-    >
-      HubRegistrar
-    </span>
+    />
   );
 }

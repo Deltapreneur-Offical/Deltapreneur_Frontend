@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
 import '../styles/franchise-page.css';
-import BackToHomeButton from '../components/common/BackToHomeButton';
 import BrandNavLogo from '../components/common/BrandNavLogo';
 import HomeFooter from '../components/common/HomeFooter';
 
@@ -77,9 +76,12 @@ export default function FranchisePage() {
   if (submitted) {
     return (
       <div className="franchise-page">
-        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <BackToHomeButton />
+        <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors cursor-pointer bg-transparent border-none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+              Back
+            </button>
             <BrandNavLogo className="cursor-pointer" onClick={() => navigate('/')} />
           </div>
         </nav>
@@ -96,9 +98,12 @@ export default function FranchisePage() {
 
   return (
     <div className="franchise-page">
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <BackToHomeButton />
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors cursor-pointer bg-transparent border-none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
           <BrandNavLogo className="cursor-pointer" onClick={() => navigate('/')} />
         </div>
       </nav>

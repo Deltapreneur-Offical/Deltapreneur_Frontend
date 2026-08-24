@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight } from 'lucide-react';
+import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
 import '../styles/franchise-page.css';
 
@@ -35,7 +35,7 @@ export default function FranchisePage() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    operationsAPI.list().then(({ data }) => { if (data?.success) setServices(data.data || []); }).catch(() => {});
+    operationsAPI.list({ serviceType: 'compliance' }).then(({ data }) => { if (data?.success) setServices(data.data || []); }).catch(() => {});
   }, []);
 
   const handleChange = (e) => {
@@ -201,6 +201,39 @@ export default function FranchisePage() {
                 <label>Full Address *</label>
                 <textarea name="full_address" value={form.full_address} onChange={handleChange} placeholder="Enter complete address" rows={3} />
                 {errors.full_address && <span className="franchise-field-error">{errors.full_address}</span>}
+              </div>
+              <div className="franchise-field franchise-field-full">
+                <label className="franchise-label-with-icon">
+                  <MapPin size={16} /> Premises Location on Map
+                </label>
+                <p className="franchise-field-hint">
+                  Open Google Maps → find your shop/office location → click Share → copy link → paste below
+                </p>
+                <input
+                  name="map_url"
+                  value={form.map_url}
+                  onChange={handleChange}
+                  placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/..."
+                  className="franchise-map-input"
+                />
+                {form.map_url && form.map_url.includes('maps') && (
+                  <div className="franchise-map-preview">
+                    <iframe
+                      title="Location Preview"
+                      width="100%"
+                      height="300"
+                      style={{ border: 0, borderRadius: '8px' }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={form.map_url.includes('google.com/maps') ?
+                        form.map_url.replace('maps?', 'maps/embed?') :
+                        `https://maps.google.com/maps?q=${encodeURIComponent(form.map_url)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    />
+                    <a href={form.map_url} target="_blank" rel="noopener noreferrer" className="franchise-map-link">
+                      <ExternalLink size={14} /> Open in Google Maps
+                    </a>
+                  </div>
+                )}
               </div>
               <div className="franchise-field franchise-field-full">
                 <label>Relevant Experience</label>

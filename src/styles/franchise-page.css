@@ -1,39 +1,60 @@
-.franchise-page { min-height: 100vh; background: #f8fafc; }
-.franchise-hero { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 5rem 1.5rem 4rem; text-align: center; }
-.franchise-hero-content { max-width: 700px; margin: 0 auto; }
-.franchise-hero-badge { display: inline-block; background: #f59e0b; color: #1e293b; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem; }
-.franchise-hero-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
-.franchise-hero-subtitle { font-size: 1.1rem; opacity: 0.85; line-height: 1.6; margin-bottom: 2rem; }
-.franchise-section { padding: 4rem 1.5rem; }
-.franchise-section-alt { background: #f1f5f9; }
-.franchise-container { max-width: 1100px; margin: 0 auto; }
-.franchise-section-title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; text-align: center; }
-.franchise-section-subtitle { color: #64748b; text-align: center; margin-bottom: 2rem; }
-.franchise-benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
-.franchise-benefit-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; text-align: center; transition: box-shadow 0.2s; }
-.franchise-benefit-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.franchise-benefit-icon { color: #7c3aed; margin-bottom: 0.75rem; }
-.franchise-benefit-label { font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.25rem; }
-.franchise-benefit-desc { font-size: 0.85rem; color: #64748b; }
-.franchise-services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-.franchise-service-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; }
-.franchise-service-name { font-size: 0.95rem; font-weight: 600; color: #1e293b; margin-bottom: 0.25rem; }
-.franchise-service-desc { font-size: 0.8rem; color: #64748b; }
-.franchise-operating-text { text-align: center; font-size: 1.05rem; color: #475569; max-width: 600px; margin: 0 auto; }
-.franchise-disclaimer { display: flex; align-items: flex-start; gap: 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 1.25rem; color: #92400e; font-size: 0.9rem; }
-.franchise-form { max-width: 900px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 2rem; }
-.franchise-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
-.franchise-field-full { grid-column: 1 / -1; }
-.franchise-field label { display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
-.franchise-field input, .franchise-field select, .franchise-field textarea { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; transition: border 0.2s; }
-.franchise-field input:focus, .franchise-field select:focus, .franchise-field textarea:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
-.franchise-field-error { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem; }
-.franchise-btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; background: #7c3aed; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: background 0.2s; }
-.franchise-btn-primary:hover { background: #6d28d9; }
-.franchise-btn-submit { display: inline-flex; align-items: center; gap: 0.5rem; background: #7c3aed; color: white; padding: 0.85rem 2rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; font-size: 1rem; width: 100%; justify-content: center; transition: background 0.2s; }
-.franchise-btn-submit:hover { background: #6d28d9; }
-.franchise-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-.franchise-error-banner { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem; }
-.franchise-success { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; padding: 2rem; }
-.franchise-success-title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem; }
-.franchise-success-text { color: #64748b; font-size: 1.1rem; max-width: 500px; }
+.franchise-page{min-height:100vh;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}
+.franchise-hero{background:linear-gradient(135deg,#1e293b 0%,#334155 50%,#475569 100%);color:white;padding:5rem 1.5rem 4rem;text-align:center;position:relative;overflow:hidden}
+.franchise-hero::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.03) 0%,transparent 50%);animation:franchise-shimmer 20s linear infinite}
+@keyframes franchise-shimmer{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.franchise-hero-content{max-width:700px;margin:0 auto;position:relative;z-index:1}
+.franchise-hero-badge{display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#1e293b;padding:.4rem 1.2rem;border-radius:999px;font-size:.8rem;font-weight:700;margin-bottom:1.25rem;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 4px 12px rgba(245,158,11,.3)}
+.franchise-hero-title{font-size:3.2rem;font-weight:800;margin-bottom:1rem;line-height:1.1}
+.franchise-hero-subtitle{font-size:1.1rem;opacity:.9;line-height:1.7;margin-bottom:2rem;max-width:600px;margin-left:auto;margin-right:auto}
+.franchise-section{padding:4.5rem 1.5rem}
+.franchise-section-alt{background:#f1f5f9}
+.franchise-container{max-width:1100px;margin:0 auto}
+.franchise-section-title{font-size:2.2rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;text-align:center}
+.franchise-section-subtitle{color:#64748b;text-align:center;margin-bottom:2.5rem;font-size:1.05rem;max-width:600px;margin-left:auto;margin-right:auto}
+.franchise-benefits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem}
+.franchise-benefit-card{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:1.75rem;text-align:center;transition:all .25s ease;position:relative;overflow:hidden}
+.franchise-benefit-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#7c3aed,#6366f1);opacity:0;transition:opacity .25s ease}
+.franchise-benefit-card:hover{box-shadow:0 8px 30px rgba(0,0,0,.08);transform:translateY(-4px);border-color:#c7d2fe}
+.franchise-benefit-card:hover::before{opacity:1}
+.franchise-benefit-icon{color:#7c3aed;margin-bottom:1rem}
+.franchise-benefit-label{font-size:1rem;font-weight:600;color:#1e293b;margin-bottom:.35rem}
+.franchise-benefit-desc{font-size:.85rem;color:#64748b;line-height:1.5}
+.franchise-services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.franchise-service-card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;transition:all .2s ease}
+.franchise-service-card:hover{border-color:#c7d2fe;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.franchise-service-name{font-size:.95rem;font-weight:600;color:#1e293b;margin-bottom:.25rem}
+.franchise-service-desc{font-size:.82rem;color:#64748b;line-height:1.5}
+.franchise-operating-text{text-align:center;font-size:1.1rem;color:#475569;max-width:600px;margin:0 auto;line-height:1.6}
+.franchise-disclaimer{display:flex;align-items:flex-start;gap:.85rem;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:12px;padding:1.25rem 1.5rem;color:#92400e;font-size:.9rem;line-height:1.6}
+.franchise-disclaimer svg{flex-shrink:0;margin-top:2px}
+.franchise-form{max-width:900px;margin:0 auto;background:white;border:1px solid #e2e8f0;border-radius:16px;padding:2.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+.franchise-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:2rem}
+.franchise-field-full{grid-column:1/-1}
+.franchise-field label{display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.45rem;letter-spacing:.01em}
+.franchise-field input,.franchise-field select,.franchise-field textarea{width:100%;padding:.75rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.92rem;color:#1e293b;background:#ffffff!important;background-image:none!important;transition:all .2s ease;font-family:inherit}
+.franchise-field input::placeholder,.franchise-field textarea::placeholder{color:#9ca3af;font-weight:400}
+.franchise-field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;cursor:pointer}
+.franchise-field input:focus,.franchise-field select:focus,.franchise-field textarea:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,.1);background-color:#ffffff}
+.franchise-field input:hover,.franchise-field select:hover,.franchise-field textarea:hover{border-color:#cbd5e1}
+.franchise-field textarea{resize:vertical;min-height:100px;line-height:1.6}
+.franchise-field-error{display:block;color:#dc2626;font-size:.8rem;margin-top:.35rem;font-weight:500}
+.franchise-btn-submit{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;padding:1rem 2.5rem;border-radius:12px;font-weight:600;font-size:1rem;border:none;cursor:pointer;width:100%;transition:all .25s ease;box-shadow:0 4px 14px rgba(124,58,237,.3)}
+.franchise-btn-submit:hover{background:linear-gradient(135deg,#6d28d9,#4f46e5);box-shadow:0 6px 20px rgba(124,58,237,.4);transform:translateY(-2px)}
+.franchise-btn-submit:active{transform:translateY(0);box-shadow:0 2px 8px rgba(124,58,237,.3)}
+.franchise-btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.franchise-error-banner{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fecaca;color:#991b1b;padding:1rem 1.25rem;border-radius:12px;margin-bottom:1.5rem;font-size:.9rem;display:flex;align-items:center;gap:.5rem}
+.franchise-success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:2rem}
+.franchise-success-title{font-size:2.2rem;font-weight:700;color:#1e293b;margin-bottom:.75rem}
+.franchise-success-text{color:#64748b;font-size:1.1rem;max-width:500px;line-height:1.6}
+.franchise-btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;padding:.85rem 1.75rem;border-radius:12px;font-weight:600;font-size:1rem;text-decoration:none;border:none;cursor:pointer;transition:all .25s ease;box-shadow:0 4px 14px rgba(124,58,237,.3)}
+.franchise-btn-primary:hover{background:linear-gradient(135deg,#6d28d9,#4f46e5);box-shadow:0 6px 20px rgba(124,58,237,.4);transform:translateY(-2px)}
+@media(max-width:768px){.franchise-hero-title{font-size:2.2rem}.franchise-section{padding:3rem 1.25rem}.franchise-form{padding:1.5rem}.franchise-form-grid{grid-template-columns:1fr}}
+
+/* Map Location Field */
+.franchise-label-with-icon{display:flex;align-items:center;gap:.5rem;font-weight:600;color:#1e293b;font-size:.95rem}
+.franchise-field-hint{font-size:.85rem;color:#64748b;margin:.35rem 0 .75rem;line-height:1.5;background:#f0f9ff;padding:.6rem .9rem;border-radius:8px;border-left:3px solid #3b82f6}
+.franchise-map-input{width:100%;padding:.85rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.95rem;background:#ffffff !important;color:#1e293b;transition:all .2s ease}
+.franchise-map-input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,.1);outline:none}
+.franchise-map-preview{margin-top:1rem;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#f8fafc}
+.franchise-map-link{display:flex;align-items:center;gap:.4rem;padding:.75rem 1rem;background:#f1f5f9;color:#7c3aed;font-size:.85rem;font-weight:600;text-decoration:none;transition:all .2s ease}
+.franchise-map-link:hover{background:#e2e8f0;color:#6d28d9}

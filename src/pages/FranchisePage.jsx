@@ -41,6 +41,7 @@ const EMPTY_FORM = {
   full_name: '', mobile_number: '', email: '', city: '', state: '', full_address: '',
   existing_business_name: '', business_type: '', preferred_location: '',
   existing_office_availability: '', relevant_experience: '', reason_for_applying: '', additional_information: '',
+  map_url: '',
 };
 
 export default function FranchisePage() {

@@ -1,68 +1,1128 @@
-.franchise-page{min-height:100vh;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}
-.franchise-hero{background:linear-gradient(135deg,#1e293b 0%,#334155 50%,#475569 100%);color:white;padding:5rem 1.5rem 4rem;text-align:center;position:relative;overflow:hidden}
-.franchise-hero::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.03) 0%,transparent 50%);animation:franchise-shimmer 20s linear infinite}
-@keyframes franchise-shimmer{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.franchise-hero-content{max-width:700px;margin:0 auto;position:relative;z-index:1}
-.franchise-hero-badge{display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#1e293b;padding:.4rem 1.2rem;border-radius:999px;font-size:.8rem;font-weight:700;margin-bottom:1.25rem;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 4px 12px rgba(245,158,11,.3)}
-.franchise-hero-title{font-size:3.2rem;font-weight:800;margin-bottom:1rem;line-height:1.1}
-.franchise-hero-subtitle{font-size:1.1rem;opacity:.9;line-height:1.7;margin-bottom:2rem;max-width:600px;margin-left:auto;margin-right:auto}
-.franchise-section{padding:4.5rem 1.5rem}
-.franchise-section-alt{background:#f1f5f9}
-.franchise-container{max-width:1100px;margin:0 auto}
-.franchise-section-title{font-size:2.2rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;text-align:center}
-.franchise-section-subtitle{color:#64748b;text-align:center;margin-bottom:2.5rem;font-size:1.05rem;max-width:600px;margin-left:auto;margin-right:auto}
-.franchise-benefits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem}
-.franchise-benefit-card{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:1.75rem;text-align:center;transition:all .25s ease;position:relative;overflow:hidden}
-.franchise-benefit-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#7c3aed,#6366f1);opacity:0;transition:opacity .25s ease}
-.franchise-benefit-card:hover{box-shadow:0 8px 30px rgba(0,0,0,.08);transform:translateY(-4px);border-color:#c7d2fe}
-.franchise-benefit-card:hover::before{opacity:1}
-.franchise-benefit-icon{color:#7c3aed;margin-bottom:1rem}
-.franchise-benefit-label{font-size:1rem;font-weight:600;color:#1e293b;margin-bottom:.35rem}
-.franchise-benefit-desc{font-size:.85rem;color:#64748b;line-height:1.5}
-.franchise-services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
-.franchise-service-card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;transition:all .2s ease}
-.franchise-service-card:hover{border-color:#c7d2fe;box-shadow:0 4px 16px rgba(0,0,0,.06)}
-.franchise-service-name{font-size:.95rem;font-weight:600;color:#1e293b;margin-bottom:.25rem}
-.franchise-service-desc{font-size:.82rem;color:#64748b;line-height:1.5}
-.franchise-operating-text{text-align:center;font-size:1.1rem;color:#475569;max-width:600px;margin:0 auto;line-height:1.6}
-.franchise-disclaimer{display:flex;align-items:flex-start;gap:.85rem;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:12px;padding:1.25rem 1.5rem;color:#92400e;font-size:.9rem;line-height:1.6}
-.franchise-disclaimer svg{flex-shrink:0;margin-top:2px}
-.franchise-form{max-width:900px;margin:0 auto;background:white;border:1px solid #e2e8f0;border-radius:16px;padding:2.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-.franchise-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:2rem}
-.franchise-field-full{grid-column:1/-1}
-.franchise-field label{display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:.45rem;letter-spacing:.01em}
-.franchise-field input,.franchise-field select,.franchise-field textarea{width:100%;padding:.75rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.92rem;color:#1e293b;background:#ffffff!important;background-image:none!important;transition:all .2s ease;font-family:inherit}
-.franchise-field input::placeholder,.franchise-field textarea::placeholder{color:#9ca3af;font-weight:400}
-.franchise-field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;cursor:pointer}
-.franchise-field input:focus,.franchise-field select:focus,.franchise-field textarea:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,.1);background-color:#ffffff}
-.franchise-field input:hover,.franchise-field select:hover,.franchise-field textarea:hover{border-color:#cbd5e1}
-.franchise-field textarea{resize:vertical;min-height:100px;line-height:1.6}
-.franchise-field-error{display:block;color:#dc2626;font-size:.8rem;margin-top:.35rem;font-weight:500}
-.franchise-btn-submit{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;padding:1rem 2.5rem;border-radius:12px;font-weight:600;font-size:1rem;border:none;cursor:pointer;width:100%;transition:all .25s ease;box-shadow:0 4px 14px rgba(124,58,237,.3)}
-.franchise-btn-submit:hover{background:linear-gradient(135deg,#6d28d9,#4f46e5);box-shadow:0 6px 20px rgba(124,58,237,.4);transform:translateY(-2px)}
-.franchise-btn-submit:active{transform:translateY(0);box-shadow:0 2px 8px rgba(124,58,237,.3)}
-.franchise-btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
-.franchise-error-banner{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fecaca;color:#991b1b;padding:1rem 1.25rem;border-radius:12px;margin-bottom:1.5rem;font-size:.9rem;display:flex;align-items:center;gap:.5rem}
-.franchise-success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:2rem}
-.franchise-success-title{font-size:2.2rem;font-weight:700;color:#1e293b;margin-bottom:.75rem}
-.franchise-success-text{color:#64748b;font-size:1.1rem;max-width:500px;line-height:1.6}
-.franchise-btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;padding:.85rem 1.75rem;border-radius:12px;font-weight:600;font-size:1rem;text-decoration:none;border:none;cursor:pointer;transition:all .25s ease;box-shadow:0 4px 14px rgba(124,58,237,.3)}
-.franchise-btn-primary:hover{background:linear-gradient(135deg,#6d28d9,#4f46e5);box-shadow:0 6px 20px rgba(124,58,237,.4);transform:translateY(-2px)}
-@media(max-width:768px){.franchise-hero-title{font-size:2.2rem}.franchise-section{padding:3rem 1.25rem}.franchise-form{padding:1.5rem}.franchise-form-grid{grid-template-columns:1fr}}
+.franchise-page {
+  --franchise-ink: #10233f;
+  --franchise-muted: #607089;
+  --franchise-line: #dce5ee;
+  --franchise-surface: #ffffff;
+  --franchise-wash: #f4f8fb;
+  --franchise-teal: #087f83;
+  --franchise-teal-dark: #07565f;
+  --franchise-amber: #d58b18;
+  min-height: 100vh;
+  color: var(--franchise-ink);
+  background: #f7fafc;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  overflow: hidden;
+}
 
-/* Map Location Field */
-.franchise-label-with-icon{display:flex;align-items:center;gap:.5rem;font-weight:600;color:#1e293b;font-size:.95rem}
-.franchise-field-hint{font-size:.85rem;color:#64748b;margin:.35rem 0 .75rem;line-height:1.5;background:#f0f9ff;padding:.6rem .9rem;border-radius:8px;border-left:3px solid #3b82f6}
-.franchise-map-input{width:100%;padding:.85rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.95rem;background:#ffffff !important;color:#1e293b;transition:all .2s ease}
-.franchise-map-input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,.1);outline:none}
-.franchise-map-preview{margin-top:1rem;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#f8fafc}
-.franchise-map-link{display:flex;align-items:center;gap:.4rem;padding:.75rem 1rem;background:#f1f5f9;color:#7c3aed;font-size:.85rem;font-weight:600;text-decoration:none;transition:all .2s ease}
-.franchise-map-link:hover{background:#e2e8f0;color:#6d28d9}
+.franchise-page > nav {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(220, 229, 238, 0.85) !important;
+  box-shadow: 0 1px 0 rgba(16, 35, 63, 0.04) !important;
+  backdrop-filter: blur(18px);
+}
 
-/* Map Tooltip */
-.franchise-map-tooltip-wrapper{position:relative;display:inline-flex;align-items:center;margin-left:.35rem;cursor:help}
-.franchise-map-info-icon{color:#64748b;transition:color .2s ease}
-.franchise-map-info-icon:hover{color:#7c3aed}
-.franchise-map-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:.5rem .75rem;border-radius:6px;font-size:.8rem;line-height:1.4;white-space:nowrap;opacity:0;visibility:hidden;transition:all .2s ease;pointer-events:none;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.15)}
-.franchise-map-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1e293b}
-.franchise-map-tooltip-wrapper:hover .franchise-map-tooltip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}
+.franchise-page > nav > div {
+  max-width: 1240px;
+  min-height: 4.25rem;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+.franchise-page > nav button:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.35rem;
+  padding: 0.5rem 0.8rem 0.5rem 0.55rem;
+  border: 1px solid var(--franchise-line);
+  border-radius: 0.7rem;
+  color: var(--franchise-muted);
+  background: #fff;
+  transition: color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.franchise-page > nav button:first-child:hover {
+  color: var(--franchise-teal-dark);
+  border-color: #9ccfd0;
+  box-shadow: 0 5px 14px rgba(8, 127, 131, 0.1);
+  transform: translateX(-2px);
+}
+
+.franchise-page > nav .home-nav-logo-swap {
+  max-width: 12rem;
+}
+
+.franchise-page > nav .brand-nav-logo {
+  height: 2.35rem;
+}
+
+.franchise-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 31rem;
+  display: flex;
+  align-items: center;
+  padding: 6rem max(1.25rem, 5vw) 5.5rem;
+  text-align: left;
+  color: #f7fbff;
+  background: radial-gradient(circle at 76% 25%, rgba(44, 174, 170, 0.22), transparent 28%), linear-gradient(120deg, #0d213d 0%, #143d56 58%, #0a666d 100%);
+  overflow: hidden;
+}
+
+.franchise-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 42rem;
+  height: 42rem;
+  right: -12rem;
+  top: -17rem;
+  border: 1px solid rgba(196, 238, 235, 0.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4rem rgba(196, 238, 235, 0.035), 0 0 0 8rem rgba(196, 238, 235, 0.025);
+  animation: franchise-orbit 18s linear infinite;
+}
+
+.franchise-hero::after {
+  content: "PARTNER WITH PURPOSE  /  BUILT FOR LOCAL EXPERTS";
+  position: absolute;
+  right: max(1.25rem, 5vw);
+  bottom: 2.1rem;
+  color: rgba(226, 247, 246, 0.58);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+@keyframes franchise-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.franchise-hero-content {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 42rem);
+  margin: 0;
+  animation: franchise-rise 650ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+@keyframes franchise-rise {
+  from { opacity: 0; transform: translateY(1.2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.franchise-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.35rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(181, 234, 226, 0.35);
+  border-radius: 999px;
+  color: #d9f5ef;
+  background: rgba(9, 111, 116, 0.32);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.franchise-hero-badge::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #f0b84a;
+  box-shadow: 0 0 0 0.25rem rgba(240, 184, 74, 0.13);
+}
+
+.franchise-hero-title {
+  max-width: 38rem;
+  margin: 0 0 1.15rem;
+  color: #ffffff;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.6rem, 5.2vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+
+.franchise-hero-title .text-amber-600 {
+  color: #f1bd58 !important;
+}
+
+.franchise-hero-subtitle {
+  max-width: 37rem;
+  margin: 0 0 2.1rem;
+  color: rgba(239, 248, 251, 0.78);
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.7;
+}
+
+.franchise-btn-primary,
+.franchise-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 0;
+  border-radius: 0.75rem;
+  color: #ffffff;
+  background: var(--franchise-teal);
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(3, 56, 69, 0.18);
+  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.franchise-btn-primary {
+  padding: 0.9rem 1.25rem;
+}
+
+.franchise-btn-primary:hover,
+.franchise-btn-submit:hover:not(:disabled) {
+  background: var(--franchise-teal-dark);
+  box-shadow: 0 14px 28px rgba(3, 56, 69, 0.24);
+  transform: translateY(-2px);
+}
+
+.franchise-btn-primary:active,
+.franchise-btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.franchise-section {
+  position: relative;
+  padding: clamp(4rem, 7vw, 7rem) max(1.25rem, 5vw);
+  background: var(--franchise-surface);
+}
+
+.franchise-section-alt {
+  background: var(--franchise-wash);
+}
+
+.franchise-container {
+  width: min(100%, 76rem);
+  margin: 0 auto;
+}
+
+.franchise-section-title {
+  margin: 0 0 0.7rem;
+  color: var(--franchise-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.85rem, 3vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  text-align: left;
+}
+
+.franchise-section-title::before {
+  content: "";
+  display: block;
+  width: 2rem;
+  height: 0.2rem;
+  margin-bottom: 1rem;
+  border-radius: 99px;
+  background: var(--franchise-amber);
+}
+
+.franchise-section-subtitle {
+  max-width: 42rem;
+  margin: 0 0 2.4rem;
+  color: var(--franchise-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  text-align: left;
+}
+
+.franchise-benefits-grid,
+.franchise-services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2.2rem;
+}
+
+.franchise-benefit-card,
+.franchise-service-card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--franchise-line);
+  border-radius: 0.9rem;
+  background: #ffffff;
+  box-shadow: 0 3px 0 rgba(16, 35, 63, 0.02);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.franchise-benefit-card {
+  min-height: 11.5rem;
+  padding: 1.25rem;
+  text-align: left;
+  animation: franchise-card-in 550ms both;
+  animation-delay: calc(var(--franchise-card-index, 0) * 50ms);
+}
+
+.franchise-benefit-card:nth-child(2) { --franchise-card-index: 1; }
+.franchise-benefit-card:nth-child(3) { --franchise-card-index: 2; }
+.franchise-benefit-card:nth-child(4) { --franchise-card-index: 3; }
+.franchise-benefit-card:nth-child(5) { --franchise-card-index: 4; }
+.franchise-benefit-card:nth-child(6) { --franchise-card-index: 5; }
+.franchise-benefit-card:nth-child(7) { --franchise-card-index: 6; }
+.franchise-benefit-card:nth-child(8) { --franchise-card-index: 7; }
+
+@keyframes franchise-card-in {
+  from { opacity: 0; transform: translateY(0.7rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.franchise-benefit-card:hover,
+.franchise-service-card:hover {
+  border-color: #9ccfd0;
+  box-shadow: 0 14px 28px rgba(16, 56, 78, 0.1);
+  transform: translateY(-4px);
+}
+
+.franchise-benefit-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1.15rem;
+  padding: 0.5rem;
+  border-radius: 0.65rem;
+  color: var(--franchise-teal);
+  background: #e4f4f2;
+}
+
+.franchise-benefit-label,
+.franchise-service-name {
+  margin: 0 0 0.45rem;
+  color: var(--franchise-ink);
+  font-size: 0.95rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.franchise-benefit-desc,
+.franchise-service-desc {
+  margin: 0;
+  color: var(--franchise-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.franchise-service-card {
+  padding: 1.3rem;
+}
+
+.franchise-service-card::before {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 0.18rem;
+  margin-bottom: 1.15rem;
+  border-radius: 99px;
+  background: var(--franchise-amber);
+}
+
+.franchise-operating-text {
+  max-width: 46rem;
+  margin: 1.5rem 0 0;
+  padding: 1.35rem 1.5rem;
+  border-left: 3px solid var(--franchise-amber);
+  color: var(--franchise-muted);
+  background: var(--franchise-wash);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.franchise-operating-text strong {
+  color: var(--franchise-teal-dark);
+}
+
+.franchise-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.15rem 1.3rem;
+  border: 1px solid #efdba8;
+  border-radius: 0.8rem;
+  color: #765c20;
+  background: #fff9e9;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.franchise-disclaimer svg {
+  flex: 0 0 auto;
+  margin-top: 0.18rem;
+  color: var(--franchise-amber);
+}
+
+.franchise-form {
+  width: min(100%, 62rem);
+  margin: 2.2rem 0 0;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  border: 1px solid var(--franchise-line);
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgba(16, 35, 63, 0.08);
+}
+
+.franchise-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.7rem;
+}
+
+.franchise-field {
+  min-width: 0;
+}
+
+.franchise-field-full {
+  grid-column: 1 / -1;
+}
+
+.franchise-field label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--franchise-ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.franchise-field input,
+.franchise-field select,
+.franchise-field textarea,
+.franchise-map-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.78rem 0.9rem;
+  border: 1px solid #cfdbe5;
+  border-radius: 0.65rem;
+  outline: none;
+  color: var(--franchise-ink);
+  background: #fbfdfe !important;
+  font: inherit;
+  font-size: 0.92rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.franchise-field input::placeholder,
+.franchise-field textarea::placeholder,
+.franchise-map-input::placeholder {
+  color: #93a2b2;
+}
+
+.franchise-field input:hover,
+.franchise-field select:hover,
+.franchise-field textarea:hover,
+.franchise-map-input:hover {
+  border-color: #9ccfd0;
+}
+
+.franchise-field input:focus,
+.franchise-field select:focus,
+.franchise-field textarea:focus,
+.franchise-map-input:focus {
+  border-color: var(--franchise-teal);
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(8, 127, 131, 0.11);
+}
+
+.franchise-field textarea {
+  min-height: 6.5rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.franchise-field select {
+  cursor: pointer;
+}
+
+.franchise-field-error {
+  display: block;
+  margin-top: 0.35rem;
+  color: #bd3d45;
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.franchise-label-with-icon {
+  display: flex !important;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.franchise-map-tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+  color: var(--franchise-teal);
+  cursor: help;
+}
+
+.franchise-map-tooltip {
+  position: absolute;
+  z-index: 5;
+  bottom: calc(100% + 0.6rem);
+  left: 50%;
+  width: min(19rem, 75vw);
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.55rem;
+  color: #ffffff;
+  background: var(--franchise-ink);
+  box-shadow: 0 10px 24px rgba(16, 35, 63, 0.18);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 0.35rem);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+}
+
+.franchise-map-tooltip-wrapper:hover .franchise-map-tooltip,
+.franchise-map-tooltip-wrapper:focus-within .franchise-map-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.franchise-map-preview {
+  margin-top: 0.8rem;
+  overflow: hidden;
+  border: 1px solid var(--franchise-line);
+  border-radius: 0.7rem;
+  background: var(--franchise-wash);
+}
+
+.franchise-map-preview iframe {
+  display: block;
+  max-width: 100%;
+}
+
+.franchise-map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  color: var(--franchise-teal-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.franchise-map-link:hover {
+  text-decoration: underline;
+}
+
+.franchise-btn-submit {
+  width: 100%;
+  min-height: 3.2rem;
+  padding: 0.9rem 1.25rem;
+  background: var(--franchise-ink);
+}
+
+.franchise-btn-submit:hover:not(:disabled) {
+  background: #18395f;
+}
+
+.franchise-btn-submit:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.franchise-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1.2rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid #f0bec2;
+  border-radius: 0.65rem;
+  color: #9e3039;
+  background: #fff4f4;
+  font-size: 0.85rem;
+}
+
+.franchise-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 5rem 1.25rem;
+  text-align: center;
+  background: radial-gradient(circle at 50% 25%, #e7f5f3, transparent 35%), #f7fafc;
+}
+
+.franchise-success svg {
+  padding: 0.8rem;
+  border: 1px solid #a9d9d2;
+  border-radius: 50%;
+  color: var(--franchise-teal) !important;
+  background: #e4f4f2;
+}
+
+.franchise-success-title {
+  margin: 0 0 0.7rem;
+  color: var(--franchise-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.franchise-success-text {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--franchise-muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 1023px) {
+  .franchise-benefits-grid,
+  .franchise-services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .franchise-hero {
+    min-height: 28rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .franchise-page > nav > div {
+    min-height: 3.8rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .franchise-page > nav .home-nav-logo-swap {
+    max-width: 8.5rem;
+  }
+
+  .franchise-page > nav .brand-nav-logo {
+    height: 1.9rem;
+  }
+
+  .franchise-hero {
+    min-height: 28rem;
+    padding-top: 4.5rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .franchise-hero::after {
+    right: 1.25rem;
+    bottom: 1.25rem;
+    font-size: 0.55rem;
+  }
+
+  .franchise-section {
+    padding-top: 3.6rem;
+    padding-bottom: 3.6rem;
+  }
+
+  .franchise-benefits-grid,
+  .franchise-services-grid,
+  .franchise-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .franchise-form {
+    padding: 1rem;
+  }
+
+  .franchise-field-full {
+    grid-column: auto;
+  }
+
+  .franchise-disclaimer {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .franchise-page *,
+  .franchise-page *::before,
+  .franchise-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.franchise-page {
+  --franchise-ink: #152238;
+  --franchise-muted: #66758b;
+  --franchise-line: #dce5ef;
+  --franchise-surface: #ffffff;
+  --franchise-wash: #f4f7fb;
+  --franchise-teal: #0a7f86;
+  --franchise-teal-dark: #075660;
+  --franchise-amber: #d58b18;
+  background:
+    radial-gradient(circle at 8% 18%, rgba(10, 127, 134, 0.06), transparent 24rem),
+    #f7f9fc;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+}
+
+.franchise-page > nav {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-bottom-color: rgba(220, 229, 239, 0.9) !important;
+  box-shadow: 0 1px 0 rgba(21, 34, 56, 0.04) !important;
+}
+
+.franchise-page > nav > div {
+  min-height: 4.75rem;
+}
+
+.franchise-page > nav button:first-child {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.franchise-page > nav button:first-child:hover {
+  background: #edf7f6;
+  box-shadow: none;
+}
+
+.franchise-hero {
+  min-height: 38rem;
+  padding: clamp(5.5rem, 9vw, 8rem) max(1.25rem, 7vw) clamp(5rem, 8vw, 7rem);
+  background:
+    radial-gradient(circle at 78% 35%, rgba(86, 206, 193, 0.22), transparent 19rem),
+    linear-gradient(120deg, #102440 0%, #163b55 55%, #0a747b 100%);
+}
+
+.franchise-hero::before {
+  width: 34rem;
+  height: 34rem;
+  right: 4vw;
+  top: 50%;
+  border-color: rgba(210, 248, 241, 0.2);
+  box-shadow: 0 0 0 3rem rgba(210, 248, 241, 0.045), 0 0 0 7rem rgba(210, 248, 241, 0.025);
+}
+
+.franchise-hero::after {
+  right: max(1.25rem, 7vw);
+  bottom: 2.4rem;
+  color: rgba(226, 247, 246, 0.66);
+}
+
+.franchise-hero-content {
+  width: min(100%, 48rem);
+}
+
+.franchise-hero-badge {
+  margin-bottom: 1.6rem;
+  border-color: rgba(180, 239, 230, 0.46);
+  background: rgba(8, 104, 111, 0.42);
+  box-shadow: 0 8px 22px rgba(3, 38, 55, 0.12);
+}
+
+.franchise-hero-title {
+  max-width: 44rem;
+  font-size: clamp(3.2rem, 7vw, 6.8rem);
+  letter-spacing: -0.045em;
+  line-height: 0.93;
+}
+
+.franchise-hero-subtitle {
+  max-width: 39rem;
+  margin-bottom: 2.4rem;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.75;
+}
+
+.franchise-btn-primary,
+.franchise-btn-submit {
+  border-radius: 0.55rem;
+  box-shadow: 0 12px 24px rgba(3, 56, 69, 0.2);
+}
+
+.franchise-btn-primary {
+  min-height: 3.15rem;
+  padding: 0.95rem 1.35rem;
+}
+
+.franchise-section {
+  padding: clamp(4.5rem, 8vw, 7.5rem) max(1.25rem, 7vw);
+}
+
+.franchise-section-alt {
+  background: #eef4f7;
+  border-top: 1px solid rgba(220, 229, 239, 0.65);
+  border-bottom: 1px solid rgba(220, 229, 239, 0.65);
+}
+
+.franchise-container {
+  width: min(100%, 82rem);
+}
+
+.franchise-section-title {
+  font-size: clamp(2rem, 3.5vw, 3.1rem);
+  letter-spacing: -0.04em;
+}
+
+.franchise-section-title::before {
+  width: 2.8rem;
+  height: 0.25rem;
+  margin-bottom: 1.2rem;
+  background: linear-gradient(90deg, var(--franchise-amber), #efc46b);
+}
+
+.franchise-section-subtitle {
+  max-width: 48rem;
+  margin-bottom: 2.8rem;
+  font-size: 1.05rem;
+}
+
+.franchise-benefits-grid,
+.franchise-services-grid {
+  gap: 1.15rem;
+  margin-top: 2.8rem;
+}
+
+.franchise-benefit-card,
+.franchise-service-card {
+  border-color: rgba(204, 217, 229, 0.92);
+  border-radius: 0.55rem;
+  box-shadow: 0 8px 22px rgba(21, 50, 74, 0.045);
+}
+
+.franchise-benefit-card {
+  min-height: 13rem;
+  padding: 1.45rem;
+}
+
+.franchise-benefit-card:hover,
+.franchise-service-card:hover {
+  border-color: #7bc5c4;
+  box-shadow: 0 18px 35px rgba(21, 50, 74, 0.11);
+  transform: translateY(-5px);
+}
+
+.franchise-benefit-icon {
+  width: 2.65rem;
+  height: 2.65rem;
+  margin-bottom: 1.3rem;
+  border-radius: 0.55rem;
+  color: var(--franchise-teal-dark);
+  background: #e1f3f1;
+}
+
+.franchise-benefit-label,
+.franchise-service-name {
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.franchise-service-card {
+  min-height: 9.5rem;
+  padding: 1.45rem;
+}
+
+.franchise-operating-text {
+  max-width: 52rem;
+  margin-top: 1.8rem;
+  padding: 1.45rem 1.6rem;
+  border-left-width: 4px;
+  border-radius: 0 0.55rem 0.55rem 0;
+  background: #edf7f6;
+  box-shadow: inset 0 0 0 1px rgba(123, 197, 196, 0.18);
+}
+
+.franchise-disclaimer {
+  max-width: 62rem;
+  border-radius: 0.55rem;
+  background: #fffaf0;
+  box-shadow: 0 8px 20px rgba(97, 75, 24, 0.05);
+}
+
+.franchise-form {
+  width: min(100%, 68rem);
+  margin-top: 2.8rem;
+  padding: clamp(1.35rem, 4vw, 3.2rem);
+  border-color: rgba(204, 217, 229, 0.92);
+  border-radius: 0.65rem;
+  box-shadow: 0 24px 60px rgba(21, 50, 74, 0.1);
+}
+
+.franchise-form-grid {
+  gap: 1.35rem 1.15rem;
+  margin-bottom: 2rem;
+}
+
+.franchise-field label {
+  margin-bottom: 0.55rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.franchise-field input,
+.franchise-field select,
+.franchise-field textarea,
+.franchise-map-input {
+  min-height: 3.2rem;
+  padding: 0.85rem 0.95rem;
+  border-color: #c9d6e2;
+  border-radius: 0.45rem;
+  background: #f9fbfd !important;
+}
+
+.franchise-field input:focus,
+.franchise-field select:focus,
+.franchise-field textarea:focus,
+.franchise-map-input:focus {
+  box-shadow: 0 0 0 4px rgba(10, 127, 134, 0.12), 0 5px 15px rgba(10, 127, 134, 0.06);
+}
+
+.franchise-btn-submit {
+  min-height: 3.35rem;
+  border-radius: 0.45rem;
+  background: var(--franchise-teal-dark);
+}
+
+.franchise-success {
+  min-height: 64vh;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(129, 213, 202, 0.22), transparent 22rem),
+    #f7f9fc;
+}
+
+@media (min-width: 1024px) {
+  .franchise-benefits-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .franchise-services-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .franchise-hero {
+    min-height: 34rem;
+    padding-top: 4.5rem;
+  }
+
+  .franchise-hero-title {
+    font-size: clamp(2.8rem, 13vw, 4.5rem);
+  }
+
+  .franchise-hero::before {
+    right: -14rem;
+    top: 58%;
+  }
+
+  .franchise-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Franchise Success Page — Professional SaaS-Level Design
+   ═══════════════════════════════════════════════════════════ */
+
+.franchise-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 6rem 1.25rem 3rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(129, 213, 202, 0.18), transparent 18rem),
+    radial-gradient(circle at 80% 70%, rgba(213, 139, 24, 0.06), transparent 14rem),
+    #f7f9fc;
+  animation: franchise-success-enter 700ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+@keyframes franchise-success-enter {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.franchise-success-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 1.8rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e4f4f2, #d0ece8);
+  box-shadow: 0 12px 32px rgba(10, 127, 134, 0.18);
+  animation: franchise-check-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms both;
+  color: var(--franchise-teal);
+}
+
+@keyframes franchise-check-pop {
+  from { opacity: 0; transform: scale(0.3) rotate(-15deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.franchise-success-title {
+  margin: 0 0 0.8rem;
+  color: var(--franchise-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  animation: franchise-success-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) 300ms both;
+}
+
+.franchise-success-text {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--franchise-muted);
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  line-height: 1.7;
+  animation: franchise-success-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) 400ms both;
+}
+
+.franchise-success-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  animation: franchise-success-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) 500ms both;
+}
+
+.franchise-success-actions .franchise-btn-primary {
+  min-height: 3rem;
+  padding: 0.85rem 1.5rem;
+}
+
+.franchise-success-explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.85rem 1.3rem;
+  border: 2px solid var(--franchise-teal);
+  border-radius: 0.65rem;
+  color: var(--franchise-teal-dark);
+  background: transparent;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.franchise-success-explore-btn:hover {
+  background: var(--franchise-teal);
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(10, 127, 134, 0.2);
+  transform: translateY(-2px);
+}
+
+.franchise-success-explore {
+  margin-top: 3rem;
+  padding: 2rem 2.5rem;
+  border: 1px solid var(--franchise-line);
+  border-radius: 0.85rem;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(16, 35, 63, 0.06);
+  animation: franchise-success-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) 600ms both;
+}
+
+.franchise-success-explore-title {
+  margin: 0 0 1.2rem;
+  color: var(--franchise-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.franchise-success-explore-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+}
+
+.franchise-success-explore-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.1rem 0.8rem;
+  border: 1px solid var(--franchise-line);
+  border-radius: 0.6rem;
+  color: var(--franchise-ink);
+  background: var(--franchise-wash);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 650;
+  transition: all 200ms ease;
+}
+
+.franchise-success-explore-card svg {
+  color: var(--franchise-teal);
+}
+
+.franchise-success-explore-card:hover {
+  border-color: #9ccfd0;
+  background: #e4f4f2;
+  box-shadow: 0 8px 20px rgba(10, 127, 134, 0.1);
+  transform: translateY(-3px);
+  color: var(--franchise-teal-dark);
+}
+
+@media (max-width: 639px) {
+  .franchise-success-actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 22rem;
+  }
+
+  .franchise-success-actions .franchise-btn-primary,
+  .franchise-success-explore-btn {
+    width: 100%;
+  }
+
+  .franchise-success-explore {
+    padding: 1.5rem 1rem;
+  }
+
+  .franchise-success-explore-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .franchise-success {
+    padding-top: 4.5rem;
+    min-height: 70vh;
+  }
+
+  .franchise-success-check {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .franchise-success-explore-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .franchise-section-title,
+  .franchise-section-subtitle,
+  .franchise-form,
+  .franchise-disclaimer {
+    animation: franchise-rise 600ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .franchise-benefit-card,
+  .franchise-service-card {
+    animation: franchise-card-in 550ms both;
+  }
+}

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
-import '../styles/franchise-page.css';
+import '../styles/franchise-page.css';
+import Confetti from '../components/common/Confetti';
 import BrandNavLogo from '../components/common/BrandNavLogo';
 import HomeFooter from '../components/common/HomeFooter';
 
@@ -76,6 +77,7 @@ export default function FranchisePage() {
   if (submitted) {
     return (
       <div className="franchise-page">
+        <Confetti show={true} />
         <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors cursor-pointer bg-transparent border-none">
@@ -86,10 +88,40 @@ export default function FranchisePage() {
           </div>
         </nav>
         <div className="franchise-success">
-          <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
-          <h1 className="franchise-success-title">Application Submitted!</h1>
-          <p className="franchise-success-text">Application submitted successfully. Our team will contact you soon.</p>
-          <button onClick={() => navigate('/')} className="franchise-btn-primary mt-6">Back to Home</button>
+          <div className="franchise-success-check">
+            <CheckCircle size={56} />
+          </div>
+          <h1 className="franchise-success-title">Thank You for Your Interest!</h1>
+          <p className="franchise-success-text">
+            Your franchise application has been submitted successfully. Our team will review it and get back to you shortly.
+          </p>
+          <div className="franchise-success-actions">
+            <button onClick={() => navigate('/')} className="franchise-btn-primary">Back to Home</button>
+            <a href="/operations" className="franchise-success-explore-btn">
+              Explore HubRegistrar Services <ArrowRight size={16} />
+            </a>
+          </div>
+          <div className="franchise-success-explore">
+            <p className="franchise-success-explore-title">While you wait, explore our services:</p>
+            <div className="franchise-success-explore-grid">
+              <a href="/operations" className="franchise-success-explore-card">
+                <Briefcase size={20} />
+                <span>HubRegistrar Services</span>
+              </a>
+              <a href="/contact" className="franchise-success-explore-card">
+                <FileText size={20} />
+                <span>Contact Us</span>
+              </a>
+              <a href="/domains" className="franchise-success-explore-card">
+                <Monitor size={20} />
+                <span>Domain Register</span>
+              </a>
+              <a href="/ventures" className="franchise-success-explore-card">
+                <Building2 size={20} />
+                <span>Ventures</span>
+              </a>
+            </div>
+          </div>
         </div>
         <HomeFooter />
       </div>

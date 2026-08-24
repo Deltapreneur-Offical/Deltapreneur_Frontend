@@ -171,7 +171,7 @@ export default function FranchisePage() {
             <h1 className="franchise-hero-title"><span className="text-amber-600">₹0</span> Franchise Fee</h1>
           </PageHeroItem>
           <PageHeroItem>
-            <p className="franchise-hero-subtitle">Join HubRegistrar as a certified franchise partner. Build your business with a trusted brand, complete support, and access to customer leads.</p>
+            <p className="franchise-hero-subtitle">Join HubRegistrar as a certified franchise partner. Build your business with a trusted brand, complete support, and access to customer leads. Operating area: approximately 25-50 km per franchise, subject to availability.</p>
           </PageHeroItem>
           <PageHeroItem>
             <CtaButtonTag className="franchise-btn-primary" {...ctaButtonProps}>Apply Now <ArrowRight size={18} /></CtaButtonTag>
@@ -219,14 +219,7 @@ export default function FranchisePage() {
         </section>
       )}
 
-      <section className="franchise-section">
-        <div className="franchise-container">
-          <PageReveal>
-            <h2 className="franchise-section-title">Operating Area</h2>
-            <p className="franchise-operating-text">Each franchise operates in an area of approximately <strong>25-50 km</strong>, subject to availability and approval.</p>
-          </PageReveal>
-        </div>
-      </section>
+
 
 
 

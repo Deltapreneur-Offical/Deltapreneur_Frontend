@@ -26,6 +26,7 @@ import {
   RefreshCw,
   Search,
   Sparkles,
+  Users,
   UsersRound,
   X,
   XCircle,

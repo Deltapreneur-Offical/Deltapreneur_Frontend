@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink } from 'lucide-react';
+import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
 import '../styles/franchise-page.css';
 
@@ -205,10 +205,13 @@ export default function FranchisePage() {
               <div className="franchise-field franchise-field-full">
                 <label className="franchise-label-with-icon">
                   <MapPin size={16} /> Premises Location on Map
+                  <span className="franchise-map-tooltip-wrapper">
+                    <Info size={14} className="franchise-map-info-icon" />
+                    <span className="franchise-map-tooltip">
+                      Open Google Maps → find your shop/office location → click Share → copy link → paste below
+                    </span>
+                  </span>
                 </label>
-                <p className="franchise-field-hint">
-                  Open Google Maps → find your shop/office location → click Share → copy link → paste below
-                </p>
                 <input
                   name="map_url"
                   value={form.map_url}

@@ -58,3 +58,11 @@
 .franchise-map-preview{margin-top:1rem;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#f8fafc}
 .franchise-map-link{display:flex;align-items:center;gap:.4rem;padding:.75rem 1rem;background:#f1f5f9;color:#7c3aed;font-size:.85rem;font-weight:600;text-decoration:none;transition:all .2s ease}
 .franchise-map-link:hover{background:#e2e8f0;color:#6d28d9}
+
+/* Map Tooltip */
+.franchise-map-tooltip-wrapper{position:relative;display:inline-flex;align-items:center;margin-left:.35rem;cursor:help}
+.franchise-map-info-icon{color:#64748b;transition:color .2s ease}
+.franchise-map-info-icon:hover{color:#7c3aed}
+.franchise-map-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;line-height:1.5;white-space:nowrap;max-width:320px;white-space:normal;opacity:0;visibility:hidden;transition:all .2s ease;pointer-events:none;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.franchise-map-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1e293b}
+.franchise-map-tooltip-wrapper:hover .franchise-map-tooltip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}

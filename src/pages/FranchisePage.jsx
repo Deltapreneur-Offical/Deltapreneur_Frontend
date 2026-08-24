@@ -5,7 +5,7 @@ import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileT
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
 import '../styles/franchise-page.css';
 import BackToHomeButton from '../components/common/BackToHomeButton';
-import BrandLogoImage from '../components/common/BrandLogoImage';
+import BrandNavLogo from '../components/common/BrandNavLogo';
 import HomeFooter from '../components/common/HomeFooter';
 
 const BENEFITS = [
@@ -80,11 +80,7 @@ export default function FranchisePage() {
         <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <BackToHomeButton />
-            <BrandLogoImage
-              alt="HubRegistrar"
-              className="h-10 cursor-pointer"
-              onClick={() => navigate('/')}
-            />
+            <BrandNavLogo className="cursor-pointer" onClick={() => navigate('/')} />
           </div>
         </nav>
         <div className="franchise-success">
@@ -103,11 +99,7 @@ export default function FranchisePage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <BackToHomeButton />
-          <BrandLogoImage
-            alt="HubRegistrar"
-            className="h-10 cursor-pointer"
-            onClick={() => navigate('/')}
-          />
+          <BrandNavLogo className="cursor-pointer" onClick={() => navigate('/')} />
         </div>
       </nav>
 

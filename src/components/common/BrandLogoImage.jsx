@@ -17,7 +17,6 @@ export default function BrandLogoImage({
       alt={alt}
       className={className}
       aria-hidden={ariaHidden || undefined}
-      style={{ height: 'auto', width: 'auto', objectFit: 'contain' }}
       {...rest}
     />
   );

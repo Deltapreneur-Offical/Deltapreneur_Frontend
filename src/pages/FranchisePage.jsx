@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
 import '../styles/franchise-page.css';
+import BackToHomeButton from '../components/common/BackToHomeButton';
+import BrandLogoImage from '../components/common/BrandLogoImage';
+import HomeFooter from '../components/common/HomeFooter';
 
 const BENEFITS = [
   { icon: Building2, label: 'HubRegistrar Branding', desc: 'Operate under a trusted brand name' },
@@ -74,18 +77,40 @@ export default function FranchisePage() {
   if (submitted) {
     return (
       <div className="franchise-page">
+        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <BackToHomeButton />
+            <BrandLogoImage
+              alt="HubRegistrar"
+              className="h-10 cursor-pointer"
+              onClick={() => navigate('/')}
+            />
+          </div>
+        </nav>
         <div className="franchise-success">
           <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
           <h1 className="franchise-success-title">Application Submitted!</h1>
           <p className="franchise-success-text">Application submitted successfully. Our team will contact you soon.</p>
           <button onClick={() => navigate('/')} className="franchise-btn-primary mt-6">Back to Home</button>
         </div>
+        <HomeFooter />
       </div>
     );
   }
 
   return (
     <div className="franchise-page">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <BackToHomeButton />
+          <BrandLogoImage
+            alt="HubRegistrar"
+            className="h-10 cursor-pointer"
+            onClick={() => navigate('/')}
+          />
+        </div>
+      </nav>
+
       <section className="franchise-hero">
         <div className="franchise-hero-content">
           <span className="franchise-hero-badge">Limited Offer</span>
@@ -257,6 +282,8 @@ export default function FranchisePage() {
           </form>
         </div>
       </section>
+
+      <HomeFooter />
     </div>
   );
 }

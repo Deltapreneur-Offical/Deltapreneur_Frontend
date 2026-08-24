@@ -300,30 +300,66 @@ export default function FranchisePage() {
                   placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/..."
                   className="franchise-map-input"
                 />
-                {form.map_url && form.map_url.includes('maps') && (
+                {form.map_url && (
                   <div className="franchise-map-preview">
-                    <iframe
-                      title="Location Preview"
-                      width="100%"
-                      height="300"
-                      style={{ border: 0, borderRadius: '8px' }}
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={(() => {
-                          const url = form.map_url;
-                          if (url.includes('google.com/maps')) return url.replace('maps?', 'maps/embed?');
-                          if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps'))
-                            return 'https://maps.google.com/maps?q=' + encodeURIComponent(url) + '&z=15&output=embed';
-                          if (url.includes('@') && url.includes(',')) {
-                            const c = url.match(/@([\d.-]+),([\d.-]+)/);
-                            if (c) return 'https://maps.google.com/maps?q=' + c[1] + ',' + c[2] + '&z=15&output=embed';
-                          }
-                          return 'https://maps.google.com/maps?q=' + encodeURIComponent(url) + '&z=15&output=embed';
-                        })()}
-                    />
-                    <a href={form.map_url} target="_blank" rel="noopener noreferrer" className="franchise-map-link">
-                      <ExternalLink size={14} /> Open in Google Maps
-                    </a>
+                    {(() => {
+                      const url = form.map_url;
+                      const isShortLink = url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps');
+                      const isFullMapsUrl = url.includes('google.com/maps') || url.includes('www.google.com/maps');
+                      
+                      if (!isShortLink && !isFullMapsUrl && !url.includes('@')) {
+                        return (
+                          <div className="franchise-map-fallback">
+                            <MapPin size={20} className="text-teal-600" />
+                            <p className="text-sm text-gray-600 mb-2">Location link saved. Preview available for full Google Maps URLs.</p>
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="franchise-map-link">
+                              <ExternalLink size={14} /> Open in Google Maps
+                            </a>
+                          </div>
+                        );
+                      }
+                      
+                      let embedUrl;
+                      if (isFullMapsUrl && !isShortLink) {
+                        embedUrl = url.replace(/\/maps\?/, '/maps/embed?');
+                        if (!embedUrl.includes('output=embed')) embedUrl += '&output=embed';
+                      } else if (url.includes('@') && url.includes(',')) {
+                        const c = url.match(/@([\d.-]+),([\d.-]+)/);
+                        embedUrl = c ? 'https://maps.google.com/maps?q=' + c[1] + ',' + c[2] + '&z=15&output=embed' : null;
+                      } else {
+                        embedUrl = null;
+                      }
+                      
+                      if (embedUrl) {
+                        return (
+                          <>
+                            <iframe
+                              title="Location Preview"
+                              width="100%"
+                              height="300"
+                              style={{ border: 0, borderRadius: '8px' }}
+                              loading="lazy"
+                              referrerPolicy="no-referrer-when-downgrade"
+                              src={embedUrl}
+                            />
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="franchise-map-link">
+                              <ExternalLink size={14} /> Open in Google Maps
+                            </a>
+                          </>
+                        );
+                      }
+                      
+                      return (
+                        <div className="franchise-map-fallback">
+                          <MapPin size={20} className="text-teal-600" />
+                          <p className="text-sm text-gray-600 mb-1">Short link detected — preview requires the full Google Maps URL.</p>
+                          <p className="text-xs text-gray-500 mb-2">Open the link below to verify your location:</p>
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="franchise-map-link">
+                            <ExternalLink size={14} /> Open in Google Maps
+                          </a>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

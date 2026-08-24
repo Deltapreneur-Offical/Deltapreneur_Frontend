@@ -627,6 +627,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     <th>{t('adminOperationsColDescription', { defaultValue: 'Description' })}</th>
                     <th>{t('adminOperationsColPrice', { defaultValue: 'Price' })}</th>
                     <th>{t('adminOperationsColStatus', { defaultValue: 'Status' })}</th>
+                    <th>{t('adminOperationsColGovtFees', { defaultValue: 'Govt Fees' })}</th>
                     <th aria-label={t('adminOperationsColActions', { defaultValue: 'Actions' })} />
                   </tr>
                 </thead>
@@ -657,6 +658,13 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                               <span className="operations-admin-status operations-admin-status--paused">
                                 {t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}
                               </span>
+                            )}
+                          </td>
+                          <td className="operations-admin-govt-fees">
+                            {row.governmentFeesApplicable ? (
+                              <span className="operations-admin-govt-fees--yes">Yes</span>
+                            ) : (
+                              <span className="operations-admin-govt-fees--no">—</span>
                             )}
                           </td>
                           <td>

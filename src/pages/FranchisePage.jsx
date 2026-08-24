@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
-import '../styles/franchise-page.css';
+import '../styles/franchise-page.css';
+
 import Confetti from '../components/common/Confetti';
 import BrandNavLogo from '../components/common/BrandNavLogo';
 import HomeFooter from '../components/common/HomeFooter';
@@ -36,6 +37,13 @@ export default function FranchisePage() {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  const CtaButtonTag = reduceMotion ? 'button' : motion.button;
+  const ctaButtonProps = reduceMotion ? {} : {
+    whileHover: { y: -2, scale: 1.02, transition: { duration: 0.22, ease: HOME_EASE_OUT } },
+    whileTap: { scale: 0.98 },
+  };
 
   useEffect(() => {
     operationsAPI.list({ serviceType: 'compliance' }).then(({ data }) => { if (data?.success) setServices(data.data || []); }).catch(() => {});
@@ -78,13 +86,10 @@ export default function FranchisePage() {
     return (
       <div className="franchise-page">
         <Confetti show={true} />
-        <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-            <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors cursor-pointer bg-transparent border-none">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-              Back
-            </button>
-            <BrandNavLogo className="cursor-pointer" onClick={() => navigate('/')} />
+        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <BackToHomeButton />
+            <BrandLogoImage alt="HubRegistrar" className="h-10 cursor-pointer" onClick={() => navigate('/')} />
           </div>
         </nav>
         <div className="franchise-success">
@@ -130,61 +135,76 @@ export default function FranchisePage() {
 
   return (
     <div className="franchise-page">
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors cursor-pointer bg-transparent border-none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-            Back
-          </button>
-          <BrandNavLogo className="cursor-pointer" onClick={() => navigate('/')} />
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <BackToHomeButton />
+          <BrandLogoImage alt="HubRegistrar" className="h-10 cursor-pointer" onClick={() => navigate('/')} />
         </div>
       </nav>
 
       <section className="franchise-hero">
-        <div className="franchise-hero-content">
-          <span className="franchise-hero-badge">Limited Offer</span>
-          <h1 className="franchise-hero-title"><span className="text-amber-600">₹0</span> Franchise Fee</h1>
-          <p className="franchise-hero-subtitle">Join HubRegistrar as a certified franchise partner. Build your business with a trusted brand, complete support, and access to customer leads.</p>
-          <a href="#apply-form" className="franchise-btn-primary">Apply Now <ArrowRight size={18} /></a>
-        </div>
+        <PageHero className="franchise-hero-content">
+          <PageHeroItem>
+            <span className="franchise-hero-badge">Limited Offer</span>
+          </PageHeroItem>
+          <PageHeroItem>
+            <h1 className="franchise-hero-title"><span className="text-amber-600">₹0</span> Franchise Fee</h1>
+          </PageHeroItem>
+          <PageHeroItem>
+            <p className="franchise-hero-subtitle">Join HubRegistrar as a certified franchise partner. Build your business with a trusted brand, complete support, and access to customer leads.</p>
+          </PageHeroItem>
+          <PageHeroItem>
+            <CtaButtonTag className="franchise-btn-primary" {...ctaButtonProps}>Apply Now <ArrowRight size={18} /></CtaButtonTag>
+          </PageHeroItem>
+        </PageHero>
       </section>
 
       <section className="franchise-section">
         <div className="franchise-container">
-          <h2 className="franchise-section-title">What You Get</h2>
-          <div className="franchise-benefits-grid">
+          <PageReveal>
+            <h2 className="franchise-section-title">What You Get</h2>
+          </PageReveal>
+          <PageStagger className="franchise-benefits-grid">
             {BENEFITS.map((b, i) => (
-              <div key={i} className="franchise-benefit-card">
-                <b.icon size={28} className="franchise-benefit-icon" />
-                <h3 className="franchise-benefit-label">{b.label}</h3>
-                <p className="franchise-benefit-desc">{b.desc}</p>
-              </div>
+              <PageStaggerItem key={i} hover>
+                <div className="franchise-benefit-card">
+                  <b.icon size={28} className="franchise-benefit-icon" />
+                  <h3 className="franchise-benefit-label">{b.label}</h3>
+                  <p className="franchise-benefit-desc">{b.desc}</p>
+                </div>
+              </PageStaggerItem>
             ))}
-          </div>
+          </PageStagger>
         </div>
       </section>
 
       {services.length > 0 && (
         <section className="franchise-section franchise-section-alt">
           <div className="franchise-container">
-            <h2 className="franchise-section-title">HubRegistrar Services</h2>
-            <p className="franchise-section-subtitle">These are the services you will be able to offer as a HubRegistrar franchise partner.</p>
-            <div className="franchise-services-grid">
+            <PageReveal>
+              <h2 className="franchise-section-title">HubRegistrar Services</h2>
+              <p className="franchise-section-subtitle">These are the services you will be able to offer as a HubRegistrar franchise partner.</p>
+            </PageReveal>
+            <PageStagger className="franchise-services-grid">
               {services.map((service) => (
-                <div key={service.id} className="franchise-service-card">
-                  <h3 className="franchise-service-name">{service.name}</h3>
-                  <p className="franchise-service-desc">{service.description || "Professional registration & compliance service"}</p>
-                </div>
+                <PageStaggerItem key={service.id} hover>
+                  <div className="franchise-service-card">
+                    <h3 className="franchise-service-name">{service.name}</h3>
+                    <p className="franchise-service-desc">{service.description || "Professional registration & compliance service"}</p>
+                  </div>
+                </PageStaggerItem>
               ))}
-            </div>
+            </PageStagger>
           </div>
         </section>
       )}
 
       <section className="franchise-section">
         <div className="franchise-container">
-          <h2 className="franchise-section-title">Operating Area</h2>
-          <p className="franchise-operating-text">Each franchise operates in an area of approximately <strong>25-50 km</strong>, subject to availability and approval.</p>
+          <PageReveal>
+            <h2 className="franchise-section-title">Operating Area</h2>
+            <p className="franchise-operating-text">Each franchise operates in an area of approximately <strong>25-50 km</strong>, subject to availability and approval.</p>
+          </PageReveal>
         </div>
       </section>
 

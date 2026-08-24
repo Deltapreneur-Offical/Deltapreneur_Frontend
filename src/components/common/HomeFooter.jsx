@@ -229,9 +229,15 @@ export default function HomeFooter() {
 
             </ScrollLink>
 
-            <ScrollLink to="/virtual-assistant" className={linkClass}>
+            <ScrollLink to="/virtual-assistant" className={linkClass + ' hidden'}>
 
               Virtual Assistant
+
+            </ScrollLink>
+
+            <ScrollLink to="/franchise" className={linkClass}>
+
+              Apply for Registry office
 
             </ScrollLink>
 

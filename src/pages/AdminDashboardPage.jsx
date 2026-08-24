@@ -66,6 +66,7 @@ import AdminOpenProviderCommissionTab from '../components/admin/AdminOpenProvide
 import AdminTrackRecordsTab from '../components/admin/AdminTrackRecordsTab';
 import AdminPremiumTechTab from '../components/admin/AdminPremiumTechTab';
 import HubRegistrarOfficeAdminTab from '../components/admin/HubRegistrarOfficeAdminTab';
+import FranchiseApplicationsAdminTab from '../components/admin/FranchiseApplicationsAdminTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -651,6 +652,7 @@ export default function AdminDashboardPage() {
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
     { id: 'hub-registrar-office', label: 'Hub Registrar & Office', icon: null, Icon: Briefcase },
+    { id: 'franchise-applications', label: 'Franchise Applications', icon: null, Icon: Users },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions') + ' (Disabled - Hidden)',   icon: AuctionIcon, disabled: true },
@@ -949,6 +951,8 @@ export default function AdminDashboardPage() {
               <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
             ) : tab === 'hub-registrar-office' ? (
               <HubRegistrarOfficeAdminTab toast={toast} />
+            ) : tab === 'franchise-applications' ? (
+              <FranchiseApplicationsAdminTab toast={toast} />
             ) : tab === 'homepage-features' ? (
               <div className="admin-homepage-features-grid">
                 <HomepageFeatureSelector type="domain" />

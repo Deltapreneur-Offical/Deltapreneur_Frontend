@@ -4664,6 +4664,11 @@ input[type="checkbox"] {
   max-width: 8.5rem;
 }
 
+.app-sidebar-logo-link:hover .home-nav-logo-img--default {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 .app-sidebar-toggle {
   display: flex;
   align-items: center;
@@ -7560,8 +7565,13 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   object-position: left center;
 }
 
+.home-main-nav .home-nav-logo-img--default {
+  transform: scale(0.8);
+  transform-origin: left center;
+}
+
 .home-nav-logo-img {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease-in-out, transform 0.1s ease-in-out;
   backface-visibility: hidden;
 }
 
@@ -7596,6 +7606,11 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .brand-logo-interactive:hover .home-nav-logo-img--hover {
   opacity: 1;
   visibility: visible;
+}
+
+.home-main-nav .home-nav-logo-btn:hover .home-nav-logo-img--default {
+  opacity: 1;
+  transform: scale(0.84);
 }
 
 /* ─── HubRegistrar text wordmark (official logo asset pending) ───────────── */
@@ -9600,6 +9615,41 @@ body.home-menu-open {
   width: 100%;
 }
 
+.home-footer-logo-link,
+.home-footer-logo {
+  display: block;
+  width: min(100%, 18rem);
+  max-width: 100%;
+}
+
+.home-footer-logo-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+  transform: none;
+}
+
+.home-footer-logo .home-footer-logo-image {
+  opacity: 1;
+  visibility: visible;
+}
+
+.home-footer-logo:hover .home-footer-logo-image {
+  opacity: 1;
+  transform: scale(1.05);
+  transform-origin: left center;
+}
+
+@media (max-width: 639px) {
+  .home-footer-logo-link,
+  .home-footer-logo {
+    width: min(100%, 13rem);
+  }
+}
+
 @media (min-width: 1024px) {
   .home-footer-grid {
     display: flex;
@@ -9610,9 +9660,9 @@ body.home-menu-open {
   }
 
   .home-footer-logo-col {
-    flex: 0 0 auto;
-    width: auto;
-    max-width: none;
+    flex: 0 0 min(18rem, 100%);
+    width: min(18rem, 100%);
+    max-width: 18rem;
     margin-right: clamp(3rem, 5.5vw, 6.5rem);
   }
 
@@ -13461,8 +13511,8 @@ body.home-menu-open {
 .fa-toggle-thumb{position:absolute;top:2px;left:2px;width:1rem;height:1rem;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .fa-toggle-input:checked+.fa-toggle-track .fa-toggle-thumb{transform:translateX(.95rem)}
 .fa-toggle-text{display:flex;align-items:center;gap:.3rem;font-size:.85rem;font-weight:600;color:#374151}
-.fa-table-wrap{overflow:auto;max-height:min(70vh,720px);border:1px solid #e5e7eb;border-radius:.85rem;background:#fff}
-.fa-table{width:100%;border-collapse:collapse;font-size:.86rem}
+.fa-table-wrap{overflow:auto;max-height:min(70vh,720px);border:1px solid #e5e7eb;border-radius:.85rem;background:#fff;overscroll-behavior-x:contain}
+.fa-table{width:100%;min-width:1180px;border-collapse:collapse;font-size:.86rem;table-layout:auto}
 .fa-table thead tr{background:#f9fafb;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:2}
 .fa-table th,.fa-table td{padding:.85rem .9rem;text-align:left;vertical-align:middle;white-space:nowrap}
 .fa-table th{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#6b7280}
@@ -13470,6 +13520,8 @@ body.home-menu-open {
 .fa-table tbody tr:hover{background:#f9fafb}
 .fa-th-sn{width:3.5rem;text-align:center}
 .fa-th-actions{width:6.5rem;text-align:center}
+.fa-table th:nth-child(10),
+.fa-table td:nth-child(10){min-width:8.75rem}
 .fa-serial{color:#9ca3af;font-weight:600;text-align:center}
 .fa-name-td{display:flex;flex-direction:column;gap:.2rem}
 .fa-name{font-weight:600;color:#111827}
@@ -13483,7 +13535,7 @@ body.home-menu-open {
 @keyframes fa-spin{to{transform:rotate(360deg)}}
 .fa-empty-state{display:flex;flex-direction:column;align-items:center;gap:.6rem;color:#9ca3af}
 .fa-empty-state p{margin:0;font-size:.9rem;color:#6b7280}
-.fa-status-sel{display:inline-flex;align-items:center;padding:.3rem .7rem;border-radius:999px;font-size:.78rem;font-weight:600;border:1px solid;cursor:pointer;appearance:none;padding-right:1.5rem}
+.fa-status-sel{display:inline-flex;align-items:center;width:8.25rem;min-width:8.25rem;padding:.3rem .7rem;border-radius:999px;font-size:.78rem;font-weight:600;line-height:1.35;border:1px solid;cursor:pointer;appearance:auto;white-space:nowrap}
 .fa-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .55rem;border-radius:999px;font-size:.72rem;font-weight:700}
 .fa-badge--bl{background:#1f2937;color:#fff}
 .fa-row-bl{background:#f9fafb;opacity:.75}

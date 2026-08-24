@@ -559,7 +559,7 @@
   background: radial-gradient(circle at 50% 25%, #e7f5f3, transparent 35%), #f7fafc;
 }
 
-.franchise-success svg {
+.franchise-success-check svg {
   padding: 0.8rem;
   border: 1px solid #a9d9d2;
   border-radius: 50%;
@@ -1016,6 +1016,16 @@
   transition: all 200ms ease;
 }
 
+.franchise-success-explore-btn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--franchise-teal-dark);
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
 .franchise-success-explore-btn:hover {
   background: var(--franchise-teal);
   color: #ffffff;
@@ -1065,7 +1075,13 @@
 }
 
 .franchise-success-explore-card svg {
+  width: 20px;
+  height: 20px;
   color: var(--franchise-teal);
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
 }
 
 .franchise-success-explore-card:hover {

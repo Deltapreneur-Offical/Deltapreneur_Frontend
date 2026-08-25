@@ -282,7 +282,7 @@
   "adminOperationsFieldComplianceNamePlaceholder": "GST Registration",
   "adminOperationsPriceHintVa": "Monthly subscription fee (required).",
   "adminOperationsPriceHintCompliance": "One-time fee (use 0 for contact-only pricing).",
-  "adminTabHubRegistrarOffice": "Hub Registrar & Office",
+  "adminTabHubRegistrarOffice": "Hub Registrar Offices",
   "adminOperationsPartitionEyebrow": "Catalog & requests",
   "adminOperationsRequestsTitle": "Requests",
   "adminOperationsRequestsTabHint": "Hire requests & service bookings",

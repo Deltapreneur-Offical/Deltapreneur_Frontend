@@ -652,7 +652,7 @@ export default function AdminDashboardPage() {
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
-    { id: 'hub-registrar-office', label: 'Hub Registrar & Office', icon: null, Icon: Briefcase },
+    { id: 'hub-registrar-office', label: 'Hub Registrar Offices', icon: null, Icon: Briefcase },
     { id: 'franchise-applications', label: 'Franchise Applications', icon: null, Icon: Users },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },

@@ -539,7 +539,7 @@ export default function OperationsPage() {
           )}
         </section>
 
-        {/* Quick Actions — Hub Registrar & Offices section only */}
+        {/* Quick Actions — Hub Registrar Offices section only */}
         {isOffices && (
           <section className="hro-quick-actions">
             <div className="mb-3">

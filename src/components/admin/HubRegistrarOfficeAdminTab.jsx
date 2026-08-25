@@ -123,7 +123,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
     return (
       <div className="hub-registrar-office-admin-tab">
         <div className="admin-header">
-          <h2>Hub Registrar & Office Management</h2>
+          <h2>Hub Registrar Offices</h2>
         </div>
         <div className="text-center py-12 text-gray-500">Loading offices...</div>
       </div>
@@ -133,7 +133,7 @@ const HubRegistrarOfficeAdminTab = ({ toast } = {}) => {
   return (
     <div className="hub-registrar-office-admin-tab">
       <div className="admin-header">
-        <h2>Hub Registrar & Office Management</h2>
+        <h2>Hub Registrar Offices</h2>
         <button
           className="btn btn-primary"
           onClick={() => {

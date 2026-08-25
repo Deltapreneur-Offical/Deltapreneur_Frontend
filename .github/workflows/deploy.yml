@@ -44,7 +44,6 @@ jobs:
       - name: Install Dependencies & Build
         env:
           VITE_API_URL: https://backend.cobrother.com
-          VITE_APP_URL: https://cobrother.com
           VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}

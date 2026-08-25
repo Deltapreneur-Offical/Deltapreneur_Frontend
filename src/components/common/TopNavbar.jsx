@@ -4,7 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import HomeTopNavActions from './HomeTopNavActions';
 import BrandNavLogo from './BrandNavLogo';
 
-export default function TopNavbar({ homeMobileMenu = false, hideContactUs = false, isScrolled = false }) {
+export default function TopNavbar({
+  homeMobileMenu = false,
+  hideContactUs = false,
+  isScrolled = false,
+  showCompactLogo = false,
+}) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,10 +34,10 @@ export default function TopNavbar({ homeMobileMenu = false, hideContactUs = fals
         {/* Compact scroll-in logo — small mark for the first navbar only */}
         <button
           type="button"
-          className={`home-top-nav-scroll-logo home-nav-logo-btn${isScrolled ? ' is-visible' : ''}`}
+          className={`home-top-nav-scroll-logo home-nav-logo-btn${isScrolled || showCompactLogo ? ' is-visible' : ''}`}
           onClick={handleLogoClick}
           aria-label="HubRegistrar home"
-          tabIndex={isScrolled ? 0 : -1}
+          tabIndex={isScrolled || showCompactLogo ? 0 : -1}
         >
           <BrandNavLogo className="home-top-nav-scroll-logo__mark" />
         </button>

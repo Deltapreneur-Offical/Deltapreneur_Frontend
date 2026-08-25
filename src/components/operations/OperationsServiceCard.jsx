@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
-import { OPERATIONS_CATEGORY_LABELS } from '../../utils/operationsCategories';
+import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../utils/operationsCategories';
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
 
 /**
@@ -14,8 +14,10 @@ export default function OperationsServiceCard({ service, onHire }) {
   const { formatPrice } = useCurrency();
 
   const Icon = resolveOperationsIcon(service);
-  const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
   const cardCompliance = isComplianceService(service);
+  const catLabel = cardCompliance
+    ? getHubRegistrarCategoryLabel(service.category)
+    : (OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category);
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
 
   return (

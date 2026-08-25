@@ -87,6 +87,7 @@ const loadAuctionsPage = () => import('./pages/AuctionsPage');
 const AuctionsPage = lazy(loadAuctionsPage);
 const DomainStorefrontPage = lazy(() => import('./pages/DomainStorefrontPage'));
 const OperationsPage = lazy(() => import('./pages/OperationsPage'));
+const RegistrationsPage = lazy(() => import('./pages/RegistrationsPage'));
 const FranchisePage = lazy(() => import('./pages/FranchisePage'));
 const DomainRegistrationOrderPage = lazy(() => import('./pages/DomainRegistrationOrderPage'));
 const DomainTransferSellerPage = lazy(() => import('./pages/DomainTransferSellerPage'));
@@ -326,6 +327,10 @@ export default function App() {
                 <Route
                   path="/operations"
                   element={<OperationsPage />}
+                />
+                <Route
+                  path="/registrations"
+                  element={<RegistrationsPage />}
                 />
                 <Route
                   path="/franchise"

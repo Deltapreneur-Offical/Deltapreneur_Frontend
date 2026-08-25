@@ -71,6 +71,14 @@ export function operationsPathForSection(sectionId) {
   return `/operations?section=${section.id}`;
 }
 
+export function operationsPathForHubRegistrarCategory(categorySlug) {
+  const params = new URLSearchParams({ section: 'compliance' });
+  if (categorySlug) params.set('category', categorySlug);
+  return `/operations?${params.toString()}`;
+}
+
+export const REGISTRATIONS_PAGE_PATH = '/registrations';
+
 export function operationsReturnLocation(sectionId) {
   const section = resolveOperationsSection(sectionId);
   return {

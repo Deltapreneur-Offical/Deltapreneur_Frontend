@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
-import { OPERATIONS_CATEGORY_LABELS } from '../../utils/operationsCategories';
+import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../utils/operationsCategories';
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
 import LikeButton from '../common/LikeButton';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
@@ -40,8 +40,10 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
   const isCarouselClone = useIsCarouselClone();
 
   const Icon = resolveOperationsIcon(service);
-  const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
   const cardCompliance = isComplianceService(service);
+  const catLabel = cardCompliance
+    ? getHubRegistrarCategoryLabel(service.category)
+    : (OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category);
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
   const skills = resolveSkills(service);
 

@@ -3231,4 +3231,37 @@
   gap: 0.5rem !important;
 }
 
+.home-registration-category-card {
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.home-registration-category-card__icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #f0f4ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-registration-category-card__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .home-section-header--domain .home-section-header__top {
+    flex-wrap: wrap;
+  }
+}
+
 

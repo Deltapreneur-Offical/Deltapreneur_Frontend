@@ -103,7 +103,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false, backVariant = 'home' }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { user, hasAccessToken, loading: authLoading } = useAuth();
@@ -255,7 +255,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             {(showBack || authButtons) ? (
               <div className="home-nav-desktop-cta home-nav-cta-group">
                 {showBack ? (
-                  <BackToHomeButton />
+                  <BackToHomeButton variant={backVariant} />
                 ) : null}
                 {authButtons}
               </div>
@@ -342,7 +342,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
               </div>
               {showBack ? (
-                <BackToHomeButton className="w-full justify-center mb-3" />
+                <BackToHomeButton variant={backVariant} className="w-full justify-center mb-3" />
               ) : null}
               {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">

@@ -19,7 +19,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { operationsAPI, operationsRequestAPI, virtualAssistantAPI, hubRegistrarOfficeAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
-import { OPERATIONS_CATEGORY_OPTIONS } from '../utils/operationsCategories';
+import { OPERATIONS_CATEGORY_OPTIONS, getHubRegistrarFilterCategoryOptions } from '../utils/operationsCategories';
 import { formatRequestAdminPrice } from '../utils/operationsPricing';
 import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
@@ -42,6 +42,7 @@ export default function OperationsPage() {
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
   const { id: routeVaId } = useParams();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionId = searchParams.get('section') || 'assistance';
   const activeSection = resolveOperationsSection(sectionId);
@@ -51,7 +52,7 @@ export default function OperationsPage() {
   const [sectionCounts, setSectionCounts] = useState({ assistance: 0, compliance: 0, offices: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(searchParams.get('category') || '');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState('price_asc');
@@ -80,6 +81,19 @@ export default function OperationsPage() {
   useEffect(() => {
     loadMyRequests();
   }, [loadMyRequests]);
+
+  const scrollToMyRequests = useCallback(() => {
+    document.getElementById('operations-my-requests')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
+
+  useEffect(() => {
+    if (location.hash !== '#operations-my-requests') return undefined;
+    const timer = window.setTimeout(scrollToMyRequests, 120);
+    return () => window.clearTimeout(timer);
+  }, [location.hash, myRequestsLoading, user, scrollToMyRequests]);
 
   useEffect(() => {
     let cancelled = false;
@@ -215,20 +229,42 @@ export default function OperationsPage() {
   useEffect(() => {
     if (isAssistance) return;
     setSearch('');
-    setCategory('');
     setMinPrice('');
     setMaxPrice('');
     setSortBy('price_asc');
-  }, [activeSection.id, isAssistance]);
+    if (!isCompliance) setCategory('');
+  }, [activeSection.id, isAssistance, isCompliance]);
+
+  const categoryFromUrl = searchParams.get('category') || '';
+
+  useEffect(() => {
+    if (!isCompliance) return;
+    setCategory(categoryFromUrl);
+  }, [isCompliance, categoryFromUrl]);
 
   const setSection = (nextSectionId) => {
     setSearchParams({ section: nextSectionId }, { replace: true });
   };
 
+  const handleCategoryChange = useCallback((nextCategory) => {
+    setCategory(nextCategory);
+    if (!isCompliance) return;
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set('section', 'compliance');
+      if (nextCategory) params.set('category', nextCategory);
+      else params.delete('category');
+      return params;
+    }, { replace: true });
+  }, [isCompliance, setSearchParams]);
+
   const categoryOptions = useMemo(() => {
+    if (isCompliance) {
+      return getHubRegistrarFilterCategoryOptions(services);
+    }
     const present = new Set(services.map((s) => s.category).filter(Boolean));
     return OPERATIONS_CATEGORY_OPTIONS.filter((opt) => present.has(opt.value));
-  }, [services]);
+  }, [services, isCompliance]);
 
   const sortOptions = useMemo(
     () => [
@@ -247,7 +283,14 @@ export default function OperationsPage() {
     setMinPrice('');
     setMaxPrice('');
     setSortBy('price_asc');
-  }, []);
+    if (isCompliance) {
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete('category');
+        return params;
+      }, { replace: true });
+    }
+  }, [isCompliance, setSearchParams]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -449,7 +492,7 @@ export default function OperationsPage() {
                 search={search}
                 onSearch={setSearch}
                 category={category}
-                onCategory={setCategory}
+                onCategory={isCompliance ? handleCategoryChange : setCategory}
                 categoryOptions={categoryOptions}
                 minPrice={minPrice}
                 onMinPrice={setMinPrice}
@@ -576,7 +619,7 @@ export default function OperationsPage() {
 
         {/* My Requests — Virtual Assistance & Hub Registrar sections only (not Offices) */}
         {user && !isOffices && (
-          <section className="operations-my-requests">
+          <section id="operations-my-requests" className="operations-my-requests">
             <div className="mb-3">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {t('operationsMyRequestsTitle', { defaultValue: 'My Requests' })}
@@ -636,6 +679,10 @@ export default function OperationsPage() {
         <OperationsRequestSuccess
           payload={requestSuccess}
           onClose={() => setRequestSuccess(null)}
+          onTrack={() => {
+            setRequestSuccess(null);
+            window.setTimeout(scrollToMyRequests, 60);
+          }}
         />
       )}
 

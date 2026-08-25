@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { operationsAPI, hubRegistrarOfficeAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
@@ -26,6 +26,7 @@ import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
  */
 export default function HomeOperationsCarouselSection({ sectionId }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const section = OPERATIONS_SECTIONS.find((s) => s.id === sectionId) || OPERATIONS_SECTIONS[0];
   const isAssistanceSection = sectionId === 'assistance';
   const isOfficesSection = sectionId === 'offices';
@@ -312,7 +313,15 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
       )}
 
       {requestSuccess && (
-        <OperationsRequestSuccess payload={requestSuccess} onClose={() => setRequestSuccess(null)} />
+        <OperationsRequestSuccess
+          payload={requestSuccess}
+          onClose={() => setRequestSuccess(null)}
+          onTrack={() => {
+            const section = requestSuccess?.type === 'booking' ? 'compliance' : 'assistance';
+            setRequestSuccess(null);
+            navigate(`/operations?section=${section}#operations-my-requests`);
+          }}
+        />
       )}
     </section>
   );

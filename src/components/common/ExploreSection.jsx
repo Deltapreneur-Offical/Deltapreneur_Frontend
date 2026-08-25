@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import LazyWhenVisible from './LazyWhenVisible';
 import DomainsSection from '../home/DomainsSection';
+import HomeRegistrationsSection from '../home/HomeRegistrationsSection';
 import VenturesSection from '../home/VenturesSection';
 import CoVenturesSection from '../home/CoVenturesSection';
 import TechnologySection from '../home/TechnologySection';
@@ -33,6 +34,7 @@ export default function ExploreSection() {
 
   return (
     <>
+      <HomeRegistrationsSection />
       <DomainsSection />
       <VenturesSection />
 

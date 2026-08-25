@@ -13,10 +13,6 @@ export default function Confetti({ show }) {
     if (firedRef.current) return;
     firedRef.current = true;
 
-    // Fire EXACTLY TWO confetti cannons simultaneously:
-    // - Top-left cannon (origin.x ≈ 0, origin.y ≈ 0.05, angle ≈ 55°)
-    // - Top-right cannon (origin.x ≈ 1, origin.y ≈ 0.05, angle ≈ 125°)
-    // Both cannons fire once at the exact same instant, crossing in the center & cascading down.
     try {
       const defaults = {
         particleCount: 180,
@@ -30,14 +26,11 @@ export default function Confetti({ show }) {
         disableForReducedMotion: true,
       };
 
-      // Top-left cannon
       confetti({
         ...defaults,
         angle: 55,
         origin: { x: 0, y: 0.05 },
       });
-
-      // Top-right cannon
       confetti({
         ...defaults,
         angle: 125,

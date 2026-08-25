@@ -380,7 +380,7 @@ export default function OperationsPage() {
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {isOffices
-                  ? 'Hub Registrar and Offices'
+                  ? 'Hub Registrar Offices'
                   : isCompliance
                   ? t('operationsComplianceFindHeading', { defaultValue: 'Find Hub Registrar' })
                   : t('operationsFeaturedVaHeading', { defaultValue: 'Featured Virtual Assistants' })}

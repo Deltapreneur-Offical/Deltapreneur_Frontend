@@ -15,8 +15,8 @@ export const OPERATIONS_SECTIONS = [
   {
     id: 'offices',
     labelKey: 'operationsSectionOffices',
-    defaultLabel: 'Hub Registrar and Offices',
-    homeLabel: 'Hub Registrar and Offices',
+    defaultLabel: 'Hub Registrar Offices',
+    homeLabel: 'Hub Registrar Offices',
     hintKey: 'operationsSectionOfficesHint',
     defaultHint: 'Find your nearest Hub Registrar office for in-person support.',
     serviceType: 'offices',

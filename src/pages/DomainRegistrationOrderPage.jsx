@@ -613,7 +613,7 @@ export default function DomainRegistrationOrderPage() {
                             if (ts === 'COMPLETED') return 'Transfer Completed';
                             if (ts === 'FAILED') return 'Transfer Failed';
                             if (ts === 'PROCESSING') return 'Transfer Processing';
-                            if (ts === 'PAYMENT_PENDING' && order.razorpayPaymentId && st === 'PAYMENT_COMPLETED') return 'Transfer in Progress';
+                            if (ts === 'PAYMENT_PENDING' && ['PAYMENT_COMPLETED', 'ACTIVE'].includes(st)) return 'Transfer in Progress';
                             if (ts === 'PAYMENT_PENDING') return 'Payment Cancelled — the payment was not completed. Use Retry Payment below to try again.';
                             return (order.transferStatus || 'Pending').replace(/_/g, ' ');
                           })()} 

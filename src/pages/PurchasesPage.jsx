@@ -549,7 +549,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
             <InvoiceDownloadButton
               onClick={() =>
                 generateInvoice({
-                  type: 'domain_registration',
+                  type: order.isTransfer ? 'domain_transfer' : 'domain_registration',
                   item: order,
                   user: invoiceUser,
                 })

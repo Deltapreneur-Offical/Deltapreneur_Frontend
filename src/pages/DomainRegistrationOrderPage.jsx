@@ -358,7 +358,7 @@ export default function DomainRegistrationOrderPage() {
       user?.username ||
       '';
     generateInvoice({
-      type: 'domain_registration',
+      type: order.isTransfer ? 'domain_transfer' : 'domain_registration',
       item: order,
       user: {
         ...user,

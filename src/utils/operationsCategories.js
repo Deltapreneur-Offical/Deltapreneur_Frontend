@@ -200,3 +200,9 @@ export function getHubRegistrarFilterCategoryOptions(services) {
     .map((item) => ({ value: item.slug, label: item.label }));
   return extras.length ? [...known, ...extras] : known;
 }
+
+export {
+  getHubRegistrarSubcategories,
+  getHubRegistrarSubcategory,
+  serviceMatchesHubRegistrarSubcategory,
+} from './hubRegistrarSubcategories';

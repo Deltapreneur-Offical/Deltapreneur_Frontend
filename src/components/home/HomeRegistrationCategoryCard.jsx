@@ -29,7 +29,7 @@ import {
   Zap,
   ArrowUpRight,
 } from 'lucide-react';
-import { operationsPathForHubRegistrarCategory } from '../../utils/operationsSections';
+import { registrationsPathForCategory } from '../../utils/operationsSections';
 import '../../styles/registrations-catalog.css';
 
 const CATEGORY_TONES = [
@@ -86,7 +86,7 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
 
   return (
     <Link
-      to={operationsPathForHubRegistrarCategory(category.slug)}
+      to={registrationsPathForCategory(category.slug)}
       className={`reg-category-card reg-category-card--${variant}`}
       style={{
         '--reg-card-bg': tone.bg,

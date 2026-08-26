@@ -19,7 +19,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { operationsAPI, operationsRequestAPI, virtualAssistantAPI, hubRegistrarOfficeAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
-import { OPERATIONS_CATEGORY_OPTIONS, getHubRegistrarFilterCategoryOptions } from '../utils/operationsCategories';
+import { OPERATIONS_CATEGORY_OPTIONS, getHubRegistrarFilterCategoryOptions, serviceMatchesHubRegistrarSubcategory } from '../utils/operationsCategories';
 import { formatRequestAdminPrice } from '../utils/operationsPricing';
 import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
@@ -236,6 +236,7 @@ export default function OperationsPage() {
   }, [activeSection.id, isAssistance, isCompliance]);
 
   const categoryFromUrl = searchParams.get('category') || '';
+  const serviceFromUrl = searchParams.get('service') || '';
 
   useEffect(() => {
     if (!isCompliance) return;
@@ -254,6 +255,7 @@ export default function OperationsPage() {
       params.set('section', 'compliance');
       if (nextCategory) params.set('category', nextCategory);
       else params.delete('category');
+      params.delete('service');
       return params;
     }, { replace: true });
   }, [isCompliance, setSearchParams]);
@@ -275,7 +277,7 @@ export default function OperationsPage() {
     [t],
   );
 
-  const activeFilterCount = [search.trim(), category, minPrice, maxPrice].filter(Boolean).length;
+  const activeFilterCount = [search.trim(), category, serviceFromUrl, minPrice, maxPrice].filter(Boolean).length;
 
   const clearAll = useCallback(() => {
     setSearch('');
@@ -287,6 +289,7 @@ export default function OperationsPage() {
       setSearchParams((prev) => {
         const params = new URLSearchParams(prev);
         params.delete('category');
+        params.delete('service');
         return params;
       }, { replace: true });
     }
@@ -295,7 +298,13 @@ export default function OperationsPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let result = services.filter((s) => {
-      if (category && s.category !== category) return false;
+      if (category) {
+        if (serviceFromUrl) {
+          if (!serviceMatchesHubRegistrarSubcategory(s, category, serviceFromUrl)) return false;
+        } else if (s.category !== category) {
+          return false;
+        }
+      }
       if (minPrice !== '' && Number(s.price) < Number(minPrice)) return false;
       if (maxPrice !== '' && Number(s.price) > Number(maxPrice)) return false;
       if (!q) return true;
@@ -310,7 +319,7 @@ export default function OperationsPage() {
     });
 
     return result;
-  }, [search, category, minPrice, maxPrice, sortBy, services]);
+  }, [search, category, serviceFromUrl, minPrice, maxPrice, sortBy, services]);
 
   const isFiltered = activeFilterCount > 0;
   const roleCountLabel = isOffices
@@ -512,10 +521,16 @@ export default function OperationsPage() {
               ) : filtered.length === 0 ? (
                 <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
                   <p className="text-base font-semibold text-gray-900 mb-1">
-                    {t('operationsComplianceEmptyTitle', { defaultValue: 'No services available yet' })}
+                    {serviceFromUrl
+                      ? t('operationsServiceComingSoonTitle', { defaultValue: "We're coming with this service soon." })
+                      : t('operationsComplianceEmptyTitle', { defaultValue: 'No services available yet' })}
                   </p>
                   <p className="text-sm text-gray-500 mb-4">
-                    {t('operationsComplianceEmptyBody', { defaultValue: 'Business solutions will appear here once added by the admin team.' })}
+                    {serviceFromUrl
+                      ? t('operationsServiceComingSoonBody', {
+                          defaultValue: 'This Hub Registrar service is not live yet. Check back soon, or browse other services in this category.',
+                        })
+                      : t('operationsComplianceEmptyBody', { defaultValue: 'Business solutions will appear here once added by the admin team.' })}
                   </p>
                 </div>
               ) : (

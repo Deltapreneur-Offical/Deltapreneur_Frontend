@@ -77,7 +77,19 @@ export function operationsPathForHubRegistrarCategory(categorySlug) {
   return `/operations?${params.toString()}`;
 }
 
+export function operationsPathForHubRegistrarService(categorySlug, serviceSlug) {
+  const params = new URLSearchParams({ section: 'compliance' });
+  if (categorySlug) params.set('category', categorySlug);
+  if (serviceSlug) params.set('service', serviceSlug);
+  return `/operations?${params.toString()}`;
+}
+
 export const REGISTRATIONS_PAGE_PATH = '/registrations';
+
+export function registrationsPathForCategory(categorySlug) {
+  if (!categorySlug) return REGISTRATIONS_PAGE_PATH;
+  return `${REGISTRATIONS_PAGE_PATH}?category=${encodeURIComponent(categorySlug)}`;
+}
 
 export function operationsReturnLocation(sectionId) {
   const section = resolveOperationsSection(sectionId);

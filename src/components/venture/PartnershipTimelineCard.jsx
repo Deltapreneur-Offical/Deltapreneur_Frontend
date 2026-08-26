@@ -1,4 +1,4 @@
-/** CoBrother contact handoff after partnership is finalized — no Pay Now by default. */
+/** HubRegistrar contact handoff after partnership is finalized — no Pay Now by default. */
 export default function PartnershipTimelineCard({ ventureName, partnerName }) {
   return (
     <div className="bg-teal-50 border border-teal-200 rounded-xl p-5 shadow-sm">
@@ -10,12 +10,12 @@ export default function PartnershipTimelineCard({ ventureName, partnerName }) {
             {partnerName
               ? `${partnerName} was selected as partner for ${ventureName || 'your venture'}.`
               : `A partner was selected for ${ventureName || 'your venture'}.`}
-            {' '}CoBrother will assist both parties with next steps.
+            {' '}HubRegistrar will assist both parties with next steps.
           </p>
           <div className="text-sm bg-white/80 border border-teal-100 rounded-lg px-4 py-3">
-            <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">CoBrother support</div>
-            <a href="mailto:support@cobrother.com" className="text-teal-900 font-medium hover:underline">
-              support@cobrother.com
+            <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">HubRegistrar support</div>
+            <a href="mailto:support@hubregistrar.com" className="text-teal-900 font-medium hover:underline">
+              support@hubregistrar.com
             </a>
           </div>
         </div>

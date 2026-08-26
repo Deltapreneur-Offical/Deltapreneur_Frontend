@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { operationsAPI } from '../../api/services';
+import { operationsAPI, hubRegistrarOfficeAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
@@ -8,6 +9,7 @@ import FeaturedVirtualAssistantsListing, {
   useFeaturedVirtualAssistants,
 } from '../virtual-assistant/FeaturedVirtualAssistantsListing';
 import HomePreviewCardShell from './HomePreviewCardShell';
+import HubRegistrarOfficeCard from '../listings/HubRegistrarOfficeCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeOperationsPreviewCard from './HomeOperationsPreviewCard';
@@ -24,8 +26,10 @@ import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
  */
 export default function HomeOperationsCarouselSection({ sectionId }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const section = OPERATIONS_SECTIONS.find((s) => s.id === sectionId) || OPERATIONS_SECTIONS[0];
   const isAssistanceSection = sectionId === 'assistance';
+  const isOfficesSection = sectionId === 'offices';
 
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,8 +37,26 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const [requestSuccess, setRequestSuccess] = useState(null);
 
   const vaFeatured = useFeaturedVirtualAssistants(20, { enabled: isAssistanceSection });
+  const [offices, setOffices] = useState([]);
+  const [officesLoading, setOfficesLoading] = useState(false);
+  const [cityFilter, setCityFilter] = useState('');
 
   useEffect(() => {
+    if (isOfficesSection) {
+      setOfficesLoading(true);
+      hubRegistrarOfficeAPI.list()
+        .then(({ data }) => {
+          setOffices(data.data || []);
+        })
+        .catch(() => {
+          setOffices([]);
+        })
+        .finally(() => {
+          setOfficesLoading(false);
+        });
+      return;
+    }
+
     if (isAssistanceSection) return undefined;
 
     let cancelled = false;
@@ -55,9 +77,9 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
     return () => {
       cancelled = true;
     };
-  }, [isAssistanceSection, section.serviceType]);
+  }, [isAssistanceSection, isOfficesSection, section.serviceType]);
 
-  const title = t(section.labelKey, { defaultValue: section.defaultLabel });
+  const title = section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel });
   const shouldAutoScroll = useShouldAutoScroll(services.length);
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
@@ -81,6 +103,127 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
       <HomeOperationsPreviewCard service={service} onHire={openServiceRequest} />
     </HomePreviewCardShell>
   );
+
+  /* HIDDEN — Virtual Assistance section temporarily disabled
+  if (isAssistanceSection) {
+    if (vaFeatured.loading) {
+      return (
+        <HomeSectionCardSkeleton
+          title={title}
+          to={viewAllPath}
+          accent={accent}
+          compact
+        />
+      );
+    }
+
+    return (
+      <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+        <div className="w-full min-w-0">
+          <HomeSectionHeader
+            title={title}
+            to={viewAllPath}
+            accent={accent}
+            showViewAll={vaFeatured.count > 0}
+          />
+          <FeaturedVirtualAssistantsListing
+            layout="row"
+            pageSize={20}
+            cards={vaFeatured.cards}
+            loading={false}
+            ariaLabel={title}
+          />
+        </div>
+      </section>
+    );
+  }
+  */
+
+  if (isOfficesSection) {
+    const filteredOffices = offices.filter((office) => {
+      if (!cityFilter.trim()) return true;
+      const searchTerm = cityFilter.toLowerCase();
+      return (
+        (office.city && office.city.toLowerCase().includes(searchTerm)) ||
+        (office.full_address && office.full_address.toLowerCase().includes(searchTerm))
+      );
+    });
+
+    return (
+      <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+        <div className="w-full min-w-0">
+          <header className="home-section-header home-section-header--operations">
+            <div className="home-section-header__top">
+              <h2 className="home-section-header__title">{title}</h2>
+              <div className="hro-header-right">
+                <div className="hro-city-filter-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-city-filter-icon">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path strokeLinecap="round" d="m21 21-4.35-4.35"/>
+                  </svg>
+                  <input
+                    type="text"
+                    className="hro-city-filter-input"
+                    placeholder="Search by city..."
+                    value={cityFilter}
+                    onChange={(e) => setCityFilter(e.target.value)}
+                  />
+                  {cityFilter && (
+                    <button
+                      type="button"
+                      className="hro-city-filter-clear"
+                      onClick={() => setCityFilter('')}
+                      aria-label="Clear search"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                {offices.length > 0 && (
+                  <Link to={viewAllPath} className="home-section-header__view-all">
+                    <span>View All</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="home-section-header__view-all-icon">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {officesLoading ? (
+            <HomeSectionCardSkeleton title={title} to={viewAllPath} accent="operations" compact />
+          ) : offices.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">
+                No offices available yet. Check back soon!
+              </p>
+            </div>
+          ) : filteredOffices.length === 0 ? (
+            <div className="hro-no-results">
+              <div className="hro-no-results-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                  <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <p className="hro-no-results-title">
+                No offices found in "{cityFilter}"
+              </p>
+              <p className="hro-no-results-desc">
+                We will be coming to that city soon! Try searching for a different city.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredOffices.map((office) => (
+                <HubRegistrarOfficeCard key={office.id} office={office} compact />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   if (isAssistanceSection) {
     if (vaFeatured.loading) {
@@ -170,7 +313,15 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
       )}
 
       {requestSuccess && (
-        <OperationsRequestSuccess payload={requestSuccess} onClose={() => setRequestSuccess(null)} />
+        <OperationsRequestSuccess
+          payload={requestSuccess}
+          onClose={() => setRequestSuccess(null)}
+          onTrack={() => {
+            const section = requestSuccess?.type === 'booking' ? 'compliance' : 'assistance';
+            setRequestSuccess(null);
+            navigate(`/operations?section=${section}#operations-my-requests`);
+          }}
+        />
       )}
     </section>
   );

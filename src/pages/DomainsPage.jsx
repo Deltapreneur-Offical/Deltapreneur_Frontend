@@ -153,7 +153,7 @@ export default function DomainsPage() {
   const [successDomain, setSuccessDomain] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [activeTab, setActiveTab] = useState('premium'); // 'all' | 'premium' | 'standard' | 'mine'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'premium' | 'standard' | 'mine'
   const [showcaseDomains, setShowcaseDomains] = useState([]);
   const [showcaseEnabled, setShowcaseEnabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -1352,10 +1352,10 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         {commissionBreakdown && (
           <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
             <div className="flex justify-between"><span>Listing Price (buyer pays)</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
-            <div className="flex justify-between"><span>CoBrother Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span></div>
+            <div className="flex justify-between"><span>HubRegistrar Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span></div>
             <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatListingCurrency(commissionBreakdown.sellerEarnings)}</span></div>
             <p className="pt-2 text-xs leading-5 text-gray-600">
-              CoBrother deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout on successful buy-now sales. Buyers pay the listed price only. Your estimated earnings are shown above.
+              HubRegistrar deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout on successful buy-now sales. Buyers pay the listed price only. Your estimated earnings are shown above.
             </p>
           </div>
         )}

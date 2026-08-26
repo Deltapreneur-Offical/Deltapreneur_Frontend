@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, X } from 'lucide-react';
 import { operationsAdminAPI } from '../../api/services';
-import { OPERATIONS_CATEGORY_OPTIONS } from '../../utils/operationsCategories';
+import {
+  OPERATIONS_CATEGORY_OPTIONS,
+  HUB_REGISTRAR_CATEGORY_OPTIONS,
+  resolveHubRegistrarCategoryForm,
+  slugifyHubRegistrarCategory,
+} from '../../utils/operationsCategories';
 import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
 import { readApiError } from '../../utils/apiError';
 
@@ -21,11 +26,14 @@ const SECTION_MODAL_META = {
 
 const EMPTY_FORM = {
   name: '',
-  category: 'compliance',
+  category: '',
+  customCategoryName: '',
   description: '',
   price: '',
   isAvailable: true,
   serviceType: 'compliance',
+  governmentFeesApplicable: false,
+  governmentFeeText: 'Government fees applicable',
 };
 
 function parsePriceInput(value) {
@@ -57,27 +65,33 @@ export default function OperationRoleModal({
   const [loading, setLoading] = useState(false);
   const isCompliance = form.serviceType === 'compliance';
   const modalMeta = SECTION_MODAL_META[sectionId] || SECTION_MODAL_META.compliance;
-  const categoryOptions = isCompliance
-    ? OPERATIONS_CATEGORY_OPTIONS.filter((opt) => opt.value === 'compliance')
-    : VA_CATEGORY_OPTIONS;
+  const categoryOptions = isCompliance ? HUB_REGISTRAR_CATEGORY_OPTIONS : VA_CATEGORY_OPTIONS;
   const activeSection = OPERATIONS_SECTIONS.find((s) => s.id === sectionId) || OPERATIONS_SECTIONS[0];
 
   useEffect(() => {
     if (mode === 'edit' && record) {
+      const isRecordCompliance = (record.serviceType || 'virtual_assistance') === 'compliance';
+      const hubRegistrarCategory = isRecordCompliance
+        ? resolveHubRegistrarCategoryForm(record.category)
+        : { category: record.category || 'people', customCategoryName: '' };
       setForm({
         name: record.name || '',
-        category: record.category || 'people',
+        category: hubRegistrarCategory.category,
+        customCategoryName: hubRegistrarCategory.customCategoryName,
         description: record.description || '',
         price: formatPriceInput(record.price),
         isAvailable: record.isAvailable !== false,
         serviceType: record.serviceType || 'virtual_assistance',
+        governmentFeesApplicable: record.governmentFeesApplicable || false,
+        governmentFeeText: record.governmentFeeText || 'Government fees applicable',
       });
       return;
     }
     setForm({
       ...EMPTY_FORM,
       serviceType: defaultServiceType,
-      category: defaultServiceType === 'compliance' ? 'compliance' : 'people',
+      category: defaultServiceType === 'compliance' ? '' : 'people',
+      customCategoryName: '',
     });
   }, [mode, record, defaultServiceType]);
 
@@ -90,7 +104,20 @@ export default function OperationRoleModal({
       alert(t('adminOperationsNameRequired', { defaultValue: 'Role name is required.' }));
       return;
     }
-    if (!form.category) {
+
+    let category = form.category;
+    if (isCompliance) {
+      if (form.category === 'other') {
+        category = slugifyHubRegistrarCategory(form.customCategoryName);
+        if (!category) {
+          alert(t('adminOperationsCustomCategoryRequired', { defaultValue: 'Enter a category name.' }));
+          return;
+        }
+      } else if (!category) {
+        alert(t('adminOperationsCategoryRequired', { defaultValue: 'Category is required.' }));
+        return;
+      }
+    } else if (!category) {
       alert(t('adminOperationsCategoryRequired', { defaultValue: 'Category is required.' }));
       return;
     }
@@ -105,11 +132,13 @@ export default function OperationRoleModal({
 
     const payload = {
       name: form.name.trim(),
-      category: form.category,
+      category,
       description: form.description.trim() || null,
       price,
       isAvailable: form.isAvailable,
       serviceType: form.serviceType,
+      governmentFeesApplicable: form.governmentFeesApplicable,
+      governmentFeeText: form.governmentFeeText.trim() || 'Government fees applicable',
     };
 
     setLoading(true);
@@ -193,7 +222,8 @@ export default function OperationRoleModal({
                       setForm((prev) => ({
                         ...prev,
                         serviceType: nextType,
-                        category: nextType === 'compliance' ? 'compliance' : prev.category === 'compliance' ? 'people' : prev.category,
+                        category: nextType === 'compliance' ? '' : prev.category === 'other' || !prev.category ? 'people' : prev.category,
+                        customCategoryName: '',
                       }));
                     }}
                   >
@@ -208,28 +238,57 @@ export default function OperationRoleModal({
               </div>
             )}
 
-            {!isCompliance && (
-              <div className="operations-role-modal-field">
-                <label className="operations-role-modal-label" htmlFor="ops-role-category">
-                  {t('adminOperationsFieldCategory', { defaultValue: 'Category' })}
-                </label>
-                <div className="operations-admin-select-wrap operations-admin-select-wrap--full">
-                  <select
-                    id="ops-role-category"
-                    className="operations-admin-select operations-role-modal-select"
-                    value={form.category}
-                    onChange={(e) => setField('category', e.target.value)}
-                  >
-                    {categoryOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-                </div>
+            <div className={`operations-role-modal-field ${isCompliance ? 'operations-role-modal-field--full' : ''}`}>
+              <label className="operations-role-modal-label" htmlFor="ops-role-category">
+                {t('adminOperationsFieldCategory', { defaultValue: 'Category' })}
+              </label>
+              <div className="operations-admin-select-wrap operations-admin-select-wrap--full">
+                <select
+                  id="ops-role-category"
+                  className="operations-admin-select operations-role-modal-select"
+                  value={form.category}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setForm((prev) => ({
+                      ...prev,
+                      category: next,
+                      customCategoryName: next === 'other' ? prev.customCategoryName : '',
+                    }));
+                  }}
+                >
+                  {isCompliance && (
+                    <option value="">
+                      {t('adminOperationsSelectCategory', { defaultValue: 'Select category' })}
+                    </option>
+                  )}
+                  {categoryOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
               </div>
-            )}
+              {isCompliance && form.category === 'other' && (
+                <>
+                  <input
+                    id="ops-role-custom-category"
+                    type="text"
+                    value={form.customCategoryName}
+                    onChange={(e) => setField('customCategoryName', e.target.value)}
+                    placeholder={t('adminOperationsCustomCategoryPlaceholder', {
+                      defaultValue: 'Type a category name',
+                    })}
+                    className="operations-role-modal-input"
+                  />
+                  <p className="operations-role-modal-hint">
+                    {t('adminOperationsCustomCategoryHint', {
+                      defaultValue: 'This name is saved as the category for this service.',
+                    })}
+                  </p>
+                </>
+              )}
+            </div>
 
             <div className={`operations-role-modal-field ${isCompliance ? 'operations-role-modal-field--full' : ''}`}>
               <label className="operations-role-modal-label" htmlFor="ops-role-price">
@@ -264,6 +323,49 @@ export default function OperationRoleModal({
                 className="operations-role-modal-input operations-role-modal-textarea"
               />
             </div>
+
+            <div className="operations-role-modal-field operations-role-modal-field--full operations-role-modal-status">
+              <div className="operations-role-modal-status-row">
+                <div>
+                  <span className="operations-role-modal-label">
+                    Government Fees Applicable
+                  </span>
+                  <p className="operations-role-modal-hint operations-role-modal-hint--inline">
+                    Show a government fees notice on this service card.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.governmentFeesApplicable}
+                  className={`admin-feature-switch operations-role-switch ${form.governmentFeesApplicable ? 'is-on' : ''}`}
+                  onClick={() => setField('governmentFeesApplicable', !form.governmentFeesApplicable)}
+                >
+                  <span className="admin-feature-switch-track">
+                    <span className="admin-feature-switch-thumb" />
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {form.governmentFeesApplicable && (
+              <div className="operations-role-modal-field operations-role-modal-field--full">
+                <label className="operations-role-modal-label" htmlFor="ops-role-gov-fee-text">
+                  Government Fee Text
+                </label>
+                <input
+                  id="ops-role-gov-fee-text"
+                  type="text"
+                  value={form.governmentFeeText}
+                  onChange={(e) => setField('governmentFeeText', e.target.value)}
+                  placeholder="Government fees applicable"
+                  className="operations-role-modal-input"
+                />
+                <p className="operations-role-modal-hint">
+                  Text displayed on the service card when the toggle is ON.
+                </p>
+              </div>
+            )}
 
             <div className="operations-role-modal-field operations-role-modal-field--full operations-role-modal-status">
               <div className="operations-role-modal-status-row">

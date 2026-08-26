@@ -1,19 +1,19 @@
 /**
  * generateInvoice.js
- * CoBrother storefront — Tax Invoice PDF (print) generator.
+ * HubRegistrar storefront — Tax Invoice PDF (print) generator.
  * Seller billed as Aultum International.
  */
 
-import coBrotherLogo from '../assets/Cobrother_logo.png';
+import coBrotherLogo from '../assets/CO/Cobrother_logo.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 
 const SELLER = {
   legalName: 'Aultum International (Proprietor: Neminath Surendra Akkole)',
   gstin: '29DXMPA9959L2ZF',
-  email: 'support@cobrother.com',
+  email: 'support@hubregistrar.com',
   phone: '080 8575 8575',
-  website: 'www.cobrother.com',
+  website: 'www.hubregistrar.com',
   addressLines: [
     'Third Floor TF 307 Marvel Artiza',
     'Pune Bangalore Road, Vidyanagar, Hubballi',
@@ -270,7 +270,7 @@ function buildLineItems({ type, item }) {
   });
   if (item.coBrotherHelpPaid) {
     lines.push({
-      name: 'CoBrother Helper Service',
+      name: 'HubRegistrar Helper Service',
       description: 'Optional helper add-on',
       qty: 1,
       unitPrice: 1000,
@@ -603,7 +603,7 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
 
     <div class="header">
       <div class="brand-block">
-        <img class="brand-logo" src="${logoUrl}" alt="CoBrother" />
+        <img class="brand-logo" src="${logoUrl}" alt="HubRegistrar" />
       </div>
       <div class="invoice-meta">
         <div class="invoice-title">Tax Invoice</div>

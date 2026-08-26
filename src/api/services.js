@@ -607,3 +607,24 @@ export const virtualAssistantAPI = {
   getPublicProfilePhotoUrl: (id) => api.get(`/api/v1/virtual-assistant/${id}/profile-photo-url`),
   getWorkspaceProfilePhotoUrl: () => api.get('/api/v1/virtual-assistant/workspace/profile-photo-url'),
 };
+
+// ─── Hub Registrar Office ──────────────────────────────────────────────────
+export const hubRegistrarOfficeAPI = {
+  list:        ()             => api.get('/api/v1/hub-registrar-offices'),
+  get:         (id)           => api.get(`/api/v1/hub-registrar-offices/${id}`),
+  adminList:   ()             => api.get('/api/v1/admin/hub-registrar-offices'),
+  adminCreate: (body)         => api.post('/api/v1/admin/hub-registrar-offices', body),
+  adminUpdate: (id, body)     => api.put(`/api/v1/admin/hub-registrar-offices/${id}`, body),
+  adminToggle: (id, isActive) => api.patch(`/api/v1/admin/hub-registrar-offices/${id}/active`, null, { params: { is_active: isActive } }),
+  adminDelete: (id)           => api.delete(`/api/v1/admin/hub-registrar-offices/${id}`),
+};
+
+// ─── Franchise Applications ─────────────────────────────────────────────────
+export const franchiseApplicationAPI = {
+  submit:           (body)          => api.post('/api/v1/franchise/apply', body),
+  adminList:        (params)        => api.get('/api/v1/admin/franchise-applications', { params }),
+  adminGet:         (id)            => api.get(`/api/v1/admin/franchise-applications/${id}`),
+  adminUpdateStatus:(id, body)      => api.patch(`/api/v1/admin/franchise-applications/${id}/status`, body),
+  adminBlacklist:   (id, body)      => api.post(`/api/v1/admin/franchise-applications/${id}/blacklist`, body),
+  adminDelete:      (id)            => api.delete(`/api/v1/admin/franchise-applications/${id}`),
+};

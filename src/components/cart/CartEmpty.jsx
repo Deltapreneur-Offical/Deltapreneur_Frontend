@@ -30,7 +30,7 @@ export default function CartEmpty() {
         Your cart is empty
       </h2>
       <p className="relative text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
-        Discover domains, technologies, and ventures on CoBrother — add items to your cart and checkout when you&apos;re ready.
+        Discover domains, technologies, and ventures on HubRegistrar — add items to your cart and checkout when you&apos;re ready.
       </p>
 
       <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">

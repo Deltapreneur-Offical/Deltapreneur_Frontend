@@ -170,7 +170,7 @@ export function buildCartPaymentDescription(items, itemCount) {
     ? `${lines.join(' | ')}${extra > 0 ? ` (+${extra} more)` : ''}`
     : `${count} item${count === 1 ? '' : 's'}`;
   const categoryText = categories.length ? categories.join(', ') : 'Cart';
-  const text = `CoBrother - ${categoryText} - ${itemsText}`;
+  const text = `HubRegistrar - ${categoryText} - ${itemsText}`;
   return text.length > 255 ? `${text.slice(0, 254)}…` : text;
 }
 
@@ -206,7 +206,7 @@ export async function openRazorpayCheckout({
       key: keyId,
       amount,
       currency: getRazorpayCurrency(order),
-      name: 'CoBrother',
+      name: 'HubRegistrar',
       description,
       order_id: orderId,
       handler: onSuccess,

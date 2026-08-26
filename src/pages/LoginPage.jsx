@@ -361,7 +361,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      title={t('welcomeToCoBrother')}
+      title={t('welcomeToHubRegistrar')}
       subtitle={t('loginSubtitle')}
       onBack={() => navigate('/')}
       footer={(

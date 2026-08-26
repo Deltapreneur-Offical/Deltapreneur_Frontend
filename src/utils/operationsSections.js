@@ -1,18 +1,33 @@
-/** Public storefront sections on /operations (legacy monthly roles catalog + business solutions). */
+/** Public storefront sections on /operations. */
 export const OPERATIONS_SECTIONS = [
+  /* HIDDEN — Virtual Assistance section temporarily disabled
   {
     id: 'assistance',
     labelKey: 'operationsSectionVirtualAssistance',
     defaultLabel: 'Virtual Assistance',
+    homeLabel: 'Virtual Assistance',
     hintKey: 'operationsSectionVaHint',
     defaultHint: 'Monthly virtual roles & business support',
     serviceType: 'virtual_assistance',
     theme: 'assistance',
   },
+  */
+  {
+    id: 'offices',
+    labelKey: 'operationsSectionOffices',
+    defaultLabel: 'Hub Registrar Offices',
+    homeLabel: 'Hub Registrar Offices',
+    hintKey: 'operationsSectionOfficesHint',
+    defaultHint: 'Find your nearest Hub Registrar office for in-person support.',
+    serviceType: 'offices',
+    theme: 'offices',
+    isPlaceholder: false,
+  },
   {
     id: 'compliance',
     labelKey: 'operationsSectionCompliances',
-    defaultLabel: 'Business Solutions',
+    defaultLabel: 'Hub Registrar',
+    homeLabel: 'Hub Registrars',
     hintKey: 'operationsSectionComplianceHint',
     defaultHint: 'Registration, filings & business services',
     serviceType: 'compliance',
@@ -54,6 +69,26 @@ export function resolveOperationsSection(sectionId) {
 export function operationsPathForSection(sectionId) {
   const section = resolveOperationsSection(sectionId);
   return `/operations?section=${section.id}`;
+}
+
+export function operationsPathForHubRegistrarCategory(categorySlug) {
+  const params = new URLSearchParams({ section: 'compliance' });
+  if (categorySlug) params.set('category', categorySlug);
+  return `/operations?${params.toString()}`;
+}
+
+export function operationsPathForHubRegistrarService(categorySlug, serviceSlug) {
+  const params = new URLSearchParams({ section: 'compliance' });
+  if (categorySlug) params.set('category', categorySlug);
+  if (serviceSlug) params.set('service', serviceSlug);
+  return `/operations?${params.toString()}`;
+}
+
+export const REGISTRATIONS_PAGE_PATH = '/registrations';
+
+export function registrationsPathForCategory(categorySlug) {
+  if (!categorySlug) return REGISTRATIONS_PAGE_PATH;
+  return `${REGISTRATIONS_PAGE_PATH}?category=${encodeURIComponent(categorySlug)}`;
 }
 
 export function operationsReturnLocation(sectionId) {

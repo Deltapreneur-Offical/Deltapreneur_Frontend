@@ -10,7 +10,7 @@ import TechnologyPurchaseConfig from './TechnologyPurchaseConfig';
 
 const BUSINESS_KEYS = new Set(ADDON_SERVICES.map((s) => s.key));
 const SAVE_DELAY_MS = 450;
-/** Domain listing extras only — Technology cart config is CoBrother-only (no VA). */
+/** Domain listing extras only — Technology cart config is HubRegistrar-only (no VA). */
 const SHOW_VA_IN_CART = false;
 
 function splitAddonServices(all = [], vaCatalog = []) {
@@ -55,7 +55,7 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
     [item.addonServices, vaServices],
   );
 
-  const [coBrotherOptIn, setCoBrotherOptIn] = useState(Boolean(item.coBrotherOptIn));
+  const [coBrotherOptIn, setHubRegistrarOptIn] = useState(Boolean(item.coBrotherOptIn));
   const [businessAddons, setBusinessAddons] = useState(split.business);
   const [vaAddons, setVaAddons] = useState(split.va);
   const [selectedPlan, setSelectedPlan] = useState(item.selectedPlan || null);
@@ -101,7 +101,7 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
 
   useEffect(() => {
     const nextSplit = splitAddonServices(item.addonServices || [], vaServices);
-    setCoBrotherOptIn(Boolean(item.coBrotherOptIn));
+    setHubRegistrarOptIn(Boolean(item.coBrotherOptIn));
     setBusinessAddons(nextSplit.business);
     setVaAddons(nextSplit.va);
     setSelectedPlan(item.selectedPlan || null);
@@ -121,15 +121,15 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
     });
   }, [isTechnology, item.id, requiresPlan, hasPlan, complete, onConfigStatus]);
 
-  const persistTechnology = useCallback(async (nextCoBrother, nextPlan) => {
+  const persistTechnology = useCallback(async (nextHubRegistrar, nextPlan) => {
     setSaving(true);
     setError('');
     try {
       const body = {
-        coBrotherOptIn: nextCoBrother,
+        coBrotherOptIn: nextHubRegistrar,
       };
       if (nextPlan) body.selectedPlan = nextPlan;
-      // Do not send addonServices — leave VA/Compliance untouched; cart UI is CoBrother-only.
+      // Do not send addonServices — leave VA/Compliance untouched; cart UI is HubRegistrar-only.
       await updateItem(item.id, body);
       await onUpdated?.();
     } catch {
@@ -154,10 +154,10 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
     }
   }, [item.id, onUpdated, updateItem]);
 
-  const scheduleTechSave = useCallback((nextCoBrother, nextPlan) => {
+  const scheduleTechSave = useCallback((nextHubRegistrar, nextPlan) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = window.setTimeout(() => {
-      persistTechnology(nextCoBrother, nextPlan);
+      persistTechnology(nextHubRegistrar, nextPlan);
     }, SAVE_DELAY_MS);
   }, [persistTechnology]);
 
@@ -172,9 +172,9 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
   }, []);
 
-  const handleCoBrotherToggle = () => {
+  const handleHubRegistrarToggle = () => {
     const next = !coBrotherOptIn;
-    setCoBrotherOptIn(next);
+    setHubRegistrarOptIn(next);
     scheduleTechSave(next, selectedPlan);
   };
 
@@ -215,7 +215,7 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
           onPlanSelect={handlePlanChange}
           plansLoading={techLoading}
           coBrotherOptIn={coBrotherOptIn}
-          onCoBrotherToggle={handleCoBrotherToggle}
+          onHubRegistrarToggle={handleHubRegistrarToggle}
           formatPrice={formatPrice}
         />
       )}

@@ -18,9 +18,15 @@ const services = [
     id: 'email',
     icon: <Mail className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Professional Email',
-    description: 'Create branded email addresses with your domain. Includes spam filtering and webmail access.',
+    tag: 'Mailbox',
+    unit: 'month',
     price: 'From catalog',
-    priceAvailable: true,
+    bullets: [
+      'yourname@yourbrand.com',
+      'Spam & malware filters',
+      'Webmail + mobile access',
+      '5 GB storage per mailbox',
+    ],
     Component: EmailForm,
     apiMethod: 'purchaseEmail',
   },
@@ -28,9 +34,15 @@ const services = [
     id: 'ssl',
     icon: <ShieldCheck className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'SSL Certificate',
-    description: 'Secure your website with industry-standard SSL encryption. Boost trust and SEO rankings.',
+    tag: 'HTTPS',
+    unit: 'yr',
     price: '—',
-    priceAvailable: true,
+    bullets: [
+      'Standard & Wildcard SSL',
+      'Browser padlock enabled',
+      'Auto-renew support',
+      '256-bit encryption',
+    ],
     Component: SSLForm,
     apiMethod: 'purchaseSSL',
   },
@@ -38,9 +50,15 @@ const services = [
     id: 'restore',
     icon: <RotateCcw className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Domain Restore',
-    description: 'Restore a domain in redemption period through CoBrother before it is permanently deleted.',
+    tag: 'Redemption',
+    unit: 'yr',
     price: 'Live quote',
-    priceAvailable: true,
+    bullets: [
+      'Recover domains in redemption',
+      'Live restore price',
+      'Secure ownership before delete',
+      'Pay once & restore via registrar',
+    ],
     Component: RestoreForm,
     apiMethod: null,
   },
@@ -48,9 +66,15 @@ const services = [
     id: 'easydmarc',
     icon: <Shield className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'EasyDMARC',
-    description: 'Protect your brand from spoofing with DMARC monitoring and reporting via CoBrother.',
+    tag: 'DMARC',
+    unit: 'yr',
     price: 'From catalog',
-    priceAvailable: true,
+    bullets: [
+      'Stop brand email spoofing',
+      'DMARC DNS record guidance',
+      'EasyDMARC order',
+      'SSO access to DMARC panel',
+    ],
     Component: EasyDmarcForm,
     apiMethod: null,
   },
@@ -58,9 +82,15 @@ const services = [
     id: 'spamexperts',
     icon: <Filter className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'SpamExperts',
-    description: 'Incoming email filtering for your domain with a control-panel login link after activation.',
+    tag: 'Filter',
+    unit: 'yr',
     price: 'From catalog',
-    priceAvailable: true,
+    bullets: [
+      'Incoming spam & malware filter',
+      'Protect your domain mailbox',
+      'Control-panel login after setup',
+      'Managed via HubRegistrar',
+    ],
     Component: SpamExpertsForm,
     apiMethod: null,
   },
@@ -68,9 +98,15 @@ const services = [
     id: 'dnssec',
     icon: <Globe className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'DNSSEC',
-    description: 'Add an extra layer of security to your DNS with cryptographic signatures. Prevent DNS spoofing attacks.',
+    tag: 'Free',
+    unit: 'setup',
     price: 'Free',
-    priceAvailable: true,
+    bullets: [
+      'Cryptographic DNS signing',
+      'Prevent cache poisoning',
+      'Anti-spoofing protection',
+      'One-click activation',
+    ],
     Component: DNSSECForm,
     apiMethod: 'toggleDnssec',
   },
@@ -78,9 +114,15 @@ const services = [
     id: 'transfer',
     icon: <ArrowRightLeft className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Domain Transfer',
-    description: 'Transfer your existing domain to CoBrother with seamless migration and 1-year extension.',
+    tag: 'All TLDs',
+    unit: 'yr',
     price: '—',
-    priceAvailable: true,
+    bullets: [
+      '.com, .in, .net, .org & more',
+      'Free EPP-code transfer',
+      'Zero downtime migration',
+      'Auto-sync DNS settings',
+    ],
     Component: TransferForm,
     apiMethod: 'initiateTransfer',
   },
@@ -88,9 +130,15 @@ const services = [
     id: 'renewal',
     icon: <Sparkles className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
     name: 'Domain Renewal',
-    description: 'Renew your domain registration before expiry to avoid downtime and retain ownership.',
+    tag: 'Multi-year',
+    unit: 'yr',
     price: '—',
-    priceAvailable: true,
+    bullets: [
+      'Lock domain for up to 10 yrs',
+      'Expiry alerts via email',
+      'Auto-renew option available',
+      'Instant registry update',
+    ],
     Component: RenewalForm,
     apiMethod: 'renewDomainDirect',
   },
@@ -103,6 +151,7 @@ function hasRegisteredDomains(orders) {
 export default function DomainServices({ orders, ordersLoading = false }) {
   const [selectedService, setSelectedService] = useState(null);
   const [priceLabels, setPriceLabels] = useState({});
+  const [tldPrices, setTldPrices] = useState({});
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -117,6 +166,11 @@ export default function DomainServices({ orders, ordersLoading = false }) {
           restore: prices?.restore?.label,
           easydmarc: prices?.easydmarc?.label,
           spamexperts: prices?.spamexperts?.label,
+          dnssec: prices?.dnssec?.label,
+        });
+        setTldPrices({
+          transfer: prices?.transfer?.byTld,
+          renewal: prices?.renewal?.byTld,
         });
       })
       .catch(() => {});
@@ -220,19 +274,23 @@ export default function DomainServices({ orders, ordersLoading = false }) {
               && !userHasRegisteredDomains;
 
             return (
-            <ServiceCard
-              key={service.id}
-              icon={service.icon}
-              name={service.name}
-              description={service.description}
-              price={service.price}
-              priceAvailable={service.priceAvailable}
-              onConfigure={() => handleConfigure(service.id)}
-              isActive={isActive}
-              noDomainsOverlay={showNoDomainsOverlay}
-            >
-              {isActive && renderForm(service)}
-            </ServiceCard>
+              <ServiceCard
+                key={service.id}
+                icon={service.icon}
+                name={service.name}
+                tag={service.tag}
+                unit={service.unit}
+                bullets={service.bullets}
+                price={service.price}
+                hasDomains={userHasRegisteredDomains}
+                tldPrices={service.id === 'transfer' ? tldPrices.transfer : undefined}
+                tldRenewPrices={service.id === 'renewal' ? tldPrices.renewal : undefined}
+                onConfigure={() => handleConfigure(service.id)}
+                isActive={isActive}
+                noDomainsOverlay={showNoDomainsOverlay}
+              >
+                {isActive && renderForm(service)}
+              </ServiceCard>
             );
           })}
         </div>

@@ -1,30 +1,30 @@
 /**
  * Customer-facing helpers — never expose registrar vendor brand names.
  *
- * Prefer vanity CoBrother hosts for new domains. Legacy OpenProvider hosts
+ * Prefer vanity HubRegistrar hosts for new domains. Legacy OpenProvider hosts
  * still map to friendly labels for existing customer orders.
  */
 
 const PLATFORM_NS_ALIASES = {
-  'ns1.cobrother.com': 'CoBrother DNS 1',
-  'ns2.cobrother.com': 'CoBrother DNS 2',
-  'ns3.cobrother.com': 'CoBrother DNS 3',
+  'ns1.cobrother.com': 'HubRegistrar DNS 1',
+  'ns2.cobrother.com': 'HubRegistrar DNS 2',
+  'ns3.cobrother.com': 'HubRegistrar DNS 3',
   // Legacy (existing domains registered before vanity NS cutover)
-  'ns1.openprovider.nl': 'CoBrother DNS 1',
-  'ns2.openprovider.be': 'CoBrother DNS 2',
-  'ns3.openprovider.eu': 'CoBrother DNS 3',
+  'ns1.openprovider.nl': 'HubRegistrar DNS 1',
+  'ns2.openprovider.be': 'HubRegistrar DNS 2',
+  'ns3.openprovider.eu': 'HubRegistrar DNS 3',
 };
 
 /** When user picks a friendly label, submit the vanity host (not legacy OP). */
 const ALIAS_TO_PLATFORM_NS = {
-  'cobrother dns 1': 'ns1.cobrother.com',
-  'cobrother dns 2': 'ns2.cobrother.com',
-  'cobrother dns 3': 'ns3.cobrother.com',
+  'hubregistrar dns 1': 'ns1.cobrother.com',
+  'hubregistrar dns 2': 'ns2.cobrother.com',
+  'hubregistrar dns 3': 'ns3.cobrother.com',
 };
 
 const VENDOR_NS_PATTERN = /openprovider|resellerclub|onlyfordemo/i;
 
-/** True when every host is a known CoBrother/platform nameserver. */
+/** True when every host is a known HubRegistrar/platform nameserver. */
 export function isPlatformNameserverSet(hosts = []) {
   const list = (Array.isArray(hosts) ? hosts : [])
     .map((h) => String(h || '').trim().toLowerCase())
@@ -38,7 +38,7 @@ export function displayNameserverHost(host, index = 0) {
   const key = String(host || '').trim().toLowerCase();
   if (!key) return '';
   if (PLATFORM_NS_ALIASES[key]) return PLATFORM_NS_ALIASES[key];
-  if (VENDOR_NS_PATTERN.test(key)) return `CoBrother DNS ${index + 1}`;
+  if (VENDOR_NS_PATTERN.test(key)) return `HubRegistrar DNS ${index + 1}`;
   return String(host).trim();
 }
 
@@ -63,7 +63,7 @@ export function resolveNameserverForSubmit(value, index = 0, originalHosts = [])
 export function formatNameserversForDisplay(hosts = []) {
   const list = (Array.isArray(hosts) ? hosts : []).map((h) => String(h || '').trim()).filter(Boolean);
   if (!list.length) return 'Not set';
-  if (isPlatformNameserverSet(list)) return 'CoBrother managed DNS';
+  if (isPlatformNameserverSet(list)) return 'HubRegistrar managed DNS';
   return list.map((host, i) => displayNameserverHost(host, i)).join(', ');
 }
 
@@ -72,7 +72,7 @@ export function scrubRegistrarVendorNames(text, fallback = '') {
   const raw = String(text || '').trim();
   if (!raw) return fallback;
   if (/open\s*provider|reseller\s*club|legacy_resellerclub/i.test(raw)) {
-    return fallback || 'Please contact CoBrother support for help with this domain.';
+    return fallback || 'Please contact HubRegistrar support for help with this domain.';
   }
   return raw;
 }

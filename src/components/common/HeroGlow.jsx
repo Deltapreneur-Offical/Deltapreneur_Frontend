@@ -1,26 +1,17 @@
-import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import DomainSearchBar from './DomainSearchBar';
 import {
-  heroDotEnter,
   heroEnterContainer,
   heroHeadlineEnter,
-  heroTaglineEnter,
 } from '../home/motion/homeMotion';
 
 export default function HeroGlow() {
-  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
 
   const textStack = reduceMotion ? (
     <div className="hero-text-stack relative z-20 w-full min-w-0">
-      <span className="hero-tagline-dot" aria-hidden="true" />
-      <p className="hero-tagline m-0 font-sans">{t('heroEyebrow')}</p>
       <h1 className="hero-headline m-0 font-sans font-normal text-black">
-        Start It Up With{' '}
-        <span className="hero-emphasis">CoBrother</span>
-        {' '}To{' '}
-        <span className="hero-emphasis">Disrupt</span>
+        The Intellectual Property Registrar
       </h1>
     </div>
   ) : (
@@ -30,22 +21,11 @@ export default function HeroGlow() {
       initial="hidden"
       animate="visible"
     >
-      <motion.span
-        className="hero-tagline-dot"
-        aria-hidden="true"
-        variants={heroDotEnter}
-      />
-      <motion.p className="hero-tagline m-0 font-sans" variants={heroTaglineEnter}>
-        {t('heroEyebrow')}
-      </motion.p>
       <motion.h1
         className="hero-headline m-0 font-sans font-normal text-black"
         variants={heroHeadlineEnter}
       >
-        Start It Up With{' '}
-        <span className="hero-emphasis">CoBrother</span>
-        {' '}To{' '}
-        <span className="hero-emphasis">Disrupt</span>
+        The Intellectual Property Registrar
       </motion.h1>
     </motion.div>
   );
@@ -62,41 +42,11 @@ export default function HeroGlow() {
 
       <style>{`
         .hero-text-stack {
-          display: grid;
-          grid-template-columns: auto 1fr;
-          column-gap: 0.5rem;
-          row-gap: 0.15rem;
-          align-items: start;
-        }
-
-        .hero-tagline-dot {
-          grid-column: 1;
-          grid-row: 1;
-          align-self: center;
-          width: 0.5rem;
-          height: 0.5rem;
-          border-radius: 50%;
-          background: var(--cobrother-brand-green);
-          flex-shrink: 0;
-        }
-
-        .hero-tagline {
-          grid-column: 2;
-          grid-row: 1;
-          margin: 0;
-          line-height: 1.2;
-          font-family: var(--font-body), system-ui, sans-serif;
-          font-size: clamp(0.72rem, 1.25vw, 0.9rem);
-          font-weight: 400;
-          letter-spacing: 0.08em;
-          color: rgba(51, 65, 85, 0.72);
-          text-rendering: optimizeLegibility;
-          -webkit-font-smoothing: antialiased;
+          display: block;
+          width: 100%;
         }
 
         .hero-headline {
-          grid-column: 2;
-          grid-row: 2;
           display: block;
           width: 100%;
           margin: 0;
@@ -108,11 +58,6 @@ export default function HeroGlow() {
           color: #050505;
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
-        }
-
-        .hero-emphasis {
-          color: inherit;
-          font-weight: 600;
         }
 
         @media (min-width: 640px) {

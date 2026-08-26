@@ -1,28 +1,17 @@
-import logoBlack from '../../assets/Cobrother_logo.png';
-import logoSkyblue from '../../assets/CoBrother_logo_darkblue.png';
-import BrandLogoImage from './BrandLogoImage';
-
 /**
- * CoBrother wordmark — static black by default, green only on hover.
- * Uses static PNG frames (not animated GIFs) so the logo does not auto-animate.
+ * HubRegistrar logo — uses official logo image.
  */
+import hubregistrarLogo from '../../assets/hubregistrarlogo_main.png';
+
 export default function BrandNavLogo({ className = '', imgClassName = 'brand-nav-logo' }) {
-  const imgBase = `${imgClassName} home-nav-logo-img`.trim();
+  const base = imgClassName || 'brand-nav-logo';
 
   return (
     <span className={`home-nav-logo-swap group h-full ${className}`.trim()}>
-      <BrandLogoImage
-        src={logoBlack}
-        alt="CoBrother"
-        loading="eager"
-        fetchpriority="high"
-        className={`${imgBase} home-nav-logo-img--default !h-full !w-full !max-w-none !object-contain`.trim()}
-      />
-      <BrandLogoImage
-        src={logoSkyblue}
-        aria-hidden
-        loading="eager"
-        className={`${imgBase} home-nav-logo-img--hover !h-full !w-full !max-w-none !object-contain`.trim()}
+      <img
+        src={hubregistrarLogo}
+        alt="HubRegistrar"
+        className={`${base} home-nav-logo-img--default`.trim()}
       />
     </span>
   );

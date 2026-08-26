@@ -534,7 +534,7 @@ function IncomingPitches() {
             <p className="text-gray-600 text-[0.9rem] mb-4 leading-relaxed text-center">
               {pendingAcquisition
                 ? `You are selecting ${[pendingPitch.buyer?.firstname, pendingPitch.buyer?.lastname].filter(Boolean).join(' ') || 'this buyer'} for a full acquisition. Your listing will close and other pitches will be declined.`
-                : 'Accepting will select this investor, close your listing, and start the deal workflow with CoBrother.'}
+                : 'Accepting will select this investor, close your listing, and start the deal workflow with HubRegistrar.'}
             </p>
             <FormCheckbox
               checked={acceptAcknowledged}
@@ -856,7 +856,7 @@ function IncomingApplications() {
             <p className="text-gray-600 text-[0.9rem] mb-4 leading-relaxed text-center">
               You are selecting <strong>{selectTarget.fullName || 'this applicant'}</strong> as your partner
               for <strong>{selectTarget.venture?.brandDetails?.brandName || 'this co-venture'}</strong>.
-              Your listing will close to other applicants and CoBrother will assist both parties with next steps.
+              Your listing will close to other applicants and HubRegistrar will assist both parties with next steps.
             </p>
             <FormCheckbox
               checked={selectAcknowledged}

@@ -1,21 +1,22 @@
 /**
- * CoBrother wordmark (GIF/PNG). GIF frames animate automatically via <img>.
+ * HubRegistrar logo — uses official logo image.
+ * Renders the brand logo image instead of the old text placeholder.
  */
+import hubregistrarLogo from '../../assets/hubregistrarlogo_main.png';
+
 export default function BrandLogoImage({
-  src,
+  src: _src,
   className = '',
-  alt = 'CoBrother',
-  'aria-hidden': ariaHidden,
+  alt = 'HubRegistrar',
+  'aria-hidden': ariaHidden = false,
   ...rest
 }) {
   return (
     <img
-      src={src}
-      alt={ariaHidden ? '' : alt}
-      aria-hidden={ariaHidden}
+      src={hubregistrarLogo}
+      alt={alt}
       className={className}
-      draggable={false}
-      decoding="async"
+      aria-hidden={ariaHidden || undefined}
       {...rest}
     />
   );

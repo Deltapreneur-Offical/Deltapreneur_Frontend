@@ -3,7 +3,6 @@ import { Mail, Phone, MessageCircle, Clock, Send, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import coBrotherLogo from '../assets/Cobrother_logo.png';
 import BrandLogoImage from '../components/common/BrandLogoImage';
 import HomeFooter from '../components/common/HomeFooter';
 import BackToHomeButton from '../components/common/BackToHomeButton';
@@ -34,9 +33,9 @@ export default function ContactPage() {
   const reduceMotion = useReducedMotion();
 
   useDocumentMeta({
-    title: 'Contact Us | CoBrother',
+    title: 'Contact Us | HubRegistrar',
     description:
-      'Contact Us — CoBrother (Aultum International) support email, phone, WhatsApp, and business address in Hubballi, Karnataka, India.',
+      'Contact Us — HubRegistrar (Aultum International) support email, phone, WhatsApp, and business address in Hubballi, Karnataka, India.',
   });
 
   const contactInfo = useMemo(
@@ -91,8 +90,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <BackToHomeButton />
           <BrandLogoImage
-            src={coBrotherLogo}
-            alt="CoBrother"
+            alt="HubRegistrar"
             className="h-10 cursor-pointer"
             onClick={() => navigate('/')}
           />

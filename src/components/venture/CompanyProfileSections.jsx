@@ -221,7 +221,7 @@ export default function CompanyProfileSections({
 
       {showLegal && (
         <>
-      <SectionTitle badge="Private">Legal (visible to you and CoBrother only)</SectionTitle>
+      <SectionTitle badge="Private">Legal (visible to you and HubRegistrar only)</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Legal Entity Name">
           <input value={draft.legalEntityName} onChange={set('legalEntityName')} className={inputCls} />

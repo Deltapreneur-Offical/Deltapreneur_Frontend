@@ -226,8 +226,8 @@ export default function TechnologyServiceDetailPage() {
       <AppLayout>
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-4" />
-          <p className="text-sm font-semibold text-gray-700">Loading CoBrother Technology Service...</p>
-          <p className="text-xs text-gray-400 mt-1">Connecting to CoBrother REST API...</p>
+          <p className="text-sm font-semibold text-gray-700">Loading HubRegistrar Technology Service...</p>
+          <p className="text-xs text-gray-400 mt-1">Connecting to HubRegistrar REST API...</p>
         </div>
       </AppLayout>
     );
@@ -329,7 +329,7 @@ export default function TechnologyServiceDetailPage() {
                       <span className="text-sm font-normal text-gray-400">/mo</span>
                     </div>
                     <p className="text-xs text-gray-300 mb-5">
-                      Instant CoBrother provisioning. 100% white-labelled.
+                      Instant HubRegistrar provisioning. 100% white-labelled.
                     </p>
                     <a
                       href="#pricing-plans"
@@ -362,7 +362,7 @@ export default function TechnologyServiceDetailPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">{feat}</h4>
-                      <p className="text-xs text-gray-500 mt-1">Built natively into CoBrother enterprise workspace engine.</p>
+                      <p className="text-xs text-gray-500 mt-1">Built natively into HubRegistrar enterprise workspace engine.</p>
                     </div>
                   </div>
                 ))}

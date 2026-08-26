@@ -1,10 +1,11 @@
-import { Headset, ShieldCheck } from 'lucide-react';
+import { Headset, ShieldCheck, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
 
 const SECTION_ICONS = {
   assistance: Headset,
   compliance: ShieldCheck,
+  offices: Building2,
 };
 
 export default function OperationsSectionTabs({
@@ -45,12 +46,24 @@ export default function OperationsSectionTabs({
                 'operations-section-tab',
                 `operations-section-tab--${section.theme}`,
                 isActive ? 'is-active' : '',
-              ].join(' ')}
+                // Offices theme — inactive
+                section.theme === 'offices' && !isActive && '!bg-gradient-to-b !from-[#f0f9ff] !to-[#e0f2fe] !border-[#bae6fd] !text-[#0369a1] hover:!border-[#7dd3fc] hover:!shadow-[0_4px_14px_rgba(14,165,233,0.12)]',
+                // Offices theme — active
+                section.theme === 'offices' && isActive && '!bg-white !border-[#0284c7] !text-[#0c4a6e] !shadow-[0_8px_22px_rgba(14,165,233,0.18)]',
+              ].filter(Boolean).join(' ')}
               onClick={() => onChange(section.id)}
             >
-              <span className="operations-section-tab-accent" aria-hidden />
+              <span 
+                className="operations-section-tab-accent" 
+                aria-hidden 
+                style={section.theme === 'offices' ? { background: 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)' } : undefined}
+              />
               <span className="operations-section-tab-main">
-                <span className="operations-section-tab-icon-wrap">
+                <span className={[
+                  'operations-section-tab-icon-wrap',
+                  section.theme === 'offices' && !isActive && '!bg-[rgba(14,165,233,0.12)] !text-[#0284c7]',
+                  section.theme === 'offices' && isActive && '!bg-[#e0f2fe] !text-[#0369a1]',
+                ].filter(Boolean).join(' ')}>
                   <TabIcon size={18} strokeWidth={2} aria-hidden />
                 </span>
                 <span className="operations-section-tab-copy">
@@ -63,7 +76,12 @@ export default function OperationsSectionTabs({
                 </span>
               </span>
               {typeof count === 'number' && (
-                <span className="operations-section-tab-count">{count}</span>
+                <span className={[
+                  'operations-section-tab-count',
+                  section.theme === 'offices' && !isActive && '!bg-[rgba(14,165,233,0.14)] !text-[#0369a1]',
+                ].filter(Boolean).join(' ')}>
+                  {count}
+                </span>
               )}
             </button>
           );

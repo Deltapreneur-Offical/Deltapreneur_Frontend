@@ -84,7 +84,7 @@ export default function FeeRequestsPage() {
 
                 {r.coBrotherNote && (
                   <div className="text-xs text-gray-400 mb-3">
-                    <strong>{t('feeRequestsCoBrotherNote')}</strong> {r.coBrotherNote}
+                    <strong>{t('feeRequestsHubRegistrarNote')}</strong> {r.coBrotherNote}
                   </div>
                 )}
 

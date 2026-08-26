@@ -49,7 +49,7 @@ export default function DataDeletionPage() {
             </h1>
 
             <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              If you have signed up or logged in to CoBrother using your Facebook account, you can request the deletion of your personal data at any time.
+              If you have signed up or logged in to HubRegistrar using your Facebook account, you can request the deletion of your personal data at any time.
             </p>
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-slate-600">
@@ -70,7 +70,7 @@ export default function DataDeletionPage() {
                   <h2 className="text-lg sm:text-xl font-bold text-slate-900">Requesting full Account & Profile deletion:</h2>
                 </div>
                 <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-4">
-                  If you also wish to permanently delete all profile records, ventures, domains, or other data stored in the CoBrother application:
+                  If you also wish to permanently delete all profile records, ventures, domains, or other data stored in the HubRegistrar application:
                 </p>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
@@ -81,7 +81,7 @@ export default function DataDeletionPage() {
                     <p className="text-sm text-slate-600">Send an email request from your registered email address.</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <span className="text-sm font-semibold text-slate-900">support@cobrother.com</span>
+                    <span className="text-sm font-semibold text-slate-900">support@hubregistrar.com</span>
                     <p className="text-xs text-slate-500 mt-1">Resolution within 24-48 business hours</p>
                   </div>
                 </div>

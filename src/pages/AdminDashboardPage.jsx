@@ -170,12 +170,21 @@ function DomainListingBadges({ item }) {
 }
 
 const STATUS_COLORS = {
+  PENDING:           '#b45309',
   PAYMENT_PENDING:   '#b45309',
   PAYMENT_COMPLETED: '#0369a1',
+  COMPLETED:         '#059669',
   FORWARDED:         '#7c3aed',
   ACCEPTED:          '#059669',
   REJECTED:          '#dc2626',
   CANCELLED:         '#4b5563',
+  FAILED:            '#dc2626',
+};
+
+const STATUS_LABELS = {
+  PAYMENT_COMPLETED: 'PURCHASED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2834,7 +2843,7 @@ function RequestsTable({ requests }) {
             </div>
             <span style={{ fontSize: '0.75rem', fontWeight: 700,
                            color: STATUS_COLORS[r.status] || '#6b7280' }}>
-              {r.status?.replace(/_/g, ' ')}
+              {STATUS_LABELS[r.status] || r.status?.replace(/_/g, ' ')}
             </span>
           </div>
           <div className="admin-field-meta">

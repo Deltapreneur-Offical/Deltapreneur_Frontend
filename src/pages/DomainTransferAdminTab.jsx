@@ -186,12 +186,16 @@ function ToastStack({ toasts, onDismiss }) {
         <div
           key={toast.id}
           className={`flex items-start gap-3 rounded-lg border bg-white p-3 text-sm shadow-lg ${
-            toast.type === 'error' ? 'border-red-200 text-red-800' : 'border-emerald-200 text-emerald-800'
+            toast.type === 'error' ? 'border-red-200 text-red-800'
+            : toast.type === 'info' ? 'border-blue-200 text-blue-800'
+            : 'border-emerald-200 text-emerald-800'
           }`}
           role="status"
         >
           {toast.type === 'error' ? (
             <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          ) : toast.type === 'info' ? (
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           ) : (
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           )}
@@ -247,6 +251,8 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
     manualPayoutConfirmed: false,
   });
   const [additionalDetailsOpen, setAdditionalDetailsOpen] = useState(false);
+  const [forceCompleteReason, setForceCompleteReason] = useState('');
+  const [refundConfirmed, setRefundConfirmed] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   const payoutProfile = selected?.sellerPayoutProfile || {};
@@ -358,20 +364,56 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
       });
     }
 
-    if (!isTechnologyOnly && !isClosed && escrowHeld) {
+    if (!isTechnologyOnly && !isClosed && escrowHeld && selected.razorpayPaymentId) {
+      const buyerPaid = selected.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected.grossAmountInr || 0) * 1.18;
+      const gstAmount = Math.round(buyerPaid * 1800 / 11800) / 100;
+      const listingPrice = Math.round((buyerPaid - gstAmount) * 100) / 100;
       availableActions.push({
-        id: 'refund',
+        id: 'processRefund',
         label: 'Refund',
-        loadingLabel: 'Refunding...',
+        loadingLabel: 'Processing refund…',
         variant: 'red',
-        title: 'Confirm Refund',
-        message: 'Are you sure you want to refund this transaction? This action may not be reversible.',
-        confirmLabel: 'Confirm Refund',
-        successMessage: 'Refund completed successfully.',
-        run: (id) => api.refund(id),
+        title: 'Confirm Refund via Razorpay',
+        message: '',
+        confirmLabel: 'Confirm & Process Refund',
+        requiresRefundConfirm: true,
+        successMessage: 'Refund processed successfully.',
+        run: (id) => api.processRefund(id),
+        refundBuyerPaid: buyerPaid,
+        refundGst: gstAmount,
+        refundListingPrice: listingPrice,
+        refundPaymentId: selected.razorpayPaymentId,
+        refundDomain: selected.domainFqdn || selected.domain_fqdn || '—',
+      });
+    }
+    if (!isTechnologyOnly && !isClosed && escrowHeld && selected.razorpayPaymentId) {
+      availableActions.push({
+        id: 'syncRefund',
+        label: 'Sync Refund Status',
+        loadingLabel: 'Syncing...',
+        variant: 'neutral',
+        title: 'Sync Refund Status from Razorpay',
+        message: 'Check Razorpay for an existing refund on this payment and synchronize the status.',
+        confirmLabel: 'Sync Refund Status',
+        successMessage: 'Refund status synchronized.',
+        run: (id) => api.syncRefund(id),
       });
     }
 
+    // Cancel Transaction — available for any non-terminal state
+    if (!isTechnologyOnly && !isClosed && !FINAL_ESCROW_STATUSES.has(escrowStatus)) {
+      availableActions.push({
+        id: 'cancelTransaction',
+        label: 'Cancel Transaction',
+        loadingLabel: 'Cancelling...',
+        variant: 'red',
+        title: 'Cancel Transaction',
+        message: 'This will cancel the transaction and restore the listing. If a payment was made, use \"Refund\" to complete the refund through Razorpay.',
+        confirmLabel: 'Cancel Transaction',
+        successMessage: 'Transaction cancelled.',
+        run: (id) => api.resolveAdminReview(id, { action: 'cancel' }),
+      });
+    }
     if (!isTechnologyOnly && !isClosed && !FINAL_ESCROW_STATUSES.has(escrowStatus) && !transferCompleted && !payoutApproved) {
       availableActions.push({
         id: 'forceComplete',
@@ -379,10 +421,11 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
         loadingLabel: 'Completing...',
         variant: 'orange',
         title: 'Force Complete Transfer',
-        message: 'This will manually mark the transfer as completed. Please ensure all verification steps have been completed before proceeding.',
+        message: 'This will manually mark the transfer as completed. A reason is required for the audit trail.',
         confirmLabel: 'Force Complete',
         successMessage: 'Transfer marked as completed.',
-        run: (id) => api.forceComplete(id),
+        requiresForceCompleteReason: true,
+        run: (id, data) => api.forceComplete(id, data),
       });
     }
 
@@ -404,43 +447,69 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
             extensionHours: 36,
           }),
       },
-      {
-        id: 'refundReview',
-        label: 'Refund Review',
-        loadingLabel: 'Refunding...',
-        variant: 'red',
-        title: 'Confirm Refund',
-        message: 'Are you sure you want to refund this transaction? This action may not be reversible.',
-        confirmLabel: 'Confirm Refund',
-        successMessage: 'Refund completed successfully.',
-        run: (id) => api.resolveAdminReview(id, { action: 'refund' }),
-      },
     ];
   }, [selected, isTechnologyOnly]);
 
   const runAction = async (action) => {
     if (!selected?.id || busyActionId) return;
-    const payload = action.requiresReleaseDetails ? releaseForm : undefined;
-    if (action.requiresReleaseDetails && !releaseForm.transactionReferenceNumber.trim()) {
-      pushToast('error', 'Transaction reference number is required.');
-      return;
+    let payload;
+    if (action.requiresRefundConfirm) {
+      if (!refundConfirmed) {
+        pushToast('error', 'Please confirm you want to proceed with this refund.');
+        return;
+      }
     }
-    if (action.requiresReleaseDetails && !releaseForm.payoutMethodUsed) {
-      pushToast('error', 'Payout method is required.');
-      return;
+    if (action.requiresReleaseDetails) {
+      payload = releaseForm;
+      if (!releaseForm.transactionReferenceNumber.trim()) {
+        pushToast('error', 'Transaction reference number is required.');
+        return;
+      }
+      if (!releaseForm.payoutMethodUsed) {
+        pushToast('error', 'Payout method is required.');
+        return;
+      }
+      if (!releaseForm.manualPayoutConfirmed) {
+        pushToast('error', 'Please confirm the payout has been manually sent.');
+        return;
+      }
     }
-    if (action.requiresReleaseDetails && !releaseForm.manualPayoutConfirmed) {
-      pushToast('error', 'Please confirm the payout has been manually sent.');
-      return;
+    if (action.requiresForceCompleteReason) {
+      if (!forceCompleteReason.trim()) {
+        pushToast('error', 'A reason is required to force-complete.');
+        return;
+      }
+      payload = { reason: forceCompleteReason.trim() };
     }
     setBusyActionId(action.id);
     try {
-      await action.run(selected.id, payload);
-      pushToast('success', action.successMessage || 'Action completed successfully.');
+      const result = await action.run(selected.id, payload);
+      let msg = action.successMessage || 'Action completed successfully.';
+      // Handle sync-refund response
+      if (result?.refundFound === false) {
+        msg = result.message || 'No refund found on Razorpay.';
+        pushToast('info', msg);
+        await openDetail(selected.id);
+        setPendingAction(null);
+        setRefundConfirmed(false);
+        return;
+      }
+      // Handle sync-refund success (real Razorpay refund ID found)
+      if (result?.refundFound === true && result?.refundId) {
+        msg = `Refund confirmed by Razorpay.\n\nRefund ID: ${result.refundId}\nRefund Amount: ${formatInr(result.refundAmountInr)}\nPayment ID: ${result.paymentId || selected?.razorpayPaymentId || '—'}`;
+      } else if (result?.refundId) {
+        // Handle process-refund success (real Razorpay refund ID returned)
+        msg = `Refund processed successfully via Razorpay.\n\nRefund ID: ${result.refundId}\nRefund Amount: ${formatInr(result.refundAmountInr)}`;
+      } else if (result?.refundAmountInr) {
+        msg = `Refund of ${formatInr(result.refundAmountInr)} synchronized from Razorpay.`;
+      }
+      pushToast('success', msg);
       await openDetail(selected.id);
       loadList();
       setPendingAction(null);
+      setRefundConfirmed(false);
       setAdditionalDetailsOpen(false);
+      setForceCompleteReason('');
       if (action.requiresReleaseDetails) {
         setReleaseForm({
           payoutMethodUsed: 'UPI',
@@ -572,11 +641,19 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
                   <div className="mt-2"><StatusChip value={selected.transferStatus} /></div>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
-                  <p className="text-xs font-semibold uppercase text-gray-500">Buyer Paid</p>
+                  <p className="text-xs font-semibold uppercase text-gray-500">Buyer Paid (incl. GST)</p>
+                  <p className="mt-2 text-lg font-bold text-gray-950">{formatInr(selected.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected.grossAmountInr || 0) * 1.18)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <p className="text-xs font-semibold uppercase text-gray-500">Listing Price (pre-GST)</p>
                   <p className="mt-2 text-lg font-bold text-gray-950">{formatInr(selected.grossAmountInr)}</p>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
-                  <p className="text-xs font-semibold uppercase text-gray-500">Commission</p>
+                  <p className="text-xs font-semibold uppercase text-gray-500">GST (18%)</p>
+                  <p className="mt-2 text-lg font-bold text-gray-950">{formatInr(selected.gstAmountInr != null ? selected.gstAmountInr : (selected.grossAmountInr || 0) * 0.18)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <p className="text-xs font-semibold uppercase text-gray-500">Platform Commission</p>
                   <p className="mt-2 text-lg font-bold text-gray-950">{formatInr(selected.platformFeeInr)}</p>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
@@ -589,19 +666,153 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
                 </div>
               </div>
 
+              {selected.escrowStatus === 'REFUNDED' && (
+                <section className="rounded-lg border border-red-200 bg-red-50 p-4">
+                  <h4 className="text-sm font-semibold uppercase tracking-wide text-red-900">
+                    Refund Details
+                  </h4>
+                  <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Refund Amount</dt>
+                      <dd className="mt-1 text-lg font-bold text-red-800">
+                        {formatInr(selected.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected.grossAmountInr || 0) * 1.18)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Refund ID</dt>
+                      <dd className="mt-1 text-sm font-medium text-red-800 break-all">
+                        {selected.razorpayRefundId || 'Not recorded'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Refund Date</dt>
+                      <dd className="mt-1 text-sm font-medium text-red-800">
+                        {formatDateTime(selected.refundCompletedAt)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Payment ID</dt>
+                      <dd className="mt-1 text-sm font-medium text-red-800 break-all">
+                        {selected.razorpayPaymentId || 'Not recorded'}
+                      </dd>
+                    </div>
+                  </dl>
+                </section>
+              )}
+
+              {selected.escrowStatus === 'REFUNDED' && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                  <p className="text-sm font-semibold text-red-800">
+                    Payout Status: Not eligible — Transaction refunded
+                  </p>
+                  <p className="mt-1 text-xs text-red-600">
+                    No seller payout can be approved or released for a refunded transaction.
+                  </p>
+                </div>
+              )}
+
+              <section className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
+                    Seller Payout Snapshot
+                  </h4>
+                  {selected.sellerPayoutSnapshot ? (
+                    <span className="inline-flex w-fit items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      Snapshot Captured
+                    </span>
+                  ) : (
+                    <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                      Snapshot Unavailable
+                    </span>
+                  )}
+                </div>
+                {selected.sellerPayoutSnapshot ? (
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Preferred Method</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {formatPayoutMethod(selected.sellerPayoutSnapshot.preferredMethod)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">UPI ID</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900 break-all">
+                        {selected.sellerPayoutSnapshot.upiId || 'N/A'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Account Holder Name</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {selected.sellerPayoutSnapshot.accountHolderName || 'N/A'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Bank Name</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {selected.sellerPayoutSnapshot.bankName || 'N/A'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Account Number (Last 4)</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {selected.sellerPayoutSnapshot.accountNumberLast4
+                          ? `XXXXXX${selected.sellerPayoutSnapshot.accountNumberLast4}`
+                          : 'N/A'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">IFSC Code</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {selected.sellerPayoutSnapshot.ifscCode || 'N/A'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Snapshot Captured</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {formatDateTime(selected.sellerPayoutSnapshot.snapshotCreatedAt)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase text-gray-500">Source</dt>
+                      <dd className="mt-1 text-sm font-medium text-gray-900">
+                        {selected.sellerPayoutSnapshot.snapshotSource || 'Unknown'}
+                      </dd>
+                    </div>
+                  </dl>
+                ) : (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-500">
+                      No seller payout details were captured for this transaction.
+                    </p>
+                    {selected.sellerPayoutProfile && !selected.sellerPayoutProfileMissing && (
+                      <p className="mt-1 text-xs text-gray-400">
+                        The seller currently has a payout profile configured, but it was not snapshotted at transaction time.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </section>
+
               <section className="rounded-lg border border-gray-200 bg-white p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
                     Seller Payout Details
+                    {selected.escrowStatus === 'REFUNDED' && (
+                      <span className="ml-2 text-xs font-normal text-gray-500">(for reference)</span>
+                    )}
                   </h4>
                   <span
                     className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${
-                      selected.sellerPayoutProfileReady
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                        : 'border-amber-200 bg-amber-50 text-amber-800'
+                      selected.escrowStatus === 'REFUNDED'
+                        ? 'border-gray-200 bg-gray-50 text-gray-600'
+                        : selected.sellerPayoutProfileReady
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : 'border-amber-200 bg-amber-50 text-amber-800'
                     }`}
                   >
-                    {selected.sellerPayoutProfileReady ? 'Complete' : 'Incomplete'}
+                    {selected.escrowStatus === 'REFUNDED'
+                      ? 'N/A — Refunded'
+                      : selected.sellerPayoutProfileReady ? 'Complete' : 'Incomplete'}
                   </span>
                 </div>
                 <dl className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -762,8 +973,46 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
 
               <section className="rounded-lg border border-gray-200 bg-white p-4">
                 <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
-                  Payout History
+                  {selected.escrowStatus === 'REFUNDED' ? 'Refund & Payout History' : 'Payout History'}
                 </h4>
+
+                {selected.escrowStatus === 'REFUNDED' && (
+                  <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm font-semibold text-red-800">
+                        Transaction Refunded
+                      </span>
+                    </div>
+                    <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+                      <div>
+                        <dt className="text-xs text-red-600">Refund Amount</dt>
+                        <dd className="text-sm font-bold text-red-800">
+                          {formatInr(selected.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected.grossAmountInr || 0) * 1.18)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-red-600">Refund ID</dt>
+                        <dd className="text-sm font-medium text-red-800 break-all">
+                          {selected.razorpayRefundId || 'Not recorded'}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-red-600">Refund Date</dt>
+                        <dd className="text-sm font-medium text-red-800">
+                          {formatDateTime(selected.refundCompletedAt)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-red-600">Payment ID</dt>
+                        <dd className="text-sm font-medium text-red-800 break-all">
+                          {selected.razorpayPaymentId || 'Not recorded'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                )}
+
                 {selected.payoutHistory?.length > 0 ? (
                   <div className="mt-3 overflow-x-auto">
                     <table className="w-full min-w-[520px] text-left text-sm">
@@ -793,6 +1042,10 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
                       </tbody>
                     </table>
                   </div>
+                ) : selected.escrowStatus === 'REFUNDED' ? (
+                  <p className="mt-2 text-sm text-gray-500">
+                    No payout was released because the transaction was refunded.
+                  </p>
                 ) : (
                   <p className="mt-2 text-sm text-gray-500">No payout release has been recorded yet.</p>
                 )}
@@ -834,6 +1087,7 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
                               Reference: {event.payload.referenceNumber}
                             </p>
                           )}
+
                         </div>
                       </li>
                     ))}
@@ -855,8 +1109,8 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
         variant={pendingAction?.variant}
         loading={pendingAction ? busyActionId === pendingAction.id : false}
         loadingLabel={pendingAction?.loadingLabel}
-        size={pendingAction?.requiresReleaseDetails ? 'xl' : 'md'}
-        confirmDisabled={releaseConfirmDisabled}
+        size={pendingAction?.requiresReleaseDetails ? 'xl' : (pendingAction?.requiresForceCompleteReason || pendingAction?.requiresRefundConfirm) ? 'lg' : 'md'}
+        confirmDisabled={releaseConfirmDisabled || (pendingAction?.requiresRefundConfirm && !refundConfirmed)}
         bodyClassName={pendingAction?.requiresReleaseDetails ? 'bg-slate-50 pb-6' : ''}
         footerClassName={
           pendingAction?.requiresReleaseDetails
@@ -866,11 +1120,77 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
         onCancel={() => {
           if (!busyActionId) {
             setPendingAction(null);
+            setRefundConfirmed(false);
             setAdditionalDetailsOpen(false);
           }
         }}
         onConfirm={() => pendingAction && runAction(pendingAction)}
       >
+        {pendingAction?.requiresForceCompleteReason && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700">
+              Please provide a reason for forcing this transfer to complete. This will be recorded in the audit trail.
+            </p>
+            <div>
+              <label htmlFor="force-complete-reason" className="text-sm font-bold text-gray-950">
+                Reason <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="force-complete-reason"
+                required
+                rows={3}
+                value={forceCompleteReason}
+                onChange={(e) => setForceCompleteReason(e.target.value)}
+                placeholder="e.g. Transfer verified via external registrar confirmation"
+                className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-950 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+          </div>
+        )}
+        {pendingAction?.requiresRefundConfirm && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              This will refund the full buyer-paid amount through the Razorpay Refund API. The refund will be processed immediately and cannot be reversed.
+            </p>
+            <div className="rounded-xl border border-red-100 bg-red-50/50 p-4">
+              <h4 className="text-sm font-bold text-red-800 mb-3">Refund Summary</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-gray-500">Domain</span>
+                  <p className="font-semibold text-gray-900">{pendingAction.refundDomain}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Payment ID</span>
+                  <p className="font-mono text-xs text-gray-900 break-all">{pendingAction.refundPaymentId}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Listing Price (pre-GST)</span>
+                  <p className="font-semibold text-gray-900">{formatInr(pendingAction.refundListingPrice)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">GST (18%)</span>
+                  <p className="font-semibold text-gray-900">{formatInr(pendingAction.refundGst)}</p>
+                </div>
+                <div className="col-span-2 border-t border-red-200 pt-3">
+                  <span className="text-gray-500">Full Refund Amount (incl. GST)</span>
+                  <p className="text-lg font-bold text-red-700">{formatInr(pendingAction.refundBuyerPaid)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <input
+                id="refund-confirm"
+                type="checkbox"
+                checked={refundConfirmed}
+                onChange={(e) => setRefundConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+              />
+              <label htmlFor="refund-confirm" className="text-sm text-amber-800 leading-5">
+                I confirm this refund is correct. The full amount of <strong>{formatInr(pendingAction.refundBuyerPaid)}</strong> will be refunded to the buyer. This action cannot be undone.
+              </label>
+            </div>
+          </div>
+        )}
         {pendingAction?.requiresReleaseDetails && (
           <div className="space-y-5">
             <div
@@ -890,9 +1210,7 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
                 )}
               </span>
               <span className="min-w-0 truncate">{payoutProfileStatus.label}</span>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
+            </div>              <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-emerald-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
@@ -912,9 +1230,9 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
                     <CreditCard className="h-5 w-5" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase text-blue-700">Buyer Paid</p>
+                    <p className="text-xs font-semibold uppercase text-blue-700">Buyer Paid (incl. GST)</p>
                     <p className="mt-1 truncate text-lg font-bold text-gray-950">
-                      {formatInr(selected?.grossAmountInr)}
+                      {formatInr(selected?.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected?.grossAmountInr || 0) * 1.18)}
                     </p>
                   </div>
                 </div>

@@ -615,7 +615,7 @@ export default function AuctionsPage() {
 
   return (
     <AppLayout>
-      <ListingBackLink />
+      <ListingBackLink to="/" />
       <div className="auctions-page">
         <div className="auctions-page-toolbar !overflow-visible">
           <div className="auctions-page-toolbar-top">

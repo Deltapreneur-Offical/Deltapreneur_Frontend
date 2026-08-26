@@ -63,6 +63,7 @@ export default function PurchasesPage() {
 
   const completedDomains = asArray(domains).filter(d =>
     d.paymentStatus === 'COMPLETED' ||
+    d.paymentStatus === 'REFUNDED' ||
     d.domainStatus === 'SOLD' ||
     d.purchasedByUserId ||
     d.purchased_by_user_id
@@ -115,9 +116,18 @@ export default function PurchasesPage() {
   const ventureCount = ventureItems.length;
   const totalItems = domainTabCount + technologyCount + ventureCount;
 
+  // Deduplicate: when a domain has a transfer transaction entry, skip the domain listing
+  // to prevent duplicate cards for the same domain purchase.
+  // Use listing ID (unique) instead of domain name to avoid cross-contamination
+  // between different purchases of the same domain name.
+  const transferListingIds = new Set(
+    domainTransfers.map((tx) => tx.domainListingId || tx.domain_listing_id).filter(Boolean)
+  );
   const domainTabItems = [
     ...domainTransfers.map((tx) => ({ ...tx, _type: 'domain_transfer' })),
-    ...completedDomains.map(d => ({ ...d, _type: 'domain' })),
+    ...completedDomains
+      .filter(d => !transferListingIds.has(d.id || d.listingId))
+      .map(d => ({ ...d, _type: 'domain' })),
     ...completedRegistrations.map(o => ({ ...o, _type: 'domain_registration' })),
   ];
   const technologyTabItems = completedTechnology.map(p => ({ ...p, _type: 'technology' }));
@@ -253,19 +263,12 @@ export default function PurchasesPage() {
           <div className="flex flex-col gap-3.5">
             {displayItems.map((item) =>
               item._type === 'domain_transfer' ? (
-                <Link
+                <DomainTransferPurchaseRow
                   key={'tx-' + item.id}
-                  to={`/purchases/transfers/${item.id}`}
-                  className="flex items-center justify-between bg-white border border-indigo-100 rounded-xl px-5 py-4 hover:border-indigo-300"
-                >
-                  <div>
-                    <div className="font-bold text-gray-900">{item.domainFqdn}</div>
-                    <div className="text-sm text-gray-500">{item.transferStatus}</div>
-                  </div>
-                  <span className="text-indigo-600 text-sm font-semibold">
-                    {t('purchasesManageTransfer', { defaultValue: 'Manage transfer' })}
-                  </span>
-                </Link>
+                  transfer={item}
+                  t={t}
+                  formatPrice={formatPrice}
+                />
               ) : item._type === 'domain_registration' ? (
                 <RegistrationPurchaseRow
                   key={'reg-' + item.id}
@@ -337,18 +340,83 @@ export default function PurchasesPage() {
   );
 }
 
+function DomainTransferPurchaseRow({ transfer, t, formatPrice }) {
+  const isRefunded = (transfer.escrowStatus || '').toUpperCase() === 'REFUNDED'
+    || (transfer.transferStatus || '').toUpperCase() === 'REFUNDED';
+  const isCancelled = (transfer.transferStatus || '').toUpperCase() === 'CANCELLED';
+  const isActive = !isRefunded && !isCancelled;
+
+  return (
+    <div className={`flex items-center justify-between bg-white border rounded-xl px-5 py-4 ${
+      isRefunded ? 'border-red-200 bg-red-50/30' : 'border-indigo-100 hover:border-indigo-300'
+    }`}>
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">
+            {t('purchasesBadgeResale', { defaultValue: 'Resale' })}
+          </span>
+          {isRefunded && (
+            <span className="text-xs font-bold text-red-700 bg-red-100 border border-red-200 px-2 py-0.5 rounded">
+              {t('purchasesBadgeRefunded', { defaultValue: 'Refunded' })}
+            </span>
+          )}
+          {isCancelled && !isRefunded && (
+            <span className="text-xs font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
+              {t('purchasesBadgeCancelled', { defaultValue: 'Cancelled' })}
+            </span>
+          )}
+        </div>
+        <div className="font-bold text-lg text-gray-900">{transfer.domainFqdn}</div>
+        {isRefunded && (
+          <div className="text-sm text-red-600 mt-1">
+            Refund ID: {transfer.razorpayRefundId || 'Pending'}
+          </div>
+        )}
+        {!isRefunded && (
+          <div className="text-sm text-gray-500">{transfer.transferStatus}</div>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+        {isRefunded ? (
+          <Link
+            to={`/purchases/transfers/${transfer.id}`}
+            className="text-xs font-semibold text-red-600 hover:text-red-800"
+          >
+            View refund details →
+          </Link>
+        ) : (
+          <Link
+            to={`/purchases/transfers/${transfer.id}`}
+            className="text-indigo-600 text-sm font-semibold"
+          >
+            {t('purchasesManageTransfer', { defaultValue: 'Manage transfer' })}
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DomainPurchaseRow({ domain, user }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const isRefunded = (domain.paymentStatus || '').toUpperCase() === 'REFUNDED';
   return (
-    <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div className={`p-5 bg-white border rounded-xl shadow-sm ${
+      isRefunded ? 'border-red-200 bg-red-50/30' : 'border-gray-200'
+    }`}>
       <div className="flex justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold text-sky-700 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded">
               ◇ {t('purchasesBadgeResale', { defaultValue: 'Resale' })}
             </span>
-            {domain.verified && (
+            {isRefunded && (
+              <span className="text-xs font-bold text-red-700 bg-red-100 border border-red-200 px-2 py-0.5 rounded">
+                {t('purchasesBadgeRefunded', { defaultValue: 'Refunded' })}
+              </span>
+            )}
+            {!isRefunded && domain.verified && (
               <span className="text-xs font-bold text-green-600">✓ {t('verified', { defaultValue: 'Verified' })}</span>
             )}
           </div>
@@ -358,7 +426,9 @@ function DomainPurchaseRow({ domain, user }) {
           <div className="text-xs text-gray-600">{domain.pricingDemand}</div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
-          <div className="font-display text-xl font-bold text-green-600">
+          <div className={`font-display text-xl font-bold ${
+            isRefunded ? 'text-red-600' : 'text-green-600'
+          }`}>
             {formatPrice(domain.askingPrice)}
           </div>
           <InvoiceDownloadButton
@@ -388,6 +458,11 @@ function RegistrationPurchaseRow({ order, user, t }) {
     status === 'EXPIRED' ||
     message.includes('checkout cancelled before payment') ||
     message.includes('pending registration order expired');
+  const isRefunded =
+    status === 'REFUNDED' ||
+    life === 'refunded' ||
+    (order.paymentStatus || '').toUpperCase() === 'REFUNDED';
+  const isClosed = isCancelled || isRefunded;
 
   const invoiceUser = {
     ...user,
@@ -410,12 +485,17 @@ function RegistrationPurchaseRow({ order, user, t }) {
       <div className="flex justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            {!isCancelled && (
+            {!isClosed && (
               <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
                 ◇ {t('purchasesBadgeRegistration', { defaultValue: 'Registration' })}
               </span>
             )}
-            {order.isPremium && !isCancelled ? (
+            {isRefunded && (
+              <span className="text-xs font-bold text-red-700 bg-red-100 border border-red-200 px-2 py-0.5 rounded">
+                {t('purchasesBadgeRefunded', { defaultValue: 'Refunded' })}
+              </span>
+            )}
+            {order.isPremium && !isClosed ? (
               <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
                 ✦ Premium
               </span>
@@ -439,12 +519,17 @@ function RegistrationPurchaseRow({ order, user, t }) {
           </div>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
-          {!isCancelled && (
+          {!isClosed && (
             <div className="font-display text-xl font-bold text-emerald-700">
               {formatPrice(amount)}
             </div>
           )}
-          {!isCancelled && canManageRegisteredDomain(order) && domainManagementHref(order) ? (
+          {isRefunded && (
+            <div className="font-display text-xl font-bold text-red-600">
+              {formatPrice(amount)}
+            </div>
+          )}
+          {!isClosed && canManageRegisteredDomain(order) && domainManagementHref(order) ? (
             <Link
               to={domainManagementHref(order)}
               className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"
@@ -452,7 +537,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
               Manage DNS →
             </Link>
           ) : null}
-          {!isCancelled && (
+          {!isClosed && (
             <Link
               to={registrationOrderDetailPath(order.id)}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
@@ -460,7 +545,7 @@ function RegistrationPurchaseRow({ order, user, t }) {
               View order →
             </Link>
           )}
-          {!isCancelled && taxInvoiceNumber ? (
+          {!isClosed && taxInvoiceNumber ? (
             <InvoiceDownloadButton
               onClick={() =>
                 generateInvoice({

@@ -33,10 +33,13 @@ export const domainTransferAdminAPI = {
   get: (id) => api.get(`/api/v1/admin/domain-transfers/${id}`),
   approvePayout: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/approve-payout`),
   releasePayout: (id, data) => api.post(`/api/v1/admin/domain-transfers/${id}/release-payout`, data),
-  refund: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/refund`),
+  processRefund: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/process-refund`),
+  syncRefund: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/sync-refund`),
+  getDashboardUrl: () => api.get('/api/v1/admin/domain-transfers/razorpay-dashboard-url'),
+  getTransactionDashboardUrl: (id) => api.get(`/api/v1/admin/domain-transfers/${id}/dashboard-url`),
   resolveAdminReview: (id, data) =>
     api.post(`/api/v1/admin/domain-transfers/${id}/resolve-admin-review`, data),
-  forceComplete: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/force-complete`),
+  forceComplete: (id, data) => api.post(`/api/v1/admin/domain-transfers/${id}/force-complete`, data),
   syncWhois: (id) => api.post(`/api/v1/admin/domain-transfers/${id}/sync-whois`),
   sendPayoutProfileReminder: (id) =>
     api.post('/api/admin/seller-payout-reminder', { transactionId: id }),

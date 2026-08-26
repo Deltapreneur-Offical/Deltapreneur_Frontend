@@ -1196,7 +1196,7 @@ export default function DomainStorefrontPage() {
                     {transferOrders.map(order => {
                       const isComplete = (order.status || '').toUpperCase() === 'ACTIVE';
                       const isPending = (order.status || '').toUpperCase() === 'REGISTRATION_PENDING';
-                      const isPaidFailed = ['PAYMENT_COMPLETED', 'PROVISION_FAILED'].includes((order.status || '').toUpperCase());
+                      const isPaidFailed = ['PAYMENT_FAILED', 'PROVISION_FAILED', 'PAYMENT_COMPLETED'].includes((order.status || '').toUpperCase());
                       const isCancelled = !order.razorpayPaymentId &&
                         ['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((order.status || '').toUpperCase());
                       
@@ -1210,7 +1210,9 @@ export default function DomainStorefrontPage() {
                         uiMsg = 'Transfer pending — your domain transfer has been submitted and is being processed.';
                         badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
                       } else if (isPaidFailed) {
-                        uiMsg = 'Payment received — your domain transfer needs processing.';
+                        uiMsg = ['PAYMENT_FAILED', 'PROVISION_FAILED'].includes((order.status || '').toUpperCase())
+                          ? 'Payment received — your domain transfer needs processing.'
+                          : 'Transfer in progress.';
                         badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
                       } else if (isCancelled) {
                         uiMsg = 'Payment Cancelled.';

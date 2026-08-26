@@ -11,6 +11,7 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 import AddToCartButton from '../cart/AddToCartButton';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import RegistryStandardBadge from '../domain/RegistryStandardBadge';
 import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
@@ -83,6 +84,7 @@ export default function DomainListingCard({
   domain,
   isOwner,
   browseMode = false,
+  marketplace = false,
   onView,
   onEdit,
   onEnquire,
@@ -389,6 +391,125 @@ export default function DomainListingCard({
 
   const cardGlowClass = isAuction ? 'domain-auction-card-clean' : 'card-glow-hover';
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MARKETPLACE VARIANT: Render flat card layout matching Premium DomainCard
+  // Blue theme (sky) instead of amber — same structure as DomainCard
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (marketplace) {
+    const priceText = priceAmount > 0 ? formatPrice(priceAmount) : null;
+    const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0;
+
+    return (
+      <div
+        className="domain-search-card relative flex h-full flex-col border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]"
+        onClick={interactive ? handleCardClick : undefined}
+        role={interactive ? 'button' : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        onKeyDown={interactive ? handleCardKeyDown : undefined}
+      >
+        {/* Share corner icon — matching Premium card style */}
+        <div ref={shareRef} className="absolute top-2.5 right-2.5 z-10">
+          <button
+            type="button"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-white/80 border border-white/60 shadow-sm hover:bg-white hover:shadow-md hover:scale-105 transition-all duration-150 cursor-pointer text-slate-500 hover:text-slate-700"
+            onClick={toggleShare}
+            title={t('listingCardShare', 'Share')}
+          >
+            <Share2 size={17} strokeWidth={2} />
+          </button>
+          {shareOpen && createPortal(
+            <div
+              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+              style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
+              onClick={stop}
+            >
+              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              </div>
+              {[
+                ['LinkedIn', linkedinShare],
+                ['Facebook', facebookShare],
+                ['Twitter / X', twitterShare],
+                ['WhatsApp', whatsappShare],
+                ['Gmail', gmailShare],
+                ['Email', emailShare],
+              ].map(([label, url]) => (
+                <button key={label} type="button" className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => handleShare(url)}>{label}</button>
+              ))}
+            </div>,
+            document.body
+          )}
+        </div>
+
+        {/* Content: badges + domain + price — matches DomainCard structure */}
+        <div className="pr-9 space-y-1.5">
+          {/* Badges row — extra pb matches Premium card's renewal text spacing */}
+          <div className="flex flex-wrap items-center gap-1.5 pb-1.5">
+            <span
+              className={`inline-flex w-fit max-w-full shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                statusKey === 'AVAILABLE'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : statusKey === 'SOLD'
+                    ? 'bg-red-50 text-red-600 border-red-200'
+                    : 'bg-gray-50 text-gray-400 border-gray-200'
+              }`}
+            >
+              {statusKey === 'AVAILABLE' ? '\u2713 Available' : statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}
+            </span>
+            <RegistryStandardBadge />
+          </div>
+
+          {/* Domain name — matching Premium exactly */}
+          <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.3, color: '#334155', overflow: 'hidden', textOverflow: 'clip', whiteSpace: 'nowrap' }}>
+            <span>{display.name}</span>
+            {display.ext?.full ? (
+              <span style={{ color: '#0369a1' }}>{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
+            ) : null}
+          </p>
+
+          {/* Standard Domain label */}
+          <p className="text-[11px] font-semibold text-sky-800/80">Standard Domain</p>
+
+          {/* Price — Premium text-base font-extrabold */}
+          {priceText ? (
+            <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">
+              {priceText}
+              <span className="text-[11px] font-medium text-gray-400 ml-1">/yr</span>
+            </p>
+          ) : (
+            <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
+          )}
+        </div>
+
+        {/* Bottom: Cart button + Share — matches DomainCard layout */}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          {canBuy ? (
+            <AddToCartButton
+              productType="DOMAIN_LISTING"
+              productId={domain.id}
+              tone="dark"
+              size="sm"
+              wrapperClassName="w-fit max-w-full"
+              className="!flex-none !min-w-0 !w-auto !justify-center !rounded-lg !px-4 !py-2.5 !text-sm !font-bold !whitespace-nowrap"
+              label={t('listingCardAddToCart', 'Add to Cart')}
+            />
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="inline-flex w-fit min-w-[8.5rem] px-4 py-2.5 rounded-lg font-bold text-sm bg-gray-100 text-gray-400 cursor-not-allowed whitespace-nowrap"
+            >
+              {statusKey === 'SOLD' ? t('listingCardSold') : statusKey === 'AVAILABLE' ? t('listingCardVerificationPending') : t('listingCardUnavailable')}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DEFAULT: Original listing card layout (cover + body) — unchanged
+  // ═══════════════════════════════════════════════════════════════════════════
   return (
     <article
       className={`domain-listing-card ${cardGlowClass} relative flex ${cardLayoutClass} w-full flex-col overflow-hidden rounded-3xl bg-white${browseMode ? ' domain-listing-card--browse' : ''}${interactive ? ' cursor-pointer' : ''}`}
@@ -411,75 +532,7 @@ export default function DomainListingCard({
       <DomainListingCover
         fullDomain={display.fullDomain}
         logoText={domain.logo_text ?? domain.logoText}
-      >
-        <div className="domain-listing-card__share-container" ref={shareRef}>
-          <button
-            type="button"
-            className="domain-listing-card__share-btn"
-            onClick={toggleShare}
-            title={t('listingCardShare')}
-          >
-            <Share2 size={18} strokeWidth={2} />
-          </button>
-          {shareOpen && createPortal(
-            <div
-              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
-              style={{
-                top: `${coords.top}px`,
-                left: `${coords.left}px`,
-              }}
-              onClick={stop}
-            >
-              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
-              </div>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(linkedinShare)}
-              >
-                {t('listingCardLinkedIn')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(facebookShare)}
-              >
-                {t('listingCardFacebook')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(twitterShare)}
-              >
-                Twitter / X
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(whatsappShare)}
-              >
-                {t('listingCardWhatsApp')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(gmailShare)}
-              >
-                Gmail
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(emailShare)}
-              >
-                Email
-              </button>
-            </div>,
-            document.body
-          )}
-        </div>
-      </DomainListingCover>
+      />
 
       <div className="domain-listing-card__body">
         <div className="domain-listing-card__domain-row">

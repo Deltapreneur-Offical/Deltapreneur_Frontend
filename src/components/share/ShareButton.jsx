@@ -104,8 +104,8 @@ export default function ShareButton({
             compact ? 'h-9 px-3 text-xs' : 'h-11 px-3.5 text-sm'
           } ${className}`}
         >
-          <Share2 className={`shrink-0 ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
-          <span className="ml-1.5 whitespace-nowrap">Share</span>
+          <Share2 className={`shrink-0 ${compact ? 'h-4 w-4' : 'h-4 w-4'}`} />
+          {!compact && <span className="ml-1.5 whitespace-nowrap">Share</span>}
         </button>
       </div>
       {open && typeof document !== 'undefined'

@@ -14,7 +14,7 @@ import DomainCard from '../domain/DomainCard';
  * marketplace escrow). Managed Acquisition (>₹5L) messaging renders through
  * the shared DomainCard when the flag is set.
  */
-export default function ShowcaseDomainCard({ item }) {
+export default function ShowcaseDomainCard({ item, shareContext = null }) {
   const fullDomain = String(item.domainName || '').toLowerCase().trim();
   const tld = String(
     item.tld ||
@@ -31,16 +31,18 @@ export default function ShowcaseDomainCard({ item }) {
         status: 'available',
         available: true,
         isPremium: true,
-        registryTier: 'premium',          registrationPriceInr: item.priceInr ?? item.askingPrice,
-          renewalPriceInr: item.renewalPriceInr,
-          premiumProvider: item.premiumProvider,
-          // NOTE: managedAcquisition is intentionally NOT passed to the shared
-          // card so the Showcase card never renders the Managed Acquisition
-          // panel — matching the Main Premium Domain card UI exactly. The
-          // underlying managed-acquisition logic (pricing, cart metadata,
-          // checkout, ₹5L rule) is fully preserved on the backend.
-        }}
-        className="h-full"
+        registryTier: 'premium',
+        registrationPriceInr: item.priceInr ?? item.askingPrice,
+        renewalPriceInr: item.renewalPriceInr,
+        premiumProvider: item.premiumProvider,
+        // NOTE: managedAcquisition is intentionally NOT passed to the shared
+        // card so the Showcase card never renders the Managed Acquisition
+        // panel — matching the Main Premium Domain card UI exactly. The
+        // underlying managed-acquisition logic (pricing, cart metadata,
+        // checkout, ₹5L rule) is fully preserved on the backend.
+      }}
+      className="h-full"
+      shareContext={shareContext}
     />
   );
 }

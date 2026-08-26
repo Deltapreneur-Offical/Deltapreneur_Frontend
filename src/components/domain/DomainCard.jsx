@@ -147,14 +147,17 @@ export default function DomainCard({
             : 'border-gray-200 bg-white shadow-[0_6px_24px_rgba(15,23,42,0.06)]'
         } ${className}`}
       >
-        {cartProps && (
-          <AddToCartButton
-            variant="corner"
-            allowRemove
-            className="absolute top-3 right-3 z-10"
-            {...cartProps}
-          />
-        )}
+        {shareContext && item.available ? (
+          <div className="absolute top-3 right-3 z-10">
+            <ShareButton
+              shareType={shareContext.shareType}
+              domain={item.domain}
+              originalQuery={shareContext.originalQuery}
+              availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
+              compact
+            />
+          </div>
+        ) : null}
         <div className="pr-10 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={item.status} />
@@ -218,15 +221,6 @@ export default function DomainCard({
               {item.status === 'error' ? 'Could not check' : 'Taken'}
             </button>
           )}
-          {shareContext && item.available ? (
-            <ShareButton
-              shareType={shareContext.shareType}
-              domain={item.domain}
-              originalQuery={shareContext.originalQuery}
-              availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
-              compact
-            />
-          ) : null}
         </div>
       </div>
     );
@@ -242,14 +236,17 @@ export default function DomainCard({
           : 'border-gray-200 bg-white opacity-70 shadow-[0_4px_16px_rgba(15,23,42,0.05)]'
       } ${className}`}
     >
-      {cartProps && (
-        <AddToCartButton
-          variant="corner"
-          allowRemove
-          className="absolute top-2.5 right-2.5 z-10"
-          {...cartProps}
-        />
-      )}
+      {shareContext && item.available ? (
+        <div className="absolute top-2.5 right-2.5 z-10">
+          <ShareButton
+            shareType={shareContext.shareType}
+            domain={item.domain}
+            originalQuery={shareContext.originalQuery}
+            availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
+            compact
+          />
+        </div>
+      ) : null}
       <div className="pr-9 space-y-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
           <StatusBadge status={item.status} />
@@ -313,15 +310,6 @@ export default function DomainCard({
             {item.status === 'error' ? 'Could not check' : 'Taken'}
           </button>
         )}
-        {shareContext && item.available ? (
-          <ShareButton
-            shareType={shareContext.shareType}
-            domain={item.domain}
-            originalQuery={shareContext.originalQuery}
-            availability={{ status: item.status, is_premium: item.isPremium, price_inr: item.registrationPriceInr }}
-            compact
-          />
-        ) : null}
       </div>
     </div>
   );

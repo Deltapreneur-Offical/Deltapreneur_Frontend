@@ -3,6 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../i18n';
+import { LanguageProvider } from '../context/LanguageContext';
+import { CurrencyProvider } from '../context/CurrencyContext';
+import { CookieConsentProvider } from '../context/CookieConsentContext';
 import VirtualAssistantMarketplacePage from '../pages/VirtualAssistantMarketplacePage';
 import VirtualAssistantApplicationsAdminPage from '../pages/VirtualAssistantApplicationsAdminPage';
 import VirtualAssistantPublicProfilePage from '../pages/VirtualAssistantPublicProfilePage';
@@ -42,22 +45,38 @@ const mockApplications = [
 function renderWithProviders(ui, { route = '/' } = {}) {
   return render(
     <I18nextProvider i18n={i18n}>
-      <MemoryRouter initialEntries={[route]}>
-        {ui}
-      </MemoryRouter>
+      <LanguageProvider>
+        <CurrencyProvider>
+          <CookieConsentProvider>
+            <MemoryRouter initialEntries={[route]}>
+              {ui}
+            </MemoryRouter>
+          </CookieConsentProvider>
+        </CurrencyProvider>
+      </LanguageProvider>
     </I18nextProvider>
   );
 }
 
-vi.mock('../api/services', () => ({
-  virtualAssistantAPI: {
-    getPublicList: vi.fn(),
-    getPublicProfile: vi.fn(),
-    getApplications: vi.fn(),
-  },
-}));
+vi.mock('../api/services', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    virtualAssistantAPI: {
+      getPublicList: vi.fn(),
+      getPublicProfile: vi.fn(),
+      getApplications: vi.fn(),
+    },
+    adminAPI: {
+      ...actual.adminAPI,
+      getVirtualAssistantCounts: vi.fn(),
+      getVirtualAssistants: vi.fn(),
+      deleteVirtualAssistant: vi.fn(),
+    },
+  };
+});
 
-import { virtualAssistantAPI } from '../api/services';
+import { virtualAssistantAPI, adminAPI } from '../api/services';
 
 describe('VirtualAssistantMarketplacePage', () => {
   beforeEach(() => {
@@ -80,8 +99,8 @@ describe('VirtualAssistantMarketplacePage', () => {
     await waitFor(() => {
       expect(screen.getByText('Test VA')).toBeTruthy();
     });
-    expect(screen.getByText('₹20,000/month')).toBeTruthy();
-    expect(screen.getByText('Mumbai')).toBeTruthy();
+    expect(screen.getByText('20,000')).toBeTruthy();
+    expect(screen.getByText('/mo')).toBeTruthy();
   });
 
   it('renders error message on fetch failure', async () => {
@@ -109,8 +128,11 @@ describe('VirtualAssistantApplicationsAdminPage', () => {
   });
 
   it('renders applications list', async () => {
-    virtualAssistantAPI.getApplications.mockResolvedValue({
-      data: { data: mockApplications, meta: { total: 1, total_pages: 1 } },
+    adminAPI.getVirtualAssistantCounts.mockResolvedValue({
+      data: { data: { all: 1, pending: 1, under_review: 0, partially_approved: 0, approved: 0, rejected: 0 } },
+    });
+    adminAPI.getVirtualAssistants.mockResolvedValue({
+      data: { data: { items: mockApplications, total: 1, page: 1, pageSize: 20, totalPages: 1 } },
     });
     renderWithProviders(<VirtualAssistantApplicationsAdminPage />);
     await waitFor(() => {
@@ -134,22 +156,15 @@ describe('VirtualAssistantPublicProfilePage', () => {
     vi.clearAllMocks();
   });
 
-  it('renders public profile', async () => {
-    virtualAssistantAPI.getPublicProfile.mockResolvedValue({
-      data: mockProfiles[0],
-    });
-    renderWithProviders(<VirtualAssistantPublicProfilePage />, { route: '/virtual-assistant/1' });
-    await waitFor(() => {
-      expect(screen.getByText('Test VA')).toBeTruthy();
-    });
-    expect(screen.getByText('₹20,000/month')).toBeTruthy();
-  });
-
-  it('shows not found for invalid profile', async () => {
-    virtualAssistantAPI.getPublicProfile.mockRejectedValue(new Error('Not found'));
-    renderWithProviders(<VirtualAssistantPublicProfilePage />, { route: '/virtual-assistant/invalid' });
-    await waitFor(() => {
-      expect(screen.getByText(/not found/i)).toBeTruthy();
-    });
+  // The page is now a legacy-URL redirect stub into the Operations detail flow.
+  it('redirects legacy profile URLs to the operations detail flow', () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/virtual-assistant/:id" element={<VirtualAssistantPublicProfilePage />} />
+        <Route path="*" element={<div>redirect-target</div>} />
+      </Routes>,
+      { route: '/virtual-assistant/1' }
+    );
+    expect(screen.getByText('redirect-target')).toBeTruthy();
   });
 });

@@ -1,16 +1,56 @@
 /**
  * API / backend origin resolution.
  *
- * **Production defaults** (split architecture):
- *   API:  https://backend.cobrother.com  (requests → /api/v1/... on backend host)
- *   App:  https://cobrother.com
+ * Runtime host mapping (production SPA):
+ *   cobrother.com     → https://backend.cobrother.com
+ *   hubregistrar.com  → https://backend.hubregistrar.com
  *
- * **Override** — set in `.env.production` or deploy build:
- *   VITE_API_URL=https://backend.cobrother.com
- *   VITE_APP_URL=https://cobrother.com
+ * Baked VITE_API_URL is only a fallback for unknown hosts / non-browser.
+ * APP_BASE_URL follows window.location.origin in the browser.
  */
 export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
+export const PRODUCTION_HUB_API_ORIGIN = 'https://backend.hubregistrar.com';
 export const PRODUCTION_APP_URL = 'https://cobrother.com';
+
+const COBROTHER_SPA_RE = /(^|\.)cobrother\.com$/i;
+const HUBREGISTRAR_SPA_RE = /(^|\.)hubregistrar\.com$/i;
+const RETURN_ORIGIN_RE =
+  /^https:\/\/([a-z0-9-]+\.)*(cobrother|hubregistrar)\.com$/i;
+const DEV_RETURN_ORIGINS = new Set([
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://localhost:3000',
+]);
+
+export function productionApiOriginForHost(hostname) {
+  const host = String(hostname || '')
+    .split(':')[0]
+    .trim()
+    .toLowerCase();
+  if (!host || host.startsWith('backend.')) return null;
+  if (COBROTHER_SPA_RE.test(host)) return PRODUCTION_API_ORIGIN;
+  if (HUBREGISTRAR_SPA_RE.test(host)) return PRODUCTION_HUB_API_ORIGIN;
+  return null;
+}
+
+export function allowedReturnOrigin(value) {
+  if (!value || typeof value !== 'string') return null;
+  let origin;
+  try {
+    const parsed = new URL(value.trim());
+    if (parsed.username || parsed.password) return null;
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    origin = parsed.origin;
+  } catch {
+    return null;
+  }
+  const host = new URL(origin).hostname.toLowerCase();
+  if (host.startsWith('backend.')) return null;
+  if (DEV_RETURN_ORIGINS.has(origin)) return origin;
+  if (RETURN_ORIGIN_RE.test(origin)) return origin;
+  return null;
+}
 
 /** Strip a trailing /api from env URLs; axios paths already include /api/v1/... */
 function siteOriginFromApiEnv(url) {
@@ -68,6 +108,10 @@ function isFrontendOrigin(url) {
  * Never the SPA origin — oauth_state cookies must be set on the same host as the callback.
  */
 export function resolveBackendOrigin() {
+  if (typeof window !== 'undefined') {
+    const mapped = productionApiOriginForHost(window.location.hostname);
+    if (mapped) return mapped;
+  }
   if (remoteApiBase && !isFrontendOrigin(remoteApiBase)) {
     return siteOriginFromApiEnv(remoteApiBase) || remoteApiBase.replace(/\/$/, '');
   }
@@ -87,6 +131,10 @@ export function resolveBackendOrigin() {
  * - Override with VITE_API_URL when needed
  */
 function resolveApiBaseUrl() {
+  if (typeof window !== 'undefined') {
+    const mapped = productionApiOriginForHost(window.location.hostname);
+    if (mapped) return mapped;
+  }
   if (import.meta.env.DEV && isLocalBackend) {
     return '';
   }
@@ -144,8 +192,13 @@ if (import.meta.env.DEV && typeof console !== 'undefined') {
   console.info(`[frontend] API target URL: ${apiTarget} (${mode})`);
 }
 
-export const APP_BASE_URL =
-  import.meta.env.VITE_APP_URL ||
-  (typeof window !== 'undefined'
-    ? window.location.origin
-    : PRODUCTION_APP_URL);
+export function resolveAppBaseUrl() {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin.replace(/\/$/, '');
+  }
+  const baked = (import.meta.env.VITE_APP_URL || '').trim();
+  if (baked) return baked.replace(/\/$/, '');
+  return PRODUCTION_APP_URL.replace(/\/$/, '');
+}
+
+export const APP_BASE_URL = resolveAppBaseUrl();

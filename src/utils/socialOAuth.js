@@ -1,12 +1,26 @@
-import { API_ORIGIN, PRODUCTION_API_ORIGIN } from '../config/urls';
+import {
+  allowedReturnOrigin,
+  PRODUCTION_API_ORIGIN,
+  resolveBackendOrigin,
+} from '../config/urls';
 import { saveReturnLocationBeforeOAuth } from './authSession';
 
 function initiateOAuth(provider, from) {
   saveReturnLocationBeforeOAuth(
     from || localStorage.getItem('redirectAfterLogin') || null,
   );
-  const backend = (API_ORIGIN || PRODUCTION_API_ORIGIN).replace(/\/$/, '');
-  window.location.href = `${backend}/oauth2/authorization/${provider}`;
+  const backend = (resolveBackendOrigin() || PRODUCTION_API_ORIGIN).replace(
+    /\/$/,
+    '',
+  );
+  const origin =
+    typeof window !== 'undefined'
+      ? allowedReturnOrigin(window.location.origin)
+      : null;
+  const query = origin
+    ? `?return_origin=${encodeURIComponent(origin)}`
+    : '';
+  window.location.href = `${backend}/oauth2/authorization/${provider}${query}`;
 }
 
 export function startGoogleOAuth(from) {

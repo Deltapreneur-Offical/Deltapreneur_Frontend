@@ -90,7 +90,23 @@ function StatusBadge({ status, lifecycleStatus, isTransfer, transferStatus }) {
     }
     // Unpaid/cancelled checkout — the customer never completed payment, so it
     // is NOT an active/pending transfer and must never read as one.
-    if (ts === 'PAYMENT_PENDING' || ['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((status || '').toUpperCase())) {
+    if (['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((status || '').toUpperCase())) {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50/70 border border-amber-200/80 px-3 py-1 rounded-full shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" /> PAYMENT CANCELLED
+        </span>
+      );
+    }
+    // Transfer is awaiting processing after successful payment
+    if (ts === 'PAYMENT_PENDING' && ['PAYMENT_COMPLETED', 'ACTIVE'].includes((status || '').toUpperCase())) {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] px-3 py-1 rounded-full shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] inline-block animate-pulse" /> TRANSFER IN PROGRESS
+        </span>
+      );
+    }
+    // Fallback for other transfer statuses that indicate payment was not completed
+    if (ts === 'PAYMENT_PENDING') {
       return (
         <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50/70 border border-amber-200/80 px-3 py-1 rounded-full shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" /> PAYMENT CANCELLED
@@ -342,7 +358,7 @@ export default function DomainRegistrationOrderPage() {
       user?.username ||
       '';
     generateInvoice({
-      type: 'domain_registration',
+      type: order.isTransfer ? 'domain_transfer' : 'domain_registration',
       item: order,
       user: {
         ...user,
@@ -387,8 +403,11 @@ export default function DomainRegistrationOrderPage() {
   // transfer that is actually being processed after payment.
   const paymentNotCompleted =
     !order.razorpayPaymentId &&
-    (['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((order.status || '').toUpperCase()) ||
-     (order.transferStatus || '').toUpperCase() === 'PAYMENT_PENDING');
+    ['CREATED', 'EXPIRED', 'PAYMENT_FAILED', 'PROVISION_FAILED'].includes((order.status || '').toUpperCase());
+  // Also hide Transfer Progress if transfer status explicitly indicates cancellation/failure
+  const transferCancelled =
+    ['FAILED', 'PAYMENT_PENDING', 'CANCELLED'].includes((order.transferStatus || '').toUpperCase()) &&
+    !['PAYMENT_COMPLETED', 'ACTIVE'].includes((order.status || '').toUpperCase());
   const expiresAt    = order.expiresAt ? new Date(order.expiresAt) : null;
   const daysLeft     = expiresAt ? Math.floor((expiresAt - Date.now()) / 86400000) : null;
   const expiringSoon = daysLeft !== null && daysLeft < 90;
@@ -588,13 +607,16 @@ export default function DomainRegistrationOrderPage() {
                         <InfoRow 
                           icon={Activity} 
                           label="Transfer Status" 
-                          value={
-                            order.transferStatus === 'PAYMENT_PENDING' ? 'Payment Cancelled — the payment was not completed. Use Retry Payment below to try again.' :
-                            order.transferStatus === 'PROCESSING' ? 'Processing Transfer' :
-                            order.transferStatus === 'COMPLETED' ? 'Transfer Completed' :
-                            order.transferStatus === 'FAILED' ? 'Transfer Failed' :
-                            (order.transferStatus || 'Pending')
-                          } 
+                          value={(() => {
+                            const ts = (order.transferStatus || '').toUpperCase();
+                            const st = (order.status || '').toUpperCase();
+                            if (ts === 'COMPLETED') return 'Transfer Completed';
+                            if (ts === 'FAILED') return 'Transfer Failed';
+                            if (ts === 'PROCESSING') return 'Transfer Processing';
+                            if (ts === 'PAYMENT_PENDING' && ['PAYMENT_COMPLETED', 'ACTIVE'].includes(st)) return 'Transfer in Progress';
+                            if (ts === 'PAYMENT_PENDING') return 'Payment Cancelled — the payment was not completed. Use Retry Payment below to try again.';
+                            return (order.transferStatus || 'Pending').replace(/_/g, ' ');
+                          })()} 
                         />
                         {order.buyerEmail && (
                           <InfoRow icon={Mail} label="Registered Email" value={order.buyerEmail} />
@@ -637,9 +659,8 @@ export default function DomainRegistrationOrderPage() {
                     </div>
                   </div>
 
-                  {/* Sidebar stats/info — Transfer Progress only once payment has
-                      actually been completed and the transfer is processing */}
-                  {!paymentNotCompleted && (
+                  {/* Sidebar stats/info — Transfer Progress only shows for fully completed transfers */}
+                  {(order.transferStatus || '').toUpperCase() === 'COMPLETED' && (
                     <div className="space-y-6">
                       <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
                         <div className="flex items-center gap-2 text-indigo-600">
@@ -797,11 +818,13 @@ export default function DomainRegistrationOrderPage() {
                     {order.gstInr != null && Number(order.gstInr) > 0 && (
                       <DetailRow label={`GST${order.gstRate ? ` (${order.gstRate}%)` : ''}`} value={formatInr(order.gstInr, { forceDecimals: true })} />
                     )}
-                    <DetailRow
-                      label="Total Paid"
-                      value={formatInr(order.priceInr || 0, { forceDecimals: true })}
-                      valueClass="font-bold text-gray-900 text-base"
-                    />
+                    {order.razorpayPaymentId && !['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((order.status || '').toUpperCase()) && (
+                      <DetailRow
+                        label="Total Paid"
+                        value={formatInr(order.priceInr || 0, { forceDecimals: true })}
+                        valueClass="font-bold text-gray-900 text-base"
+                      />
+                    )}
                   </div>
                 </div>
 

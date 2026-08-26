@@ -99,9 +99,9 @@ function buildAultumInvoiceNumber(item = {}, explicitSequence = null, type = nul
     return String(fromBackend).trim();
   }
 
-  const isDomainRegistration = type === 'domain_registration';
-  if (isDomainRegistration) {
-    // Successful registrations always receive a backend number on ACTIVE.
+  const isDomainType = type === 'domain_registration' || type === 'domain_transfer' || type === 'domain_renewal';
+  if (isDomainType) {
+    // Successful domain transactions always receive a backend number on ACTIVE.
     // Missing number ⇒ do not invent / consume a client-side sequence.
     return null;
   }
@@ -211,9 +211,9 @@ function buildLineItems({ type, item }) {
   /** @type {{ name: string, description?: string, qty: number, unitPrice: number, amount: number }[]} */
   const lines = [];
 
-  if (type === 'domain_registration') {
+  if (type === 'domain_registration' || type === 'domain_transfer' || type === 'domain_renewal') {
     const productName =
-      item.domain || `${item.domainName || ''}${item.domainExtension || ''}` || 'Domain registration';
+      item.domain || `${item.domainName || ''}${item.domainExtension || ''}` || 'Domain';
     const qty = Math.max(1, Number(item.periodYears ?? item.quantityYears ?? 1) || 1);
     const gst = Number(item.gstInr ?? 0);
     const total = Number(item.priceInr ?? item.price ?? 0);
@@ -230,9 +230,14 @@ function buildLineItems({ type, item }) {
           ? subtotal / qty
           : subtotal;
 
+    const opLabel =
+      type === 'domain_transfer' ? 'Domain transfer'
+      : type === 'domain_renewal' ? 'Domain renewal'
+      : 'Domain registration';
+
     lines.push({
       name: productName,
-      description: `Domain registration · ${qty} ${qty === 1 ? 'year' : 'years'}`,
+      description: `${opLabel} · ${qty} ${qty === 1 ? 'year' : 'years'}`,
       qty,
       unitPrice,
       amount: subtotal,
@@ -278,7 +283,7 @@ function buildLineItems({ type, item }) {
 
 /**
  * @param {object} opts
- * @param {'domain'|'domain_registration'|'software'} opts.type
+ * @param {'domain'|'domain_registration'|'domain_transfer'|'domain_renewal'|'software'} opts.type
  * @param {object} opts.item
  * @param {object} opts.user — { name, email, gstin, address, phone, firstname, lastname, ... }
  * @param {number} [opts.invoiceSequence] — optional 1-based domain purchase sequence
@@ -288,7 +293,7 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
   if (!invNo) {
     if (typeof window !== 'undefined') {
       window.alert(
-        'Invoice is available only after the domain is successfully registered. '
+        'Invoice is available only after the domain transaction is successfully completed. '
         + 'Failed or refunded purchases do not receive an invoice number.',
       );
     }
@@ -311,15 +316,23 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
   const logoUrl = invoiceLogoUrl();
   const customerName = resolveCustomerName(user, item);
   const typeLabel =
-    type === 'domain_registration'
-      ? 'Domain Registration'
-      : type === 'domain'
-        ? 'Domain Purchase'
-        : 'Software License';
+    type === 'domain_registration' ? 'Domain Registration'
+    : type === 'domain_transfer' ? 'Domain Transfer'
+    : type === 'domain_renewal' ? 'Domain Renewal'
+    : type === 'domain' ? 'Domain Purchase'
+    : 'Software License';
   const typeBadgeBg =
-    type === 'software' ? '#ede9fe' : type === 'domain_registration' ? '#ecfdf5' : '#e0f2fe';
+    type === 'software' ? '#ede9fe'
+    : type === 'domain_transfer' ? '#eff6ff'
+    : type === 'domain_renewal' ? '#fef3c7'
+    : type === 'domain_registration' ? '#ecfdf5'
+    : '#e0f2fe';
   const typeBadgeColor =
-    type === 'software' ? '#6d28d9' : type === 'domain_registration' ? '#047857' : '#0369a1';
+    type === 'software' ? '#6d28d9'
+    : type === 'domain_transfer' ? '#1d4ed8'
+    : type === 'domain_renewal' ? '#92400e'
+    : type === 'domain_registration' ? '#047857'
+    : '#0369a1';
 
   const sellerAddressHtml = SELLER.addressLines.map((line) => escapeHtml(line)).join('<br/>');
 

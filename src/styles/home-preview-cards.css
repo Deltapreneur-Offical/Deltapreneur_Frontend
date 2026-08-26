@@ -211,10 +211,24 @@
   }
 }
 
-/* Tablet 768px-1023px: exactly 2 cards */
+/* Tablet 768px-1023px: compact centered cards */
 @media (min-width: 768px) and (max-width: 1023px) {
+  .home-preview-row {
+    justify-content: center !important;
+    padding-inline: 1.5rem !important;
+    gap: 1rem !important;
+  }
   .home-preview-row__item {
-    width: calc((100% - 1.25rem) / 2) !important;
+    width: min(calc((100% - 1rem) / 2), 18rem) !important;
+    flex: 0 0 auto !important;
+  }
+  .home-auto-scroll-row {
+    padding-inline: 1.5rem !important;
+    gap: 1rem !important;
+  }
+  .home-auto-scroll-row__item {
+    width: min(calc((100% - 1rem) / 2), 18rem) !important;
+    flex: 0 0 auto !important;
   }
 }
 
@@ -1146,7 +1160,7 @@
 }
 @media (min-width: 768px) {
   .home-preview-row__item:has(.home-operations-preview-card) {
-    width: calc((100% - 1.25rem) / 2 * 1.12) !important;
+    width: min(calc((100% - 1rem) / 2 * 1.12), 18rem) !important;
   }
 }
 @media (min-width: 1024px) {
@@ -1165,7 +1179,7 @@
 }
 @media (min-width: 768px) {
   .home-auto-scroll-row__item:has(.home-operations-preview-card) {
-    width: calc((50vw - 1.875rem) * 1.12) !important;
+    width: min(calc((50vw - 1.875rem) * 1.12), 18rem) !important;
   }
 }
 @media (min-width: 1024px) {

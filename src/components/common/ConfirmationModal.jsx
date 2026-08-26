@@ -80,7 +80,7 @@ export default function ConfirmationModal({
               <h2 id="confirmation-modal-title" className="text-lg font-semibold text-gray-950">
                 {title}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-600">{message}</p>
+              {message && <p className="mt-2 text-sm leading-6 text-gray-600">{message}</p>}
             </div>
           </div>
         </div>

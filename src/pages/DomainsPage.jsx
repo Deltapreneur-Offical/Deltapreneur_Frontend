@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -166,11 +166,7 @@ export default function DomainsPage() {
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
   const domainRows = asArray(allDomains);
-  const visibleDomains = resolveMarketplaceListingRows(domainRows, {
-    tab: activeTab,
-    user,
-    type: 'domain',
-  });
+  const visibleDomains = resolveMarketplaceListingRows(domainRows, { tab: activeTab, user, type: 'domain' });
 
   const marketplaceFilter = useFilterSort(visibleDomains, {
     searchFields: ['domainName', 'domainExtension'],
@@ -196,14 +192,18 @@ export default function DomainsPage() {
     [showcaseDomains],
   );
 
-  const showcaseFilter = useFilterSort(showcaseFilterItems, {
+  const showcaseFilterConfig = useMemo(() => ({
     searchFields: ['domainName', 'name', 'domainExtension'],
     priceField: 'askingPrice',
     categoryField: 'pricingDemand',
     dateField: 'createdAt',
-  }, 60, {
+  }), []);
+
+  const showcaseFilterOptions = useMemo(() => ({
     resetPageWhen: activeTab,
-  });
+  }), [activeTab]);
+
+  const showcaseFilter = useFilterSort(showcaseFilterItems, showcaseFilterConfig, 60, showcaseFilterOptions);
 
   // Shared FilterBar wiring — values come from the marketplace hook (both stay
   // in sync because every handler below updates both hooks).

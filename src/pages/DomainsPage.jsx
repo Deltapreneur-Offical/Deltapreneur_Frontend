@@ -631,6 +631,7 @@ export default function DomainsPage() {
                     <ListingCardShell key={d.id}>
                       <DomainListingCard
                         domain={d}
+                        marketplace
                         isOwner={isListingOwner(d, user, 'domain')}
                         likeState={getLike(d.id)}
                         onLike={() => toggleLike(d.id)}

@@ -364,7 +364,8 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
       });
     }
 
-    if (!isTechnologyOnly && !isClosed && escrowHeld && selected.razorpayPaymentId) {
+    const refundBlocked = ['REFUNDED', 'SELLER_PAID', 'PAYOUT_RELEASED', 'COMPLETED'].includes(transferStatus);
+    if (!isTechnologyOnly && !refundBlocked && escrowHeld && selected.razorpayPaymentId) {
       const buyerPaid = selected.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected.grossAmountInr || 0) * 1.18;
       const gstAmount = Math.round(buyerPaid * 1800 / 11800) / 100;
       const listingPrice = Math.round((buyerPaid - gstAmount) * 100) / 100;
@@ -386,7 +387,7 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
         refundDomain: selected.domainFqdn || selected.domain_fqdn || '—',
       });
     }
-    if (!isTechnologyOnly && !isClosed && escrowHeld && selected.razorpayPaymentId) {
+    if (!isTechnologyOnly && !refundBlocked && escrowHeld && selected.razorpayPaymentId) {
       availableActions.push({
         id: 'syncRefund',
         label: 'Sync Refund Status',

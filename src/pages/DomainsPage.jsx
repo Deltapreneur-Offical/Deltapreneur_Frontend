@@ -213,12 +213,20 @@ export default function DomainsPage() {
   const maxPrice = marketplaceFilter.maxPrice;
   const sortBy = marketplaceFilter.sortBy;
   const activeFilterCount = marketplaceFilter.activeFilterCount;
-  const handleSearch = (v) => { marketplaceFilter.handleSearch(v); showcaseFilter.handleSearch(v); };
-  const handleCategory = (v) => { marketplaceFilter.handleCategory(v); showcaseFilter.handleCategory(v); };
-  const handleMinPrice = (v) => { marketplaceFilter.handleMinPrice(v); showcaseFilter.handleMinPrice(v); };
-  const handleMaxPrice = (v) => { marketplaceFilter.handleMaxPrice(v); showcaseFilter.handleMaxPrice(v); };
-  const handleSort = (v) => { marketplaceFilter.handleSort(v); showcaseFilter.handleSort(v); };
-  const clearAll = () => { marketplaceFilter.clearAll(); showcaseFilter.clearAll(); };
+
+  // Use refs for filter handlers so FilterBar's useEffect(onSearch) doesn't
+  // re-trigger resetPage on every re-render of DomainsPage.
+  const mfRef = useRef(null);
+  mfRef.current = marketplaceFilter;
+  const sfRef = useRef(null);
+  sfRef.current = showcaseFilter;
+
+  const handleSearch   = useCallback((v) => { mfRef.current.handleSearch(v);   sfRef.current.handleSearch(v); }, []);
+  const handleCategory = useCallback((v) => { mfRef.current.handleCategory(v); sfRef.current.handleCategory(v); }, []);
+  const handleMinPrice = useCallback((v) => { mfRef.current.handleMinPrice(v); sfRef.current.handleMinPrice(v); }, []);
+  const handleMaxPrice = useCallback((v) => { mfRef.current.handleMaxPrice(v); sfRef.current.handleMaxPrice(v); }, []);
+  const handleSort     = useCallback((v) => { mfRef.current.handleSort(v);     sfRef.current.handleSort(v); }, []);
+  const clearAll       = useCallback(()  => { mfRef.current.clearAll();         sfRef.current.clearAll(); }, []);
 
   const showcaseVisibleInAll =
     activeTab === 'all' &&
@@ -230,9 +238,7 @@ export default function DomainsPage() {
 
   const handlePageChange = (newPage) => {
     marketplaceFilter.setPage(newPage);
-    requestAnimationFrame(() => {
-      domainListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {

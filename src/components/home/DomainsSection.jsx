@@ -78,14 +78,14 @@ export default function DomainsSection() {
   };
 
   if (loading || !hasFetchedDomains) {
-    return <HomeSectionCardSkeleton title={t('domains')} to="/domains" accent="domain" />;
+    return <HomeSectionCardSkeleton title="Domain Register" to="/domains" accent="domain" />;
   }
 
   return (
     <section className="bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
-          title={t('domains')}
+          title="Domain Register"
           to="/domains"
           accent="domain"
           showViewAll={previewDomains.length > 0}
@@ -93,7 +93,7 @@ export default function DomainsSection() {
         {previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={40} ariaLabel={t('domains')}>
+          <HomeAutoScrollRow durationSec={40} ariaLabel="Domain Register">
             {previewDomains.map((domain) => (
               <HomeAutoScrollRowItem key={domain.id}>
                 {renderDomainCard(domain)}

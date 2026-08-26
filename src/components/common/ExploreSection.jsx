@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import LazyWhenVisible from './LazyWhenVisible';
 import DomainsSection from '../home/DomainsSection';
+import HomeRegistrationsSection from '../home/HomeRegistrationsSection';
 import VenturesSection from '../home/VenturesSection';
 import CoVenturesSection from '../home/CoVenturesSection';
 import TechnologySection from '../home/TechnologySection';
@@ -10,7 +11,6 @@ import FeedbackSection from '../home/FeedbackSection';
 import HomeOperationsCarouselSection from '../home/HomeOperationsCarouselSection';
 import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
-import ServicesSection from './ServicesSection';
 
 function LazySection({ title, to, variant = 'browse', compact = false, children }) {
   return (
@@ -34,29 +34,30 @@ export default function ExploreSection() {
 
   return (
     <>
+      <HomeRegistrationsSection />
       <DomainsSection />
       <VenturesSection />
 
       <LazySection
-        title={t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+        title="Co-Ventures Register"
         to="/ventures?mode=co-venture"
         compact
       >
         <CoVenturesSection />
       </LazySection>
 
-      <LazySection title={t('auctions')} to="/auctions" variant="auction">
+      <LazySection title="Registry Auctions" to="/auctions" variant="auction">
         <AuctionsSection />
       </LazySection>
 
-      <LazySection title={t('technologySoftware')} to="/technology">
+      <LazySection title="Technology Register" to="/technology">
         <TechnologySection />
       </LazySection>
 
       {OPERATIONS_SECTIONS.map((section) => (
         <LazySection
           key={section.id}
-          title={t(section.labelKey, { defaultValue: section.defaultLabel })}
+          title={section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel })}
           to={operationsPathForSection(section.id)}
           compact
         >
@@ -64,11 +65,11 @@ export default function ExploreSection() {
         </LazySection>
       ))}
 
-      <ServicesSection isDashboard={false} />
-
+      {/* HIDDEN — Creators section temporarily disabled
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
       </LazySection>
+      */}
 
       <LazyWhenVisible>
         <FeedbackSection />

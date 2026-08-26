@@ -24,9 +24,9 @@ export default function TermsAndConditionsPage() {
   const lastUpdated = '18 APRIL 2026';
 
   useDocumentMeta({
-    title: 'Terms and Conditions | CoBrother',
+    title: 'Terms and Conditions | HubRegistrar',
     description:
-      'CoBrother Terms and Conditions for using cobrother.com — domain registration, marketplace, technology, and related digital services.',
+      'HubRegistrar Terms and Conditions for using hubregistrar.com — domain registration, marketplace, technology, and related digital services.',
   });
 
   const sections = [
@@ -126,7 +126,7 @@ export default function TermsAndConditionsPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
                 <TermsSection id="acceptance" title={t('termsSection1Title')}>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    CoBrother {t('termsSection1Body')}
+                    HubRegistrar {t('termsSection1Body')}
                   </p>
                 </TermsSection>
                 <TermsSection id="services" title={t('termsSection2Title')}>
@@ -147,7 +147,7 @@ export default function TermsAndConditionsPage() {
                 </TermsSection>
                 <TermsSection id="intellectual-property" title={t('termsSection4Title')}>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    CoBrother {t('termsSection4Body')}
+                    HubRegistrar {t('termsSection4Body')}
                   </p>
                 </TermsSection>
                 <TermsSection id="payments" title={t('termsSection5Title')}>
@@ -201,7 +201,7 @@ export default function TermsAndConditionsPage() {
                     <p className="text-sm text-slate-600 mt-2">
                       Contact Us:{' '}
                       <a href="/contact" className="font-medium text-indigo-600 hover:underline">
-                        https://cobrother.com/contact
+                        https://hubregistrar.com/contact
                       </a>
                     </p>
                   </div>

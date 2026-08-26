@@ -103,7 +103,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false, backVariant = 'home' }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { user, hasAccessToken, loading: authLoading } = useAuth();
@@ -175,7 +175,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               type="button"
               className="home-nav-logo-btn shrink-0"
               onClick={handleLogoClick}
-              aria-label="CoBrother home"
+              aria-label="HubRegistrar home"
             >
               <BrandNavLogo />
             </button>
@@ -223,6 +223,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   </DropdownLink>
                 </NavDropdown>
 
+                {/* HIDDEN — Creators dropdown temporarily disabled
                 <NavDropdown
                   label={t('disruptors')}
                   open={openDropdown === 'creators'}
@@ -230,6 +231,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 >
                   <DropdownLink onClick={() => go('/creator')}>{t('exploreDisruptors')}</DropdownLink>
                 </NavDropdown>
+                */}
               </div>
             </div>
           </div>
@@ -253,7 +255,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             {(showBack || authButtons) ? (
               <div className="home-nav-desktop-cta home-nav-cta-group">
                 {showBack ? (
-                  <BackToHomeButton />
+                  <BackToHomeButton variant={backVariant} />
                 ) : null}
                 {authButtons}
               </div>
@@ -322,6 +324,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 </button>
               </MobileAccordion>
 
+              {/* HIDDEN — Creators mobile accordion temporarily disabled
               <MobileAccordion
                 title={t('disruptors')}
                 open={mobileAccordion === 'creators'}
@@ -329,6 +332,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               >
                 <button type="button" className="home-mobile-link" onClick={() => go('/creator')}>{t('exploreDisruptors')}</button>
               </MobileAccordion>
+              */}
             </div>
 
             <div className="home-nav-drawer-footer">
@@ -338,7 +342,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
               </div>
               {showBack ? (
-                <BackToHomeButton className="w-full justify-center mb-3" />
+                <BackToHomeButton variant={backVariant} className="w-full justify-center mb-3" />
               ) : null}
               {!authLoading && (
                 <div className="flex flex-col items-stretch gap-3 w-full">

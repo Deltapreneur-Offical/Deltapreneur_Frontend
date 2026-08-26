@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'CoBrother';
+const DEFAULT_TITLE = 'HubRegistrar';
 
 /**
  * Set document title + optional meta description for public compliance pages.

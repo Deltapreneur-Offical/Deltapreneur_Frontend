@@ -17,6 +17,7 @@ export default function BackButton({
   const { t } = useTranslation();
   const [isHovering, setIsHovering] = useState(false);
   const resolvedLabel = label ?? t('auctionDetailBack');
+  const isProfessional = variant === 'professional';
 
   const handleClick = () => {
     if (to) {
@@ -31,8 +32,9 @@ export default function BackButton({
     navigate('/');
   };
 
-  const base =
-    variant === 'home'
+  const base = isProfessional
+    ? 'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2'
+    : variant === 'home'
       ? 'inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold text-white shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2'
       : variant === 'pill'
       ? 'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white transition-all duration-200'
@@ -58,7 +60,7 @@ export default function BackButton({
       onFocus={() => setIsHovering(true)}
       onBlur={() => setIsHovering(false)}
       className={`${base} ${className}`.trim()}
-      style={hoverStyles}
+      style={isProfessional ? undefined : hoverStyles}
     >
       <ArrowLeft size={16} className="shrink-0" aria-hidden />
       <span>{resolvedLabel}</span>

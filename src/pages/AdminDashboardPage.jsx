@@ -26,6 +26,7 @@ import {
   RefreshCw,
   Search,
   Sparkles,
+  Users,
   UsersRound,
   X,
   XCircle,
@@ -65,6 +66,8 @@ import AdminBlacklistUsersTab from '../components/admin/AdminBlacklistUsersTab';
 import AdminOpenProviderCommissionTab from '../components/admin/AdminOpenProviderCommissionTab';
 import AdminTrackRecordsTab from '../components/admin/AdminTrackRecordsTab';
 import AdminPremiumTechTab from '../components/admin/AdminPremiumTechTab';
+import HubRegistrarOfficeAdminTab from '../components/admin/HubRegistrarOfficeAdminTab';
+import FranchiseApplicationsAdminTab from '../components/admin/FranchiseApplicationsAdminTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
@@ -653,14 +656,16 @@ export default function AdminDashboardPage() {
     { id: 'showcase', label: 'OP Premium Showcase', icon: DomainsIcon },
     { id: 'cocreations',        label: t('adminTabTechnology'),        icon: TechnologyIcon },
     { id: 'reseller-portal',    label: 'Reseller Portal',              icon: null, Icon: Activity },
-    { id: 'requests',           label: t('adminTabCoBrotherRequests'), icon: RequestIcon    },
+    { id: 'requests',           label: t('adminTabHubRegistrarRequests'), icon: RequestIcon    },
     { id: 'auctions',           label: t('adminTabDomainAuctions'),    icon: AuctionIcon    },
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
+    { id: 'hub-registrar-office', label: 'Hub Registrar Offices', icon: null, Icon: Briefcase },
+    { id: 'franchise-applications', label: 'Franchise Applications', icon: null, Icon: Users },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
-    { id: 'community-auctions', label: t('adminTabCreatorAuctions'),   icon: AuctionIcon },
+    { id: 'community-auctions', label: t('adminTabCreatorAuctions') + ' (Disabled - Hidden)',   icon: AuctionIcon, disabled: true },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
     { id: 'openprovider-pricing', label: 'OpenProvider Pricing',           icon: DomainsIcon },
@@ -742,9 +747,11 @@ export default function AdminDashboardPage() {
                 <button
                   key={tabItem.id}
                   type="button"
-                  className={`admin-dashboard-tab admin-dashboard-tab--${tabItem.id} ${tab === tabItem.id ? 'active' : ''}`}
+                  className={`admin-dashboard-tab admin-dashboard-tab--${tabItem.id} ${tab === tabItem.id ? 'active' : ''} ${tabItem.disabled ? 'admin-dashboard-tab--disabled' : ''}`}
                   aria-pressed={tab === tabItem.id}
-                  onClick={() => setTab(tabItem.id)}
+                  disabled={tabItem.disabled}
+                  onClick={() => !tabItem.disabled && setTab(tabItem.id)}
+                  title={tabItem.disabled ? 'This section is hidden' : undefined}
                 >
                   {tabItem.icon ? (
                     <img src={tabItem.icon} alt="" className="admin-dashboard-tab-icon" />
@@ -952,13 +959,20 @@ export default function AdminDashboardPage() {
               <MeetingsAdminTab meetings={data} />
             ) : tab === 'operations' ? (
               <OperationsAdminTab services={data} onRefresh={() => loadTab(tab, { silent: true })} />
+            ) : tab === 'hub-registrar-office' ? (
+              <HubRegistrarOfficeAdminTab toast={toast} />
+            ) : tab === 'franchise-applications' ? (
+              <FranchiseApplicationsAdminTab toast={toast} />
             ) : tab === 'homepage-features' ? (
               <div className="admin-homepage-features-grid">
                 <HomepageFeatureSelector type="domain" />
                 <HomepageFeatureSelector type="venture" />
                 <HomepageFeatureSelector type="coventure" />
                 <HomepageFeatureSelector type="software" />
-                <HomepageFeatureSelector type="community" />
+                {/* DISABLED — Community homepage feature temporarily disabled */}
+                <div className="opacity-50 pointer-events-none">
+                  <HomepageFeatureSelector type="community" disabled={true} />
+                </div>
                 <HomepageFeatureSelector type="virtual-assistant" />
                 <HomepageFeatureSelector type="auction" />
               </div>
@@ -1376,7 +1390,7 @@ function VentureAdminRow({
                 onClick={handleVentureForward}
                 title={forwardableApp ? t('adminForwardCoVentureTitle') : t('adminForwardRequiresApp')}
               >
-                {t('adminForwardToCoBrother')}
+                {t('adminForwardToHubRegistrar')}
               </button>
             )}
             {!venture.takenDown ? (
@@ -1460,7 +1474,7 @@ function VentureAdminRow({
                             onForward(app.id, 'COVENTURE');
                           }}
                         >
-                          {t('adminForwardToCoBrother')}
+                          {t('adminForwardToHubRegistrar')}
                         </button>
                       )}
                     </div>
@@ -1560,7 +1574,7 @@ function VentureAdminRow({
                             className="btn-secondary btn-sm text-[0.75rem]"
                             onClick={() => onForward(app.id, 'COVENTURE')}
                           >
-                            {t('adminForwardToCoBrother')}
+                            {t('adminForwardToHubRegistrar')}
                           </button>
                         )}
                       </div>
@@ -1839,7 +1853,7 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePer
               <button className="btn-secondary btn-sm"
                 onClick={() => onForward(item.id, getType())}
                 style={{ fontSize: '0.8rem' }}>
-                {t('adminForwardToCoBrother')}
+                {t('adminForwardToHubRegistrar')}
               </button>
             )}
             {!item.takenDown ? (
@@ -2730,7 +2744,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                       onClick={() => onForward(e.id, 'DOMAIN_ENQUIRY')}
                       style={{ fontSize: '0.8rem' }}
                     >
-                      {t('adminForwardToCoBrother')}
+                      {t('adminForwardToHubRegistrar')}
                     </button>
                   )}
                   {actions.forwardDisabled && (
@@ -2740,7 +2754,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                       disabled
                       style={{ fontSize: '0.8rem', opacity: 0.6, cursor: 'not-allowed' }}
                     >
-                      {t('adminForwardToCoBrother')}
+                      {t('adminForwardToHubRegistrar')}
                     </button>
                   )}
                   {actions.inProgress && (
@@ -2827,7 +2841,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
 function RequestsTable({ requests }) {
   const { t } = useTranslation();
   if (requests.length === 0) return (
-    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoCoBrotherRequests')}</h3></div>
+    <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">{t('adminNoHubRegistrarRequests')}</h3></div>
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -2855,7 +2869,7 @@ function RequestsTable({ requests }) {
             </div>
           )}
           <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.3rem' }}>
-            {t('adminCoBrotherLine', { first: r.assignedCoBrother?.firstname, last: r.assignedCoBrother?.lastname })}
+            {t('adminHubRegistrarLine', { first: r.assignedCoBrother?.firstname, last: r.assignedCoBrother?.lastname })}
           </div>
         </div>
       ))}
@@ -2885,11 +2899,11 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
   const handleSubmit = async () => {
     if (noCoBrothers) {
-      adminToast.error(i18n.t('adminNoCoBrotherYet'));
+      adminToast.error(i18n.t('adminNoHubRegistrarYet'));
       return;
     }
     if (!selectedCoBrother) {
-      adminToast.error(i18n.t('adminSelectCoBrotherAlert'));
+      adminToast.error(i18n.t('adminSelectHubRegistrarAlert'));
       return;
     }
     setLoading(true);
@@ -2908,9 +2922,9 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         
         <div className="relative z-10 mb-6">
           <div className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-600 text-[10px] font-bold tracking-wider uppercase rounded-lg mb-4">
-            {t('adminForwardModalBadge', 'Forward to CoBrother')}
+            {t('adminForwardModalBadge', 'Forward to HubRegistrar')}
           </div>
-          <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignCoBrother')}</h2>
+          <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignHubRegistrar')}</h2>
           <p className="text-[15px] text-gray-500">
             {t('adminForwardSelectDesc', { type: formatAdminRequestType(type, t).toLowerCase() })}
           </p>
@@ -2919,7 +2933,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         <div className="relative z-10">
           {noCoBrothers && (
             <div className="px-4 py-3 bg-[#fdf5f5] border border-[#f3d9d9] text-[#c95b5b] text-[13px] rounded-xl mb-6">
-              {t('adminNoCoBrotherAccounts', 'No CoBrother accounts found. Create or promote a user to the CoBrother role before forwarding.')}
+              {t('adminNoHubRegistrarAccounts', 'No HubRegistrar accounts found. Create or promote a user to the HubRegistrar role before forwarding.')}
             </div>
           )}
 
@@ -2937,7 +2951,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
           <div className="mb-6">
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2.5">
-              {t('adminSelectCoBrother', 'Select CoBrother')}
+              {t('adminSelectHubRegistrar', 'Select HubRegistrar')}
             </label>
             <select 
               value={selectedCoBrother} 
@@ -2945,7 +2959,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
               disabled={noCoBrothers}
               className="w-full px-4 py-3.5 bg-white border border-gray-200 text-gray-700 text-[15px] rounded-xl outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
-              <option value="">{t('adminChooseCoBrother', 'Choose a CoBrother...')}</option>
+              <option value="">{t('adminChooseHubRegistrar', 'Choose a HubRegistrar...')}</option>
               {coBrothers.map(cb => {
                 const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
                 return (
@@ -3394,7 +3408,7 @@ const ADMIN_PENDING_CHIPS = [
   { key: 'domains',           tab: 'domains',           label: 'Domains',          color: 'bg-sky-100 text-sky-700 ring-sky-200' },
   { key: 'domainEnquiries',   tab: 'domain-enquiries',  label: 'Domain enquiries', color: 'bg-sky-100 text-sky-700 ring-sky-200' },
   { key: 'opManagedAcquisitions', tab: 'op-managed-acquisitions', label: 'OP acquisitions', color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
-  { key: 'cobrotherPayments', tab: 'requests',          label: 'CoBrother payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
+  { key: 'cobrotherPayments', tab: 'requests',          label: 'HubRegistrar payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
   { key: 'operations',        tab: 'operations',        label: 'Operations',       color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
 ];
 
@@ -3539,7 +3553,7 @@ function AdminPendingCard({ icon: Icon, label, hint, count, accent, loading, onC
 function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, total, onJump }) {
   const platformStats = [
     { key: 'totalUsers',        Icon: UsersRound,   label: 'Users',       value: stats?.totalUsers,        accent: 'indigo'  },
-    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'CoBrothers',  value: stats?.totalCoBrothers,   accent: 'violet'  },
+    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'HubRegistrars',  value: stats?.totalCoBrothers,   accent: 'violet'  },
     { key: 'totalVentures',     Icon: Briefcase,    label: 'Ventures',    value: stats?.totalVentures,     accent: 'emerald' },
     { key: 'totalDomains',      Icon: Globe,        label: 'Domains',     value: stats?.totalDomains,      accent: 'sky'     },
     { key: 'totalTechnologies', Icon: Cpu,          label: 'Technology',  value: stats?.totalTechnologies, accent: 'rose'    },
@@ -3553,7 +3567,7 @@ function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, tota
     { key: 'opManagedAcquisitions', Icon: Globe,      label: 'OP acquisition requests', hint: 'OpenProvider managed acquisitions',      count: counts?.opManagedAcquisitions, tab: 'op-managed-acquisitions', accent: 'indigo' },
     { key: 'technologies',      Icon: Cpu,            label: 'Technology verifications', hint: 'Software/technology awaiting verification', count: counts?.technologies,    tab: 'cocreations',       accent: 'rose'    },
     { key: 'softwareAuctions',  Icon: Package,        label: 'Software auctions',        hint: 'Pending approval to go live',             count: counts?.softwareAuctions,  tab: 'software-auctions', accent: 'violet'  },
-    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'CoBrother payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
+    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'HubRegistrar payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
     { key: 'operations',        Icon: Headset,        label: 'Operations requests',      hint: 'Customer service requests pending',       count: counts?.operations,        tab: 'operations',        accent: 'indigo'  },
   ];
 
@@ -3663,7 +3677,7 @@ const QUEUE_TYPE_META = {
   domain_enquiry:    { label: 'Domain enquiry',    Icon: FileQuestion,  chip: 'bg-sky-50 text-sky-700 ring-sky-200',             tab: 'domain-enquiries' },
   technology:        { label: 'Technology',        Icon: Cpu,           chip: 'bg-rose-50 text-rose-700 ring-rose-200',          tab: 'cocreations' },
   software_auction:  { label: 'Software auction',  Icon: Package,       chip: 'bg-violet-50 text-violet-700 ring-violet-200',    tab: 'software-auctions' },
-  cobrother_payment: { label: 'CoBrother payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
+  cobrother_payment: { label: 'HubRegistrar payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
   operations:        { label: 'Operations',        Icon: Headset,       chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200',    tab: 'operations' },
 };
 
@@ -3674,7 +3688,7 @@ const QUEUE_FILTER_OPTIONS = [
   { id: 'domain_enquiry',    label: 'Domain enquiries' },
   { id: 'technology',        label: 'Technology' },
   { id: 'software_auction',  label: 'Software auctions' },
-  { id: 'cobrother_payment', label: 'CoBrother payments' },
+  { id: 'cobrother_payment', label: 'HubRegistrar payments' },
   { id: 'operations',        label: 'Operations' },
 ];
 
@@ -3727,7 +3741,7 @@ function mapQueueItem(item, type) {
     domain_enquiry: getString(item?.domainName, item?.domain?.domainName, 'Domain enquiry'),
     technology: getString(item?.name, item?.title, 'Technology'),
     software_auction: getString(item?.softwareName, item?.software?.title, item?.software?.name, item?.title, 'Software auction'),
-    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'CoBrother request'),
+    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'HubRegistrar request'),
     operations: getString(item?.title, item?.serviceName, item?.requestType, 'Operations request'),
   };
   return {

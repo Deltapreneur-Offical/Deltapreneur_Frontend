@@ -76,7 +76,7 @@
 
 .page-loader__logo {
   display: block;
-  height: 2.5rem;
+  height: 4rem;
   width: auto;
   filter: drop-shadow(3px 3px 10px rgba(180, 180, 255, 0.5));
 }

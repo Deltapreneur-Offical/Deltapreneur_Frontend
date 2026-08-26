@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { formatInr } from '../../utils/money';
 
 /**
- * Pre-written CoBrother share message with the CURRENT domain state.
+ * Pre-written HubRegistrar share message with the CURRENT domain state.
  *
  * `availability` mirrors the share-preview payload shape:
  *   { status: 'available' | 'taken' | 'check_failed' | ..., is_premium: bool, price_inr: number|null }
@@ -36,7 +36,7 @@ export function buildShareMessage({ domain, shareUrl, availability }) {
     details.push(isPremium ? `💰 ${price} (1st Year)` : `💰 ${price}/yr`);
   }
 
-  const lines = [`🚀 Check out ${domain} on CoBrother!`];
+  const lines = [`🚀 Check out ${domain} on HubRegistrar!`];
   if (details.length) lines.push('', ...details);
   lines.push('', `🔗 ${shareUrl}`);
   return lines.join('\n');
@@ -60,7 +60,7 @@ export function buildSocialLinks(shareUrl, domain, availability) {
   const url = encodeURIComponent(shareUrl);
   const message = buildShareMessage({ domain, shareUrl, availability });
   const text = encodeURIComponent(message);
-  const subject = encodeURIComponent(`Check out ${domain} on CoBrother!`);
+  const subject = encodeURIComponent(`Check out ${domain} on HubRegistrar!`);
   const body = encodeURIComponent(message);
   return [
     { label: 'WhatsApp', href: `https://wa.me/?text=${text}`, tone: 'bg-emerald-600 hover:bg-emerald-500' },
@@ -148,7 +148,7 @@ export default function SharePopover({ shareType, domain, originalQuery, availab
     if (navigator.share) {
       try {
         await navigator.share({
-          title: domain || 'CoBrother',
+          title: domain || 'HubRegistrar',
           text: buildShareMessage({ domain, shareUrl, availability }),
           url: shareUrl,
         });
@@ -181,7 +181,7 @@ export default function SharePopover({ shareType, domain, originalQuery, availab
               </p>
               <div className="mt-1.5 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1.5">
                 <p className="text-[11px] font-medium text-red-600">
-                  Note: Rewards are available to active CoBrother users only.
+                  Note: Rewards are available to active HubRegistrar users only.
                 </p>
               </div>
             </>

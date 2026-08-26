@@ -25,7 +25,7 @@ import {
 export default function LegalPolicyShell({
   badgeIcon: BadgeIcon = FileText,
   badge,
-  titleLead = 'CoBrother',
+  titleLead = 'HubRegistrar',
   titleAccent,
   intro,
   lastUpdated,
@@ -39,7 +39,7 @@ export default function LegalPolicyShell({
   const [openDropdown, setOpenDropdown] = useState(null);
   const { isScrolled, navRef } = useHomePageScrollNav();
 
-  const resolvedTitle = documentTitle || `${titleLead} ${titleAccent} | CoBrother`.replace(/\s+/g, ' ').trim();
+  const resolvedTitle = documentTitle || `${titleLead} ${titleAccent} | HubRegistrar`.replace(/\s+/g, ' ').trim();
   useDocumentMeta({
     title: resolvedTitle,
     description: documentDescription || intro,
@@ -194,7 +194,7 @@ export function PolicyContactCard() {
         <p className="text-sm text-slate-600 mt-2">
           Contact page:{' '}
           <a href="/contact" className="font-medium text-indigo-600 hover:underline">
-            https://cobrother.com/contact
+            https://hubregistrar.com/contact
           </a>
         </p>
       </div>

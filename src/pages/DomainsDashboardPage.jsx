@@ -467,7 +467,7 @@ export default function DomainsDashboardPage() {
                             month: 'numeric', day: 'numeric', year: 'numeric',
                           })}. {daysLeft !== null && daysLeft > 7 ? `Renewal opens 7 days before expiry.` : `Renew to avoid a service interruption.`}
                         </span>
-                        {/* Renew → CoBrother order page (never vendor registrar panel) */}
+                        {/* Renew → HubRegistrar order page (never vendor registrar panel) */}
                         {daysLeft !== null && daysLeft > 7 ? (
                           <span
                             className="shrink-0 text-sm font-bold text-gray-500 bg-gray-200 px-4 py-1.5 rounded-md cursor-not-allowed select-none"
@@ -605,8 +605,8 @@ function DomainRow({ domain, type, onVerify }) {
   const shareBase = APP_BASE_URL.replace(/\/$/, '');
   const shareUrl = `${shareBase}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = `${domain.domainName}${domain.domainExtension}`;
-  const shareSubject = `Premium Domain Listing Available on CoBrother: ${domainName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on CoBrother.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on CoBrother, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via CoBrother]`;
+  const shareSubject = `Premium Domain Listing Available on HubRegistrar: ${domainName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on HubRegistrar.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on HubRegistrar, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via HubRegistrar]`;
   const shareText = t('domainsDashboardShareText', { name: `${domain.domainName}${domain.domainExtension}` });
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;

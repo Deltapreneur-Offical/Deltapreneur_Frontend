@@ -241,14 +241,14 @@ export default function AuctionsSection() {
   const shouldAutoScroll = useShouldAutoScroll(displayAuctions.length);
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('auctions')} to="/auctions" accent="auction" variant="auction" />;
+    return <HomeSectionCardSkeleton title="Registry Auctions" to="/auctions" accent="auction" variant="auction" />;
   }
 
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
-          title={t('auctions')}
+          title="Registry Auctions"
           to="/auctions"
           accent="auction"
           showViewAll={displayAuctions.length > 0}
@@ -256,7 +256,7 @@ export default function AuctionsSection() {
         {displayAuctions.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noAuctions')}</p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={50} ariaLabel={t('auctions')}>
+          <HomeAutoScrollRow durationSec={50} ariaLabel="Registry Auctions">
             {displayAuctions.map((auction) => (
               <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
                 <AuctionPreviewCard

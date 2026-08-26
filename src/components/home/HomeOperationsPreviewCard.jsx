@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
-import { OPERATIONS_CATEGORY_LABELS } from '../../utils/operationsCategories';
+import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../utils/operationsCategories';
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
 import LikeButton from '../common/LikeButton';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
@@ -40,13 +40,19 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
   const isCarouselClone = useIsCarouselClone();
 
   const Icon = resolveOperationsIcon(service);
-  const catLabel = OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category;
   const cardCompliance = isComplianceService(service);
+  const catLabel = cardCompliance
+    ? getHubRegistrarCategoryLabel(service.category)
+    : (OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category);
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
   const skills = resolveSkills(service);
 
   const imageUrl = service.imageUrl || service.image_url || null;
   const views = Number(service.views ?? service.view_count ?? 0);
+
+  // Display-only wording for the homepage Hub Registrars cards: "Registration" → "Register"
+  // in the visible title. Backend/API identifiers (e.g. GST_REGISTRATION) stay untouched.
+  const displayName = (service.name || '').replace(/\bRegistration\b/g, 'Register');
 
   const [liked, setLiked] = useState(Boolean(service.liked));
   const [likeCount, setLikeCount] = useState(Number(service.likeCount ?? service.likes ?? 0));
@@ -69,7 +75,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
           {imageUrl && !isCarouselClone ? (
             <img
               src={imageUrl}
-              alt={service.name}
+              alt={displayName}
               className="home-operations-preview-card__avatar"
               width={54}
               height={54}
@@ -91,7 +97,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
         ) : null}
       </div>
 
-      <h3 className="home-operations-preview-card__title">{service.name}</h3>
+      <h3 className="home-operations-preview-card__title">{displayName}</h3>
 
       <p className="home-operations-preview-card__desc">
         {service.description ||
@@ -156,6 +162,14 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
           <ArrowRight size={16} strokeWidth={2.5} aria-hidden />
         </button>
       </div>
+
+      {service.governmentFeesApplicable && service.governmentFeeText && (
+        <div className="home-operations-preview-card__gov-fee">
+          <span className="home-operations-preview-card__gov-fee-text">
+            {service.governmentFeeText}
+          </span>
+        </div>
+      )}
 
       <hr className="creator-profile-card__divider" />
       <div className="creator-profile-card__footer">

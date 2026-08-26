@@ -568,13 +568,13 @@ export default function CartPage() {
             <div className="absolute inset-x-0 top-0 z-10 h-1.5 shrink-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
             <div className="overflow-y-auto overscroll-contain px-4 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6">
               <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-800 sm:text-[11px]">
-                <span className="truncate">CoBrother Priority Managed Acquisition</span>
+                <span className="truncate">HubRegistrar Priority Managed Acquisition</span>
               </div>
               <h2 className="font-display text-xl font-extrabold leading-tight text-slate-900 sm:text-[1.65rem]">
                 Confirm your Priority Managed Acquisition
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Thank you for trusting CoBrother with your premium acquisition of{' '}
+                Thank you for trusting HubRegistrar with your premium acquisition of{' '}
                 <strong className="text-slate-900 break-words">
                   {managedAcquisitionItems[0]?.productName || 'this domain'}
                 </strong>
@@ -660,7 +660,7 @@ export default function CartPage() {
               <strong className="text-slate-900">{premiumConfirmSuccess.domain}</strong> is with our team.
             </p>
             <p className="text-sm text-slate-500 leading-relaxed mb-6">
-              A confirmation email is on its way. CoBrother will personally manage this acquisition
+              A confirmation email is on its way. HubRegistrar will personally manage this acquisition
               and contact you with clear next steps — no payment is due right now.
             </p>
             <button
@@ -1043,7 +1043,7 @@ export default function CartPage() {
                   }
                   secureNote={
                     isManagedAcquisitionOnly
-                      ? 'Managed by CoBrother — no payment charged now'
+                      ? 'Managed by HubRegistrar — no payment charged now'
                       : undefined
                   }
                 />

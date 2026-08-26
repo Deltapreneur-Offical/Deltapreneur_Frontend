@@ -80,8 +80,8 @@ function CallNavButton() {
     <a
       href={SUPPORT_PHONE_TEL}
       className="home-nav-call-btn home-nav-contact-icon-btn"
-      aria-label="Call CoBrother support"
-      title="Call CoBrother support"
+      aria-label="Call HubRegistrar support"
+      title="Call HubRegistrar support"
     >
       <FaPhoneAlt aria-hidden />
     </a>

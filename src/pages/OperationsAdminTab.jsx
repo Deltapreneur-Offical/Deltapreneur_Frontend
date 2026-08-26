@@ -22,19 +22,19 @@ const SECTION_META = {
   compliance: {
     icon: ShieldCheck,
     titleKey: 'adminOperationsComplianceTitle',
-    defaultTitle: 'Business Solutions',
+    defaultTitle: 'Hub Registrar',
     subtitleKey: 'adminOperationsComplianceSubtitle',
-    defaultSubtitle: 'Manage one-time registration and business solutions.',
+    defaultSubtitle: 'Manage one-time registration and hub registrar services.',
     addKey: 'adminOperationsAddComplianceService',
-    defaultAdd: '+ Add Solution',
+    defaultAdd: '+ Add Service',
     searchKey: 'adminOperationsSearchCompliancePlaceholder',
-    defaultSearch: 'Search business solutions…',
+    defaultSearch: 'Search hub registrar services…',
     nameColKey: 'adminOperationsColServiceName',
-    defaultNameCol: 'Solution Name',
+    defaultNameCol: 'Service Name',
     emptyKey: 'adminOperationsEmptyCompliance',
-    defaultEmpty: 'No business solutions match your filters.',
+    defaultEmpty: 'No hub registrar services match your filters.',
     modalTitleKey: 'adminOperationsModalTitleCompliance',
-    defaultModalTitle: 'Add / Edit Business Solution',
+    defaultModalTitle: 'Add / Edit Hub Registrar Service',
     namePlaceholderKey: 'adminOperationsFieldComplianceNamePlaceholder',
     defaultNamePlaceholder: 'GST Registration',
     priceHintKey: 'adminOperationsPriceHintCompliance',
@@ -98,7 +98,7 @@ function resolveInitialPartition(sectionParam) {
   if (sectionParam === 'compliance') return 'compliance';
   if (sectionParam === 'requests') return 'requests';
   if (sectionParam === 'virtual-assistants' || sectionParam === 'assistance') return 'virtual-assistants';
-  return 'virtual-assistants';
+  return 'compliance';
 }
 
 export default function OperationsAdminTab({ services = [], onRefresh }) {
@@ -627,6 +627,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     <th>{t('adminOperationsColDescription', { defaultValue: 'Description' })}</th>
                     <th>{t('adminOperationsColPrice', { defaultValue: 'Price' })}</th>
                     <th>{t('adminOperationsColStatus', { defaultValue: 'Status' })}</th>
+                    <th>{t('adminOperationsColGovtFees', { defaultValue: 'Govt Fees' })}</th>
                     <th aria-label={t('adminOperationsColActions', { defaultValue: 'Actions' })} />
                   </tr>
                 </thead>
@@ -657,6 +658,13 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                               <span className="operations-admin-status operations-admin-status--paused">
                                 {t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}
                               </span>
+                            )}
+                          </td>
+                          <td className="operations-admin-govt-fees">
+                            {row.governmentFeesApplicable ? (
+                              <span className="operations-admin-govt-fees--yes">Yes</span>
+                            ) : (
+                              <span className="operations-admin-govt-fees--no">—</span>
                             )}
                           </td>
                           <td>

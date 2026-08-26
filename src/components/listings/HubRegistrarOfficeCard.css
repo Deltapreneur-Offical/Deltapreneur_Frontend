@@ -1,0 +1,402 @@
+.hro-card {
+  background: #ffffff;
+  border: 1px solid #e8ecf4;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.hro-card:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+  border-color: #b4cee7;
+}
+
+/* Top Section */
+.hro-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.hro-card-office-icon {
+  flex-shrink: 0;
+  width: 110px;
+  height: 110px;
+  background: #f0f4ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.hro-office-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hro-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hro-card-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1a2332;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.3;
+}
+
+.hro-card-subtitle-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.hro-card-dot {
+  width: 24px;
+  height: 4px;
+  background: #f59e0b;
+  border-radius: 2px;
+}
+
+.hro-card-dot-sm {
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+}
+
+.hro-card-type {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+.hro-card-verified-badge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hro-verified-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.hro-verified-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.hro-verified-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #059669;
+  letter-spacing: 0.05em;
+}
+
+.hro-verified-sub {
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+/* Divider */
+.hro-card-divider {
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    #d1d5db 0px,
+    #d1d5db 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  margin: 0.25rem 0;
+}
+
+/* Middle Section */
+.hro-card-middle {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0;
+  padding: 0.75rem 0;
+}
+
+.hro-card-divider-v {
+  width: 1px;
+  height: 100%;
+  min-height: 50px;
+  background: #e5e7eb;
+  align-self: stretch;
+}
+
+.hro-card-address-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-right: 1.25rem;
+}
+
+.hro-address-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: #eef2ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hro-pin-icon {
+  width: 20px;
+  height: 20px;
+  color: #1e3a8a;
+}
+
+
+
+/* Verified area - badge + zone */
+.hro-card-verified-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.375rem;
+}
+
+.hro-zone-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #86efac;
+  white-space: nowrap;
+}
+
+.hro-card-address {
+  font-size: 0.8125rem;
+  color: #1a2332;
+  line-height: 1.4;
+  margin: 0;
+  font-weight: 500;
+}
+
+.hro-card-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-left: 1.25rem;
+}
+
+.hro-trust-badge,
+.hro-secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hro-trust-badge {
+  color: #2563eb;
+}
+
+.hro-secure-badge {
+  color: #16a34a;
+}
+
+.hro-badge-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.hro-badge-icon-blue {
+  color: #3b82f6;
+}
+
+.hro-secure-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Action Buttons */
+.hro-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.hro-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hro-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hro-action-call {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.hro-action-call:hover:not(:disabled) {
+  background: #dcfce7;
+}
+
+.hro-action-map {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.hro-action-map:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.hro-action-icon-wrap {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hro-action-icon-call {
+  background: #dcfce7;
+}
+
+.hro-action-icon-map {
+  background: #fee2e2;
+}
+
+.hro-action-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.hro-action-call .hro-action-svg {
+  color: #16a34a;
+}
+
+.hro-action-map .hro-action-svg {
+  color: #dc2626;
+}
+
+.hro-action-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  min-width: 0;
+}
+
+.hro-action-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hro-action-subtitle {
+  font-size: 0.6875rem;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.hro-action-call .hro-action-title,
+.hro-action-call .hro-action-subtitle {
+  color: #166534;
+}
+
+.hro-action-map .hro-action-title,
+.hro-action-map .hro-action-subtitle {
+  color: #991b1b;
+}
+
+.hro-action-arrow {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.hro-action-call .hro-action-arrow {
+  color: #16a34a;
+}
+
+.hro-action-map .hro-action-arrow {
+  color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hro-card-top {
+    flex-direction: column;
+  }
+
+  .hro-card-office-icon {
+    width: 90px;
+    height: 90px;
+  }
+
+  .hro-card-verified-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .hro-card-middle {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .hro-card-divider-v {
+    width: 100%;
+    height: 1px;
+    min-height: 0;
+  }
+
+  .hro-card-address-section {
+    padding-right: 0;
+  }
+
+  .hro-card-badges {
+    padding-left: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .hro-card-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .hro-card {
+    position: relative;
+  }
+}

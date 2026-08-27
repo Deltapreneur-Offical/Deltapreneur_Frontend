@@ -16,8 +16,12 @@ import CartPageSkeleton from '../components/cart/CartPageSkeleton';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { cartAPI } from '../api/services';
+import { cartAPI, domainStorefrontAPI } from '../api/services';
 import { openRazorpayCheckout, buildCartPaymentDescription } from '../utils/razorpayCheckout';
+import {
+  messageForVerifyFailure,
+  recoverCheckoutAfterVerifyFailure,
+} from '../utils/checkoutVerifyRecovery';
 import { PREMIUM_DOMAIN_MIN_PRICE } from '../utils/domainPricing';
 import { notifyCartChanged } from '../utils/cartEvents';
 import PaymentProcessingOverlay from '../components/cart/PaymentProcessingOverlay';
@@ -440,11 +444,28 @@ export default function CartPage() {
           } catch (err) {
             await fetchCart().catch(() => {});
             notifyCartChanged();
-            const detail = err?.response?.data?.detail || '';
-            if (detail.includes('No cart items found')) {
-              setError('This payment session expired. Please checkout again.');
+            const recovered = await recoverCheckoutAfterVerifyFailure({
+              listOrders: domainStorefrontAPI.listOrders,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+            });
+            if (recovered.outcome === 'success' || recovered.outcome === 'processing') {
+              const domains = recovered.domains || [];
+              setError(messageForVerifyFailure({ err, recovered }));
+              setPaymentSuccess({
+                purchased: domains.length || 1,
+                total: domains.length || 1,
+                domains,
+                partial: false,
+              });
+              if (recovered.outcome === 'success') {
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 4500);
+              }
             } else {
-              setError(detail || err?.response?.data?.message || 'Payment verification failed.');
+              setError(messageForVerifyFailure({ err, recovered }));
+              setPaymentSuccess(null);
+              setShowConfetti(false);
             }
           } finally {
             resetCheckoutUi();

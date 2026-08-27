@@ -3,10 +3,11 @@ import { pickMediaUrl } from '../utils/mediaUrl';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown, Eye } from 'lucide-react';
+import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown, Eye, Globe } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
+import '../styles/ventures-split-columns.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
 import ShowcaseDomainCard from '../components/listings/ShowcaseDomainCard';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
@@ -154,6 +155,7 @@ export default function DomainsPage() {
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'premium' | 'standard' | 'mine'
+  const [splitMobilePanel, setSplitMobilePanel] = useState('venture'); // 'venture' | 'coventure' — mobile split-panel selector
   const [showcaseDomains, setShowcaseDomains] = useState([]);
   const [showcaseEnabled, setShowcaseEnabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -398,15 +400,217 @@ export default function DomainsPage() {
         ) : (
           <>
             <ListingBackLink />
-            <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6 min-w-0">
+
+            {/* ── Visual polish: subtle background, refined header, tabs, filter, cards ── */}
+            <style>{`
+              /* Page: subtle cool-gray canvas for card separation */
+              .domains-page-wrap {
+                margin: 0 -0.5rem;
+                padding: 1rem 0.75rem 2rem;
+                background: linear-gradient(180deg, #f8f9fb 0%, #f3f4f6 100%);
+                border-radius: 0.75rem;
+              }
+              @media (min-width: 768px) {
+                .domains-page-wrap { margin: 0 -0.75rem; padding: 1.25rem 1rem 2.5rem; }
+              }
+
+              /* Header: subtle teal accent line */
+              .domains-header-area {
+                position: relative;
+                padding: 0 0 0.75rem;
+                margin: 0 0 0.5rem;
+                border-bottom: 1px solid rgba(15,118,110,0.08);
+                background: transparent;
+                overflow: visible;
+              }
+              .domains-header-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.25rem;
+                height: 2.25rem;
+                border-radius: 0.6rem;
+                background: linear-gradient(135deg, #f0fdfa, #ecfdf5);
+                border: 1px solid rgba(15,118,110,0.12);
+                color: #0f766e;
+                flex-shrink: 0;
+              }
+
+              /* Tabs: refined with brand-tinted active states */
+              .domains-tab-bar {
+                background: #ffffff !important;
+                border: 1px solid rgba(0,0,0,0.06) !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+                padding: 3px !important;
+              }
+              .domains-tab-bar > button {
+                transition: all 0.2s ease !important;
+              }
+              .domains-tab-bar > button.domains-tab--all-active {
+                background: #f0fdfa !important;
+                color: #0f766e !important;
+                box-shadow: 0 1px 3px rgba(15,118,110,0.12), 0 0 0 1px rgba(15,118,110,0.18) !important;
+              }
+              .domains-tab-bar > button.domains-tab--premium-active {
+                background: #FFFBF2 !important;
+                color: #9A6700 !important;
+                box-shadow: 0 1px 3px rgba(217,154,0,0.12), 0 0 0 1px rgba(217,154,0,0.18) !important;
+              }
+              .domains-tab-bar > button.domains-tab--standard-active {
+                background: #f0fdfa !important;
+                color: #0f766e !important;
+                box-shadow: 0 1px 3px rgba(15,118,110,0.12), 0 0 0 1px rgba(15,118,110,0.18) !important;
+              }
+              .domains-tab-bar > button.domains-tab--mine-active {
+                background: #FFFBF2 !important;
+                color: #9A6700 !important;
+                box-shadow: 0 1px 3px rgba(217,154,0,0.12), 0 0 0 1px rgba(217,154,0,0.18) !important;
+              }
+
+              /* FilterBar: white card with subtle shadow */
+              .domains-page-wrap .filter-bar,
+              .domains-page-wrap > div:has(.filter-bar) {
+                background: #ffffff;
+                border: 1px solid rgba(0,0,0,0.05);
+                border-radius: 0.875rem;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.015);
+                padding: 0.75rem 1rem;
+              }
+              /* Search input & Newest First: teal border */
+              .domains-page-wrap input[type="text"],
+              .domains-page-wrap input:not([type]),
+              .domains-page-wrap select.filter-sort-select {
+                background: #ffffff !important;
+                border-color: rgba(15,118,110,0.2) !important;
+              }
+              .domains-page-wrap input[type="text"]:focus,
+              .domains-page-wrap input:not([type]):focus,
+              .domains-page-wrap select.filter-sort-select:focus {
+                border-color: rgba(15,118,110,0.4) !important;
+                box-shadow: 0 0 0 3px rgba(15,118,110,0.08) !important;
+                outline: none !important;
+              }
+              /* ONLY All Categories, Min, Max: amber border */
+              .domains-page-wrap select.filter-category-select,
+              .domains-page-wrap input[placeholder*="Min"],
+              .domains-page-wrap input[placeholder*="Max"] {
+                border-color: rgba(217,154,0,0.35) !important;
+                background: #ffffff !important;
+              }
+              .domains-page-wrap select.filter-category-select:focus,
+              .domains-page-wrap input[placeholder*="Min"]:focus,
+              .domains-page-wrap input[placeholder*="Max"]:focus {
+                border-color: rgba(217,154,0,0.55) !important;
+                box-shadow: 0 0 0 3px rgba(217,154,0,0.1) !important;
+                outline: none !important;
+              }
+
+              /* Standard domain cards: teal hover lift */
+              .domain-listing-grid .listing-card-glow-shell {
+                transition: transform 0.22s ease, box-shadow 0.22s ease;
+              }
+              .domain-listing-grid .listing-card-glow-shell:hover {
+                transform: translateY(-4px);
+              }
+              .domain-listing-grid .listing-card-glow-shell::before {
+                background: linear-gradient(135deg, rgba(15,118,110,0.1), rgba(15,118,110,0.03)) !important;
+              }
+
+              /* Premium cards: amber hover */
+              .domains-split-premium .ventures-split__body .listing-card-glow-shell {
+                transition: transform 0.22s ease, box-shadow 0.22s ease;
+              }
+              .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover {
+                transform: translateY(-4px);
+              }
+              .domains-split-premium .ventures-split__body .listing-card-glow-shell::before {
+                background: linear-gradient(135deg, rgba(217,154,0,0.1), rgba(217,154,0,0.03)) !important;
+              }
+
+              /* Add-to-Cart buttons: subtle brand hover */
+              .domain-listing-grid .domain-listing-card__price-cta,
+              .domains-split-premium .ventures-split__body .domain-listing-card__price-cta {
+                transition: all 0.2s ease;
+              }
+              .domains-split-premium .ventures-split__body .domain-listing-card__price-cta:hover {
+                box-shadow: 0 2px 8px rgba(217,154,0,0.18);
+              }
+              .domain-listing-grid .domain-listing-card__price-cta:hover {
+                box-shadow: 0 2px 8px rgba(15,118,110,0.18);
+              }
+
+              /* Standard domain cards: badges on one line */
+              .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
+                flex-wrap: nowrap !important;
+              }
+
+              /* Add-to-Cart buttons: subtle brand hover */
+              .domain-listing-grid .domain-listing-card__price-cta,
+              .domains-split-premium .ventures-split__body .domain-listing-card__price-cta {
+                transition: all 0.2s ease;
+              }
+              .domains-split-premium .ventures-split__body .domain-listing-card__price-cta:hover {
+                box-shadow: 0 2px 8px rgba(217,154,0,0.18);
+              }
+              .domain-listing-grid .domain-listing-card__price-cta:hover {
+                box-shadow: 0 2px 8px rgba(15,118,110,0.18);
+              }
+            `}</style>
+
+            {/* Global responsive overrides — must live outside ventures-split so they apply to single-column fallback too */}
+            <style>{`
+              /* Mobile: force full-width grid, remove restrictive 18rem cap */
+              @media (max-width: 639px) {
+                .domains-page-wrap .domain-listing-grid,
+                .domains-page-wrap .listing-card-glow-grid.domain-listing-grid {
+                  max-width: 100% !important;
+                  margin-inline: 0 !important;
+                  padding: 8px 0 12px !important;
+                  grid-template-columns: 1fr !important;
+                  display: grid !important;
+                  visibility: visible !important;
+                  opacity: 1 !important;
+                  height: auto !important;
+                  overflow: visible !important;
+                }
+                .domains-page-wrap .listing-card-glow-shell {
+                  display: block !important;
+                  visibility: visible !important;
+                  opacity: 1 !important;
+                  height: auto !important;
+                  overflow: visible !important;
+                }
+              }
+              /* Tablet / Nest Hub (~1280px): 2-col with breathing room */
+              @media (min-width: 640px) and (max-width: 1279px) {
+                .domains-page-wrap .domain-listing-grid,
+                .domains-page-wrap .listing-card-glow-grid.domain-listing-grid {
+                  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                  gap: 1rem !important;
+                  max-width: 100% !important;
+                  margin-inline: 0 !important;
+                }
+              }
+              /* Standard domain cards: badges on one line */
+              .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
+                flex-wrap: nowrap !important;
+              }
+            `}</style>
+
+            <div className="domains-page-wrap">
+            <div className="domains-header-area">
+            <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 min-w-0">
               <div className="min-w-0 w-full md:w-auto">
-                <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2">
+                <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2.5">
+                  <span className="domains-header-icon">
+                    <Globe size={20} strokeWidth={1.8} />
+                  </span>
                   {t('domains')}
                   {pendingVerificationCount > 0 ? (
                     <PendingVerificationDot className="h-2.5 w-2.5" title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
                   ) : null}
                 </h1>
-                <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
+                <p className="text-gray-500 mt-1.5 text-sm">{t('buyAndSellDomains')}</p>
               </div>
               <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end md:w-auto md:gap-3">
                 <Link
@@ -448,6 +652,7 @@ export default function DomainsPage() {
                 </button>
               </div>
             </div>
+            </div>{/* domains-header-area */}
 
             <div className="mb-6 inline-flex flex-wrap items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1">
               <button
@@ -562,6 +767,166 @@ export default function DomainsPage() {
             ) : (
             <>
 
+            {activeTab === 'all' && showcaseDomains.length > 0 && marketplaceFilter.totalCount > 0 ? (
+              /* ── Side-by-side: Premium Domains | Standard Domains ── */
+              <div className="ventures-split domains-split-premium">
+                <style>{`
+                  /* ── Refined Premium Domains theme: subtle cream + muted amber accents ── */
+                  .domains-split-premium .ventures-split__mobile-tab--venture.ventures-split__mobile-tab--active {
+                    background: #ffffff;
+                    color: #7A5A00;
+                    box-shadow: 0 1px 4px rgba(180,140,40,0.15), 0 0 0 1px rgba(217,154,0,0.3);
+                  }
+                  .domains-split-premium .ventures-split__panel--venture {
+                    background: linear-gradient(180deg, #FFFBF2 0%, #FFFCF5 100%);
+                    border-color: #EDE5D3;
+                  }
+                  .domains-split-premium .ventures-split__panel--venture::before {
+                    background: linear-gradient(90deg, #D99A00 0%, #C8932A 50%, #E8C86A 100%);
+                    height: 3px;
+                  }
+                  .domains-split-premium .ventures-split__header--venture::before,
+                  .domains-split-premium .ventures-split__header--venture::after {
+                    background: rgba(180,140,40,0.12);
+                  }
+                  .domains-split-premium .ventures-split__icon--venture {
+                    color: #9A6700;
+                    background: linear-gradient(145deg, #FFF8EC 0%, #FDF3E0 100%);
+                    border: 1px solid rgba(217,154,0,0.25);
+                  }
+                  .domains-split-premium .ventures-split__count--venture {
+                    color: #8A6A10;
+                    background: rgba(217,154,0,0.08);
+                    border: 1px solid rgba(217,154,0,0.15);
+                  }
+                  .domains-split-premium .ventures-split__empty--venture {
+                    border-color: rgba(180,140,40,0.2);
+                  }
+                  /* ── Premium cards: white with neutral warm-gray border ── */
+                  .domains-split-premium .ventures-split__body .listing-card-glow-shell {
+                    padding: 10px;
+                  }
+                  .domains-split-premium .ventures-split__body .domain-listing-card.card-glow-hover,
+                  .domains-split-premium .ventures-split__body .domain-listing-card {
+                    background: #ffffff !important;
+                    border: 1px solid #E7E1D5 !important;
+                    border-radius: 0.85rem;
+                    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+                  }
+                  .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover .domain-listing-card,
+                  .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover .domain-listing-card.card-glow-hover {
+                    transform: translateY(-3px);
+                    border-color: rgba(217,154,0,0.35) !important;
+                    box-shadow: 0 8px 28px rgba(180,140,40,0.13), 0 2px 8px rgba(0,0,0,0.04) !important;
+                  }
+                  .domains-split-premium .ventures-split__body .listing-card-glow-shell::before {
+                    background: linear-gradient(135deg, rgba(217,154,0,0.12), rgba(217,154,0,0.04)) !important;
+                  }
+                `}</style>
+                <div className="ventures-split__mobile-tabs" role="tablist" aria-label="Domain sections">
+                  <button role="tab" type="button" aria-selected={splitMobilePanel === 'venture'} className={`ventures-split__mobile-tab ventures-split__mobile-tab--venture ${splitMobilePanel === 'venture' ? 'ventures-split__mobile-tab--active' : ''}`} onClick={() => setSplitMobilePanel('venture')}>
+                    Premium Domains
+                    <span className="ventures-split__mobile-tab-count">{showcaseFilter.filtered.length}</span>
+                  </button>
+                  <button role="tab" type="button" aria-selected={splitMobilePanel === 'coventure'} className={`ventures-split__mobile-tab ventures-split__mobile-tab--coventure ${splitMobilePanel === 'coventure' ? 'ventures-split__mobile-tab--active' : ''}`} onClick={() => setSplitMobilePanel('coventure')}>
+                    Standard Domains
+                    <span className="ventures-split__mobile-tab-count">{marketplaceFilter.totalCount}</span>
+                  </button>
+                </div>
+                <div className="ventures-split__mobile-viewport">
+                  <div className={`ventures-split__mobile-track ${splitMobilePanel === 'coventure' ? 'ventures-split__mobile-track--coventure' : ''}`}>
+                    <section className="ventures-split__panel ventures-split__panel--venture ventures-split__mobile-panel">
+                      <header className="ventures-split__header ventures-split__header--venture">
+                        <div className="ventures-split__header-main">
+                          <span className="ventures-split__icon ventures-split__icon--venture" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
+                          <div className="ventures-split__header-text">
+                            <h2 className="ventures-split__title">Premium Domains</h2>
+                            <p className="ventures-split__subtitle">Showcase listings with premium pricing</p>
+                          </div>
+                        </div>
+                        <span className="ventures-split__count ventures-split__count--venture">
+                          {showcaseFilter.filtered.length} premium
+                        </span>
+                      </header>
+                      <div className="ventures-split__body">
+                        {showcaseFilter.filtered.length === 0 ? (
+                          <div className="ventures-split__empty ventures-split__empty--venture">
+                            <p>{activeFilterCount > 0 ? 'No premium domains match your filters.' : 'No premium domains are currently showcased.'}</p>
+                          </div>
+                        ) : (
+                          <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
+                            {showcaseFilter.filtered.map((d) => (
+                              <ListingCardShell key={d.showcaseId}>
+                                <ShowcaseDomainCard item={d} />
+                              </ListingCardShell>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                    <div className="ventures-split__divider ventures-split__mobile-divider" aria-hidden="true">
+                      <span className="ventures-split__divider-line" />
+                    </div>
+                    <section className="ventures-split__panel ventures-split__panel--coventure ventures-split__mobile-panel">
+                      <header className="ventures-split__header ventures-split__header--coventure">
+                        <div className="ventures-split__header-main">
+                          <span className="ventures-split__icon ventures-split__icon--coventure" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
+                          <div className="ventures-split__header-text">
+                            <h2 className="ventures-split__title">Standard Domains</h2>
+                            <p className="ventures-split__subtitle">Marketplace domain listings</p>
+                          </div>
+                        </div>
+                        <span className="ventures-split__count ventures-split__count--coventure">
+                          {marketplaceFilter.totalCount} listed
+                        </span>
+                      </header>
+                      <div className="ventures-split__body">
+                        {loading ? (
+                          <PageContentSkeleton variant="cards" rows={4} />
+                        ) : marketplaceFilter.paginated.length === 0 ? (
+                          <div className="ventures-split__empty ventures-split__empty--coventure">
+                            <p>{activeFilterCount > 0 ? 'No marketplace domains match your filters.' : 'No marketplace domains found.'}</p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
+                              {marketplaceFilter.paginated.map(d => (
+                                <ListingCardShell key={d.id}>
+                                  <DomainListingCard
+                                    domain={d}
+                                    marketplace
+                                    isOwner={isListingOwner(d, user, 'domain')}
+                                    likeState={getLike(d.id)}
+                                    onLike={() => toggleLike(d.id)}
+                                    onView={() => openDetailIfAllowed(d)}
+                                    onEdit={() => { setEditTarget(d); setShowForm(false); }}
+                                    onBuy={() => {
+                                      if (!user) {
+                                        navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                                        return;
+                                      }
+                                      setBuyTarget(d);
+                                    }}
+                                    onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
+                                    onDelete={() => setDeleteTarget(d.id)}
+                                    onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
+                                  />
+                                </ListingCardShell>
+                              ))}
+                            </div>
+                            <Pagination page={marketplaceFilter.page} totalPages={marketplaceFilter.totalPages}
+                              onPage={handlePageChange} totalCount={marketplaceFilter.totalCount} pageSize={20} />
+                          </>
+                        )}
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            ) : (
+            /* ── Single-column: Premium-only, Standard-only, or My Listings ── */
+            <>
+
             {!loading && (marketplaceFilter.totalCount + showcaseFilter.filtered.length) > 0 && (
               <div className="text-sm text-gray-600 mb-4">
                 {t('domainsPageResultsFound', {
@@ -655,8 +1020,11 @@ export default function DomainsPage() {
                   onPage={handlePageChange} totalCount={marketplaceFilter.totalCount} pageSize={20} />
               </>
             )}
-            </>
-            )}
+          </>
+        )}
+        </>
+        )}
+        </div>{/* domains-page-wrap */}
           </>
         )}
       </div>

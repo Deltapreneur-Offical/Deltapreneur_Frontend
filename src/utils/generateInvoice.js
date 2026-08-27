@@ -4,20 +4,19 @@
  * Seller billed as Aultum International.
  */
 
-import coBrotherLogo from '../assets/CO/Cobrother_logo.png';
+import coBrotherLogo from '../assets/hubregistrarlogo_main.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 
 const SELLER = {
-  legalName: 'Aultum International (Proprietor: Neminath Surendra Akkole)',
+  legalName: 'Aultum International',
   gstin: '29DXMPA9959L2ZF',
   email: 'support@hubregistrar.com',
   phone: '080 8575 8575',
   website: 'www.hubregistrar.com',
   addressLines: [
-    'Third Floor TF 307 Marvel Artiza',
-    'Pune Bangalore Road, Vidyanagar, Hubballi',
-    'Dharwad, Karnataka, 580021 India',
+    'TF 307, Marvel Artiza',
+    'Hubballi, Karnataka (IN) 580021',
   ],
 };
 
@@ -365,12 +364,12 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
   <meta charset="UTF-8"/>
   <title>Invoice ${escapeHtml(invNo)} — ${escapeHtml(SELLER.legalName)}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'DM Sans', system-ui, sans-serif;
+      font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
       background: #fff;
       color: #111827;
       font-size: 13px;

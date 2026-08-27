@@ -6,7 +6,6 @@ import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
-import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import DomainListingCard from '../listings/DomainListingCard';
@@ -62,18 +61,17 @@ export default function DomainsSection() {
     // has its own amber border/glow + hover lift, so it renders bare in the
     // marquee (no outer shell) to match the premium card exactly.
     if (isShowcaseRow(domain)) {
-      return <ShowcaseDomainCard item={domain} />;
+      return <ShowcaseDomainCard item={domain} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: domain.domainName || domain.name }} />;
     }
     return (
-      <HomePreviewCardShell accent="domain">
-        <DomainListingCard
-          domain={domain}
-          browseMode={true}
-          likeState={getLike(domain.id)}
-          onLike={() => toggleLike(domain.id)}
-          onView={() => handleViewDetails(domain.id)}
-        />
-      </HomePreviewCardShell>
+      <DomainListingCard
+        domain={domain}
+        browseMode={true}
+        marketplace
+        likeState={getLike(domain.id)}
+        onLike={() => toggleLike(domain.id)}
+        onView={() => handleViewDetails(domain.id)}
+      />
     );
   };
 

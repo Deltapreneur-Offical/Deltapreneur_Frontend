@@ -659,8 +659,14 @@ export default function DomainRegistrationOrderPage() {
                     </div>
                   </div>
 
-                  {/* Sidebar stats/info — Transfer Progress only shows for fully completed transfers */}
-                  {(order.transferStatus || '').toUpperCase() === 'COMPLETED' && (
+                  {/* Sidebar stats/info — Transfer Progress shows only when payment is completed AND transfer is in progress */}
+                  {(() => {
+                    const ts = (order.transferStatus || '').toUpperCase();
+                    const ps = (order.status || '').toUpperCase();
+                    const paymentDone = ['PAYMENT_COMPLETED', 'ACTIVE'].includes(ps);
+                    const transferInProgress = !['COMPLETED', 'FAILED', 'CANCELLED', 'PAYMENT_PENDING'].includes(ts) && ts !== '';
+                    return paymentDone && transferInProgress;
+                  })() && (
                     <div className="space-y-6">
                       <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-6 space-y-4">
                         <div className="flex items-center gap-2 text-indigo-600">

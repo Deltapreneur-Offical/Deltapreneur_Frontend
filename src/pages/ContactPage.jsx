@@ -91,7 +91,7 @@ export default function ContactPage() {
           <BackToHomeButton />
           <BrandLogoImage
             alt="HubRegistrar"
-            className="h-10 cursor-pointer"
+            className="h-12 cursor-pointer"
             onClick={() => navigate('/')}
           />
         </div>

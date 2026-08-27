@@ -4655,7 +4655,7 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   min-width: 0;
-  max-width: 8.5rem;
+  max-width: 9.5rem;
   flex: 1;
   opacity: 1;
   transition: opacity 0.2s ease;
@@ -4663,12 +4663,12 @@ input[type="checkbox"] {
 
 .app-sidebar-logo-link .brand-nav-logo,
 .app-sidebar-logo-link .home-nav-logo-img {
-  height: 2.25rem !important;
-  max-width: 8.5rem;
+  height: 2.6rem !important;
+  max-width: 9.5rem;
 }
 
 .app-sidebar-logo-link .home-nav-logo-swap {
-  max-width: 8.5rem;
+  max-width: 9.5rem;
 }
 
 .app-sidebar-logo-link:hover .home-nav-logo-img--default {
@@ -5142,17 +5142,17 @@ input[type="checkbox"] {
 
 .app-layout-collapsed-brand {
   flex-shrink: 0;
-  max-width: 10rem;
+  max-width: 11rem;
 }
 
 .app-layout-collapsed-brand .brand-nav-logo,
 .app-layout-collapsed-brand .home-nav-logo-img {
-  height: 2.75rem;
-  max-width: 10rem;
+  height: 3.15rem;
+  max-width: 11rem;
 }
 
 .app-layout-collapsed-brand .home-nav-logo-swap {
-  max-width: 10rem;
+  max-width: 11rem;
 }
 
 .app-layout-main-column {
@@ -5170,17 +5170,17 @@ input[type="checkbox"] {
 
   .app-layout-mobile-brand {
     flex-shrink: 0;
-    max-width: 9rem;
+    max-width: 10rem;
   }
 
   .app-layout-mobile-brand .brand-nav-logo,
   .app-layout-mobile-brand .home-nav-logo-img {
-    height: 2.75rem;
-    max-width: 9rem;
+    height: 3.15rem;
+    max-width: 10rem;
   }
 
   .app-layout-mobile-brand .home-nav-logo-swap {
-    max-width: 9rem;
+    max-width: 10rem;
   }
 
   .app-layout-header-actions .home-nav-util-group {
@@ -5194,17 +5194,17 @@ input[type="checkbox"] {
 
 @media (max-width: 1023px) and (min-width: 640px) {
   .app-layout-mobile-brand {
-    max-width: 10rem;
+    max-width: 11rem;
   }
 
   .app-layout-mobile-brand .brand-nav-logo,
   .app-layout-mobile-brand .home-nav-logo-img {
-    height: 3rem;
-    max-width: 10rem;
+    height: 3.35rem;
+    max-width: 11rem;
   }
 
   .app-layout-mobile-brand .home-nav-logo-swap {
-    max-width: 10rem;
+    max-width: 11rem;
   }
 }
 
@@ -7307,8 +7307,8 @@ input[type="checkbox"] {
 }
 
 :root {
-  --brand-nav-logo-height: 2.75rem;
-  --brand-nav-logo-max-width: 18rem;
+  --brand-nav-logo-height: 3.25rem;
+  --brand-nav-logo-max-width: 20rem;
 }
 
 
@@ -7573,7 +7573,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 }
 
 .home-main-nav .home-nav-logo-img--default {
-  transform: scale(0.8);
+  transform: scale(0.92);
   transform-origin: left center;
 }
 
@@ -7617,7 +7617,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 .home-main-nav .home-nav-logo-btn:hover .home-nav-logo-img--default {
   opacity: 1;
-  transform: scale(0.84);
+  transform: scale(0.96);
 }
 
 /* ─── HubRegistrar text wordmark (official logo asset pending) ───────────── */
@@ -8263,8 +8263,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 @media (max-width: 1279px) and (min-width: 640px) {
   :root {
-    --brand-nav-logo-height: 2.25rem;
-    --brand-nav-logo-max-width: 11rem;
+    --brand-nav-logo-height: 2.65rem;
+    --brand-nav-logo-max-width: 13rem;
   }
 
   body.home-page-body {
@@ -8298,8 +8298,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 @media (max-width: 639px) {
   :root {
-    --brand-nav-logo-height: 1.75rem;
-    --brand-nav-logo-max-width: 7.5rem;
+    --brand-nav-logo-height: 2.1rem;
+    --brand-nav-logo-max-width: 9rem;
   }
 
   .home-main-nav-inner {

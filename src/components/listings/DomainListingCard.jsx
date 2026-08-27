@@ -471,18 +471,32 @@ export default function DomainListingCard({
           <p className="text-[11px] font-semibold text-sky-800/80">Standard Domain</p>
 
           {/* Price — Premium text-base font-extrabold */}
-          {priceText ? (
-            <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">
-              {priceText}
-              <span className="text-[11px] font-medium text-gray-400 ml-1">/yr</span>
-            </p>
-          ) : (
-            <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
-          )}
+          {(() => {
+            const isCom = display.ext?.full && display.ext.full.replace('.', '').toLowerCase() === 'com';
+            return priceText ? (
+              <>
+                <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">
+                  {priceText}
+                  {isCom ? (
+                    <span className="text-[11px] font-medium text-gray-400 ml-1">(1st Year)</span>
+                  ) : (
+                    <span className="text-[11px] font-medium text-gray-400 ml-1">/yr</span>
+                  )}
+                </p>
+                {isCom && (
+                  <p className="text-[11px] font-medium text-gray-400 leading-none pt-0.5">
+                    Renews at ₹1,050/yr
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
+            );
+          })()}
         </div>
 
         {/* Bottom: Cart button + Share — matches DomainCard layout */}
-        <div className="mt-6 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           {canBuy ? (
             <AddToCartButton
               productType="DOMAIN_LISTING"

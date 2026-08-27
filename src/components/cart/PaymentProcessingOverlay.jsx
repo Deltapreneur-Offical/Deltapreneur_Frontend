@@ -100,7 +100,7 @@ export default function PaymentProcessingOverlay({ open = false }) {
             >
               <BrandLogoImage
                 alt="HubRegistrar"
-                className="mb-6 h-10 w-auto object-contain"
+                className="mb-6 h-12 w-auto object-contain"
               />
               <div
                 className="mb-6 h-12 w-12 animate-spin rounded-full border-[3px] border-indigo-200 border-t-indigo-600"

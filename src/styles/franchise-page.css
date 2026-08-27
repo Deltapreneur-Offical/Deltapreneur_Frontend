@@ -49,11 +49,11 @@
 }
 
 .franchise-page > nav .home-nav-logo-swap {
-  max-width: 12rem;
+  max-width: 14rem;
 }
 
 .franchise-page > nav .brand-nav-logo {
-  height: 2.35rem;
+  height: 2.75rem;
 }
 
 .franchise-hero {
@@ -610,11 +610,11 @@
   }
 
   .franchise-page > nav .home-nav-logo-swap {
-    max-width: 8.5rem;
+    max-width: 10rem;
   }
 
   .franchise-page > nav .brand-nav-logo {
-    height: 1.9rem;
+    height: 2.2rem;
   }
 
   .franchise-hero {

@@ -1,11 +1,15 @@
 /**
  * Customer-facing helpers — never expose registrar vendor brand names.
  *
- * Prefer vanity HubRegistrar hosts for new domains. Legacy OpenProvider hosts
- * still map to friendly labels for existing customer orders.
+ * Prefer vanity HubRegistrar hosts for new domains. Existing CoBrother and
+ * legacy OpenProvider hosts still map to friendly labels.
  */
 
 const PLATFORM_NS_ALIASES = {
+  'ns1.hubregistrar.com': 'HubRegistrar DNS 1',
+  'ns2.hubregistrar.com': 'HubRegistrar DNS 2',
+  'ns3.hubregistrar.com': 'HubRegistrar DNS 3',
+  // Existing CoBrother vanity hosts remain platform DNS.
   'ns1.cobrother.com': 'HubRegistrar DNS 1',
   'ns2.cobrother.com': 'HubRegistrar DNS 2',
   'ns3.cobrother.com': 'HubRegistrar DNS 3',
@@ -15,11 +19,11 @@ const PLATFORM_NS_ALIASES = {
   'ns3.openprovider.eu': 'HubRegistrar DNS 3',
 };
 
-/** When user picks a friendly label, submit the vanity host (not legacy OP). */
+/** When user picks a friendly label, submit HubRegistrar vanity hosts (not CoBrother / legacy OP). */
 const ALIAS_TO_PLATFORM_NS = {
-  'hubregistrar dns 1': 'ns1.cobrother.com',
-  'hubregistrar dns 2': 'ns2.cobrother.com',
-  'hubregistrar dns 3': 'ns3.cobrother.com',
+  'hubregistrar dns 1': 'ns1.hubregistrar.com',
+  'hubregistrar dns 2': 'ns2.hubregistrar.com',
+  'hubregistrar dns 3': 'ns3.hubregistrar.com',
 };
 
 const VENDOR_NS_PATTERN = /openprovider|resellerclub|onlyfordemo/i;

@@ -273,4 +273,27 @@ export function serviceMatchesHubRegistrarSubcategory(service, categorySlug, sub
   return (sub.aliases || []).some((alias) => slugsRelated(nameSlug, alias) || nameSlug === alias);
 }
 
+/**
+ * Match a static subcategory item against an API service record and return
+ * the API record if matched. Uses name/alias slug similarity.
+ */
+export function matchServicePriceFromApi(subcategory, apiServices) {
+  if (!subcategory || !apiServices || apiServices.length === 0) return null;
+  const subSlug = subcategory.slug || '';
+  const subAliases = subcategory.aliases || [];
+
+  for (const svc of apiServices) {
+    if (svc.price == null || svc.price === 0) continue;
+    const nameSlug = slugifyServiceName(svc.name);
+    // Direct slug match
+    if (nameSlug === subSlug) return svc;
+    // Alias match
+    if (subAliases.some((alias) => nameSlug === alias || nameSlug.startsWith(alias + '_') || alias.startsWith(nameSlug + '_'))) return svc;
+    // Partial match: API name contains subcategory label words
+    const subWords = subSlug.split('_').filter((w) => w.length > 4);
+    if (subWords.length > 0 && subWords.every((w) => nameSlug.includes(w))) return svc;
+  }
+  return null;
+}
+
 export { slugifyServiceName };

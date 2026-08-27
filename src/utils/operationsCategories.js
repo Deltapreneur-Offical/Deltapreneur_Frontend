@@ -205,4 +205,5 @@ export {
   getHubRegistrarSubcategories,
   getHubRegistrarSubcategory,
   serviceMatchesHubRegistrarSubcategory,
+  matchServicePriceFromApi,
 } from './hubRegistrarSubcategories';

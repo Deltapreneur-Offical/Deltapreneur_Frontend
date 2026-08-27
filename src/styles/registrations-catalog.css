@@ -53,6 +53,14 @@
   letter-spacing: -0.02em;
 }
 
+.reg-category-card__price {
+  margin: 0.4rem 0 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f766e;
+  letter-spacing: -0.02em;
+}
+
 .reg-category-card__kicker,
 .reg-category-card__desc {
   margin: 0;

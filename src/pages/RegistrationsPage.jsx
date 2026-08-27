@@ -11,7 +11,10 @@ import useDocumentMeta from '../hooks/useDocumentMeta';
 import {
   getHubRegistrarSubcategories,
   getStaticHubRegistrarCategories,
+  matchServicePriceFromApi,
 } from '../utils/operationsCategories';
+import { operationsAPI } from '../api/services';
+import { asArray } from '../utils/asArray';
 import { REGISTRATIONS_PAGE_PATH } from '../utils/operationsSections';
 import '../styles/registrations-catalog.css';
 
@@ -24,7 +27,22 @@ export default function RegistrationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [apiServices, setApiServices] = useState([]);
   const { isScrolled, navRef } = useHomePageScrollNav();
+
+  // Fetch operations services from backend (single source of truth for prices)
+  useEffect(() => {
+    let cancelled = false;
+    operationsAPI
+      .list({ serviceType: 'compliance' })
+      .then(({ data }) => {
+        if (!cancelled) setApiServices(asArray(data));
+      })
+      .catch(() => {
+        if (!cancelled) setApiServices([]);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const selectedSlug = searchParams.get('category') || '';
   const selectedCategory = useMemo(
@@ -33,8 +51,16 @@ export default function RegistrationsPage() {
   );
   const showingServices = Boolean(selectedCategory);
   const services = useMemo(
-    () => (selectedCategory ? getHubRegistrarSubcategories(selectedCategory.slug) : []),
-    [selectedCategory],
+    () => {
+      if (!selectedCategory) return [];
+      const subs = getHubRegistrarSubcategories(selectedCategory.slug);
+      if (apiServices.length === 0) return subs;
+      return subs.map((sub) => {
+        const match = matchServicePriceFromApi(sub, apiServices);
+        return match ? { ...sub, price: match.price } : sub;
+      });
+    },
+    [selectedCategory, apiServices],
   );
 
   useDocumentMeta({

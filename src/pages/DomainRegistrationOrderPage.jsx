@@ -1098,7 +1098,7 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                   type="text"
                   value={ns1}
                   onChange={(e) => setNs1(e.target.value)}
-                  placeholder="e.g. ns1.cobrother.com"
+                  placeholder="e.g. ns1.hubregistrar.com"
                   className="w-full bg-gray-50 border border-gray-200/80 focus:border-indigo-500 focus:bg-white text-sm font-medium px-4 py-2.5 rounded-xl transition-all outline-none"
                 />
               </div>
@@ -1110,7 +1110,7 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                   type="text"
                   value={ns2}
                   onChange={(e) => setNs2(e.target.value)}
-                  placeholder="e.g. ns2.cobrother.com"
+                  placeholder="e.g. ns2.hubregistrar.com"
                   className="w-full bg-gray-50 border border-gray-200/80 focus:border-indigo-500 focus:bg-white text-sm font-medium px-4 py-2.5 rounded-xl transition-all outline-none"
                 />
               </div>

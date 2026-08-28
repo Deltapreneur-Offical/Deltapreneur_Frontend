@@ -13,6 +13,33 @@ import { loadExchangeRates } from '../services/currencyRates';
 
 const STORAGE_KEY = 'cobrother_currency';
 
+/** Direct API fetch — bypasses cached currencyRates.js module. */
+async function fetchRatesDirectly() {
+  const supported = new Set(SUPPORTED_CURRENCIES);
+  const APIs = [
+    'https://open.er-api.com/v6/latest/INR',
+    'https://api.exchangerate-api.com/v4/latest/INR',
+  ];
+  const results = await Promise.allSettled(
+    APIs.map((url) => fetch(url, { cache: 'no-store' }).then((r) => r.json()))
+  );
+  const ok = results
+    .filter((r) => r.status === 'fulfilled')
+    .map((r) => r.value?.rates ?? {});
+  if (!ok.length) throw new Error('All exchange rate APIs failed');
+
+  const merged = { INR: 1 };
+  for (const code of supported) {
+    if (code === 'INR') continue;
+    const candidates = ok
+      .map((rates) => Number(rates[code]))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    if (candidates.length === 0) continue;
+    merged[code] = candidates.reduce((s, r) => s + r, 0) / candidates.length;
+  }
+  return merged;
+}
+
 const CurrencyContext = createContext(null);
 
 export function CurrencyProvider({ children }) {
@@ -34,13 +61,22 @@ export function CurrencyProvider({ children }) {
   const refreshRates = useCallback(async (force = false) => {
     setRatesLoading(true);
     try {
-      const result = await loadExchangeRates({ force });
-      setMeta(result.fallback ? buildFallbackMetaFromRates() : result.meta);
-      setRatesStale(Boolean(result.stale || result.fallback));
-      setRatesUpdatedAt(result.updatedAt ?? null);
+      // Always fetch directly from live APIs for accurate rates.
+      // The shared currencyRates.js module may have stale cached data.
+      const rates = await fetchRatesDirectly();
+      setMeta(buildMetaFromRates(rates));
+      setRatesStale(false);
     } catch {
-      setMeta(buildFallbackMetaFromRates());
-      setRatesStale(true);
+      // Direct fetch failed — try legacy path as fallback
+      try {
+        const result = await loadExchangeRates({ force: true });
+        setMeta(result.fallback ? buildFallbackMetaFromRates() : result.meta);
+        setRatesStale(Boolean(result.stale || result.fallback));
+        setRatesUpdatedAt(result.updatedAt ?? null);
+      } catch {
+        setMeta(buildFallbackMetaFromRates());
+        setRatesStale(true);
+      }
     } finally {
       setRatesLoading(false);
     }

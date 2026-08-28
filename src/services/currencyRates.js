@@ -3,13 +3,19 @@ import { EXCHANGE_RATE_CACHE_TTL_MS, SUPPORTED_CURRENCIES } from '../constants/c
 import { buildMetaFromRates, buildFallbackMetaFromRates } from '../utils/currencyDisplay';
 
 /** Bumped when rate aggregation changes — clears stale caches. */
-const STORAGE_KEY = 'cobrother_exchange_rates_v3';
-const LEGACY_STORAGE_KEYS = ['cobrother_exchange_rates_v1', 'cobrother_exchange_rates_v2'];
+const STORAGE_KEY = 'cobrother_exchange_rates_v5';
+const LEGACY_STORAGE_KEYS = ['cobrother_exchange_rates_v1', 'cobrother_exchange_rates_v2', 'cobrother_exchange_rates_v3', 'cobrother_exchange_rates_v4'];
 
 const PROVIDERS = {
   openErApi: 'https://open.er-api.com/v6/latest/INR',
   exchangeRateApiV4: 'https://api.exchangerate-api.com/v4/latest/INR',
 };
+
+/** Use a cache-busting query so the browser never serves a stale API response. */
+function bust(url) {
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}_cb=${Date.now()}`;
+}
 
 function clearLegacyCaches() {
   try {
@@ -94,9 +100,7 @@ function normalizeRatesObject(rawRates) {
   for (const code of SUPPORTED_CURRENCIES) {
     if (code === 'INR') continue;
     const rate = Number(rawRates[code]);
-    if (!Number.isFinite(rate) || rate <= 0) {
-      throw new Error(`Missing or invalid rate for ${code}`);
-    }
+    if (!Number.isFinite(rate) || rate <= 0) continue;
     rates[code] = rate;
   }
   return rates;
@@ -116,7 +120,8 @@ export function mergeConsumerRates(snapshots) {
     if (!candidates.length) {
       throw new Error(`No live rate for ${code}`);
     }
-    merged[code] = Math.min(...candidates);
+    // Average across providers for a more accurate mid-market rate.
+    merged[code] = candidates.reduce((sum, r) => sum + r, 0) / candidates.length;
   }
   return merged;
 }
@@ -135,7 +140,7 @@ function packPayload(rates, source, updatedAt, sourceUpdatedAt, extra = {}) {
 }
 
 async function fetchOpenErApiRates() {
-  const res = await fetch(PROVIDERS.openErApi, {
+  const res = await fetch(bust(PROVIDERS.openErApi), {
     method: 'GET',
     cache: 'no-store',
     headers: { Accept: 'application/json' },
@@ -153,7 +158,7 @@ async function fetchOpenErApiRates() {
 }
 
 async function fetchExchangeRateApiV4Rates() {
-  const res = await fetch(PROVIDERS.exchangeRateApiV4, {
+  const res = await fetch(bust(PROVIDERS.exchangeRateApiV4), {
     method: 'GET',
     cache: 'no-store',
     headers: { Accept: 'application/json' },

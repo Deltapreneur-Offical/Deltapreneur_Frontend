@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Share2, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { operationsPathForHubRegistrarService } from '../../utils/operationsSections';
-import { formatInr } from '../../utils/money';
+import useCurrency from '../../context/CurrencyContext';
 import '../../styles/registrations-catalog.css';
 
 export default function HomeRegistrationServiceCard({ categorySlug, service }) {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const hasPrice = service.price != null && Number(service.price) > 0;
   const [copied, setCopied] = useState(false);
 
@@ -54,19 +57,32 @@ export default function HomeRegistrationServiceCard({ categorySlug, service }) {
       <Link
         to={operationsPathForHubRegistrarService(categorySlug, service.slug)}
         className="reg-category-card reg-category-card--service"
-        aria-label={service.label + ' Hub Registrar service'}
+        aria-label={`${service.label} Hub Registrar service`}
       >
         <div className="reg-category-card__body">
-          <p className="reg-category-card__kicker">Service</p>
+          <p className="reg-category-card__kicker">{t('regCatalogCardService')}</p>
           <h3 className="reg-category-card__title">{service.label}</h3>
           {hasPrice ? (
             <p className="reg-category-card__price">
-              {formatInr(service.price, { forceDecimals: true })}
+              {formatPrice(service.price, { forceDecimals: true })}
             </p>
-          ) : null}
+          ) : (
+            <div className="mt-1.5">
+              <span className="inline-block rounded-lg border border-indigo-200 bg-indigo-50/60 px-3 py-1.5 text-xs font-semibold text-indigo-700">
+                {t('operationsContactForPricing', { defaultValue: 'Contact for pricing' })}
+              </span>
+              {service.governmentFeesApplicable && service.governmentFeeText && (
+                <div className="mt-1.5">
+                  <span className="inline-block rounded-md bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                    {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <span className="reg-category-card__cta">
-          Explore
+          {t('regCatalogCardExplore')}
           <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden />
         </span>
       </Link>

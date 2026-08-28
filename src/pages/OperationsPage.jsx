@@ -389,7 +389,7 @@ export default function OperationsPage() {
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {isOffices
-                  ? 'Hub Registrar Offices'
+                  ? t('operationsSectionOffices', { defaultValue: 'Hub Registrar Offices' })
                   : isCompliance
                   ? t('operationsComplianceFindHeading', { defaultValue: 'Find Hub Registrar' })
                   : t('operationsFeaturedVaHeading', { defaultValue: 'Featured Virtual Assistants' })}
@@ -414,7 +414,7 @@ export default function OperationsPage() {
                   <input
                     type="text"
                     className="hro-city-filter-input"
-                    placeholder="Search by city..."
+                    placeholder={t('operationsSearchByCity', { defaultValue: 'Search by city...' })}
                     value={officeCityFilter}
                     onChange={(e) => setOfficeCityFilter(e.target.value)}
                   />
@@ -423,7 +423,7 @@ export default function OperationsPage() {
                       type="button"
                       className="hro-city-filter-clear"
                       onClick={() => setOfficeCityFilter('')}
-                      aria-label="Clear search"
+                      aria-label={t('operationsClearSearch', { defaultValue: 'Clear search' })}
                     >
                       ×
                     </button>
@@ -454,10 +454,10 @@ export default function OperationsPage() {
             ) : offices.length === 0 ? (
               <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
                 <p className="text-base font-semibold text-gray-900 mb-1">
-                  No offices available yet
+                  {t('operationsNoOfficesAvailable', { defaultValue: 'No offices available yet' })}
                 </p>
                 <p className="text-sm text-gray-500 mb-4">
-                  Hub Registrar offices will appear here once added by the admin team.
+                  {t('operationsNoOfficesHint', { defaultValue: 'Hub Registrar offices will appear here once added by the admin team.' })}
                 </p>
               </div>
             ) : (() => {
@@ -478,10 +478,10 @@ export default function OperationsPage() {
                       </svg>
                     </div>
                     <p className="hro-no-results-title">
-                      No offices found in "{officeCityFilter}"
+                      {t('operationsNoOfficesFound', { city: officeCityFilter, defaultValue: 'No offices found in "{{city}}"' })}
                     </p>
                     <p className="hro-no-results-desc">
-                      We will be coming to that city soon! Try searching for a different city.
+                      {t('operationsNoOfficesFoundHint', { defaultValue: 'We will be coming to that city soon! Try searching for a different city.' })}
                     </p>
                   </div>
                 );
@@ -559,10 +559,10 @@ export default function OperationsPage() {
           <section className="hro-quick-actions">
             <div className="mb-3">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
-                Quick Actions
+                {t('operationsQuickActions', { defaultValue: 'Quick Actions' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
-                Quick ways to connect with Hub Registrar offices.
+                {t('operationsQuickActionsHint', { defaultValue: 'Quick ways to connect with Hub Registrar offices.' })}
               </p>
             </div>
 
@@ -581,8 +581,8 @@ export default function OperationsPage() {
                   </svg>
                 </div>
                 <div className="hro-quick-action-content">
-                  <span className="hro-quick-action-title">Find Nearest Office</span>
-                  <span className="hro-quick-action-desc">Browse all available offices</span>
+                  <span className="hro-quick-action-title">{t('operationsFindNearestOffice', { defaultValue: 'Find Nearest Office' })}</span>
+                  <span className="hro-quick-action-desc">{t('operationsBrowseAllOffices', { defaultValue: 'Browse all available offices' })}</span>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-quick-action-arrow">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -600,8 +600,8 @@ export default function OperationsPage() {
                   </svg>
                 </div>
                 <div className="hro-quick-action-content">
-                  <span className="hro-quick-action-title">Call Support</span>
-                  <span className="hro-quick-action-desc">Speak with our team</span>
+                  <span className="hro-quick-action-title">{t('operationsCallSupport', { defaultValue: 'Call Support' })}</span>
+                  <span className="hro-quick-action-desc">{t('operationsSpeakWithTeam', { defaultValue: 'Speak with our team' })}</span>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-quick-action-arrow">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -621,8 +621,8 @@ export default function OperationsPage() {
                   </svg>
                 </div>
                 <div className="hro-quick-action-content">
-                  <span className="hro-quick-action-title">Report an Issue</span>
-                  <span className="hro-quick-action-desc">Coming soon</span>
+                  <span className="hro-quick-action-title">{t('operationsReportIssue', { defaultValue: 'Report an Issue' })}</span>
+                  <span className="hro-quick-action-desc">{t('operationsComingSoon', { defaultValue: 'Coming soon' })}</span>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-quick-action-arrow">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

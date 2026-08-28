@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Search, ShieldCheck, Building2, Scale, Sparkles, X } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
@@ -19,10 +20,42 @@ import { REGISTRATIONS_PAGE_PATH } from '../utils/operationsSections';
 import '../styles/registrations-catalog.css';
 
 const ALL_CATEGORIES = getStaticHubRegistrarCategories();
-const EMPTY_CATEGORY_MESSAGE = 'No category found. Check back soon, we are working on it.';
-const EMPTY_SERVICE_MESSAGE = 'No service found. Check back soon, we are working on it.';
+
+/** Map category slugs to i18n translation keys for labels, descriptions, and highlights. */
+const REG_CAT_I18N = {
+  business_entity: { labelKey: 'regCatBusinessEntity', descKey: 'regCatDescBusinessEntity', highlightsKey: 'regCatHighlightBusinessEntity' },
+  tax_identity: { labelKey: 'regCatTaxIdentity', descKey: 'regCatDescTaxIdentity', highlightsKey: 'regCatHighlightTaxIdentity' },
+  local_licences: { labelKey: 'regCatLocalLicences', descKey: 'regCatDescLocalLicences', highlightsKey: 'regCatHighlightLocalLicences' },
+  msme_udyam: { labelKey: 'regCatMsmeUdyam', descKey: 'regCatDescMsmeUdyam', highlightsKey: 'regCatHighlightMsmeUdyam' },
+  startup_dpiit: { labelKey: 'regCatStartupDpiit', descKey: 'regCatDescStartupDpiit', highlightsKey: 'regCatHighlightStartupDpiit' },
+  food_fssai: { labelKey: 'regCatFoodFssai', descKey: 'regCatDescFoodFssai', highlightsKey: 'regCatHighlightFoodFssai' },
+  import_export: { labelKey: 'regCatImportExport', descKey: 'regCatDescImportExport', highlightsKey: 'regCatHighlightImportExport' },
+  manufacturing: { labelKey: 'regCatManufacturing', descKey: 'regCatDescManufacturing', highlightsKey: 'regCatHighlightManufacturing' },
+  technology_saas: { labelKey: 'regCatTechnologySaas', descKey: 'regCatDescTechnologySaas', highlightsKey: 'regCatHighlightTechnologySaas' },
+  ecommerce: { labelKey: 'regCatEcommerce', descKey: 'regCatDescEcommerce', highlightsKey: 'regCatHighlightEcommerce' },
+  fintech: { labelKey: 'regCatFintech', descKey: 'regCatDescFintech', highlightsKey: 'regCatHighlightFintech' },
+  aviation: { labelKey: 'regCatAviation', descKey: 'regCatDescAviation', highlightsKey: 'regCatHighlightAviation' },
+  construction_real_estate: { labelKey: 'regCatConstructionRealEstate', descKey: 'regCatDescConstructionRealEstate', highlightsKey: 'regCatHighlightConstructionRealEstate' },
+  healthcare: { labelKey: 'regCatHealthcare', descKey: 'regCatDescHealthcare', highlightsKey: 'regCatHighlightHealthcare' },
+  education: { labelKey: 'regCatEducation', descKey: 'regCatDescEducation', highlightsKey: 'regCatHighlightEducation' },
+  professional_services: { labelKey: 'regCatProfessionalServices', descKey: 'regCatDescProfessionalServices', highlightsKey: 'regCatHighlightProfessionalServices' },
+  telecom: { labelKey: 'regCatTelecom', descKey: 'regCatDescTelecom', highlightsKey: 'regCatHighlightTelecom' },
+  pharma_chemical: { labelKey: 'regCatPharmaChemical', descKey: 'regCatDescPharmaChemical', highlightsKey: 'regCatHighlightPharmaChemical' },
+  automotive: { labelKey: 'regCatAutomotive', descKey: 'regCatDescAutomotive', highlightsKey: 'regCatHighlightAutomotive' },
+  agriculture: { labelKey: 'regCatAgriculture', descKey: 'regCatDescAgriculture', highlightsKey: 'regCatHighlightAgriculture' },
+  logistics_transport: { labelKey: 'regCatLogisticsTransport', descKey: 'regCatDescLogisticsTransport', highlightsKey: 'regCatHighlightLogisticsTransport' },
+  tourism_hospitality: { labelKey: 'regCatTourismHospitality', descKey: 'regCatDescTourismHospitality', highlightsKey: 'regCatHighlightTourismHospitality' },
+  entertainment_media: { labelKey: 'regCatEntertainmentMedia', descKey: 'regCatDescEntertainmentMedia', highlightsKey: 'regCatHighlightEntertainmentMedia' },
+  energy_power: { labelKey: 'regCatEnergyPower', descKey: 'regCatDescEnergyPower', highlightsKey: 'regCatHighlightEnergyPower' },
+  defence_aerospace: { labelKey: 'regCatDefenceAerospace', descKey: 'regCatDescDefenceAerospace', highlightsKey: 'regCatHighlightDefenceAerospace' },
+  intellectual_property: { labelKey: 'regCatIntellectualProperty', descKey: 'regCatDescIntellectualProperty', highlightsKey: 'regCatHighlightIntellectualProperty' },
+  employer_labour: { labelKey: 'regCatEmployerLabour', descKey: 'regCatDescEmployerLabour', highlightsKey: 'regCatHighlightEmployerLabour' },
+  environmental: { labelKey: 'regCatEnvironmental', descKey: 'regCatDescEnvironmental', highlightsKey: 'regCatHighlightEnvironmental' },
+  digital_services: { labelKey: 'regCatDigitalServices', descKey: 'regCatDescDigitalServices', highlightsKey: 'regCatHighlightDigitalServices' },
+};
 
 export default function RegistrationsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -52,9 +85,26 @@ export default function RegistrationsPage() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [selectedSlug]);
 
+  // Translate category labels, descriptions, and highlights for the current language
+  const translatedCategories = useMemo(() => (
+    ALL_CATEGORIES.map((cat) => {
+      const i18n = REG_CAT_I18N[cat.slug];
+      if (!i18n) return cat;
+      return {
+        ...cat,
+        label: t(i18n.labelKey, cat.label),
+        description: t(i18n.descKey, cat.description),
+        highlights: (cat.highlights || []).map((_, idx) => {
+          const key = `${i18n.highlightsKey}${idx}`;
+          return t(key, cat.highlights[idx]);
+        }),
+      };
+    })
+  ), [t]);
+
   const selectedCategory = useMemo(
-    () => ALL_CATEGORIES.find((row) => row.slug === selectedSlug) || null,
-    [selectedSlug],
+    () => translatedCategories.find((row) => row.slug === selectedSlug) || null,
+    [selectedSlug, translatedCategories],
   );
   const showingServices = Boolean(selectedCategory);
   const services = useMemo(
@@ -64,7 +114,7 @@ export default function RegistrationsPage() {
       if (apiServices.length === 0) return subs;
       return subs.map((sub) => {
         const match = matchServicePriceFromApi(sub, apiServices);
-        return match ? { ...sub, price: match.price } : sub;
+        return match ? { ...sub, price: match.price, governmentFeesApplicable: match.governmentFeesApplicable, governmentFeeText: match.governmentFeeText } : sub;
       });
     },
     [selectedCategory, apiServices],
@@ -101,14 +151,14 @@ export default function RegistrationsPage() {
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
-    if (!query) return ALL_CATEGORIES;
-    return ALL_CATEGORIES.filter((category) => (
+    if (!query) return translatedCategories;
+    return translatedCategories.filter((category) => (
       category.label.toLowerCase().includes(query)
       || category.slug.toLowerCase().includes(query)
       || (category.description || '').toLowerCase().includes(query)
       || (category.highlights || []).some((point) => point.toLowerCase().includes(query))
     ));
-  }, [categoryFilter]);
+  }, [categoryFilter, translatedCategories]);
 
   const filteredServices = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
@@ -124,7 +174,7 @@ export default function RegistrationsPage() {
   };
 
   const visibleItems = showingServices ? filteredServices : filteredCategories;
-  const emptyMessage = showingServices ? EMPTY_SERVICE_MESSAGE : EMPTY_CATEGORY_MESSAGE;
+  const emptyMessage = showingServices ? t('regCatalogEmptyService') : t('regCatalogEmptyCategory');
 
   return (
     <div className="relative min-w-0 bg-white overflow-visible">
@@ -148,20 +198,20 @@ export default function RegistrationsPage() {
         <div className="reg-catalog-hero-inner">
           <p className="reg-catalog-kicker">
             <Sparkles size={13} strokeWidth={2.4} aria-hidden />
-            Hub Registrar
+            {t('regCatalogKicker')}
           </p>
           <h1 className="reg-catalog-title">
             {showingServices ? selectedCategory.label : (
               <>
-                Every registration category,
-                <span> mapped for Indian business.</span>
+                {t('regCatalogHeroTitle')}
+                <span> {t('regCatalogHeroTitleAccent')}</span>
               </>
             )}
           </h1>
           <p className="reg-catalog-lead">
             {showingServices
-              ? 'Choose a service under this category. If it is live in Hub Registrar, you can book a slot. If not, we will show a coming-soon message.'
-              : 'From a street food cart to aviation, manufacturing, startups, and enterprises. Choose a category to open the services that apply.'}
+              ? t('regCatalogHeroDescService')
+              : t('regCatalogHeroDesc')}
           </p>
 
           <div className="reg-catalog-search">
@@ -169,10 +219,10 @@ export default function RegistrationsPage() {
             <input
               type="text"
               className="reg-catalog-search__input"
-              placeholder={showingServices ? 'Search services' : 'Search with Category'}
+              placeholder={showingServices ? t('regCatalogSearchServices') : t('regCatalogSearchCategories')}
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              aria-label={showingServices ? 'Search services' : 'Search with Category'}
+              aria-label={showingServices ? t('regCatalogSearchServices') : t('regCatalogSearchCategories')}
               autoComplete="off"
               spellCheck="false"
             />
@@ -181,7 +231,7 @@ export default function RegistrationsPage() {
                 type="button"
                 className="reg-catalog-search__clear"
                 onClick={() => setCategoryFilter('')}
-                aria-label="Clear search"
+                aria-label={t('regCatalogClearSearch')}
               >
                 <X size={14} strokeWidth={2.25} aria-hidden />
               </button>
@@ -194,21 +244,21 @@ export default function RegistrationsPage() {
                 <Building2 size={18} strokeWidth={2} aria-hidden />
                 <div>
                   <strong>{ALL_CATEGORIES.length}</strong>
-                  <span>Categories</span>
+                  <span>{t('regCatalogStatCategories')}</span>
                 </div>
               </div>
               <div className="reg-catalog-stat">
                 <Scale size={18} strokeWidth={2} aria-hidden />
                 <div>
-                  <strong>India-wide</strong>
-                  <span>Entity to industry</span>
+                  <strong>{t('regCatalogStatIndiaWide')}</strong>
+                  <span>{t('regCatalogStatEntityIndustry')}</span>
                 </div>
               </div>
               <div className="reg-catalog-stat">
                 <ShieldCheck size={18} strokeWidth={2} aria-hidden />
                 <div>
-                  <strong>Guided</strong>
-                  <span>Open matching services</span>
+                  <strong>{t('regCatalogStatGuided')}</strong>
+                  <span>{t('regCatalogStatOpenMatching')}</span>
                 </div>
               </div>
             </div>
@@ -223,17 +273,17 @@ export default function RegistrationsPage() {
               {showingServices ? (
                 <button type="button" className="reg-catalog-back" onClick={goBackToCategories}>
                   <ArrowLeft size={16} strokeWidth={2.25} aria-hidden />
-                  Back to categories
+                  {t('regCatalogBackToCategories')}
                 </button>
               ) : null}
               <h2 className="reg-catalog-section-title">
-                {showingServices ? 'Browse services' : 'Browse categories'}
+                {showingServices ? t('regCatalogBrowseServices') : t('regCatalogBrowseCategories')}
               </h2>
               <p className="reg-catalog-count">
                 {visibleItems.length}{' '}
                 {showingServices
-                  ? (visibleItems.length === 1 ? 'service' : 'services')
-                  : (visibleItems.length === 1 ? 'category' : 'categories')}
+                  ? (visibleItems.length === 1 ? t('regCatalogCountService') : t('regCatalogCountServices'))
+                  : (visibleItems.length === 1 ? t('regCatalogCountCategory') : t('regCatalogCountCategories'))}
               </p>
             </div>
           </div>

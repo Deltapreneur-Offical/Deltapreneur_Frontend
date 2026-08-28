@@ -485,7 +485,7 @@ export default function DomainListingCard({
                 </p>
                 {isCom && (
                   <p className="text-[11px] font-medium text-gray-400 leading-none pt-0.5">
-                    Renews at ₹1,050/yr
+                    Renews at {formatPrice(1050)}/yr
                   </p>
                 )}
               </>

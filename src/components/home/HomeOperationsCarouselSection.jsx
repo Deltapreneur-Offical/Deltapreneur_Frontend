@@ -283,7 +283,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             {t('operationsHomeEmpty', { defaultValue: 'No services available yet.' })}
           </p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={50} ariaLabel={title}>
+          <HomeAutoScrollRow durationSec={sectionId === 'compliance' ? 500 : 50} ariaLabel={title}>
             {services.map((service) => (
               <HomeAutoScrollRowItem key={service.id}>
                 {renderServiceCard(service)}

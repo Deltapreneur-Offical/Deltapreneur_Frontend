@@ -21,6 +21,17 @@ export default function OperationsServiceCard({ service, onHire }) {
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
 
   return (
+    <>
+    <style>{`
+      .ops-badge-scroll {
+        display: inline-block;
+        animation: ops-badge-marquee 8s ease-in-out infinite alternate;
+      }
+      @keyframes ops-badge-marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-30%); }
+      }
+    `}</style>
     <article
       key={service.id}
       className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg"
@@ -43,8 +54,8 @@ export default function OperationsServiceCard({ service, onHire }) {
       </p>
       <div className="mt-4 pt-3 border-t border-gray-100 flex items-end justify-between gap-3">
         {cardCompliance && !priceInfo.showPrice ? (
-          <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 px-3 py-2 min-h-[2.75rem]">
-            <p className="text-xs font-semibold text-indigo-700">
+          <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 px-3 py-2 min-h-[2.75rem] overflow-hidden">
+            <p className="ops-badge-scroll text-sm font-semibold text-indigo-700 whitespace-nowrap">
               {t('operationsContactForPricing', { defaultValue: 'Contact for pricing' })}
             </p>
           </div>
@@ -64,8 +75,8 @@ export default function OperationsServiceCard({ service, onHire }) {
           <div className="min-h-[2.75rem]" />
         )}
         {service.governmentFeesApplicable && service.governmentFeeText && (
-          <div className="mt-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-center">
-            <p className="text-[11px] font-semibold text-amber-700">{service.governmentFeeText}</p>
+          <div className="mt-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-center overflow-hidden">
+            <p className="ops-badge-scroll text-sm font-semibold text-amber-700 whitespace-nowrap">{service.governmentFeeText}</p>
           </div>
         )}
         <button
@@ -80,5 +91,6 @@ export default function OperationsServiceCard({ service, onHire }) {
         </button>
       </div>
     </article>
+    </>
   );
 }

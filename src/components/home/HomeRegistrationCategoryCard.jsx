@@ -48,7 +48,7 @@ function toneForSlug(slug) {
   return CATEGORY_TONES[hash];
 }
 
-const CATEGORY_ICONS = {
+export const CATEGORY_ICONS = {
   business_entity: Building2,
   tax_identity: Receipt,
   local_licences: Landmark,

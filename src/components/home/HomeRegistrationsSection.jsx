@@ -71,7 +71,7 @@ export default function HomeRegistrationsSection() {
         {filteredCategories.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{EMPTY_MESSAGE}</p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={90} ariaLabel="Registrations">
+          <HomeAutoScrollRow durationSec={160} ariaLabel="Registrations">
             {filteredCategories.map((category) => (
               <HomeAutoScrollRowItem key={category.slug}>
                 <HomeRegistrationCategoryCard category={category} variant="marquee" />

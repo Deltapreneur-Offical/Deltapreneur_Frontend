@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Share2, Search, Check } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Share2, Search, Check, Copy, X } from 'lucide-react';
 import {
   Briefcase, Building2, Car, Clapperboard, Copyright, Cpu,
   Factory, FlaskConical, Globe, GraduationCap, HardHat, HeartPulse,
@@ -47,20 +48,43 @@ export default function HomeRegistrationsSection() {
     ));
   }, [categoryFilter]);
 
-  const handleShare = useCallback((e, slug) => {
+  const handleShare = useCallback((e, cat) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = window.location.origin + registrationsPathForCategory(slug);
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(url).then(() => {
-        setCopiedSlug(slug);
+    const url = window.location.origin + registrationsPathForCategory(cat.slug);
+    const title = cat.label || 'HubRegistrar';
+    const text = `Check out ${title} registrations on HubRegistrar!\n\n${url}`;
+
+    // Use native share if available (mobile)
+    if (navigator.share) {
+      navigator.share({ title, text, url }).catch(() => {});
+      return;
+    }
+
+    // Fallback: copy to clipboard with visual feedback
+    const copyText = (text) => {
+      if (navigator.clipboard?.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      return Promise.resolve();
+    };
+
+    copyText(url)
+      .then(() => {
+        setCopiedSlug(cat.slug);
         setTimeout(() => setCopiedSlug(null), 1500);
-      }).catch(() => {
+      })
+      .catch(() => {
         window.prompt('Copy this link:', url);
       });
-    } else {
-      window.prompt('Copy this link:', url);
-    }
   }, []);
 
   const renderCard = (cat) => {
@@ -68,14 +92,15 @@ export default function HomeRegistrationsSection() {
     const highlights = (cat.highlights || []).slice(0, 3);
 
     return (
-      <Link
-        to={registrationsPathForCategory(cat.slug)}
-        className="reg-mini-card"
-        aria-label={`${cat.label} registrations`}
-      >
-        <button type="button" className="reg-mini-card__share" onClick={(e) => handleShare(e, cat.slug)} aria-label="Share">
+      <div className="reg-mini-card-wrapper">
+        <button type="button" className="reg-mini-card__share" onClick={(e) => handleShare(e, cat)} aria-label="Share">
           {copiedSlug === cat.slug ? <Check size={15} strokeWidth={2.5} /> : <Share2 size={15} strokeWidth={2} />}
         </button>
+        <Link
+          to={registrationsPathForCategory(cat.slug)}
+          className="reg-mini-card"
+          aria-label={`${cat.label} registrations`}
+        >
         <div className="reg-mini-card__top">
           <h3 className="reg-mini-card__title">{cat.label}</h3>
           {cat.description && (
@@ -101,7 +126,8 @@ export default function HomeRegistrationsSection() {
             <Icon size={36} strokeWidth={1.5} />
           </div>
         </div>
-      </Link>
+        </Link>
+      </div>
     );
   };
 

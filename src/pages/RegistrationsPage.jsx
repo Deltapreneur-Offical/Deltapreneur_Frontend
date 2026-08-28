@@ -45,6 +45,13 @@ export default function RegistrationsPage() {
   }, []);
 
   const selectedSlug = searchParams.get('category') || '';
+
+  // Scroll to top when the selected category changes so the destination
+  // page always starts at the top instead of preserving the old scroll position.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [selectedSlug]);
+
   const selectedCategory = useMemo(
     () => ALL_CATEGORIES.find((row) => row.slug === selectedSlug) || null,
     [selectedSlug],

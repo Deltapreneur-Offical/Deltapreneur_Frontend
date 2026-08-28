@@ -1153,7 +1153,7 @@
 .home-auto-scroll-row .home-preview-card-shell .home-operations-preview-card {
   width: 100%;
   height: 100%;
-  min-height: 22rem;
+  min-height: 17.5rem;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -1273,7 +1273,6 @@
 
 .home-operations-preview-card__title {
   margin: 0;
-  flex: 1 1 auto;
   min-width: 0;
   font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.12rem;
@@ -1311,10 +1310,10 @@
   color: #475569;
   font-weight: 500;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 5rem;
+  min-height: 0;
   flex: 1 1 auto;
 }
 
@@ -1427,19 +1426,20 @@
 
 /* Government fee notice */
 .home-operations-preview-card__gov-fee {
-  padding: 0.35rem 0.75rem;
-  margin: 0 0.6rem;
+  padding: 0.25rem 0.5rem;
+  margin: 0.4rem 0.6rem 0;
   background: #fffbeb;
   border: 1px solid #fde68a;
-  border-radius: 6px;
+  border-radius: 5px;
   text-align: center;
 }
 
 .home-operations-preview-card__gov-fee-text {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: #92400e;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .home-operations-preview-card__cta {

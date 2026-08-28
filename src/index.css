@@ -11444,7 +11444,7 @@ body.home-menu-open {
   flex-direction: column;
   width: 100%;
   max-width: 28rem;
-  max-height: min(92vh, 640px);
+  max-height: 88vh;
   overflow: hidden;
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -11569,6 +11569,7 @@ body.home-menu-open {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
   padding: 0.75rem 1rem 1rem;
 }
 
@@ -11577,7 +11578,25 @@ body.home-menu-open {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem 0.75rem;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
   padding-right: 0.1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.operations-request-modal-fields::-webkit-scrollbar {
+  width: 4px;
+}
+
+.operations-request-modal-fields::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.operations-request-modal-fields::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
 }
 
 .operations-request-modal-field {
@@ -11676,12 +11695,66 @@ body.home-menu-open {
 }
 
 @media (max-width: 480px) {
+  .operations-request-modal-overlay {
+    align-items: center;
+    padding: 1rem 0.75rem;
+  }
+
+  .operations-request-modal {
+    max-height: 82vh;
+    border-radius: 1rem;
+  }
+
+  .operations-request-modal-header {
+    flex-shrink: 0;
+    padding: 0.85rem 0.85rem 0.65rem;
+    padding-right: 2.5rem;
+  }
+
+  .operations-request-modal-title {
+    font-size: 1rem;
+  }
+
+  .operations-request-modal-service-name {
+    font-size: 0.75rem;
+  }
+
+  .operations-request-modal-service-price {
+    font-size: 0.75rem;
+  }
+
+  .operations-request-modal-service-hint {
+    font-size: 0.68rem;
+  }
+
+  .operations-request-modal-form {
+    padding: 0.6rem 0.85rem 0.75rem;
+    gap: 0;
+  }
+
   .operations-request-modal-fields {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 
   .operations-request-modal-field--full {
     grid-column: auto;
+  }
+
+  .operations-request-modal-actions {
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+    padding-top: 0.6rem;
+  }
+
+  .operations-request-modal-submit {
+    min-height: 2.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .operations-request-modal-cancel {
+    min-height: 2.25rem;
+    font-size: 0.8125rem;
   }
 }
 

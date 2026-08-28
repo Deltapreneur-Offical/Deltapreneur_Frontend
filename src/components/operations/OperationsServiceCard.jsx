@@ -76,7 +76,7 @@ export default function OperationsServiceCard({ service, onHire }) {
         )}
         {service.governmentFeesApplicable && service.governmentFeeText && (
           <div className="mt-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-center overflow-hidden">
-            <p className="ops-badge-scroll text-sm font-semibold text-amber-700 whitespace-nowrap">{service.governmentFeeText}</p>
+            <p className="ops-badge-scroll text-[12px] font-semibold text-amber-700 whitespace-nowrap">{service.governmentFeeText.replace(/^Government/i, 'Govt.')}</p>
           </div>
         )}
         <button

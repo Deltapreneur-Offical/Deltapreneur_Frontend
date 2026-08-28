@@ -166,7 +166,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
       {service.governmentFeesApplicable && service.governmentFeeText && (
         <div className="home-operations-preview-card__gov-fee">
           <span className="home-operations-preview-card__gov-fee-text">
-            {service.governmentFeeText}
+            {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
           </span>
         </div>
       )}

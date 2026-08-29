@@ -90,6 +90,7 @@ export default function HomeRegistrationsSection() {
   const renderCard = (cat) => {
     const Icon = CATEGORY_ICONS[cat.slug] || Briefcase;
     const highlights = (cat.highlights || []).slice(0, 3);
+    const price = cat.price || '₹999';
 
     return (
       <div className="reg-mini-card-wrapper">
@@ -119,12 +120,9 @@ export default function HomeRegistrationsSection() {
         )}
         <div className="reg-mini-card__footer">
           <span className="reg-mini-card__cta">
-            Explore
-            <ArrowRight size={16} strokeWidth={2.5} aria-hidden />
+            Starts from {price}
+            <ArrowRight size={14} strokeWidth={2.5} aria-hidden />
           </span>
-          <div className="reg-mini-card__icon">
-            <Icon size={36} strokeWidth={1.5} />
-          </div>
         </div>
         </Link>
       </div>

@@ -373,21 +373,13 @@ function TotalsPanel({
   edgePointsUsed,
   payable,
 }) {
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
+  const breakdownId = 'cart-pay-today-breakdown';
+
   return (
     <div className="rounded-2xl border border-gray-100 bg-gradient-to-b from-gray-50/90 to-white p-4 space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+      {(showEdgePointsRow || (!edgePointsApplying && edgePointsUsed > 0)) && (
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[13px] text-gray-600">Products total</span>
-          <span className="text-[13px] font-semibold text-gray-900 tabular-nums">
-            {formatPrice(orderView.productSubtotal)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[13px] text-gray-500">GST (18%)</span>
-          <span className="text-[13px] font-medium text-gray-700 tabular-nums">
-            {formatPrice(orderView.productGst)}
-          </span>
-        </div>
         {showEdgePointsRow && (
           <div className="flex items-center justify-between gap-3">
             <span className="text-[13px] text-emerald-700">Edge Points</span>
@@ -406,19 +398,63 @@ function TotalsPanel({
           <p className="text-[10px] text-emerald-600 text-right -mt-1">{edgePointsUsed} pts redeemed</p>
         )}
       </div>
+      )}
 
-      <div className="rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/70 px-4 py-3.5 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Pay today</p>
-          <p className="text-[10px] text-gray-500 mt-0.5">Services billed separately</p>
-        </div>
-        <p className="font-display text-xl font-bold text-emerald-900 tabular-nums">
-          {edgePointsApplying ? (
-            formatPrice(orderView.productTotal)
-          ) : (
-            <AnimatedAmount value={payable} formatPrice={formatPrice} />
+      <div className="rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/70 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setBreakdownOpen((open) => !open)}
+          aria-expanded={breakdownOpen}
+          aria-controls={breakdownId}
+          className="w-full px-4 py-3.5 flex items-center justify-between gap-4 text-left transition-colors hover:bg-emerald-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:ring-inset"
+        >
+          <div>
+            <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Pay today</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">Including applicable taxes</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <p className="font-display text-xl font-bold text-emerald-900 tabular-nums">
+              {edgePointsApplying ? (
+                formatPrice(orderView.productTotal)
+              ) : (
+                <AnimatedAmount value={payable} formatPrice={formatPrice} />
+              )}
+            </p>
+            <ChevronDown
+              size={16}
+              className={`text-emerald-700/70 transition-transform duration-200 ${breakdownOpen ? 'rotate-180' : ''}`}
+              aria-hidden
+            />
+          </div>
+        </button>
+        <AnimatePresence initial={false}>
+          {breakdownOpen && (
+            <motion.div
+              id={breakdownId}
+              key="pay-today-breakdown"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-3.5 pt-0 space-y-2 border-t border-emerald-100/90">
+                <div className="flex items-center justify-between gap-3 pt-3">
+                  <span className="text-[12px] text-gray-600">Products</span>
+                  <span className="text-[12px] font-semibold text-gray-900 tabular-nums">
+                    {formatPrice(orderView.productSubtotal)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[12px] text-gray-600">GST (18%)</span>
+                  <span className="text-[12px] font-semibold text-gray-900 tabular-nums">
+                    {formatPrice(orderView.productGst)}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           )}
-        </p>
+        </AnimatePresence>
       </div>
     </div>
   );

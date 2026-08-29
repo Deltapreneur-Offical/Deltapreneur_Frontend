@@ -153,6 +153,7 @@ export default function AddToCartButton({
 
       const rect = btnRef.current?.getBoundingClientRect();
       if (rect) setFlyRect(rect);
+      navigate('/cart');
     } catch (err) {
       setJustAdded(false);
       if (isPremiumCartAloneError(err)) {

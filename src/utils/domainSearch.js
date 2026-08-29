@@ -38,8 +38,28 @@ export function clearDomainSearchCache() {
   supportedTldsCatalogPromise = null;
 }
 
+const SLD_MAX_LEN = 63;
+
+/** DNS SLD for Domain Register: drop spaces/punctuation, keep letters, digits, hyphen. */
 export function normalizeDomainLabel(raw) {
-  return (raw || '').trim().toLowerCase().split('.')[0];
+  const head = String(raw || '').trim().toLowerCase().split('.')[0];
+  return head.replace(/[^a-z0-9-]/g, '').replace(/^-+|-+$/g, '').slice(0, SLD_MAX_LEN);
+}
+
+/** Safe TLD / multi-part extension after the first dot (e.g. co.uk). */
+export function normalizeDomainExtension(raw) {
+  const text = String(raw || '').trim().toLowerCase();
+  const dot = text.indexOf('.');
+  if (dot === -1) return '';
+  return text.slice(dot + 1).replace(/[^a-z0-9.-]/g, '').replace(/^\.+|\.+$/g, '');
+}
+
+/** Domain Register FQDN. Bare phrases default to .com. Search box text is unchanged. */
+export function normalizeSearchFqdn(raw, defaultExt = 'com') {
+  const label = normalizeDomainLabel(raw);
+  if (!label) return '';
+  const ext = normalizeDomainExtension(raw) || String(defaultExt || 'com').replace(/[^a-z0-9.-]/g, '') || 'com';
+  return `${label}.${ext}`;
 }
 
 function mapItem(item, label) {

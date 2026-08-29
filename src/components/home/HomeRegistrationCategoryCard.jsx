@@ -46,6 +46,7 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
   const Icon = CATEGORY_ICONS[category.slug] || Briefcase;
   const tone = toneForSlug(category.slug || '');
   const [copied, setCopied] = useState(false);
+  const price = category.price || '₹999';
 
   const handleShare = useCallback((e) => {
     e.preventDefault();
@@ -129,10 +130,12 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
           )}
         </div>
 
-        <span className="reg-category-card__cta">
-          {t('regCatalogCardExplore')}
-          <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden />
-        </span>
+        <div className="reg-category-card__footer">
+          <span className="reg-category-card__cta">
+            Starts from {price}
+            <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden />
+          </span>
+        </div>
       </Link>
     </div>
   );

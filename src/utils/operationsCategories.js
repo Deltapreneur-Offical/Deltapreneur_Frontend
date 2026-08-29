@@ -112,16 +112,63 @@ export const HUB_REGISTRAR_CATEGORY_HIGHLIGHTS = {
   digital_services: ['DSC and e-sign', 'Website presence', 'Digital filings'],
 };
 
+export const HUB_REGISTRAR_CATEGORY_PRICES = {
+  business_entity: { display: '₹1', numeric: 1 },
+  msme_udyam: { display: '₹1', numeric: 1 },
+  tax_identity: { display: '₹99', numeric: 99 },
+  import_export: { display: '₹999', numeric: 999 },
+  local_licences: { display: '₹999', numeric: 999 },
+  food_fssai: { display: '₹1,499', numeric: 1499 },
+  digital_services: { display: '₹1,999', numeric: 1999 },
+  professional_services: { display: '₹1,999', numeric: 1999 },
+  ecommerce: { display: '₹2,499', numeric: 2499 },
+  education: { display: '₹2,499', numeric: 2499 },
+  employer_labour: { display: '₹2,499', numeric: 2499 },
+  agriculture: { display: '₹2,499', numeric: 2499 },
+  tourism_hospitality: { display: '₹2,499', numeric: 2499 },
+  technology_saas: { display: '₹2,999', numeric: 2999 },
+  startup_dpiit: { display: '₹2,999', numeric: 2999 },
+  intellectual_property: { display: '₹2,999', numeric: 2999 },
+  entertainment_media: { display: '₹2,999', numeric: 2999 },
+  logistics_transport: { display: '₹2,999', numeric: 2999 },
+  manufacturing: { display: '₹4,999', numeric: 4999 },
+  construction_real_estate: { display: '₹4,999', numeric: 4999 },
+  healthcare: { display: '₹4,999', numeric: 4999 },
+  environmental: { display: '₹4,999', numeric: 4999 },
+  automotive: { display: '₹4,999', numeric: 4999 },
+  energy_power: { display: '₹4,999', numeric: 4999 },
+  fintech: { display: '₹7,999', numeric: 7999 },
+  pharma_chemical: { display: '₹7,999', numeric: 7999 },
+  telecom: { display: '₹7,999', numeric: 7999 },
+  aviation: { display: '₹9,999', numeric: 9999 },
+  defence_aerospace: { display: '₹9,999', numeric: 9999 },
+};
+
 export function getStaticHubRegistrarCategories() {
-  return HUB_REGISTRAR_CATEGORY_OPTIONS
+  const categories = [];
+  const seen = new Set();
+
+  HUB_REGISTRAR_CATEGORY_OPTIONS
     .filter((opt) => opt.value !== 'other')
-    .map((opt) => ({
-      slug: opt.value,
-      label: opt.label,
-      description: HUB_REGISTRAR_CATEGORY_COPY[opt.value]
-        || 'Registration and compliance support for this category.',
-      highlights: HUB_REGISTRAR_CATEGORY_HIGHLIGHTS[opt.value] || [],
-    }));
+    .forEach((opt) => {
+      if (!seen.has(opt.value)) {
+        seen.add(opt.value);
+        const priceData = HUB_REGISTRAR_CATEGORY_PRICES[opt.value] || { display: '₹999', numeric: 999 };
+        categories.push({
+          slug: opt.value,
+          label: opt.label,
+          description: HUB_REGISTRAR_CATEGORY_COPY[opt.value]
+            || 'Registration and compliance support for this category.',
+          highlights: HUB_REGISTRAR_CATEGORY_HIGHLIGHTS[opt.value] || [],
+          price: priceData.display,
+          priceNumeric: priceData.numeric,
+        });
+      }
+    });
+
+  categories.sort((a, b) => a.priceNumeric - b.priceNumeric);
+
+  return categories;
 }
 
 const HUB_REGISTRAR_KNOWN_VALUES = new Set(

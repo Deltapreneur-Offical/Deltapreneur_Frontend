@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import greenFavicon from './assets/favicon.png';
-import purpleFavicon from './assets/Cobrother_Profile_skyblue.png';
+import lightFavicon from './assets/favicon.png';
+import darkFavicon from './assets/Hubregistrar_favicon_white.png';
+import { applyThemeFavicon } from './utils/applyThemeFavicon';
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
@@ -166,18 +167,11 @@ const currentCountryBase = getCountryBasename();
 
 export default function App() {
   useEffect(() => {
-    const lightModeMatcher = window.matchMedia('(prefers-color-scheme: light)');
-    
-    const handleThemeChange = (e) => {
-      const faviconTag = document.getElementById('dynamic-favicon');
-      if (faviconTag) {
-        faviconTag.href = e.matches ? purpleFavicon : greenFavicon;
-      }
-    };
-
-    handleThemeChange(lightModeMatcher);
-    lightModeMatcher.addEventListener('change', handleThemeChange);
-    return () => lightModeMatcher.removeEventListener('change', handleThemeChange);
+    const darkModeMatcher = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyFavicon = () => applyThemeFavicon(lightFavicon, darkFavicon);
+    applyFavicon();
+    darkModeMatcher.addEventListener('change', applyFavicon);
+    return () => darkModeMatcher.removeEventListener('change', applyFavicon);
   }, []);
 
   return (

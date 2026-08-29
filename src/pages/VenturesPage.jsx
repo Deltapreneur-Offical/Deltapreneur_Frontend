@@ -254,6 +254,15 @@ export default function VenturesPage() {
 
   return (
     <AppLayout>
+      <style>{`
+        /* Nest Hub Max (1280×800): inner card grids 1-col */
+        @media (min-width: 1024px) and (max-width: 1400px) {
+          .ventures-split__body .venture-listing-grid,
+          .ventures-split__body .listing-card-glow-grid.venture-listing-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
       <ListingBackLink />
       <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between min-w-0">
         <div>

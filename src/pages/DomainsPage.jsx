@@ -595,6 +595,13 @@ export default function DomainsPage() {
               .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
                 flex-wrap: nowrap !important;
               }
+              /* Nest Hub Max (1280×800) and similar: inner card grids 1-col */
+              @media (min-width: 1024px) and (max-width: 1400px) {
+                .ventures-split__body .domain-listing-grid,
+                .ventures-split__body .listing-card-glow-grid.domain-listing-grid {
+                  grid-template-columns: 1fr !important;
+                }
+              }
             `}</style>
 
             <div className="domains-page-wrap">

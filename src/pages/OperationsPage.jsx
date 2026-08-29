@@ -41,6 +41,7 @@ export default function OperationsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const { id: routeVaId } = useParams();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -237,11 +238,26 @@ export default function OperationsPage() {
 
   const categoryFromUrl = searchParams.get('category') || '';
   const serviceFromUrl = searchParams.get('service') || '';
+  const bookServiceId = searchParams.get('bookService') || '';
 
   useEffect(() => {
     if (!isCompliance) return;
     setCategory(categoryFromUrl);
   }, [isCompliance, categoryFromUrl]);
+
+  // Auto-open booking modal when returning from login with bookService param
+  useEffect(() => {
+    if (!user || !bookServiceId || loading) return;
+    const target = services.find((s) => String(s.id) === String(bookServiceId));
+    if (!target) return;
+    // Clear the param so a page refresh does not re-open the modal
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete('bookService');
+      return params;
+    }, { replace: true });
+    setRequestTarget(target);
+  }, [user, bookServiceId, loading, services, setSearchParams]);
 
   const setSection = (nextSectionId) => {
     setSearchParams({ section: nextSectionId }, { replace: true });
@@ -541,7 +557,11 @@ export default function OperationsPage() {
                       service={service}
                       onHire={() => {
                         if (!user) {
-                          navigate('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+                          // Build redirect URL that preserves section/category/service context
+                          const returnPath = window.location.pathname + window.location.search;
+                          const sep = returnPath.includes('?') ? '&' : '?';
+                          const redirectUrl = returnPath + sep + 'bookService=' + encodeURIComponent(service.id);
+                          navigate('/login?redirect=' + encodeURIComponent(redirectUrl));
                           return;
                         }
                         setRequestTarget(service);

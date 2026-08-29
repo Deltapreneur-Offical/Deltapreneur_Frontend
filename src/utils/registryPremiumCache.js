@@ -3,15 +3,14 @@
  * Isolated from marketplace premium (DomainsPage mode=premium).
  */
 
+import { normalizeDomainLabel } from './domainSearch';
+
 const CACHE_TTL_MS = 5 * 60 * 1000;
 /** @type {Map<string, { ts: number, items: object[] }>} */
 const cache = new Map();
 
 export function premiumCacheKey(label) {
-  return String(label || '')
-    .trim()
-    .toLowerCase()
-    .split('.')[0];
+  return normalizeDomainLabel(label);
 }
 
 export function getCachedPremiumItems(label) {

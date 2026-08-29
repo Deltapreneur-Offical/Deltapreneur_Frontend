@@ -22,17 +22,13 @@ import {
   premiumCacheKey,
   setCachedPremiumItems,
 } from '../utils/registryPremiumCache';
-import { preferredTldRank } from '../utils/domainSearch';
+import { preferredTldRank, normalizeSearchFqdn } from '../utils/domainSearch';
 
 const DEFAULT_TLD = 'com';
 const PREMIUM_LOADING_MESSAGES = 3;
 
 function parseDomainInput(raw, fallbackTld) {
-  const q = raw.trim().toLowerCase();
-  if (!q) return null;
-  const dot = q.indexOf('.');
-  if (dot !== -1) return q;
-  return `${q}.${fallbackTld}`;
+  return normalizeSearchFqdn(raw, fallbackTld) || null;
 }
 
 function statusBadgeClass(status, lifecycleStatus) {

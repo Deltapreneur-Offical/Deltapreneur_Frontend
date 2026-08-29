@@ -7307,8 +7307,8 @@ input[type="checkbox"] {
 }
 
 :root {
-  --brand-nav-logo-height: 3.25rem;
-  --brand-nav-logo-max-width: 20rem;
+  --brand-nav-logo-height: 3.5rem;
+  --brand-nav-logo-max-width: 22rem;
 }
 
 
@@ -7316,8 +7316,8 @@ body.home-page-body {
   background: #ffffff !important;
   color: #111827 !important;
   overflow-x: clip;
-  --home-topbar-height: 2.5rem;
-  --home-main-nav-height: 3.5rem;
+  --home-topbar-height: 2.85rem;
+  --home-main-nav-height: 3.55rem;
   --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
   --home-hero-glow-hue: 200;
   animation: home-hero-glow-hue-rotate 12s ease-in-out infinite;
@@ -7364,8 +7364,8 @@ body.home-page-body {
 
 @media (min-width: 768px) {
   body.home-page-body {
-    --home-topbar-height: 2.75rem;
-    --home-main-nav-height: 4rem;
+    --home-topbar-height: 3.15rem;
+    --home-main-nav-height: 3.55rem;
   }
 }
 
@@ -7474,7 +7474,7 @@ body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
 
 /* ── Compact scroll-in logo: delayed crossfade after main nav starts hiding ─ */
 .home-top-nav-scroll-logo {
-  --home-top-scroll-logo-height: calc(var(--home-topbar-height) - 0.55rem);
+  --home-top-scroll-logo-height: calc(var(--home-topbar-height) - 0.14rem);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -7496,7 +7496,7 @@ body.home-page-body.scrolled .home-main-nav .home-nav-logo-btn {
 .home-top-nav-scroll-logo.home-nav-logo-btn {
   height: var(--home-top-scroll-logo-height);
   max-height: var(--home-top-scroll-logo-height);
-  max-width: 8.5rem;
+  max-width: 16.5rem;
 }
 
 .home-top-nav-scroll-logo .home-nav-logo-swap {
@@ -7573,7 +7573,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 }
 
 .home-main-nav .home-nav-logo-img--default {
-  transform: scale(0.92);
+  transform: scale(1);
   transform-origin: left center;
 }
 
@@ -7604,7 +7604,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .home-nav-logo-btn:hover .home-nav-logo-img--default,
 .app-sidebar-logo-link:hover .home-nav-logo-img--default,
 .brand-logo-interactive:hover .home-nav-logo-img--default {
-  opacity: 0;
+  opacity: 1;
 }
 
 .home-nav-logo-swap:hover .home-nav-logo-img--hover,
@@ -8102,14 +8102,14 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
    hamburger) collapses on scroll so the compact mark remains visible. */
 @media (max-width: 1279px) {
   body.home-page-body {
-    --home-topbar-height: 2.5rem;
-    --home-main-nav-height: 3.5rem;
+    --home-topbar-height: 2.85rem;
+    --home-main-nav-height: 3.55rem;
     --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
   }
 
   @media (min-width: 768px) {
     body.home-page-body {
-      --home-topbar-height: 2.75rem;
+      --home-topbar-height: 3.15rem;
     }
   }
 
@@ -8263,12 +8263,12 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 @media (max-width: 1279px) and (min-width: 640px) {
   :root {
-    --brand-nav-logo-height: 2.65rem;
-    --brand-nav-logo-max-width: 13rem;
+    --brand-nav-logo-height: 2.9rem;
+    --brand-nav-logo-max-width: 15rem;
   }
 
   body.home-page-body {
-    --home-main-nav-height: 3.625rem;
+    --home-main-nav-height: 3.05rem;
   }
 
   .home-top-nav-inner,
@@ -8298,8 +8298,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 @media (max-width: 639px) {
   :root {
-    --brand-nav-logo-height: 2.1rem;
-    --brand-nav-logo-max-width: 9rem;
+    --brand-nav-logo-height: 2.4rem;
+    --brand-nav-logo-max-width: 11.5rem;
   }
 
   .home-main-nav-inner {
@@ -8354,8 +8354,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   }
 
   body.home-page-body {
-    --home-topbar-height: 2.75rem;
-    --home-main-nav-height: 4rem;
+    --home-topbar-height: 3.15rem;
+    --home-main-nav-height: 3.55rem;
     --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
   }
 

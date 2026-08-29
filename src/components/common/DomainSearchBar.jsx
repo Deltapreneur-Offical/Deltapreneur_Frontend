@@ -10,7 +10,7 @@ import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
 import { fetchAvailableTldsPage, fetchAvailableTldsChunk, fetchAvailableTlds, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
-import { preferredTldRank } from '../../utils/domainSearch';
+import { preferredTldRank, normalizeDomainLabel, normalizeDomainExtension, normalizeSearchFqdn } from '../../utils/domainSearch';
 import { DomainCardGrid } from '../domain/DomainCard';
 import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
 import RegistryPremiumLoader from '../domain/RegistryPremiumLoader';
@@ -681,11 +681,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   }, [resetSearchBar]);
 
   const parseQuery = (raw) => {
-    const q = toSafeLower(raw).trim();
-    if (!q) return null;
-    const dot = q.indexOf('.');
-    if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    return null;
+    const name = normalizeDomainLabel(raw);
+    const ext = normalizeDomainExtension(raw);
+    if (!name || !ext) return null;
+    return [{ name, ext }];
   };
 
   const mapTldItem = (item, label) => {
@@ -802,9 +801,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     const q = toSafeLower(raw).trim();
     if (!q) return;
 
-    const hasTld = q.includes('.');
-    const label = hasTld ? q.split('.')[0] : q;
-    const fqdn = hasTld ? q : `${label}.com`;
+    const label = normalizeDomainLabel(q);
+    const fqdn = normalizeSearchFqdn(q);
+    if (!label || !fqdn) return;
     const cacheKey = `all-tlds:${label}`;
 
     setRegistrySegment(REGISTRY_PREMIUM_SEGMENT.STANDARD);
@@ -1113,6 +1112,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     setLoading(false);
   };
 
+  // Query-only deps: keep the text across pills, but do not search Domain
+  // Register just because the user switched onto that pill.
   useEffect(() => {
     if (searchMode !== 'new') return;
     if (!normalizedQuery) { setResults([]); return; }
@@ -1126,7 +1127,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(query), 250);
     return () => clearTimeout(debounceRef.current);
-  }, [query, searchMode]);
+  }, [query]);
 
   const fetchPremiumDomains = async (raw, options = {}) => {
     const { force = false } = options;
@@ -1207,7 +1208,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       return () => clearTimeout(debounceRef.current);
     }
     return undefined;
-  }, [query, searchMode]);
+  }, [query]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -1235,7 +1236,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
   const handleTabChange = (tabId) => {
     if (tabId === searchMode) return;
-    setQuery('');
     newSearchCacheRef.current.clear();
     clearAllSearchResults();
     setSearchMode(tabId);
@@ -1340,7 +1340,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const handleLoadMorePremium = useCallback(() => {
     setPremiumVisibleCount((c) => c + 15);
     if (tldHasMore && !tldLoadingMore) {
-      loadMoreTlds(normalizedQuery.split('.')[0]);
+      loadMoreTlds(normalizeDomainLabel(normalizedQuery));
     }
   }, [tldHasMore, tldLoadingMore, loadMoreTlds, normalizedQuery]);
 
@@ -1681,7 +1681,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <div className="flex justify-center pt-2">
               <button
                 type="button"
-                onClick={() => loadMoreTlds(normalizedQuery.split('.')[0])}
+                onClick={() => loadMoreTlds(normalizeDomainLabel(normalizedQuery))}
                 disabled={tldLoadingMore}
                 className="inline-flex items-center gap-2 text-sm font-bold text-white bg-gray-900 hover:bg-gray-700 disabled:opacity-60 px-6 h-11 rounded-xl transition-all shadow-sm select-none"
               >

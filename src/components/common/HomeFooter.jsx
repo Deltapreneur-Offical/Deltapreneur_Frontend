@@ -264,7 +264,7 @@ export default function HomeFooter() {
 
             </ScrollLink>
 
-            <ScrollLink to="/join-form" className={linkClass}>
+            <ScrollLink to="/join-form" className={linkClass + ' hidden'}>
 
               {t('joinHubRegistrar', { defaultValue: 'Join Us' })}
 

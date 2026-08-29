@@ -760,7 +760,7 @@ export default function DomainsPage() {
                     <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {showcaseFilter.paginated.map((d) => (
                         <ListingCardShell key={d.showcaseId}>
-                          <ShowcaseDomainCard item={d} />
+                          <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                         </ListingCardShell>
                       ))}
                     </div>
@@ -864,7 +864,7 @@ export default function DomainsPage() {
                           <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
                             {showcaseFilter.filtered.map((d) => (
                               <ListingCardShell key={d.showcaseId}>
-                                <ShowcaseDomainCard item={d} />
+                                <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                               </ListingCardShell>
                             ))}
                           </div>
@@ -955,7 +955,7 @@ export default function DomainsPage() {
                 <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {showcaseFilter.filtered.map((d) => (
                     <ListingCardShell key={d.showcaseId}>
-                      <ShowcaseDomainCard item={d} />
+                      <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                     </ListingCardShell>
                   ))}
                 </div>

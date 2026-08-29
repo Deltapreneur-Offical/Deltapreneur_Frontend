@@ -132,33 +132,46 @@ export default function HomeRegistrationsSection() {
   return (
     <section className="bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
-        <div className="reg-section-header">
-          <h2 className="reg-section-header__title">Registrations</h2>
-          <div className="reg-section-header__actions">
-            <div className="reg-section-header__search">
-              <Search size={16} className="reg-section-header__search-icon" />
-              <input
-                type="text"
-                placeholder="Search with Category"
-                className="reg-section-header__search-input"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                aria-label="Search with Category"
-              />
-              {categoryFilter && (
-                <button type="button" className="reg-section-header__search-clear" onClick={() => setCategoryFilter('')} aria-label="Clear search">×</button>
-              )}
+        <header className="home-section-header home-section-header--operations">
+          <div className="home-section-header__top">
+            <h2 className="home-section-header__title">Registrations</h2>
+            <div className="hro-header-right">
+              <div className="hro-city-filter-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-city-filter-icon">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path strokeLinecap="round" d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  type="text"
+                  className="hro-city-filter-input"
+                  placeholder="Search with Category"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                />
+                {categoryFilter && (
+                  <button
+                    type="button"
+                    className="hro-city-filter-clear"
+                    onClick={() => setCategoryFilter('')}
+                    aria-label="Clear search"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <Link to={REGISTRATIONS_PAGE_PATH} className="home-section-header__view-all">
+                <span>View All</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="home-section-header__view-all-icon">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
-            <Link to={REGISTRATIONS_PAGE_PATH} className="reg-section-header__view-all">
-              <span>View All</span>
-              <ArrowRight size={14} strokeWidth={2.5} />
-            </Link>
           </div>
-        </div>
+        </header>
         {filteredCategories.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{EMPTY_MESSAGE}</p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={160} ariaLabel="Registrations">
+          <HomeAutoScrollRow durationSec={160} ariaLabel="Registrations" onlyWhenOverflow={!!categoryFilter}>
             {filteredCategories.map((cat) => (
               <HomeAutoScrollRowItem key={cat.slug}>
                 {renderCard(cat)}

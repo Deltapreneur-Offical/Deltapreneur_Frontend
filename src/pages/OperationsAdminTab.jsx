@@ -8,7 +8,7 @@ import ConfirmationModal from '../components/common/ConfirmationModal';
 import { operationsAdminAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
 import VirtualAssistantsAdminModule from '../components/admin/VirtualAssistantsAdminModule';
-import { getRequestActionLabel, getRequestStatusLabel } from '../utils/operationsRequestLabels';
+import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
 
@@ -539,7 +539,6 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   ) : (
                     filteredRequests.map((row, index) => {
                       const serial = String(index + 1).padStart(2, '0');
-                      const actionLabel = getRequestActionLabel(row, t);
                       const statusLabel = getRequestStatusLabel(row.status, t);
                       const statusClass = REQUEST_STATUS_STYLES[row.status] || REQUEST_STATUS_STYLES.PENDING;
                       return (
@@ -547,7 +546,6 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                           <td className="operations-admin-serial">{serial}</td>
                           <td className="operations-admin-date">{formatRequestDate(row.createdAt)}</td>
                           <td className="operations-admin-service-name">
-                            <span className="operations-admin-request-action">{actionLabel}</span>
                             <span className="operations-admin-request-service">{row.serviceName}</span>
                           </td>
                           <td className="operations-admin-contact">

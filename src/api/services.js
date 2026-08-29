@@ -359,10 +359,12 @@ export const adminAPI = {
   getOpenProviderManagedAcquisitions: () =>
     api.get('/api/v1/openprovider-managed-acquisitions/all'),
   getShowcaseDomains: (params) => api.get('/api/v1/admin/showcase', { params }),
-  generateShowcaseCandidates: (data) =>
-    api.post('/api/v1/admin/showcase/generate', data),
+  generateShowcaseCandidates: (data, config = {}) =>
+    api.post('/api/v1/admin/showcase/generate', data, config),
   getShowcaseStatus: (generationId) =>
     api.get('/api/v1/admin/showcase/status', { params: { generation_id: generationId } }),
+  cancelShowcaseGeneration: (generationId) =>
+    api.post('/api/v1/admin/showcase/cancel', { generation_id: generationId }),
   selectShowcaseDomain: (id) =>
     api.post('/api/v1/admin/showcase/select', { id }),
   unselectShowcaseDomain: (id) =>

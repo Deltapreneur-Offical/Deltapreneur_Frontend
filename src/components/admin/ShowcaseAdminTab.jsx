@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminAPI } from '../../api/services';
 import useCurrency from '../../context/CurrencyContext';
 
@@ -106,25 +106,29 @@ export default function ShowcaseAdminTab() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [genCount, setGenCount] = useState('50');
+  const [generating, setGenerating] = useState(false);
+  const [genCount, setGenCount] = useState('20');
   const [draft, setDraft] = useState(null);
   const [notice, setNotice] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
 
-  // Phase B UX state
-  const [mode, setMode] = useState('random'); // 'random' | 'keyword'
+  const [mode, setMode] = useState('random');
   const [keyword, setKeyword] = useState('');
-  const [genStatus, setGenStatus] = useState(null); // live polled status
-  const [lastResult, setLastResult] = useState(null); // final generate summary
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [genStatus, setGenStatus] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const pollRef = useRef(null);
   const inFlight = useRef(false);
+  const generationIdRef = useRef(null);
+  const abortRef = useRef(null);
+  const foundCountRef = useRef(0);
 
-  const notify = (type, msg) => {
+  const notify = useCallback((type, msg) => {
     setNotice({ type, msg });
     window.setTimeout(() => setNotice((n) => (n && n.msg === msg ? null : n)), 4500);
-  };
+  }, []);
 
   const stopPoll = useCallback(() => {
     if (pollRef.current) {
@@ -135,18 +139,36 @@ export default function ShowcaseAdminTab() {
 
   useEffect(() => stopPoll, [stopPoll]);
 
-  const load = useCallback(async (silent) => {
-    if (inFlight.current) return;
+  const load = useCallback(async (silent, overrides = {}, isRetry = false) => {
+    if (inFlight.current) {
+      if (silent && !isRetry) {
+        await new Promise((r) => window.setTimeout(r, 150));
+        return load(silent, overrides, true);
+      }
+      return;
+    }
     inFlight.current = true;
     if (!silent) setLoading(true);
     try {
-      const params = buildParams(filters, sort, page, pageSize);
-      const res = await adminAPI.getShowcaseDomains(params);
-      setItems(res.data?.items || []);
-      setTotal(res.data?.total || 0);
-      setConfig(res.data?.config || null);
-      setReadOnly(!!res.data?.readOnly);
-      if (!silent) setDraft((d) => d || res.data?.config || null);
+      const nextFilters = overrides.filters ?? filters;
+      const nextSort = overrides.sort ?? sort;
+      const nextPage = overrides.page ?? page;
+      const params = buildParams(nextFilters, nextSort, nextPage, pageSize);
+      const [poolRes, liveRes] = await Promise.all([
+        adminAPI.getShowcaseDomains(params),
+        adminAPI.getShowcaseDomains({
+          page: 1,
+          page_size: 200,
+          is_selected: true,
+          sort: 'newest',
+        }),
+      ]);
+      setItems(poolRes.data?.items || []);
+      setTotal(poolRes.data?.total || 0);
+      setSelectedItems(liveRes.data?.items || []);
+      setConfig(poolRes.data?.config || null);
+      setReadOnly(!!poolRes.data?.readOnly);
+      if (!silent) setDraft((d) => d || poolRes.data?.config || null);
     } catch (e) {
       notify('error', e.response?.data?.error || 'Failed to load showcase domains.');
     } finally {
@@ -157,11 +179,9 @@ export default function ShowcaseAdminTab() {
 
   useEffect(() => {
     load(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
-  const selected = useMemo(() => items.filter((it) => it.isSelected), [items]);
-  const candidates = useMemo(() => items.filter((it) => !it.isSelected), [items]);
+  const liveOnMarketplace = selectedItems;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   const refresh = useCallback(async (silent) => {
@@ -182,16 +202,17 @@ export default function ShowcaseAdminTab() {
   }, [load, notify]);
 
   const generate = async () => {
-    if (readOnly) return;
-    setBusy(true);
-    setGenStatus(null);
+    if (readOnly || generating) return;
+    setGenerating(true);
+    foundCountRef.current = 0;
+    setGenStatus({ state: 'running', phase: 'Starting OpenProvider search…', candidatesFound: 0 });
     setLastResult(null);
     stopPoll();
     const gid = newGenerationId();
+    generationIdRef.current = gid;
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      // Send the current form values when actually filled in, so a fresh
-      // Generate works even before a Settings save. Empty values are omitted
-      // and the backend falls back to the saved config (no wasted OP calls).
       const payload = { count: Number(genCount) || 1, mode, generation_id: gid };
       if (mode === 'keyword') {
         const labels = String(keyword || '')
@@ -204,52 +225,99 @@ export default function ShowcaseAdminTab() {
         .split(',')
         .map((t) => t.trim().replace(/^\./, ''))
         .filter(Boolean);
-      if (tlds.length) payload.allowed_tlds = tlds;
+      const narrowTldPayload = tlds.length > 0 && tlds.every((t) => ['com', 'net', 'org'].includes(t));
+      // Suggest names: do not send a .com-only limit (backend also expands it).
+      // Search by name still honours the filter the admin typed.
+      if (mode === 'keyword' && tlds.length) payload.allowed_tlds = tlds;
+      if (mode === 'random' && tlds.length && !narrowTldPayload) payload.allowed_tlds = tlds;
 
-      // Poll live progress while the POST is in flight (async server serves
-      // the /status read concurrently). Zero extra OpenProvider calls.
       pollRef.current = setInterval(async () => {
         try {
           const res = await adminAPI.getShowcaseStatus(gid);
           const st = res.data?.status;
           if (st) {
+            if (typeof st.candidatesFound === 'number') {
+              foundCountRef.current = st.candidatesFound;
+            }
             setGenStatus(st);
-            if (st.state === 'complete' || st.state === 'failed') stopPoll();
+            if (st.state === 'complete' || st.state === 'failed' || st.state === 'cancelled') {
+              stopPoll();
+            }
           }
-        } catch (err) {
-          // Transient (e.g. request not registered yet) — poll again.
+        } catch {
+          // Status can 404 until the POST registers — keep polling.
         }
       }, 1200);
 
-      const res = await adminAPI.generateShowcaseCandidates(payload);
+      const res = await adminAPI.generateShowcaseCandidates(payload, { signal: controller.signal });
       const data = res.data || {};
+      stopPoll();
+      if (typeof data.candidates_added === 'number') {
+        foundCountRef.current = data.candidates_added;
+      }
+      setGenStatus((prev) => ({
+        ...(prev || {}),
+        state: data.cancelled ? 'cancelled' : 'complete',
+        phase: data.cancelled ? 'Stopped.' : 'Generation complete.',
+        candidatesFound: data.candidates_added ?? prev?.candidatesFound ?? foundCountRef.current,
+      }));
       setLastResult(data);
-      if ((data.candidates_added ?? 0) > 0) {
-        notify('success', `${data.candidates_added} candidate(s) found. Tick domains to publish.`);
+      if (data.cancelled) {
+        notify('success', data.message || 'Stopped. Found names stay in the pool until you Tick them.');
+      } else if ((data.candidates_added ?? 0) > 0) {
+        notify('success', `${data.candidates_added} name(s) added to the pool. Tick a row to put it on the Marketplace.`);
       } else if (data.message) {
         notify('error', data.message);
       } else {
-        notify('error', 'No candidates found.');
+        notify('error', 'No Premium names found. Try Search by name, or clear the extension limit in Advanced settings.');
       }
       await load(false);
     } catch (e) {
-      if (e.response?.status === 409) {
-        // Another generation/refresh owns the lock. Tell the admin clearly
-        // and still refresh the list — the running generation's results may
-        // already be persisted, so they should appear without re-clicking.
+      stopPoll();
+      const aborted = e?.code === 'ERR_CANCELED' || e?.name === 'CanceledError';
+      if (aborted) {
+        setGenStatus((prev) => ({
+          ...(prev || {}),
+          state: 'cancelled',
+          phase: 'Stopped.',
+        }));
+        setLastResult({
+          cancelled: true,
+          candidates_added: foundCountRef.current,
+          message: 'Stopped. Names already found stay in the pool (not published).',
+        });
+        notify('success', 'Stopped. Names already found stay in the pool (not published).');
+        await load(true);
+      } else if (e.response?.status === 409) {
+        setGenStatus(null);
         notify(
           'error',
           e.response?.data?.error ||
-            'A showcase generation/refresh is already in progress. Try again shortly.'
+            'A search or live-card recheck is already running. Try again shortly.'
         );
         await load(true);
       } else {
-        notify('error', e.response?.data?.error || 'Generation failed.');
+        setGenStatus((prev) => ({ ...(prev || {}), state: 'failed', phase: 'Generation failed.' }));
+        notify('error', e.response?.data?.error || 'Search failed.');
       }
     } finally {
       stopPoll();
-      setBusy(false);
+      setGenerating(false);
+      abortRef.current = null;
+      generationIdRef.current = null;
     }
+  };
+
+  const cancelGenerate = async () => {
+    const gid = generationIdRef.current;
+    if (!gid) return;
+    stopPoll();
+    try {
+      await adminAPI.cancelShowcaseGeneration(gid);
+    } catch {
+      // Still abort the waiting POST so the UI unblocks.
+    }
+    abortRef.current?.abort();
   };
 
   const toggleSelect = async (row, wantSelected) => {
@@ -314,14 +382,21 @@ export default function ShowcaseAdminTab() {
   };
 
   const applyFilters = (next) => {
-    setFilters(next);
     setPage(1);
-    setTimeout(() => load(false), 0);
+    setFilters(next);
   };
 
   const setF = (patch) => applyFilters({ ...filters, ...patch });
 
-  const running = genStatus?.state === 'running';
+  const running = generating || genStatus?.state === 'running';
+
+  const draftTlds = (Array.isArray(draft?.allowed_tlds) ? draft.allowed_tlds : [])
+    .map((t) => String(t || '').trim().replace(/^\./, '').toLowerCase())
+    .filter(Boolean);
+  const narrowTlds = draftTlds.length > 0 && draftTlds.every((t) => ['com', 'net', 'org'].includes(t));
+  const savedKeywords = (Array.isArray(draft?.seed_labels) ? draft.seed_labels : [])
+    .map((s) => String(s || '').trim())
+    .filter(Boolean);
 
   const fmtClock = (sec) => {
     const s = Math.max(0, Math.round(sec || 0));
@@ -334,7 +409,7 @@ export default function ShowcaseAdminTab() {
       {readOnly && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <strong>Read-only preview.</strong> The showcase table is not applied on this database, so
-          nothing can be saved here (Generate / Tick / Untick / Refresh / Settings are disabled).
+          nothing can be saved here (Find names / Tick / Untick / Recheck live cards / Settings are disabled).
           No data has been or can be modified.
         </div>
       )}
@@ -353,52 +428,100 @@ export default function ShowcaseAdminTab() {
 
       {/* --------------------------------------------------------- header */}
       <div>
-        <h2 className="text-lg font-bold text-slate-900">OpenProvider Premium Showcase</h2>
-        <p className="text-sm text-slate-500">
-          Selected domains appear on the Marketplace as OpenProvider Premium cards. Candidates are
-          never published until you tick them.
+        <h2 className="text-lg font-bold text-slate-900">OpenProvider Premium inventory</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Find names into the pool, Tick a row to put it on the Marketplace, Untick to hide it.
+          Nothing goes live until you Tick it.
         </p>
+        <ol className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-slate-600">
+          <li className="rounded-full bg-slate-100 px-3 py-1">1. Find</li>
+          <li className="rounded-full bg-slate-100 px-3 py-1">2. Tick to publish</li>
+          <li className="rounded-full bg-slate-100 px-3 py-1">3. Live on Marketplace</li>
+        </ol>
       </div>
+
+      {narrowTlds && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="font-semibold">Limit extensions is {draftTlds.map((t) => `.${t}`).join(', ')} only</p>
+          <p className="mt-1 text-amber-800">
+            Registry Premium almost never matches invented names on .com. Suggest names now uses popular
+            extensions (com, net, org, io, ai, co) anyway. For Search by name, clear this limit or use a
+            real word like hustler, mint, or nova.
+          </p>
+          <button
+            type="button"
+            onClick={() => setDraft({ ...draft, allowed_tlds: [] })}
+            disabled={readOnly}
+            className="mt-2 rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+          >
+            Clear extension limit
+          </button>
+        </div>
+      )}
 
       {/* ------------------------------------------------- main find/generate */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">Find Premium Domains</h3>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">Find Premium names</h3>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <button
+            type="button"
             onClick={() => setMode('random')}
-            disabled={busy || readOnly}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            disabled={generating || readOnly}
+            className={`rounded-xl border px-4 py-3 text-left transition disabled:opacity-50 ${
               mode === 'random'
-                ? 'bg-indigo-600 text-white'
-                : 'border border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
-            } disabled:opacity-50`}
+                ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-200'
+                : 'border-slate-200 bg-white hover:bg-slate-50'
+            }`}
           >
-            🔀 Random Premium
+            <span className={`text-sm font-semibold ${mode === 'random' ? 'text-indigo-800' : 'text-slate-800'}`}>
+              Suggest names
+            </span>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              Scans your Keywords first, then brandable roots across popular extensions.
+            </span>
           </button>
           <button
+            type="button"
             onClick={() => setMode('keyword')}
-            disabled={busy || readOnly}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            disabled={generating || readOnly}
+            className={`rounded-xl border px-4 py-3 text-left transition disabled:opacity-50 ${
               mode === 'keyword'
-                ? 'bg-indigo-600 text-white'
-                : 'border border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
-            } disabled:opacity-50`}
+                ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-200'
+                : 'border-slate-200 bg-white hover:bg-slate-50'
+            }`}
           >
-            Search by keyword
+            <span className={`text-sm font-semibold ${mode === 'keyword' ? 'text-indigo-800' : 'text-slate-800'}`}>
+              Search by name
+            </span>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              Best hit rate. Type a real word OpenProvider can look up (hustler, mint, nova).
+            </span>
           </button>
+        </div>
 
+        <div className="mt-4 flex flex-wrap items-end gap-3">
           {mode === 'keyword' && (
-            <input
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Domain keyword / name (e.g. shinebyte)"
-              className={`${inputCls} w-56`}
-            />
+            <label className="min-w-[16rem] flex-1">
+              <span className={labelCls}>Word to look up</span>
+              <input
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="hustler, mint, nova"
+                className={inputCls}
+              />
+              <span className="mt-1 block text-[11px] text-slate-400">
+                {keyword.trim()
+                  ? 'OpenProvider will search this word across extensions.'
+                  : savedKeywords.length
+                    ? `Empty → uses saved Keywords: ${savedKeywords.join(', ')}`
+                    : 'Empty → uses saved Keywords below. Add real words, not invented brands.'}
+              </span>
+            </label>
           )}
 
           <label className="flex flex-col">
-            <span className={labelCls}>How many domains?</span>
+            <span className={labelCls}>How many to find?</span>
             <input
               type="number"
               min={1}
@@ -407,25 +530,28 @@ export default function ShowcaseAdminTab() {
               onChange={(e) => setGenCount(e.target.value.replace(/^0+(?=\d)/, ''))}
               className={`${inputCls} w-28`}
               placeholder="e.g. 20"
-              title="Number of premium candidates to try to find"
+              title="How many Premium names to try to add to the pool"
             />
           </label>
           <button
+            type="button"
             onClick={generate}
-            disabled={busy || loading || readOnly}
+            disabled={generating || loading || readOnly}
             title={readOnly ? 'Disabled — read-only preview' : undefined}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {busy ? 'Working…' : `Generate ${genCount || 0}`}
+            {generating ? 'Searching…' : `Find ${genCount || 0}`}
           </button>
-          <button
-            onClick={() => refresh(true)}
-            disabled={busy || loading || readOnly}
-            title={readOnly ? 'Disabled — read-only preview' : undefined}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-          >
-            Refresh
-          </button>
+          {running && (
+            <button
+              type="button"
+              onClick={cancelGenerate}
+              disabled={readOnly}
+              className="rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          )}
         </div>
 
         {/* live progress */}
@@ -452,10 +578,10 @@ export default function ShowcaseAdminTab() {
               )}
             </div>
             <p className="mt-1.5 text-xs text-indigo-600">
-              Candidates found:{' '}
+              In the pool so far:{' '}
               <span className="font-semibold">{genStatus.candidatesFound ?? 0}</span>
               {genStatus.targetCount ? ` of ${genStatus.targetCount}` : ''}
-              {' · '}talking to OpenProvider — checking Premium domains live
+              {' · '}checking OpenProvider Premium names (not published until you Tick)
             </p>
             <ReasonsList reasons={genStatus.reasons} />
           </div>
@@ -471,16 +597,21 @@ export default function ShowcaseAdminTab() {
             }`}
           >
             <p className="font-semibold">
-              {lastResult.mode === 'random' ? 'Random' : 'Keyword'} generation complete —{' '}
-              {lastResult.candidates_added ?? 0} candidate(s) found
-              {lastResult.skipped_existing ? ` (${lastResult.skipped_existing} already in pool)` : ''}.
+              {lastResult.cancelled
+                ? 'Search stopped'
+                : lastResult.mode === 'random'
+                  ? 'Suggested-name search complete'
+                  : 'Search-by-name complete'}
+              {' — '}
+              {lastResult.candidates_added ?? 0} added to the pool
+              {lastResult.skipped_existing ? ` (${lastResult.skipped_existing} already in the pool)` : ''}.
             </p>
-            {lastResult.shortfall && lastResult.message && (
+            {lastResult.message && (lastResult.shortfall || lastResult.cancelled) && (
               <p className="mt-1">{lastResult.message}</p>
             )}
-            {!lastResult.shortfall && (
+            {!lastResult.shortfall && !lastResult.cancelled && (
               <p className="mt-1 text-xs opacity-80">
-                Review the candidates below and tick the ones you want to publish.
+                Review the pool below. Tick puts a name on the Marketplace; Untick takes it off.
               </p>
             )}
             <ReasonsList reasons={lastResult.reasons} />
@@ -491,6 +622,7 @@ export default function ShowcaseAdminTab() {
       {/* ------------------------------------------------- advanced settings */}
       <div className="rounded-2xl border border-slate-200 bg-white">
         <button
+          type="button"
           onClick={() => setShowAdvanced((v) => !v)}
           className="flex w-full items-center justify-between px-5 py-3 text-left"
         >
@@ -501,9 +633,38 @@ export default function ShowcaseAdminTab() {
         </button>
         {showAdvanced && config && (
           <div className="border-t border-slate-100 px-5 pb-5 pt-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <label className="block min-w-0 flex-1">
+                  <span className={labelCls}>Keywords</span>
+                  <input
+                    value={draft?.seed_labels?.join(', ') ?? ''}
+                    onChange={(e) =>
+                      setDraft({ ...draft, seed_labels: e.target.value.split(',').map((s) => s.trim()) })
+                    }
+                    className={inputCls}
+                    placeholder="hustler, mint, nova, solara"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setDraft({ ...draft, seed_labels: ['hustler', 'mint', 'nova', 'solara'] })}
+                  disabled={readOnly}
+                  className="mt-5 shrink-0 rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50"
+                >
+                  Use example words
+                </button>
+              </div>
+              <p className="mt-2 text-[12px] leading-relaxed text-slate-600">
+                Real words OpenProvider can look up — not invented brands.
+                Used when Search by name is empty, by Suggest names (first), and by the overnight refill.
+                Good examples: hustler, mint, nova, sage, harbor. Save after editing.
+              </p>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <label className="block">
-                <span className={labelCls}>Public showcase</span>
+                <span className={labelCls}>Show on Marketplace</span>
                 <select
                   value={draft?.enabled ? 'true' : 'false'}
                   onChange={(e) =>
@@ -511,41 +672,28 @@ export default function ShowcaseAdminTab() {
                   }
                   className={inputCls}
                 >
-                  <option value="false">Disabled</option>
-                  <option value="true">Enabled</option>
+                  <option value="false">Hidden — Ticked names stay in admin only</option>
+                  <option value="true">Visible — Ticked names appear as Premium cards</option>
                 </select>
               </label>
               <label className="block">
-                <span className={labelCls}>Allowed TLDs (comma)</span>
+                <span className={labelCls}>Limit extensions (optional)</span>
                 <input
                   value={draft?.allowed_tlds?.join(', ') ?? ''}
                   onChange={(e) =>
                     setDraft({ ...draft, allowed_tlds: e.target.value.split(',').map((t) => t.trim().replace(/^\./, '')) })
                   }
                   className={inputCls}
-                  placeholder="Empty = all TLDs (recommended)"
+                  placeholder="Leave blank (recommended)"
                 />
                 <span className="mt-1 block text-[11px] text-slate-400">
-                  Leave empty to discover Premium domains across every TLD OpenProvider returns. Enter a comma list (e.g. com, ai, io) to restrict.
-                </span>
-              </label>
-              <label className="block">
-                <span className={labelCls}>Keywords (for Search mode)</span>
-                <input
-                  value={draft?.seed_labels?.join(', ') ?? ''}
-                  onChange={(e) =>
-                    setDraft({ ...draft, seed_labels: e.target.value.split(',').map((s) => s.trim()) })
-                  }
-                  className={inputCls}
-                  placeholder="shinebyte, solara"
-                />
-                <span className="mt-1 block text-[11px] text-slate-400">
-                  Saved keywords are used by the background refresh pool.
+                  Blank is best. Applies strictly to Search by name. Suggest names ignores a .com-only limit.
+                  Example if you need one: ai, io, co
                 </span>
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className={labelCls}>Max selected</span>
+                  <span className={labelCls}>Max live cards</span>
                   <input
                     type="number"
                     min={1}
@@ -556,7 +704,7 @@ export default function ShowcaseAdminTab() {
                   />
                 </label>
                 <label className="block">
-                  <span className={labelCls}>Refresh (hrs)</span>
+                  <span className={labelCls}>Recheck every (hours)</span>
                   <input
                     type="number"
                     min={1}
@@ -570,6 +718,7 @@ export default function ShowcaseAdminTab() {
             </div>
             <div className="mt-4 flex justify-end">
               <button
+                type="button"
                 onClick={saveConfig}
                 disabled={busy || readOnly}
                 title={readOnly ? 'Disabled — read-only preview' : undefined}
@@ -582,25 +731,30 @@ export default function ShowcaseAdminTab() {
         )}
       </div>
 
-      {/* ------------------------------------------------- glossary */}
-      <p className="text-xs text-slate-400">
-        <strong>Candidate</strong> = found by the system but not published yet ·{' '}
-        <strong>Selected</strong> = you approved it and it appears on the Marketplace.
-      </p>
-
-      {/* ------------------------------------------------- selected */}
+      {/* ------------------------------------------------- live on marketplace */}
       <div className="rounded-2xl border border-emerald-200 bg-white p-5">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-800">
-            Selected / Active ({selected.length})
+            Live on Marketplace ({liveOnMarketplace.length})
           </h3>
-          <span className="text-xs text-slate-400">Only these appear publicly</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400">Ticked names — these can appear publicly</span>
+            <button
+              type="button"
+              onClick={() => refresh(true)}
+              disabled={busy || generating || loading || readOnly}
+              title="Re-check live Marketplace cards with OpenProvider (prices and availability). Does not find new names."
+              className="rounded-md border border-emerald-200 bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
+            >
+              Recheck live cards
+            </button>
+          </div>
         </div>
-        {selected.length === 0 ? (
-          <p className="text-sm text-slate-400">No selected domains yet. Tick candidates below to publish.</p>
+        {liveOnMarketplace.length === 0 ? (
+          <p className="text-sm text-slate-400">None live yet. Tick a row in the pool below to publish.</p>
         ) : (
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {selected.map((it) => (
+            {liveOnMarketplace.map((it) => (
               <div
                 key={it.id}
                 className="flex items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-emerald-50/40 px-3 py-2.5"
@@ -641,7 +795,7 @@ export default function ShowcaseAdminTab() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">
-            Candidates ({total})
+            Inventory pool ({total})
           </h3>
           <div className="flex items-center gap-3">
             <button
@@ -651,7 +805,7 @@ export default function ShowcaseAdminTab() {
               {showFilters ? 'Hide filters ▾' : 'Show filters ▸'}
             </button>
             <button
-              onClick={() => { setFilters(DEFAULT_FILTERS); setPage(1); setTimeout(() => load(false), 0); }}
+              onClick={() => { setFilters(DEFAULT_FILTERS); setPage(1); }}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
             >
               Reset filters
@@ -690,7 +844,7 @@ export default function ShowcaseAdminTab() {
               </label>
               <div className="ml-auto flex items-center gap-2">
                 <span className="text-xs text-slate-400">Sort:</span>
-                <select value={sort} onChange={(e) => { setSort(e.target.value); setTimeout(() => load(false), 0); }} className={`${inputCls} w-auto`}>
+                <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className={`${inputCls} w-auto`}>
                   {SORTS.map((s) => (
                     <option key={s.id} value={s.id}>{s.label}</option>
                   ))}
@@ -708,7 +862,7 @@ export default function ShowcaseAdminTab() {
           </div>
         ) : items.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-400">
-            No candidates yet. Use Generate {genCount || 0} to find OpenProvider Premium domains.
+            No names in the pool yet. Use Find {genCount || 0} to search OpenProvider Premium inventory.
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -802,14 +956,14 @@ export default function ShowcaseAdminTab() {
             </span>
             <div className="flex gap-2">
               <button
-                onClick={() => { setPage(Math.max(1, page - 1)); setTimeout(() => load(false), 0); }}
+                onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page <= 1 || loading}
                 className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >
                 Prev
               </button>
               <button
-                onClick={() => { setPage(Math.min(pageCount, page + 1)); setTimeout(() => load(false), 0); }}
+                onClick={() => setPage(Math.min(pageCount, page + 1))}
                 disabled={page >= pageCount || loading}
                 className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >

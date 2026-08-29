@@ -1,6 +1,6 @@
 import React from 'react';
 import VerifiedIcon from '../../assets/Verified_Icon.png';
-import OfficeIcon from '../../assets/hubregistrarofficeicon.png';
+import OfficeIcon from '../../assets/favicon.png';
 import './HubRegistrarOfficeCard.css';
 
 const HubRegistrarOfficeCard = ({ office, compact = false }) => {

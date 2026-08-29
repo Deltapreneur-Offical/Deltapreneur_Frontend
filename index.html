@@ -3,11 +3,34 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link id="dynamic-favicon" rel="icon" type="image/png" href="/src/assets/favicon.png" />
+  <link rel="icon" type="image/png" href="./src/assets/Hubregistrar_favicon_white.png" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" type="image/png" href="./src/assets/favicon.png" media="(prefers-color-scheme: light)" />
+  <script>
+    (function () {
+      var darkHref = '/Hubregistrar_favicon_white.png';
+      var lightHref = '/favicon.png';
+      var darkLink = document.querySelector('link[rel="icon"][media*="dark"]');
+      var lightLink = document.querySelector('link[rel="icon"][media*="light"]');
+      if (darkLink) darkHref = darkLink.getAttribute('href') || darkHref;
+      if (lightLink) lightHref = lightLink.getAttribute('href') || lightHref;
 
-  <link rel="icon" type="image/png" href="/src/assets/favicon.png" media="(prefers-color-scheme: dark)" />
-  <link rel="icon" type="image/png" href="/src/assets/Cobrother_Profile_skyblue.png"
-    media="(prefers-color-scheme: light)" />
+      function applyFavicon() {
+        var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(function (node) {
+          node.remove();
+        });
+        var link = document.createElement('link');
+        link.id = 'dynamic-favicon';
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = isDark ? darkHref : lightHref;
+        document.head.appendChild(link);
+      }
+
+      applyFavicon();
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyFavicon);
+    })();
+  </script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Permissions-Policy" content="unload=*" />

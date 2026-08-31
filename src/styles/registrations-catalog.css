@@ -871,4 +871,32 @@
     width: 28px;
     height: 28px;
   }
+
+  /* Mobile: Title + View All on same row, search below */
+  .home-section-header--operations .home-section-header__top {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .home-section-header--operations .hro-header-right {
+    display: contents;
+  }
+
+  .home-section-header--operations .home-section-header__title {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .home-section-header--operations .home-section-header__view-all {
+    order: 2;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .home-section-header--operations .hro-city-filter-wrap {
+    order: 3;
+    width: 100%;
+    min-width: 0;
+  }
 }

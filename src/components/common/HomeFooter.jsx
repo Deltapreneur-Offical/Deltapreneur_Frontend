@@ -105,7 +105,7 @@ const socialRowOne = [
 
   { id: 'whatsapp', href: WHATSAPP_URL, label: 'WhatsApp', Icon: WhatsappIcon },
 
-  { id: 'facebook', href: 'https://www.facebook.com/share/16vjEWTjHi/', label: 'Facebook', Icon: FacebookIcon },
+  { id: 'facebook', href: 'https://www.facebook.com/hubregistrar', label: 'Facebook', Icon: FacebookIcon },
 
   { id: 'instagram', href: 'https://www.instagram.com/cobrother__?igsh=bXE3YnR4dDJ6NnVi', label: 'Instagram', Icon: InstagramIcon },
 

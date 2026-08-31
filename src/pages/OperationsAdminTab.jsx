@@ -9,6 +9,7 @@ import { operationsAdminAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
 import VirtualAssistantsAdminModule from '../components/admin/VirtualAssistantsAdminModule';
 import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
+import { getHubRegistrarCategoryLabel } from '../utils/operationsCategories';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
 
@@ -218,6 +219,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     if (!q) return requests;
     return requests.filter((row) => {
       const haystack = [
+        getHubRegistrarCategoryLabel(row.category),
         row.serviceName,
         row.fullName,
         row.email,
@@ -515,6 +517,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   <tr>
                     <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
                     <th>{t('adminOperationsColDate', { defaultValue: 'Date' })}</th>
+                    <th>{t('adminOperationsColCategory', { defaultValue: 'Category' })}</th>
                     <th>{t('adminOperationsColServiceName', { defaultValue: 'Service' })}</th>
                     <th>{t('adminOperationsColContact', { defaultValue: 'Contact' })}</th>
                     <th>{t('adminOperationsColDescription', { defaultValue: 'Message' })}</th>
@@ -526,13 +529,13 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <tbody>
                   {requestsLoading ? (
                     <tr>
-                      <td colSpan={6} className="operations-admin-empty">
+                      <td colSpan={7} className="operations-admin-empty">
                         {t('loading', { defaultValue: 'Loading…' })}
                       </td>
                     </tr>
                   ) : filteredRequests.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="operations-admin-empty">
+                      <td colSpan={7} className="operations-admin-empty">
                         {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
                       </td>
                     </tr>
@@ -545,6 +548,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                         <tr key={row.id}>
                           <td className="operations-admin-serial">{serial}</td>
                           <td className="operations-admin-date">{formatRequestDate(row.createdAt)}</td>
+                          <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{getHubRegistrarCategoryLabel(row.category) || '—'}</td>
                           <td className="operations-admin-service-name">
                             <span className="operations-admin-request-service">{row.serviceName}</span>
                           </td>
@@ -621,6 +625,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <thead>
                   <tr>
                     <th>{t('adminOperationsColSerial', { defaultValue: 'S.No' })}</th>
+                    <th>{t('adminOperationsColCategory', { defaultValue: 'Category' })}</th>
                     <th>{t(meta.nameColKey, { defaultValue: meta.defaultNameCol })}</th>
                     <th>{t('adminOperationsColDescription', { defaultValue: 'Description' })}</th>
                     <th>{t('adminOperationsColPrice', { defaultValue: 'Price' })}</th>
@@ -632,7 +637,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <tbody>
                   {filteredCatalog.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="operations-admin-empty">
+                      <td colSpan={7} className="operations-admin-empty">
                         {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
                       </td>
                     </tr>
@@ -643,6 +648,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                       return (
                         <tr key={row.id}>
                           <td className="operations-admin-serial">{serial}</td>
+                          <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{getHubRegistrarCategoryLabel(row.category) || '—'}</td>
                           <td className="operations-admin-name">{row.name}</td>
                           <td className="operations-admin-description">{truncate(row.description)}</td>
                           <td className="operations-admin-price">{formatAdminPrice(row)}</td>

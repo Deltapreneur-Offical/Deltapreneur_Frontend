@@ -1,7 +1,9 @@
 import { useMemo, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Share2, Search, Check, Copy, X } from 'lucide-react';
+import { ArrowRight, Share2, Search, Check, Copy, X } from 'lucide-react';
+import bulletpointTick from '../../assets/bulletpointtick.png';
+import cardTickLightBlue from '../../assets/cardticklightblue.png';
 import {
   Briefcase, Building2, Car, Clapperboard, Copyright, Cpu,
   Factory, FlaskConical, Globe, GraduationCap, HardHat, HeartPulse,
@@ -102,6 +104,13 @@ export default function HomeRegistrationsSection() {
           className="reg-mini-card"
           aria-label={`${cat.label} registrations`}
         >
+        <img
+          src={cardTickLightBlue}
+          alt=""
+          aria-hidden
+          draggable="false"
+          className="reg-mini-card__watermark"
+        />
         <div className="reg-mini-card__top">
           <h3 className="reg-mini-card__title">{cat.label}</h3>
           {cat.description && (
@@ -112,16 +121,24 @@ export default function HomeRegistrationsSection() {
           <ul className="reg-mini-card__list">
             {highlights.map((point) => (
               <li key={point}>
-                <CheckCircle2 size={14} strokeWidth={2} aria-hidden />
+                <img
+                  src={bulletpointTick}
+                  alt=""
+                  aria-hidden
+                  draggable="false"
+                  className="reg-mini-card__bullet"
+                />
                 <span>{point}</span>
               </li>
             ))}
           </ul>
         )}
         <div className="reg-mini-card__footer">
-          <span className="reg-mini-card__cta">
-            Starts from {price}
-            <ArrowRight size={14} strokeWidth={2.5} aria-hidden />
+          <span className="reg-mini-card__price-pill">
+            <span className="reg-mini-card__price">{price}</span>
+            <span className="reg-mini-card__price-arrow" aria-hidden>
+              <ArrowRight size={14} strokeWidth={2.5} />
+            </span>
           </span>
         </div>
         </Link>

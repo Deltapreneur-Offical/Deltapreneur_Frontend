@@ -103,7 +103,7 @@ function MobileAccordion({ title, open, onToggle, children }) {
 
 
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false, backVariant = 'home' }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false, isScrolled = false, backVariant = 'professional' }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { user, hasAccessToken, loading: authLoading } = useAuth();

@@ -497,7 +497,15 @@ export default function DomainListingCard({
 
         {/* Bottom: Cart button + Share — matches DomainCard layout */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {canBuy ? (
+          {isAuction && auctionLive ? (
+            <button
+              type="button"
+              className="inline-flex w-fit min-w-[8.5rem] items-center gap-1.5 px-4 py-2.5 rounded-lg font-bold text-sm bg-sky-500 text-white hover:bg-sky-600 transition-colors whitespace-nowrap"
+              onClick={(e) => { stop(e); onViewAuction?.(); }}
+            >
+              <Gavel size={13} className="shrink-0" /> On Live Auction →
+            </button>
+          ) : canBuy ? (
             <AddToCartButton
               productType="DOMAIN_LISTING"
               productId={domain.id}

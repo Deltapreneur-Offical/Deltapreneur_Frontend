@@ -167,7 +167,17 @@ export default function DomainsPage() {
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
-  const domainRows = asArray(allDomains);
+  // Merge active auction data into domain records so DomainListingCard can detect live auctions.
+  const domainRows = useMemo(() => {
+    const rows = asArray(allDomains);
+    // If no auction data was fetched yet, return rows as-is.
+    if (!rows.length) return rows;
+    // Only enrich domains that have saleType AUCTION but no auction object.
+    return rows.map((d) => {
+      if (d.saleType !== 'AUCTION' || d.auction) return d;
+      return d; // auction data not available from this endpoint — enrichment happens in useEffect below
+    });
+  }, [allDomains]);
   const visibleDomains = resolveMarketplaceListingRows(domainRows, { tab: activeTab, user, type: 'domain' });
 
   const marketplaceFilter = useFilterSort(visibleDomains, {
@@ -264,6 +274,40 @@ export default function DomainsPage() {
         if (!cancelled) setLoading(false);
       });
 
+    return () => { cancelled = true; };
+  }, [activeTab]);
+
+  // Fetch active auctions and merge auction data into domain records.
+  // The /api/v1/domain/all endpoint does NOT include auction data,
+  // so we fetch it separately and attach it to matching domains.
+  useEffect(() => {
+    let cancelled = false;
+    auctionAPI.getActive({ page: 1, page_size: 200 })
+      .then(({ data }) => {
+        if (cancelled) return;
+        const auctionItems = Array.isArray(data?.items) ? data.items : [];
+        if (!auctionItems.length) return;
+        // Build a map: domainId → auction object
+        const auctionMap = new Map();
+        for (const a of auctionItems) {
+          const domainId = a.domainId || a.domain_id;
+          if (domainId) auctionMap.set(String(domainId).toLowerCase(), a);
+        }
+        if (!auctionMap.size) return;
+        // Merge auction data into domain records
+        setAllDomains(prev => {
+          const updated = asArray(prev).map(d => {
+            const key = String(d.id).toLowerCase();
+            const auction = auctionMap.get(key);
+            if (auction && !d.auction) {
+              return { ...d, auction };
+            }
+            return d;
+          });
+          return updated;
+        });
+      })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [activeTab]);
 

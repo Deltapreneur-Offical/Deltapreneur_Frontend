@@ -541,6 +541,7 @@ function DomainRow({ domain, type, onVerify }) {
   const isAuction  = domain.saleType === 'AUCTION';
   const auction    = domain.auction;
   const auctionId  = auction?.id;
+  const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
   const updateShareMenuPosition = useCallback(() => {
     const el = shareButtonRef.current;
@@ -677,7 +678,7 @@ function DomainRow({ domain, type, onVerify }) {
     <div className="relative flex items-center justify-between overflow-visible bg-white border border-gray-200 rounded-[10px] px-5 py-4 gap-3 transition-all hover:-translate-y-px hover:shadow-lg">
       <div>
         <div className="font-bold text-gray-900 text-base flex items-center gap-2 min-w-0">
-          {type === 'listing' && isDomainPendingVerification(domain) ? (
+          {type === 'listing' && isDomainPendingVerification(domain) && !(isAuction && auctionLive) ? (
             <PendingVerificationDot title={t('domainsPageVerificationPending', { defaultValue: 'Verification pending' })} />
           ) : null}
           <span className="min-w-0 overflow-hidden">
@@ -766,7 +767,13 @@ function DomainRow({ domain, type, onVerify }) {
           </span>
         )}
 
-        {type === 'listing' && !domain.verified && domain.domainStatus === 'AVAILABLE' && (
+        {type === 'listing' && isAuction && auctionLive && (
+          <span className="inline-flex items-center gap-1.5 text-[0.78rem] font-bold text-white bg-sky-500 border border-sky-600 px-3 py-1.5 rounded-full cursor-pointer hover:bg-sky-600 transition-colors">
+            <Gavel size={14} /> On Live Auction →
+          </span>
+        )}
+
+        {type === 'listing' && !domain.verified && domain.domainStatus === 'AVAILABLE' && !(isAuction && auctionLive) && (
           <button className="btn-glow btn-glow-sm" onClick={onVerify}>
             {t('domainsDashboardVerify')}
             {isAuction && auction?.status === 'DRAFT' && t('domainsDashboardVerifyStartsAuction')}

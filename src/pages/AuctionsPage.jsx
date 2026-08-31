@@ -540,14 +540,10 @@ export default function AuctionsPage() {
     const techCount = source
       ? source.filter((a) => String(a.auctionType || '').toUpperCase() === 'TECHNOLOGY' || a.software || a.softwareId).length
       : softwareAuctions.length;
-    const creatorCount = source
-      ? source.filter((a) => String(a.auctionType || '').toUpperCase() === 'CREATOR' || a.community || a.communityId).length
-      : communityAuctions.length;
     return [
       { value: 'all', label: 'Category' },
       { value: 'domains', label: `Domains (${domainCount})` },
       { value: 'technology', label: `Technology (${techCount})` },
-      { value: 'community', label: `Creators (${creatorCount})` },
     ];
   }, [view, myListed, myBids, domainAuctions.length, softwareAuctions.length, communityAuctions.length]);
 

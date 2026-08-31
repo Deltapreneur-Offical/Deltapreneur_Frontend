@@ -1394,6 +1394,13 @@
   gap: 0.1rem;
 }
 
+.home-operations-preview-card__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .home-operations-preview-card__price-label {
   font-size: 0.625rem;
   font-weight: 700;
@@ -1440,6 +1447,15 @@
   color: #92400e;
   letter-spacing: 0.01em;
   white-space: nowrap;
+}
+
+.home-operations-preview-card__govt-inline {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #92400e;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .home-operations-preview-card__cta {

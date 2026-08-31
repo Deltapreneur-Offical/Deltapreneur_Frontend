@@ -132,24 +132,31 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
           <span className="home-operations-preview-card__price-label">
             {priceLabel}
           </span>
-          <span className="home-operations-preview-card__price-amount">
-            {priceInfo.showPrice ? (
-              <>
-                {priceInfo.amount}
-                {priceInfo.suffix && (
-                  <span className="home-operations-preview-card__price-suffix">
-                    {priceInfo.suffix}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="home-operations-preview-card__price-amount--muted">
-                {cardCompliance
-                  ? t('operationsContact', { defaultValue: 'Contact' })
-                  : '—'}
+          <div className="home-operations-preview-card__price-row">
+            <span className="home-operations-preview-card__price-amount">
+              {priceInfo.showPrice ? (
+                <>
+                  {priceInfo.amount}
+                  {priceInfo.suffix && (
+                    <span className="home-operations-preview-card__price-suffix">
+                      {priceInfo.suffix}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="home-operations-preview-card__price-amount--muted">
+                  {cardCompliance
+                    ? t('operationsContact', { defaultValue: 'Contact' })
+                    : '—'}
+                </span>
+              )}
+            </span>
+            {service.governmentFeesApplicable && service.governmentFeeText && (
+              <span className="home-operations-preview-card__govt-inline">
+                / {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
               </span>
             )}
-          </span>
+          </div>
         </div>
         <button
           type="button"
@@ -162,14 +169,6 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
           <ArrowRight size={16} strokeWidth={2.5} aria-hidden />
         </button>
       </div>
-
-      {service.governmentFeesApplicable && service.governmentFeeText && (
-        <div className="home-operations-preview-card__gov-fee">
-          <span className="home-operations-preview-card__gov-fee-text">
-            {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
-          </span>
-        </div>
-      )}
 
       <hr className="creator-profile-card__divider" />
       <div className="creator-profile-card__footer">

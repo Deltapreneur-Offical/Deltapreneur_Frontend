@@ -9,7 +9,7 @@ import { operationsAdminAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
 import VirtualAssistantsAdminModule from '../components/admin/VirtualAssistantsAdminModule';
 import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
-import { getHubRegistrarCategoryLabel } from '../utils/operationsCategories';
+import { getHubRegistrarCategoryLabel, HUB_REGISTRAR_CATEGORY_OPTIONS } from '../utils/operationsCategories';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
 
@@ -110,8 +110,10 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   );
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [requestTypeFilter, setRequestTypeFilter] = useState('all');
   const [requestStatusFilter, setRequestStatusFilter] = useState('all');
+  const [requestCategoryFilter, setRequestCategoryFilter] = useState('all');
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [modal, setModal] = useState(null);
@@ -193,9 +195,11 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   useEffect(() => {
     setSearch('');
     setStatusFilter('all');
+    setCategoryFilter('all');
     if (!isRequestsPartition) {
       setRequestTypeFilter('all');
       setRequestStatusFilter('all');
+      setRequestCategoryFilter('all');
     }
   }, [activePartitionId, isRequestsPartition]);
 
@@ -208,16 +212,18 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     return complianceServices.filter((row) => {
       if (statusFilter === 'active' && row.isAvailable === false) return false;
       if (statusFilter === 'paused' && row.isAvailable !== false) return false;
+      if (categoryFilter !== 'all' && row.category !== categoryFilter) return false;
       if (!q) return true;
-      const haystack = `${row.name || ''} ${row.description || ''}`.toLowerCase();
+      const haystack = `${row.name || ''} ${row.description || ''} ${getHubRegistrarCategoryLabel(row.category)}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [complianceServices, search, statusFilter]);
+  }, [complianceServices, search, statusFilter, categoryFilter]);
 
   const filteredRequests = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return requests;
     return requests.filter((row) => {
+      if (requestCategoryFilter !== 'all' && row.category !== requestCategoryFilter) return false;
+      if (!q) return true;
       const haystack = [
         getHubRegistrarCategoryLabel(row.category),
         row.serviceName,
@@ -229,7 +235,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
       ].filter(Boolean).join(' ').toLowerCase();
       return haystack.includes(q);
     });
-  }, [requests, search]);
+  }, [requests, search, requestCategoryFilter]);
 
   const handleDelete = async (row) => {
     const confirmed = window.confirm(
@@ -470,6 +476,22 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <div className="operations-admin-select-wrap">
                   <select
                     className="operations-admin-select"
+                    value={requestCategoryFilter}
+                    onChange={(e) => setRequestCategoryFilter(e.target.value)}
+                    aria-label="Category"
+                  >
+                    <option value="all">All Categories</option>
+                    {HUB_REGISTRAR_CATEGORY_OPTIONS
+                      .filter((opt) => opt.value !== 'other')
+                      .map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+                <div className="operations-admin-select-wrap">
+                  <select
+                    className="operations-admin-select"
                     value={requestTypeFilter}
                     onChange={(e) => setRequestTypeFilter(e.target.value)}
                   >
@@ -494,19 +516,37 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 </div>
               </>
             ) : (
-              <div className="operations-admin-select-wrap">
-                <select
-                  className="operations-admin-select"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  aria-label={t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}
-                >
-                  <option value="all">{t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}</option>
-                  <option value="active">{t('adminOperationsStatusActive', { defaultValue: 'Active' })}</option>
-                  <option value="paused">{t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}</option>
-                </select>
-                <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
-              </div>
+              <>
+                <div className="operations-admin-select-wrap">
+                  <select
+                    className="operations-admin-select"
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    aria-label="Category"
+                  >
+                    <option value="all">All Categories</option>
+                    {HUB_REGISTRAR_CATEGORY_OPTIONS
+                      .filter((opt) => opt.value !== 'other')
+                      .map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+                <div className="operations-admin-select-wrap">
+                  <select
+                    className="operations-admin-select"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    aria-label={t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}
+                  >
+                    <option value="all">{t('adminOperationsFilterAllStatus', { defaultValue: 'All Status' })}</option>
+                    <option value="active">{t('adminOperationsStatusActive', { defaultValue: 'Active' })}</option>
+                    <option value="paused">{t('adminOperationsStatusPaused', { defaultValue: 'Paused' })}</option>
+                  </select>
+                  <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
+                </div>
+              </>
             )}
           </div>
 

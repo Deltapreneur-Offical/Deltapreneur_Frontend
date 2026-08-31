@@ -684,8 +684,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 20.5rem;
-  padding: 1.15rem 1.25rem 0.85rem;
+  min-height: 18.25rem;
+  padding: 0.75rem 0.8rem 0.6rem;
   border-radius: 20px;
   border: 1.5px solid #bae6fd;
   background: #ffffff;
@@ -699,15 +699,14 @@
 .reg-mini-card__watermark {
   position: absolute;
   right: -1.85rem;
-  bottom: -0.1rem;
-  z-index: 0;
+  bottom: 0.7rem;
+  z-index: 1;
   width: 8.5rem;
   height: 8.5rem;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  mix-blend-mode: multiply;
-  opacity: 0.92;
+  opacity: 1;
 }
 
 .reg-mini-card:hover,
@@ -729,8 +728,8 @@
 
 .reg-mini-card__share {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.6rem;
+  right: 0.6rem;
   z-index: 5;
   display: flex;
   align-items: center;
@@ -895,8 +894,8 @@
   }
 
   .reg-mini-card {
-    min-height: 18.5rem;
-    padding: 1rem 1.1rem;
+    min-height: 16.5rem;
+    padding: 0.65rem 0.7rem 0.55rem;
     border-radius: 16px;
   }
 
@@ -975,10 +974,19 @@
   }
 }
 
-/* Registration cards only — slightly narrower so height > width (portrait). */
+/* Registration cards only — slightly smaller portrait cards with more gap. */
+.home-auto-scroll-row__set:has(.reg-mini-card) {
+  gap: 1.65rem;
+  padding-right: 1.65rem;
+}
+
+.home-preview-row:has(.reg-mini-card) {
+  gap: 1.5rem !important;
+}
+
 @media (min-width: 768px) {
   .home-preview-row .home-preview-row__item:has(.reg-mini-card),
   .home-auto-scroll-row .home-auto-scroll-row__item:has(.reg-mini-card) {
-    width: 16.75rem !important;
+    width: 15rem !important;
   }
 }

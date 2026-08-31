@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -15,9 +14,8 @@ export default function BackButton({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [isHovering, setIsHovering] = useState(false);
   const resolvedLabel = label ?? t('auctionDetailBack');
-  const isProfessional = variant === 'professional';
+  const compact = variant === 'pill';
 
   const handleClick = () => {
     if (to) {
@@ -32,35 +30,15 @@ export default function BackButton({
     navigate('/');
   };
 
-  const base = isProfessional
-    ? 'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2'
-    : variant === 'home'
-      ? 'inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold text-white shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2'
-      : variant === 'pill'
-      ? 'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white transition-all duration-200'
-      : 'inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 text-white shadow-md';
-
-  const hoverStyles = isHovering
-    ? {
-      background: 'linear-gradient(90deg, #3b82f6, #a855f7, #ec4899)',
-      opacity: 0.85,
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-    }
-    : {
-      background: 'linear-gradient(90deg, #3b82f6, #a855f7, #ec4899)',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    };
+  const base = compact
+    ? 'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2'
+    : 'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2';
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      onFocus={() => setIsHovering(true)}
-      onBlur={() => setIsHovering(false)}
       className={`${base} ${className}`.trim()}
-      style={isProfessional ? undefined : hoverStyles}
     >
       <ArrowLeft size={16} className="shrink-0" aria-hidden />
       <span>{resolvedLabel}</span>

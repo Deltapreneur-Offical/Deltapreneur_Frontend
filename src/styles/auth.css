@@ -81,27 +81,31 @@
   padding: 0;
   width: 2.5rem;
   height: 2.5rem;
-  border: none;
-  background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899);
-  color: white;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
   cursor: pointer;
-  border-radius: 50%;
-  transition: all 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .auth-page__back:hover {
-  color: white;
-  background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899);
-  opacity: 0.85;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  color: #0f172a;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.auth-page__back:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #cbd5e1;
 }
 
 .auth-page__back-icon {
   width: 1.25rem;
   height: 1.25rem;
   flex-shrink: 0;
-  filter: brightness(0) invert(1);
 }
 
 .auth-page__logo {

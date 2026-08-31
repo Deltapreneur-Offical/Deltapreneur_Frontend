@@ -107,7 +107,7 @@ const socialRowOne = [
 
   { id: 'facebook', href: 'https://www.facebook.com/hubregistrar', label: 'Facebook', Icon: FacebookIcon },
 
-  { id: 'instagram', href: 'https://www.instagram.com/cobrother__?igsh=bXE3YnR4dDJ6NnVi', label: 'Instagram', Icon: InstagramIcon },
+  { id: 'instagram', href: 'https://instagram.com/hub_registrar/links', label: 'Instagram', Icon: InstagramIcon },
 
 ];
 
@@ -115,7 +115,7 @@ const socialRowOne = [
 
 const socialRowTwo = [
 
-  { id: 'linkedin', href: 'https://www.linkedin.com/company/co-brother/', label: 'LinkedIn', Icon: LinkedinIcon },
+  { id: 'linkedin', href: 'https://www.linkedin.com/company/hubregistrar/', label: 'LinkedIn', Icon: LinkedinIcon },
 
   { id: 'youtube', href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
 

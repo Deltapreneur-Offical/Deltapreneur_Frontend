@@ -10,7 +10,7 @@ export default function HeroGlow() {
 
   const textStack = reduceMotion ? (
     <div className="hero-text-stack relative z-20 w-full min-w-0">
-      <h1 className="hero-headline m-0 font-sans font-normal text-black">
+      <h1 className="hero-headline m-0 font-sans font-semibold text-black">
         The Intellectual Property Registrar
       </h1>
     </div>
@@ -22,7 +22,7 @@ export default function HeroGlow() {
       animate="visible"
     >
       <motion.h1
-        className="hero-headline m-0 font-sans font-normal text-black"
+        className="hero-headline m-0 font-sans font-semibold text-black"
         variants={heroHeadlineEnter}
       >
         The Intellectual Property Registrar
@@ -53,7 +53,7 @@ export default function HeroGlow() {
           line-height: 1.25;
           font-family: var(--font-body), system-ui, sans-serif;
           font-size: clamp(1.02rem, 3.2vw, 1.22rem);
-          font-weight: 400;
+          font-weight: 600;
           letter-spacing: 0;
           color: #050505;
           text-rendering: optimizeLegibility;

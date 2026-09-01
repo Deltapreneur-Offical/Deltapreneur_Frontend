@@ -11645,6 +11645,33 @@ body.home-menu-open {
   font-size: 0.875rem;
 }
 
+.operations-request-modal-submit--pay {
+  background: #0581cb;
+  color: #ffffff;
+  border: 1px solid #0581cb;
+  border-radius: 9999px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.operations-request-modal-submit--pay:hover:not(:disabled) {
+  background: #046ba8;
+  box-shadow: 0 4px 14px rgba(5, 129, 203, 0.35);
+  transform: translateY(-1px);
+}
+
+.operations-request-modal-submit--pay:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.operations-request-modal-submit--pay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .operations-request-modal-cancel {
   min-height: 2.5rem;
   padding: 0 1rem;
@@ -12352,6 +12379,18 @@ body.home-menu-open {
   color: #92400e;
   background: #fef3c7;
   border: 1px solid #fcd34d;
+}
+
+.operations-my-requests-status--contact-pending {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+
+.operations-my-requests-status--payment-failed {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
 }
 
 .operations-my-requests-status--contacted {

@@ -872,6 +872,7 @@ export default function ShowcaseAdminTab() {
                   <th className="px-3 py-2 font-semibold">Domain</th>
                   <th className="px-3 py-2 font-semibold">TLD</th>
                   <th className="px-3 py-2 font-semibold">Price (1st yr)</th>
+                  <th className="px-3 py-2 font-semibold">Renewal Price</th>
                   <th className="px-3 py-2 font-semibold">Payable</th>
                   <th className="px-3 py-2 font-semibold">Status</th>
                   <th className="px-3 py-2 font-semibold">Premium</th>
@@ -886,6 +887,9 @@ export default function ShowcaseAdminTab() {
                     <td className="px-3 py-2.5 text-slate-500">.{it.tld}</td>
                     <td className="px-3 py-2.5 text-slate-700">
                       {it.createPriceInr ? formatPrice(it.createPriceInr) : '—'}
+                    </td>
+                    <td className="px-3 py-2.5 text-slate-700">
+                      {it.renewalPriceInr ? formatPrice(it.renewalPriceInr) : '—'}
                     </td>
                     <td className="px-3 py-2.5 text-slate-700">
                       {it.payableInr ? formatPrice(it.payableInr) : '—'}

@@ -22,11 +22,38 @@ export function getRequestStatusLabel(status, t) {
   if (normalized === 'PENDING') {
     return translate(t, 'adminOperationsRequestStatusPending', 'Pending');
   }
+  if (normalized === 'CONTACT_PENDING') {
+    return translate(t, 'adminOperationsRequestStatusContactPending', 'Contact Pending');
+  }
   if (normalized === 'CONTACTED') {
     return translate(t, 'adminOperationsRequestStatusContacted', 'Contacted');
   }
   if (normalized === 'CLOSED') {
     return translate(t, 'adminOperationsRequestStatusClosed', 'Closed');
+  }
+  if (normalized === 'PAYMENT_FAILED') {
+    return translate(t, 'adminOperationsRequestStatusPaymentFailed', 'Payment Failed');
+  }
+  return status || '—';
+}
+
+/** Customer-facing status label (used in My Requests). */
+export function getCustomerRequestStatusLabel(status, t) {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'PENDING') {
+    return translate(t, 'adminOperationsRequestStatusPending', 'Pending');
+  }
+  if (normalized === 'CONTACT_PENDING') {
+    return translate(t, 'operationsRequestStatusContactPending', 'Contact Pending');
+  }
+  if (normalized === 'CONTACTED') {
+    return translate(t, 'operationsRequestStatusConfirmed', 'Confirmed');
+  }
+  if (normalized === 'CLOSED') {
+    return translate(t, 'adminOperationsRequestStatusClosed', 'Closed');
+  }
+  if (normalized === 'PAYMENT_FAILED') {
+    return translate(t, 'operationsRequestStatusPaymentFailed', 'Payment Failed');
   }
   return status || '—';
 }

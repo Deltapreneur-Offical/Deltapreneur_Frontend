@@ -39,6 +39,7 @@ const CATEGORIES = [
   'Domain Renewal',
   'Domain Transfer',
   'OpenProvider Managed Acquisition',
+  'Operations',
   'Other',
 ];
 

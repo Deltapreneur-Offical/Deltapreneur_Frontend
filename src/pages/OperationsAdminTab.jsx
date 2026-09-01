@@ -15,8 +15,16 @@ import { readApiError } from '../utils/apiError';
 
 const REQUEST_STATUS_STYLES = {
   PENDING: 'operations-admin-request-status--pending',
+  CONTACT_PENDING: 'operations-admin-request-status--pending',
   CONTACTED: 'operations-admin-request-status--contacted',
   CLOSED: 'operations-admin-request-status--closed',
+  PAYMENT_FAILED: 'operations-admin-request-status--pending',
+};
+
+const PAYMENT_STATUS_STYLES = {
+  SUCCESS: 'operations-admin-request-status--contacted',
+  FAILED: 'operations-admin-request-status--closed',
+  PENDING: 'operations-admin-request-status--pending',
 };
 
 const SECTION_META = {
@@ -496,7 +504,6 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     onChange={(e) => setRequestTypeFilter(e.target.value)}
                   >
                     <option value="all">{t('adminOperationsFilterAllRequestTypes', { defaultValue: 'All Types' })}</option>
-                    <option value="hire">{t('operationsHire', { defaultValue: 'Hire' })}</option>
                     <option value="booking">{t('operationsBookSlot', { defaultValue: 'Book Your Slot' })}</option>
                   </select>
                   <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
@@ -509,6 +516,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                   >
                     <option value="all">{t('adminOperationsFilterAllRequestStatus', { defaultValue: 'All Status' })}</option>
                     <option value="PENDING">{t('adminOperationsRequestStatusPending', { defaultValue: 'Pending' })}</option>
+                    <option value="CONTACT_PENDING">{t('adminOperationsRequestStatusContactPending', { defaultValue: 'Contact Pending' })}</option>
                     <option value="CONTACTED">{t('adminOperationsRequestStatusContacted', { defaultValue: 'Contacted' })}</option>
                     <option value="CLOSED">{t('adminOperationsRequestStatusClosed', { defaultValue: 'Closed' })}</option>
                   </select>
@@ -561,6 +569,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     <th>{t('adminOperationsColServiceName', { defaultValue: 'Service' })}</th>
                     <th>{t('adminOperationsColContact', { defaultValue: 'Contact' })}</th>
                     <th>{t('adminOperationsColDescription', { defaultValue: 'Message' })}</th>
+                    <th>{t('adminOperationsColPayment', { defaultValue: 'Payment' })}</th>
                     <th className="operations-admin-request-status-col">
                       {t('adminOperationsColStatus', { defaultValue: 'Status' })}
                     </th>
@@ -569,13 +578,13 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <tbody>
                   {requestsLoading ? (
                     <tr>
-                      <td colSpan={7} className="operations-admin-empty">
+                      <td colSpan={8} className="operations-admin-empty">
                         {t('loading', { defaultValue: 'Loading…' })}
                       </td>
                     </tr>
                   ) : filteredRequests.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="operations-admin-empty">
+                      <td colSpan={8} className="operations-admin-empty">
                         {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
                       </td>
                     </tr>
@@ -599,11 +608,41 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                             <a href={`mailto:${row.email}`}>{row.email}</a> • {formatRequestPhone(row.phone)}
                           </td>
                           <td className="operations-admin-message">{truncate(row.message, 60)}</td>
+                          <td>
+                            {(() => {
+                              const payStatus = (row.paymentStatus || '').toUpperCase();
+                              if (payStatus === 'SUCCESS') return (
+                                <span className="operations-admin-request-status operations-admin-request-status--contacted">
+                                  {t('adminOperationsPaymentCompleted', { defaultValue: 'Completed' })}
+                                </span>
+                              );
+                              if (payStatus === 'FAILED') return (
+                                <span className="operations-admin-request-status operations-admin-request-status--closed">
+                                  {t('adminOperationsPaymentFailed', { defaultValue: 'Failed' })}
+                                </span>
+                              );
+                              return (
+                                <span className="operations-admin-request-status operations-admin-request-status--pending">
+                                  {t('adminOperationsPaymentPending', { defaultValue: 'Pending' })}
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className="operations-admin-request-status-col">
                             <div className="operations-admin-request-status-wrap">
                               <span className={`operations-admin-request-status ${statusClass}`}>{statusLabel}</span>
                               <div className="operations-admin-actions">
                                 {row.status === 'PENDING' && (
+                                  <button
+                                    type="button"
+                                    className="operations-admin-action-btn"
+                                    title={t('adminOperationsMarkContacted', { defaultValue: 'Mark as Contacted' })}
+                                    onClick={() => openContactModal(row)}
+                                  >
+                                    <CheckCircle2 size={15} />
+                                  </button>
+                                )}
+                                {row.status === 'CONTACT_PENDING' && (
                                   <button
                                     type="button"
                                     className="operations-admin-action-btn"
@@ -677,7 +716,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                 <tbody>
                   {filteredCatalog.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="operations-admin-empty">
+                      <td colSpan={8} className="operations-admin-empty">
                         {t(meta.emptyKey, { defaultValue: meta.defaultEmpty })}
                       </td>
                     </tr>

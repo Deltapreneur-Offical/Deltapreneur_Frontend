@@ -623,6 +623,16 @@ export const hubRegistrarOfficeAPI = {
   adminDelete: (id)           => api.delete(`/api/v1/admin/hub-registrar-offices/${id}`),
 };
 
+// ─── Hub Registrar Categories ─────────────────────────────────────────────
+export const hubRegistrarCategoryAPI = {
+  list:        ()             => api.get('/api/v1/hub-registrar/categories'),
+  adminList:   ()             => api.get('/api/v1/admin/hub-registrar/categories'),
+  adminGet:    (id)           => api.get(`/api/v1/admin/hub-registrar/categories/${id}`),
+  adminCreate: (body)         => api.post('/api/v1/admin/hub-registrar/categories', body),
+  adminUpdate: (id, body)     => api.put(`/api/v1/admin/hub-registrar/categories/${id}`, body),
+  adminDelete: (id)           => api.delete(`/api/v1/admin/hub-registrar/categories/${id}`),
+};
+
 // ─── Franchise Applications ─────────────────────────────────────────────────
 export const franchiseApplicationAPI = {
   submit:           (body)          => api.post('/api/v1/franchise/apply', body),

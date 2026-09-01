@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Pencil, Trash2, ChevronDown, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Pencil, Trash2, ChevronDown, ShieldCheck, CheckCircle2, AlertCircle, Briefcase, Building2, Car, Clapperboard, Copyright, Cpu, Factory, FlaskConical, Globe, GraduationCap, HardHat, HeartPulse, Hotel, Landmark, Leaf, Monitor, Plane, Radio, Receipt, Rocket, Shield, ShoppingBag, Truck, Users, UtensilsCrossed, Wheat, Zap } from 'lucide-react';
 import OperationsAdminPartitionTabs from '../components/operations/OperationsAdminPartitionTabs';
 import OperationsContactModal from '../components/operations/OperationsContactModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
-import { operationsAdminAPI } from '../api/services';
+import { operationsAdminAPI, hubRegistrarCategoryAPI } from '../api/services';
 import OperationRoleModal from '../components/admin/OperationRoleModal';
 import VirtualAssistantsAdminModule from '../components/admin/VirtualAssistantsAdminModule';
 import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
-import { getHubRegistrarCategoryLabel, HUB_REGISTRAR_CATEGORY_OPTIONS } from '../utils/operationsCategories';
+import { getHubRegistrarCategoryLabel } from '../utils/operationsCategories';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
 
@@ -101,6 +101,20 @@ function formatRequestPhone(phone) {
   return phone || '—';
 }
 
+const CATEGORY_ICONS = {
+  business_entity: Building2, tax_identity: Receipt, local_licences: Landmark,
+  msme_udyam: Factory, startup_dpiit: Rocket, food_fssai: UtensilsCrossed,
+  import_export: Globe, manufacturing: Factory, technology_saas: Cpu,
+  ecommerce: ShoppingBag, fintech: Landmark, aviation: Plane,
+  construction_real_estate: HardHat, healthcare: HeartPulse,
+  education: GraduationCap, professional_services: Briefcase, telecom: Radio,
+  pharma_chemical: FlaskConical, automotive: Car, agriculture: Wheat,
+  logistics_transport: Truck, tourism_hospitality: Hotel,
+  entertainment_media: Clapperboard, energy_power: Zap,
+  defence_aerospace: Shield, intellectual_property: Copyright,
+  employer_labour: Users, environmental: Leaf, digital_services: Monitor,
+};
+
 const OPERATIONS_PARTITION_IDS = ['virtual-assistants', 'compliance', 'requests'];
 
 function resolveInitialPartition(sectionParam) {
@@ -131,6 +145,22 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [notice, setNotice] = useState(null);
   const noticeTimerRef = useRef(null);
+
+  // ── Hub Registrar sub-tab (services vs categories) ───────────────────
+  const [complianceSubTab, setComplianceSubTab] = useState('services');
+
+  // ── Hub Registrar Categories ──────────────────────────────────────────
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryForm, setCategoryForm] = useState({
+    name: '', slug: '', description: '', starting_price: '',
+    icon: '', display_order: 0, is_active: true,
+  });
+  const [categorySubmitting, setCategorySubmitting] = useState(false);
+  const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState(null);
+  const [deleteCategoryLoading, setDeleteCategoryLoading] = useState(false);
 
   useEffect(() => {
     const section = searchParams.get('section');
@@ -200,6 +230,87 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     loadRequests();
   }, [loadRequests]);
 
+  // ── Category CRUD handlers ──────────────────────────────────────────────
+  const fetchCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    try {
+      const { data } = await hubRegistrarCategoryAPI.adminList();
+      setCategories(data.data || []);
+    } catch {
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activePartitionId === 'compliance') {
+      fetchCategories();
+    }
+  }, [activePartitionId, fetchCategories]);
+
+  const resetCategoryForm = () => {
+    setCategoryForm({ name: '', slug: '', description: '', starting_price: '', icon: '', display_order: 0, is_active: true });
+    setEditingCategory(null);
+    setShowCategoryForm(false);
+  };
+
+  const handleCategorySubmit = async (e) => {
+    e.preventDefault();
+    if (!categoryForm.name.trim()) { showNotice('Category name is required', 'error'); return; }
+    if (!editingCategory && !categoryForm.slug.trim()) { showNotice('Slug is required', 'error'); return; }
+    try {
+      setCategorySubmitting(true);
+      const payload = {
+        name: categoryForm.name.trim(),
+        description: categoryForm.description.trim() || null,
+        startingPrice: categoryForm.starting_price === '' ? null : Number(categoryForm.starting_price),
+        icon: categoryForm.icon.trim() || null,
+        displayOrder: Number(categoryForm.display_order) || 0,
+        isActive: categoryForm.is_active,
+      };
+      if (editingCategory) {
+        await hubRegistrarCategoryAPI.adminUpdate(editingCategory.id, payload);
+        showNotice('Category updated successfully');
+      } else {
+        payload.slug = categoryForm.slug.trim().toLowerCase();
+        await hubRegistrarCategoryAPI.adminCreate(payload);
+        showNotice('Category created successfully');
+      }
+      resetCategoryForm();
+      fetchCategories();
+    } catch (err) {
+      showNotice(readApiError(err) || 'Failed to save category', 'error');
+    } finally {
+      setCategorySubmitting(false);
+    }
+  };
+
+  const handleCategoryToggleActive = async (cat) => {
+    try {
+      await hubRegistrarCategoryAPI.adminUpdate(cat.id, { isActive: !cat.isActive });
+      showNotice(`Category ${cat.isActive ? 'deactivated' : 'activated'}`);
+      fetchCategories();
+    } catch (err) {
+      showNotice(readApiError(err) || 'Failed to update status', 'error');
+    }
+  };
+
+  const handleCategoryDelete = async () => {
+    if (!deleteCategoryConfirm) return;
+    try {
+      setDeleteCategoryLoading(true);
+      await hubRegistrarCategoryAPI.adminDelete(deleteCategoryConfirm.id);
+      showNotice('Category deleted');
+      setDeleteCategoryConfirm(null);
+      fetchCategories();
+    } catch (err) {
+      showNotice(readApiError(err) || 'Failed to delete', 'error');
+    } finally {
+      setDeleteCategoryLoading(false);
+    }
+  };
+
   useEffect(() => {
     setSearch('');
     setStatusFilter('all');
@@ -222,10 +333,21 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
       if (statusFilter === 'paused' && row.isAvailable !== false) return false;
       if (categoryFilter !== 'all' && row.category !== categoryFilter) return false;
       if (!q) return true;
-      const haystack = `${row.name || ''} ${row.description || ''} ${getHubRegistrarCategoryLabel(row.category)}`.toLowerCase();
+      const haystack = `${row.name || ''} ${row.description || ''} ${dynamicCategoryLabel(row.category)}`.toLowerCase();
       return haystack.includes(q);
     });
   }, [complianceServices, search, statusFilter, categoryFilter]);
+
+  // Dynamic category slug → name lookup from API data
+  const categoryNameMap = useMemo(() => {
+    const map = {};
+    for (const cat of categories) { map[cat.slug] = cat.name; }
+    return map;
+  }, [categories]);
+  const dynamicCategoryLabel = useCallback((slug) => {
+    const val = String(slug || '').trim().toLowerCase();
+    return categoryNameMap[val] || getHubRegistrarCategoryLabel(val);
+  }, [categoryNameMap]);
 
   const filteredRequests = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -233,7 +355,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
       if (requestCategoryFilter !== 'all' && row.category !== requestCategoryFilter) return false;
       if (!q) return true;
       const haystack = [
-        getHubRegistrarCategoryLabel(row.category),
+        dynamicCategoryLabel(row.category),
         row.serviceName,
         row.fullName,
         row.email,
@@ -471,6 +593,17 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
             )}
           </div>
 
+          {/* ── Hub Registrar sub-tabs (Services / Categories) ──────────── */}
+          {activePartitionId === 'compliance' && (
+            <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-xl mb-5 w-fit border border-gray-200 shadow-inner">
+              <button type="button" className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${complianceSubTab === 'services' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-gray-200/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'}`} onClick={() => setComplianceSubTab('services')}>Services</button>
+              <button type="button" className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${complianceSubTab === 'categories' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-gray-200/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'}`} onClick={() => setComplianceSubTab('categories')}>Categories</button>
+            </div>
+          )}
+
+          {/* ── Services view (complianceSubTab === 'services') ─────────── */}
+          {(!isRequestsPartition && !isVirtualAssistantsPartition && activePartitionId !== 'compliance' || complianceSubTab === 'services') && (
+          <>
           <div className="operations-admin-toolbar">
             <input
               type="search"
@@ -489,10 +622,10 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     aria-label="Category"
                   >
                     <option value="all">All Categories</option>
-                    {HUB_REGISTRAR_CATEGORY_OPTIONS
-                      .filter((opt) => opt.value !== 'other')
-                      .map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {categories
+                      .filter((cat) => cat.isActive)
+                      .map((cat) => (
+                        <option key={cat.slug} value={cat.slug}>{cat.name}</option>
                       ))}
                   </select>
                   <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
@@ -533,10 +666,10 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     aria-label="Category"
                   >
                     <option value="all">All Categories</option>
-                    {HUB_REGISTRAR_CATEGORY_OPTIONS
-                      .filter((opt) => opt.value !== 'other')
-                      .map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {categories
+                      .filter((cat) => cat.isActive)
+                      .map((cat) => (
+                        <option key={cat.slug} value={cat.slug}>{cat.name}</option>
                       ))}
                   </select>
                   <ChevronDown size={16} className="operations-admin-select-chevron" aria-hidden />
@@ -597,7 +730,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                         <tr key={row.id}>
                           <td className="operations-admin-serial">{serial}</td>
                           <td className="operations-admin-date">{formatRequestDate(row.createdAt)}</td>
-                          <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{getHubRegistrarCategoryLabel(row.category) || '—'}</td>
+                          <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{dynamicCategoryLabel(row.category) || '—'}</td>
                           <td className="operations-admin-service-name">
                             <span className="operations-admin-request-service">{row.serviceName}</span>
                           </td>
@@ -727,7 +860,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                       return (
                         <tr key={row.id}>
                           <td className="operations-admin-serial">{serial}</td>
-                          <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{getHubRegistrarCategoryLabel(row.category) || '—'}</td>
+                          <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{dynamicCategoryLabel(row.category) || '—'}</td>
                           <td className="operations-admin-name">{row.name}</td>
                           <td className="operations-admin-description">{truncate(row.description)}</td>
                           <td className="operations-admin-price">{formatAdminPrice(row)}</td>
@@ -802,6 +935,88 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                       })}
             </p>
           </div>
+          </>
+          )}
+
+          {/* ── Categories view (complianceSubTab === 'categories') ──────── */}
+          {activePartitionId === 'compliance' && complianceSubTab === 'categories' && (
+            <>
+              <div className="operations-admin-section-header">
+                <div className="operations-admin-section-heading">
+                  <span className="operations-admin-section-icon operations-admin-section-icon--compliance">
+                    <ShieldCheck size={18} aria-hidden />
+                  </span>
+                  <div>
+                    <h3 className="operations-admin-section-title">Hub Registrar Categories</h3>
+                    <p className="operations-admin-section-subtitle">Manage main categories displayed on the public website.</p>
+                  </div>
+                </div>
+                <button type="button" className="operations-admin-add-btn operations-admin-add-btn--compliance" onClick={() => { resetCategoryForm(); setShowCategoryForm(true); }}>+ Add Category</button>
+              </div>
+
+              {showCategoryForm && (
+                <div className="operations-admin-modal-overlay" onClick={() => !categorySubmitting && resetCategoryForm()}>
+                  <div className="operations-admin-modal" onClick={(e) => e.stopPropagation()}>
+                    <h3>{editingCategory ? 'Edit Main Category' : 'Add New Main Category'}</h3>
+                    <form onSubmit={handleCategorySubmit} className="operations-admin-modal-form">
+                      <div className="operations-admin-form-group"><label>Category Name *</label><input type="text" value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="e.g. Business / Entity Registration" maxLength={255} required /></div>
+                      {!editingCategory && (<div className="operations-admin-form-group"><label>Slug *</label><input type="text" value={categoryForm.slug} onChange={(e) => setCategoryForm({ ...categoryForm, slug: e.target.value.toLowerCase() })} placeholder="e.g. business_entity" maxLength={64} pattern="[a-z0-9][a-z0-9_-]*" required /><small className="text-gray-400">Lowercase letters, numbers, underscores, and hyphens only. Cannot be changed after creation.</small></div>)}
+                      {editingCategory && (<div className="operations-admin-form-group"><label>Slug</label><input type="text" value={categoryForm.slug} disabled className="bg-gray-50 text-gray-500 cursor-not-allowed" /><small className="text-gray-400">Slug cannot be changed after creation.</small></div>)}
+                      <div className="operations-admin-form-group"><label>Description</label><textarea value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} placeholder="Short description for the category card" rows={3} maxLength={5000} /></div>
+                      <div className="operations-admin-form-row"><div className="operations-admin-form-group"><label>Starting Price (₹)</label><input type="number" value={categoryForm.starting_price} onChange={(e) => setCategoryForm({ ...categoryForm, starting_price: e.target.value })} placeholder="e.g. 1499" min="0" step="1" /></div><div className="operations-admin-form-group"><label>Icon</label><input type="text" value={categoryForm.icon} onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })} placeholder="e.g. Building2" maxLength={64} /></div></div>
+                      <div className="operations-admin-form-row"><div className="operations-admin-form-group"><label>Display Order</label><input type="number" value={categoryForm.display_order} onChange={(e) => setCategoryForm({ ...categoryForm, display_order: parseInt(e.target.value) || 0 })} min="0" /></div><div className="operations-admin-form-group"><label>Status</label><select value={categoryForm.is_active ? 'active' : 'inactive'} onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.value === 'active' })}><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div>
+                      <div className="operations-admin-form-actions"><button type="button" className="btn btn-secondary" onClick={resetCategoryForm} disabled={categorySubmitting}>Cancel</button><button type="submit" className="btn btn-primary" disabled={categorySubmitting}>{categorySubmitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}</button></div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-1">
+                {categoriesLoading ? (
+                  <div className="operations-admin-empty">Loading categories...</div>
+                ) : categories.length === 0 ? (
+                  <div className="operations-admin-empty">No main categories found. Click "+ Add Category" to create one.</div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {categories.map((cat) => {
+                      const Icon = CATEGORY_ICONS[cat.slug] || Briefcase;
+                      const formatPrice = (p) => p != null ? `Starts at ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p)}` : '—';
+                      return (
+                        <div key={cat.id} className="relative bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                              <Icon size={22} strokeWidth={1.8} />
+                            </div>
+                            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cat.isActive ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-gray-100 text-gray-500 ring-1 ring-gray-200'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${cat.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                              {cat.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-bold text-gray-900 mb-1 leading-tight">{cat.name}</h4>
+                          <p className="text-xs text-gray-500 mb-3 line-clamp-2 flex-1">{cat.description || 'No description'}</p>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-semibold text-indigo-600">{formatPrice(cat.startingPrice)}</span>
+                            <span className="text-[11px] text-gray-400 font-mono">#{cat.displayOrder}</span>
+                          </div>
+                          <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                            <button type="button" className="flex-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors" onClick={() => { setEditingCategory(cat); setCategoryForm({ name: cat.name, slug: cat.slug, description: cat.description || '', starting_price: cat.startingPrice ?? '', icon: cat.icon || '', display_order: cat.displayOrder || 0, is_active: cat.isActive }); setShowCategoryForm(true); }}>
+                              <Pencil size={13} className="inline -mt-0.5 mr-1" />Edit
+                            </button>
+                            <button type="button" className={`flex-1 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${cat.isActive ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`} onClick={() => handleCategoryToggleActive(cat)}>
+                              {cat.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button type="button" className="text-xs font-medium px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors" onClick={() => setDeleteCategoryConfirm(cat)}>
+                              <Trash2 size={13} className="inline -mt-0.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -826,6 +1041,20 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
             if (!contactLoading) setContactRequest(null);
           }}
           onMarkContacted={handleMarkContacted}
+        />
+      )}
+
+      {deleteCategoryConfirm && (
+        <ConfirmationModal
+          open={Boolean(deleteCategoryConfirm)}
+          title="Delete Category"
+          message={`Are you sure you want to delete "${deleteCategoryConfirm.name}"? This is a soft delete — the category will be hidden from the public website but can be restored by an administrator.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          variant="red"
+          loading={deleteCategoryLoading}
+          onCancel={() => !deleteCategoryLoading && setDeleteCategoryConfirm(null)}
+          onConfirm={handleCategoryDelete}
         />
       )}
 

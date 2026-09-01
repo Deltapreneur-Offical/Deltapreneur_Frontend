@@ -109,7 +109,8 @@ function shouldAttemptRefresh(error, original) {
   if (isPublicAuthRequest(original)) return false;
   if (!canAttemptRefresh()) return false;
   const status = error.response?.status;
-  if (status !== 401 && status !== 403) return false;
+  // Only expired/invalid access JWTs. 403 is CSRF or role denial — not refreshable.
+  if (status !== 401) return false;
 
   const detail = String(
     error.response?.data?.detail ||
@@ -121,9 +122,9 @@ function shouldAttemptRefresh(error, original) {
   if (detail.includes('invalid email or password')) return false;
   if (detail.includes('invalid email or code')) return false;
   if (detail.includes('csrf')) return false;
-
-  if (status === 401) return true;
-  return detail.includes('not authenticated') || detail.includes('missing');
+  if (detail.includes('access denied')) return false;
+  if (detail.includes('account is deactivated')) return false;
+  return true;
 }
 
 /** Hard auth failure (clear session). Network / 5xx stay logged in. */

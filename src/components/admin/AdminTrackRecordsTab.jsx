@@ -86,10 +86,7 @@ export default function AdminTrackRecordsTab() {
   const [invoiceSavedMsg, setInvoiceSavedMsg] = useState({});
   const [invoiceErrorById, setInvoiceErrorById] = useState({});
 
-  const isAuthError = (err) => {
-    const status = err?.response?.status;
-    return status === 401 || status === 403;
-  };
+  const isSessionExpiredError = (err) => err?.response?.status === 401;
 
   const fetchTrackRecords = useCallback(async () => {
     setLoading(true);
@@ -101,7 +98,7 @@ export default function AdminTrackRecordsTab() {
       // sync as a background task and returns instantly.
       if (!authExpiredRef.current) {
         adminAPI.syncTrackRecords().catch((syncErr) => {
-          if (isAuthError(syncErr)) {
+          if (isSessionExpiredError(syncErr)) {
             authExpiredRef.current = true;
             setAuthExpired(true);
             setFetchError('Session expired. Please sign in again to load Track Records.');
@@ -138,7 +135,7 @@ export default function AdminTrackRecordsTab() {
       }
     } catch (err) {
       console.error('Failed to fetch Track Records:', err);
-      if (isAuthError(err)) {
+      if (isSessionExpiredError(err)) {
         authExpiredRef.current = true;
         setAuthExpired(true);
         setFetchError('Session expired. Please sign in again to load Track Records.');

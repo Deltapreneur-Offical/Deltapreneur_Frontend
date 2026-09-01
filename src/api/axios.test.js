@@ -159,6 +159,28 @@ describe('api axios client', () => {
     }
   });
 
+  it('does not treat 403 Access denied as an expired session', async () => {
+    const { setStoredAccessToken, getStoredAccessToken } = await import('../utils/authSession');
+    setStoredAccessToken('still-valid-access');
+    document.cookie = 'csrf_token=csrf-abc; path=/';
+
+    const error = {
+      config: {
+        url: '/api/v1/admin/dashboard',
+        method: 'get',
+        headers: {},
+      },
+      response: {
+        status: 403,
+        data: { detail: 'Access denied' },
+      },
+    };
+
+    await expect(responseErrorHandler(error)).rejects.toBeTruthy();
+    expect(mocks.postMock).not.toHaveBeenCalled();
+    expect(getStoredAccessToken()).toBe('still-valid-access');
+  });
+
   it('clears the session when refresh returns 401', async () => {
     const { setStoredAccessToken, getStoredAccessToken } = await import('../utils/authSession');
     setStoredAccessToken('expired-access');

@@ -171,6 +171,34 @@ export function getStaticHubRegistrarCategories() {
   return categories;
 }
 
+/** Format API startingPrice into the same display string used on /registrations. */
+export function formatHubRegistrarStartingPrice(price) {
+  const n = Number(price);
+  if (price == null || price === '' || Number.isNaN(n) || n === 0) return '₹999';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+/**
+ * Map a public Hub Registrar category API row to the card shape used on the
+ * homepage carousel and /registrations. Admin `name` and `startingPrice` are
+ * the source of truth; highlights stay local because the API does not send them.
+ */
+export function mapPublicHubRegistrarCategory(cat) {
+  const startingPrice = cat?.startingPrice ?? cat?.starting_price;
+  return {
+    slug: cat.slug,
+    label: cat.name,
+    description: cat.description || '',
+    price: formatHubRegistrarStartingPrice(startingPrice),
+    priceNumeric: Number(startingPrice) || 0,
+    highlights: HUB_REGISTRAR_CATEGORY_HIGHLIGHTS[cat.slug] || [],
+  };
+}
+
 const HUB_REGISTRAR_KNOWN_VALUES = new Set(
   HUB_REGISTRAR_CATEGORY_OPTIONS.map((opt) => opt.value).filter((value) => value !== 'other'),
 );

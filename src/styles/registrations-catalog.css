@@ -699,7 +699,7 @@
 .reg-mini-card__watermark {
   position: absolute;
   right: -1.35rem;
-  bottom: 0.7rem;
+  bottom: 0.15rem;
   z-index: 1;
   width: calc(8.5rem - 35px);
   height: calc(8.5rem - 35px);
@@ -827,6 +827,7 @@
 }
 
 .reg-mini-card__price-pill {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -835,16 +836,34 @@
   min-width: 0;
   padding: 0.32rem 0.28rem 0.32rem 1rem;
   border-radius: 9999px;
-  border: 2px solid transparent;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
+  border: none;
+  background: transparent;
   box-shadow:
     0 0 0 1px rgba(125, 211, 252, 0.22),
     0 8px 18px rgba(2, 132, 199, 0.07),
     0 0 18px rgba(56, 189, 248, 0.12);
   color: #0059a4;
   box-sizing: border-box;
+}
+
+/* Sky ring only — interior stays open so the card tick shows through. */
+.reg-mini-card__price-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .reg-mini-card:hover .reg-mini-card__price-pill,
@@ -856,6 +875,8 @@
 }
 
 .reg-mini-card__price {
+  position: relative;
+  z-index: 1;
   min-width: 0;
   flex: 1 1 auto;
   font-size: 1.05rem;
@@ -868,6 +889,8 @@
 }
 
 .reg-mini-card__price-arrow {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -9,8 +9,13 @@ import {
   Hotel, Landmark, Leaf, Monitor, Plane, Radio, Receipt, Rocket,
   Shield, ShoppingBag, Truck, Users, UtensilsCrossed, Wheat, Zap,
 } from 'lucide-react';
-import { getStaticHubRegistrarCategories } from '../../utils/operationsCategories';
+import {
+  getStaticHubRegistrarCategories,
+  mapPublicHubRegistrarCategory,
+} from '../../utils/operationsCategories';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
+import { hubRegistrarCategoryAPI } from '../../api/services';
+import { asArray } from '../../utils/asArray';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/registrations-catalog.css';
 
@@ -28,7 +33,7 @@ const CATEGORY_ICONS = {
   employer_labour: Users, environmental: Leaf, digital_services: Monitor,
 };
 
-const ALL_CATEGORIES = getStaticHubRegistrarCategories();
+const STATIC_CATEGORIES = getStaticHubRegistrarCategories();
 const EMPTY_MESSAGE = 'No category found. Check back soon, we are working on it.';
 
 export default function HomeRegistrationsSection() {
@@ -36,18 +41,37 @@ export default function HomeRegistrationsSection() {
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [allCategories, setAllCategories] = useState(STATIC_CATEGORIES);
   const rowWrapRef = useRef(null);
+
+  // Same public Hub Registrar Categories API as admin + /registrations.
+  useEffect(() => {
+    let cancelled = false;
+    hubRegistrarCategoryAPI
+      .list()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const items = asArray(data)
+          .map(mapPublicHubRegistrarCategory)
+          .filter((cat) => cat.slug && cat.label);
+        if (items.length) setAllCategories(items);
+      })
+      .catch(() => {
+        // Keep static fallback so the homepage still renders.
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
-    if (!query) return ALL_CATEGORIES;
-    return ALL_CATEGORIES.filter((cat) => (
+    if (!query) return allCategories;
+    return allCategories.filter((cat) => (
       cat.label.toLowerCase().includes(query)
       || cat.slug.toLowerCase().includes(query)
       || (cat.description || '').toLowerCase().includes(query)
       || (cat.highlights || []).some((p) => p.toLowerCase().includes(query))
     ));
-  }, [categoryFilter]);
+  }, [categoryFilter, allCategories]);
 
   const getPreviewRow = useCallback(() => (
     rowWrapRef.current?.querySelector('.home-preview-row') || null

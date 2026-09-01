@@ -11,20 +11,14 @@ import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import {
   getHubRegistrarSubcategories,
-  HUB_REGISTRAR_CATEGORY_HIGHLIGHTS,
   getStaticHubRegistrarCategories,
+  mapPublicHubRegistrarCategory,
   matchServicePriceFromApi,
 } from '../utils/operationsCategories';
 import { operationsAPI, hubRegistrarCategoryAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { REGISTRATIONS_PAGE_PATH } from '../utils/operationsSections';
 import '../styles/registrations-catalog.css';
-
-/** Format API startingPrice number into display string. */
-function formatRegPrice(price) {
-  if (price == null || price === 0) return '₹999';
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
-}
 
 /** Map category slugs to i18n translation keys for labels, descriptions, and highlights. */
 const REG_CAT_I18N = {
@@ -90,14 +84,10 @@ export default function RegistrationsPage() {
       .list()
       .then(({ data }) => {
         if (cancelled) return;
-        const items = (data.data || []).map((cat) => ({
-          slug: cat.slug,
-          label: cat.name,
-          description: cat.description || '',
-          price: formatRegPrice(cat.startingPrice),
-          highlights: HUB_REGISTRAR_CATEGORY_HIGHLIGHTS[cat.slug] || [],
-        }));
-        setAllCategories(items);
+        const items = asArray(data)
+          .map(mapPublicHubRegistrarCategory)
+          .filter((cat) => cat.slug && cat.label);
+        if (items.length) setAllCategories(items);
       })
       .catch(() => {
         // Keep static fallback on API failure

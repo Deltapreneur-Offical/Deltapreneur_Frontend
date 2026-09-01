@@ -401,7 +401,7 @@ export default function DomainListingCard({
 
     return (
       <div
-        className="domain-search-card relative flex h-full flex-col border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]"
+        className="domain-search-card domain-search-card--listing relative flex h-full min-w-0 w-full flex-col overflow-hidden border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]"
         onClick={interactive ? handleCardClick : undefined}
         role={interactive ? 'button' : undefined}
         tabIndex={interactive ? 0 : undefined}
@@ -442,9 +442,9 @@ export default function DomainListingCard({
         </div>
 
         {/* Content: badges + domain + price — matches DomainCard structure */}
-        <div className="pr-9 space-y-1.5">
+        <div className="pr-9 min-w-0 space-y-1.5">
           {/* Badges row — extra pb matches Premium card's renewal text spacing */}
-          <div className="flex flex-wrap items-center gap-1.5 pb-1.5">
+          <div className="flex flex-wrap items-center gap-1.5 pb-1.5 min-w-0">
             <span
               className={`inline-flex w-fit max-w-full shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                 statusKey === 'AVAILABLE'
@@ -459,11 +459,10 @@ export default function DomainListingCard({
             <RegistryStandardBadge />
           </div>
 
-          {/* Domain name — matching Premium exactly */}
-          <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.3, color: '#334155', overflow: 'hidden', textOverflow: 'clip', whiteSpace: 'nowrap' }}>
+          <p className="domain-search-card__name m-0 min-w-0 max-w-full font-bold leading-snug text-slate-700">
             <span>{display.name}</span>
             {display.ext?.full ? (
-              <span style={{ color: '#0369a1' }}>{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
+              <span className="text-sky-700">{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
             ) : null}
           </p>
 
@@ -475,16 +474,16 @@ export default function DomainListingCard({
             const isCom = display.ext?.full && display.ext.full.replace('.', '').toLowerCase() === 'com';
             return priceText ? (
               <>
-                <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">
-                  {priceText}
+                <p className="domain-search-card__price flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-base font-extrabold text-gray-950 leading-tight pt-0.5 min-w-0">
+                  <span className="min-w-0 break-all">{priceText}</span>
                   {isCom ? (
-                    <span className="text-[11px] font-medium text-gray-400 ml-1">(1st Year)</span>
+                    <span className="text-[11px] font-medium text-gray-400 whitespace-nowrap">(1st Year)</span>
                   ) : (
-                    <span className="text-[11px] font-medium text-gray-400 ml-1">/yr</span>
+                    <span className="text-[11px] font-medium text-gray-400 whitespace-nowrap">/yr</span>
                   )}
                 </p>
                 {isCom && (
-                  <p className="text-[11px] font-medium text-gray-400 leading-none pt-0.5">
+                  <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5 break-words">
                     Renews at {formatPrice(1050)}/yr
                   </p>
                 )}
@@ -496,7 +495,7 @@ export default function DomainListingCard({
         </div>
 
         {/* Bottom: Cart button + Share — matches DomainCard layout */}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2">
           {isAuction && auctionLive ? (
             <button
               type="button"

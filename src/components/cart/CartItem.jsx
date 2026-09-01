@@ -51,6 +51,12 @@ export default function CartItem({
   const Icon = meta.icon;
   const isRemoving = removingId === item.id;
   const isDomainReg = item.productType === 'DOMAIN_REGISTRATION';
+  const isDomainListing = item.productType === 'DOMAIN_LISTING';
+  const listingDisplayTotal = isDomainListing && Number(item.metadata?.buyerPayableInr) > 0
+    ? Number(item.metadata.buyerPayableInr)
+      + (Number(item.addonAmount) || 0)
+      + (Number(item.coBrotherFee) || 0)
+    : null;
   const minPeriod = Math.max(1, Number(item.metadata?.minPeriodYears || 1));
   const registrationTld = (() => {
     const fromMeta = String(item.metadata?.tld || '').replace(/^\./, '').toLowerCase();
@@ -128,11 +134,14 @@ export default function CartItem({
             {item.productType === 'TECHNOLOGY' && item.selectedPlan && (
               <span className="text-indigo-600 font-medium">{planLabelForKey(item.selectedPlan)}</span>
             )}
-            {item.basePrice > 0 && (
+            {item.basePrice > 0 && !isDomainListing && (
               <span>
                 Base {formatMoney(item.basePrice)}
                 {isDomainReg && selectedPeriod > 1 ? ` · ${selectedPeriod} years` : ''}
               </span>
+            )}
+            {isDomainListing && listingDisplayTotal != null && (
+              <span>Inclusive of applicable taxes</span>
             )}
             {item.addonAmount > 0 && <span>Add-ons {formatMoney(item.addonAmount)}</span>}
             {item.coBrotherFee > 0 && <span>CoBrother {formatMoney(item.coBrotherFee)}</span>}
@@ -191,7 +200,7 @@ export default function CartItem({
             isPeriodUpdating ? 'text-indigo-400 animate-pulse' : 'text-gray-900'
           }`}
         >
-          {formatMoney(item.lineTotal)}
+          {formatMoney(listingDisplayTotal != null ? listingDisplayTotal : item.lineTotal)}
         </span>
         <button
           type="button"

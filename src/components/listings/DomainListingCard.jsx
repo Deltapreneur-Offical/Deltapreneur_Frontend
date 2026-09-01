@@ -6,6 +6,7 @@ import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
+import { listingBuyerPayable } from '../../utils/marketplaceListingPrice';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 import AddToCartButton from '../cart/AddToCartButton';
@@ -118,7 +119,7 @@ export default function DomainListingCard({
 
   const basePrice = isAuction
     ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
-    : domain.askingPrice;
+    : listingBuyerPayable(domain);
   const priceAmount = basePrice;
 
   useEffect(() => {
@@ -459,7 +460,10 @@ export default function DomainListingCard({
             <RegistryStandardBadge />
           </div>
 
-          <p className="domain-search-card__name m-0 min-w-0 max-w-full font-bold leading-snug text-slate-700">
+          <p
+            className="domain-search-card__name m-0 min-w-0 max-w-full font-bold leading-snug text-slate-700"
+            title={display.fullDomain}
+          >
             <span>{display.name}</span>
             {display.ext?.full ? (
               <span className="text-sky-700">{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
@@ -469,29 +473,21 @@ export default function DomainListingCard({
           {/* Standard Domain label */}
           <p className="text-[11px] font-semibold text-sky-800/80">Standard Domain</p>
 
-          {/* Price — Premium text-base font-extrabold */}
-          {(() => {
-            const isCom = display.ext?.full && display.ext.full.replace('.', '').toLowerCase() === 'com';
-            return priceText ? (
-              <>
-                <p className="domain-search-card__price flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-base font-extrabold text-gray-950 leading-tight pt-0.5 min-w-0">
-                  <span className="min-w-0 break-all">{priceText}</span>
-                  {isCom ? (
-                    <span className="text-[11px] font-medium text-gray-400 whitespace-nowrap">(1st Year)</span>
-                  ) : (
-                    <span className="text-[11px] font-medium text-gray-400 whitespace-nowrap">/yr</span>
-                  )}
-                </p>
-                {isCom && (
-                  <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5 break-words">
-                    Renews at {formatPrice(1050)}/yr
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
-            );
-          })()}
+          {priceText ? (
+            <>
+              <p
+                className="domain-search-card__price text-base font-extrabold text-gray-950 pt-0.5 min-w-0 max-w-full"
+                title={priceText}
+              >
+                <span className="domain-search-card__price-value">{priceText}</span>
+              </p>
+              <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5">
+                Inclusive of applicable taxes
+              </p>
+            </>
+          ) : (
+            <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
+          )}
         </div>
 
         {/* Bottom: Cart button + Share — matches DomainCard layout */}
@@ -581,14 +577,21 @@ export default function DomainListingCard({
           ) : null}
         </div>
 
-        {(isAuction || Number(domain.askingPrice) > 0 || handleViewDetails) && (
-          <DomainListingPriceBox
-            amount={!isAuction && Number(domain.askingPrice) > 0 ? formatPrice(domain.askingPrice) : null}
-            isAuction={isAuction}
-            onViewDetails={handleViewDetails}
-            viewLabel={t('listingCardViewDetails', 'View details')}
-            auctionLabel={t('listingCardOnLiveAuction', 'On Live Auction')}
-          />
+        {(isAuction || Number(listingBuyerPayable(domain)) > 0 || handleViewDetails) && (
+          <div className="min-w-0">
+            <DomainListingPriceBox
+              amount={!isAuction && Number(listingBuyerPayable(domain)) > 0 ? formatPrice(listingBuyerPayable(domain)) : null}
+              isAuction={isAuction}
+              onViewDetails={handleViewDetails}
+              viewLabel={t('listingCardViewDetails', 'View details')}
+              auctionLabel={t('listingCardOnLiveAuction', 'On Live Auction')}
+            />
+            {!isAuction && Number(listingBuyerPayable(domain)) > 0 ? (
+              <p className="mt-1 text-[11px] font-medium text-gray-400 leading-snug">
+                Inclusive of applicable taxes
+              </p>
+            ) : null}
+          </div>
         )}
 
         <ListingCardStatsFooter

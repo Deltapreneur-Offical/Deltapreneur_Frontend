@@ -84,6 +84,12 @@ export function buildCartItemBreakdown(item, vaCatalog = [], operationsPriceByKe
   const virtualAssistantLines = addonLines.filter((l) => l.isVirtualAssistant);
   const addonAmount = Number(item.addonAmount) || 0;
   const productPayToday = round2((Number(item.basePrice) || 0) + addonAmount + (Number(item.coBrotherFee) || 0));
+  const isDomainListing = item.productType === 'DOMAIN_LISTING';
+  const listingInclusive = isDomainListing
+    ? Number(item.metadata?.buyerPayableInr) > 0
+      ? round2(Number(item.metadata.buyerPayableInr) + addonAmount + (Number(item.coBrotherFee) || 0))
+      : null
+    : null;
 
   return {
     id: item.id,
@@ -99,7 +105,10 @@ export function buildCartItemBreakdown(item, vaCatalog = [], operationsPriceByKe
     basePrice: Number(item.basePrice) || 0,
     addonAmount,
     coBrotherFee: Number(item.coBrotherFee) || 0,
-    productPayToday,
+    productPayToday: listingInclusive != null ? listingInclusive : productPayToday,
+    listingInclusive: listingInclusive != null,
+    listingGst: isDomainListing ? Number(item.metadata?.gstInr || 0) : 0,
+    listingGstRate: isDomainListing ? item.metadata?.gstRate : null,
     serviceLines,
     virtualAssistantLines,
     lineTotal: Number(item.lineTotal) || 0,
@@ -124,6 +133,9 @@ export function buildCartOrderViewModel(itemBreakdowns) {
       basePrice: breakdown.basePrice,
       addonAmount: breakdown.addonAmount,
       coBrotherFee: breakdown.coBrotherFee,
+      listingInclusive: breakdown.listingInclusive === true,
+      listingGst: breakdown.listingGst || 0,
+      listingGstRate: breakdown.listingGstRate,
     });
 
     breakdown.serviceLines.forEach((line) => {
@@ -149,17 +161,28 @@ export function buildCartOrderViewModel(itemBreakdowns) {
     });
   });
 
-  const productSubtotal = round2(products.reduce((sum, p) => sum + p.amount, 0));
-  const productGst = round2(productSubtotal * 0.18);
-  const productTotal = round2(productSubtotal + productGst);
+  const listingDisplaySum = round2(
+    products.reduce((sum, p) => sum + (p.listingInclusive ? p.amount : 0), 0),
+  );
+  const nonListingExGst = round2(
+    products.reduce((sum, p) => sum + (p.listingInclusive ? 0 : p.amount), 0),
+  );
+  const listingGstRate = products.find((p) => p.listingInclusive && p.listingGstRate != null)?.listingGstRate;
+  const nonListingGst = round2(nonListingExGst * 0.18);
+  const listingOnly = products.length > 0 && products.every((p) => p.listingInclusive);
+  const productTotal = round2(listingDisplaySum + nonListingExGst + nonListingGst);
+  const productSubtotal = round2(listingDisplaySum + nonListingExGst);
+  const hideGstSplit = listingOnly || nonListingGst <= 0;
 
   return {
     products,
     services,
     virtualAssistants,
     productSubtotal,
-    productGst,
+    productGst: nonListingGst,
     productTotal,
+    hideGstSplit,
+    gstRate: listingGstRate != null ? Number(listingGstRate) : null,
   };
 }
 

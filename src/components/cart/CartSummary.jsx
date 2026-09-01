@@ -445,12 +445,18 @@ function TotalsPanel({
                     {formatPrice(orderView.productSubtotal)}
                   </span>
                 </div>
+                {!orderView.hideGstSplit && orderView.productGst > 0 ? (
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[12px] text-gray-600">GST (18%)</span>
+                  <span className="text-[12px] text-gray-600">
+                    GST{orderView.gstRate != null ? ` (${orderView.gstRate}%)` : ' (18%)'}
+                  </span>
                   <span className="text-[12px] font-semibold text-gray-900 tabular-nums">
                     {formatPrice(orderView.productGst)}
                   </span>
                 </div>
+                ) : orderView.hideGstSplit ? (
+                <p className="text-[11px] text-gray-500 pt-1">Inclusive of applicable taxes</p>
+                ) : null}
               </div>
             </motion.div>
           )}

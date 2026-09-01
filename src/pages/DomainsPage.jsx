@@ -15,7 +15,7 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import OverflowMarqueeText from '../components/common/OverflowMarqueeText';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { fetchSupportedTlds, getCachedSupportedTlds } from '../utils/domainSearch';
-import { domainAPI, auctionAPI } from '../api/services';
+import { domainAPI, auctionAPI, domainStorefrontAPI } from '../api/services';
 import AddToCartButton from '../components/cart/AddToCartButton';
 import { useAuth } from '../context/AuthContext';
 import useReferralTracker from '../hooks/useReferralTracker';
@@ -50,6 +50,8 @@ import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 import { extractDomainList, normalizeDomainRecord } from '../utils/domainApiAdapter';
+import { listingBuyerPayable } from '../utils/marketplaceListingPrice';
+import { computeRegistrationPricing } from '../utils/domainRegistrationPricing';
 import { normalizeContactInfo } from '../utils/ventureProfileUtils';
 import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows, isListingOwner } from '../utils/listingVisibility';
@@ -97,11 +99,12 @@ function convertAmountBetweenCurrencies(amount, fromCurrency, toCurrency, conver
   return formatPriceInputAmount(convertedAmount, target);
 }
 
-function computeListingCurrencyCommission(sellerAmount, commissionPercent = 15, currencyCode = DEFAULT_LISTING_CURRENCY) {
+function computeListingCurrencyCommission(sellerAmount, commissionPercent, currencyCode = DEFAULT_LISTING_CURRENCY) {
   const code = (currencyCode || DEFAULT_LISTING_CURRENCY).toUpperCase();
   const round = code === DEFAULT_LISTING_CURRENCY ? roundInr : roundMoney;
   const listingPrice = round(sellerAmount);
-  const commissionAmount = round((listingPrice * Number(commissionPercent || 0)) / 100);
+  const pct = Number(commissionPercent);
+  const commissionAmount = Number.isFinite(pct) ? round((listingPrice * pct) / 100) : 0;
   const sellerEarnings = round(listingPrice - commissionAmount);
 
   return {
@@ -110,7 +113,7 @@ function computeListingCurrencyCommission(sellerAmount, commissionPercent = 15, 
     sellerEarnings,
     commissionAmount,
     finalListingPrice: listingPrice,
-    commissionPercent,
+    commissionPercent: Number.isFinite(pct) ? pct : null,
   };
 }
 
@@ -639,10 +642,10 @@ export default function DomainsPage() {
               .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
                 flex-wrap: wrap !important;
               }
-              /* Nest Hub Max (1280×800) and similar: inner card grids 1-col */
+              /* Nest Hub Max: keep premium split cards 1-col. Standard marketplace uses auto-fill. */
               @media (min-width: 1024px) and (max-width: 1400px) {
-                .ventures-split__body .domain-listing-grid,
-                .ventures-split__body .listing-card-glow-grid.domain-listing-grid {
+                .ventures-split__body .domain-listing-grid:not(.domain-listing-grid--standard),
+                .ventures-split__body .listing-card-glow-grid.domain-listing-grid:not(.domain-listing-grid--standard) {
                   grid-template-columns: 1fr !important;
                 }
               }
@@ -1432,7 +1435,8 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency: navCurrency, convertToInr, ratesLoading, formatCurrency, ratesMeta } = useCurrency();
-  const [commissionPercent, setCommissionPercent] = useState(15);
+  const [commissionPercent, setCommissionPercent] = useState(null);
+  const [gstConfig, setGstConfig] = useState(null);
   const [auctionCreationFeeInr, setAuctionCreationFeeInr] = useState(118);
   const isEdit = Boolean(editDomain?.id);
   const isAdmin = roleWaivesAuctionPlatformFees(user?.role);
@@ -1480,11 +1484,19 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
     import('../utils/auctionFees').then(({ fetchListingFeesAndCharges }) => {
       fetchListingFeesAndCharges()
         .then((fees) => {
-          setCommissionPercent(Number(fees?.listingCommissionPercent ?? 15));
+          const pct = Number(fees?.listingCommissionPercent);
+          if (Number.isFinite(pct)) setCommissionPercent(pct);
           setAuctionCreationFeeInr(Number(fees?.auctionCreationFeeInr ?? 118));
         })
         .catch(() => { });
     });
+    domainStorefrontAPI.getConfig()
+      .then(({ data }) => {
+        const payload = data?.data ?? data;
+        const gst = payload?.gst;
+        if (gst && typeof gst === 'object') setGstConfig(gst);
+      })
+      .catch(() => { });
   }, []);
 
   const setContact = (k, v) =>
@@ -1628,8 +1640,11 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
   const isAuction = form.saleType === 'AUCTION';
   const sellerAmount = parseFloat(form.askingPrice) || 0;
   const savedAskingPriceInr = getAskingPriceInr();
-  const commissionBreakdown = !isAuction && sellerAmount > 0
+  const commissionBreakdown = !isAuction && sellerAmount > 0 && commissionPercent != null
     ? computeListingCurrencyCommission(sellerAmount, commissionPercent, form.currency)
+    : null;
+  const buyerPaysBreakdown = !isAuction && sellerAmount > 0 && gstConfig
+    ? computeRegistrationPricing(sellerAmount, 1, gstConfig)
     : null;
   const formatListingCurrency = (value) => formatCurrency(value, form.currency || DEFAULT_LISTING_CURRENCY);
   const selectedExt = normalizeDomainExtension(form.domainExtension);
@@ -1766,16 +1781,34 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         )}
         {(!isAuction || isEdit) && sellerAmount > 0 && (
           <p className="text-[0.72rem] text-gray-600 -mt-2">
-            Marketplace card will show about {formatInr(savedAskingPriceInr)} when your app currency is INR.
+            Marketplace card will show about {formatInr(
+              gstConfig
+                ? computeRegistrationPricing(savedAskingPriceInr, 1, gstConfig).total
+                : savedAskingPriceInr
+            )} (inclusive of applicable taxes) when your app currency is INR.
           </p>
         )}
         {commissionBreakdown && (
           <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3 text-sm text-gray-700 space-y-1">
-            <div className="flex justify-between"><span>Listing Price (buyer pays)</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
-            <div className="flex justify-between"><span>HubRegistrar Commission ({commissionBreakdown.commissionPercent}%)</span><span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span></div>
-            <div className="flex justify-between font-semibold text-gray-900"><span>Estimated Seller Earnings</span><span>{formatListingCurrency(commissionBreakdown.sellerEarnings)}</span></div>
+            <div className="flex justify-between"><span>Listing Price</span><span>{formatListingCurrency(commissionBreakdown.listingPrice)}</span></div>
+            <div className="flex justify-between">
+              <span>Platform Fee ({commissionBreakdown.commissionPercent}%)</span>
+              <span>{formatListingCurrency(commissionBreakdown.commissionAmount)}</span>
+            </div>
+            <div className="flex justify-between font-semibold text-gray-900">
+              <span>You Receive</span>
+              <span>{formatListingCurrency(commissionBreakdown.sellerEarnings)}</span>
+            </div>
+            {buyerPaysBreakdown ? (
+              <div className="flex justify-between font-semibold text-gray-900 pt-1 border-t border-purple-100">
+                <span>Buyer Pays</span>
+                <span>{formatListingCurrency(buyerPaysBreakdown.total)}</span>
+              </div>
+            ) : null}
             <p className="pt-2 text-xs leading-5 text-gray-600">
-              HubRegistrar deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout on successful buy-now sales. Buyers pay the listed price only. Your estimated earnings are shown above.
+              HubRegistrar deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout.
+              Buyers see the tax-inclusive price only — they are not shown this fee.
+              {buyerPaysBreakdown ? ' Buyer pays includes applicable taxes.' : ''}
             </p>
           </div>
         )}
@@ -1894,10 +1927,15 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
   });
 
   const addonExtra = addonTotal(addons);
-  const domainPrice = Number(domain.askingPrice);
-  const subTotal = domainPrice + addonExtra;
-  const gstAmount = subTotal * 0.18;
-  const totalPrice = subTotal + gstAmount;
+  const domainPrice = listingBuyerPayable(domain);
+  const asking = Number(domain.askingPrice) || 0;
+  const gstConfig = domain.gstRate != null
+    ? { enabled: domain.gstEnabled !== false, rate: Number(domain.gstRate), priceInclusive: false }
+    : null;
+  const billed = gstConfig
+    ? computeRegistrationPricing(asking + addonExtra, 1, gstConfig)
+    : { total: domainPrice + addonExtra, gst: 0 };
+  const totalPrice = billed.total;
 
   const [redeemPoints, setRedeemPoints] = useState(false);
   const [finalPayable, setFinalPayable] = useState(totalPrice);
@@ -2076,14 +2114,11 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
               Virtual assistant selection will be shared with the admin team for hiring follow-up.
             </div>
           )}
-          <div className="flex justify-between text-gray-500 mb-1">
-            <span>GST (18%)</span>
-            <span>{formatPrice(gstAmount)}</span>
-          </div>
           <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2 mt-1">
             <span>{t('domainsPageTotalLabel')}</span>
             <span>{formatPrice(totalPrice)}</span>
           </div>
+          <p className="text-[0.7rem] text-gray-500 mt-1">Inclusive of applicable taxes</p>
         </div>
 
         <EdgePointsRedeemToggle
@@ -2275,10 +2310,10 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                   </>
                 ) : (
                   <div className="flex flex-col justify-center p-4 rounded-[16px] bg-emerald-50/80 border border-emerald-100 sm:col-span-2">
-                    <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">Asking Price</div>
-                    <div className="text-3xl font-black text-emerald-700">
-                      {formatPrice(Number(d.askingPrice) * 1.18)}
-                      <span className="text-sm font-semibold text-emerald-600/70 ml-2">(inc. 18% GST)</span>
+                    <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">Price</div>
+                    <div className="text-3xl font-black text-emerald-700 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span>{formatPrice(listingBuyerPayable(d))}</span>
+                      <span className="text-sm font-semibold text-emerald-600/70">Inclusive of applicable taxes</span>
                     </div>
                   </div>
                 )}

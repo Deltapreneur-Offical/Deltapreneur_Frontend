@@ -199,11 +199,13 @@ export default function CartPage() {
   const { priceByAddonKey } = useOperationsServicesCatalog();
 
   const productOrderTotal = useMemo(() => {
+    const backendTotal = Number(cart?.total);
+    if (Number.isFinite(backendTotal) && backendTotal > 0) return backendTotal;
     const breakdowns = (cart?.items || []).map((item) =>
       buildCartItemBreakdown(item, vaServices, priceByAddonKey),
     );
     return buildCartOrderViewModel(breakdowns).productTotal;
-  }, [cart?.items, vaServices, priceByAddonKey]);
+  }, [cart?.items, cart?.total, vaServices, priceByAddonKey]);
 
   const items = cart?.items || [];
   const technologyItems = useMemo(

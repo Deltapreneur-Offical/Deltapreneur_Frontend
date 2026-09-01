@@ -1891,10 +1891,29 @@
 }
 
 .domain-search-card--listing .domain-search-card__name {
-  font-size: 1.15rem;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  white-space: normal;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+.domain-search-card--listing .domain-search-card__price,
+.domain-search-card--listing .domain-search-card__price-value {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+  line-height: 1.25;
 }
 
 @media (max-width: 639px) {
@@ -1928,28 +1947,9 @@
   max-width: 100%;
 }
 
-@container domains-page (max-width: 539px) {
-  .domain-listing-grid--standard {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-}
-
-@container domains-page (min-width: 540px) and (max-width: 859px) {
-  .domain-listing-grid--standard {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-@container domains-page (min-width: 860px) and (max-width: 1199px) {
-  .domain-listing-grid--standard {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-}
-
-@container domains-page (min-width: 1200px) {
-  .domain-listing-grid--standard {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  }
+/* Size columns from the grid's own width so split panels never get 3 skinny cards. */
+.domains-page-wrap .domain-listing-grid.domain-listing-grid--standard {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)) !important;
 }
 
 

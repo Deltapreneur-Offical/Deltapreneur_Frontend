@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../api/services';
-import { ensureAccessTokenFromRefresh } from '../api/axios';
 import {
   clearAuthTokens,
   getStoredAccessToken,
@@ -38,12 +37,12 @@ function shouldClearAuth(error) {
     '',
   ).toLowerCase();
   return (
-    !detail ||
-    detail.includes('invalid') ||
-    detail.includes('expired') ||
-    detail.includes('not authenticated') ||
-    detail.includes('missing') ||
-    detail.includes('token')
+    detail.includes('session expired') ||
+    detail.includes('invalid token') ||
+    detail.includes('expired token') ||
+    detail.includes('invalid or expired') ||
+    detail.includes('refresh token') ||
+    detail.includes('not authenticated')
   );
 }
 
@@ -67,22 +66,13 @@ export function AuthProvider({ children }) {
     if (token || cookieSession) setHasAccessToken(true);
     try {
       // Prefer existing access cookie / memory token for /auth/me.
-      // Do NOT refresh first — parallel refreshes after OAuth race and revoke the session.
+      // Do NOT refresh after a successful me call — overlapping refreshes
+      // used to revoke the live session (backend now also guards this).
       const { data } = await profileAPI.getMe();
       // Backend may return FastAPI { data }, Java { user }, or the user object directly.
       const userData = normalizeUserPayload(data);
       setUser(userData);
       setHasAccessToken(true);
-
-      // After a valid session, load an in-memory access JWT for WebSocket query auth.
-      // Single-flight via axios so concurrent fetchMe calls share one refresh.
-      if (!getAccessToken() && hasCookieAuthSession()) {
-        try {
-          await ensureAccessTokenFromRefresh();
-        } catch {
-          // API still works via HttpOnly cookies; WS may reconnect later.
-        }
-      }
       return userData;
     } catch (err) {
       const status = err?.response?.status;

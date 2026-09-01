@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { resolveWebSocketOrigin } from '../config/urls';
-import { getStoredAccessToken } from '../utils/authSession';
+import { ensureAccessTokenFromRefresh } from '../api/axios';
+import { getStoredAccessToken, hasCookieAuthSession } from '../utils/authSession';
 
 function getAccessToken() {
   return getStoredAccessToken();
@@ -17,16 +18,13 @@ export function useNotificationSocket(userId, onNotification) {
   useEffect(() => {
     if (!userId || !onNotification) return undefined;
 
-    const token = getAccessToken();
-    if (!token) return undefined;
-
     let ws;
     let cancelled = false;
     let reconnectTimer;
     let reconnectAttempt = 0;
 
-    const connect = () => {
-      if (cancelled) return;
+    const connect = (token) => {
+      if (cancelled || !token) return;
 
       const url = `${resolveWebSocketOrigin()}/ws/notifications/${encodeURIComponent(
         String(userId),
@@ -60,7 +58,9 @@ export function useNotificationSocket(userId, onNotification) {
         if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) return;
 
         const delay = Math.min(30000, BASE_RECONNECT_MS * reconnectAttempt);
-        reconnectTimer = window.setTimeout(connect, delay);
+        reconnectTimer = window.setTimeout(() => {
+          void start();
+        }, delay);
       };
 
       ws.onerror = () => {
@@ -68,7 +68,21 @@ export function useNotificationSocket(userId, onNotification) {
       };
     };
 
-    connect();
+    const start = async () => {
+      if (cancelled) return;
+      let token = getAccessToken();
+      if (!token && hasCookieAuthSession()) {
+        try {
+          token = await ensureAccessTokenFromRefresh();
+        } catch {
+          token = getAccessToken();
+        }
+      }
+      if (!token) return;
+      connect(token);
+    };
+
+    void start();
 
     return () => {
       cancelled = true;

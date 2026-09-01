@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext';
+import { currencyForLanguage } from '../../utils/languageCurrencyMap';
 
 const LANGUAGES = [
   { code: 'en-IN', name: 'English' },
@@ -51,6 +53,7 @@ function isActiveLanguage(current, code) {
 export default function LanguageDropdown({ variant = 'dark', className = '' }) {
   const { t, i18n } = useTranslation();
   const { changeLanguage } = useLanguage();
+  const { setCurrency } = useCurrency();
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState(null);
   const triggerRef = useRef(null);
@@ -77,6 +80,12 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
       maxHeight: openUp ? Math.min(panelHeight, spaceAbove - 6) : Math.min(panelHeight, spaceBelow - 6),
     });
   }, []);
+
+  const selectLanguage = useCallback((code) => {
+    changeLanguage(code);
+    const nextCurrency = currencyForLanguage(code);
+    if (nextCurrency) setCurrency(nextCurrency);
+  }, [changeLanguage, setCurrency]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -114,7 +123,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
               type="button"
               className={sectionItemCls(isActiveLanguage(i18n.language, lang.code))}
               aria-selected={isActiveLanguage(i18n.language, lang.code)}
-              onClick={() => changeLanguage(lang.code)}
+              onClick={() => selectLanguage(lang.code)}
             >
               <span className="font-medium tabular-nums">{languageShortCode(lang.code)}</span>
               <span className="text-gray-500">{lang.name}</span>
@@ -167,7 +176,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
               className={itemCls(isActiveLanguage(i18n.language, lang.code))}
               aria-selected={isActiveLanguage(i18n.language, lang.code)}
               onClick={() => {
-                changeLanguage(lang.code);
+                selectLanguage(lang.code);
                 setOpen(false);
               }}
             >
@@ -213,7 +222,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
         ) : (
           <span className="home-nav-language-label truncate">{languageLabel(i18n.language)}</span>
         )}
-        {!isMinimal ? <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} /> : null}
+        <ChevronDown size={isMinimal ? 12 : 13} className="home-nav-util-chevron shrink-0 text-slate-400" strokeWidth={2} />
       </button>
       {panel}
     </div>

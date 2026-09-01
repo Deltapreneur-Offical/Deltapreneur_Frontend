@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
-import { CURRENCY_LABELS } from '../../constants/currencies';
+import { useLanguage } from '../../context/LanguageContext';
+import { CURRENCY_LABELS, NAVBAR_PINNED_CURRENCIES, orderNavbarCurrencies } from '../../constants/currencies';
 import { getCurrencySymbol, getCurrencyFlag } from '../../utils/currencyDisplay';
+import { languageForCurrency } from '../../utils/languageCurrencyMap';
 
 /**
  * Shared currency selector (TopNavbar dark bar + AppLayout light).
@@ -21,11 +23,18 @@ const CURRENCY_SHORT = {
 
 export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
   const { currency, setCurrency, supportedCurrencies } = useCurrency();
+  const { changeLanguage, language } = useLanguage();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [coords, setCoords] = useState(null);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
+
+  const selectCurrency = useCallback((code) => {
+    setCurrency(code);
+    const nextLang = languageForCurrency(code, language);
+    if (nextLang) changeLanguage(nextLang);
+  }, [setCurrency, changeLanguage, language]);
 
   const updatePosition = useCallback(() => {
     const el = triggerRef.current;
@@ -69,6 +78,8 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
   }, [open, updatePosition]);
 
   if (variant === 'profile-menu') {
+    const orderedProfileCurrencies = orderNavbarCurrencies(supportedCurrencies);
+    const pinnedCount = NAVBAR_PINNED_CURRENCIES.filter((code) => orderedProfileCurrencies.includes(code)).length;
     const sectionItemCls = (active) =>
       `flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors border-none bg-transparent cursor-pointer ${
         active ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-gray-700 hover:bg-gray-50'
@@ -80,19 +91,23 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
           Currency
         </p>
         <div className="max-h-40 overflow-y-auto space-y-0.5 pr-1" role="listbox" aria-label="Currency">
-          {supportedCurrencies.map((code) => (
-            <button
-              key={code}
-              type="button"
-              className={sectionItemCls(currency === code)}
-              aria-selected={currency === code}
-              onClick={() => setCurrency(code)}
-            >
-              <span className="font-medium tabular-nums">
-                {CURRENCY_SHORT[code] || ''} {code}
-              </span>
-              <span className="truncate text-gray-500">{CURRENCY_LABELS[code] || code}</span>
-            </button>
+          {orderedProfileCurrencies.map((code, index) => (
+            <Fragment key={code}>
+              <button
+                type="button"
+                className={sectionItemCls(currency === code)}
+                aria-selected={currency === code}
+                onClick={() => selectCurrency(code)}
+              >
+                <span className="font-medium tabular-nums">
+                  {CURRENCY_SHORT[code] || ''} {code}
+                </span>
+                <span className="truncate text-gray-500">{CURRENCY_LABELS[code] || code}</span>
+              </button>
+              {index === pinnedCount - 1 && index < orderedProfileCurrencies.length - 1 ? (
+                <div className="my-1 border-t border-gray-100" aria-hidden="true" />
+              ) : null}
+            </Fragment>
           ))}
         </div>
       </div>
@@ -114,6 +129,9 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
     const label = (CURRENCY_LABELS[code] || '').toLowerCase();
     return code.toLowerCase().includes(term) || label.includes(term);
   });
+  const orderedCurrencies = orderNavbarCurrencies(filteredCurrencies);
+  const pinnedVisibleCount = NAVBAR_PINNED_CURRENCIES.filter((code) => orderedCurrencies.includes(code)).length;
+  const showPinnedDivider = !searchQuery.trim() && pinnedVisibleCount > 0 && pinnedVisibleCount < orderedCurrencies.length;
 
   const fullLabel = CURRENCY_LABELS[currency] || currency;
   const shortLabel = CURRENCY_SHORT[currency] || currency;
@@ -148,35 +166,39 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
             />
           </div>
           <div className="max-h-60 space-y-0.5 overflow-y-auto p-1">
-            {filteredCurrencies.map((code) => {
+            {orderedCurrencies.map((code, index) => {
               const flag = getCurrencyFlag(code);
               const symbol = getCurrencySymbol(code);
               const label = CURRENCY_LABELS[code] || code;
               const cleanLabel = label.includes(symbol) ? label.replace(symbol, '').trim() : label;
               return (
-                <button
-                  type="button"
-                  key={code}
-                  aria-selected={currency === code}
-                  onClick={() => {
-                    setCurrency(code);
-                    setOpen(false);
-                    setSearchQuery('');
-                  }}
-                  className={itemCls(currency === code)}
-                >
-                  <span className="flex min-w-0 items-center gap-2.5">
-                    <img src={flag} alt="" className="h-3.5 w-5 shrink-0 rounded-[3px] border border-gray-200/60 object-cover shadow-sm" />
-                    <span className="min-w-0">
-                      <span className="block font-medium leading-tight text-gray-900">{code}</span>
-                      <span className="mt-0.5 block truncate text-[10px] leading-tight text-gray-400">{cleanLabel}</span>
+                <Fragment key={code}>
+                  <button
+                    type="button"
+                    aria-selected={currency === code}
+                    onClick={() => {
+                      selectCurrency(code);
+                      setOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className={itemCls(currency === code)}
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <img src={flag} alt="" className="h-3.5 w-5 shrink-0 rounded-[3px] border border-gray-200/60 object-cover shadow-sm" />
+                      <span className="min-w-0">
+                        <span className="block font-medium leading-tight text-gray-900">{code}</span>
+                        <span className="mt-0.5 block truncate text-[10px] leading-tight text-gray-400">{cleanLabel}</span>
+                      </span>
                     </span>
-                  </span>
-                  <span className="shrink-0 text-xs font-semibold text-gray-500">{symbol}</span>
-                </button>
+                    <span className="shrink-0 text-xs font-semibold text-gray-500">{symbol}</span>
+                  </button>
+                  {showPinnedDivider && index === pinnedVisibleCount - 1 ? (
+                    <div className="my-1 border-t border-gray-100" aria-hidden="true" />
+                  ) : null}
+                </Fragment>
               );
             })}
-            {filteredCurrencies.length === 0 && (
+            {orderedCurrencies.length === 0 && (
               <div className="py-4 text-center text-xs text-gray-400">No results found</div>
             )}
           </div>
@@ -213,9 +235,9 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
             <img src={getCurrencyFlag(currency)} alt="" className="h-3.5 w-5 shrink-0 rounded-[3px] border border-gray-200/60 object-cover shadow-sm" />
             <span className="home-nav-currency-label home-nav-currency-label--full truncate">{fullLabel}</span>
             <span className="home-nav-currency-label home-nav-currency-label--short truncate">{shortLabel}</span>
-            <ChevronDown size={13} className="shrink-0 text-slate-400" strokeWidth={2} />
           </span>
         )}
+        <ChevronDown size={isMinimal ? 12 : 13} className="home-nav-util-chevron shrink-0 text-slate-400" strokeWidth={2} />
       </button>
       {panel}
     </div>

@@ -99,17 +99,6 @@ function HomeNavToolbarSeparator({ variant = 'desktop' }) {
   );
 }
 
-function SupportLabel({ className = 'home-nav-support-label' }) {
-  const { t } = useTranslation();
-
-  return (
-    <span className={className}>
-      <span className="home-nav-support-prefix">{t('navSupport24/7')}</span>
-      <span className="home-nav-support-emphasis">{t('navSupportLabel')}</span>
-    </span>
-  );
-}
-
 export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const { t } = useTranslation();
   const { user, logout, refreshUser, loading: authLoading } = useAuth();
@@ -233,8 +222,6 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
 
   return (
     <>
-      <SupportLabel />
-      <HomeNavToolbarSeparator />
       <a href={SUPPORT_PHONE_TEL} className="home-nav-phone-number">
         {SUPPORT_PHONE_DISPLAY}
       </a>
@@ -314,9 +301,6 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 >
                   {t('contactUs')}
                 </a>
-                <div className="home-profile-mobile-only px-3 py-1.5 text-sm font-medium">
-                  <SupportLabel />
-                </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
                   className="home-profile-mobile-only px-3 py-1.5 text-sm font-semibold text-slate-500 hover:bg-gray-50 transition-colors no-underline"
@@ -377,9 +361,6 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                     {t('contactUs')}
                   </a>
                 ) : null}
-                <div className="home-profile-mobile-only px-3 py-1.5 text-sm font-medium">
-                  <SupportLabel />
-                </div>
                 <a
                   href={SUPPORT_PHONE_TEL}
                   className="home-profile-mobile-only px-3 py-1.5 text-sm font-semibold text-slate-500 hover:bg-gray-100 transition-colors no-underline"

@@ -7829,7 +7829,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   align-items: center;
   justify-content: flex-end;
   flex-wrap: nowrap;
-  gap: 0.625rem;
+  gap: 0.85rem;
   flex-shrink: 0;
   overflow: visible;
 }
@@ -7896,7 +7896,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .home-nav-util-group {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.95rem;
   flex-shrink: 0;
   padding: 0.125rem 0;
 }
@@ -7997,6 +7997,109 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .home-top-nav-actions .home-nav-util-btn:focus-visible,
 .app-layout-header-utils .home-nav-util-btn:focus-visible {
   box-shadow: 0 0 0 2px rgba(226, 232, 240, 0.95) !important;
+}
+
+.home-nav-util-language,
+.home-nav-util-currency,
+.home-profile-menu-language,
+.home-profile-menu-currency {
+  position: relative;
+}
+
+.home-nav-util-group .home-nav-util-divider {
+  display: inline-block;
+  width: 1px;
+  height: 0.95rem;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  background: var(--brand-border);
+  font-size: 0;
+  line-height: 0;
+}
+
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn,
+.home-profile-menu-language .home-nav-util-btn,
+.home-profile-menu-currency .home-nav-util-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 0.34rem 0.72rem !important;
+  border: 1px solid var(--brand-border) !important;
+  outline: none !important;
+  border-radius: 9999px !important;
+  background: var(--brand-soft) !important;
+  box-shadow: none !important;
+  color: var(--brand-hover) !important;
+  font-weight: 600;
+}
+
+.home-nav-util-language .home-nav-util-btn::before,
+.home-nav-util-currency .home-nav-util-btn::before,
+.home-profile-menu-language .home-nav-util-btn::before,
+.home-profile-menu-currency .home-nav-util-btn::before,
+.home-nav-util-language .home-nav-util-btn::after,
+.home-nav-util-currency .home-nav-util-btn::after,
+.home-profile-menu-language .home-nav-util-btn::after,
+.home-profile-menu-currency .home-nav-util-btn::after {
+  content: none;
+}
+
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn svg,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn svg,
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn span,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn span,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn svg,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn svg,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn span,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn span,
+.home-profile-menu-language .home-nav-util-btn svg,
+.home-profile-menu-currency .home-nav-util-btn svg,
+.home-profile-menu-language .home-nav-util-btn span,
+.home-profile-menu-currency .home-nav-util-btn span {
+  color: inherit !important;
+}
+
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn:hover,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn:hover,
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn:focus-visible,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn:focus-visible,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn:hover,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn:hover,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn:focus-visible,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn:focus-visible,
+.home-profile-menu-language .home-nav-util-btn:hover,
+.home-profile-menu-currency .home-nav-util-btn:hover {
+  background: #ede9fe !important;
+  border-color: var(--brand) !important;
+  box-shadow: none !important;
+  color: var(--brand-hover) !important;
+}
+
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn:hover svg,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn:hover svg,
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn:hover span,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn:hover span,
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn:focus-visible svg,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn:focus-visible svg,
+.home-top-nav-actions .home-nav-util-language .home-nav-util-btn:focus-visible span,
+.home-top-nav-actions .home-nav-util-currency .home-nav-util-btn:focus-visible span,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn:hover svg,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn:hover svg,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn:hover span,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn:hover span,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn:focus-visible svg,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn:focus-visible svg,
+.app-layout-header-utils .home-nav-util-language .home-nav-util-btn:focus-visible span,
+.app-layout-header-utils .home-nav-util-currency .home-nav-util-btn:focus-visible span {
+  color: var(--brand-hover) !important;
+}
+
+.home-nav-util-chevron {
+  opacity: 0.85;
 }
 
 .home-nav-contact-link {
@@ -8286,7 +8389,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   .app-layout-header-utils .home-nav-util-currency .home-nav-util-btn,
   .app-layout-header-utils .home-nav-util-language .home-nav-util-btn {
     font-size: 0.8125rem !important;
-    padding: 0 0.25rem !important;
+    padding: 0.28rem 0.5rem !important;
   }
 }
 

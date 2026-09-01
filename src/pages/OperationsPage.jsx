@@ -16,7 +16,7 @@ import HubRegistrarOfficeCard from '../components/listings/HubRegistrarOfficeCar
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { operationsAPI, operationsRequestAPI, virtualAssistantAPI, hubRegistrarOfficeAPI } from '../api/services';
+import { operationsAPI, operationsRequestAPI, virtualAssistantAPI, hubRegistrarOfficeAPI, hubRegistrarCategoryAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 import { OPERATIONS_CATEGORY_OPTIONS, getHubRegistrarFilterCategoryOptions, serviceMatchesHubRegistrarSubcategory } from '../utils/operationsCategories';
@@ -62,6 +62,26 @@ export default function OperationsPage() {
   const [myRequests, setMyRequests] = useState([]);
   const [myRequestsLoading, setMyRequestsLoading] = useState(false);
   const [detailProfile, setDetailProfile] = useState(null);
+  const [apiCategories, setApiCategories] = useState([]);
+
+  // Fetch categories from API on mount — used for the compliance dropdown
+  useEffect(() => {
+    let cancelled = false;
+    hubRegistrarCategoryAPI
+      .list()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const items = (data.data || []).map((cat) => ({
+          value: cat.slug,
+          label: cat.name,
+        }));
+        setApiCategories(items);
+      })
+      .catch(() => {
+        // Keep empty — static fallback will be used
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const loadMyRequests = useCallback(async () => {
     if (!user) {
@@ -278,11 +298,14 @@ export default function OperationsPage() {
 
   const categoryOptions = useMemo(() => {
     if (isCompliance) {
-      return getHubRegistrarFilterCategoryOptions(services);
+      // Prefer API categories (live database); fall back to static list
+      return apiCategories.length > 0
+        ? apiCategories
+        : getHubRegistrarFilterCategoryOptions(services);
     }
     const present = new Set(services.map((s) => s.category).filter(Boolean));
     return OPERATIONS_CATEGORY_OPTIONS.filter((opt) => present.has(opt.value));
-  }, [services, isCompliance]);
+  }, [services, isCompliance, apiCategories]);
 
   const sortOptions = useMemo(
     () => [

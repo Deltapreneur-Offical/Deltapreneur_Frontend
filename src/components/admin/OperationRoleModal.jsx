@@ -8,6 +8,7 @@ import {
   resolveHubRegistrarCategoryForm,
   slugifyHubRegistrarCategory,
 } from '../../utils/operationsCategories';
+import { useCategoryMap } from '../../context/CategoryContext';
 import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
 import { readApiError } from '../../utils/apiError';
 
@@ -65,7 +66,12 @@ export default function OperationRoleModal({
   const [loading, setLoading] = useState(false);
   const isCompliance = form.serviceType === 'compliance';
   const modalMeta = SECTION_MODAL_META[sectionId] || SECTION_MODAL_META.compliance;
-  const categoryOptions = isCompliance ? HUB_REGISTRAR_CATEGORY_OPTIONS : VA_CATEGORY_OPTIONS;
+  const categoryMap = useCategoryMap();
+  const categoryOptions = isCompliance
+    ? Object.entries(categoryMap).length > 0
+      ? [{ value: 'other', label: 'Other (Custom)' }, ...Object.entries(categoryMap).map(([value, label]) => ({ value, label }))]
+      : HUB_REGISTRAR_CATEGORY_OPTIONS
+    : VA_CATEGORY_OPTIONS;
   const activeSection = OPERATIONS_SECTIONS.find((s) => s.id === sectionId) || OPERATIONS_SECTIONS[0];
 
   useEffect(() => {

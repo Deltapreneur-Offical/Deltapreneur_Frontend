@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useDynamicCategoryName } from '../../context/CategoryContext';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
 import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../utils/operationsCategories';
@@ -38,11 +39,12 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const isCarouselClone = useIsCarouselClone();
+  const dynamicName = useDynamicCategoryName(service.category, getHubRegistrarCategoryLabel);
 
   const Icon = resolveOperationsIcon(service);
   const cardCompliance = isComplianceService(service);
   const catLabel = cardCompliance
-    ? getHubRegistrarCategoryLabel(service.category)
+    ? dynamicName
     : (OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category);
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
   const skills = resolveSkills(service);

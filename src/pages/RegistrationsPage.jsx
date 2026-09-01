@@ -11,15 +11,20 @@ import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import {
   getHubRegistrarSubcategories,
+  HUB_REGISTRAR_CATEGORY_HIGHLIGHTS,
   getStaticHubRegistrarCategories,
   matchServicePriceFromApi,
 } from '../utils/operationsCategories';
-import { operationsAPI } from '../api/services';
+import { operationsAPI, hubRegistrarCategoryAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { REGISTRATIONS_PAGE_PATH } from '../utils/operationsSections';
 import '../styles/registrations-catalog.css';
 
-const ALL_CATEGORIES = getStaticHubRegistrarCategories();
+/** Format API startingPrice number into display string. */
+function formatRegPrice(price) {
+  if (price == null || price === 0) return '₹999';
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+}
 
 /** Map category slugs to i18n translation keys for labels, descriptions, and highlights. */
 const REG_CAT_I18N = {
@@ -61,6 +66,7 @@ export default function RegistrationsPage() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [apiServices, setApiServices] = useState([]);
+  const [allCategories, setAllCategories] = useState(getStaticHubRegistrarCategories());
   const { isScrolled, navRef } = useHomePageScrollNav();
 
   // Fetch operations services from backend (single source of truth for prices)
@@ -77,6 +83,28 @@ export default function RegistrationsPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // Fetch categories from API on mount — replaces static fallback with live data
+  useEffect(() => {
+    let cancelled = false;
+    hubRegistrarCategoryAPI
+      .list()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const items = (data.data || []).map((cat) => ({
+          slug: cat.slug,
+          label: cat.name,
+          description: cat.description || '',
+          price: formatRegPrice(cat.startingPrice),
+          highlights: HUB_REGISTRAR_CATEGORY_HIGHLIGHTS[cat.slug] || [],
+        }));
+        setAllCategories(items);
+      })
+      .catch(() => {
+        // Keep static fallback on API failure
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   const selectedSlug = searchParams.get('category') || '';
 
   // Scroll to top when the selected category changes so the destination
@@ -85,22 +113,27 @@ export default function RegistrationsPage() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [selectedSlug]);
 
-  // Translate category labels, descriptions, and highlights for the current language
+  // Merge API category data with i18n translations.
+  // API data (from admin) is the source of truth for name/description/price.
+  // i18n is used only for highlights (which the API doesn't provide).
   const translatedCategories = useMemo(() => (
-    ALL_CATEGORIES.map((cat) => {
+    allCategories.map((cat) => {
       const i18n = REG_CAT_I18N[cat.slug];
-      if (!i18n) return cat;
+      const highlights = (cat.highlights && cat.highlights.length > 0)
+        ? cat.highlights
+        : i18n
+          ? Array.from({ length: 3 }, (_, idx) => t(`${i18n.highlightsKey}${idx}`, ''))
+              .filter(Boolean)
+          : [];
       return {
         ...cat,
-        label: t(i18n.labelKey, cat.label),
-        description: t(i18n.descKey, cat.description),
-        highlights: (cat.highlights || []).map((_, idx) => {
-          const key = `${i18n.highlightsKey}${idx}`;
-          return t(key, cat.highlights[idx]);
-        }),
+        // Use API values as-is (admin-managed, source of truth)
+        label: cat.label,
+        description: cat.description,
+        highlights,
       };
     })
-  ), [t]);
+  ), [t, allCategories]);
 
   const selectedCategory = useMemo(
     () => translatedCategories.find((row) => row.slug === selectedSlug) || null,
@@ -243,7 +276,7 @@ export default function RegistrationsPage() {
               <div className="reg-catalog-stat">
                 <Building2 size={18} strokeWidth={2} aria-hidden />
                 <div>
-                  <strong>{ALL_CATEGORIES.length}</strong>
+                  <strong>{allCategories.length}</strong>
                   <span>{t('regCatalogStatCategories')}</span>
                 </div>
               </div>

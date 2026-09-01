@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useDynamicCategoryName } from '../../context/CategoryContext';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
 import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel, HUB_REGISTRAR_CATEGORY_LABELS } from '../../utils/operationsCategories';
 
@@ -60,11 +61,14 @@ import { formatOperationsPrice, isComplianceService } from '../../utils/operatio
 export default function OperationsServiceCard({ service, onHire }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const dynamicName = useDynamicCategoryName(service.category, getHubRegistrarCategoryLabel);
 
   const Icon = resolveOperationsIcon(service);
   const cardCompliance = isComplianceService(service);
+  // Use dynamic API category name for compliance (Hub Registrar) services.
+  // For non-compliance services, fall back to static category labels.
   const catLabel = cardCompliance
-    ? t(HUB_REG_I18N_KEY[service.category], { defaultValue: getHubRegistrarCategoryLabel(service.category) })
+    ? dynamicName
     : t(CATEGORY_I18N_KEY[service.category], { defaultValue: OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category });
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
 

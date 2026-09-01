@@ -15,12 +15,15 @@ import App from './App.jsx'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'
 import { LanguageProvider } from './context/LanguageContext'
 import { CurrencyProvider } from './context/CurrencyContext'
+import { CategoryProvider } from './context/CategoryContext'
 
 createRoot(document.getElementById('root')).render(
   <ErrorBoundary>
     <LanguageProvider>
       <CurrencyProvider>
-        <App />
+        <CategoryProvider>
+          <App />
+        </CategoryProvider>
       </CurrencyProvider>
     </LanguageProvider>
   </ErrorBoundary>,

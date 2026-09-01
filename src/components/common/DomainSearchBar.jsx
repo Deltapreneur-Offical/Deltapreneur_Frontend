@@ -6,6 +6,7 @@ import { ArrowRight, Search, Loader2, ChevronRight } from 'lucide-react';
 import { domainAPI, domainStorefrontAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
+import { listingBuyerPayable } from '../../utils/marketplaceListingPrice';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -1728,11 +1729,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-blue-100 text-blue-700">
                     LISTED DOMAIN
                   </span>
-                  <h2 className="text-xl font-extrabold mb-3 text-gray-900">
+                  <h2 className="text-xl font-extrabold mb-3 text-gray-900 truncate" title={`${item.domainName || ''}${item.domainExtension || ''}`}>
                     {item.domainName}<span className="text-blue-600">{item.domainExtension}</span>
                   </h2>
-                  <p className="text-blue-600 text-sm font-semibold mb-4">
-                    Asking {formatPrice(item.askingPrice || 0)}
+                  <p className="text-blue-600 text-sm font-semibold mb-1 truncate tabular-nums" title={formatPrice(listingBuyerPayable(item))}>
+                    {formatPrice(listingBuyerPayable(item))}
+                  </p>
+                  <p className="text-[11px] font-medium text-gray-400 mb-4">
+                    Inclusive of applicable taxes
                   </p>
                   <button
                     type="button"

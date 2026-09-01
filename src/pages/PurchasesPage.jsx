@@ -12,6 +12,7 @@ import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 import { extractDomainList } from '../utils/domainApiAdapter';
+import { listingBuyerPayable } from '../utils/marketplaceListingPrice';
 import {
   isRegistrationPurchase,
   registrationOrderDetailPath,
@@ -429,7 +430,7 @@ function DomainPurchaseRow({ domain, user }) {
           <div className={`font-display text-xl font-bold ${
             isRefunded ? 'text-red-600' : 'text-green-600'
           }`}>
-            {formatPrice(domain.askingPrice)}
+            {formatPrice(listingBuyerPayable(domain) || domain.askingPrice)}
           </div>
           <InvoiceDownloadButton
             onClick={() => generateInvoice({ type: 'domain', item: domain, user })}

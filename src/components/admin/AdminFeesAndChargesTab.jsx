@@ -256,7 +256,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
         <FeeInput
           fieldKey="listingCommissionPercent"
           label="Marketplace Commission"
-          hint="Deducted from the seller's payout when a buy-now domain sells. Example: if the listing price is ₹10,000 and commission is 15%, the buyer pays ₹10,000 and the seller receives ₹8,500."
+          hint="Deducted from the seller's payout when a buy-now domain sells. Example: if the listing price is ₹10,000 and commission is 15%, the seller receives ₹8,500. The buyer pays the listing price plus GST (for example ₹11,800 at 18% GST)."
           value={fees.listingCommissionPercent}
           onChange={handleFieldChange}
           suffix="%"
@@ -264,7 +264,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
         <InfoRow
           emoji="💡"
           label="Who pays this?"
-          description="The seller pays this. It is deducted from their payout. The buyer only sees and pays the listed price — they are not charged this commission."
+          description="The seller pays this. It is deducted from their payout. The buyer is not shown this commission. The buyer pays the listing price plus applicable GST."
         />
         <SharedFeeBadge
           label="Auction fees also apply to Domain Auctions"

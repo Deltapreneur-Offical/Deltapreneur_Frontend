@@ -246,15 +246,22 @@ function buildLineItems({ type, item }) {
 
   if (type === 'domain') {
     const productName = `${item.domainName || ''}${item.domainExtension || ''}`.trim() || 'Domain';
-    const amount = Number(item.askingPrice || item.priceInr || item.price || 0);
+    const asking = Number(item.askingPrice || item.subtotalInr || item.price || 0);
+    const gst = Number(item.gstInr ?? 0);
+    const total = Number(
+      item.priceInr
+      || item.buyerPayableInr
+      || (gst > 0 ? asking + gst : asking),
+    );
+    const subtotal = asking > 0 ? asking : (gst > 0 && total > gst ? total - gst : total);
     lines.push({
       name: productName,
       description: item.pricingDemand || 'Domain name purchase',
       qty: 1,
-      unitPrice: amount,
-      amount,
+      unitPrice: subtotal,
+      amount: subtotal,
     });
-    return { lines, gst: 0, total: amount };
+    return { lines, gst, total: total || subtotal + gst };
   }
 
   const sw = item.software || {};

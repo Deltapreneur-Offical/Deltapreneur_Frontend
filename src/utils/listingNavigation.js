@@ -20,14 +20,10 @@ export function isLoggedIn() {
   return hasAuthSession();
 }
 
-/** Logged in → dedicated detail page (ventures) or list page with ?id=; otherwise → login. */
+/** Navigate to the listing detail/browse page. All listing types are publicly
+ *  viewable from the Home page — no login redirect is needed. */
 export function navigateToListingDetail(navigate, type, id) {
   const path = getListingBrowsePath(type, id);
-  if (!isLoggedIn()) {
-    localStorage.setItem('redirectAfterLogin', path);
-    navigate('/login', { state: { from: path } });
-    return;
-  }
   navigate(path);
 }
 

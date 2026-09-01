@@ -245,7 +245,7 @@ export default function TechnologyServiceDetailPage() {
             {error || 'The requested technology service does not exist or is currently unavailable.'}
           </p>
           <button
-            onClick={() => navigate('/technology')}
+            onClick={() => navigate('/technology', { replace: true })}
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -270,7 +270,7 @@ export default function TechnologyServiceDetailPage() {
           <div className="mx-auto max-w-7xl relative z-10">
             {/* Back Link */}
             <button
-              onClick={() => navigate('/technology')}
+              onClick={() => navigate('/technology', { replace: true })}
               className="inline-flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors mb-6"
             >
               <ArrowLeft className="h-4 w-4" />

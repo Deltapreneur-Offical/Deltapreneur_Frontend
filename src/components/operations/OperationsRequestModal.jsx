@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { operationsRequestAPI } from '../../api/services';
 import { readApiError } from '../../utils/apiError';
+import { openRazorpayCheckout } from '../../utils/razorpayCheckout';
 import {
   formatOperationsPrice,
   isComplianceService,
@@ -21,6 +22,11 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
   const isCompliance = isComplianceService(service);
   const priceInfo = formatOperationsPrice(service, { t });
   const [mounted, setMounted] = useState(false);
+
+  // phase: 'form' | 'processing' | 'success' | 'failed'
+  const [phase, setPhase] = useState('form');
+  const [resultData, setResultData] = useState(null);
+  const requestIdRef = useRef(null);
 
   const [form, setForm] = useState({
     fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
@@ -45,12 +51,53 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  const handlePaymentSuccess = useCallback(async (response) => {
+    // response contains: razorpay_payment_id, razorpay_order_id, razorpay_signature
+    // Use ref to get the latest requestId (avoids stale closure after setResultData)
+    const reqId = requestIdRef.current;
+    try {
+      const verifyRes = await operationsRequestAPI.verifyPayment({
+        requestId: reqId,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpayOrderId: response.razorpay_order_id,
+        razorpaySignature: response.razorpay_signature,
+      });
+      setResultData(verifyRes?.data?.data || verifyRes?.data);
+      setPhase('success');
+      onSuccess?.({
+        type: isCompliance ? 'booking' : 'hire',
+        serviceName: service.name,
+        quotedPrice: Number(service.price) || 0,
+        billingPeriod: isCompliance ? 'one_time' : 'monthly',
+      });
+    } catch (err) {
+      setError(
+        readApiError(err)
+          || t('operationsRequestVerifyFailed', { defaultValue: 'Payment verification failed. Please contact support.' }),
+      );
+      setPhase('failed');
+    }
+  }, [isCompliance, service, onSuccess, t]);
+
+  const handlePaymentDismiss = useCallback(() => {
+    // User closed Razorpay without paying — stay on form, allow retry
+    setLoading(false);
+  }, []);
+
+  const handlePaymentFailure = useCallback(() => {
+    setError(
+      t('operationsRequestPaymentFailed', { defaultValue: 'Payment failed. Please try again.' }),
+    );
+    setLoading(false);
+  }, [t]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setPhase('form');
     try {
-      await operationsRequestAPI.submit({
+      const orderRes = await operationsRequestAPI.createOrder({
         operationsServiceId: service.id,
         fullName: form.fullName.trim(),
         email: form.email.trim(),
@@ -60,18 +107,28 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
         message: form.message.trim() || null,
         preferredTimeline: form.preferredTimeline.trim() || null,
       });
-      onSuccess({
-        type: isCompliance ? 'booking' : 'hire',
-        serviceName: service.name,
-        quotedPrice: Number(service.price) || 0,
-        billingPeriod: isCompliance ? 'one_time' : 'monthly',
+      const orderData = orderRes?.data?.data || orderRes?.data;
+      if (!orderData?.orderId) {
+        throw new Error('Invalid payment order from server.');
+      }
+      setResultData(orderData);
+      requestIdRef.current = orderData?.requestId;
+      setLoading(false);
+
+      // Open Razorpay Checkout
+      openRazorpayCheckout({
+        orderData,
+        user,
+        description: `HubRegistrar - ${service.name}`,
+        onSuccess: handlePaymentSuccess,
+        onFailure: handlePaymentFailure,
+        onDismiss: handlePaymentDismiss,
       });
     } catch (err) {
       setError(
         readApiError(err)
           || t('operationsRequestSubmitFailed', { defaultValue: 'Failed to submit request.' }),
       );
-    } finally {
       setLoading(false);
     }
   };
@@ -80,9 +137,16 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
     ? t('operationsBookModalTitle', { defaultValue: 'Book Your Slot' })
     : t('operationsHireModalTitle', { defaultValue: 'Hire Virtual Role' });
 
+  const payAmount = isCompliance && priceInfo.showPrice ? priceInfo.amount : null;
   const submitLabel = isCompliance
-    ? t('operationsBookSlot', { defaultValue: 'Book Your Slot' })
-    : t('operationsHireSubmit', { defaultValue: 'Submit Hire Request' });
+    ? (loading
+      ? t('operationsProcessing', { defaultValue: 'Processing...' })
+      : payAmount
+        ? t('operationsPayAmount', { defaultValue: `Pay ${payAmount}` })
+        : t('operationsBookSlot', { defaultValue: 'Book Your Slot' }))
+    : (loading
+      ? t('operationsProcessing', { defaultValue: 'Processing...' })
+      : t('operationsHireSubmit', { defaultValue: 'Submit Hire Request' }));
 
   const priceHint = isCompliance
     ? t('operationsBookPriceHint', { defaultValue: 'Single registration / filing service' })
@@ -130,6 +194,57 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
           </div>
         </div>
 
+        {/* ── SUCCESS STATE ── */}
+        {phase === 'success' && (
+          <div className="operations-request-modal-success" style={{ padding: '2rem', textAlign: 'center' }}>
+            <CheckCircle size={56} className="mx-auto mb-4" style={{ color: '#22c55e' }} />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', marginBottom: '0.5rem' }}>
+              {t('operationsPaymentSuccess', { defaultValue: 'Payment Successful' })}
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.5rem' }}>
+              {t('operationsPaymentSuccessMsg', { defaultValue: 'Payment received. Your booking is now pending admin contact.' })}
+            </p>
+            <div style={{ background: '#f9fafb', borderRadius: '0.75rem', padding: '1rem', textAlign: 'left', fontSize: '0.8125rem', color: '#374151' }}>
+              <p style={{ marginBottom: '0.375rem' }}><strong>{t('operationsRequestService', { defaultValue: 'Service' })}:</strong> {service.name}</p>
+              <p style={{ marginBottom: '0.375rem' }}><strong>{t('operationsRequestAmountPaid', { defaultValue: 'Amount Paid' })}:</strong> {priceInfo.amount}</p>
+              {resultData?.razorpayPaymentId && (
+                <p><strong>{t('operationsRequestPaymentId', { defaultValue: 'Payment ID' })}:</strong> {resultData.razorpayPaymentId}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-glow operations-request-modal-submit operations-request-modal-submit--pay"
+              style={{ marginTop: '1.25rem', width: '100%' }}
+            >
+              {t('close', { defaultValue: 'Close' })}
+            </button>
+          </div>
+        )}
+
+        {/* ── FAILED STATE ── */}
+        {phase === 'failed' && (
+          <div className="operations-request-modal-failed" style={{ padding: '2rem', textAlign: 'center' }}>
+            <XCircle size={56} className="mx-auto mb-4" style={{ color: '#ef4444' }} />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', marginBottom: '0.5rem' }}>
+              {t('operationsPaymentFailed', { defaultValue: 'Payment Failed' })}
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.5rem' }}>
+              {t('operationsPaymentFailedMsg', { defaultValue: 'Your payment could not be completed. Please try again.' })}
+            </p>
+            <div className="operations-request-modal-actions">
+              <button type="button" onClick={() => { setPhase('form'); setError(''); }} className="btn-glow operations-request-modal-submit operations-request-modal-submit--pay">
+                {t('retry', { defaultValue: 'Retry' })}
+              </button>
+              <button type="button" onClick={onClose} className="operations-request-modal-cancel">
+                {t('cancel', { defaultValue: 'Cancel' })}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── FORM STATE ── */}
+        {phase === 'form' && (
         <form onSubmit={handleSubmit} className="operations-request-modal-form">
           <div className="operations-request-modal-fields">
             <div className="operations-request-modal-field operations-request-modal-field--full">
@@ -245,9 +360,16 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
           )}
 
           <div className="operations-request-modal-actions">
-            <button type="submit" disabled={loading} className="btn-glow operations-request-modal-submit">
+            <button
+              type="submit"
+              disabled={loading}
+              className={`btn-glow operations-request-modal-submit ${isCompliance && payAmount ? 'operations-request-modal-submit--pay' : ''}`}
+            >
               {loading ? (
-                <span className="operations-request-modal-spinner" aria-hidden />
+                <>
+                  <span className="operations-request-modal-spinner" aria-hidden />
+                  <span>{submitLabel}</span>
+                </>
               ) : (
                 submitLabel
               )}
@@ -257,6 +379,7 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>,
     document.body,

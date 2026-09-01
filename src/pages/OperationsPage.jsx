@@ -21,7 +21,7 @@ import { asArray } from '../utils/asArray';
 import { unwrapApiData } from '../utils/apiResponse';
 import { OPERATIONS_CATEGORY_OPTIONS, getHubRegistrarFilterCategoryOptions, serviceMatchesHubRegistrarSubcategory } from '../utils/operationsCategories';
 import { formatRequestAdminPrice } from '../utils/operationsPricing';
-import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
+import { getCustomerRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { OPERATIONS_SECTIONS, resolveOperationsSection } from '../utils/operationsSections';
 
 function formatMyRequestDate(value) {
@@ -688,7 +688,7 @@ export default function OperationsPage() {
                         </div>
                       </div>
                       <span className={`operations-my-requests-status operations-my-requests-status--${String(row.status || '').toLowerCase()}`}>
-                        {getRequestStatusLabel(row.status, t)}
+                        {getCustomerRequestStatusLabel(row.status, t)}
                       </span>
                     </article>
                   ))}

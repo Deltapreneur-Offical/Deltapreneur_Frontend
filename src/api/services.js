@@ -330,6 +330,8 @@ export const operationsAdminAPI = {
 
 export const operationsRequestAPI = {
   submit: (body) => api.post('/api/v1/operations/requests', body),
+  createOrder: (body) => api.post('/api/v1/operations/requests/order', body),
+  verifyPayment: (body) => api.post('/api/v1/operations/requests/verify', body),
   listMine: () => api.get('/api/v1/operations/requests/me'),
 };
 

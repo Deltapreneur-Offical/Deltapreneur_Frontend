@@ -837,7 +837,7 @@
   border-radius: 9999px;
   border: 2px solid transparent;
   background:
-    linear-gradient(90deg, #eef1ff 0%, #e8ecfe 48%, #ece8ff 100%) padding-box,
+    linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
   box-shadow:
     0 0 0 1px rgba(125, 211, 252, 0.22),

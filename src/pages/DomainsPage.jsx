@@ -583,9 +583,9 @@ export default function DomainsPage() {
                 box-shadow: 0 2px 8px rgba(15,118,110,0.18);
               }
 
-              /* Standard domain cards: badges on one line */
+              /* Standard domain cards: badges wrap on narrow cards */
               .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
-                flex-wrap: nowrap !important;
+                flex-wrap: wrap !important;
               }
 
               /* Add-to-Cart buttons: subtle brand hover */
@@ -625,8 +625,8 @@ export default function DomainsPage() {
                   overflow: visible !important;
                 }
               }
-              /* Tablet / Nest Hub (~1280px): 2-col with breathing room */
-              @media (min-width: 640px) and (max-width: 1279px) {
+              /* Tablet: 2-col until the page container can fit 3 (see container queries) */
+              @media (min-width: 640px) and (max-width: 899px) {
                 .domains-page-wrap .domain-listing-grid,
                 .domains-page-wrap .listing-card-glow-grid.domain-listing-grid {
                   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -635,9 +635,9 @@ export default function DomainsPage() {
                   margin-inline: 0 !important;
                 }
               }
-              /* Standard domain cards: badges on one line */
+              /* Standard domain cards: badges wrap on narrow cards */
               .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
-                flex-wrap: nowrap !important;
+                flex-wrap: wrap !important;
               }
               /* Nest Hub Max (1280×800) and similar: inner card grids 1-col */
               @media (min-width: 1024px) and (max-width: 1400px) {
@@ -940,7 +940,7 @@ export default function DomainsPage() {
                           </div>
                         ) : (
                           <>
-                            <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
+                            <div className="listing-card-glow-grid domain-listing-grid domain-listing-grid--standard grid grid-cols-1 sm:grid-cols-2">
                               {marketplaceFilter.paginated.map(d => (
                                 <ListingCardShell key={d.id}>
                                   <DomainListingCard
@@ -1042,7 +1042,7 @@ export default function DomainsPage() {
               )
             ) : (
               <>
-                <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="listing-card-glow-grid domain-listing-grid domain-listing-grid--standard grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-[1600px]:grid-cols-4">
                   {marketplaceFilter.paginated.map(d => (
                     <ListingCardShell key={d.id}>
                       <DomainListingCard

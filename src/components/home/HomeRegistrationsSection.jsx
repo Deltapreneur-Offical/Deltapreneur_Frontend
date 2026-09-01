@@ -1,7 +1,6 @@
-import { useMemo, useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Share2, Search, Check, Copy, X } from 'lucide-react';
+import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import bulletpointTick from '../../assets/bulletpointtick.png';
 import cardTickLightBlue from '../../assets/cardticklightblue.png';
 import {
@@ -12,8 +11,6 @@ import {
 } from 'lucide-react';
 import { getStaticHubRegistrarCategories } from '../../utils/operationsCategories';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
-import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/registrations-catalog.css';
 
@@ -37,7 +34,9 @@ const EMPTY_MESSAGE = 'No category found. Check back soon, we are working on it.
 export default function HomeRegistrationsSection() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [copiedSlug, setCopiedSlug] = useState(null);
-  const shouldAutoScroll = useShouldAutoScroll(ALL_CATEGORIES.length);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const rowWrapRef = useRef(null);
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
@@ -49,6 +48,174 @@ export default function HomeRegistrationsSection() {
       || (cat.highlights || []).some((p) => p.toLowerCase().includes(query))
     ));
   }, [categoryFilter]);
+
+  const getPreviewRow = useCallback(() => (
+    rowWrapRef.current?.querySelector('.home-preview-row') || null
+  ), []);
+
+  const getPageStep = useCallback((el) => {
+    const item = el.querySelector('.home-preview-row__item');
+    if (!item) return Math.round(el.clientWidth * 0.75);
+    const styles = getComputedStyle(el);
+    const gap = parseFloat(styles.columnGap || styles.gap) || 24;
+    const pad = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
+    const cardWidth = item.getBoundingClientRect().width;
+    const stride = cardWidth + gap;
+    if (stride <= 0) return Math.round(el.clientWidth * 0.75);
+    const usable = Math.max(0, el.clientWidth - pad);
+    const visibleCount = Math.max(1, Math.floor((usable + gap) / stride));
+    return visibleCount * stride;
+  }, []);
+
+  const updateNavState = useCallback(() => {
+    const el = getPreviewRow();
+    const wrap = rowWrapRef.current;
+    if (!el) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      return;
+    }
+    const max = el.scrollWidth - el.clientWidth;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(max > 2 && el.scrollLeft < max - 2);
+
+    if (wrap) {
+      const wrapRect = wrap.getBoundingClientRect();
+      const card = wrap.querySelector('.reg-mini-card');
+      if (card) {
+        const cardRect = card.getBoundingClientRect();
+        const center = cardRect.top - wrapRect.top + cardRect.height / 2;
+        wrap.style.setProperty('--reg-nav-center', `${Math.round(center)}px`);
+      }
+      const edgeGap = 28;
+      wrap.style.setProperty('--reg-nav-inset-left', `${Math.round(edgeGap - wrapRect.left)}px`);
+      wrap.style.setProperty('--reg-nav-inset-right', `${Math.round(wrapRect.right - window.innerWidth + edgeGap)}px`);
+    }
+  }, [getPreviewRow]);
+
+  const scrollCards = useCallback((dir) => {
+    const el = getPreviewRow();
+    if (!el) return;
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    const next = Math.min(maxScroll, Math.max(0, el.scrollLeft + dir * getPageStep(el)));
+    el.scrollTo({ left: next, behavior: 'smooth' });
+  }, [getPreviewRow, getPageStep]);
+
+  useEffect(() => {
+    const el = getPreviewRow();
+    if (!el) return undefined;
+
+    updateNavState();
+    const rafId = requestAnimationFrame(updateNavState);
+
+    const onScroll = () => updateNavState();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateNavState)
+      : null;
+    resizeObserver?.observe(el);
+    const firstCard = el.querySelector('.reg-mini-card');
+    if (firstCard) resizeObserver?.observe(firstCard);
+    window.addEventListener('resize', updateNavState);
+
+    // Hover + move cursor (no click needed) and click-drag both scroll the
+    // row. Touch keeps native swipe. Card clicks still work unless the
+    // pointer actually dragged.
+    let pointerId = null;
+    let startX = 0;
+    let startScroll = 0;
+    let dragged = false;
+    let hoverX = null;
+
+    const onPointerDown = (e) => {
+      if (e.pointerType === 'touch') return;
+      if (e.target.closest('.reg-mini-card__share, .reg-cards-nav')) return;
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      startScroll = el.scrollLeft;
+      dragged = false;
+      hoverX = null;
+      el.classList.add('reg-cards-preview-row--dragging');
+      if (el.setPointerCapture) {
+        try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+      }
+    };
+
+    const onPointerMove = (e) => {
+      if (e.pointerType === 'touch') return;
+      if (e.target.closest('.reg-cards-nav')) return;
+
+      if (pointerId !== null && e.pointerId === pointerId) {
+        const dx = e.clientX - startX;
+        if (!dragged && Math.abs(dx) < 6) return;
+        dragged = true;
+        el.scrollLeft = startScroll - dx;
+        return;
+      }
+
+      if (e.buttons !== 0) return;
+      if (e.target.closest('.reg-mini-card__share')) {
+        hoverX = e.clientX;
+        return;
+      }
+      if (hoverX === null) {
+        hoverX = e.clientX;
+        return;
+      }
+      const dx = e.clientX - hoverX;
+      hoverX = e.clientX;
+      if (!dx) return;
+      el.scrollLeft -= dx;
+    };
+
+    const onPointerUp = (e) => {
+      if (pointerId === null || e.pointerId !== pointerId) return;
+      pointerId = null;
+      hoverX = e.clientX;
+      el.classList.remove('reg-cards-preview-row--dragging');
+      if (!dragged) return;
+      const blockClick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        el.removeEventListener('click', blockClick, true);
+      };
+      el.addEventListener('click', blockClick, true);
+      window.setTimeout(() => el.removeEventListener('click', blockClick, true), 0);
+    };
+
+    const onPointerLeave = () => {
+      if (pointerId !== null) return;
+      hoverX = null;
+    };
+
+    const onWheel = (e) => {
+      if (el.scrollWidth <= el.clientWidth + 1) return;
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaX;
+    };
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', onPointerUp);
+    el.addEventListener('pointerleave', onPointerLeave);
+    el.addEventListener('wheel', onWheel, { passive: false });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      el.removeEventListener('scroll', onScroll);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateNavState);
+      el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('pointermove', onPointerMove);
+      el.removeEventListener('pointerup', onPointerUp);
+      el.removeEventListener('pointercancel', onPointerUp);
+      el.removeEventListener('pointerleave', onPointerLeave);
+      el.removeEventListener('wheel', onWheel);
+      el.classList.remove('reg-cards-preview-row--dragging');
+    };
+  }, [filteredCategories, getPreviewRow, updateNavState]);
 
   const handleShare = useCallback((e, cat) => {
     e.preventDefault();
@@ -137,7 +304,7 @@ export default function HomeRegistrationsSection() {
           <span className="reg-mini-card__price-pill">
             <span className="reg-mini-card__price">{price}</span>
             <span className="reg-mini-card__price-arrow" aria-hidden>
-              <ArrowRight size={14} strokeWidth={2.5} />
+              <ArrowRight size={18} strokeWidth={2.5} />
             </span>
           </span>
         </div>
@@ -185,22 +352,41 @@ export default function HomeRegistrationsSection() {
         </header>
         {filteredCategories.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{EMPTY_MESSAGE}</p>
-        ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={160} ariaLabel="Registrations" onlyWhenOverflow={!!categoryFilter}>
-            {filteredCategories.map((cat) => (
-              <HomeAutoScrollRowItem key={cat.slug}>
-                {renderCard(cat)}
-              </HomeAutoScrollRowItem>
-            ))}
-          </HomeAutoScrollRow>
         ) : (
-          <HomePreviewRow>
-            {filteredCategories.map((cat) => (
-              <HomePreviewRowItem key={cat.slug}>
-                {renderCard(cat)}
-              </HomePreviewRowItem>
-            ))}
-          </HomePreviewRow>
+          <div
+            className={[
+              'reg-cards-row-wrap',
+              canScrollLeft ? 'reg-cards-row-wrap--fade-left' : '',
+              canScrollRight ? 'reg-cards-row-wrap--fade-right' : '',
+            ].filter(Boolean).join(' ')}
+            ref={rowWrapRef}
+          >
+            <button
+              type="button"
+              className="reg-cards-nav reg-cards-nav--prev"
+              onClick={() => scrollCards(-1)}
+              disabled={!canScrollLeft}
+              aria-label="Scroll registration cards left"
+            >
+              <ChevronLeft size={22} strokeWidth={2.25} aria-hidden />
+            </button>
+            <HomePreviewRow className="reg-cards-preview-row">
+              {filteredCategories.map((cat) => (
+                <HomePreviewRowItem key={cat.slug}>
+                  {renderCard(cat)}
+                </HomePreviewRowItem>
+              ))}
+            </HomePreviewRow>
+            <button
+              type="button"
+              className="reg-cards-nav reg-cards-nav--next"
+              onClick={() => scrollCards(1)}
+              disabled={!canScrollRight}
+              aria-label="Scroll registration cards right"
+            >
+              <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
+            </button>
+          </div>
         )}
       </div>
     </section>

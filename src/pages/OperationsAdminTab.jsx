@@ -337,6 +337,17 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
     compliance: complianceServices.length,
   }), [complianceServices]);
 
+  // Dynamic category slug → name lookup from API data (must be before filteredCatalog)
+  const categoryNameMap = useMemo(() => {
+    const map = {};
+    for (const cat of categories) { map[cat.slug] = cat.name; }
+    return map;
+  }, [categories]);
+  const dynamicCategoryLabel = useCallback((slug) => {
+    const val = String(slug || '').trim().toLowerCase();
+    return categoryNameMap[val] || getHubRegistrarCategoryLabel(val);
+  }, [categoryNameMap]);
+
   const filteredCatalog = useMemo(() => {
     const q = search.trim().toLowerCase();
     return complianceServices.filter((row) => {
@@ -347,18 +358,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
       const haystack = `${row.name || ''} ${row.description || ''} ${dynamicCategoryLabel(row.category)}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [complianceServices, search, statusFilter, categoryFilter]);
-
-  // Dynamic category slug → name lookup from API data
-  const categoryNameMap = useMemo(() => {
-    const map = {};
-    for (const cat of categories) { map[cat.slug] = cat.name; }
-    return map;
-  }, [categories]);
-  const dynamicCategoryLabel = useCallback((slug) => {
-    const val = String(slug || '').trim().toLowerCase();
-    return categoryNameMap[val] || getHubRegistrarCategoryLabel(val);
-  }, [categoryNameMap]);
+  }, [complianceServices, search, statusFilter, categoryFilter, dynamicCategoryLabel]);
 
   const filteredRequests = useMemo(() => {
     const q = search.trim().toLowerCase();

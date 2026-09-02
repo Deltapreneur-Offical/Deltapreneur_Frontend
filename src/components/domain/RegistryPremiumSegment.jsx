@@ -88,6 +88,8 @@ export default function RegistryPremiumSegment({
             }}
             onClick={() => onChange(opt.id)}
             className={`relative z-[1] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-300 whitespace-nowrap select-none min-w-0 ${
+              opt.sparkle ? 'premium-domain-pill' : ''
+            } ${
               active
                 ? opt.sparkle
                   ? 'text-amber-950'
@@ -97,7 +99,7 @@ export default function RegistryPremiumSegment({
           >
             {opt.diamond ? <span aria-hidden="true">◆</span> : null}
             {opt.sparkle ? <span aria-hidden="true">✦</span> : null}
-            <span className="truncate">{opt.label}</span>
+            <span className={`truncate ${opt.sparkle ? 'premium-domain-pill__label' : ''}`}>{opt.label}</span>
             {opt.loading ? (
               <span className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${opt.sparkle ? 'border-amber-300 border-t-amber-700' : 'border-sky-300 border-t-sky-700'}`} />
             ) : typeof opt.count === 'number' ? (

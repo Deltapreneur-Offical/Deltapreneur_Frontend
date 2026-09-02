@@ -84,7 +84,7 @@ export default function OperationsServiceCard({ service, onHire }) {
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-sm shadow-indigo-100 group-hover:bg-indigo-100 transition-colors">
           <Icon size={20} strokeWidth={2} aria-hidden />
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
+        <span className="max-w-[calc(100%-4rem)] text-[9px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full whitespace-normal break-words">
           {catLabel}
         </span>
       </div>

@@ -195,6 +195,21 @@
   min-width: 0;
 }
 
+.reg-service-card__meta-price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.reg-service-card__meta-sep {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
 .reg-service-card__offer {
   display: flex;
   flex-direction: column;

@@ -64,22 +64,25 @@ export default function HomeRegistrationServiceCard({ categorySlug, service }) {
           <h3 className="reg-category-card__title">{service.label}</h3>
         </div>
         <div className="reg-service-card__meta">
-          {hasPrice ? (
-            <p className="reg-category-card__price">
-              {formatPrice(service.price, { forceDecimals: true })}
-            </p>
-          ) : (
-            <div className="reg-service-card__offer">
+          <div className="reg-service-card__meta-price-row">
+            {hasPrice ? (
+              <span className="reg-category-card__price">
+                {formatPrice(service.price, { forceDecimals: true })}
+              </span>
+            ) : (
               <span className="reg-service-card__quote">
                 {t('operationsContactForPricing', { defaultValue: 'Contact for pricing' })}
               </span>
-              {service.governmentFeesApplicable && service.governmentFeeText ? (
+            )}
+            {service.governmentFeesApplicable ? (
+              <>
+                <span className="reg-service-card__meta-sep">/</span>
                 <span className="reg-service-card__govt">
-                  {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
+                  Govt. fees applicable
                 </span>
-              ) : null}
-            </div>
-          )}
+              </>
+            ) : null}
+          </div>
           <span className="reg-category-card__cta-arrow" aria-hidden>
             <ArrowRight size={16} strokeWidth={2.5} />
           </span>

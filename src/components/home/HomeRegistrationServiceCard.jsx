@@ -62,28 +62,28 @@ export default function HomeRegistrationServiceCard({ categorySlug, service }) {
         <div className="reg-category-card__body">
           <p className="reg-category-card__kicker">{t('regCatalogCardService')}</p>
           <h3 className="reg-category-card__title">{service.label}</h3>
+        </div>
+        <div className="reg-service-card__meta">
           {hasPrice ? (
             <p className="reg-category-card__price">
               {formatPrice(service.price, { forceDecimals: true })}
             </p>
           ) : (
-            <div className="mt-1.5">
-              <span className="inline-block rounded-lg border border-indigo-200 bg-indigo-50/60 px-3 py-1.5 text-xs font-semibold text-indigo-700">
+            <div className="reg-service-card__offer">
+              <span className="reg-service-card__quote">
                 {t('operationsContactForPricing', { defaultValue: 'Contact for pricing' })}
               </span>
-              {service.governmentFeesApplicable && service.governmentFeeText && (
-                <div className="mt-1.5">
-                  <span className="inline-block rounded-md bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                    {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
-                  </span>
-                </div>
-              )}
+              {service.governmentFeesApplicable && service.governmentFeeText ? (
+                <span className="reg-service-card__govt">
+                  {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
+                </span>
+              ) : null}
             </div>
           )}
+          <span className="reg-category-card__cta-arrow" aria-hidden>
+            <ArrowRight size={16} strokeWidth={2.5} />
+          </span>
         </div>
-        <span className="reg-category-card__cta-arrow" aria-hidden>
-          <ArrowRight size={18} strokeWidth={2.5} />
-        </span>
       </Link>
     </div>
   );

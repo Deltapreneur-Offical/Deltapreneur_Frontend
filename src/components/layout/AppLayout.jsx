@@ -186,6 +186,8 @@ export default function AppLayout({ children }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
+  const layoutScrollRef = useRef(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('sidebarCollapsed');
@@ -408,6 +410,15 @@ export default function AppLayout({ children }) {
     localStorage.setItem('sidebarCollapsed', sidebarCollapsed.toString());
   }, [sidebarCollapsed]);
 
+  useEffect(() => {
+    const root = layoutScrollRef.current;
+    if (!root) return undefined;
+    const onScroll = () => setHeaderScrolled(root.scrollTop > 16);
+    onScroll();
+    root.addEventListener('scroll', onScroll, { passive: true });
+    return () => root.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleBellOpen = () => {
     const opening = !bellOpen;
     setBellOpen(opening);
@@ -501,10 +512,7 @@ export default function AppLayout({ children }) {
 
   // ─── AUTHENTICATED DASHBOARD LAYOUT ───────────────────────────────────────
   return (
-    <div
-      className="flex min-h-screen flex-col overflow-x-hidden overflow-y-auto bg-gray-50"
-      data-app-layout-scroll
-    >
+    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-gray-50">
       <div className="app-layout-workspace flex w-full flex-1 items-stretch">
       {/* Desktop Left Sidebar â€” workspace only; ends above full-width footer */}
       <aside
@@ -815,7 +823,7 @@ export default function AppLayout({ children }) {
       {/* Main column: header + page content (footer is outside workspace) */}
       <div className="app-layout-main-column flex min-w-0 flex-1 flex-col">
         {/* Top Header */}
-        <header className="app-layout-header sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible">
+        <header className={`app-layout-header z-30 shrink-0 border-b border-gray-200 bg-white/95 px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible backdrop-blur-md${headerScrolled ? ' is-scrolled' : ''}`}>
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden sm:gap-3">
             <button
               onClick={() => setMobileOpen(true)}
@@ -830,9 +838,10 @@ export default function AppLayout({ children }) {
 
             <Link
               to="/"
-              className={`brand-logo-interactive flex items-center shrink-0 ${
-                sidebarCollapsed ? 'lg:flex' : 'lg:hidden'
-              } ${sidebarCollapsed ? 'app-layout-collapsed-brand' : 'app-layout-mobile-brand'}`}
+              className={`brand-logo-interactive items-center shrink-0 ${
+                sidebarCollapsed ? 'flex app-layout-collapsed-brand' : 'flex lg:hidden app-layout-mobile-brand'
+              }`}
+              aria-label="HubRegistrar home"
             >
               <BrandNavLogo />
             </Link>
@@ -1025,15 +1034,18 @@ export default function AppLayout({ children }) {
           </div>
         </header>
 
-        <div className="app-layout-scroll-body flex flex-1 flex-col bg-gray-50 min-w-0">
+        <div
+          ref={layoutScrollRef}
+          data-app-layout-scroll
+          className="app-layout-scroll-body flex min-h-0 flex-1 flex-col overflow-y-auto bg-gray-50 min-w-0"
+        >
           <div className="app-main-content min-w-0 max-w-[100%] flex-1 px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:p-5 lg:p-6 xl:p-8">
             {children}
           </div>
+          <HomeFooter />
         </div>
       </div>
       </div>
-
-      <HomeFooter />
 
       {/* Logout Confirmation Dialog */}
       {showLogoutConfirm && (

@@ -61,6 +61,7 @@ export default function RegistrationsPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [apiServices, setApiServices] = useState([]);
   const [allCategories, setAllCategories] = useState(getStaticHubRegistrarCategories());
+  const [categoriesReady, setCategoriesReady] = useState(false);
   const { isScrolled, navRef } = useHomePageScrollNav();
 
   // Fetch operations services from backend (single source of truth for prices)
@@ -91,6 +92,9 @@ export default function RegistrationsPage() {
       })
       .catch(() => {
         // Keep static fallback on API failure
+      })
+      .finally(() => {
+        if (!cancelled) setCategoriesReady(true);
       });
     return () => { cancelled = true; };
   }, []);
@@ -167,10 +171,13 @@ export default function RegistrationsPage() {
   }, [selectedSlug]);
 
   useEffect(() => {
+    // Wait until the public category list has settled so a homepage click
+    // is not stripped before the matching slug arrives from the API.
+    if (!categoriesReady) return;
     if (selectedSlug && !selectedCategory) {
       setSearchParams({}, { replace: true });
     }
-  }, [selectedSlug, selectedCategory, setSearchParams]);
+  }, [selectedSlug, selectedCategory, setSearchParams, categoriesReady]);
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();

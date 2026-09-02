@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, Loader2 } from 'lucide-react';
+import useCurrency from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { domainStorefrontAPI } from '../../api/services';
 import { paySslAddon } from '../../utils/domainAddonCheckout';
 import { readApiError } from '../../utils/apiError';
 
 export default function SSLForm({ onClose, orders }) {
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [domainId, setDomainId] = useState('');
   const [productId, setProductId] = useState('');
@@ -128,7 +130,7 @@ export default function SSLForm({ onClose, orders }) {
           >
             {products.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name}{p.wildcard ? ' (Wildcard)' : ''} — {p.label || `₹${p.unitInr}/yr`}
+                {p.name}{p.wildcard ? ' (Wildcard)' : ''} — {p.label || `${formatPrice(p.unitInr)}/yr`}
               </option>
             ))}
           </select>

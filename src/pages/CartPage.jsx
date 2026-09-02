@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Trash2, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
 import CartItem from '../components/cart/CartItem';
 import CartSummary from '../components/cart/CartSummary';
@@ -72,17 +73,18 @@ function registrantComplete(r) {
 }
 
 /** Optional GSTIN — empty is fine; if filled must be 15 alphanumeric chars. */
-function registrantGstinError(r) {
+function registrantGstinError(r, t = (key, options) => options?.defaultValue || key) {
   const raw = String(r?.gstin || '').trim();
   if (!raw) return '';
   const normalized = raw.toUpperCase().replace(/\s+/g, '');
   if (!/^[0-9A-Z]{15}$/.test(normalized)) {
-    return 'GSTIN must be exactly 15 letters/numbers (e.g. 22AAAAA0000A1Z5).';
+    return t('cartGstinInvalid', { defaultValue: 'GSTIN must be exactly 15 letters/numbers (e.g. 22AAAAA0000A1Z5).' });
   }
   return '';
 }
 
 export default function CartPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { cart, fetchCart, removeItem, clearCart, updateDomainRegistrationPeriod } = useCart();
@@ -176,7 +178,7 @@ export default function CartPage() {
       await removeItem(itemId);
       setRedemption(EMPTY_REDEMPTION);
     } catch {
-      setError('Could not remove item. Please try again.');
+      setError(t('cartRemoveFailed', { defaultValue: 'Could not remove item. Please try again.' }));
     } finally {
       setRemovingId(null);
     }
@@ -184,7 +186,7 @@ export default function CartPage() {
 
   const handleClear = async () => {
     if (checkoutLoading || verifyInFlightRef.current) return;
-    if (!window.confirm('Remove all items from your cart?')) return;
+    if (!window.confirm(t('cartClearConfirm', { defaultValue: 'Remove all items from your cart?' }))) return;
     setClearing(true);
     setError('');
     try {
@@ -269,7 +271,7 @@ export default function CartPage() {
         err?.response?.data?.detail ||
           err?.response?.data?.message ||
           err?.message ||
-          'Could not update registration period pricing. Please try again.',
+          t('cartUpdatePeriodFailed', { defaultValue: 'Could not update registration period pricing. Please try again.' }),
       );
     } finally {
       setPeriodUpdatingId(null);
@@ -303,15 +305,15 @@ export default function CartPage() {
     }
     if (managedAcquisitionItems.length > 0) {
       setError(
-        'Managed acquisition domains must be confirmed alone. Remove other items first.',
+        t('cartManagedAcquisitionAlone', { defaultValue: 'Managed acquisition domains must be confirmed alone. Remove other items first.' }),
       );
       return;
     }
     if (needsRegistrantDetails && !registrantComplete(registrant)) {
-      setError('Please complete registrant details before paying for domain registrations.');
+      setError(t('cartRegistrantRequired', { defaultValue: 'Please complete registrant details before paying for domain registrations.' }));
       return;
     }
-    const gstinErr = needsRegistrantDetails ? registrantGstinError(registrant) : '';
+    const gstinErr = needsRegistrantDetails ? registrantGstinError(registrant, t) : '';
     if (gstinErr) {
       setError(gstinErr);
       return;
@@ -324,7 +326,10 @@ export default function CartPage() {
     });
     if (incompleteTech) {
       setExpandedConfigId(incompleteTech.id);
-      setError(`Select a pricing plan for “${incompleteTech.productName || 'Technology'}” before checkout.`);
+      setError(t('cartSelectPlanBeforeCheckout', {
+        defaultValue: 'Select a pricing plan for "{{product}}" before checkout.',
+        product: incompleteTech.productName || t('technology', { defaultValue: 'Technology' }),
+      }));
       return;
     }
 
@@ -332,15 +337,15 @@ export default function CartPage() {
     const buyerEmail = buyer.buyerEmail.trim();
     const buyerPhone = buyer.buyerPhone.trim();
     if (!buyerName) {
-      setError('Please enter your full name before checkout.');
+      setError(t('cartBuyerNameRequired', { defaultValue: 'Please enter your full name before checkout.' }));
       return;
     }
     if (!buyerEmail) {
-      setError('Please enter your email before checkout.');
+      setError(t('cartBuyerEmailRequired', { defaultValue: 'Please enter your email before checkout.' }));
       return;
     }
     if (!/^\d{10}$/.test(buyerPhone)) {
-      setError('Please enter a valid 10-digit phone number before checkout.');
+      setError(t('cartBuyerPhoneRequired', { defaultValue: 'Please enter a valid 10-digit phone number before checkout.' }));
       return;
     }
 
@@ -375,8 +380,11 @@ export default function CartPage() {
 
       if (backendCurrency !== requestedCurrency && requestedCurrency !== 'INR') {
         setError(
-          `Payment currency is ${backendCurrency}, but you selected ${requestedCurrency}. ` +
-          `Checkout was cancelled — switch currency to ${backendCurrency} or INR and try again.`,
+          t('cartPaymentCurrencyMismatch', {
+            defaultValue: 'Payment currency is {{backendCurrency}}, but you selected {{requestedCurrency}}. Checkout was cancelled - switch currency to {{backendCurrency}} or INR and try again.',
+            backendCurrency,
+            requestedCurrency,
+          }),
         );
         if (orderId) {
           try {
@@ -426,13 +434,17 @@ export default function CartPage() {
             if (needsAttention || purchased <= 0) {
               setError(
                 verifyData?.message
-                || 'Payment was received but domain registration did not complete. Do not pay again — contact support with your payment ID.',
+                || t('cartPaymentReceivedRegistrationIncomplete', { defaultValue: 'Payment was received but domain registration did not complete. Do not pay again - contact support with your payment ID.' }),
               );
               setPaymentSuccess(null);
               setShowConfetti(false);
             } else {
               if (purchased > 0 && purchased < total) {
-                setError(`${purchased} of ${total} items purchased. Some items were no longer available — review your cart.`);
+                setError(t('cartPartialPurchaseError', {
+                  defaultValue: '{{purchased}} of {{total}} items purchased. Some items were no longer available - review your cart.',
+                  purchased,
+                  total,
+                }));
               }
               setPaymentSuccess({
                 purchased,
@@ -476,7 +488,7 @@ export default function CartPage() {
         onFailure: () => {
           pendingCheckoutOrderId.current = null;
           paymentSucceededRef.current = false;
-          setError('Payment failed. Please try again.');
+          setError(t('storefrontPaymentFailed', { defaultValue: 'Payment failed. Please try again.' }));
           resetCheckoutUi();
         },
         onDismiss: async () => {
@@ -591,56 +603,55 @@ export default function CartPage() {
             <div className="absolute inset-x-0 top-0 z-10 h-1.5 shrink-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
             <div className="overflow-y-auto overscroll-contain px-4 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6">
               <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-800 sm:text-[11px]">
-                <span className="truncate">HubRegistrar Priority Managed Acquisition</span>
+                <span className="truncate">{t('cartManagedPriorityBadge', { defaultValue: 'HubRegistrar Priority Managed Acquisition' })}</span>
               </div>
               <h2 className="font-display text-xl font-extrabold leading-tight text-slate-900 sm:text-[1.65rem]">
-                Confirm your Priority Managed Acquisition
+                {t('cartManagedConfirmTitle', { defaultValue: 'Confirm your Priority Managed Acquisition' })}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Thank you for trusting HubRegistrar with your premium acquisition of{' '}
-                <strong className="text-slate-900 break-words">
-                  {managedAcquisitionItems[0]?.productName || 'this domain'}
-                </strong>
-                . Because this is a high-value transaction, it qualifies for our Priority Managed
-                Service. Rather than a standard instant checkout, you have been assigned a dedicated
-                specialist who will personally oversee this transaction, secure payment, and transfer
-                to ensure a seamless handover.
+                {t('cartManagedConfirmIntro', { defaultValue: 'Thank you for trusting HubRegistrar with your premium acquisition of' })}{' '}
+                {managedAcquisitionItems[0]?.productName ? (
+                  <strong className="text-slate-900 break-words" translate="no">
+                    {managedAcquisitionItems[0].productName}
+                  </strong>
+                ) : (
+                  <strong className="text-slate-900 break-words">
+                    {t('thisDomain', { defaultValue: 'this domain' })}
+                  </strong>
+                )}
+                . {t('cartManagedConfirmBody', { defaultValue: 'Because this is a high-value transaction, it qualifies for our Priority Managed Service. You have been assigned a dedicated specialist who will personally oversee this transaction, secure payment, and transfer.' })}
               </p>
 
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/90 p-3.5 sm:mt-5 sm:p-4">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
-                  What Happens Next
+                  {t('cartWhatHappensNext', { defaultValue: 'What Happens Next' })}
                 </p>
                 <ol className="space-y-2.5 text-sm text-slate-700">
                   <li className="flex gap-2.5">
                     <span className="shrink-0 font-bold text-emerald-700">1</span>
                     <span>
-                      <strong>Priority Escalation:</strong> We instantly open your managed
-                      acquisition file and alert your dedicated specialist.
+                      <strong>{t('cartManagedStep1Title', { defaultValue: 'Priority Escalation:' })}</strong> {t('cartManagedStep1Body', { defaultValue: 'We instantly open your managed acquisition file and alert your dedicated specialist.' })}
                     </span>
                   </li>
                   <li className="flex gap-2.5">
                     <span className="shrink-0 font-bold text-emerald-700">2</span>
                     <span>
-                      <strong>White-Glove Coordination:</strong> We contact the current owner on
-                      your behalf to verify readiness and secure the best possible terms.
+                      <strong>{t('cartManagedStep2Title', { defaultValue: 'White-Glove Coordination:' })}</strong> {t('cartManagedStep2Body', { defaultValue: 'We contact the current owner on your behalf to verify readiness and secure the best possible terms.' })}
                     </span>
                   </li>
                   <li className="flex gap-2.5">
                     <span className="shrink-0 font-bold text-emerald-700">3</span>
                     <span>
-                      <strong>Guided Secure Transfer:</strong> We provide 1-on-1 support through
-                      the payment process and oversee the transfer until complete ownership is in
-                      your hands.
+                      <strong>{t('cartManagedStep3Title', { defaultValue: 'Guided Secure Transfer:' })}</strong> {t('cartManagedStep3Body', { defaultValue: 'We provide one-on-one support through payment and oversee the transfer until complete ownership is in your hands.' })}
                     </span>
                   </li>
                 </ol>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500">
-                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Zero upfront payment</span>
-                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Dedicated VIP specialist</span>
-                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Encrypted secure transfer</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{t('cartManagedZeroUpfront', { defaultValue: 'Zero upfront payment' })}</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{t('cartManagedSpecialist', { defaultValue: 'Dedicated VIP specialist' })}</span>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{t('cartManagedSecureTransfer', { defaultValue: 'Encrypted secure transfer' })}</span>
               </div>
 
               <div className="mt-5 flex flex-col-reverse gap-2.5 sm:mt-6 sm:flex-row sm:items-stretch">
@@ -650,7 +661,7 @@ export default function CartPage() {
                   disabled={checkoutLoading}
                   onClick={() => setConfirmPremiumOpen(false)}
                 >
-                  Not now
+                  {t('notNow', { defaultValue: 'Not now' })}
                 </button>
                 <button
                   type="button"
@@ -676,15 +687,14 @@ export default function CartPage() {
             <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 text-2xl" aria-hidden>✓</div>
             <h2 className="font-display text-2xl font-extrabold text-slate-900 mb-2">
-              Request received — we&apos;ve got this
+              {t('cartManagedRequestReceivedTitle', { defaultValue: "Request received - we've got this" })}
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed mb-2">
-              Your acquisition request for{' '}
-              <strong className="text-slate-900">{premiumConfirmSuccess.domain}</strong> is with our team.
+              {t('cartManagedRequestForPrefix', { defaultValue: 'Your acquisition request for' })}{' '}
+              <strong className="text-slate-900" translate="no">{premiumConfirmSuccess.domain}</strong> {t('cartManagedRequestForSuffix', { defaultValue: 'is with our team.' })}
             </p>
             <p className="text-sm text-slate-500 leading-relaxed mb-6">
-              A confirmation email is on its way. HubRegistrar will personally manage this acquisition
-              and contact you with clear next steps — no payment is due right now.
+              {t('cartManagedRequestReceivedBody', { defaultValue: 'A confirmation email is on its way. HubRegistrar will personally manage this acquisition and contact you with clear next steps - no payment is due right now.' })}
             </p>
             <button
               type="button"
@@ -694,7 +704,7 @@ export default function CartPage() {
                 navigate('/domains/dashboard?tab=acquisitions');
               }}
             >
-              View My Acquisition Orders
+              {t('cartViewMyAcquisitionOrders', { defaultValue: 'View My Acquisition Orders' })}
             </button>
           </div>
         </div>
@@ -716,36 +726,40 @@ export default function CartPage() {
             <div className="absolute -top-24 -right-24 w-[280px] h-[280px] rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />
             <div className="text-5xl mb-3" aria-hidden>🎉</div>
             <h2 id="cart-payment-success-title" className="font-display text-2xl font-extrabold text-gray-900 mb-2">
-              Payment successful
+              {t('cartPaymentSuccessful', { defaultValue: 'Payment successful' })}
             </h2>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
               {paymentSuccess.partial
-                ? `${paymentSuccess.purchased} of ${paymentSuccess.total} items were purchased. Review your cart for anything left.`
+                ? t('cartPaymentPartialSuccess', {
+                  defaultValue: '{{purchased}} of {{total}} items were purchased. Review your cart for anything left.',
+                  purchased: paymentSuccess.purchased,
+                  total: paymentSuccess.total,
+                })
                 : paymentSuccess.purchased > 1
-                  ? `${paymentSuccess.purchased} items purchased successfully. You can manage them from Purchases.`
-                  : 'Your purchase is confirmed. You can manage it from Purchases.'}
+                  ? t('cartPaymentMultipleSuccess', { defaultValue: '{{count}} items purchased successfully. You can manage them from Purchases.', count: paymentSuccess.purchased })
+                  : t('cartPaymentSingleSuccess', { defaultValue: 'Your purchase is confirmed. You can manage it from Purchases.' })}
             </p>
             {Array.isArray(paymentSuccess.domains) && paymentSuccess.domains.length > 0 && (
               <div className="mb-5 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5 text-left">
                 <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 mb-1.5">
-                  Domains registered
+                  {t('cartDomainsRegistered', { defaultValue: 'Domains registered' })}
                 </p>
                 <ul className="space-y-1">
                   {paymentSuccess.domains.slice(0, 6).map((domain) => (
-                    <li key={domain} className="text-sm font-semibold text-gray-900 truncate">
+                    <li key={domain} className="text-sm font-semibold text-gray-900 truncate" translate="no">
                       {domain}
                     </li>
                   ))}
                   {paymentSuccess.domains.length > 6 && (
                     <li className="text-xs text-gray-500">
-                      +{paymentSuccess.domains.length - 6} more
+                      {t('moreCount', { defaultValue: '+{{count}} more', count: paymentSuccess.domains.length - 6 })}
                     </li>
                   )}
                 </ul>
               </div>
             )}
             <button type="button" className="btn-glow w-full" onClick={closePaymentSuccess}>
-              View purchases
+              {t('viewPurchases', { defaultValue: 'View purchases' })}
             </button>
           </motion.div>
         </div>
@@ -757,11 +771,11 @@ export default function CartPage() {
               <ShoppingCart size={22} className="shrink-0 text-indigo-600" strokeWidth={1.75} aria-hidden />
               <div className="min-w-0">
                 <h1 className="font-display truncate text-xl font-semibold tracking-tight text-gray-900">
-                  Shopping Cart
+                  {t('shoppingCart', { defaultValue: 'Shopping Cart' })}
                 </h1>
                 {hasItems && (
                   <p className="mt-0.5 text-xs text-gray-500">
-                    {items.length} item{items.length !== 1 ? 's' : ''} in your cart
+                    {t('cartItemsCount', { defaultValue: '{{count}} item in your cart', count: items.length })}
                   </p>
                 )}
               </div>
@@ -786,7 +800,7 @@ export default function CartPage() {
                   ) : (
                     <Trash2 size={13} strokeWidth={2.25} />
                   )}
-                  Clear all
+                  {t('clearAll', { defaultValue: 'Clear all' })}
                 </button>
               )}
             </div>
@@ -806,12 +820,10 @@ export default function CartPage() {
         {isManagedAcquisitionOnly && (
           <div className="mb-5 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-orange-50/40 px-5 py-4">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-800 mb-1.5">
-              Managed Domain Acquisition
+              {t('cartManagedAcquisitionTitle', { defaultValue: 'Managed Domain Acquisition' })}
             </p>
             <p className="text-sm text-slate-700 leading-relaxed">
-              This domain requires a personalized acquisition process. Our team will guide you through
-              every step, including verification, coordination, payment guidance, and secure transfer
-              of ownership.
+              {t('cartManagedAcquisitionDesc', { defaultValue: 'This domain requires a personalized acquisition process. Our team will guide you through every step, including verification, coordination, payment guidance, and secure transfer of ownership.' })}
             </p>
           </div>
         )}
@@ -870,8 +882,10 @@ export default function CartPage() {
                             }`}
                           >
                             <span>
-                              {expanded ? 'Hide configuration' : 'Configure plan & Co-Creator'}
-                              {needsConfig ? ' · Plan required' : ''}
+                              {expanded
+                                ? t('hideConfiguration', { defaultValue: 'Hide configuration' })
+                                : t('configurePlanCoCreator', { defaultValue: 'Configure plan & Co-Creator' })}
+                              {needsConfig ? t('planRequiredSuffix', { defaultValue: ' - Plan required' }) : ''}
                             </span>
                             <ChevronDown
                               size={16}
@@ -895,16 +909,16 @@ export default function CartPage() {
                 <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
                   <div>
                     <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">
-                      Buyer Information
+                      {t('cartBuyerInformation', { defaultValue: 'Buyer Information' })}
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">
-                      Used once for Technology checkout in this order.
+                      {t('cartBuyerInformationDesc', { defaultValue: 'Used once for Technology checkout in this order.' })}
                     </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="space-y-1 sm:col-span-2">
                       <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                        Full Name
+                        {t('operationsRequestFullName', { defaultValue: 'Full Name' })}
                       </span>
                       <input
                         type="text"
@@ -913,12 +927,12 @@ export default function CartPage() {
                           setBuyer((prev) => ({ ...prev, buyerFullName: e.target.value }))
                         }
                         className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none"
-                        placeholder="Your full name"
+                        placeholder={t('yourFullName', { defaultValue: 'Your full name' })}
                       />
                     </label>
                     <label className="space-y-1">
                       <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                        Email
+                        {t('emailLabel', { defaultValue: 'Email' })}
                       </span>
                       <input
                         type="email"
@@ -932,7 +946,7 @@ export default function CartPage() {
                     </label>
                     <label className="space-y-1">
                       <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                        Phone <span className="text-red-500">*</span>
+                        {t('operationsRequestPhone', { defaultValue: 'Phone' })} <span className="text-red-500">*</span>
                       </span>
                       <input
                         type="text"
@@ -946,7 +960,7 @@ export default function CartPage() {
                           }))
                         }
                         className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-indigo-400 outline-none"
-                        placeholder="10-digit number"
+                        placeholder={t('tenDigitNumber', { defaultValue: '10-digit number' })}
                       />
                     </label>
                   </div>
@@ -957,27 +971,25 @@ export default function CartPage() {
                 <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
                   <div>
                     <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">
-                      Registrant Details
+                      {t('cartRegistrantDetails', { defaultValue: 'Registrant Details' })}
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">
-                      Required once for all domain registrations in this order. Choose each domain&apos;s
-                      registration period on its card above. GST tax is added at checkout — optionally
-                      enter your GSTIN below for the invoice.
+                      {t('cartRegistrantDetailsDesc', { defaultValue: "Required once for all domain registrations in this order. Choose each domain's registration period on its card above. GST tax is added at checkout - optionally enter your GSTIN below for the invoice." })}
                     </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
-                      ['firstName', 'First Name'],
-                      ['lastName', 'Last Name'],
-                      ['email', 'Email'],
-                      ['phone', 'Phone'],
-                      ['street', 'Address'],
-                      ['city', 'City'],
-                      ['state', 'State'],
-                      ['zip', 'ZIP Code'],
-                    ].map(([field, label]) => (
+                      ['firstName', 'cartFirstName', 'First Name'],
+                      ['lastName', 'cartLastName', 'Last Name'],
+                      ['email', 'emailLabel', 'Email'],
+                      ['phone', 'operationsRequestPhone', 'Phone'],
+                      ['street', 'address', 'Address'],
+                      ['city', 'storefrontCity', 'City'],
+                      ['state', 'storefrontState', 'State'],
+                      ['zip', 'zipCode', 'ZIP Code'],
+                    ].map(([field, labelKey, defaultLabel]) => (
                       <label key={field} className="space-y-1">
-                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{label}</span>
+                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{t(labelKey, { defaultValue: defaultLabel })}</span>
                         <input
                           type={field === 'email' ? 'email' : 'text'}
                           value={registrant[field] || ''}
@@ -989,9 +1001,9 @@ export default function CartPage() {
                     ))}
                     <label className="space-y-1 sm:col-span-2">
                       <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                        GST Number (GSTIN){' '}
+                        {t('gstNumberGstin', { defaultValue: 'GST Number (GSTIN)' })}{' '}
                         <span className="font-semibold normal-case tracking-normal text-gray-400">
-                          — optional
+                          {t('optionalSuffix', { defaultValue: '- optional' })}
                         </span>
                       </span>
                       <input
@@ -1009,18 +1021,18 @@ export default function CartPage() {
                         }
                         placeholder="e.g. 22AAAAA0000A1Z5"
                         className={`w-full rounded-xl border bg-gray-50/40 px-3 py-2 text-sm text-gray-900 tracking-wider focus:bg-white focus:border-indigo-400 outline-none ${
-                          registrantGstinError(registrant)
+                          registrantGstinError(registrant, t)
                             ? 'border-rose-300 focus:border-rose-400'
                             : 'border-gray-200'
                         }`}
                       />
-                      {registrantGstinError(registrant) ? (
+                      {registrantGstinError(registrant, t) ? (
                         <span className="block text-[11px] text-rose-600">
-                          {registrantGstinError(registrant)}
+                          {registrantGstinError(registrant, t)}
                         </span>
                       ) : (
                         <span className="block text-[11px] text-gray-400">
-                          For business invoices. Leave blank if you don&apos;t have a GSTIN.
+                          {t('cartGstinHint', { defaultValue: "For business invoices. Leave blank if you don't have a GSTIN." })}
                         </span>
                       )}
                     </label>
@@ -1061,12 +1073,12 @@ export default function CartPage() {
                   }
                   checkoutLabel={
                     isManagedAcquisitionOnly
-                      ? 'Reserve Order & Pay Later'
+                      ? t('cartReservePayLater', { defaultValue: 'Reserve Order & Pay Later' })
                       : undefined
                   }
                   secureNote={
                     isManagedAcquisitionOnly
-                      ? 'Managed by HubRegistrar — no payment charged now'
+                      ? t('cartManagedSecureNote', { defaultValue: 'Managed by HubRegistrar - no payment charged now' })
                       : undefined
                   }
                 />

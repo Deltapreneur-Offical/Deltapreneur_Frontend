@@ -164,7 +164,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                   <input
                     type="text"
                     className="hro-city-filter-input"
-                    placeholder="Search by city..."
+                    placeholder={t('searchByCity', { defaultValue: 'Search by city...' })}
                     value={cityFilter}
                     onChange={(e) => setCityFilter(e.target.value)}
                   />
@@ -181,7 +181,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                 </div>
                 {offices.length > 0 && (
                   <Link to={viewAllPath} className="home-section-header__view-all">
-                    <span>View All</span>
+                    <span>{t('viewAll', { defaultValue: 'View All' })}</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="home-section-header__view-all-icon">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
@@ -196,7 +196,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
           ) : offices.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">
-                No offices available yet. Check back soon!
+                {t('noOfficesYet', { defaultValue: 'No offices available yet. Check back soon!' })}
               </p>
             </div>
           ) : filteredOffices.length === 0 ? (
@@ -207,10 +207,10 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                 </svg>
               </div>
               <p className="hro-no-results-title">
-                No offices found in "{cityFilter}"
+                {t('noOfficesFoundIn', { defaultValue: 'No offices found in' })} "{cityFilter}"
               </p>
               <p className="hro-no-results-desc">
-                We will be coming to that city soon! Try searching for a different city.
+                {t('comingToCitySoon', { defaultValue: 'We will be coming to that city soon! Try searching for a different city.' })}
               </p>
             </div>
           ) : (

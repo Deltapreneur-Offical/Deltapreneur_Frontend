@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import DomainSearchBar from './DomainSearchBar';
 import {
   heroEnterContainer,
@@ -7,11 +8,13 @@ import {
 
 export default function HeroGlow() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
+  const headline = t('homeHeroHeadline', { defaultValue: 'The Intellectual Property Registrar' });
 
   const textStack = reduceMotion ? (
     <div className="hero-text-stack relative z-20 w-full min-w-0">
       <h1 className="hero-headline m-0 font-sans font-semibold text-black">
-        The Intellectual Property Registrar
+        {headline}
       </h1>
     </div>
   ) : (
@@ -25,7 +28,7 @@ export default function HeroGlow() {
         className="hero-headline m-0 font-sans font-semibold text-black"
         variants={heroHeadlineEnter}
       >
-        The Intellectual Property Registrar
+        {headline}
       </motion.h1>
     </motion.div>
   );

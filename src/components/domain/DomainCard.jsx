@@ -6,6 +6,7 @@ import RegistryPremiumBadge from './RegistryPremiumBadge';
 import RegistryStandardBadge from './RegistryStandardBadge';
 import { isRegistryPremium } from '../../utils/registryPremium';
 import ShareButton from '../share/ShareButton';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Normalize any discovery-source item into the shared DomainCard shape.
@@ -74,19 +75,20 @@ export function normalizeDomainCardItem(raw = {}) {
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const map = {
-    available: ['bg-emerald-50 text-emerald-700 border-emerald-200', '✓ Available'],
-    taken: ['bg-red-50 text-red-600 border-red-200', 'Taken'],
-    error: ['bg-amber-50 text-amber-700 border-amber-200', 'Check failed'],
-    marketplace: ['bg-indigo-50 text-indigo-700 border-indigo-200', 'Marketplace'],
-    loading: ['bg-gray-50 text-gray-400 border-gray-200', 'Checking…'],
+    available: ['bg-emerald-50 text-emerald-700 border-emerald-200', t('domainCardAvailable', { defaultValue: 'Available' }), true],
+    taken: ['bg-red-50 text-red-600 border-red-200', t('domainCardTaken', { defaultValue: 'Taken' })],
+    error: ['bg-amber-50 text-amber-700 border-amber-200', t('domainCardCheckFailed', { defaultValue: 'Check failed' })],
+    marketplace: ['bg-indigo-50 text-indigo-700 border-indigo-200', t('domainCardMarketplace', { defaultValue: 'Marketplace' })],
+    loading: ['bg-gray-50 text-gray-400 border-gray-200', t('domainCardChecking', { defaultValue: 'Checking...' })],
   };
-  const [cls, label] = map[status] ?? map.taken;
+  const [cls, label, showCheck] = map[status] ?? map.taken;
   return (
     <span
       className={`inline-flex w-fit max-w-full shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${cls}`}
     >
-      {label}
+      {showCheck ? '\u2713 ' : ''}{label}
     </span>
   );
 }
@@ -103,6 +105,7 @@ export default function DomainCard({
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
   shareContext = null,
 }) {
+  const { t } = useTranslation();
   const { formatDomainPrice } = useCurrency();
   const item = normalizeDomainCardItem(rawItem);
   const canBuy = item.available && item.registrationPriceInr != null;
@@ -169,36 +172,38 @@ export default function DomainCard({
             </span>
           ) : null}
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-950 leading-tight">
-            {item.name}
-            <span className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
+            <span translate="no">{item.name}</span>
+            <span translate="no" className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
           </h2>
           {item.isPremium ? (
-            <p className="text-xs font-semibold text-amber-800/85">Premium Domain</p>
+            <p className="text-xs font-semibold text-amber-800/85">{t('domainCardPremiumDomain', { defaultValue: 'Premium Domain' })}</p>
           ) : item.available ? (
-            <p className="text-xs font-semibold text-sky-800/85">Standard Domain</p>
+            <p className="text-xs font-semibold text-sky-800/85">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
           ) : null}
           {priceText ? (
-            <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none">
+            <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none" translate="no">
               {priceText}
               <span className="text-xs font-medium text-gray-400 ml-1.5">
-                {item.isPremium ? ' (1st Year)' : '/yr'}
+                {item.isPremium ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' }) : t('domainCardYearSuffix', { defaultValue: '/yr' })}
               </span>
             </p>
           ) : (
-            <p className="text-sm font-semibold text-gray-400">Price unavailable</p>
+            <p className="text-sm font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
           )}
           {renewalText ? (
-            <p className="text-xs text-gray-500">Renews at {renewalText}/yr</p>
+            <p className="text-xs text-gray-500">
+              {t('domainCardRenewsAt', { defaultValue: 'Renews at {{price}}/yr', price: renewalText })}
+            </p>
           ) : item.isPremium ? (
-            <p className="text-xs text-gray-400">Renewal price unavailable</p>
+            <p className="text-xs text-gray-400">{t('domainCardRenewalUnavailable', { defaultValue: 'Renewal price unavailable' })}</p>
           ) : null}
           {item.managedAcquisition && (
             <div className="mt-1.5 space-y-0.5">
               <div className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-200">
-                Managed acquisition
+                {t('domainCardManagedAcquisition', { defaultValue: 'Managed acquisition' })}
               </div>
               <p className="text-xs leading-snug text-amber-700/90">
-                Personalized acquisition — no online payment. Our team guides you through the purchase.
+                {t('domainCardManagedAcquisitionDesc', { defaultValue: 'Personalized acquisition - no online payment. Our team guides you through the purchase.' })}
               </p>
             </div>
           )}
@@ -218,7 +223,9 @@ export default function DomainCard({
               disabled
               className="inline-flex w-fit min-w-[8.5rem] px-4 py-2.5 rounded-lg font-bold text-sm bg-gray-100 text-gray-400 cursor-not-allowed whitespace-nowrap"
             >
-              {item.status === 'error' ? 'Could not check' : 'Taken'}
+              {item.status === 'error'
+                ? t('domainCardCouldNotCheck', { defaultValue: 'Could not check' })
+                : t('domainCardTaken', { defaultValue: 'Taken' })}
             </button>
           )}
         </div>
@@ -258,36 +265,38 @@ export default function DomainCard({
           </span>
         ) : null}
         <h3 className="text-lg font-extrabold tracking-tight text-gray-950 leading-snug">
-          {item.name}
-          <span className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
+          <span translate="no">{item.name}</span>
+          <span translate="no" className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
         </h3>
         {item.isPremium ? (
-          <p className="text-[11px] font-semibold text-amber-800/80">Premium Domain</p>
+          <p className="text-[11px] font-semibold text-amber-800/80">{t('domainCardPremiumDomain', { defaultValue: 'Premium Domain' })}</p>
         ) : item.available ? (
-          <p className="text-[11px] font-semibold text-sky-800/80">Standard Domain</p>
+          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
         ) : null}
         {priceText ? (
-          <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5">
+          <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5" translate="no">
             {priceText}
             <span className="text-[11px] font-medium text-gray-400 ml-1">
-              {item.isPremium ? ' (1st Year)' : '/yr'}
+              {item.isPremium ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' }) : t('domainCardYearSuffix', { defaultValue: '/yr' })}
             </span>
           </p>
         ) : (
-          <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
+          <p className="text-xs font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
         )}
         {renewalText ? (
-          <p className="text-[11px] text-gray-500">Renews at {renewalText}/yr</p>
+          <p className="text-[11px] text-gray-500">
+            {t('domainCardRenewsAt', { defaultValue: 'Renews at {{price}}/yr', price: renewalText })}
+          </p>
         ) : item.isPremium ? (
-          <p className="text-[11px] text-gray-400">Renewal price unavailable</p>
+          <p className="text-[11px] text-gray-400">{t('domainCardRenewalUnavailable', { defaultValue: 'Renewal price unavailable' })}</p>
         ) : null}
         {item.managedAcquisition && (
           <div className="mt-1.5 space-y-0.5">
             <div className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-200">
-              Managed acquisition
+              {t('domainCardManagedAcquisition', { defaultValue: 'Managed acquisition' })}
             </div>
             <p className="text-[11px] leading-snug text-amber-700/90">
-              Personalized acquisition — no online payment. Our team guides you through the purchase.
+              {t('domainCardManagedAcquisitionDesc', { defaultValue: 'Personalized acquisition - no online payment. Our team guides you through the purchase.' })}
             </p>
           </div>
         )}
@@ -307,7 +316,9 @@ export default function DomainCard({
             disabled
             className="inline-flex w-fit min-w-[8rem] px-3.5 sm:px-4 py-2.5 rounded-lg font-bold text-xs sm:text-sm bg-gray-100 text-gray-400 cursor-not-allowed whitespace-nowrap"
           >
-            {item.status === 'error' ? 'Could not check' : 'Taken'}
+            {item.status === 'error'
+              ? t('domainCardCouldNotCheck', { defaultValue: 'Could not check' })
+              : t('domainCardTaken', { defaultValue: 'Taken' })}
           </button>
         )}
       </div>

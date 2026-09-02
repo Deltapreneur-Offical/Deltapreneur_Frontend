@@ -231,13 +231,13 @@ export default function HomeFooter() {
 
             <ScrollLink to="/virtual-assistant" className={linkClass + ' hidden'}>
 
-              Virtual Assistant
+              {t('navVirtualAssistant', { defaultValue: 'Virtual Assistant' })}
 
             </ScrollLink>
 
             <ScrollLink to="/franchise" className={linkClass}>
 
-              Apply for Registry office
+              {t('footerApplyRegistryOffice', { defaultValue: 'Apply for Registry office' })}
 
             </ScrollLink>
 

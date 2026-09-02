@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ArrowRightLeft, Loader2 } from 'lucide-react';
+import useCurrency from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { fetchDomainTransferQuote, payDomainTransfer } from '../../utils/domainTransferCheckout';
 import { readApiError } from '../../utils/apiError';
 
 export default function TransferForm({ onClose }) {
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [domain, setDomain] = useState('');
   const [authCode, setAuthCode] = useState('');
@@ -106,8 +108,8 @@ export default function TransferForm({ onClose }) {
       )}
       {quote?.totalInr != null && !quoteLoading && (
         <p className="text-sm font-semibold text-slate-800">
-          Total due: ₹{Number(quote.totalInr).toLocaleString('en-IN')}
-          {quote.gstInr > 0 ? ` (incl. GST ₹${Number(quote.gstInr).toLocaleString('en-IN')})` : ''}
+          Total due: {formatPrice(quote.totalInr)}
+          {quote.gstInr > 0 ? ` (incl. GST ${formatPrice(quote.gstInr)})` : ''}
         </p>
       )}
 

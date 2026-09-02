@@ -13,139 +13,31 @@ import { domainStorefrontAPI } from '../../api/services';
 import { readApiError } from '../../utils/apiError';
 import { useTranslation } from 'react-i18next';
 
-const services = [
-  {
-    id: 'email',
-    icon: <Mail className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'Professional Email',
-    tag: 'Mailbox',
-    unit: 'month',
-    price: 'From catalog',
-    bullets: [
-      'yourname@yourbrand.com',
-      'Spam & malware filters',
-      'Webmail + mobile access',
-      '5 GB storage per mailbox',
-    ],
-    Component: EmailForm,
-    apiMethod: 'purchaseEmail',
-  },
-  {
-    id: 'ssl',
-    icon: <ShieldCheck className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'SSL Certificate',
-    tag: 'HTTPS',
-    unit: 'yr',
-    price: '—',
-    bullets: [
-      'Standard & Wildcard SSL',
-      'Browser padlock enabled',
-      'Auto-renew support',
-      '256-bit encryption',
-    ],
-    Component: SSLForm,
-    apiMethod: 'purchaseSSL',
-  },
-  {
-    id: 'restore',
-    icon: <RotateCcw className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'Domain Restore',
-    tag: 'Redemption',
-    unit: 'yr',
-    price: 'Live quote',
-    bullets: [
-      'Recover domains in redemption',
-      'Live restore price',
-      'Secure ownership before delete',
-      'Pay once & restore via registrar',
-    ],
-    Component: RestoreForm,
-    apiMethod: null,
-  },
-  {
-    id: 'easydmarc',
-    icon: <Shield className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'EasyDMARC',
-    tag: 'DMARC',
-    unit: 'yr',
-    price: 'From catalog',
-    bullets: [
-      'Stop brand email spoofing',
-      'DMARC DNS record guidance',
-      'EasyDMARC order',
-      'SSO access to DMARC panel',
-    ],
-    Component: EasyDmarcForm,
-    apiMethod: null,
-  },
-  {
-    id: 'spamexperts',
-    icon: <Filter className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'SpamExperts',
-    tag: 'Filter',
-    unit: 'yr',
-    price: 'From catalog',
-    bullets: [
-      'Incoming spam & malware filter',
-      'Protect your domain mailbox',
-      'Control-panel login after setup',
-      'Managed via HubRegistrar',
-    ],
-    Component: SpamExpertsForm,
-    apiMethod: null,
-  },
-  {
-    id: 'dnssec',
-    icon: <Globe className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'DNSSEC',
-    tag: 'Free',
-    unit: 'setup',
-    price: 'Free',
-    bullets: [
-      'Cryptographic DNS signing',
-      'Prevent cache poisoning',
-      'Anti-spoofing protection',
-      'One-click activation',
-    ],
-    Component: DNSSECForm,
-    apiMethod: 'toggleDnssec',
-  },
-  {
-    id: 'transfer',
-    icon: <ArrowRightLeft className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'Domain Transfer',
-    tag: 'All TLDs',
-    unit: 'yr',
-    price: '—',
-    bullets: [
-      '.com, .in, .net, .org & more',
-      'Free EPP-code transfer',
-      'Zero downtime migration',
-      'Auto-sync DNS settings',
-    ],
-    Component: TransferForm,
-    apiMethod: 'initiateTransfer',
-  },
-  {
-    id: 'renewal',
-    icon: <Sparkles className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
-    name: 'Domain Renewal',
-    tag: 'Multi-year',
-    unit: 'yr',
-    price: '—',
-    bullets: [
-      'Lock domain for up to 10 yrs',
-      'Expiry alerts via email',
-      'Auto-renew option available',
-      'Instant registry update',
-    ],
-    Component: RenewalForm,
-    apiMethod: 'renewDomainDirect',
-  },
-];
+
 
 function hasRegisteredDomains(orders) {
   return Array.isArray(orders) && orders.length > 0;
+}
+
+const SERVICE_CONFIGS = [
+  { id: 'email', icon: Mail, tagKey: 'serviceMailbox', nameKey: 'serviceProfessionalEmail', unit: 'month', price: 'From catalog', bulletsKey: 'serviceEmailBullets', Component: EmailForm, apiMethod: 'purchaseEmail' },
+  { id: 'ssl', icon: ShieldCheck, tagKey: 'serviceHttps', nameKey: 'serviceSslCertificate', unit: 'yr', price: '—', bulletsKey: 'serviceSslBullets', Component: SSLForm, apiMethod: 'purchaseSSL' },
+  { id: 'restore', icon: RotateCcw, tagKey: 'serviceRedemption', nameKey: 'serviceDomainRestore', unit: 'yr', price: 'Live quote', bulletsKey: 'serviceRestoreBullets', Component: RestoreForm, apiMethod: null },
+  { id: 'easydmarc', icon: Shield, tagKey: 'serviceDmarc', nameKey: 'serviceEasyDmarc', unit: 'yr', price: 'From catalog', bulletsKey: 'serviceDmarcBullets', Component: EasyDmarcForm, apiMethod: null },
+  { id: 'spamexperts', icon: Filter, tagKey: 'serviceFilter', nameKey: 'serviceSpamExperts', unit: 'yr', price: 'From catalog', bulletsKey: 'serviceSpamBullets', Component: SpamExpertsForm, apiMethod: null },
+  { id: 'dnssec', icon: Globe, tagKey: 'serviceFree', nameKey: 'serviceDnssec', unit: 'setup', price: 'Free', bulletsKey: 'serviceDnssecBullets', Component: DNSSECForm, apiMethod: 'toggleDnssec' },
+  { id: 'transfer', icon: ArrowRightLeft, tagKey: 'serviceAllTlds', nameKey: 'serviceDomainTransfer', unit: 'yr', price: '—', bulletsKey: 'serviceTransferBullets', Component: TransferForm, apiMethod: 'initiateTransfer' },
+  { id: 'renewal', icon: Sparkles, tagKey: 'serviceMultiYear', nameKey: 'serviceDomainRenewal', unit: 'yr', price: '—', bulletsKey: 'serviceRenewalBullets', Component: RenewalForm, apiMethod: 'renewDomainDirect' },
+];
+
+function buildServices(t) {
+  return SERVICE_CONFIGS.map((cfg) => ({
+    ...cfg,
+    icon: <cfg.icon className="w-6 h-6 text-[#2563EB] stroke-[#2563EB]" />,
+    name: t(cfg.nameKey, { defaultValue: cfg.nameKey }),
+    tag: t(cfg.tagKey, { defaultValue: cfg.tagKey }),
+    bullets: t(cfg.bulletsKey, { defaultValue: '', returnObjects: true }) || [],
+  }));
 }
 
 export default function DomainServices({ orders, ordersLoading = false }) {
@@ -153,6 +45,7 @@ export default function DomainServices({ orders, ordersLoading = false }) {
   const [priceLabels, setPriceLabels] = useState({});
   const [tldPrices, setTldPrices] = useState({});
   const { t } = useTranslation();
+  const services = useMemo(() => buildServices(t), [t]);
 
   useEffect(() => {
     domainStorefrontAPI.getPrices()
@@ -259,9 +152,9 @@ export default function DomainServices({ orders, ordersLoading = false }) {
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">Domain Services</h2>
+            <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">{t('serviceDomainServices', { defaultValue: 'Domain Services' })}</h2>
             <p className="text-xs text-gray-500">
-              Enhance, secure, and manage your domains with our add-on services.
+              {t('serviceDomainServicesDesc', { defaultValue: 'Enhance, secure, and manage your domains with our add-on services.' })}
             </p>
           </div>
         </div>

@@ -116,6 +116,7 @@ function useMinWidthLg() {
 }
 
 function TldPriceMarquee() {
+  const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const reduceMotion = useReducedMotion();
   const [tldPrices, setTldPrices] = useState(() => readTldMarqueeCache());
@@ -302,7 +303,7 @@ function TldPriceMarquee() {
           <span className="tld-price-marquee-pill__tld">{item.tld}</span>
           <span className="tld-price-marquee-pill__price">
             {formatPrice(Number(item.price))}
-            <span className="tld-price-marquee-pill__yr">/yr</span>
+            <span className="tld-price-marquee-pill__yr">{t('domainCardYearSuffix', { defaultValue: '/yr' })}</span>
           </span>
         </div>
       ))}
@@ -314,14 +315,14 @@ function TldPriceMarquee() {
       <div
         className="tld-price-marquee-mask tld-price-marquee-mask--loading"
         aria-busy="true"
-        aria-label="Loading domain extension prices"
+        aria-label={t('domainSearchLoadingTldPrices', { defaultValue: 'Loading domain extension prices' })}
       >
         <div className="tld-price-marquee-loading-track">
           {TLD_MARQUEE_ORDER.map((tld) => (
             <div key={tld} className="tld-price-marquee-skeleton-pill">
               <span className="tld-price-marquee-skeleton-tld">{tld}</span>
               <span className="tld-price-marquee-skeleton-bar" aria-hidden />
-              <span className="tld-price-marquee-skeleton-yr">/yr</span>
+              <span className="tld-price-marquee-skeleton-yr">{t('domainCardYearSuffix', { defaultValue: '/yr' })}</span>
             </div>
           ))}
         </div>
@@ -1096,7 +1097,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           err?.response?.data?.message
           || err?.response?.data?.error
           || err?.message
-          || 'Could not check this domain with the registrar.';
+          || t('domainSearchRegistrarCheckFailed', { defaultValue: 'Could not check this domain with the registrar.' });
         if (idx !== -1) {
           nextResults[idx] = {
             ...nextResults[idx],
@@ -1567,10 +1568,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     <div className="flex justify-end mb-3">
                       <span className="text-xs font-semibold text-gray-400">
                         {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
-                          ? `${visibleNewResults.length} of ${premiumNewResults.length} · sorted by price`
-                          : `${visibleNewResults.length} shown · sorted by price`}
+                          ? t('domainSearchPremiumResultCount', {
+                            defaultValue: '{{shown}} of {{total}} - sorted by price',
+                            shown: visibleNewResults.length,
+                            total: premiumNewResults.length,
+                          })
+                          : t('domainSearchStandardResultCount', {
+                            defaultValue: '{{count}} shown - sorted by price',
+                            count: visibleNewResults.length,
+                          })}
                         {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && registryPremiumLoading
-                          ? ' · updating…'
+                          ? t('domainSearchUpdatingSuffix', { defaultValue: ' - updating...' })
                           : ''}
                       </span>
                     </div>
@@ -1603,11 +1611,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                           {tldLoadingMore ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              Loading Premium Domains…
+                              {t('domainSearchLoadingPremiumDomains', { defaultValue: 'Loading Premium Domains...' })}
                             </>
                           ) : (
                             <>
-                              Load More Premium Domains
+                              {t('domainSearchLoadMorePremiumDomains', { defaultValue: 'Load More Premium Domains' })}
                               <ChevronRight className="w-4 h-4" />
                             </>
                           )}
@@ -1630,9 +1638,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   >
                     {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                       ? (registryPremiumLoading
-                        ? 'Searching premium marketplace…'
-                        : '✨ No premium domains found. Try another keyword.')
-                      : 'No standard domains in these results. Try Premium Domains.'}
+                        ? t('domainSearchSearchingPremiumMarketplace', { defaultValue: 'Searching premium marketplace...' })
+                        : t('domainSearchNoPremiumDomains', { defaultValue: 'No premium domains found. Try another keyword.' }))
+                      : t('domainSearchNoStandardDomains', { defaultValue: 'No standard domains in these results. Try Premium Domains.' })}
                   </div>
                 )}
               </div>
@@ -1689,11 +1697,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 {tldLoadingMore ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading…
+                    {t('loading', { defaultValue: 'Loading...' })}
                   </>
                 ) : (
                   <>
-                    View More
+                    {t('viewMore', { defaultValue: 'View More' })}
                     <ChevronRight className="w-4 h-4" />
                   </>
                 )}
@@ -1711,7 +1719,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             && availableNewResults.length === 0 && premiumNewResults.length === 0
             && (!registrarErrorMessage || !completedNewResults.every((item) => item.status === 'error')) && (
             <p className="text-center text-gray-500 text-sm py-6">
-              No available domains found for this search. Please try another domain name.
+              {t('domainSearchNoAvailableDomains', { defaultValue: 'No available domains found for this search. Please try another domain name.' })}
             </p>
           )}
 
@@ -1727,23 +1735,23 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   className="domain-search-card bg-white border border-blue-200 ring-1 ring-blue-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
                 >
                   <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-blue-100 text-blue-700">
-                    LISTED DOMAIN
+                    {t('domainSearchListedDomainBadge', { defaultValue: 'Listed Domain' })}
                   </span>
                   <h2 className="text-xl font-extrabold mb-3 text-gray-900 truncate" title={`${item.domainName || ''}${item.domainExtension || ''}`}>
-                    {item.domainName}<span className="text-blue-600">{item.domainExtension}</span>
+                    <span translate="no">{item.domainName}</span><span translate="no" className="text-blue-600">{item.domainExtension}</span>
                   </h2>
                   <p className="text-blue-600 text-sm font-semibold mb-1 truncate tabular-nums" title={formatPrice(listingBuyerPayable(item))}>
                     {formatPrice(listingBuyerPayable(item))}
                   </p>
                   <p className="text-[11px] font-medium text-gray-400 mb-4">
-                    Inclusive of applicable taxes
+                    {t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}
                   </p>
                   <button
                     type="button"
                     onClick={() => navigate(`/domains?highlight=${item.id}`)}
                     className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-blue-600 text-white hover:bg-blue-700"
                   >
-                    View on Marketplace →
+                    {t('domainSearchViewOnMarketplace', { defaultValue: 'View on Marketplace' })} →
                   </button>
                 </div>
               ))}
@@ -1763,7 +1771,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           {hasSearchQuery && searchMode === 'auction' && !auctionsLoading && filteredAuctionResults.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredAuctionResults.map((auction) => {
-                const title = domainTitleFromAuction(auction) || 'Unnamed domain';
+                const title = domainTitleFromAuction(auction) || t('domainSearchUnnamedDomain', { defaultValue: 'Unnamed domain' });
                 const currentBid = Number(auction.currentHighestBid ?? 0);
                 const minBid = Number(auction.minBidPrice ?? 0);
                 const amount = currentBid > 0 ? currentBid : minBid;
@@ -1774,22 +1782,26 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     className="domain-search-card bg-white border border-gray-200 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200"
                   >
                     <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-amber-100 text-amber-700">
-                      LIVE AUCTION
+                      {t('domainSearchLiveAuctionBadge', { defaultValue: 'Live Auction' })}
                     </span>
-                    <h2 className="text-xl font-extrabold mb-3 text-gray-900 truncate">{title}</h2>
+                    <h2 className="text-xl font-extrabold mb-3 text-gray-900 truncate" translate="no">{title}</h2>
                     <p className="text-sm text-gray-600 mb-1">
-                      {currentBid > 0 ? 'Current highest bid' : 'Starting bid'}
+                      {currentBid > 0
+                        ? t('domainSearchCurrentHighestBid', { defaultValue: 'Current highest bid' })
+                        : t('domainSearchStartingBid', { defaultValue: 'Starting bid' })}
                     </p>
                     <p className="font-extrabold text-xl text-amber-600 mb-3">
                       {formatPrice(amount)}
                     </p>
-                    <p className="text-sm text-gray-600 mb-4">{totalBids} bids placed</p>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {t('domainSearchBidsPlaced', { defaultValue: '{{count}} bids placed', count: totalBids })}
+                    </p>
                     <button
                       type="button"
                       onClick={() => navigate(`/auction/${auction.id}`)}
                       className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-gray-900 text-white hover:bg-gray-700"
                     >
-                      Bid Now
+                      {t('bidNow', { defaultValue: 'Bid Now' })}
                     </button>
                   </div>
                 );

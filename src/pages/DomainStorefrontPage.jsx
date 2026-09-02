@@ -66,7 +66,8 @@ function isOrderConfirmed(order) {
 }
 
 /* ─── Premium Copy Button ─── */
-function CopyBtn({ text, label = 'Copy' }) {
+function CopyBtn({ text, label }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const handle = async () => {
     try {
@@ -86,7 +87,7 @@ function CopyBtn({ text, label = 'Copy' }) {
       }`}
     >
       {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Key className="w-3 h-3" />}
-      {copied ? 'Copied' : label}
+      {copied ? t('copied', { defaultValue: 'Copied' }) : (label || t('copy', { defaultValue: 'Copy' }))}
     </button>
   );
 }
@@ -546,7 +547,7 @@ export default function DomainStorefrontPage() {
     e.preventDefault();
     setTransferError(''); setTransferSuccess('');
     if (!transferDomain.trim() || !transferAuthCode.trim()) {
-      setTransferError('Domain name and EPP/Authorization code are required.');
+      setTransferError(t('storefrontTransferRequired', { defaultValue: 'Domain name and EPP/Authorization code are required.' }));
       return;
     }
     if (!user) {
@@ -566,7 +567,7 @@ export default function DomainStorefrontPage() {
       )
     );
     if (blockedTransfer) {
-      setTransferError('You already have an active or pending transfer request for this domain. Check Your Transfers history below.');
+      setTransferError(t('storefrontTransferDuplicate', { defaultValue: 'You already have an active or pending transfer request for this domain. Check Your Transfers history below.' }));
       return;
     }
 
@@ -589,7 +590,10 @@ export default function DomainStorefrontPage() {
         user,
         description: `Transfer ${transferDomain.trim()}`,
       });
-      setTransferSuccess(`Domain transfer initiated successfully for ${orderData.domain}!`);
+      setTransferSuccess(t('storefrontTransferInitiated', {
+        defaultValue: 'Domain transfer initiated successfully for {{domain}}!',
+        domain: orderData.domain,
+      }));
       setTransferDomain('');
       setTransferAuthCode('');
       await loadOrders();
@@ -611,9 +615,9 @@ export default function DomainStorefrontPage() {
       const { data } = await domainStorefrontAPI.initiateTransferOut({ domain: target });
       const res = data?.data ?? data;
       setOutSuccessCode(res.authCode);
-      setOutSuccessMsg(res.message || 'Domain successfully unlocked.');
+      setOutSuccessMsg(res.message || t('storefrontDomainUnlocked', { defaultValue: 'Domain successfully unlocked.' }));
     } catch (err) {
-      setOutError(readApiError(err, 'Could not retrieve EPP code.'));
+      setOutError(readApiError(err, t('storefrontCouldNotRetrieveEpp', { defaultValue: 'Could not retrieve EPP code.' })));
     } finally { setOutLoading(false); }
   };
 
@@ -640,11 +644,11 @@ export default function DomainStorefrontPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <p className="text-[0.7rem] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md max-w-fit">
-                HubRegistrar Storefront
+                {t('storefrontHeaderEyebrow', { defaultValue: 'HubRegistrar Storefront' })}
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Domain Storefront</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{t('storefrontHeaderTitle', { defaultValue: 'Domain Storefront' })}</h1>
               <p className="text-sm text-gray-500">
-                Register branded domains, update DNS configuration, and manage EPP transfers in and out.
+                {t('storefrontHeaderDesc', { defaultValue: 'Register branded domains, update DNS configuration, and manage EPP transfers in and out.' })}
               </p>
             </div>
           </div>
@@ -657,7 +661,7 @@ export default function DomainStorefrontPage() {
                 activeTab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              Register a Domain
+              {t('storefrontRegisterTab', { defaultValue: 'Register a Domain' })}
             </button>
             <button
               onClick={() => setActiveTab('transfer')}
@@ -665,7 +669,7 @@ export default function DomainStorefrontPage() {
                 activeTab === 'transfer' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              Transfer Options
+              {t('storefrontTransferTab', { defaultValue: 'Transfer Options' })}
             </button>
           </div>
 
@@ -689,10 +693,10 @@ export default function DomainStorefrontPage() {
                   <div className="mb-4 flex items-end justify-between gap-3">
                     <div>
                       <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">
-                        Domain search
+                        {t('storefrontDomainSearchEyebrow', { defaultValue: 'Domain search' })}
                       </p>
                       <h2 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
-                        Find your domain name
+                        {t('storefrontFindDomainName', { defaultValue: 'Find your domain name' })}
                       </h2>
                     </div>
                   </div>
@@ -713,7 +717,7 @@ export default function DomainStorefrontPage() {
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search for domain e.g. mybrand"
+                            placeholder={t('storefrontSearchPlaceholder', { defaultValue: 'Search for domain e.g. mybrand' })}
                             className="storefront-search-form__input"
                             autoComplete="off"
                             spellCheck={false}
@@ -727,11 +731,11 @@ export default function DomainStorefrontPage() {
                           {checking ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                              Checking...
+                              {t('storefrontChecking', { defaultValue: 'Checking...' })}
                             </>
                           ) : (
                             <>
-                              Check Availability
+                              {t('storefrontCheckAvailability', { defaultValue: 'Check Availability' })}
                               <ArrowRight className="w-4 h-4" aria-hidden="true" />
                             </>
                           )}
@@ -745,7 +749,7 @@ export default function DomainStorefrontPage() {
                         className="storefront-search-form__cancel"
                       >
                         <X className="w-4 h-4" />
-                        Cancel
+                        {t('cancel', { defaultValue: 'Cancel' })}
                       </button>
                     )}
                   </form>
@@ -778,9 +782,9 @@ export default function DomainStorefrontPage() {
                     />
                     <p className="mt-3 text-xs text-gray-500 flex items-center gap-1.5">
                       <ShoppingCart className="w-3.5 h-3.5" />
-                      Add domains to cart, then complete registrant details and payment in{' '}
+                      {t('storefrontAddDomainsToCartPrefix', { defaultValue: 'Add domains to cart, then complete registrant details and payment in' })}{' '}
                       <Link to="/cart" className="font-semibold text-indigo-600 hover:underline">
-                        Cart
+                        {t('cart', { defaultValue: 'Cart' })}
                       </Link>
                       .
                     </p>
@@ -790,14 +794,14 @@ export default function DomainStorefrontPage() {
                 {checkResult && !checkError && checkResult.status === 'taken' && (
                   <div className="mt-6 rounded-xl border border-rose-100 p-5 bg-rose-50/40">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-gray-950">{checkResult.domain}</span>
+                      <span className="text-lg font-bold text-gray-950" translate="no">{checkResult.domain}</span>
                       <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700 uppercase tracking-wide">
-                        Taken
+                        {t('domainCardTaken', { defaultValue: 'Taken' })}
                       </span>
                     </div>
                     {premiumLoading ? (
                       <p className="mt-2 text-xs font-semibold text-amber-800/90">
-                        Checking Premium Marketplace for this name…
+                        {t('storefrontCheckingPremiumMarketplace', { defaultValue: 'Checking Premium Marketplace for this name...' })}
                       </p>
                     ) : null}
                   </div>
@@ -835,10 +839,17 @@ export default function DomainStorefrontPage() {
                           <div className="flex justify-end mb-3">
                             <span className="text-xs font-semibold text-gray-400">
                               {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
-                                ? `${visibleTldItems.length} of ${premiumTldItems.length} · sorted by price`
-                                : `${visibleTldItems.length} shown · sorted by price`}
+                                ? t('domainSearchPremiumResultCount', {
+                                  defaultValue: '{{shown}} of {{total}} - sorted by price',
+                                  shown: visibleTldItems.length,
+                                  total: premiumTldItems.length,
+                                })
+                                : t('domainSearchStandardResultCount', {
+                                  defaultValue: '{{count}} shown - sorted by price',
+                                  count: visibleTldItems.length,
+                                })}
                               {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM && premiumLoading
-                                ? ' · updating…'
+                                ? t('domainSearchUpdatingSuffix', { defaultValue: ' - updating...' })
                                 : ''}
                             </span>
                           </div>
@@ -870,11 +881,11 @@ export default function DomainStorefrontPage() {
                                 {tldLoadingMore ? (
                                   <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    Loading Premium Domains…
+                                    {t('domainSearchLoadingPremiumDomains', { defaultValue: 'Loading Premium Domains...' })}
                                   </>
                                 ) : (
                                   <>
-                                    Load More Premium Domains
+                                    {t('domainSearchLoadMorePremiumDomains', { defaultValue: 'Load More Premium Domains' })}
                                     <ChevronRight className="w-4 h-4" />
                                   </>
                                 )}
@@ -897,9 +908,9 @@ export default function DomainStorefrontPage() {
                         >
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                             ? (premiumLoading
-                              ? 'Searching premium marketplace…'
-                              : '✨ No premium domains found. Try another keyword.')
-                            : 'No standard domains in these results. Try Premium Domains.'}
+                              ? t('domainSearchSearchingPremiumMarketplace', { defaultValue: 'Searching premium marketplace...' })
+                              : t('domainSearchNoPremiumDomains', { defaultValue: 'No premium domains found. Try another keyword.' }))
+                            : t('domainSearchNoStandardDomains', { defaultValue: 'No standard domains in these results. Try Premium Domains.' })}
                         </div>
                       )}
                     </div>
@@ -953,11 +964,11 @@ export default function DomainStorefrontPage() {
                           {tldLoadingMore ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              Loading…
+                              {t('loading', { defaultValue: 'Loading...' })}
                             </>
                           ) : (
                             <>
-                              View More
+                              {t('viewMore', { defaultValue: 'View More' })}
                               <ChevronRight className="w-4 h-4" />
                             </>
                           )}
@@ -970,7 +981,7 @@ export default function DomainStorefrontPage() {
                 {!tldLoading && !tldError && checkResult && tldItems.length === 0 && !premiumLoading && premiumTldItems.length === 0 && (
                   <div className="mt-6 flex items-center gap-2.5 text-xs text-gray-500 bg-gray-50 border border-gray-150 rounded-xl p-4">
                     <Globe className="w-4 h-4 shrink-0 text-gray-400" />
-                    No other available extensions found for this name. Try another domain.
+                    {t('storefrontNoOtherExtensions', { defaultValue: 'No other available extensions found for this name. Try another domain.' })}
                   </div>
                 )}
               </section>
@@ -989,7 +1000,7 @@ export default function DomainStorefrontPage() {
                     transferSubMode === 'in' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
-                  Transfer to HubRegistrar
+                  {t('storefrontTransferInTab', { defaultValue: 'Transfer to HubRegistrar' })}
                 </button>
                 <button
                   onClick={() => setTransferSubMode('out')}
@@ -997,7 +1008,7 @@ export default function DomainStorefrontPage() {
                     transferSubMode === 'out' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
-                  Transfer to Others
+                  {t('storefrontTransferOutTab', { defaultValue: 'Transfer to Others' })}
                 </button>
               </div>
 
@@ -1005,9 +1016,9 @@ export default function DomainStorefrontPage() {
               {transferSubMode === 'in' && (
                 <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="space-y-1">
-                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">Transfer Domain in to HubRegistrar</h2>
+                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">{t('storefrontTransferInTitle', { defaultValue: 'Transfer Domain in to HubRegistrar' })}</h2>
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Move your domain hosting and registrar management over to HubRegistrar. A 1-year registration extension is automatically applied upon successful EPP transfer.
+                      {t('storefrontTransferInDesc', { defaultValue: 'Move your domain hosting and registrar management over to HubRegistrar. A 1-year registration extension is automatically applied upon successful EPP transfer.' })}
                     </p>
                   </div>
 
@@ -1025,7 +1036,7 @@ export default function DomainStorefrontPage() {
                   <form onSubmit={handleTransferSubmit} className="space-y-4 max-w-lg">
                     <div className="space-y-1.5">
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
-                        Domain Name
+                        {t('domainNameLabel', { defaultValue: 'Domain Name' })}
                       </label>
                       <input
                         type="text"
@@ -1039,7 +1050,7 @@ export default function DomainStorefrontPage() {
 
                     <div className="space-y-1.5">
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
-                        EPP / Authorization Code
+                        {t('eppAuthorizationCode', { defaultValue: 'EPP / Authorization Code' })}
                       </label>
                       <input
                         type="text"
@@ -1060,11 +1071,11 @@ export default function DomainStorefrontPage() {
                         {transferLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Requesting Transfer...
+                            {t('storefrontRequestingTransfer', { defaultValue: 'Requesting Transfer...' })}
                           </>
                         ) : (
                           <>
-                            Submit Transfer Request <ArrowRight className="w-4 h-4" />
+                            {t('storefrontSubmitTransferRequest', { defaultValue: 'Submit Transfer Request' })} <ArrowRight className="w-4 h-4" />
                           </>
                         )}
                       </button>
@@ -1094,10 +1105,10 @@ export default function DomainStorefrontPage() {
                           id="transfer-confirm-title"
                           className="text-sm font-bold text-amber-900 uppercase tracking-wide"
                         >
-                          Important: Please Check Your EPP/Auth Code Carefully
+                          {t('storefrontEppConfirmTitle', { defaultValue: 'Important: Please Check Your EPP/Auth Code Carefully' })}
                         </h3>
                         <p className="text-xs text-gray-500 leading-relaxed">
-                          Confirm your transfer details before proceeding to payment.
+                          {t('storefrontEppConfirmDesc', { defaultValue: 'Confirm your transfer details before proceeding to payment.' })}
                         </p>
                       </div>
                     </div>
@@ -1105,52 +1116,52 @@ export default function DomainStorefrontPage() {
                     {/* Entered details for the final double-check */}
                     <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 space-y-1.5">
                       <div className="flex items-center justify-between gap-3 text-xs">
-                        <span className="font-bold text-gray-500 uppercase tracking-wide">Domain</span>
-                        <span className="font-bold text-gray-900 break-all">{transferDomain.trim()}</span>
+                        <span className="font-bold text-gray-500 uppercase tracking-wide">{t('domain', { defaultValue: 'Domain' })}</span>
+                        <span className="font-bold text-gray-900 break-all" translate="no">{transferDomain.trim()}</span>
                       </div>
                       <div className="flex items-center justify-between gap-3 text-xs">
-                        <span className="font-bold text-gray-500 uppercase tracking-wide">EPP / Auth Code</span>
-                        <span className="font-mono font-bold text-gray-900 break-all">{transferAuthCode.trim()}</span>
+                        <span className="font-bold text-gray-500 uppercase tracking-wide">{t('eppAuthCodeShort', { defaultValue: 'EPP / Auth Code' })}</span>
+                        <span className="font-mono font-bold text-gray-900 break-all" translate="no">{transferAuthCode.trim()}</span>
                       </div>
                     </div>
 
                     <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3.5 space-y-2.5">
                       <p className="text-xs text-amber-800/90 leading-relaxed">
-                        Before proceeding with payment, please make sure your EPP/Auth Code is entered exactly as provided by your current registrar.
+                        {t('storefrontEppConfirmWarning', { defaultValue: 'Before proceeding with payment, please make sure your EPP/Auth Code is entered exactly as provided by your current registrar.' })}
                       </p>
                       <p className="text-xs text-amber-800/90 leading-relaxed">
-                        Some characters can look very similar and are easy to confuse, for example:
+                        {t('storefrontEppSimilarChars', { defaultValue: 'Some characters can look very similar and are easy to confuse, for example:' })}
                       </p>
                       <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                         <li className="flex items-center gap-1.5 text-xs text-amber-900">
                           <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">I</code>
-                          <span>— uppercase letter “i”</span>
+                          <span>{t('storefrontEppUpperI', { defaultValue: '- uppercase letter i' })}</span>
                         </li>
                         <li className="flex items-center gap-1.5 text-xs text-amber-900">
                           <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">l</code>
-                          <span>— lowercase letter “L”</span>
+                          <span>{t('storefrontEppLowerL', { defaultValue: '- lowercase letter L' })}</span>
                         </li>
                         <li className="flex items-center gap-1.5 text-xs text-amber-900">
                           <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">1</code>
-                          <span>— number one</span>
+                          <span>{t('storefrontEppNumberOne', { defaultValue: '- number one' })}</span>
                         </li>
                         <li className="flex items-center gap-1.5 text-xs text-amber-900">
                           <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">O</code>
-                          <span>— uppercase letter “o”</span>
+                          <span>{t('storefrontEppUpperO', { defaultValue: '- uppercase letter o' })}</span>
                         </li>
                         <li className="flex items-center gap-1.5 text-xs text-amber-900">
                           <code className="font-mono font-bold text-base leading-none text-amber-950 bg-white border border-amber-200 rounded-md px-1.5 py-1">0</code>
-                          <span>— number zero</span>
+                          <span>{t('storefrontEppNumberZero', { defaultValue: '- number zero' })}</span>
                         </li>
                       </ul>
                       <p className="text-xs text-amber-800/90 leading-relaxed">
-                        Please copy and paste the EPP/Auth Code directly from your current registrar whenever possible. Avoid adding extra spaces before or after the code.
+                        {t('storefrontEppPasteAdvice', { defaultValue: 'Please copy and paste the EPP/Auth Code directly from your current registrar whenever possible. Avoid adding extra spaces before or after the code.' })}
                       </p>
                       <p className="text-xs text-amber-800/90 leading-relaxed">
-                        The EPP/Auth Code is verified during the transfer process. If the code is incorrect, the transfer will fail and your payment will be automatically refunded.
+                        {t('storefrontEppRefundAdvice', { defaultValue: 'The EPP/Auth Code is verified during the transfer process. If the code is incorrect, the transfer will fail and your payment will be automatically refunded.' })}
                       </p>
                       <p className="text-xs font-semibold text-amber-900">
-                        Please double-check the code before making the payment.
+                        {t('storefrontEppDoubleCheck', { defaultValue: 'Please double-check the code before making the payment.' })}
                       </p>
                     </div>
 
@@ -1164,10 +1175,10 @@ export default function DomainStorefrontPage() {
                         {transferLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Opening Checkout...
+                            {t('storefrontOpeningCheckout', { defaultValue: 'Opening Checkout...' })}
                           </>
                         ) : (
-                          <>Continue <ArrowRight className="w-4 h-4" /></>
+                          <>{t('continue', { defaultValue: 'Continue' })} <ArrowRight className="w-4 h-4" /></>
                         )}
                       </button>
                       <button
@@ -1176,7 +1187,7 @@ export default function DomainStorefrontPage() {
                         disabled={transferLoading}
                         className="inline-flex h-11 items-center justify-center gap-2 px-6 text-sm font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-200 rounded-xl disabled:opacity-50 transition-all shadow-sm select-none"
                       >
-                        Cancel
+                        {t('cancel', { defaultValue: 'Cancel' })}
                       </button>
                     </div>
                   </div>
@@ -1186,7 +1197,7 @@ export default function DomainStorefrontPage() {
               {transferSubMode === 'in' && transferOrders.length > 0 && (
                 <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mt-8 space-y-4">
                   <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider border-b border-gray-100 pb-3">
-                    Your Transfers
+                    {t('storefrontYourTransfers', { defaultValue: 'Your Transfers' })}
                   </h2>
                   <div className="space-y-3">
                     {transferOrders.map(order => {
@@ -1201,28 +1212,28 @@ export default function DomainStorefrontPage() {
                       let badgeColor = 'bg-gray-50 text-gray-600 border-gray-200';
                       
                       if (isComplete) {
-                        uiMsg = 'Transfer completed.';
+                        uiMsg = t('storefrontTransferCompleted', { defaultValue: 'Transfer completed.' });
                         badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
                       } else if (isPending) {
-                        uiMsg = 'Transfer pending — your domain transfer has been submitted and is being processed.';
+                        uiMsg = t('storefrontTransferPending', { defaultValue: 'Transfer pending - your domain transfer has been submitted and is being processed.' });
                         badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
                       } else if (isPaidComplete) {
-                        uiMsg = 'Transfer in progress.';
+                        uiMsg = t('storefrontTransferInProgress', { defaultValue: 'Transfer in progress.' });
                         badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
                       } else if (isPaidFailed) {
-                        uiMsg = 'Payment received — your domain transfer needs processing.';
+                        uiMsg = t('storefrontTransferNeedsProcessing', { defaultValue: 'Payment received - your domain transfer needs processing.' });
                         badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
                       } else if (isCancelled) {
-                        uiMsg = 'Payment Cancelled.';
+                        uiMsg = t('storefrontPaymentCancelled', { defaultValue: 'Payment Cancelled.' });
                         badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
                       }
 
                       return (
                         <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-150 bg-gray-50/50 gap-4">
                           <div>
-                            <div className="font-bold text-gray-900">{order.domain}</div>
+                            <div className="font-bold text-gray-900" translate="no">{order.domain}</div>
                             <div className="text-xs text-gray-500 mt-0.5">
-                              Ordered: {new Date(order.createdAt).toLocaleDateString()}
+                              {t('orderedDate', { defaultValue: 'Ordered: {{date}}', date: new Date(order.createdAt).toLocaleDateString() })}
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
@@ -1233,7 +1244,7 @@ export default function DomainStorefrontPage() {
                               to={registrationOrderDetailPath(order.id)}
                               className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
                             >
-                              View Details
+                              {t('viewDetails', { defaultValue: 'View Details' })}
                             </Link>
                           </div>
                         </div>
@@ -1247,9 +1258,9 @@ export default function DomainStorefrontPage() {
               {transferSubMode === 'out' && (
                 <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="space-y-1">
-                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">Transfer Domain out to Others</h2>
+                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">{t('storefrontTransferOutTitle', { defaultValue: 'Transfer Domain out to Others' })}</h2>
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Retrieve your domain authorization EPP code and disable registrar transfer-lock to move your domain to an external provider.
+                      {t('storefrontTransferOutDesc', { defaultValue: 'Retrieve your domain authorization EPP code and disable registrar transfer-lock to move your domain to an external provider.' })}
                     </p>
                   </div>
 
@@ -1267,17 +1278,17 @@ export default function DomainStorefrontPage() {
                       </div>
                       <div className="bg-white border border-emerald-200 rounded-xl p-4 space-y-2">
                         <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">
-                          EPP Authorization Code
+                          {t('storefrontEppAuthorizationCodeTitle', { defaultValue: 'EPP Authorization Code' })}
                         </label>
                         <div className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                          <span className="font-mono text-sm font-bold text-gray-800 select-all">{outSuccessCode}</span>
+                          <span className="font-mono text-sm font-bold text-gray-800 select-all" translate="no">{outSuccessCode}</span>
                           <CopyBtn text={outSuccessCode} />
                         </div>
                       </div>
                       <div className="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-4">
                         <ShieldAlert className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
                         <span className="font-medium leading-relaxed">
-                          Your registrar transfer-lock is successfully disabled. Enter the EPP code above at your new domain provider to complete your transfer-out.
+                          {t('storefrontTransferLockDisabled', { defaultValue: 'Your registrar transfer-lock is successfully disabled. Enter the EPP code above at your new domain provider to complete your transfer-out.' })}
                         </span>
                       </div>
                       <button
@@ -1285,14 +1296,14 @@ export default function DomainStorefrontPage() {
                         onClick={() => { setOutSuccessCode(''); setOutDomain(''); }}
                         className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
                       >
-                        Unlock another domain
+                        {t('storefrontUnlockAnotherDomain', { defaultValue: 'Unlock another domain' })}
                       </button>
                     </div>
                   ) : (
                     <form onSubmit={handleTransferOutSubmit} className="space-y-4 max-w-lg">
                       <div className="space-y-1.5">
                         <label className="block text-sm font-semibold text-gray-600 mb-1">
-                          Domain Name
+                          {t('domainNameLabel', { defaultValue: 'Domain Name' })}
                         </label>
                         <input
                           type="text"
@@ -1313,11 +1324,11 @@ export default function DomainStorefrontPage() {
                           {outLoading ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              Unlocking Domain...
+                              {t('storefrontUnlockingDomain', { defaultValue: 'Unlocking Domain...' })}
                             </>
                           ) : (
                             <>
-                              Disable Lock & Get Code <Key className="w-4 h-4" />
+                              {t('storefrontDisableLockGetCode', { defaultValue: 'Disable Lock & Get Code' })} <Key className="w-4 h-4" />
                             </>
                           )}
                         </button>
@@ -1333,14 +1344,14 @@ export default function DomainStorefrontPage() {
           {/* ══ ORDERS LIST ══ */}
           <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-4">
             <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Your Registrations</h2>
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">{t('storefrontYourRegistrations', { defaultValue: 'Your Registrations' })}</h2>
               <button
                 type="button"
                 onClick={loadOrders}
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800"
               >
                 <RefreshCw className="w-4 h-4" />
-                Refresh List
+                {t('storefrontRefreshList', { defaultValue: 'Refresh List' })}
               </button>
             </div>
 
@@ -1353,10 +1364,10 @@ export default function DomainStorefrontPage() {
                 <table className="min-w-full text-xs">
                   <thead>
                     <tr className="text-left text-gray-400 border-b border-gray-100 uppercase tracking-wider">
-                      <th className="py-2.5 pr-4 font-bold">Domain</th>
-                      <th className="py-2.5 pr-4 font-bold">Total Price</th>
-                      <th className="py-2.5 pr-4 font-bold">Status</th>
-                      <th className="py-2.5 font-bold">Actions</th>
+                      <th className="py-2.5 pr-4 font-bold">{t('domain', { defaultValue: 'Domain' })}</th>
+                      <th className="py-2.5 pr-4 font-bold">{t('totalPrice', { defaultValue: 'Total Price' })}</th>
+                      <th className="py-2.5 pr-4 font-bold">{t('status', { defaultValue: 'Status' })}</th>
+                      <th className="py-2.5 font-bold">{t('actions', { defaultValue: 'Actions' })}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1367,7 +1378,7 @@ export default function DomainStorefrontPage() {
                             to={registrationOrderDetailPath(order.id)}
                             className="text-indigo-700 hover:text-indigo-900 hover:underline"
                           >
-                            {order.domain}
+                            <span translate="no">{order.domain}</span>
                           </Link>
                         </td>
                         <td className="py-4 pr-4 text-gray-600 font-medium">
@@ -1385,7 +1396,7 @@ export default function DomainStorefrontPage() {
                             to={registrationOrderDetailPath(order.id)}
                             className="text-indigo-600 hover:text-indigo-800 font-bold"
                           >
-                            Manage Domain
+                            {t('storefrontManageDomain', { defaultValue: 'Manage Domain' })}
                           </Link>
                         </td>
                       </tr>

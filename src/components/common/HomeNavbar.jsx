@@ -197,7 +197,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   onToggle={() => toggleDesktopDropdown('venture')}
                 >
                   <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
-                  <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('co-venture')); }}>List Co-Venture</DropdownLink>
+                  <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('co-venture')); }}>
+                    {t('venturesPageListCoVentureCta', { defaultValue: 'List Co-Venture' })}
+                  </DropdownLink>
                   <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('venture')); }}>{t('listVenture')}</DropdownLink>
                 </NavDropdown>
 
@@ -243,7 +245,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               type="button"
               className="home-nav-hamburger"
               onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={mobileMenuOpen ? t('closeMenu', { defaultValue: 'Close menu' }) : t('openMenu', { defaultValue: 'Open menu' })}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -271,13 +273,13 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <button
             type="button"
             className="home-nav-overlay"
-            aria-label="Close menu"
+            aria-label={t('closeMenu', { defaultValue: 'Close menu' })}
             onClick={closeMobileMenu}
           />
-          <aside className="home-nav-drawer" aria-label="Main navigation">
+          <aside className="home-nav-drawer" aria-label={t('mainNavigation', { defaultValue: 'Main navigation' })}>
             <div className="home-nav-drawer-header">
               <span className="home-nav-drawer-title">{t('navMenu')}</span>
-              <button type="button" className="home-nav-drawer-close" onClick={closeMobileMenu} aria-label="Close menu">
+              <button type="button" className="home-nav-drawer-close" onClick={closeMobileMenu} aria-label={t('closeMenu', { defaultValue: 'Close menu' })}>
                 <X size={22} strokeWidth={2} />
               </button>
             </div>

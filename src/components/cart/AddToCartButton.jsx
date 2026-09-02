@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Check, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import CartFlyAnimation from './CartFlyAnimation';
@@ -47,6 +48,7 @@ export default function AddToCartButton({
   /** After a successful add, show a Go to Cart toast (Technology flow). */
   promptGoToCart = false,
 }) {
+  const { t } = useTranslation();
   const { addItem, updateItem, removeItem, isInCart, getCartItem, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -203,15 +205,15 @@ export default function AddToCartButton({
     : 'h-[2.625rem] w-[2.625rem]';
 
   const buttonLabel = showGoToCart
-    ? 'Go to Cart'
+    ? t('goToCart', { defaultValue: 'Go to Cart' })
     : label
       || (cornerRemove
-        ? 'Remove'
+        ? t('remove', { defaultValue: 'Remove' })
         : inCart && updateWhenInCart
-          ? 'Update Cart'
+          ? t('updateCart', { defaultValue: 'Update Cart' })
           : showAdded
-            ? 'In Cart'
-            : 'Add to Cart');
+            ? t('inCart', { defaultValue: 'In Cart' })
+            : t('listingCardAddToCart', { defaultValue: 'Add to Cart' }));
 
   const conflictModal = (
     <PremiumCartConflictModal
@@ -233,12 +235,12 @@ export default function AddToCartButton({
 
   if (variant === 'corner') {
     const title = disabled
-      ? (label || 'Unavailable')
+      ? (label || t('listingCardUnavailable', { defaultValue: 'Unavailable' }))
       : cornerRemove
-        ? 'Remove from cart'
+        ? t('removeFromCart', { defaultValue: 'Remove from cart' })
         : showAdded
-          ? 'In cart — view cart'
-          : 'Add to cart';
+          ? t('inCartViewCart', { defaultValue: 'In cart - view cart' })
+          : t('addToCart', { defaultValue: 'Add to cart' });
     return (
       <>
         <button
@@ -347,8 +349,8 @@ export default function AddToCartButton({
             type="button"
             onClick={handleRemove}
             disabled={isDisabled}
-            title="Remove from cart"
-            aria-label="Remove from cart"
+            title={t('removeFromCart', { defaultValue: 'Remove from cart' })}
+            aria-label={t('removeFromCart', { defaultValue: 'Remove from cart' })}
             className={`inline-flex shrink-0 items-center justify-center ${removeRadius} border border-rose-200 bg-white text-rose-500
               shadow-sm transition-all duration-200
               hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 hover:shadow-md
@@ -371,9 +373,9 @@ export default function AddToCartButton({
           className="fixed bottom-6 left-1/2 z-[10000] w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-emerald-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)]"
           role="status"
         >
-          <p className="text-sm font-semibold text-gray-900">Added to cart</p>
+          <p className="text-sm font-semibold text-gray-900">{t('addedToCart', { defaultValue: 'Added to cart' })}</p>
           <p className="mt-1 text-xs text-gray-500">
-            Review pricing plan and Co-Creator options before checkout.
+            {t('addToCartReviewOptions', { defaultValue: 'Review pricing plan and Co-Creator options before checkout.' })}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
@@ -384,14 +386,14 @@ export default function AddToCartButton({
                 navigate('/cart');
               }}
             >
-              Go to Cart
+              {t('goToCart', { defaultValue: 'Go to Cart' })}
             </button>
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
               onClick={() => setGoToCartOpen(false)}
             >
-              Continue browsing
+              {t('continueBrowsing', { defaultValue: 'Continue browsing' })}
             </button>
           </div>
         </div>

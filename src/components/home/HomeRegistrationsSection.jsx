@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import bulletpointTick from '../../assets/bulletpointtick.png';
 import cardTickLightBlue from '../../assets/cardticklightblue.png';
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
 import { usePublicHubRegistrarCategories } from '../../context/CategoryContext';
+import useCurrency from '../../context/CurrencyContext';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/registrations-catalog.css';
 
@@ -28,9 +30,11 @@ const CATEGORY_ICONS = {
   employer_labour: Users, environmental: Leaf, digital_services: Monitor,
 };
 
-const EMPTY_MESSAGE = 'No category found. Check back soon, we are working on it.';
+
 
 export default function HomeRegistrationsSection() {
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [categoryFilter, setCategoryFilter] = useState('');
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -258,7 +262,9 @@ export default function HomeRegistrationsSection() {
   const renderCard = (cat) => {
     const Icon = CATEGORY_ICONS[cat.slug] || Briefcase;
     const highlights = (cat.highlights || []).slice(0, 3);
-    const price = cat.price || '₹999';
+    const displayName = t('regCatName' + cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase()), { defaultValue: cat.label });
+    const displayDesc = t('regCatDesc' + cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase()), { defaultValue: cat.description || '' });
+    const priceNumeric = cat.priceNumeric || 0;
 
     return (
       <div className="reg-mini-card-wrapper">
@@ -279,30 +285,33 @@ export default function HomeRegistrationsSection() {
           className="reg-mini-card__watermark"
         />
         <div className="reg-mini-card__top">
-          <h3 className="reg-mini-card__title">{cat.label}</h3>
-          {cat.description && (
-            <p className="reg-mini-card__desc">{cat.description}</p>
+          <h3 className="reg-mini-card__title">{displayName}</h3>
+          {displayDesc && (
+            <p className="reg-mini-card__desc">{displayDesc}</p>
           )}
         </div>
         {highlights.length > 0 && (
           <ul className="reg-mini-card__list">
-            {highlights.map((point) => (
-              <li key={point}>
-                <img
-                  src={bulletpointTick}
-                  alt=""
-                  aria-hidden
-                  draggable="false"
-                  className="reg-mini-card__bullet"
-                />
-                <span>{point}</span>
-              </li>
-            ))}
+            {highlights.map((point, idx) => {
+              const slugPascal = cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+              const translated = t(`regCatHighlight${slugPascal}${idx}`, { defaultValue: point });
+              return (
+                <li key={point}>
+                  <img
+                    src={bulletpointTick}
+                    alt=""
+                    aria-hidden
+                    draggable="false"
+                    className="reg-mini-card__bullet"
+                  />
+                  <span>{translated}</span>
+                </li>
+              );
+            })}
           </ul>
         )}
-        <div className="reg-mini-card__footer">
-          <span className="reg-mini-card__price-pill">
-            <span className="reg-mini-card__price">{price}</span>
+        <div className="reg-mini-card__footer">            <span className="reg-mini-card__price-pill">
+            <span className="reg-mini-card__price">{priceNumeric > 0 ? formatPrice(priceNumeric) : '₹999'}</span>
             <span className="reg-mini-card__price-arrow" aria-hidden>
               <ArrowRight size={18} strokeWidth={2.5} />
             </span>
@@ -318,7 +327,7 @@ export default function HomeRegistrationsSection() {
       <div className="w-full min-w-0">
         <header className="home-section-header home-section-header--operations">
           <div className="home-section-header__top">
-            <h2 className="home-section-header__title">Registrations</h2>
+            <h2 className="home-section-header__title">{t('homeRegistrationsTitle', { defaultValue: 'Registrations' })}</h2>
             <div className="hro-header-right">
               <div className="hro-city-filter-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-city-filter-icon">
@@ -328,7 +337,7 @@ export default function HomeRegistrationsSection() {
                 <input
                   type="text"
                   className="hro-city-filter-input"
-                  placeholder="Search with Category"
+                  placeholder={t('regCatalogSearchCategories', { defaultValue: 'Search with Category' })}
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 />
@@ -344,7 +353,7 @@ export default function HomeRegistrationsSection() {
                 )}
               </div>
               <Link to={REGISTRATIONS_PAGE_PATH} className="home-section-header__view-all">
-                <span>View All</span>
+                <span>{t('viewAll', { defaultValue: 'View All' })}</span>
                 <ArrowRight className="home-section-header__view-all-icon" aria-hidden="true" />
               </Link>
             </div>
@@ -363,7 +372,7 @@ export default function HomeRegistrationsSection() {
             </HomePreviewRow>
           </div>
         ) : filteredCategories.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">{EMPTY_MESSAGE}</p>
+          <p className="text-center text-gray-500 py-4">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
         ) : (
           <div
             className={[

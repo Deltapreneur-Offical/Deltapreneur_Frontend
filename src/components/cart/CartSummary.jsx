@@ -9,6 +9,7 @@ import {
   Receipt,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useVirtualAssistantCatalog } from '../../hooks/useVirtualAssistantCatalog';
 import { useOperationsServicesCatalog } from '../../hooks/useOperationsServicesCatalog';
@@ -176,14 +177,15 @@ function IconBadge({ iconKey, accent, tint, IconOverride, useVaIcon, size = 'md'
   );
 }
 
-function formatEstimatedPrice(price, formatPrice, { monthly = false } = {}) {
-  if (!price || price <= 0) return 'On request';
-  return `${formatPrice(price)}${monthly ? '/mo' : ''}`;
+function formatEstimatedPrice(price, formatPrice, t, { monthly = false } = {}) {
+  if (!price || price <= 0) return t('onRequest', { defaultValue: 'On request' });
+  return `${formatPrice(price)}${monthly ? t('monthSuffix', { defaultValue: '/mo' }) : ''}`;
 }
 
-function ProductRow({ product, formatPrice }) {
+function ProductRow({ product, formatPrice, t }) {
   const [expanded, setExpanded] = useState(false);
   const meta = getCartProductMeta(product.productType);
+  const metaLabel = t(meta.labelKey, { defaultValue: meta.label });
   const ProductIcon = meta.icon;
   const hasBreakdown = product.coBrotherFee > 0 || product.addonAmount > 0 || product.basePrice !== product.amount;
 
@@ -205,12 +207,16 @@ function ProductRow({ product, formatPrice }) {
           size="sm"
         />
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium text-gray-900 truncate">{product.name}</p>
+          <p className="text-[13px] font-medium text-gray-900 truncate" translate="no">{product.name}</p>
           <p className="text-[10px] font-medium mt-0.5" style={{ color: meta.accent }}>
             {product.planLabel
               || (product.productType === 'DOMAIN_REGISTRATION' && product.periodYears
-                ? `${meta.label} · ${product.periodYears} ${product.periodYears === 1 ? 'yr' : 'yrs'}`
-                : meta.label)}
+                ? t('cartDomainRegistrationPeriod', {
+                  defaultValue: '{{label}} - {{count}} yr',
+                  label: metaLabel,
+                  count: product.periodYears,
+                })
+                : metaLabel)}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -237,18 +243,18 @@ function ProductRow({ product, formatPrice }) {
           >
             <div className="mx-3 mb-2 px-3 py-2 rounded-lg bg-gray-50/90 space-y-1.5">
               <div className="flex justify-between text-[11px]">
-                <span className="text-gray-500">Base price</span>
+                <span className="text-gray-500">{t('basePrice', { defaultValue: 'Base price' })}</span>
                 <span className="text-gray-700 tabular-nums font-medium">{formatPrice(product.basePrice)}</span>
               </div>
               {product.coBrotherFee > 0 && (
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-gray-500">Co-Creator</span>
+                  <span className="text-gray-500">{t('coCreator', { defaultValue: 'Co-Creator' })}</span>
                   <span className="text-gray-700 tabular-nums font-medium">{formatPrice(product.coBrotherFee)}</span>
                 </div>
               )}
               {product.addonAmount > 0 && (
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-gray-500">Services</span>
+                  <span className="text-gray-500">{t('services', { defaultValue: 'Services' })}</span>
                   <span className="text-gray-700 tabular-nums font-medium">{formatPrice(product.addonAmount)}</span>
                 </div>
               )}
@@ -273,7 +279,8 @@ function RequestCard({
   useVaIcon = false,
 }) {
   const [expanded, setExpanded] = useState(false);
-  const pricePrefix = priceLabel === 'On request' ? '' : 'From ';
+  const { t } = useTranslation();
+  const pricePrefix = priceLabel === t('onRequest', { defaultValue: 'On request' }) ? '' : t('fromPricePrefix', { defaultValue: 'From ' });
 
   return (
     <div className="rounded-xl border border-gray-100 bg-gray-50/30 overflow-hidden">
@@ -294,7 +301,7 @@ function RequestCard({
             <div className="flex items-start justify-between gap-2">
               <p className="text-[13px] font-semibold text-gray-900 leading-snug pr-1">{label}</p>
               <div className="text-right shrink-0">
-                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Est.</p>
+              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">{t('estimateShort', { defaultValue: 'Est.' })}</p>
                 <p className="text-[13px] font-semibold text-gray-900 tabular-nums leading-tight">
                   {pricePrefix}{priceLabel}
                 </p>
@@ -304,17 +311,17 @@ function RequestCard({
               <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                 <span className="inline-flex items-center gap-1 max-w-full rounded-full bg-white border border-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
                   <Link2 size={10} className="shrink-0 text-gray-400" />
-                  <span className="truncate">{productName}</span>
+                  <span className="truncate" translate="no">{productName}</span>
                 </span>
                 <span
                   className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
                   style={{ backgroundColor: `${accent}10`, color: accent }}
                 >
-                  Follow-up required
+                  {t('followUpRequired', { defaultValue: 'Follow-up required' })}
                 </span>
               </div>
               <span className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 shrink-0">
-                {expanded ? 'Hide details' : 'View details'}
+                {expanded ? t('hideDetails', { defaultValue: 'Hide details' }) : t('viewDetails', { defaultValue: 'View details' })}
                 <ChevronDown
                   size={13}
                   className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
@@ -344,14 +351,14 @@ function RequestCard({
                 {description ? (
                   <p>{description}</p>
                 ) : (
-                  <p className="text-gray-500">Our team will contact you after purchase with full details.</p>
+                  <p className="text-gray-500">{t('cartFollowUpDefaultDesc', { defaultValue: 'Our team will contact you after purchase with full details.' })}</p>
                 )}
                 <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 border-t border-gray-200/60">
-                  <span><span className="text-gray-400">Linked product · </span>{productName}</span>
-                  <span><span className="text-gray-400">Billing · </span>Not charged today</span>
+                  <span><span className="text-gray-400">{t('linkedProductPrefix', { defaultValue: 'Linked product - ' })}</span><span translate="no">{productName}</span></span>
+                  <span><span className="text-gray-400">{t('billingPrefix', { defaultValue: 'Billing - ' })}</span>{t('notChargedToday', { defaultValue: 'Not charged today' })}</span>
                   <span>
-                    <span className="text-gray-400">Estimate · </span>
-                    {pricePrefix}{priceLabel}{monthly && priceLabel !== 'On request' ? ' (monthly)' : ''}
+                    <span className="text-gray-400">{t('estimatePrefix', { defaultValue: 'Estimate - ' })}</span>
+                    {pricePrefix}{priceLabel}{monthly && priceLabel !== t('onRequest', { defaultValue: 'On request' }) ? t('monthlyParenthetical', { defaultValue: ' (monthly)' }) : ''}
                   </span>
                 </div>
               </div>
@@ -373,6 +380,7 @@ function TotalsPanel({
   edgePointsUsed,
   payable,
 }) {
+  const { t } = useTranslation();
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const breakdownId = 'cart-pay-today-breakdown';
 
@@ -395,7 +403,7 @@ function TotalsPanel({
           </div>
         )}
         {!edgePointsApplying && edgePointsUsed > 0 && (
-          <p className="text-[10px] text-emerald-600 text-right -mt-1">{edgePointsUsed} pts redeemed</p>
+          <p className="text-[10px] text-emerald-600 text-right -mt-1">{t('cartPointsRedeemed', { defaultValue: '{{count}} pts redeemed', count: edgePointsUsed })}</p>
         )}
       </div>
       )}
@@ -409,8 +417,8 @@ function TotalsPanel({
           className="w-full px-4 py-3.5 flex items-center justify-between gap-4 text-left transition-colors hover:bg-emerald-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:ring-inset"
         >
           <div>
-            <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Pay today</p>
-            <p className="text-[10px] text-gray-500 mt-0.5">Including applicable taxes</p>
+            <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">{t('payToday', { defaultValue: 'Pay today' })}</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">{t('includingApplicableTaxes', { defaultValue: 'Including applicable taxes' })}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <p className="font-display text-xl font-bold text-emerald-900 tabular-nums">
@@ -440,7 +448,7 @@ function TotalsPanel({
             >
               <div className="px-4 pb-3.5 pt-0 space-y-2 border-t border-emerald-100/90">
                 <div className="flex items-center justify-between gap-3 pt-3">
-                  <span className="text-[12px] text-gray-600">Products</span>
+                  <span className="text-[12px] text-gray-600">{t('products', { defaultValue: 'Products' })}</span>
                   <span className="text-[12px] font-semibold text-gray-900 tabular-nums">
                     {formatPrice(orderView.productSubtotal)}
                   </span>
@@ -455,7 +463,7 @@ function TotalsPanel({
                   </span>
                 </div>
                 ) : orderView.hideGstSplit ? (
-                <p className="text-[11px] text-gray-500 pt-1">Inclusive of applicable taxes</p>
+                <p className="text-[11px] text-gray-500 pt-1">{t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}</p>
                 ) : null}
               </div>
             </motion.div>
@@ -480,6 +488,7 @@ export default function CartSummary({
   checkoutLabel,
   secureNote,
 }) {
+  const { t } = useTranslation();
   const { formatPrice, formatDomainPrice } = useCurrency();
   const hasDomainRegistration = useMemo(
     () => (cart?.items || []).some((it) => it.productType === 'DOMAIN_REGISTRATION'),
@@ -512,16 +521,16 @@ export default function CartSummary({
               <Receipt size={18} className="text-white" strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="font-display text-base font-semibold text-gray-900 tracking-tight">Order Summary</h3>
+              <h3 className="font-display text-base font-semibold text-gray-900 tracking-tight">{t('orderSummary', { defaultValue: 'Order Summary' })}</h3>
               <p className="text-[11px] text-gray-500 mt-0.5">
-                {orderView.products.length} product{orderView.products.length !== 1 ? 's' : ''} due today
-                {followUpCount > 0 && ` · ${followUpCount} follow-up request${followUpCount !== 1 ? 's' : ''}`}
+                {t('cartSummaryDueToday', { defaultValue: '{{count}} product due today', count: orderView.products.length })}
+                {followUpCount > 0 && t('cartSummaryFollowUpsSuffix', { defaultValue: ' - {{count}} follow-up request', count: followUpCount })}
               </p>
             </div>
           </div>
           <span className="inline-flex items-center gap-1.5 shrink-0 rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800 sm:px-2.5 sm:py-1 sm:text-[11px]">
             <Lock size={10} className="shrink-0 sm:w-[11px] sm:h-[11px]" strokeWidth={2} aria-hidden />
-            <span className="whitespace-nowrap">Secure checkout</span>
+            <span className="whitespace-nowrap">{t('secureCheckout', { defaultValue: 'Secure checkout' })}</span>
           </span>
         </div>
       </div>
@@ -532,15 +541,15 @@ export default function CartSummary({
             <SectionHeader
               accent="#111827"
               icon={Package}
-              title="Products"
-              subtitle="Paid today · included in checkout"
+              title={t('products', { defaultValue: 'Products' })}
+              subtitle={t('cartProductsSubtitle', { defaultValue: 'Paid today - included in checkout' })}
               count={orderView.products.length}
             />
           </div>
           <div className="space-y-2">
             {orderView.products.length === 0 ? (
               <p className="text-[12px] text-gray-400 p-4 text-center rounded-2xl border border-gray-100 bg-white">
-                No products in cart
+                {t('cartNoProducts', { defaultValue: 'No products in cart' })}
               </p>
             ) : (
               orderView.products.map((product) => (
@@ -548,6 +557,7 @@ export default function CartSummary({
                   key={product.id}
                   product={product}
                   formatPrice={money}
+                  t={t}
                 />
               ))
             )}
@@ -558,10 +568,10 @@ export default function CartSummary({
           <CollapsibleFollowUpSection
             accent="#059669"
             icon={FileCheck}
-            title="Requested Services"
-            subtitle="Included in checkout total · handled after purchase"
+            title={t('cartRequestedServices', { defaultValue: 'Requested Services' })}
+            subtitle={t('cartFollowUpSectionSubtitle', { defaultValue: 'Included in checkout total - handled after purchase' })}
             tooltip={SERVICE_FOLLOW_UP_TOOLTIP}
-            tooltipLabel="About requested services"
+            tooltipLabel={t('aboutRequestedServices', { defaultValue: 'About requested services' })}
             count={orderView.services.length}
           >
             {orderView.services.map((entry) => (
@@ -569,7 +579,7 @@ export default function CartSummary({
                 key={entry.id}
                 label={entry.label}
                 productName={entry.productName}
-                priceLabel={formatEstimatedPrice(entry.estimatedPrice, money)}
+                priceLabel={formatEstimatedPrice(entry.estimatedPrice, money, t)}
                 tooltip={SERVICE_FOLLOW_UP_TOOLTIP}
                 description={entry.description}
                 iconKey={entry.iconKey}
@@ -585,10 +595,10 @@ export default function CartSummary({
             accent="#6366f1"
             icon={Package}
             useVaIcon
-            title="Virtual Assistants"
-            subtitle="Included in checkout total · handled after purchase"
+            title={t('navVirtualAssistants', { defaultValue: 'Virtual Assistants' })}
+            subtitle={t('cartFollowUpSectionSubtitle', { defaultValue: 'Included in checkout total - handled after purchase' })}
             tooltip={VA_FOLLOW_UP_TOOLTIP}
-            tooltipLabel="About virtual assistant requests"
+            tooltipLabel={t('aboutVirtualAssistantRequests', { defaultValue: 'About virtual assistant requests' })}
             count={orderView.virtualAssistants.length}
           >
             {orderView.virtualAssistants.map((entry) => (
@@ -596,7 +606,7 @@ export default function CartSummary({
                 key={entry.id}
                 label={entry.label}
                 productName={entry.productName}
-                priceLabel={formatEstimatedPrice(entry.estimatedPrice, money, { monthly: true })}
+                priceLabel={formatEstimatedPrice(entry.estimatedPrice, money, t, { monthly: true })}
                 tooltip={VA_FOLLOW_UP_TOOLTIP}
                 description={entry.description}
                 accent="#6366f1"
@@ -632,7 +642,7 @@ export default function CartSummary({
           {loading ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              Processing…
+              {t('operationsProcessing', { defaultValue: 'Processing...' })}
             </>
           ) : checkoutLabel ? (
             <>
@@ -642,13 +652,13 @@ export default function CartSummary({
           ) : (
             <>
               <Lock size={15} />
-              Pay {money(edgePointsApplying ? orderView.productTotal : payable)}
+              {t('payAmount', { defaultValue: 'Pay {{amount}}', amount: money(edgePointsApplying ? orderView.productTotal : payable) })}
             </>
           )}
         </button>
         <p className="text-[10px] text-gray-400 text-center flex items-center justify-center gap-1">
           <Lock size={10} />
-          {secureNote || 'Razorpay secure payment'}
+          {secureNote || t('razorpaySecurePayment', { defaultValue: 'Razorpay secure payment' })}
         </p>
       </div>
     </div>

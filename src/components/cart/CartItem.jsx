@@ -1,28 +1,33 @@
 import { Trash2, AlertCircle, Globe, Cpu, Rocket, ShoppingBag, Loader2, Info } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { planLabelForKey } from '../../utils/technologyPricingPlans';
+import { useTranslation } from 'react-i18next';
 
 const TYPE_META = {
   DOMAIN_LISTING: {
     label: 'Domain',
+    labelKey: 'domain',
     icon: Globe,
     badge: 'bg-sky-50 text-sky-700 border-sky-100',
     avatar: 'from-sky-100 to-sky-50 text-sky-600',
   },
   TECHNOLOGY: {
     label: 'Technology',
+    labelKey: 'technology',
     icon: Cpu,
     badge: 'bg-violet-50 text-violet-700 border-violet-100',
     avatar: 'from-violet-100 to-violet-50 text-violet-600',
   },
   DOMAIN_REGISTRATION: {
     label: 'Domain Registration',
+    labelKey: 'cartProductDomainRegistration',
     icon: Globe,
     badge: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     avatar: 'from-emerald-100 to-emerald-50 text-emerald-600',
   },
   VENTURE_DEAL: {
     label: 'Venture',
+    labelKey: 'venture',
     icon: Rocket,
     badge: 'bg-indigo-50 text-indigo-700 border-indigo-100',
     avatar: 'from-indigo-100 to-indigo-50 text-indigo-600',
@@ -39,11 +44,13 @@ export default function CartItem({
   onPeriodChange,
   periodUpdatingId,
 }) {
+  const { t } = useTranslation();
   const { formatPrice, formatDomainPrice } = useCurrency();
   const formatMoney =
     item.productType === 'DOMAIN_REGISTRATION' ? formatDomainPrice : formatPrice;
   const meta = TYPE_META[item.productType] || {
     label: item.productType,
+    labelKey: 'product',
     icon: ShoppingBag,
     badge: 'bg-gray-50 text-gray-600 border-gray-100',
     avatar: 'from-gray-100 to-gray-50 text-gray-500',
@@ -94,7 +101,7 @@ export default function CartItem({
           <div className="flex items-center gap-2 rounded-full bg-white border border-indigo-100 shadow-sm px-3.5 py-2">
             <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
             <span className="text-xs font-semibold text-indigo-700">
-              Updating registration price…
+              {t('cartUpdatingRegistrationPrice', { defaultValue: 'Updating registration price...' })}
             </span>
           </div>
         </div>
@@ -115,19 +122,22 @@ export default function CartItem({
       <div className="flex-1 min-w-0 pr-2">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-semibold tracking-wide ${meta.badge}`}>
-            {meta.label}
+            {t(meta.labelKey, { defaultValue: meta.label })}
           </span>
           {!item.available && (
             <span className="text-[11px] text-red-600 flex items-center gap-1 font-medium">
-              <AlertCircle size={12} /> Unavailable
+              <AlertCircle size={12} /> {t('listingCardUnavailable', { defaultValue: 'Unavailable' })}
             </span>
           )}
         </div>
-        <h4 className="font-display text-[15px] font-semibold text-gray-900 mt-1.5 truncate">
-          {item.productName || 'Unknown Item'}
+        <h4
+          className="font-display text-[15px] font-semibold text-gray-900 mt-1.5 truncate"
+          translate={item.productName ? 'no' : undefined}
+        >
+          {item.productName || t('unknownItem', { defaultValue: 'Unknown Item' })}
         </h4>
         {isDomainReg && (item.metadata?.isPremium === true) && (
-          <p className="mt-0.5 text-xs font-semibold text-amber-800">Premium Domain</p>
+          <p className="mt-0.5 text-xs font-semibold text-amber-800">{t('domainCardPremiumDomain', { defaultValue: 'Premium Domain' })}</p>
         )}
         {(item.basePrice > 0 || item.addonAmount > 0 || item.coBrotherFee > 0 || item.selectedPlan || isDomainReg) && (
           <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-xs text-gray-500">
@@ -136,14 +146,16 @@ export default function CartItem({
             )}
             {item.basePrice > 0 && !isDomainListing && (
               <span>
-                Base {formatMoney(item.basePrice)}
-                {isDomainReg && selectedPeriod > 1 ? ` · ${selectedPeriod} years` : ''}
+                {t('basePriceInline', { defaultValue: 'Base {{price}}', price: formatMoney(item.basePrice) })}
+                {isDomainReg && selectedPeriod > 1
+                  ? t('selectedYearsSuffix', { defaultValue: ' - {{count}} years', count: selectedPeriod })
+                  : ''}
               </span>
             )}
             {isDomainListing && listingDisplayTotal != null && (
-              <span>Inclusive of applicable taxes</span>
+              <span>{t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}</span>
             )}
-            {item.addonAmount > 0 && <span>Add-ons {formatMoney(item.addonAmount)}</span>}
+            {item.addonAmount > 0 && <span>{t('addonsPriceInline', { defaultValue: 'Add-ons {{price}}', price: formatMoney(item.addonAmount) })}</span>}
             {item.coBrotherFee > 0 && <span>CoBrother {formatMoney(item.coBrotherFee)}</span>}
           </div>
         )}
@@ -152,7 +164,7 @@ export default function CartItem({
           <div className="mt-3 space-y-1.5 max-w-[14rem]">
             <label className="flex flex-col gap-1">
               <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                Registration Period
+                {t('storefrontPeriod', { defaultValue: 'Registration period' })}
               </span>
               <select
                 value={selectedPeriod}
@@ -168,14 +180,14 @@ export default function CartItem({
               >
                 {periodOptions.map((y) => (
                   <option key={y} value={y}>
-                    {y} {y === 1 ? 'Year' : 'Years'}
-                    {y === minPeriod && minPeriod > 1 ? ' (min)' : ''}
+                    {t('cartYearOption', { defaultValue: '{{count}} year', count: y })}
+                    {y === minPeriod && minPeriod > 1 ? t('minimumSuffix', { defaultValue: ' (min)' }) : ''}
                   </option>
                 ))}
               </select>
             </label>
             <p className="text-[11px] text-gray-400 leading-snug">
-              Price updates instantly when you change years.
+              {t('cartPriceUpdatesInstantly', { defaultValue: 'Price updates instantly when you change years.' })}
             </p>
             {minPeriod > 1 && registrationTld ? (
               <div className="mt-0.5 flex items-start gap-1.5 text-[11px] leading-snug text-gray-500">
@@ -185,8 +197,11 @@ export default function CartItem({
                   aria-hidden
                 />
                 <p>
-                  Note: .{registrationTld} domains require a minimum {minPeriod}-year
-                  registration period as mandated by the registry.
+                  {t('cartTldMinimumPeriodNote', {
+                    defaultValue: 'Note: .{{tld}} domains require a minimum {{count}}-year registration period as mandated by the registry.',
+                    tld: registrationTld,
+                    count: minPeriod,
+                  })}
                 </p>
               </div>
             ) : null}
@@ -207,8 +222,8 @@ export default function CartItem({
           onClick={() => onRemove(item.id)}
           disabled={isRemoving || isPeriodUpdating}
           className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors duration-150 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
-          title="Remove from cart"
-          aria-label="Remove from cart"
+          title={t('removeFromCart', { defaultValue: 'Remove from cart' })}
+          aria-label={t('removeFromCart', { defaultValue: 'Remove from cart' })}
         >
           {isRemoving ? (
             <span className="block h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-200 border-t-red-500" />

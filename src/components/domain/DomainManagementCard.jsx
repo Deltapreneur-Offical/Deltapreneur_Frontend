@@ -28,7 +28,7 @@ function CopyButton({ text, label = 'Copy' }) {
   );
 }
 
-const DNS_TABS = ['DNS Records', 'Nameservers', 'Forwarding'];
+
 
 /**
  * GoDaddy-style DNS / domain management panel for registered storefront domains.
@@ -36,6 +36,11 @@ const DNS_TABS = ['DNS Records', 'Nameservers', 'Forwarding'];
  */
 export default function DomainManagementCard({ domainManagement, compact = false }) {
   const { t } = useTranslation();
+  const dnsTabs = [
+    { id: 'DNS Records', label: t('dnsRecords', { defaultValue: 'DNS Records' }) },
+    { id: 'Nameservers', label: t('nameservers', { defaultValue: 'Nameservers' }) },
+    { id: 'Forwarding', label: t('forwarding', { defaultValue: 'Forwarding' }) },
+  ];
   const [subTab, setSubTab] = useState('Nameservers');
   const mgmt = domainManagement;
 
@@ -56,8 +61,8 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <Globe className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">Manage your domain</h2>
-            <p className="text-xs text-gray-500">Add DNS records, point your website, or change nameservers for{' '}
+            <h2 className="text-sm font-semibold text-gray-900">{t('dnsManageYourDomain', { defaultValue: 'Manage your domain' })}</h2>
+            <p className="text-xs text-gray-500">{t('dnsManageDesc', { defaultValue: 'Add DNS records, point your website, or change nameservers for' })}{' '}
               <span className="font-semibold">{mgmt.domain}</span>
             </p>
           </div>
@@ -66,9 +71,9 @@ export default function DomainManagementCard({ domainManagement, compact = false
           <div className="px-5 py-3 border-t border-gray-100">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
-                <Server className="w-3.5 h-3.5" /> Nameservers
+                <Server className="w-3.5 h-3.5" /> {t('nameservers', { defaultValue: 'Nameservers' })}
               </span>
-              <CopyButton text={nsText} label="Copy all" />
+              <CopyButton text={nsText} label={t('copyAll', { defaultValue: 'Copy all' })} />
             </div>
             <ul className="space-y-1.5">
               {nameservers.map((ns) => (
@@ -94,32 +99,32 @@ export default function DomainManagementCard({ domainManagement, compact = false
           <span className="inline-block mb-2 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
             ⚡ COBROTHER AI
           </span>
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">Connect Your Domain in Minutes</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('dnsConnectDomain', { defaultValue: 'Connect Your Domain in Minutes' })}</h3>
           <p className="text-xs text-gray-500 mb-3">
-            Set up your domain with your website, email, or social media profile faster than ever.
+            {t('dnsConnectDesc', { defaultValue: 'Set up your domain with your website, email, or social media profile faster than ever.' })}
           </p>
           <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
-            Connect Domain <ChevronRight className="w-3.5 h-3.5" />
+            {t('dnsConnectBtn', { defaultValue: 'Connect Domain' })} <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">Easily verify domain ownership</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('dnsVerifyOwnership', { defaultValue: 'Easily verify domain ownership' })}</h3>
           <p className="text-xs text-gray-500 mb-3">
-            Need to verify ownership to connect to an external service? We've made it easier than ever.
+            {t('dnsVerifyDesc', { defaultValue: "Need to verify ownership to connect to an external service? We've made it easier than ever." })}
           </p>
           <button className="text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-md transition-colors">
-            Verify Domain Ownership
+            {t('dnsVerifyBtn', { defaultValue: 'Verify Domain Ownership' })}
           </button>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">Create MX records</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('dnsCreateMx', { defaultValue: 'Create MX records' })}</h3>
           <p className="text-xs text-gray-500 mb-3">
-            Quickly create MX records to connect your domain with email services.
+            {t('dnsCreateMxDesc', { defaultValue: 'Quickly create MX records to connect your domain with email services.' })}
           </p>
           <button className="text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-md transition-colors">
-            Create Now
+            {t('dnsCreateNow', { defaultValue: 'Create Now' })}
           </button>
         </div>
       </div>
@@ -132,7 +137,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
           <span className="text-sm font-semibold text-gray-900">{mgmt.domain}</span>
           <div className="flex items-center gap-3">
             <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
-              Domain Settings
+              {t('dnsDomainSettings', { defaultValue: 'Domain Settings' })}
             </button>
           </div>
         </div>
@@ -140,14 +145,14 @@ export default function DomainManagementCard({ domainManagement, compact = false
         {/* Sub-tabs */}
         <div className="border-b border-gray-200">
           <nav className="flex overflow-x-auto px-2">
-            {DNS_TABS.map((tab) => (
-              <button key={tab} type="button" onClick={() => setSubTab(tab)}
+            {dnsTabs.map((tab) => (
+              <button key={tab.id} type="button" onClick={() => setSubTab(tab.id)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-                  subTab === tab
+                  subTab === tab.id
                     ? 'border-green-500 text-green-700'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}>
-                {tab}
+                {tab.label}
               </button>
             ))}
           </nav>
@@ -158,15 +163,15 @@ export default function DomainManagementCard({ domainManagement, compact = false
           {subTab === 'Nameservers' && (
             <div>
               <p className="text-sm text-gray-600 mb-4">
-                Your domain uses the nameservers below. Change them only if you are moving DNS management to another provider.
+                {t('dnsNsDescription', { defaultValue: 'Your domain uses the nameservers below. Change them only if you are moving DNS management to another provider.' })}
               </p>
               {nameservers.length > 0 ? (
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1.5">
-                      <Server className="w-3.5 h-3.5 text-gray-400" /> Nameservers
+                      <Server className="w-3.5 h-3.5 text-gray-400" /> {t('nameservers', { defaultValue: 'Nameservers' })}
                     </span>
-                    <CopyButton text={nsText} label="Copy all" />
+                    <CopyButton text={nsText} label={t('copyAll', { defaultValue: 'Copy all' })} />
                   </div>
                   <ul className="space-y-2">
                     {nameservers.map((ns) => (
@@ -177,12 +182,12 @@ export default function DomainManagementCard({ domainManagement, compact = false
                     ))}
                   </ul>
                   <p className="text-xs text-gray-400 mt-3">
-                    These nameservers route traffic for your domain. Change them only if you move DNS to another provider.
+                    {t('dnsNsFooter', { defaultValue: 'These nameservers route traffic for your domain. Change them only if you move DNS to another provider.' })}
                   </p>
                 </div>
               ) : (
                 <p className="text-sm text-gray-400 italic">
-                  Nameserver information not yet available. Check back after registration completes.
+                  {t('dnsNsUnavailable', { defaultValue: 'Nameserver information not yet available. Check back after registration completes.' })}
                 </p>
               )}
             </div>
@@ -192,7 +197,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <div className="text-center py-10">
               <Server className="w-10 h-10 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-500 mb-4">
-                DNS records are managed in the DNS & Nameservers section of your order detail page.
+                {t('dnsRecordsManaged', { defaultValue: 'DNS records are managed in the DNS & Nameservers section of your order detail page.' })}
               </p>
             </div>
           )}
@@ -201,7 +206,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <div className="text-center py-10">
               <Globe className="w-10 h-10 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-500 mb-4">
-                Domain forwarding can be configured in the HubRegistrar domain control panel.
+                {t('dnsForwardingDesc', { defaultValue: 'Domain forwarding can be configured in the HubRegistrar domain control panel.' })}
               </p>
             </div>
           )}
@@ -212,7 +217,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
         <div className="px-6 py-4 border-t border-gray-100 flex flex-wrap items-center gap-4">
           {mgmt.loginEmail && (
             <p className="text-xs text-gray-400">
-              Sign in with <span className="font-mono text-gray-600">{mgmt.loginEmail}</span>
+              {t('dnsSignInWith', { defaultValue: 'Sign in with' })} <span className="font-mono text-gray-600">{mgmt.loginEmail}</span>
             </p>
           )}
         </div>
@@ -222,8 +227,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
 
       {/* Quick steps */}
       {steps.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg px-6 py-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick steps</h3>
+        <div className="bg-white border border-gray-200 rounded-lg px-6 py-5 shadow-sm">              <h3 className="text-sm font-semibold text-gray-900 mb-3">{t('dnsQuickSteps', { defaultValue: 'Quick steps' })}</h3>
           <ol className="list-decimal pl-5 space-y-1.5 text-sm text-gray-700">
             {steps.map((step, i) => (
               <li key={i}>{step}</li>
@@ -235,7 +239,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
       {/* Expiry */}
       {mgmt.expiresAt && (
         <p className="text-xs text-gray-400 px-1">
-          Registrar expiry (approx.): {new Date(mgmt.expiresAt).toLocaleDateString('en-IN')}
+          {t('dnsRegistrarExpiry', { defaultValue: 'Registrar expiry (approx.):' })} {new Date(mgmt.expiresAt).toLocaleDateString()}
         </p>
       )}
 

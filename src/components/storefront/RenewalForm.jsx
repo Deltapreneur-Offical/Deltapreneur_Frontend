@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { RotateCcw, Loader2 } from 'lucide-react';
+import useCurrency from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { fetchDomainRenewalQuote, payDomainRenewal } from '../../utils/domainRenewalCheckout';
 import { readApiError } from '../../utils/apiError';
 
 export default function RenewalForm({ onClose, orders }) {
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [domainId, setDomainId] = useState('');
   const [period, setPeriod] = useState('1');
@@ -119,8 +121,8 @@ export default function RenewalForm({ onClose, orders }) {
       )}
       {quote?.totalInr != null && !quoteLoading && (
         <p className="text-sm font-semibold text-slate-800">
-          Total due: ₹{Number(quote.totalInr).toLocaleString('en-IN')}
-          {quote.gstInr > 0 ? ` (incl. GST ₹${Number(quote.gstInr).toLocaleString('en-IN')})` : ''}
+          Total due: {formatPrice(quote.totalInr)}
+          {quote.gstInr > 0 ? ` (incl. GST ${formatPrice(quote.gstInr)})` : ''}
         </p>
       )}
 

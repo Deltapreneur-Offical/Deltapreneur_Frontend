@@ -6,7 +6,7 @@ import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft } from 'luci
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
 import { technologyServicesAPI } from '../api/technologyServicesApi';
-import TechnologyServiceCard from '../components/technology/TechnologyServiceCard';
+import TechnologyServiceCard, { techT } from '../components/technology/TechnologyServiceCard';
 import { Sparkles } from 'lucide-react';
 import AddToCartButton from '../components/cart/AddToCartButton';
 import TechnologyPlanPicker from '../components/cart/TechnologyPlanPicker';
@@ -331,7 +331,7 @@ export default function CoCreationPage() {
 
             {!loading && totalCount > 0 && (
               <div className="text-sm text-gray-600 mb-4">
-                {totalCount} technology listing{totalCount !== 1 ? 's' : ''} found
+                {totalCount} {t('techListingsCount', { count: totalCount, defaultValue: totalCount !== 1 ? 'technology listings found' : 'technology listing found' })}
               </div>
             )}
 
@@ -352,7 +352,7 @@ export default function CoCreationPage() {
                 <p className="text-gray-600 mb-6">
                   {activeFilterCount > 0
                     ? 'Try adjusting your search or filters.'
-                    : 'Check back soon for new technology listings.'}
+                    : t('technologyPageEmptyHint', { defaultValue: 'Check back soon for new technology listings.' })}
                 </p>
                 {activeFilterCount > 0 && (
                   <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
@@ -401,29 +401,39 @@ export default function CoCreationPage() {
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-2 border border-blue-100">
                     <Sparkles className="h-3.5 w-3.5" />
-                    HubRegistrar Enterprise Catalogue
+                    {t('techServicesEnterpriseCatalogue', { defaultValue: 'HubRegistrar Enterprise Catalogue' })}
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-                    Technology Services
+                    {t('techServicesTitle', { defaultValue: 'Technology Services' })}
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    White-labelled provider-powered applications & cloud services.
+                    {t('techServicesSubtitle', { defaultValue: 'White-labelled provider-powered applications & cloud services.' })}
                   </p>
                 </div>
 
                 {/* Service Category Filter Buttons */}
                 <div className="flex flex-wrap gap-1.5">
-                  {['All', 'AI', 'Business', 'Marketing', 'Productivity', 'Communication', 'Hosting', 'Security', 'Storage'].map((cat) => (
+                  {[
+                    { value: 'All', label: t('commonAll', { defaultValue: 'All' }) },
+                    { value: 'AI', label: techT(t, 'techCat_', 'AI') },
+                    { value: 'Business', label: techT(t, 'techCat_', 'Business') },
+                    { value: 'Marketing', label: techT(t, 'techCat_', 'Marketing') },
+                    { value: 'Productivity', label: techT(t, 'techCat_', 'Productivity') },
+                    { value: 'Communication', label: techT(t, 'techCat_', 'Communication') },
+                    { value: 'Hosting', label: techT(t, 'techCat_', 'Hosting') },
+                    { value: 'Security', label: techT(t, 'techCat_', 'Security') },
+                    { value: 'Storage', label: techT(t, 'techCat_', 'Storage') },
+                  ].map(({ value, label }) => (
                     <button
-                      key={cat}
-                      onClick={() => setServiceCategory(cat)}
+                      key={value}
+                      onClick={() => setServiceCategory(value)}
                       className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
-                        serviceCategory === cat
+                        serviceCategory === value
                           ? 'bg-blue-600 text-white shadow-md'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {cat}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -1252,7 +1262,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                 isEdit
                   ? 'Save changes →'
                   : (form.purchaseType === 'AUCTION'
-                    ? `Pay ₹${Number(auctionCreationFeeInr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })} & List technology →`
+                    ? `${t('commonPay', { defaultValue: 'Pay' })} ${formatPrice(Number(auctionCreationFeeInr || 0))} & ${t('listTechnology', { defaultValue: 'List technology' })} →`
                     : 'List technology →'
                   )
               )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import {
@@ -44,8 +45,20 @@ const ICON_MAP = {
   Box,
 };
 
+/**
+ * Translate a technology-service string using a deterministic key derived from
+ * the original English text. Falls back to the original text when no translation
+ * key exists — proper names like "AI Business Suite" stay unchanged.
+ */
+export function techT(t, prefix, text) {
+  if (!text) return text;
+  const key = `${prefix}${text.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+  return t(key, { defaultValue: text });
+}
+
 export default function TechnologyServiceCard({ service, compact = false, homeLayout = false }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { formatPrice, convertToInr } = useCurrency();
   const IconComponent = (service.icon && ICON_MAP[service.icon]) || Box;
 
@@ -82,11 +95,11 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
                   {/* Badges stacked vertically below the name */}
                   <div className="mt-2.5 flex flex-col items-start gap-1.5">
                     <span className="inline-block rounded-full bg-blue-50 px-2 py-[1px] text-[10px] font-semibold text-blue-600 uppercase tracking-wider whitespace-nowrap max-w-full">
-                      {service.category}
+                      {techT(t, 'techCat_', service.category)}
                     </span>
                     {service.badge && (
                       <span className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 px-2 py-[1px] text-[10px] font-bold text-amber-700 border border-amber-200/50 whitespace-nowrap leading-tight max-w-full">
-                        {service.badge}
+                        {techT(t, 'techBadge_', service.badge)}
                       </span>
                     )}
                   </div>
@@ -94,7 +107,7 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
               ) : (
                 <>
                   <span className="inline-block rounded-full bg-blue-50 px-2 py-[1px] text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1 truncate max-w-full">
-                    {service.category}
+                    {techT(t, 'techCat_', service.category)}
                   </span>
                   <TruncatedTextTooltip text={service.name} className="block min-w-0 max-w-full">
                     <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-75 truncate">
@@ -108,14 +121,14 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
 
           {!homeLayout && service.badge && (
             <span className="shrink-0 max-w-[45%] inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 px-2 py-[1px] text-[10px] font-bold text-amber-700 border border-amber-200/50 whitespace-nowrap overflow-hidden text-ellipsis leading-tight">
-              {service.badge}
+              {techT(t, 'techBadge_', service.badge)}
             </span>
           )}
         </div>
 
         {/* Short Description */}
         <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-4">
-          {service.short_description}
+          {techT(t, `techDesc_${service.slug}_`, service.short_description)}
         </p>
 
         {/* Features Checklist */}
@@ -124,7 +137,7 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
             {service.features.slice(0, 3).map((feat, idx) => (
               <li key={idx} className="flex items-center gap-2 text-xs text-gray-600">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="line-clamp-1">{feat}</span>
+                <span className="line-clamp-1">{techT(t, `techFeat_${service.slug}_${idx}_`, feat)}</span>
               </li>
             ))}
           </ul>
@@ -134,12 +147,12 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
       {/* Footer / Price & CTA */}
       <div className="flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 pt-3.5 mt-2 min-w-0">
         <div className="min-w-max shrink-0">
-          <span className="block text-[11px] text-gray-400 font-medium leading-none mb-1">Starting at</span>
+          <span className="block text-[11px] text-gray-400 font-medium leading-none mb-1">{t('commonStartingAt', { defaultValue: 'Starting at' })}</span>
           <div className="inline-flex items-baseline gap-1 whitespace-nowrap">
             <span className="text-sm sm:text-base md:text-lg xl:text-xl font-extrabold text-gray-900 leading-none whitespace-nowrap">
               {formatTechPrice(service.starting_price || 15)}
             </span>
-            <span className="text-xs text-gray-500 font-semibold leading-none shrink-0 whitespace-nowrap">/mo</span>
+            <span className="text-xs text-gray-500 font-semibold leading-none shrink-0 whitespace-nowrap">/{t('commonMo', { defaultValue: 'mo' })}</span>
           </div>
         </div>
 
@@ -150,7 +163,7 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
           }}
           className={`${homeLayout ? 'shrink-0' : 'shrink'} inline-flex items-center gap-1 sm:gap-1.5 rounded-xl bg-gray-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition-all duration-75 group-hover:bg-blue-600 group-hover:shadow-md group-hover:shadow-blue-600/30 whitespace-nowrap min-w-0`}
         >
-          <span className="truncate">Explore Service</span>
+          <span className="truncate">{t('commonExploreService', { defaultValue: 'Explore Service' })}</span>
           <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:translate-x-1" />
         </button>
       </div>

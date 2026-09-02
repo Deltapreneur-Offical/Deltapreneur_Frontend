@@ -95,7 +95,7 @@ export default function TechnologyServiceDetailPage() {
     const timeoutId = setTimeout(() => {
       if (isMounted) {
         console.warn(`[TechnologyServiceDetailPage] Safety timeout (5s) reached for API: ${apiUrl}`);
-        setError('Request timed out while loading technology service details.');
+        setError(t('techDetailTimeout', { defaultValue: 'Request timed out while loading technology service details.' }));
         setLoading(false);
       }
     }, 5000);
@@ -108,7 +108,7 @@ export default function TechnologyServiceDetailPage() {
         if (!targetSlug) {
           console.error('[TechnologyServiceDetailPage] Missing slug in route');
           if (isMounted) {
-            setError('Technology service identifier is missing.');
+            setError(t('techDetailMissingId', { defaultValue: 'Technology service identifier is missing.' }));
             setLoading(false);
           }
           clearTimeout(timeoutId);
@@ -121,7 +121,7 @@ export default function TechnologyServiceDetailPage() {
         const data = res.data || res;
         if (!data || (!data.slug && !data.id)) {
           if (isMounted) {
-            setError('Technology service not found.');
+            setError(t('techDetailNotFound', { defaultValue: 'Technology service not found.' }));
             setService(null);
           }
         } else if (isMounted) {
@@ -143,7 +143,7 @@ export default function TechnologyServiceDetailPage() {
       } catch (err) {
         console.error(`[TechnologyServiceDetailPage] Error calling API ${apiUrl}:`, err);
         if (isMounted) {
-          setError(err?.response?.data?.detail || 'Technology service not found.');
+          setError(err?.response?.data?.detail || t('techDetailNotFound', { defaultValue: 'Technology service not found.' }));
           setService(null);
         }
       } finally {
@@ -190,7 +190,7 @@ export default function TechnologyServiceDetailPage() {
     if (slug === 'business-phone') {
       const code = String(areaCode || '').trim();
       if (!code) {
-        setInputError('Please enter the area code for your Business Phone number.');
+        setInputError(t('techDetailPhoneAreaCode', { defaultValue: 'Please enter the area code for your Business Phone number.' }));
         return;
       }
       metadata.areaCode = code;
@@ -198,7 +198,7 @@ export default function TechnologyServiceDetailPage() {
     if (slug === 'web-hosting') {
       const domain = String(primaryDomain || '').trim().toLowerCase();
       if (!domain || !domain.includes('.')) {
-        setInputError('Please enter the primary domain for your hosting account (e.g. example.com).');
+        setInputError(t('techDetailDomainRequired', { defaultValue: 'Please enter the primary domain for your hosting account.' }));
         return;
       }
       metadata.primaryDomain = domain;
@@ -215,7 +215,7 @@ export default function TechnologyServiceDetailPage() {
       setPurchasingPlan(null);
       navigate('/cart');
     } catch (err) {
-      alert(err?.response?.data?.detail || 'Failed to add to cart. Please try again.');
+      alert(err?.response?.data?.detail || t('techDetailCartFailed', { defaultValue: 'Failed to add to cart. Please try again.' }));
     } finally {
       setSubmitting(false);
     }
@@ -242,7 +242,7 @@ export default function TechnologyServiceDetailPage() {
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Technology Not Found</h2>
           <p className="mt-2 text-sm text-gray-600 max-w-md">
-            {error || 'The requested technology service does not exist or is currently unavailable.'}
+            {error || t('techDetailUnavailable', { defaultValue: 'The requested technology service does not exist or is currently unavailable.' })}
           </p>
           <button
             onClick={() => navigate('/technology', { replace: true })}
@@ -608,7 +608,7 @@ export default function TechnologyServiceDetailPage() {
                 disabled={submitting}
                 className="w-1/2 rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white shadow-md hover:bg-indigo-700 flex items-center justify-center gap-2"
               >
-                {submitting ? 'Provisioning...' : 'Confirm & Pay'}
+                {submitting ? t('techDetailProvisioning', { defaultValue: 'Provisioning...' }) : t('techDetailConfirmPay', { defaultValue: 'Confirm & Pay' })}
               </button>
             </div>
           </div>

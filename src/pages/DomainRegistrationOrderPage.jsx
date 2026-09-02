@@ -28,12 +28,13 @@ import {
   ShieldAlert,
   Edit2,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import useCurrency from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
 import { domainStorefrontAPI } from '../api/services';
 import { generateInvoice } from '../utils/generateInvoice';
 import { readApiError } from '../utils/domainRegistrationOrder';
-import { formatInr } from '../utils/money';
 import {
   displayNameserverHost,
   formatNameserversForDisplay,
@@ -161,8 +162,9 @@ const TABS = [
 
 export default function DomainRegistrationOrderPage() {
   const { orderId }  = useParams();
-  const navigate     = useNavigate();
-  const { user }     = useAuth();
+  const navigate     = useNavigate();  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
+  const { user } = useAuth();
 
   const [order,         setOrder]         = useState(null);
   const [loading,       setLoading]       = useState(true);
@@ -514,7 +516,7 @@ export default function DomainRegistrationOrderPage() {
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>Base Renewal Price:</span>
                         <span>
-                          {formatInr(
+                          {formatPrice(
                             renewQuote?.subtotalInr
                               ?? ((config?.renewalFallbackUnitInr || 799) * renewPeriod),
                           )}
@@ -525,7 +527,7 @@ export default function DomainRegistrationOrderPage() {
                           GST{renewQuote?.gstRate != null ? ` (${renewQuote.gstRate}%)` : ''}:
                         </span>
                         <span>
-                          {formatInr(
+                          {formatPrice(
                             renewQuote?.gstInr
                               ?? Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 0.18 * 100) / 100,
                           )}
@@ -534,7 +536,7 @@ export default function DomainRegistrationOrderPage() {
                       <div className="flex justify-between text-sm font-extrabold text-gray-950 mt-2 border-t border-gray-200 pt-2">
                         <span>Total Amount:</span>
                         <span>
-                          {formatInr(
+                          {formatPrice(
                             renewQuote?.totalInr
                               ?? Math.round((config?.renewalFallbackUnitInr || 799) * renewPeriod * 1.18 * 100) / 100,
                           )}
@@ -819,15 +821,15 @@ export default function DomainRegistrationOrderPage() {
                   </div>
                   <div className="divide-y divide-gray-100/70">
                     {order.subtotalInr != null && (
-                      <DetailRow label="Subtotal" value={formatInr(order.subtotalInr, { forceDecimals: true })} />
+                      <DetailRow label="Subtotal" value={formatPrice(order.subtotalInr, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
                     )}
                     {order.gstInr != null && Number(order.gstInr) > 0 && (
-                      <DetailRow label={`GST${order.gstRate ? ` (${order.gstRate}%)` : ''}`} value={formatInr(order.gstInr, { forceDecimals: true })} />
+                      <DetailRow label={`GST${order.gstRate ? ` (${order.gstRate}%)` : ''}`} value={formatPrice(order.gstInr, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
                     )}
                     {order.razorpayPaymentId && !['CREATED', 'EXPIRED', 'PAYMENT_FAILED'].includes((order.status || '').toUpperCase()) && (
                       <DetailRow
                         label="Total Paid"
-                        value={formatInr(order.priceInr || 0, { forceDecimals: true })}
+                        value={formatPrice(order.priceInr || 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         valueClass="font-bold text-gray-900 text-base"
                       />
                     )}
@@ -1701,7 +1703,7 @@ function AddonProductsSection({ order, onUpdateSuccess, user }) {
                       >
                         {sslProducts.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name}{p.wildcard ? ' (Wildcard)' : ''} — {p.label || `₹${p.unitInr}/yr`}
+                            {p.name}{p.wildcard ? ' (Wildcard)' : ''} — {p.label || `${formatPrice(p.unitInr)}/yr`}
                           </option>
                         ))}
                       </select>

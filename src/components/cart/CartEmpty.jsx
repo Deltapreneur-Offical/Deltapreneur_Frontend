@@ -1,16 +1,18 @@
 import { ShoppingCart, ArrowRight, Handshake } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import domainsIcon from '../../assets/CoBranding.png';
 import technologyIcon from '../../assets/CoCreation.png';
 
 const LINKS = [
-  { to: '/domains', label: 'Domains', iconSrc: domainsIcon, desc: 'Premium & pre-owned names' },
-  { to: '/technology', label: 'Technology', iconSrc: technologyIcon, desc: 'Software & hardware listings' },
-  { to: '/ventures', label: 'Ventures', icon: Handshake, desc: 'Acquisition opportunities' },
+  { to: '/domains', labelKey: 'domains', label: 'Domains', iconSrc: domainsIcon, descKey: 'cartEmptyDomainsDesc', desc: 'Premium & pre-owned names' },
+  { to: '/technology', labelKey: 'technology', label: 'Technology', iconSrc: technologyIcon, descKey: 'cartEmptyTechnologyDesc', desc: 'Software & hardware listings' },
+  { to: '/ventures', labelKey: 'ventures', label: 'Ventures', icon: Handshake, descKey: 'cartEmptyVenturesDesc', desc: 'Acquisition opportunities' },
 ];
 
 export default function CartEmpty() {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -27,14 +29,14 @@ export default function CartEmpty() {
       </div>
 
       <h2 className="relative font-display text-2xl font-semibold text-gray-900 mb-2">
-        Your cart is empty
+        {t('cartEmptyTitle', { defaultValue: 'Your cart is empty' })}
       </h2>
       <p className="relative text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
-        Discover domains, technologies, and ventures on HubRegistrar — add items to your cart and checkout when you&apos;re ready.
+        {t('cartEmptyDesc', { defaultValue: "Discover domains, technologies, and ventures on HubRegistrar - add items to your cart and checkout when you're ready." })}
       </p>
 
       <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">
-        {LINKS.map(({ to, label, icon: Icon, iconSrc, desc }) => (
+        {LINKS.map(({ to, labelKey, label, icon: Icon, iconSrc, descKey, desc }) => (
           <Link
             key={to}
             to={to}
@@ -53,10 +55,10 @@ export default function CartEmpty() {
               )}
             </div>
             <span className="font-semibold text-sm text-gray-900 flex items-center gap-1">
-              {label}
+              {t(labelKey, { defaultValue: label })}
               <ArrowRight size={14} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-600" />
             </span>
-            <span className="text-xs text-gray-500 mt-0.5">{desc}</span>
+            <span className="text-xs text-gray-500 mt-0.5">{t(descKey, { defaultValue: desc })}</span>
           </Link>
         ))}
       </div>

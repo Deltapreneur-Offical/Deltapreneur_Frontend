@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
+
 import { useDynamicCategoryName } from '../../context/CategoryContext';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
 import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel, HUB_REGISTRAR_CATEGORY_LABELS } from '../../utils/operationsCategories';
@@ -61,6 +62,7 @@ import { formatOperationsPrice, isComplianceService } from '../../utils/operatio
 export default function OperationsServiceCard({ service, onHire }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+
   const dynamicName = useDynamicCategoryName(service.category, getHubRegistrarCategoryLabel);
 
   const Icon = resolveOperationsIcon(service);
@@ -68,7 +70,7 @@ export default function OperationsServiceCard({ service, onHire }) {
   // Use dynamic API category name for compliance (Hub Registrar) services.
   // For non-compliance services, fall back to static category labels.
   const catLabel = cardCompliance
-    ? dynamicName
+    ? t(HUB_REG_I18N_KEY[service.category], { defaultValue: dynamicName })
     : t(CATEGORY_I18N_KEY[service.category], { defaultValue: OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category });
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
 
@@ -87,17 +89,17 @@ export default function OperationsServiceCard({ service, onHire }) {
         </span>
       </div>
       <h3 className="font-display text-base font-bold text-gray-900 leading-snug mb-1.5">
-        {service.name}
+        {t(`opsSvcName_${(service.name || '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '')}`, { defaultValue: service.name })}
       </h3>
       <p className="text-sm text-gray-500 flex-1 leading-relaxed line-clamp-2">
-        {service.description || t('operationsCardDesc', {
-          defaultValue: 'Dedicated remote professional for your MSME — flexible monthly engagement.',
-        })}
+        {service.description
+          ? t(`opsSvcDesc_${(service.name || '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '')}`, { defaultValue: service.description })
+          : t('operationsCardDesc', { defaultValue: 'Dedicated remote professional for your MSME — flexible monthly engagement.' })}
       </p>
       {service.governmentFeesApplicable && service.governmentFeeText && (
         <div className="mt-2 w-fit">
           <span className="inline-block px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-700 whitespace-nowrap">
-            {service.governmentFeeText.replace(/^Government/i, 'Govt.')}
+            {t('operationsGovtFeesApplicable', { defaultValue: 'Govt. fees applicable' })}
           </span>
         </div>
       )}

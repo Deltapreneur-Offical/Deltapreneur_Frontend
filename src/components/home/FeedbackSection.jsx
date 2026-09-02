@@ -75,13 +75,13 @@ export default function FeedbackSection() {
         setFeedbackSubmitted(true);
         resetProtection();
       } else {
-        alert('Failed to send feedback. Please try again.');
+        alert(t('feedbackFailed', { defaultValue: 'Failed to send feedback. Please try again.' }));
         resetProtection();
       }
     } catch (error) {
       console.error('Feedback error:', error);
       resetProtection();
-      alert('Something went wrong. Please try again later.');
+      alert(t('feedbackError', { defaultValue: 'Something went wrong. Please try again later.' }));
     } finally {
       setFeedbackSubmitting(false);
     }

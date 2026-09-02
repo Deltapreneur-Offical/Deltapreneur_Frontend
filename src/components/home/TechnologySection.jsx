@@ -75,7 +75,7 @@ export default function TechnologySection() {
   );
 
   if (loading) {
-    return <HomeSectionCardSkeleton title="Technology Register" to="/technology" />;
+    return <HomeSectionCardSkeleton title={t('homeTechnologyRegister', { defaultValue: 'Technology Register' })} to="/technology" />;
   }
 
   return (
@@ -85,9 +85,9 @@ export default function TechnologySection() {
         {/* 1. Marketplace Technology Listings */}
         {previewSoftwares.length > 0 && (
           <div>
-            <HomeSectionHeader title="Technology Register" to="/technology" />
+            <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'Technology Register' })} to="/technology" />
             {shouldAutoScroll ? (
-              <HomeAutoScrollRow durationSec={50} ariaLabel="Technology Register">
+              <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeTechnologyRegister', { defaultValue: 'Technology Register' })}>
                 {previewSoftwares.map((item) => (
                   <HomeAutoScrollRowItem key={item.id}>
                     {renderTechnologyCard(item)}
@@ -112,17 +112,17 @@ export default function TechnologySection() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-1 border border-blue-100">
                 <Sparkles className="h-3.5 w-3.5" />
-                Featured HubRegistrar Services
+                {t('homeFeaturedServices', { defaultValue: 'Featured HubRegistrar Services' })}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Technology Register
+                {t('homeTechnologyRegister', { defaultValue: 'Technology Register' })}
               </h2>
             </div>
             <button
               onClick={() => navigate('/technology')}
               className="inline-flex items-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100 hover:border-blue-400 hover:text-blue-800 transition-all duration-200"
             >
-              View All
+              {t('viewAll', { defaultValue: 'View All' })}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>

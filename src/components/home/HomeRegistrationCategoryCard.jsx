@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
 import {
   Briefcase, Building2, Car, Clapperboard, Copyright, Cpu,
   Factory, FlaskConical, Globe, GraduationCap, HardHat, HeartPulse,
@@ -43,10 +44,14 @@ export const CATEGORY_ICONS = {
 
 export default function HomeRegistrationCategoryCard({ category, variant = 'marquee' }) {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const Icon = CATEGORY_ICONS[category.slug] || Briefcase;
   const tone = toneForSlug(category.slug || '');
   const [copied, setCopied] = useState(false);
-  const price = category.price || '₹999';
+  const slugPascal = (category.slug || '').charAt(0).toUpperCase() + (category.slug || '').slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+  const displayName = t('regCatName' + slugPascal, { defaultValue: category.label });
+  const displayDesc = t('regCatDesc' + slugPascal, { defaultValue: category.description || '' });
+  const priceNumeric = category.priceNumeric || 0;
 
   const handleShare = useCallback((e) => {
     e.preventDefault();
@@ -115,16 +120,16 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
             <p className="reg-category-card__kicker">{t('regCatalogKicker')}</p>
           )}
 
-          <h3 className="reg-category-card__title">{category.label}</h3>
+          <h3 className="reg-category-card__title">{displayName}</h3>
 
-          {category.description && variant === 'catalog' && (
-            <p className="reg-category-card__desc">{category.description}</p>
+          {displayDesc && variant === 'catalog' && (
+            <p className="reg-category-card__desc">{displayDesc}</p>
           )}
 
           {variant === 'marquee' && (category.highlights || []).length > 0 && (
             <ul className="reg-category-card__points">
-              {category.highlights.slice(0, 3).map((point) => (
-                <li key={point}>{point}</li>
+              {category.highlights.slice(0, 3).map((point, idx) => (
+                <li key={point}>{t('regCatHighlight' + slugPascal + idx, { defaultValue: point })}</li>
               ))}
             </ul>
           )}
@@ -132,7 +137,7 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
 
         <div className="reg-category-card__footer">
           <span className="reg-category-card__cta">
-            {price}
+            {priceNumeric > 0 ? formatPrice(priceNumeric) : '₹999'}
             <ArrowUpRight size={20} strokeWidth={2.25} aria-hidden />
           </span>
         </div>

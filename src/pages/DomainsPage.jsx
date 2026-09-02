@@ -415,7 +415,11 @@ export default function DomainsPage() {
                     setDetailTarget(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
                     setBuyTarget(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
                     setSuccessDomain(prev => (prev?.id === normalizedSaved.id ? { ...prev, ...normalizedSaved } : prev));
-                    setGlobalNotice(`Saved ${normalizedSaved.domainName}${normalizedSaved.domainExtension} at ${formatInr(normalizedSaved.askingPrice)}.`);
+                    setGlobalNotice(t('domainsPageSavedNotice', {
+                      defaultValue: 'Saved {{domain}} at {{price}}.',
+                      domain: `${normalizedSaved.domainName}${normalizedSaved.domainExtension}`,
+                      price: formatInr(normalizedSaved.askingPrice),
+                    }));
                     setEditTarget(null);
                   } else {
                     setAllDomains(prev => [normalizedSaved, ...prev]);
@@ -2118,7 +2122,7 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
             <span>{t('domainsPageTotalLabel')}</span>
             <span>{formatPrice(totalPrice)}</span>
           </div>
-          <p className="text-[0.7rem] text-gray-500 mt-1">Inclusive of applicable taxes</p>
+          <p className="text-[0.7rem] text-gray-500 mt-1">{t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}</p>
         </div>
 
         <EdgePointsRedeemToggle
@@ -2235,7 +2239,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
 
         <button
           type="button"
-          aria-label="Close"
+            aria-label={t('close', { defaultValue: 'Close' })}
           className="absolute top-4 right-4 sm:top-5 sm:right-5 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 border border-gray-200 text-gray-500 hover:text-gray-900 shadow-sm transition-colors"
           onClick={(e) => {
             e.stopPropagation();
@@ -2269,7 +2273,9 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                 )}
                 {!isAuction && (
                   <span className="px-2.5 py-1 rounded-md text-[0.7rem] font-bold uppercase tracking-widest" style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
-                    {d.domainStatus}
+                    {t(`domainStatus${String(d.domainStatus || '').toLowerCase().replace(/(^|_)([a-z])/g, (_, __, ch) => ch.toUpperCase())}`, {
+                      defaultValue: String(d.domainStatus || '').replace(/_/g, ' '),
+                    })}
                   </span>
                 )}
               </div>
@@ -2295,7 +2301,9 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                   <>
                     <div className="flex flex-col justify-center p-4 rounded-[16px] bg-emerald-50/80 border border-emerald-100">
                       <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">
-                        {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Minimum Bid'}
+                        {auction.currentHighestBid > 0
+                          ? t('domainsPageHighestBid', { defaultValue: 'Highest Bid' })
+                          : t('domainsPageMinimumBid', { defaultValue: 'Minimum Bid' })}
                       </div>
                       <div className="text-2xl font-black text-emerald-700">
                         {auction.currentHighestBid > 0
@@ -2304,16 +2312,20 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                       </div>
                     </div>
                     <div className="flex flex-col justify-center p-4 rounded-[16px] bg-gray-50/80 border border-gray-200">
-                      <div className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Bids</div>
+                      <div className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-widest mb-1">
+                        {t('domainsPageTotalBids', { defaultValue: 'Total Bids' })}
+                      </div>
                       <div className="text-xl font-bold text-gray-900">{auction.totalBids}</div>
                     </div>
                   </>
                 ) : (
                   <div className="flex flex-col justify-center p-4 rounded-[16px] bg-emerald-50/80 border border-emerald-100 sm:col-span-2">
-                    <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">Price</div>
+                    <div className="text-[0.7rem] font-bold text-emerald-700 uppercase tracking-widest mb-1">
+                      {t('domainsPagePriceLabel', { defaultValue: 'Price' })}
+                    </div>
                     <div className="text-3xl font-black text-emerald-700 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                       <span>{formatPrice(listingBuyerPayable(d))}</span>
-                      <span className="text-sm font-semibold text-emerald-600/70">Inclusive of applicable taxes</span>
+                      <span className="text-sm font-semibold text-emerald-600/70">{t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}</span>
                     </div>
                   </div>
                 )}
@@ -2386,7 +2398,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                     <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600 shadow-sm">
                       {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
                     </div>
-                    <div className="font-bold text-gray-900 text-sm">
+                    <div className="font-bold text-gray-900 text-sm" translate="no">
                       {d.listedBy.firstname} {d.listedBy.lastname}
                     </div>
                   </div>

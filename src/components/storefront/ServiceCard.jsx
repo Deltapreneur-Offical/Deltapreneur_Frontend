@@ -1,5 +1,6 @@
 import { CheckCircle2, ArrowRight } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
 import NoDomainsOverlay from './NoDomainsOverlay';
 
 /** Strip trailing unit suffix from API labels like "From ₹708 / yr" so the unit shows once. */
@@ -8,19 +9,23 @@ function splitCardPrice(price, unit) {
   const cleaned = raw.replace(/\s*\/\s*(yr|year|mo|month|setup)\s*$/i, '').trim() || raw;
 
   if (/^free(\s+setup)?$/i.test(cleaned)) {
-    return { amount: 'Free', unitLabel: 'setup' };
+    return { amount: 'Free', unitLabel: 'setup', isFree: true, numericInr: 0 };
   }
+
+  // Extract numeric INR value from strings like "From ₹717" or "₹103"
+  const numMatch = cleaned.replace(/[^\d.]/g, '');
+  const numericInr = numMatch ? parseFloat(numMatch) : null;
 
   const unitWords = { yr: 'year', month: 'month', setup: 'setup' };
   return {
     amount: cleaned,
     unitLabel: `per ${unitWords[unit] || unit}`,
+    numericInr,
+    isFree: false,
   };
 }
 
-function fmtInr(n) {
-  return n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '—';
-}
+
 
 export default function ServiceCard({
   icon,
@@ -37,15 +42,24 @@ export default function ServiceCard({
   noDomainsOverlay = false,
   children,
 }) {
-  const { amount, unitLabel } = splitCardPrice(price, unit);
+  const { t } = useTranslation();
+  const { formatPrice, formatDomainPrice } = useCurrency();
+  const { amount, unitLabel: rawUnitLabel, numericInr, isFree } = splitCardPrice(price, unit);
+  const displayPrice = isFree ? t('serviceFreePrice', { defaultValue: 'Free' }) : (numericInr != null ? formatDomainPrice(numericInr) : amount);
+  // Translate unit labels
+  const unitTranslations = {
+    'per year': t('servicePerYear', { defaultValue: 'per year' }),
+    'per month': t('servicePerMonth', { defaultValue: 'per month' }),
+    'per setup': t('servicePerSetup', { defaultValue: 'per setup' }),
+  };
+  const unitLabel = unitTranslations[rawUnitLabel] || rawUnitLabel;
   const showNeedsDomainHint = !hasDomains && name !== 'Domain Transfer';
 
   const renderTldRow = ([tld, value]) => (
-    <div key={tld} className="flex items-center justify-between text-[10.5px]">
-      <span className="font-mono font-bold text-gray-700">{tld}</span>
+    <div key={tld} className="flex items-center justify-between text-[10.5px]">        <span className="font-mono font-bold text-gray-700">{tld}</span>
       <span className="font-semibold text-gray-500">
-        {fmtInr(value)}
-        <span className="text-[9px] text-gray-400">/yr</span>
+        {formatDomainPrice(value)}
+        <span className="text-[9px] text-gray-400">/{t('servicePerYearShort', { defaultValue: 'yr' })}</span>
       </span>
     </div>
   );
@@ -78,7 +92,7 @@ export default function ServiceCard({
           <h3 className="text-[15px] font-bold leading-snug text-gray-900">{name}</h3>
           {showNeedsDomainHint && (
             <span className="mt-1 inline-block rounded-full border border-[#93C5FD] bg-[#EFF6FF] px-2 py-0.5 text-[9px] font-bold text-[#0E7ACD]">
-              Needs an Active Domain
+              {t('serviceNeedsDomain', { defaultValue: 'Needs an Active Domain' })}
             </span>
           )}
         </div>
@@ -97,12 +111,12 @@ export default function ServiceCard({
 
         {bullets.length > 0 && (
           <ul className="flex-1 space-y-2">
-            {bullets.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-[12px] font-medium text-gray-600">
+            {bullets.map((b, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-[12px] font-medium text-gray-600">
                 <CheckCircle2
                   className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#1EA7FD]"
                 />
-                <span>{b}</span>
+                <span>{typeof b === 'string' ? b : JSON.stringify(b)}</span>
               </li>
             ))}
           </ul>
@@ -113,7 +127,7 @@ export default function ServiceCard({
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 overflow-hidden">
             <p className="text-[13px] font-bold leading-tight text-gray-900 tabular-nums">
-              {amount}
+              {displayPrice}
             </p>
             <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-400">
               {unitLabel}
@@ -124,7 +138,7 @@ export default function ServiceCard({
             onClick={onConfigure}
             className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-xl bg-black px-3 text-[11px] font-semibold text-white shadow-sm transition-all select-none hover:bg-neutral-900 active:scale-95"
           >
-            {isActive ? 'Hide Panel' : 'Configure'}
+            {isActive ? t('serviceHidePanel', { defaultValue: 'Hide Panel' }) : t('serviceConfigure', { defaultValue: 'Configure' })}
             <ArrowRight
               className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5"
               aria-hidden="true"

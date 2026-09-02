@@ -57,7 +57,7 @@ function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel, au
         <div className="domain-listing-card__price-text min-w-0 flex items-center gap-1.5">
           <Gavel size={14} className="shrink-0 text-indigo-600" />
           <span className="domain-listing-card__price-value truncate font-semibold text-indigo-600">
-            {auctionLabel || 'On Live Auction'}
+            {auctionLabel}
           </span>
         </div>
       ) : amount ? (
@@ -248,10 +248,10 @@ export default function DomainListingCard({
               type="button"
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white p-0 text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
               onClick={toggleOwnerMenu}
-              aria-label="Listing actions"
+              aria-label={t('listingActions', { defaultValue: 'Listing actions' })}
               aria-haspopup="menu"
               aria-expanded={ownerMenuOpen}
-              title="Listing actions"
+              title={t('listingActions', { defaultValue: 'Listing actions' })}
             >
               <MoreVertical size={16} strokeWidth={2} />
             </button>
@@ -307,19 +307,19 @@ export default function DomainListingCard({
                   stop(e);
                   onPutForAuction();
                 }}
-                title="Start Auction"
+                title={t('startAuction', { defaultValue: 'Start Auction' })}
               >
                 <Gavel size={13} className="shrink-0" />
-                <span className="truncate">Start Auction</span>
+                <span className="truncate">{t('startAuction', { defaultValue: 'Start Auction' })}</span>
               </button>
             )}
             {isAuction && (
               <span
                 className={`${PRIMARY_BTN} min-w-0 cursor-default border border-indigo-200 bg-indigo-50 text-indigo-500 inline-flex items-center justify-center gap-1.5`}
-                title="In Auction"
+                title={t('inAuction', { defaultValue: 'In Auction' })}
               >
                 <Gavel size={13} className="shrink-0" />
-                <span className="truncate">In Auction</span>
+                <span className="truncate">{t('inAuction', { defaultValue: 'In Auction' })}</span>
               </span>
             )}
           </div>
@@ -425,7 +425,7 @@ export default function DomainListingCard({
               onClick={stop}
             >
               <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('shareVia', { defaultValue: 'Share via' })}</span>
               </div>
               {[
                 ['LinkedIn', linkedinShare],
@@ -455,7 +455,11 @@ export default function DomainListingCard({
                     : 'bg-gray-50 text-gray-400 border-gray-200'
               }`}
             >
-              {statusKey === 'AVAILABLE' ? '\u2713 Available' : statusKey === 'SOLD' ? 'Sold' : 'Unavailable'}
+              {statusKey === 'AVAILABLE'
+                ? `\u2713 ${t('listingCardAvailable', { defaultValue: 'Available' })}`
+                : statusKey === 'SOLD'
+                  ? t('listingCardSold', { defaultValue: 'Sold' })
+                  : t('listingCardUnavailable', { defaultValue: 'Unavailable' })}
             </span>
             <RegistryStandardBadge />
           </div>
@@ -464,14 +468,14 @@ export default function DomainListingCard({
             className="domain-search-card__name m-0 min-w-0 max-w-full font-bold leading-snug text-slate-700"
             title={display.fullDomain}
           >
-            <span>{display.name}</span>
+            <span translate="no">{display.name}</span>
             {display.ext?.full ? (
-              <span className="text-sky-700">{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
+              <span translate="no" className="text-sky-700">{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
             ) : null}
           </p>
 
           {/* Standard Domain label */}
-          <p className="text-[11px] font-semibold text-sky-800/80">Standard Domain</p>
+          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
 
           {priceText ? (
             <>
@@ -482,11 +486,11 @@ export default function DomainListingCard({
                 <span className="domain-search-card__price-value">{priceText}</span>
               </p>
               <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5">
-                Inclusive of applicable taxes
+                {t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}
               </p>
             </>
           ) : (
-            <p className="text-xs font-semibold text-gray-400">Price unavailable</p>
+            <p className="text-xs font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
           )}
         </div>
 
@@ -498,7 +502,7 @@ export default function DomainListingCard({
               className="inline-flex w-fit min-w-[8.5rem] items-center gap-1.5 px-4 py-2.5 rounded-lg font-bold text-sm bg-sky-500 text-white hover:bg-sky-600 transition-colors whitespace-nowrap"
               onClick={(e) => { stop(e); onViewAuction?.(); }}
             >
-              <Gavel size={13} className="shrink-0" /> On Live Auction →
+              <Gavel size={13} className="shrink-0" /> {t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })} →
             </button>
           ) : canBuy ? (
             <AddToCartButton
@@ -563,15 +567,15 @@ export default function DomainListingCard({
               display: 'block',
             }}
           >
-            <span>{display.name}</span>
+            <span translate="no">{display.name}</span>
             {display.ext?.full ? (
-              <span className="domain-listing-card__tld">{display.ext.full}</span>
+              <span translate="no" className="domain-listing-card__tld">{display.ext.full}</span>
             ) : null}
           </p>
           {domain.verified ? (
             <img
               src={verifiedIcon}
-              alt="Verified"
+              alt={t('verified', { defaultValue: 'Verified' })}
               className="domain-listing-card__verified-badge"
             />
           ) : null}
@@ -588,7 +592,7 @@ export default function DomainListingCard({
             />
             {!isAuction && Number(listingBuyerPayable(domain)) > 0 ? (
               <p className="mt-1 text-[11px] font-medium text-gray-400 leading-snug">
-                Inclusive of applicable taxes
+                {t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}
               </p>
             ) : null}
           </div>

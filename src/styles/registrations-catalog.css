@@ -93,6 +93,26 @@
   color: #0369a1;
 }
 
+.reg-category-card__cta-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  margin-top: auto;
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 50%;
+  background: #0059a4;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  flex-shrink: 0;
+}
+
+.reg-category-card:hover .reg-category-card__cta-arrow,
+.reg-category-card:focus-visible .reg-category-card__cta-arrow {
+  background: #00457f;
+}
+
 .reg-category-card--marquee {
   min-height: 16.75rem;
   padding: 1.2rem 1.15rem 1.05rem;
@@ -901,6 +921,20 @@
   background: #0059a4;
   color: #ffffff;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.reg-mini-card--skeleton {
+  min-height: 16.5rem;
+  pointer-events: none;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: reg-mini-card-skeleton 1.2s ease-in-out infinite;
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes reg-mini-card-skeleton {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 
 .reg-mini-card__icon {

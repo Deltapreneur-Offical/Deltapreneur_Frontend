@@ -9,13 +9,8 @@ import {
   Hotel, Landmark, Leaf, Monitor, Plane, Radio, Receipt, Rocket,
   Shield, ShoppingBag, Truck, Users, UtensilsCrossed, Wheat, Zap,
 } from 'lucide-react';
-import {
-  getStaticHubRegistrarCategories,
-  mapPublicHubRegistrarCategory,
-} from '../../utils/operationsCategories';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
-import { hubRegistrarCategoryAPI } from '../../api/services';
-import { asArray } from '../../utils/asArray';
+import { usePublicHubRegistrarCategories } from '../../context/CategoryContext';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/registrations-catalog.css';
 
@@ -33,7 +28,6 @@ const CATEGORY_ICONS = {
   employer_labour: Users, environmental: Leaf, digital_services: Monitor,
 };
 
-const STATIC_CATEGORIES = getStaticHubRegistrarCategories();
 const EMPTY_MESSAGE = 'No category found. Check back soon, we are working on it.';
 
 export default function HomeRegistrationsSection() {
@@ -41,28 +35,11 @@ export default function HomeRegistrationsSection() {
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [allCategories, setAllCategories] = useState(STATIC_CATEGORIES);
+  const { categories: allCategories, fetched } = usePublicHubRegistrarCategories();
   const rowWrapRef = useRef(null);
   const suppressCardClickRef = useRef(false);
   const navigate = useNavigate();
-
-  // Same public Hub Registrar Categories API as admin + /registrations.
-  useEffect(() => {
-    let cancelled = false;
-    hubRegistrarCategoryAPI
-      .list()
-      .then(({ data }) => {
-        if (cancelled) return;
-        const items = asArray(data)
-          .map(mapPublicHubRegistrarCategory)
-          .filter((cat) => cat.slug && cat.label);
-        if (items.length) setAllCategories(items);
-      })
-      .catch(() => {
-        // Keep static fallback so the homepage still renders.
-      });
-    return () => { cancelled = true; };
-  }, []);
+  const waitingForCategories = !fetched && allCategories.length === 0;
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
@@ -373,7 +350,19 @@ export default function HomeRegistrationsSection() {
             </div>
           </div>
         </header>
-        {filteredCategories.length === 0 ? (
+        {waitingForCategories ? (
+          <div className="reg-cards-row-wrap" aria-busy="true" aria-label="Loading categories">
+            <HomePreviewRow className="reg-cards-preview-row">
+              {[0, 1, 2, 3, 4].map((key) => (
+                <HomePreviewRowItem key={key}>
+                  <div className="reg-mini-card-wrapper">
+                    <div className="reg-mini-card reg-mini-card--skeleton" />
+                  </div>
+                </HomePreviewRowItem>
+              ))}
+            </HomePreviewRow>
+          </div>
+        ) : filteredCategories.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{EMPTY_MESSAGE}</p>
         ) : (
           <div

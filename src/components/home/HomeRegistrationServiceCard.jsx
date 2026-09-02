@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Share2, Check } from 'lucide-react';
+import { ArrowRight, Share2, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { operationsPathForHubRegistrarService } from '../../utils/operationsSections';
 import useCurrency from '../../context/CurrencyContext';
@@ -81,9 +81,8 @@ export default function HomeRegistrationServiceCard({ categorySlug, service }) {
             </div>
           )}
         </div>
-        <span className="reg-category-card__cta">
-          {t('regCatalogCardExplore')}
-          <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden />
+        <span className="reg-category-card__cta-arrow" aria-hidden>
+          <ArrowRight size={18} strokeWidth={2.5} />
         </span>
       </Link>
     </div>

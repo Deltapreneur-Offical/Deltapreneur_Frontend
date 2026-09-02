@@ -199,6 +199,52 @@ export function mapPublicHubRegistrarCategory(cat) {
   };
 }
 
+const HUB_REGISTRAR_CACHE_KEY = 'hr_public_categories_v1';
+const SAFE_CACHED_SLUG = /^[a-zA-Z0-9_-]{1,64}$/;
+
+function sanitizeCachedCategory(row) {
+  if (!row || typeof row !== 'object') return null;
+  const slug = String(row.slug || '').trim();
+  const label = String(row.label || '').trim();
+  if (!SAFE_CACHED_SLUG.test(slug) || !label) return null;
+  const highlights = Array.isArray(row.highlights)
+    ? row.highlights.filter((item) => typeof item === 'string').slice(0, 6)
+    : (HUB_REGISTRAR_CATEGORY_HIGHLIGHTS[slug] || []);
+  return {
+    slug,
+    label,
+    description: typeof row.description === 'string' ? row.description : '',
+    price: typeof row.price === 'string' && row.price ? row.price : formatHubRegistrarStartingPrice(row.priceNumeric),
+    priceNumeric: Number(row.priceNumeric) || 0,
+    highlights,
+  };
+}
+
+/** Last successful public category list — used so homepage never flashes hardcoded ₹1 titles. */
+export function readCachedHubRegistrarCategories() {
+  try {
+    if (typeof window === 'undefined') return [];
+    const raw = window.localStorage.getItem(HUB_REGISTRAR_CACHE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(sanitizeCachedCategory).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+export function writeCachedHubRegistrarCategories(items) {
+  try {
+    if (typeof window === 'undefined') return;
+    const safe = (items || []).map(sanitizeCachedCategory).filter(Boolean);
+    if (!safe.length) return;
+    window.localStorage.setItem(HUB_REGISTRAR_CACHE_KEY, JSON.stringify(safe));
+  } catch {
+    // Private mode / quota — ignore.
+  }
+}
+
 const HUB_REGISTRAR_KNOWN_VALUES = new Set(
   HUB_REGISTRAR_CATEGORY_OPTIONS.map((opt) => opt.value).filter((value) => value !== 'other'),
 );

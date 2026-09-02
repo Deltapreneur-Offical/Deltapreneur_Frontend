@@ -11,12 +11,11 @@ import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import {
   getHubRegistrarSubcategories,
-  getStaticHubRegistrarCategories,
-  mapPublicHubRegistrarCategory,
   matchServicePriceFromApi,
 } from '../utils/operationsCategories';
-import { operationsAPI, hubRegistrarCategoryAPI } from '../api/services';
+import { operationsAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
+import { usePublicHubRegistrarCategories } from '../context/CategoryContext';
 import { REGISTRATIONS_PAGE_PATH } from '../utils/operationsSections';
 import '../styles/registrations-catalog.css';
 
@@ -60,8 +59,7 @@ export default function RegistrationsPage() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [apiServices, setApiServices] = useState([]);
-  const [allCategories, setAllCategories] = useState(getStaticHubRegistrarCategories());
-  const [categoriesReady, setCategoriesReady] = useState(false);
+  const { categories: allCategories, fetched: categoriesReady } = usePublicHubRegistrarCategories();
   const { isScrolled, navRef } = useHomePageScrollNav();
 
   // Fetch operations services from backend (single source of truth for prices)
@@ -74,27 +72,6 @@ export default function RegistrationsPage() {
       })
       .catch(() => {
         if (!cancelled) setApiServices([]);
-      });
-    return () => { cancelled = true; };
-  }, []);
-
-  // Fetch categories from API on mount — replaces static fallback with live data
-  useEffect(() => {
-    let cancelled = false;
-    hubRegistrarCategoryAPI
-      .list()
-      .then(({ data }) => {
-        if (cancelled) return;
-        const items = asArray(data)
-          .map(mapPublicHubRegistrarCategory)
-          .filter((cat) => cat.slug && cat.label);
-        if (items.length) setAllCategories(items);
-      })
-      .catch(() => {
-        // Keep static fallback on API failure
-      })
-      .finally(() => {
-        if (!cancelled) setCategoriesReady(true);
       });
     return () => { cancelled = true; };
   }, []);

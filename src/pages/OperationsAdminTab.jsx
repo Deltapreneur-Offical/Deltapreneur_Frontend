@@ -161,6 +161,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState(null);
   const [deleteCategoryLoading, setDeleteCategoryLoading] = useState(false);
+  const categoryFormRef = useRef(null);
 
   useEffect(() => {
     const section = searchParams.get('section');
@@ -177,6 +178,16 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
       setActivePartitionId(section);
     }
   }, [searchParams, setSearchParams]);
+
+  // Scroll to category form when it opens or switches category
+  const categoryFormKey = showCategoryForm ? (editingCategory?.id || 'add') : null;
+  useEffect(() => {
+    if (categoryFormKey && categoryFormRef.current) {
+      requestAnimationFrame(() => {
+        categoryFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [categoryFormKey]);
 
   const handlePartitionChange = (nextPartitionId) => {
     setActivePartitionId(nextPartitionId);
@@ -955,7 +966,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
               </div>
 
               {showCategoryForm && (
-                <div className="operations-admin-modal-overlay" onClick={() => !categorySubmitting && resetCategoryForm()}>
+                <div key={categoryFormKey} ref={categoryFormRef} className="operations-admin-modal-overlay" onClick={() => !categorySubmitting && resetCategoryForm()}>
                   <div className="operations-admin-modal" onClick={(e) => e.stopPropagation()}>
                     <h3>{editingCategory ? 'Edit Main Category' : 'Add New Main Category'}</h3>
                     <form onSubmit={handleCategorySubmit} className="operations-admin-modal-form">

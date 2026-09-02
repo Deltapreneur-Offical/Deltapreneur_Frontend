@@ -823,9 +823,29 @@
 }
 
 .reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-title {
-  max-width: 11.5em;
-  font-size: clamp(2rem, 4.2vw, 3.15rem);
-  line-height: 1.12;
+  max-width: 18.5em;
+  font-size: clamp(1.65rem, 2.35vw, 2.15rem);
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: -0.03em;
+}
+
+.reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-title__lead,
+.reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-title__accent {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-title__lead,
+  .reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-title__accent {
+    white-space: nowrap;
+  }
+}
+
+.reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-title__spark {
+  top: auto;
+  bottom: 0.28em;
+  right: -0.9em;
 }
 
 .reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-lead {
@@ -1046,7 +1066,7 @@
 @media (min-width: 900px) {
   .reg-catalog-hero.reg-catalog-hero--browse .reg-catalog-hero-inner {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.2fr) minmax(17rem, 0.8fr);
     column-gap: 3rem;
     align-items: center;
   }

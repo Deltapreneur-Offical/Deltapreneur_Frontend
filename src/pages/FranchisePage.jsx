@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle, Building2, GraduationCap, Monitor, Megaphone, Users, FileText, MapPin, Briefcase, AlertCircle, Send, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { operationsAPI, franchiseApplicationAPI } from '../api/services';
+import { asArray } from '../utils/asArray';
+import { unwrapApiData } from '../utils/apiResponse';
 import '../styles/franchise-page.css';
 
 import {
@@ -61,7 +63,14 @@ export default function FranchisePage() {
   };
 
   useEffect(() => {
-    operationsAPI.list({ serviceType: 'compliance' }).then(({ data }) => { if (data?.success) setServices(data.data || []); }).catch(() => {});
+    operationsAPI
+      .list({ serviceType: 'compliance' })
+      .then((response) => {
+        setServices(asArray(unwrapApiData(response) ?? response?.data));
+      })
+      .catch(() => {
+        setServices([]);
+      });
   }, []);
 
   const handleChange = (e) => {
@@ -185,7 +194,7 @@ export default function FranchisePage() {
           <PageReveal>
             <h2 className="franchise-section-title">What You Get</h2>
           </PageReveal>
-          <PageStagger className="franchise-benefits-grid">
+          <PageStagger className="franchise-benefits-grid" mount>
             {BENEFITS.map((b, i) => (
               <PageStaggerItem key={i} hover>
                 <div className="franchise-benefit-card">
@@ -206,7 +215,7 @@ export default function FranchisePage() {
               <h2 className="franchise-section-title">HubRegistrar Services</h2>
               <p className="franchise-section-subtitle">These are the services you will be able to offer as a HubRegistrar franchise partner.</p>
             </PageReveal>
-            <PageStagger className="franchise-services-grid">
+            <PageStagger className="franchise-services-grid" mount>
               {services.map((service) => (
                 <PageStaggerItem key={service.id} hover>
                   <div className="franchise-service-card">

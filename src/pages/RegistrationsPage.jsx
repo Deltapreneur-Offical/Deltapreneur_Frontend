@@ -214,7 +214,9 @@ export default function RegistrationsPage() {
             <h1 className="reg-catalog-title">
               {showingServices ? selectedCategory.label : (
                 <>
-                  {t('regCatalogHeroTitle')}
+                  <span className="reg-catalog-title__lead">
+                    {t('regCatalogHeroTitle')}
+                  </span>
                   <span className="reg-catalog-title__accent">
                     {t('regCatalogHeroTitleAccent')}
                   </span>

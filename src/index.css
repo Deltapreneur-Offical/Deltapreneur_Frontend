@@ -1,3 +1,87 @@
+.premium-domain-pill {
+  isolation: isolate;
+  overflow: visible;
+  border: 1px solid rgba(217, 154, 0, 0.46);
+  box-shadow: 0 0 0 1px rgba(217, 154, 0, 0.08), 0 0 14px rgba(217, 154, 0, 0.18);
+}
+
+.premium-domain-pill__label {
+  color: #6b7280;
+  background: linear-gradient(100deg, #6b7280 0%, #6b7280 38%, #a16207 50%, #d99a00 62%, #6b7280 78%, #6b7280 100%);
+  background-size: 240% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: premium-domain-text-glow 5.6s ease-in-out infinite;
+}
+
+.premium-domain-pill::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  border: 1px solid rgba(217, 154, 0, 0.2);
+}
+
+.premium-domain-pill::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  inset: -1px;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--premium-domain-angle),
+    transparent 0deg 335deg,
+    rgba(217, 154, 0, 0.18) 343deg,
+    rgba(217, 154, 0, 0.62) 351deg,
+    #fff7cc 356deg,
+    #ffffff 358deg,
+    rgba(217, 154, 0, 0.38) 360deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: premium-domain-border-trace 2.8s linear infinite;
+}
+
+@property --premium-domain-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: -90deg;
+}
+
+@keyframes premium-domain-border-trace {
+  to { --premium-domain-angle: 270deg; }
+}
+
+@keyframes premium-domain-text-glow {
+  0%, 22%, 100% {
+    background-position: 100% 0;
+  }
+  52%, 72% {
+    background-position: 0% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-domain-pill::after {
+    animation: none;
+    opacity: 0.75;
+  }
+
+  .premium-domain-pill__label {
+    animation: none;
+    color: #a16207;
+    -webkit-text-fill-color: currentColor;
+  }
+}
 /* ═══════════════════════════════════════════════════════
    CoBrother Design System — Dark Luxury / Editorial
    ═══════════════════════════════════════════════════════ */

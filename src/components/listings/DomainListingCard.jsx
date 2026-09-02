@@ -151,7 +151,7 @@ export default function DomainListingCard({
       try {
         await navigator.share({
           title: `Domain: ${display.fullDomain}`,
-          text: `Check out this premium Domain listed on HubRegistrar!\n\n${shareUrl}`,
+          text: shareText,
           url: shareUrl,
         });
         return;
@@ -183,12 +183,13 @@ export default function DomainListingCard({
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = display.fullDomain;
   const shareSubject = `Premium Domain Listing Available on HubRegistrar: ${domainName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on HubRegistrar.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on HubRegistrar, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via HubRegistrar]`;
+  const shareText = `🚀 Check out ${domainName} on HubRegistrar!\n\n✦ Premium Domain\n✅ Available\n💰 ${formatPrice(priceAmount)}\n\nA premium domain name listed for sale on HubRegistrar.`;
+  const shareBody = `${shareText}\n\n🔗 ${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareSubject + '\n\n' + shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent('Check out this premium Domain listed on HubRegistrar!\n\n' + shareUrl)}`;
+  const twitterShare = `https://x.com/intent/tweet?text=${encodeURIComponent(shareBody)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareBody)}`;
   const gmailShare = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
   const emailShare = `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareBody)}`;
 

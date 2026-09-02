@@ -218,7 +218,7 @@ export default function DomainsPage() {
     resetPageWhen: activeTab,
   }), [activeTab]);
 
-  const showcaseFilter = useFilterSort(showcaseFilterItems, showcaseFilterConfig, 60, showcaseFilterOptions);
+  const showcaseFilter = useFilterSort(showcaseFilterItems, showcaseFilterConfig, 20, showcaseFilterOptions);
 
   // Shared FilterBar wiring — values come from the marketplace hook (both stay
   // in sync because every handler below updates both hooks).
@@ -253,6 +253,11 @@ export default function DomainsPage() {
 
   const handlePageChange = (newPage) => {
     marketplaceFilter.setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleShowcasePageChange = (newPage) => {
+    showcaseFilter.setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -812,6 +817,8 @@ export default function DomainsPage() {
                       ))}
                     </div>
                   )}
+                  <Pagination page={showcaseFilter.page} totalPages={showcaseFilter.totalPages}
+                    onPage={handleShowcasePageChange} totalCount={showcaseFilter.totalCount} pageSize={20} />
                 </div>
               ) : (
                 <div className="text-center py-14 text-sm text-gray-500">
@@ -908,13 +915,17 @@ export default function DomainsPage() {
                             <p>{activeFilterCount > 0 ? 'No premium domains match your filters.' : 'No premium domains are currently showcased.'}</p>
                           </div>
                         ) : (
-                          <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
-                            {showcaseFilter.filtered.map((d) => (
-                              <ListingCardShell key={d.showcaseId}>
-                                <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
-                              </ListingCardShell>
-                            ))}
-                          </div>
+                          <>
+                            <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
+                              {showcaseFilter.paginated.map((d) => (
+                                <ListingCardShell key={d.showcaseId}>
+                                  <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
+                                </ListingCardShell>
+                              ))}
+                            </div>
+                            <Pagination page={showcaseFilter.page} totalPages={showcaseFilter.totalPages}
+                              onPage={handleShowcasePageChange} totalCount={showcaseFilter.totalCount} pageSize={20} />
+                          </>
                         )}
                       </div>
                     </section>
@@ -1000,12 +1011,14 @@ export default function DomainsPage() {
                   </span>
                 </div>
                 <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {showcaseFilter.filtered.map((d) => (
+                  {showcaseFilter.paginated.map((d) => (
                     <ListingCardShell key={d.showcaseId}>
                       <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                     </ListingCardShell>
                   ))}
                 </div>
+                <Pagination page={showcaseFilter.page} totalPages={showcaseFilter.totalPages}
+                  onPage={handleShowcasePageChange} totalCount={showcaseFilter.totalCount} pageSize={20} />
               </div>
             )}
 

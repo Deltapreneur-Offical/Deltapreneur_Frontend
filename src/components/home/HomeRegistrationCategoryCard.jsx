@@ -132,8 +132,8 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
 
         <div className="reg-category-card__footer">
           <span className="reg-category-card__cta">
-            Starts from {price}
-            <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden />
+            {price}
+            <ArrowUpRight size={20} strokeWidth={2.25} aria-hidden />
           </span>
         </div>
       </Link>

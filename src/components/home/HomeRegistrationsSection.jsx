@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import bulletpointTick from '../../assets/bulletpointtick.png';
 import cardTickLightBlue from '../../assets/cardticklightblue.png';
@@ -9,13 +9,8 @@ import {
   Hotel, Landmark, Leaf, Monitor, Plane, Radio, Receipt, Rocket,
   Shield, ShoppingBag, Truck, Users, UtensilsCrossed, Wheat, Zap,
 } from 'lucide-react';
-import {
-  getStaticHubRegistrarCategories,
-  mapPublicHubRegistrarCategory,
-} from '../../utils/operationsCategories';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
-import { hubRegistrarCategoryAPI } from '../../api/services';
-import { asArray } from '../../utils/asArray';
+import { usePublicHubRegistrarCategories } from '../../context/CategoryContext';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/registrations-catalog.css';
 
@@ -33,7 +28,6 @@ const CATEGORY_ICONS = {
   employer_labour: Users, environmental: Leaf, digital_services: Monitor,
 };
 
-const STATIC_CATEGORIES = getStaticHubRegistrarCategories();
 const EMPTY_MESSAGE = 'No category found. Check back soon, we are working on it.';
 
 export default function HomeRegistrationsSection() {
@@ -41,26 +35,11 @@ export default function HomeRegistrationsSection() {
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [allCategories, setAllCategories] = useState(STATIC_CATEGORIES);
+  const { categories: allCategories, fetched } = usePublicHubRegistrarCategories();
   const rowWrapRef = useRef(null);
-
-  // Same public Hub Registrar Categories API as admin + /registrations.
-  useEffect(() => {
-    let cancelled = false;
-    hubRegistrarCategoryAPI
-      .list()
-      .then(({ data }) => {
-        if (cancelled) return;
-        const items = asArray(data)
-          .map(mapPublicHubRegistrarCategory)
-          .filter((cat) => cat.slug && cat.label);
-        if (items.length) setAllCategories(items);
-      })
-      .catch(() => {
-        // Keep static fallback so the homepage still renders.
-      });
-    return () => { cancelled = true; };
-  }, []);
+  const suppressCardClickRef = useRef(false);
+  const navigate = useNavigate();
+  const waitingForCategories = !fetched && allCategories.length === 0;
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
@@ -142,14 +121,14 @@ export default function HomeRegistrationsSection() {
     if (firstCard) resizeObserver?.observe(firstCard);
     window.addEventListener('resize', updateNavState);
 
-    // Hover + move cursor (no click needed) and click-drag both scroll the
-    // row. Touch keeps native swipe. Card clicks still work unless the
-    // pointer actually dragged.
+    // Click-drag scrolls the row. A plain click must still open the card.
+    // Do not mark the row as dragging (or capture the pointer) until the
+    // pointer actually moves — otherwise the card Link never receives click.
     let pointerId = null;
     let startX = 0;
     let startScroll = 0;
     let dragged = false;
-    let hoverX = null;
+    let capturing = false;
 
     const onPointerDown = (e) => {
       if (e.pointerType === 'touch') return;
@@ -158,45 +137,33 @@ export default function HomeRegistrationsSection() {
       startX = e.clientX;
       startScroll = el.scrollLeft;
       dragged = false;
-      hoverX = null;
-      el.classList.add('reg-cards-preview-row--dragging');
-      if (el.setPointerCapture) {
-        try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
-      }
+      capturing = false;
+      suppressCardClickRef.current = false;
     };
 
     const onPointerMove = (e) => {
       if (e.pointerType === 'touch') return;
-      if (e.target.closest('.reg-cards-nav')) return;
-
-      if (pointerId !== null && e.pointerId === pointerId) {
-        const dx = e.clientX - startX;
-        if (!dragged && Math.abs(dx) < 6) return;
-        dragged = true;
-        el.scrollLeft = startScroll - dx;
-        return;
+      if (pointerId === null || e.pointerId !== pointerId) return;
+      const dx = e.clientX - startX;
+      if (!dragged && Math.abs(dx) < 8) return;
+      dragged = true;
+      suppressCardClickRef.current = true;
+      if (!capturing) {
+        capturing = true;
+        el.classList.add('reg-cards-preview-row--dragging');
+        try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
       }
-
-      if (e.buttons !== 0) return;
-      if (e.target.closest('.reg-mini-card__share')) {
-        hoverX = e.clientX;
-        return;
-      }
-      if (hoverX === null) {
-        hoverX = e.clientX;
-        return;
-      }
-      const dx = e.clientX - hoverX;
-      hoverX = e.clientX;
-      if (!dx) return;
-      el.scrollLeft -= dx;
+      el.scrollLeft = startScroll - dx;
     };
 
     const onPointerUp = (e) => {
       if (pointerId === null || e.pointerId !== pointerId) return;
       pointerId = null;
-      hoverX = e.clientX;
       el.classList.remove('reg-cards-preview-row--dragging');
+      if (capturing) {
+        try { el.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+      }
+      capturing = false;
       if (!dragged) return;
       const blockClick = (event) => {
         event.preventDefault();
@@ -204,12 +171,10 @@ export default function HomeRegistrationsSection() {
         el.removeEventListener('click', blockClick, true);
       };
       el.addEventListener('click', blockClick, true);
-      window.setTimeout(() => el.removeEventListener('click', blockClick, true), 0);
-    };
-
-    const onPointerLeave = () => {
-      if (pointerId !== null) return;
-      hoverX = null;
+      window.setTimeout(() => {
+        el.removeEventListener('click', blockClick, true);
+        suppressCardClickRef.current = false;
+      }, 0);
     };
 
     const onWheel = (e) => {
@@ -223,7 +188,6 @@ export default function HomeRegistrationsSection() {
     el.addEventListener('pointermove', onPointerMove);
     el.addEventListener('pointerup', onPointerUp);
     el.addEventListener('pointercancel', onPointerUp);
-    el.addEventListener('pointerleave', onPointerLeave);
     el.addEventListener('wheel', onWheel, { passive: false });
 
     return () => {
@@ -235,7 +199,6 @@ export default function HomeRegistrationsSection() {
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerup', onPointerUp);
       el.removeEventListener('pointercancel', onPointerUp);
-      el.removeEventListener('pointerleave', onPointerLeave);
       el.removeEventListener('wheel', onWheel);
       el.classList.remove('reg-cards-preview-row--dragging');
     };
@@ -280,6 +243,18 @@ export default function HomeRegistrationsSection() {
       });
   }, []);
 
+  const handleCardClick = useCallback((e, cat) => {
+    if (suppressCardClickRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    const path = registrationsPathForCategory(cat.slug);
+    e.preventDefault();
+    navigate(path);
+  }, [navigate]);
+
   const renderCard = (cat) => {
     const Icon = CATEGORY_ICONS[cat.slug] || Briefcase;
     const highlights = (cat.highlights || []).slice(0, 3);
@@ -294,6 +269,7 @@ export default function HomeRegistrationsSection() {
           to={registrationsPathForCategory(cat.slug)}
           className="reg-mini-card"
           aria-label={`${cat.label} registrations`}
+          onClick={(e) => handleCardClick(e, cat)}
         >
         <img
           src={cardTickLightBlue}
@@ -374,7 +350,19 @@ export default function HomeRegistrationsSection() {
             </div>
           </div>
         </header>
-        {filteredCategories.length === 0 ? (
+        {waitingForCategories ? (
+          <div className="reg-cards-row-wrap" aria-busy="true" aria-label="Loading categories">
+            <HomePreviewRow className="reg-cards-preview-row">
+              {[0, 1, 2, 3, 4].map((key) => (
+                <HomePreviewRowItem key={key}>
+                  <div className="reg-mini-card-wrapper">
+                    <div className="reg-mini-card reg-mini-card--skeleton" />
+                  </div>
+                </HomePreviewRowItem>
+              ))}
+            </HomePreviewRow>
+          </div>
+        ) : filteredCategories.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{EMPTY_MESSAGE}</p>
         ) : (
           <div

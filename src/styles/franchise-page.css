@@ -11,7 +11,7 @@
   color: var(--franchise-ink);
   background: #f7fafc;
   font-family: var(--font-body), "Segoe UI", sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .franchise-page > nav {
@@ -261,8 +261,6 @@
   min-height: 11.5rem;
   padding: 1.25rem;
   text-align: left;
-  animation: franchise-card-in 550ms both;
-  animation-delay: calc(var(--franchise-card-index, 0) * 50ms);
 }
 
 .franchise-benefit-card:nth-child(2) { --franchise-card-index: 1; }
@@ -1145,10 +1143,5 @@
   .franchise-form,
   .franchise-disclaimer {
     animation: franchise-rise 600ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
-  }
-
-  .franchise-benefit-card,
-  .franchise-service-card {
-    animation: franchise-card-in 550ms both;
   }
 }

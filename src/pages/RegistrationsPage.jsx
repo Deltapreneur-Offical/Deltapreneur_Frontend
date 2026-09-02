@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Search, ShieldCheck, Building2, Scale, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Building2, ChevronRight, LayoutGrid, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
 import HomeRegistrationCategoryCard from '../components/home/HomeRegistrationCategoryCard';
 import HomeRegistrationServiceCard from '../components/home/HomeRegistrationServiceCard';
+import buildingsSkyline from '../assets/buildingssss.png';
 import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import {
   getHubRegistrarSubcategories,
-  getStaticHubRegistrarCategories,
-  mapPublicHubRegistrarCategory,
   matchServicePriceFromApi,
 } from '../utils/operationsCategories';
-import { operationsAPI, hubRegistrarCategoryAPI } from '../api/services';
+import { operationsAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
+import { usePublicHubRegistrarCategories } from '../context/CategoryContext';
 import { REGISTRATIONS_PAGE_PATH } from '../utils/operationsSections';
 import '../styles/registrations-catalog.css';
 
@@ -60,7 +60,7 @@ export default function RegistrationsPage() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [apiServices, setApiServices] = useState([]);
-  const [allCategories, setAllCategories] = useState(getStaticHubRegistrarCategories());
+  const { categories: allCategories, fetched: categoriesReady } = usePublicHubRegistrarCategories();
   const { isScrolled, navRef } = useHomePageScrollNav();
 
   // Fetch operations services from backend (single source of truth for prices)
@@ -73,24 +73,6 @@ export default function RegistrationsPage() {
       })
       .catch(() => {
         if (!cancelled) setApiServices([]);
-      });
-    return () => { cancelled = true; };
-  }, []);
-
-  // Fetch categories from API on mount — replaces static fallback with live data
-  useEffect(() => {
-    let cancelled = false;
-    hubRegistrarCategoryAPI
-      .list()
-      .then(({ data }) => {
-        if (cancelled) return;
-        const items = asArray(data)
-          .map(mapPublicHubRegistrarCategory)
-          .filter((cat) => cat.slug && cat.label);
-        if (items.length) setAllCategories(items);
-      })
-      .catch(() => {
-        // Keep static fallback on API failure
       });
     return () => { cancelled = true; };
   }, []);
@@ -167,10 +149,13 @@ export default function RegistrationsPage() {
   }, [selectedSlug]);
 
   useEffect(() => {
+    // Wait until the public category list has settled so a homepage click
+    // is not stripped before the matching slug arrives from the API.
+    if (!categoriesReady) return;
     if (selectedSlug && !selectedCategory) {
       setSearchParams({}, { replace: true });
     }
-  }, [selectedSlug, selectedCategory, setSearchParams]);
+  }, [selectedSlug, selectedCategory, setSearchParams, categoriesReady]);
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
@@ -212,84 +197,133 @@ export default function RegistrationsPage() {
         isScrolled={isScrolled}
       />
 
-      <section className="reg-catalog-hero">
+      <div className="reg-catalog-shell">
         <div className="pointer-events-none absolute inset-0 z-0 glow-layer" aria-hidden />
         <div className="reg-catalog-hero-orb reg-catalog-hero-orb--tr" aria-hidden />
         <div className="reg-catalog-hero-orb reg-catalog-hero-orb--bl" aria-hidden />
         <div className="reg-catalog-hero-dots" aria-hidden />
 
+        <section className={showingServices ? 'reg-catalog-hero reg-catalog-hero--service' : 'reg-catalog-hero reg-catalog-hero--browse'}>
         <div className="reg-catalog-hero-inner">
-          <p className="reg-catalog-kicker">
-            <Sparkles size={13} strokeWidth={2.4} aria-hidden />
-            {t('regCatalogKicker')}
-          </p>
-          <h1 className="reg-catalog-title">
-            {showingServices ? selectedCategory.label : (
-              <>
-                {t('regCatalogHeroTitle')}
-                <span> {t('regCatalogHeroTitleAccent')}</span>
-              </>
-            )}
-          </h1>
-          <p className="reg-catalog-lead">
-            {showingServices
-              ? t('regCatalogHeroDescService')
-              : t('regCatalogHeroDesc')}
-          </p>
+          <div className={showingServices ? undefined : 'reg-catalog-hero-main'}>
+          <div className="reg-catalog-hero-copy">
+            <p className="reg-catalog-kicker">
+              <Sparkles size={13} strokeWidth={2.4} aria-hidden />
+              {t('regCatalogKicker')}
+            </p>
+            <h1 className="reg-catalog-title">
+              {showingServices ? selectedCategory.label : (
+                <>
+                  <span className="reg-catalog-title__lead">
+                    {t('regCatalogHeroTitle')}
+                  </span>
+                  <span className="reg-catalog-title__accent">
+                    {t('regCatalogHeroTitleAccent')}
+                  </span>
+                  <span className="reg-catalog-title__spark" aria-hidden>
+                    ✦
+                  </span>
+                </>
+              )}
+            </h1>
+            <p className="reg-catalog-lead">
+              {showingServices
+                ? (selectedCategory.description || t('regCatalogHeroDescService'))
+                : t('regCatalogHeroDesc')}
+            </p>
+          </div>
 
-          <div className="reg-catalog-search">
-            <Search className="reg-catalog-search__icon" size={18} strokeWidth={2} aria-hidden />
-            <input
-              type="text"
-              className="reg-catalog-search__input"
-              placeholder={showingServices ? t('regCatalogSearchServices') : t('regCatalogSearchCategories')}
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              aria-label={showingServices ? t('regCatalogSearchServices') : t('regCatalogSearchCategories')}
-              autoComplete="off"
-              spellCheck="false"
-            />
-            {categoryFilter.trim() ? (
-              <button
-                type="button"
-                className="reg-catalog-search__clear"
-                onClick={() => setCategoryFilter('')}
-                aria-label={t('regCatalogClearSearch')}
-              >
-                <X size={14} strokeWidth={2.25} aria-hidden />
-              </button>
+          <div className="reg-catalog-hero-tools">
+            <div className={showingServices ? 'reg-catalog-search' : 'reg-catalog-search reg-catalog-search--browse'}>
+              <Search className="reg-catalog-search__icon" size={18} strokeWidth={2} aria-hidden />
+              <input
+                type="text"
+                className="reg-catalog-search__input"
+                placeholder={showingServices ? t('regCatalogSearchServices') : t('regCatalogSearchCategories')}
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                aria-label={showingServices ? t('regCatalogSearchServices') : t('regCatalogSearchCategories')}
+                autoComplete="off"
+                spellCheck="false"
+              />
+              {categoryFilter.trim() ? (
+                <button
+                  type="button"
+                  className="reg-catalog-search__clear"
+                  onClick={() => setCategoryFilter('')}
+                  aria-label={t('regCatalogClearSearch')}
+                >
+                  <X size={14} strokeWidth={2.25} aria-hidden />
+                </button>
+              ) : null}
+              {!showingServices ? (
+                <button
+                  type="button"
+                  className="reg-catalog-search__go"
+                  onClick={() => document.getElementById('reg-catalog-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  aria-label={t('regCatalogSearchCategories')}
+                >
+                  <Search size={16} strokeWidth={2.5} aria-hidden />
+                </button>
+              ) : null}
+            </div>
+            {showingServices ? (
+              <p className="reg-catalog-hero-count">
+                {filteredServices.length}{' '}
+                {filteredServices.length === 1 ? t('regCatalogCountService') : t('regCatalogCountServices')}
+              </p>
             ) : null}
+          </div>
           </div>
 
           {!showingServices ? (
-            <div className="reg-catalog-stats">
-              <div className="reg-catalog-stat">
-                <Building2 size={18} strokeWidth={2} aria-hidden />
-                <div>
-                  <strong>{allCategories.length}</strong>
-                  <span>{t('regCatalogStatCategories')}</span>
+            <aside className="reg-catalog-hero-aside" aria-label={t('regCatalogStatCategories')}>
+              <div className="reg-catalog-float">
+                <div className="reg-catalog-float__body">
+                  <p className="reg-catalog-float__eyebrow">{t('regCatalogKicker')}</p>
+                  <ul className="reg-catalog-float__list">
+                    <li className="reg-catalog-float__row">
+                      <div className="reg-catalog-float__icon reg-catalog-float__icon--blue" aria-hidden>
+                        <LayoutGrid size={18} strokeWidth={2} />
+                      </div>
+                      <div>
+                        <strong>{allCategories.length} {t('regCatalogStatCategories')}</strong>
+                        <span>{t('regCatalogFloatCatDesc', { defaultValue: 'A wide range of categories to choose from.' })}</span>
+                      </div>
+                      <ChevronRight className="reg-catalog-float__chevron" size={18} strokeWidth={2.25} aria-hidden />
+                    </li>
+                    <li className="reg-catalog-float__row">
+                      <div className="reg-catalog-float__icon reg-catalog-float__icon--purple" aria-hidden>
+                        <Building2 size={18} strokeWidth={2} />
+                      </div>
+                      <div>
+                        <strong>{t('regCatalogStatIndiaWide')} {t('regCatalogStatEntityIndustry')}</strong>
+                        <span>{t('regCatalogFloatIndiaDesc', { defaultValue: 'Services and registrations across the country.' })}</span>
+                      </div>
+                      <ChevronRight className="reg-catalog-float__chevron" size={18} strokeWidth={2.25} aria-hidden />
+                    </li>
+                    <li className="reg-catalog-float__row">
+                      <div className="reg-catalog-float__icon reg-catalog-float__icon--green" aria-hidden>
+                        <ShieldCheck size={18} strokeWidth={2} />
+                      </div>
+                      <div>
+                        <strong>{t('regCatalogStatGuided')} {t('regCatalogStatOpenMatching')}</strong>
+                        <span>{t('regCatalogFloatGuidedDesc', { defaultValue: 'Find the right service with smart guidance.' })}</span>
+                      </div>
+                      <ChevronRight className="reg-catalog-float__chevron" size={18} strokeWidth={2.25} aria-hidden />
+                    </li>
+                  </ul>
+                </div>
+                <div className="reg-catalog-float__skyline">
+                  <img src={buildingsSkyline} alt="" />
                 </div>
               </div>
-              <div className="reg-catalog-stat">
-                <Scale size={18} strokeWidth={2} aria-hidden />
-                <div>
-                  <strong>{t('regCatalogStatIndiaWide')}</strong>
-                  <span>{t('regCatalogStatEntityIndustry')}</span>
-                </div>
-              </div>
-              <div className="reg-catalog-stat">
-                <ShieldCheck size={18} strokeWidth={2} aria-hidden />
-                <div>
-                  <strong>{t('regCatalogStatGuided')}</strong>
-                  <span>{t('regCatalogStatOpenMatching')}</span>
-                </div>
-              </div>
-            </div>
+            </aside>
           ) : null}
         </div>
-      </section>
+        </section>
 
-      <div className="home-hero-align-outer">
+      <div className="home-hero-align-outer reg-catalog-body" id="reg-catalog-results">
         <div className="home-hero-align-inner">
           <div className="reg-catalog-toolbar">
             <div>
@@ -314,7 +348,7 @@ export default function RegistrationsPage() {
           {visibleItems.length === 0 ? (
             <div className="reg-catalog-empty">{emptyMessage}</div>
           ) : showingServices ? (
-            <div className="reg-catalog-grid">
+            <div className="reg-catalog-grid reg-catalog-grid--services">
               {filteredServices.map((service) => (
                 <HomeRegistrationServiceCard
                   key={service.slug}
@@ -335,6 +369,7 @@ export default function RegistrationsPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
 
       <HomeFooter />

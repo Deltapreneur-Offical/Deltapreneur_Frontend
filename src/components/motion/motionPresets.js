@@ -9,8 +9,8 @@ export { HOME_EASE, HOME_EASE_OUT, homeCardHover, homeCardTap };
 
 export const pageViewport = {
   once: true,
-  margin: '0px 0px -64px 0px',
-  amount: 0.14,
+  margin: '0px 0px -40px 0px',
+  amount: 'some',
 };
 
 export const pageHeroContainer = {

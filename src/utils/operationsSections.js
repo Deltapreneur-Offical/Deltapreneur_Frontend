@@ -86,9 +86,12 @@ export function operationsPathForHubRegistrarService(categorySlug, serviceSlug) 
 
 export const REGISTRATIONS_PAGE_PATH = '/registrations';
 
+const SAFE_CATEGORY_SLUG = /^[a-zA-Z0-9_-]{1,64}$/;
+
 export function registrationsPathForCategory(categorySlug) {
-  if (!categorySlug) return REGISTRATIONS_PAGE_PATH;
-  return `${REGISTRATIONS_PAGE_PATH}?category=${encodeURIComponent(categorySlug)}`;
+  const slug = String(categorySlug || '').trim();
+  if (!SAFE_CATEGORY_SLUG.test(slug)) return REGISTRATIONS_PAGE_PATH;
+  return `${REGISTRATIONS_PAGE_PATH}?category=${encodeURIComponent(slug)}`;
 }
 
 export function operationsReturnLocation(sectionId) {

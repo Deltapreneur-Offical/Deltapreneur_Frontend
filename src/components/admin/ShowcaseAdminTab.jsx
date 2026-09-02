@@ -228,7 +228,9 @@ export default function ShowcaseAdminTab() {
       const narrowTldPayload = tlds.length > 0 && tlds.every((t) => ['com', 'net', 'org'].includes(t));
       // Suggest names: do not send a .com-only limit (backend also expands it).
       // Search by name still honours the filter the admin typed.
-      if (mode === 'keyword' && tlds.length) payload.allowed_tlds = tlds;
+      // Always send allowed_tlds for keyword mode so the backend can
+      // distinguish "user cleared the field" ([]) from "not provided" (None).
+      if (mode === 'keyword') payload.allowed_tlds = tlds;
       if (mode === 'random' && tlds.length && !narrowTldPayload) payload.allowed_tlds = tlds;
 
       pollRef.current = setInterval(async () => {

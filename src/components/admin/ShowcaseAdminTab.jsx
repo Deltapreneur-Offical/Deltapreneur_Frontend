@@ -111,6 +111,7 @@ export default function ShowcaseAdminTab() {
   const [draft, setDraft] = useState(null);
   const [notice, setNotice] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectedItems, setSelectedItems] = useState([]);
 
   const [mode, setMode] = useState('random');
@@ -356,6 +357,80 @@ export default function ShowcaseAdminTab() {
     }
   };
 
+  /* ── bulk selection helpers ────────────────────────────────── */
+  const toggleRowSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = () => {
+    setSelectedIds((prev) => {
+      const allIds = items.map((it) => it.id);
+      const allSelected = allIds.length > 0 && allIds.every((id) => prev.has(id));
+      if (allSelected) {
+        const next = new Set(prev);
+        allIds.forEach((id) => next.delete(id));
+        return next;
+      }
+      const next = new Set(prev);
+      allIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const allVisibleSelected = items.length > 0 && items.every((it) => selectedIds.has(it.id));
+  const someVisibleSelected = items.some((it) => selectedIds.has(it.id)) && !allVisibleSelected;
+
+  const bulkTick = async () => {
+    if (readOnly || selectedIds.size === 0) return;
+    const ids = [...selectedIds];
+    setBusy(true);
+    let ok = 0, fail = 0;
+    try {
+      for (const id of ids) {
+        try {
+          await adminAPI.selectShowcaseDomain(id);
+          ok++;
+        } catch {
+          fail++;
+        }
+      }
+      if (fail === 0) notify('success', `${ok} domain(s) published to the showcase.`);
+      else notify('warning', `${ok} updated, ${fail} failed.`);
+      setSelectedIds(new Set());
+      await load(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const bulkRemove = async () => {
+    if (readOnly || selectedIds.size === 0) return;
+    if (!window.confirm(`Remove ${selectedIds.size} selected domain(s) from the showcase pool entirely?`)) return;
+    const ids = [...selectedIds];
+    setBusy(true);
+    let ok = 0, fail = 0;
+    try {
+      for (const id of ids) {
+        try {
+          await adminAPI.removeShowcaseDomain(id);
+          ok++;
+        } catch {
+          fail++;
+        }
+      }
+      if (fail === 0) notify('success', `${ok} domain(s) removed.`);
+      else notify('warning', `${ok} removed, ${fail} failed.`);
+      setSelectedIds(new Set());
+      await load(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const saveConfig = async () => {
     if (!draft || readOnly) return;
     setBusy(true);
@@ -386,6 +461,7 @@ export default function ShowcaseAdminTab() {
   const applyFilters = (next) => {
     setPage(1);
     setFilters(next);
+    setSelectedIds(new Set());
   };
 
   const setF = (patch) => applyFilters({ ...filters, ...patch });
@@ -807,7 +883,7 @@ export default function ShowcaseAdminTab() {
               {showFilters ? 'Hide filters ▾' : 'Show filters ▸'}
             </button>
             <button
-              onClick={() => { setFilters(DEFAULT_FILTERS); setPage(1); }}
+              onClick={() => { setFilters(DEFAULT_FILTERS); setPage(1); setSelectedIds(new Set()); }}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
             >
               Reset filters
@@ -846,7 +922,7 @@ export default function ShowcaseAdminTab() {
               </label>
               <div className="ml-auto flex items-center gap-2">
                 <span className="text-xs text-slate-400">Sort:</span>
-                <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className={`${inputCls} w-auto`}>
+                <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); setSelectedIds(new Set()); }} className={`${inputCls} w-auto`}>
                   {SORTS.map((s) => (
                     <option key={s.id} value={s.id}>{s.label}</option>
                   ))}
@@ -868,9 +944,37 @@ export default function ShowcaseAdminTab() {
           </p>
         ) : (
           <div className="overflow-x-auto">
+            {selectedIds.size > 0 && (
+              <div className="mb-3 flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5">
+                <span className="text-sm font-semibold text-indigo-800">{selectedIds.size} selected</span>
+                <button
+                  onClick={bulkTick}
+                  disabled={busy || readOnly}
+                  className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  Tick Selected
+                </button>
+                <button
+                  onClick={bulkRemove}
+                  disabled={busy || readOnly}
+                  className="rounded-md border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+                >
+                  Remove Selected
+                </button>
+              </div>
+            )}
             <table className="w-full min-w-[860px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-400">
+                  <th className="px-3 py-2 font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      ref={(el) => { if (el) el.indeterminate = someVisibleSelected; }}
+                      onChange={toggleAllVisible}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600"
+                    />
+                  </th>
                   <th className="px-3 py-2 font-semibold">Domain</th>
                   <th className="px-3 py-2 font-semibold">TLD</th>
                   <th className="px-3 py-2 font-semibold">Price (1st yr)</th>
@@ -885,6 +989,14 @@ export default function ShowcaseAdminTab() {
               <tbody>
                 {items.map((it) => (
                   <tr key={it.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                    <td className="px-3 py-2.5">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(it.id)}
+                        onChange={() => toggleRowSelect(it.id)}
+                        className="h-4 w-4 rounded border-slate-300 text-indigo-600"
+                      />
+                    </td>
                     <td className="px-3 py-2.5 font-medium text-slate-900">{it.domainName}</td>
                     <td className="px-3 py-2.5 text-slate-500">.{it.tld}</td>
                     <td className="px-3 py-2.5 text-slate-700">

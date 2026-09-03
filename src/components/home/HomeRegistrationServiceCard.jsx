@@ -16,8 +16,8 @@ export default function HomeRegistrationServiceCard({ categorySlug, service }) {
     e.preventDefault();
     e.stopPropagation();
     const url = window.location.origin + operationsPathForHubRegistrarService(categorySlug, service.slug);
-    const title = service.label || 'HubRegistrar Service';
-    const text = 'Check out ' + title + ' on HubRegistrar!\n\n' + url;
+    const title = service.label || 'Deltapreneur Service';
+    const text = 'Check out ' + title + ' on Deltapreneur!\n\n' + url;
 
     if (navigator.share) {
       navigator.share({ title, text, url }).catch(() => {});

@@ -230,8 +230,8 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
 
   const shareBase = PRODUCTION_APP_URL.replace(/\/$/, '');
   const shareUrl = `${shareBase}/creator/${community.id || ''}${user?.id ? `?ref=${user.id}` : ''}`;
-  const shareSubject = `Check out this creator profile on HubRegistrar: ${name}`;
-  const shareBody = `Check out this creator profile on HubRegistrar!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
+  const shareSubject = `Check out this creator profile on Deltapreneur: ${name}`;
+  const shareBody = `Check out this creator profile on Deltapreneur!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

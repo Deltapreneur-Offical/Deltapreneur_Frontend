@@ -969,10 +969,7 @@ export default function AdminDashboardPage() {
                 <HomepageFeatureSelector type="venture" />
                 <HomepageFeatureSelector type="coventure" />
                 <HomepageFeatureSelector type="software" />
-                {/* DISABLED — Community homepage feature temporarily disabled */}
-                <div className="opacity-50 pointer-events-none">
-                  <HomepageFeatureSelector type="community" disabled={true} />
-                </div>
+                <HomepageFeatureSelector type="community" />
                 <HomepageFeatureSelector type="virtual-assistant" />
                 <HomepageFeatureSelector type="auction" />
               </div>
@@ -2922,7 +2919,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         
         <div className="relative z-10 mb-6">
           <div className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-600 text-[10px] font-bold tracking-wider uppercase rounded-lg mb-4">
-            {t('adminForwardModalBadge', 'Forward to HubRegistrar')}
+            {t('adminForwardModalBadge', 'Forward to Deltapreneur')}
           </div>
           <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignHubRegistrar')}</h2>
           <p className="text-[15px] text-gray-500">
@@ -2933,7 +2930,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         <div className="relative z-10">
           {noCoBrothers && (
             <div className="px-4 py-3 bg-[#fdf5f5] border border-[#f3d9d9] text-[#c95b5b] text-[13px] rounded-xl mb-6">
-              {t('adminNoHubRegistrarAccounts', 'No HubRegistrar accounts found. Create or promote a user to the HubRegistrar role before forwarding.')}
+              {t('adminNoHubRegistrarAccounts', 'No Deltapreneur accounts found. Create or promote a user to the Deltapreneur role before forwarding.')}
             </div>
           )}
 
@@ -2951,7 +2948,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
           <div className="mb-6">
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2.5">
-              {t('adminSelectHubRegistrar', 'Select HubRegistrar')}
+              {t('adminSelectHubRegistrar', 'Select Deltapreneur')}
             </label>
             <select 
               value={selectedCoBrother} 
@@ -2959,7 +2956,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
               disabled={noCoBrothers}
               className="w-full px-4 py-3.5 bg-white border border-gray-200 text-gray-700 text-[15px] rounded-xl outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
-              <option value="">{t('adminChooseHubRegistrar', 'Choose a HubRegistrar...')}</option>
+              <option value="">{t('adminChooseHubRegistrar', 'Choose a Deltapreneur...')}</option>
               {coBrothers.map(cb => {
                 const alreadyAssigned = activeRequests.some(r => String(r.assignedCoBrother?.id) === String(cb.id));
                 return (
@@ -3408,7 +3405,7 @@ const ADMIN_PENDING_CHIPS = [
   { key: 'domains',           tab: 'domains',           label: 'Domains',          color: 'bg-sky-100 text-sky-700 ring-sky-200' },
   { key: 'domainEnquiries',   tab: 'domain-enquiries',  label: 'Domain enquiries', color: 'bg-sky-100 text-sky-700 ring-sky-200' },
   { key: 'opManagedAcquisitions', tab: 'op-managed-acquisitions', label: 'OP acquisitions', color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
-  { key: 'cobrotherPayments', tab: 'requests',          label: 'HubRegistrar payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
+  { key: 'cobrotherPayments', tab: 'requests',          label: 'Deltapreneur payments', color: 'bg-amber-100 text-amber-700 ring-amber-200' },
   { key: 'operations',        tab: 'operations',        label: 'Operations',       color: 'bg-indigo-100 text-indigo-700 ring-indigo-200' },
 ];
 
@@ -3567,7 +3564,7 @@ function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, tota
     { key: 'opManagedAcquisitions', Icon: Globe,      label: 'OP acquisition requests', hint: 'OpenProvider managed acquisitions',      count: counts?.opManagedAcquisitions, tab: 'op-managed-acquisitions', accent: 'indigo' },
     { key: 'technologies',      Icon: Cpu,            label: 'Technology verifications', hint: 'Software/technology awaiting verification', count: counts?.technologies,    tab: 'cocreations',       accent: 'rose'    },
     { key: 'softwareAuctions',  Icon: Package,        label: 'Software auctions',        hint: 'Pending approval to go live',             count: counts?.softwareAuctions,  tab: 'software-auctions', accent: 'violet'  },
-    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'HubRegistrar payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
+    { key: 'cobrotherPayments', Icon: ClipboardList,  label: 'Deltapreneur payments',       hint: 'Listers with payment pending',            count: counts?.cobrotherPayments, tab: 'requests',          accent: 'amber'   },
     { key: 'operations',        Icon: Headset,        label: 'Operations requests',      hint: 'Customer service requests pending',       count: counts?.operations,        tab: 'operations',        accent: 'indigo'  },
   ];
 
@@ -3677,7 +3674,7 @@ const QUEUE_TYPE_META = {
   domain_enquiry:    { label: 'Domain enquiry',    Icon: FileQuestion,  chip: 'bg-sky-50 text-sky-700 ring-sky-200',             tab: 'domain-enquiries' },
   technology:        { label: 'Technology',        Icon: Cpu,           chip: 'bg-rose-50 text-rose-700 ring-rose-200',          tab: 'cocreations' },
   software_auction:  { label: 'Software auction',  Icon: Package,       chip: 'bg-violet-50 text-violet-700 ring-violet-200',    tab: 'software-auctions' },
-  cobrother_payment: { label: 'HubRegistrar payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
+  cobrother_payment: { label: 'Deltapreneur payment', Icon: ClipboardList, chip: 'bg-amber-50 text-amber-700 ring-amber-200',       tab: 'requests' },
   operations:        { label: 'Operations',        Icon: Headset,       chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200',    tab: 'operations' },
 };
 
@@ -3688,7 +3685,7 @@ const QUEUE_FILTER_OPTIONS = [
   { id: 'domain_enquiry',    label: 'Domain enquiries' },
   { id: 'technology',        label: 'Technology' },
   { id: 'software_auction',  label: 'Software auctions' },
-  { id: 'cobrother_payment', label: 'HubRegistrar payments' },
+  { id: 'cobrother_payment', label: 'Deltapreneur payments' },
   { id: 'operations',        label: 'Operations' },
 ];
 
@@ -3741,7 +3738,7 @@ function mapQueueItem(item, type) {
     domain_enquiry: getString(item?.domainName, item?.domain?.domainName, 'Domain enquiry'),
     technology: getString(item?.name, item?.title, 'Technology'),
     software_auction: getString(item?.softwareName, item?.software?.title, item?.software?.name, item?.title, 'Software auction'),
-    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'HubRegistrar request'),
+    cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'Deltapreneur request'),
     operations: getString(item?.title, item?.serviceName, item?.requestType, 'Operations request'),
   };
   return {

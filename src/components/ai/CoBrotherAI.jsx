@@ -57,22 +57,22 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Globe2,
       text: 'How do I buy a domain?',
-      prompt: 'How do I buy a premium domain on HubRegistrar?',
+      prompt: 'How do I buy a premium domain on Deltapreneur?',
     },
     {
       icon: Globe2,
       text: 'Domain transfer after purchase',
-      prompt: 'Explain the HubRegistrar domain transfer process after I buy a domain.',
+      prompt: 'Explain the Deltapreneur domain transfer process after I buy a domain.',
     },
     {
       icon: Globe2,
       text: 'When will I get paid?',
-      prompt: 'When will I get paid as a seller after a domain transfer on HubRegistrar?',
+      prompt: 'When will I get paid as a seller after a domain transfer on Deltapreneur?',
     },
     {
       icon: Globe2,
       text: 'What should I do next?',
-      prompt: 'What should I do next in my domain transfer on HubRegistrar?',
+      prompt: 'What should I do next in my domain transfer on Deltapreneur?',
     },
     {
       icon: Globe2,
@@ -82,14 +82,14 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Globe2,
       text: 'How do I list my domain?',
-      prompt: 'Explain how to list my domain on HubRegistrar.',
+      prompt: 'Explain how to list my domain on Deltapreneur.',
     },
   ],
   ventures: [
     {
       icon: BriefcaseBusiness,
       text: 'How do I list a venture?',
-      prompt: 'Explain how to list my venture on HubRegistrar.',
+      prompt: 'Explain how to list my venture on Deltapreneur.',
     },
     {
       icon: BriefcaseBusiness,
@@ -101,12 +101,12 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Cpu,
       text: 'Find technology listings',
-      prompt: 'Show me software and technology listings on HubRegistrar and explain how to evaluate them.',
+      prompt: 'Show me software and technology listings on Deltapreneur and explain how to evaluate them.',
     },
     {
       icon: Cpu,
       text: 'How do I buy software?',
-      prompt: 'How do I buy or acquire a technology listing on HubRegistrar?',
+      prompt: 'How do I buy or acquire a technology listing on Deltapreneur?',
     },
   ],
   auctions: [
@@ -118,7 +118,7 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Gavel,
       text: 'Auction bidding tips',
-      prompt: 'What should I know before placing a bid in a HubRegistrar domain auction?',
+      prompt: 'What should I know before placing a bid in a Deltapreneur domain auction?',
     },
   ],
 };
@@ -997,7 +997,7 @@ export default function CoBrotherAI({ initialOpen = false }) {
                           isDark ? 'text-white' : 'text-slate-950'
                         }`}
                       >
-                        Welcome to HubRegistrar
+                        Welcome to Deltapreneur
                       </h3>
                       <p className={`mx-auto mt-2 max-w-sm text-sm leading-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                         {EMPTY_SECTIONS[mode]} Get focused guidance without leaving the marketplace.
@@ -1190,7 +1190,7 @@ export default function CoBrotherAI({ initialOpen = false }) {
                 </form>
                 <div className={`mt-2 flex items-center justify-between gap-2 text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                   <span className="truncate">
-                    {hasAccessToken ? 'Responses can use your HubRegistrar context.' : 'Sign in for saved chats and favorites.'}
+                    {hasAccessToken ? 'Responses can use your Deltapreneur context.' : 'Sign in for saved chats and favorites.'}
                   </span>
                   <button
                     type="button"

@@ -42,7 +42,7 @@ describe('buildCartPaymentDescription', () => {
         [{ productType: 'DOMAIN_REGISTRATION', productName: 'example.com' }],
         1,
       ),
-    ).toBe('HubRegistrar - Domain Registration - Domain Registration: example.com');
+    ).toBe('Deltapreneur - Domain Registration - Domain Registration: example.com');
   });
 
   it('shows mixed categories when cart has multiple types', () => {
@@ -55,7 +55,7 @@ describe('buildCartPaymentDescription', () => {
         2,
       ),
     ).toBe(
-      'HubRegistrar - Domain Registration, Technology - Domain Registration: alpha.com | Technology: My SaaS',
+      'Deltapreneur - Domain Registration, Technology - Domain Registration: alpha.com | Technology: My SaaS',
     );
   });
 });

@@ -603,13 +603,13 @@ export default function CartPage() {
             <div className="absolute inset-x-0 top-0 z-10 h-1.5 shrink-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
             <div className="overflow-y-auto overscroll-contain px-4 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6">
               <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-800 sm:text-[11px]">
-                <span className="truncate">{t('cartManagedPriorityBadge', { defaultValue: 'HubRegistrar Priority Managed Acquisition' })}</span>
+                <span className="truncate">{t('cartManagedPriorityBadge', { defaultValue: 'Deltapreneur Priority Managed Acquisition' })}</span>
               </div>
               <h2 className="font-display text-xl font-extrabold leading-tight text-slate-900 sm:text-[1.65rem]">
                 {t('cartManagedConfirmTitle', { defaultValue: 'Confirm your Priority Managed Acquisition' })}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                {t('cartManagedConfirmIntro', { defaultValue: 'Thank you for trusting HubRegistrar with your premium acquisition of' })}{' '}
+                {t('cartManagedConfirmIntro', { defaultValue: 'Thank you for trusting Deltapreneur with your premium acquisition of' })}{' '}
                 {managedAcquisitionItems[0]?.productName ? (
                   <strong className="text-slate-900 break-words" translate="no">
                     {managedAcquisitionItems[0].productName}
@@ -694,7 +694,7 @@ export default function CartPage() {
               <strong className="text-slate-900" translate="no">{premiumConfirmSuccess.domain}</strong> {t('cartManagedRequestForSuffix', { defaultValue: 'is with our team.' })}
             </p>
             <p className="text-sm text-slate-500 leading-relaxed mb-6">
-              {t('cartManagedRequestReceivedBody', { defaultValue: 'A confirmation email is on its way. HubRegistrar will personally manage this acquisition and contact you with clear next steps - no payment is due right now.' })}
+              {t('cartManagedRequestReceivedBody', { defaultValue: 'A confirmation email is on its way. Deltapreneur will personally manage this acquisition and contact you with clear next steps - no payment is due right now.' })}
             </p>
             <button
               type="button"
@@ -1078,7 +1078,7 @@ export default function CartPage() {
                   }
                   secureNote={
                     isManagedAcquisitionOnly
-                      ? t('cartManagedSecureNote', { defaultValue: 'Managed by HubRegistrar - no payment charged now' })
+                      ? t('cartManagedSecureNote', { defaultValue: 'Managed by Deltapreneur - no payment charged now' })
                       : undefined
                   }
                 />

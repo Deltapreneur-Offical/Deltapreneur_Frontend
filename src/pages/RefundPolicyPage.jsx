@@ -24,15 +24,15 @@ export default function RefundPolicyPage() {
       badgeIcon={RefreshCcw}
       badge="Refund Policy"
       titleAccent="Refund Policy"
-      intro={`This Refund Policy explains when and how ${BUSINESS_LEGAL_NAME} (HubRegistrar) issues refunds for payments made in INR on hubregistrar.com for domain registrations, marketplace purchases, technology products, and related digital services.`}
+      intro={`This Refund Policy explains when and how ${BUSINESS_LEGAL_NAME} (Deltapreneur) issues refunds for payments made in INR on hubregistrar.com for domain registrations, marketplace purchases, technology products, and related digital services.`}
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
-      documentTitle="Refund Policy | HubRegistrar"
-      documentDescription="HubRegistrar Refund Policy — eligibility, timelines (5-7 business days), how to request refunds, and grievance contact for hubregistrar.com."
+      documentTitle="Refund Policy | Deltapreneur"
+      documentDescription="Deltapreneur Refund Policy — eligibility, timelines (5-7 business days), how to request refunds, and grievance contact for hubregistrar.com."
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          HubRegistrar is operated by {BUSINESS_LEGAL_NAME}. Payments on hubregistrar.com are processed securely through
+          Deltapreneur is operated by {BUSINESS_LEGAL_NAME}. Payments on hubregistrar.com are processed securely through
           authorized payment partners (including Razorpay and HDFC Bank SmartGateway / other RBI-regulated payment
           aggregators or banks enabled on our checkout). This policy applies to all purchases completed on our website
           and related checkout flows.
@@ -89,7 +89,7 @@ export default function RefundPolicyPage() {
 
       <PolicySection id="how-to" title="5. How to request a refund">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          To request a refund, contact HubRegistrar Support with:
+          To request a refund, contact Deltapreneur Support with:
         </p>
         <ul className="mt-2 list-disc pl-5 space-y-1 text-slate-600 text-sm sm:text-base leading-relaxed">
           <li>Registered email / phone used at checkout</li>
@@ -155,7 +155,7 @@ export default function RefundPolicyPage() {
       <PolicySection id="changes" title="10. Changes to this policy">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
           We may update this Refund Policy from time to time. The &quot;Last updated&quot; date at the top of this page
-          will be revised when changes are published. Continued use of HubRegistrar after updates constitutes acceptance
+          will be revised when changes are published. Continued use of Deltapreneur after updates constitutes acceptance
           of the revised policy.
         </p>
       </PolicySection>

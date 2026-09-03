@@ -16,7 +16,7 @@ export function isVendorRegistrarPanelUrl(url) {
 }
 
 /**
- * Customer-facing DNS management link — always HubRegistrar order DNS tab.
+ * Customer-facing DNS management link — always Deltapreneur order DNS tab.
  * Never returns OpenProvider / ResellerClub control-panel URLs.
  */
 export function domainManagementHref(order) {

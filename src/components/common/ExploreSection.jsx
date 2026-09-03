@@ -39,14 +39,14 @@ export default function ExploreSection() {
       <VenturesSection />
 
       <LazySection
-        title={t('homeCoVenturesRegister', { defaultValue: 'Co-Ventures Register' })}
+        title={t('homeCoVenturesRegister', { defaultValue: 'Delta Co-Ventures' })}
         to="/ventures?mode=co-venture"
         compact
       >
         <CoVenturesSection />
       </LazySection>
 
-      <LazySection title={t('homeRegistryAuctions', { defaultValue: 'Registry Auctions' })} to="/auctions" variant="auction">
+      <LazySection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction">
         <AuctionsSection />
       </LazySection>
 
@@ -65,11 +65,9 @@ export default function ExploreSection() {
         </LazySection>
       ))}
 
-      {/* HIDDEN — Creators section temporarily disabled
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />
       </LazySection>
-      */}
 
       <LazyWhenVisible>
         <FeedbackSection />

@@ -100,7 +100,7 @@ function StatusPill({ availability }) {
 }
 
 /**
- * Public shared-domain page — full HubRegistrar page (real header + footer) with a
+ * Public shared-domain page — full Deltapreneur page (real header + footer) with a
  * desktop two-column layout: the shared domain card (focus) on the left and an
  * "Explore more" continuation panel on the right (stacked on mobile). Resolves
  * the share token, records the referral once (server dedupes), and re-runs a
@@ -254,7 +254,7 @@ export default function SharedDomainPage() {
                     <div className="flex items-center gap-2">
                       <span className="cb-shared-live-dot" aria-hidden="true" />
                       <span className="text-sm font-semibold text-gray-600">
-                        HubRegistrar is checking the shared domain live…
+                        Deltapreneur is checking the shared domain live…
                       </span>
                     </div>
                     <div className="cb-shared-skel mt-5 h-3 w-28 rounded-full" />
@@ -279,7 +279,7 @@ export default function SharedDomainPage() {
                       to="/"
                       className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gray-950 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-gray-700 hover:text-white"
                     >
-                      Back to HubRegistrar <ArrowRight className="h-4 w-4" />
+                      Back to Deltapreneur <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
@@ -417,7 +417,7 @@ export default function SharedDomainPage() {
                         <h2 className="text-2xl font-extrabold tracking-tight text-gray-950">
                           Explore more domains
                           <span className="block text-sm font-semibold text-gray-500">
-                            on HubRegistrar
+                            on Deltapreneur
                           </span>
                         </h2>
                         <Link

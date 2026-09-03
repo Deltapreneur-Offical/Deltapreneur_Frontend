@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'HubRegistrar';
+const DEFAULT_TITLE = 'Deltapreneur';
 
 /**
  * Set document title + optional meta description for public compliance pages.

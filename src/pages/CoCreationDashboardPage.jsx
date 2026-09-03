@@ -452,7 +452,7 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
             )}
             {helpPaid && (
               <span className="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md tracking-wider">
-                ◆ HubRegistrar
+                ◆ Deltapreneur
               </span>
             )}
           </div>
@@ -474,7 +474,7 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
               <div className="text-[0.7rem] text-gray-400 font-medium">+ {formatPrice(1000)} pending</div>
             )}
             {helpPaid && (
-              <div className="text-[0.7rem] text-emerald-600 font-medium">+ {formatPrice(1000)} HubRegistrar</div>
+              <div className="text-[0.7rem] text-emerald-600 font-medium">+ {formatPrice(1000)} Deltapreneur</div>
             )}
           </div>
           <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>
@@ -535,11 +535,11 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
             </div>
           )}
 
-          {/* HubRegistrar status */}
+          {/* Deltapreneur status */}
           {helpPaid && (
             <div className="px-4 py-3.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-5 text-[0.85rem] text-emerald-800 font-medium shadow-sm flex items-start gap-2">
               <span className="text-emerald-500 text-lg leading-none mt-0.5">◆</span>
-              <span>HubRegistrar assigned — check your email for introduction details.</span>
+              <span>Deltapreneur assigned — check your email for introduction details.</span>
             </div>
           )}
 
@@ -631,7 +631,7 @@ function SoldRow({ tx }) {
               {formatPrice(tx.grossAmountInr || sw.price || 0)}
             </div>
             {tx.coBrotherOptIn && (
-              <div className="text-[0.7rem] text-emerald-600 font-medium">HubRegistrar Assisted</div>
+              <div className="text-[0.7rem] text-emerald-600 font-medium">Deltapreneur Assisted</div>
             )}
           </div>
           <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>

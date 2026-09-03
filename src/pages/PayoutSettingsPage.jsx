@@ -931,7 +931,7 @@ export default function PayoutSettingsPage() {
             <div className="flex flex-col gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1.5">
                 <p className="text-sm text-gray-500">
-                  Payouts are released manually by HubRegistrar after transfer completion.
+                  Payouts are released manually by Deltapreneur after transfer completion.
                 </p>
                 <PayoutSupportHint />
               </div>

@@ -24,15 +24,15 @@ export default function CancellationPolicyPage() {
       badgeIcon={Ban}
       badge="Cancellation Policy"
       titleAccent="Cancellation Policy"
-      intro={`This Cancellation Policy explains how you can cancel an order or request before or after payment on HubRegistrar (${BUSINESS_LEGAL_NAME}), applicable timelines, and what happens next for digital products and domain services.`}
+      intro={`This Cancellation Policy explains how you can cancel an order or request before or after payment on Deltapreneur (${BUSINESS_LEGAL_NAME}), applicable timelines, and what happens next for digital products and domain services.`}
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
-      documentTitle="Cancellation Policy | HubRegistrar"
-      documentDescription="HubRegistrar Cancellation Policy — cancel before or after payment, timelines, refunds within 5-7 business days, and contact details for hubregistrar.com."
+      documentTitle="Cancellation Policy | Deltapreneur"
+      documentDescription="Deltapreneur Cancellation Policy — cancel before or after payment, timelines, refunds within 5-7 business days, and contact details for hubregistrar.com."
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          HubRegistrar offers digital marketplace and registration services. Cancellation options depend on whether you have
+          Deltapreneur offers digital marketplace and registration services. Cancellation options depend on whether you have
           completed payment, whether the service has already been fulfilled (for example, a domain successfully
           registered), and the product-specific terms shown at checkout. All prices are in INR.
         </p>
@@ -74,7 +74,7 @@ export default function CancellationPolicyPage() {
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
           For digital orders where fulfillment has not started or is still in progress, you must submit a cancellation
           request within <strong>24 hours</strong> of payment confirmation, or before the service is marked as delivered
-          in your HubRegistrar account—whichever is earlier. We confirm cancellation requests within{' '}
+          in your Deltapreneur account—whichever is earlier. We confirm cancellation requests within{' '}
           <strong>2 business days</strong>. Marketplace or auction purchases may have shorter windows stated on the
           listing page; those terms apply in addition to this policy.
         </p>
@@ -90,7 +90,7 @@ export default function CancellationPolicyPage() {
 
       <PolicySection id="account" title="6. Account cancellation">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          You may request closure of your HubRegistrar account by contacting support. Account closure does not
+          You may request closure of your Deltapreneur account by contacting support. Account closure does not
           automatically refund completed purchases. Data handling after closure is described in our{' '}
           <a href="/privacy-policy" className="font-medium text-indigo-600 hover:underline">
             Privacy Policy

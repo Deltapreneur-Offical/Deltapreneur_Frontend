@@ -33,9 +33,9 @@ export default function ContactPage() {
   const reduceMotion = useReducedMotion();
 
   useDocumentMeta({
-    title: 'Contact Us | HubRegistrar',
+    title: 'Contact Us | Deltapreneur',
     description:
-      'Contact Us — HubRegistrar (Aultum International) support email, phone, WhatsApp, and business address in Hubballi, Karnataka, India.',
+      'Contact Us — Deltapreneur (Aultum International) support email, phone, WhatsApp, and business address in Hubballi, Karnataka, India.',
   });
 
   const contactInfo = useMemo(
@@ -90,7 +90,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <BackToHomeButton />
           <BrandLogoImage
-            alt="HubRegistrar"
+            alt="Deltapreneur"
             className="h-12 cursor-pointer"
             onClick={() => navigate('/')}
           />

@@ -280,7 +280,6 @@ export default function DashboardPage() {
       cta: t('manageVentures'),
       tone: 'ventures',
     },
-    /* HIDDEN — Creators module temporarily disabled
     {
       key: 'creators',
       title: t('disruptors'),
@@ -289,7 +288,6 @@ export default function DashboardPage() {
       cta: t('exploreDisruptors'),
       tone: 'creators',
     },
-    */
     {
       key: 'domains',
       title: t('domains'),
@@ -331,14 +329,12 @@ export default function DashboardPage() {
       label: t('dashboardCreateVentureQuick'),
       tone: 'venture',
     },
-    /* HIDDEN — Creators quick action temporarily disabled
     {
       key: 'creators',
       to: '/creator',
       label: t('dashboardExploreCreatorsQuick'),
       tone: 'creators',
     },
-    */
     {
       key: 'domains',
       to: '/domains',
@@ -357,9 +353,7 @@ export default function DashboardPage() {
     { key: 'ventures', label: t('dashboardTotalVentures'), value: stats.totalVentures, tone: 'ventures' },
     { key: 'domains', label: t('dashboardActiveDomains'), value: stats.totalDomains, tone: 'domains' },
     { key: 'technologies', label: t('dashboardTechnologies'), value: stats.totalTechnologies, tone: 'technologies' },
-    /* HIDDEN — Creators stat card temporarily disabled
     { key: 'creators', label: t('dashboardCreators'), value: stats.totalCreators, tone: 'creators' },
-    */
   ];
 
   return (
@@ -414,13 +408,11 @@ export default function DashboardPage() {
           </section>
         ) : null}
 
-        {/* HIDDEN — Creators profile completion banner temporarily disabled
         {!isAdmin && creatorProfileReady && creatorProfile ? (
           <div className="relative z-0 w-full min-w-0 overflow-visible">
             <CreatorProfileCompletionBanner profile={creatorProfile} editTo="/creator" />
           </div>
         ) : null}
-        */}
 
         {user?.id ? <PayoutProfileBanner context="default" /> : null}
 

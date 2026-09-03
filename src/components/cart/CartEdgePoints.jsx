@@ -274,7 +274,7 @@ export default function CartEdgePoints({ orderTotal, onChange }) {
         {!canRedeem ? (
           <p className="text-xs text-gray-500 leading-relaxed">
             {points === 0
-              ? 'You have 0 Edge Points. Earn by referring friends, completing purchases, or listing on HubRegistrar.'
+              ? 'You have 0 Edge Points. Earn by referring friends, completing purchases, or listing on Deltapreneur.'
               : 'Add items to your cart to redeem Edge Points at checkout.'}
           </p>
         ) : (

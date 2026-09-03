@@ -1,4 +1,4 @@
-/** Unwrap HubRegistrar API bodies: `{ success, data }` or plain payloads. */
+/** Unwrap Deltapreneur API bodies: `{ success, data }` or plain payloads. */
 export function unwrapApiData(response) {
   const body = response?.data ?? response;
   if (body && typeof body === 'object' && 'data' in body && body.data !== undefined) {

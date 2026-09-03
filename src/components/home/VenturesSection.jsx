@@ -62,7 +62,7 @@ export default function VenturesSection() {
   if (loading) {
     return (
       <HomeSectionCardSkeleton
-        title={t('homeVentureRegister', { defaultValue: 'Venture Register' })}
+        title={t('homeVentureRegister', { defaultValue: 'Delta Venture' })}
         to="/ventures?mode=venture"
         accent="venture"
         compact
@@ -74,7 +74,7 @@ export default function VenturesSection() {
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
-          title={t('homeVentureRegister', { defaultValue: 'Venture Register' })}
+          title={t('homeVentureRegister', { defaultValue: 'Delta Venture' })}
           to="/ventures?mode=venture"
           accent="venture"
           showViewAll={ventures.length > 0}
@@ -82,7 +82,7 @@ export default function VenturesSection() {
         {ventures.length === 0 ? (
           <p className="text-center text-gray-500 py-8">{t('noVentures')}</p>
         ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeVentureRegister', { defaultValue: 'Venture Register' })}>
+          <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeVentureRegister', { defaultValue: 'Delta Venture' })}>
             {ventures.map((venture) => (
               <HomeAutoScrollRowItem key={venture.id}>
                 {renderVentureCard(venture)}

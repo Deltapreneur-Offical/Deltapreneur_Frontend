@@ -80,8 +80,8 @@ function CallNavButton() {
     <a
       href={SUPPORT_PHONE_TEL}
       className="home-nav-call-btn home-nav-contact-icon-btn"
-      aria-label="Call HubRegistrar support"
-      title="Call HubRegistrar support"
+      aria-label="Call Deltapreneur support"
+      title="Call Deltapreneur support"
     >
       <FaPhoneAlt aria-hidden />
     </a>

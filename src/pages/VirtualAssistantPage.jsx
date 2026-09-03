@@ -319,7 +319,7 @@ const VirtualAssistantPage = () => {
         </PageHeroItem>
         <PageHeroItem>
           <p className="va-app-hero-subtitle mb-8 sm:mb-10 md:mb-12">
-            Join HubRegistrar as a Virtual Assistant and help businesses thrive with your skills. Work flexibly, earn competitively, and grow with us.
+            Join Deltapreneur as a Virtual Assistant and help businesses thrive with your skills. Work flexibly, earn competitively, and grow with us.
           </p>
         </PageHeroItem>
       </PageHero>

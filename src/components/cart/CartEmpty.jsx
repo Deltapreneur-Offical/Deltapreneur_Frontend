@@ -32,7 +32,7 @@ export default function CartEmpty() {
         {t('cartEmptyTitle', { defaultValue: 'Your cart is empty' })}
       </h2>
       <p className="relative text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
-        {t('cartEmptyDesc', { defaultValue: "Discover domains, technologies, and ventures on HubRegistrar - add items to your cart and checkout when you're ready." })}
+        {t('cartEmptyDesc', { defaultValue: "Discover domains, technologies, and ventures on Deltapreneur - add items to your cart and checkout when you're ready." })}
       </p>
 
       <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl">

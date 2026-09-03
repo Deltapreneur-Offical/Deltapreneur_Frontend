@@ -112,7 +112,7 @@ export default function TechnologySection() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-1 border border-blue-100">
                 <Sparkles className="h-3.5 w-3.5" />
-                {t('homeFeaturedServices', { defaultValue: 'Featured HubRegistrar Services' })}
+                {t('homeFeaturedServices', { defaultValue: 'Featured Deltapreneur Services' })}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                 {t('homeTechnologyRegister', { defaultValue: 'Technology Register' })}

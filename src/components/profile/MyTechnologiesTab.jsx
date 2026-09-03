@@ -130,7 +130,7 @@ export default function MyTechnologiesTab() {
         <div className="rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center bg-gray-50/50">
           <Cpu className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-base font-bold text-gray-900">No active technology subscriptions</h3>
-          <p className="mt-1 text-xs text-gray-500">Explore HubRegistrar Technology Services catalogue to provision new applications.</p>
+          <p className="mt-1 text-xs text-gray-500">Explore Deltapreneur Technology Services catalogue to provision new applications.</p>
           <a
             href="/technology"
             className="mt-6 inline-block rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-700"
@@ -235,7 +235,7 @@ export default function MyTechnologiesTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Service Credentials</h3>
-            <p className="text-xs text-gray-500 mb-4">White-labelled access details for your HubRegistrar service.</p>
+            <p className="text-xs text-gray-500 mb-4">White-labelled access details for your Deltapreneur service.</p>
 
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3 text-xs font-mono text-gray-800 border border-gray-100">
               <div>

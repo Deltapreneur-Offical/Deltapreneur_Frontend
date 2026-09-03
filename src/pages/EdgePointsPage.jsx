@@ -78,7 +78,7 @@ function SummaryCard({ summary, loading }) {
 
 function HowItWorksCard() {
   const rules = [
-    { icon: Share2, title: 'Share & Earn', desc: 'Earn 20 Edge Points every time another user opens your shared HubRegistrar listing link.' },
+    { icon: Share2, title: 'Share & Earn', desc: 'Earn 20 Edge Points every time another user opens your shared Deltapreneur listing link.' },
     { icon: Gift, title: '10 Points = ₹1', desc: 'Your Edge Points convert to real rupee discounts at checkout.' },
     { icon: ChevronRight, title: 'Where to Redeem', desc: 'Use on Domains, Ventures, Technologies, Auctions, and other eligible purchases.' },
     { icon: Info, title: 'Max Redemption', desc: 'Maximum discount per purchase is ₹500 (5,000 points).' },

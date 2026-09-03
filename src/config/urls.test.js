@@ -14,7 +14,7 @@ describe('production host mapping', () => {
     );
   });
 
-  it('maps HubRegistrar SPA hosts to backend.hubregistrar.com', () => {
+  it('maps Deltapreneur SPA hosts to backend.hubregistrar.com', () => {
     expect(productionApiOriginForHost('hubregistrar.com')).toBe(
       'https://backend.hubregistrar.com',
     );

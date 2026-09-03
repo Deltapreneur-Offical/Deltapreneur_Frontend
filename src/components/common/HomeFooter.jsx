@@ -211,7 +211,7 @@ export default function HomeFooter() {
 
         <div className="home-footer-logo-col flex flex-col items-start justify-start sm:col-span-2 md:col-span-4">
 
-          <Link to="/" className="home-footer-logo-link group mb-4 inline-block" aria-label="HubRegistrar home">
+          <Link to="/" className="home-footer-logo-link group mb-4 inline-block" aria-label="Deltapreneur home">
             <BrandNavLogo className="home-footer-logo" imgClassName="home-footer-logo-image" />
           </Link>
 
@@ -229,7 +229,7 @@ export default function HomeFooter() {
 
             </ScrollLink>
 
-            <ScrollLink to="/virtual-assistant" className={linkClass + ' hidden'}>
+            <ScrollLink to="/virtual-assistant" className={linkClass}>
 
               {t('navVirtualAssistant', { defaultValue: 'Virtual Assistant' })}
 

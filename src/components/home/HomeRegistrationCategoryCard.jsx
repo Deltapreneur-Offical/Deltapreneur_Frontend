@@ -57,8 +57,8 @@ export default function HomeRegistrationCategoryCard({ category, variant = 'marq
     e.preventDefault();
     e.stopPropagation();
     const url = window.location.origin + registrationsPathForCategory(category.slug);
-    const title = category.label || 'HubRegistrar';
-    const text = 'Check out ' + title + ' registrations on HubRegistrar!\n\n' + url;
+    const title = category.label || 'Deltapreneur';
+    const text = 'Check out ' + title + ' registrations on Deltapreneur!\n\n' + url;
 
     if (navigator.share) {
       navigator.share({ title, text, url }).catch(() => {});

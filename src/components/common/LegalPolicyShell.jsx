@@ -25,7 +25,7 @@ import {
 export default function LegalPolicyShell({
   badgeIcon: BadgeIcon = FileText,
   badge,
-  titleLead = 'HubRegistrar',
+  titleLead = 'Deltapreneur',
   titleAccent,
   intro,
   lastUpdated,
@@ -39,7 +39,7 @@ export default function LegalPolicyShell({
   const [openDropdown, setOpenDropdown] = useState(null);
   const { isScrolled, navRef } = useHomePageScrollNav();
 
-  const resolvedTitle = documentTitle || `${titleLead} ${titleAccent} | HubRegistrar`.replace(/\s+/g, ' ').trim();
+  const resolvedTitle = documentTitle || `${titleLead} ${titleAccent} | Deltapreneur`.replace(/\s+/g, ' ').trim();
   useDocumentMeta({
     title: resolvedTitle,
     description: documentDescription || intro,

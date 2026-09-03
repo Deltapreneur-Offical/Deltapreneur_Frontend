@@ -475,7 +475,6 @@ export default function OperationsPage() {
             </div>
           </div>
 
-          {/* HIDDEN — Virtual Assistance content temporarily disabled
           {isAssistance ? (
             <FeaturedVirtualAssistantsListing
               layout="grid"
@@ -485,9 +484,7 @@ export default function OperationsPage() {
               onViewProfile={(profileId) => openVaDetailInUrl(profileId)}
               onHireProfile={(profileId) => openVaDetailInUrl(profileId, { intent: 'hire' })}
             />
-          ) : (
-          */}
-          {isOffices ? (
+          ) : isOffices ? (
             officesLoading ? (
               <PageContentSkeleton variant="grid" rows={3} />
             ) : offices.length === 0 ? (

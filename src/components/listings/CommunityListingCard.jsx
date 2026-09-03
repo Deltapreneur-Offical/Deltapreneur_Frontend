@@ -127,8 +127,8 @@ export default function CommunityListingCard({
     const path = getVirtualAssistantDetailPath(profile?.id);
     const shareUrl = `${base}${path}${user?.id ? `?ref=${user.id}` : ''}`;
     const shareName = profile?.fullName || profile?.name || 'Virtual Assistant';
-    const shareSubject = `Check out this virtual assistant on HubRegistrar: ${shareName}`;
-    const shareText = `Check out this virtual assistant on HubRegistrar!\n\n${shareSubject}\n\n${shareUrl}`;
+    const shareSubject = `Check out this virtual assistant on Deltapreneur: ${shareName}`;
+    const shareText = `Check out this virtual assistant on Deltapreneur!\n\n${shareSubject}\n\n${shareUrl}`;
 
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {

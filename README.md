@@ -180,4 +180,4 @@ CoBrother_Frontend/
 
 ## License
 
-Private — Deltapreneur copy of the CoBrother/HubRegistrar frontend.
+Private — Deltapreneur copy of the CoBrother/Deltapreneur frontend.

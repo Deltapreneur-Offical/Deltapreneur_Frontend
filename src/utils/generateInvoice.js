@@ -1,10 +1,10 @@
 /**
  * generateInvoice.js
- * HubRegistrar storefront — Tax Invoice PDF (print) generator.
+ * Deltapreneur storefront — Tax Invoice PDF (print) generator.
  * Seller billed as Aultum International.
  */
 
-import coBrotherLogo from '../assets/hubregistrarlogo_main.png';
+import coBrotherLogo from '../assets/Deltapreneur_main_logo.png';
 import { formatAuctionDate } from './auctionDate';
 import { formatInr } from './money';
 
@@ -276,7 +276,7 @@ function buildLineItems({ type, item }) {
   });
   if (item.coBrotherHelpPaid) {
     lines.push({
-      name: 'HubRegistrar Helper Service',
+      name: 'Deltapreneur Helper Service',
       description: 'Optional helper add-on',
       qty: 1,
       unitPrice: 1000,
@@ -376,7 +376,8 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+      font-family: 'Guild A Display', 'Guild A Display Regular', system-ui, sans-serif;
+      font-weight: 400;
       background: #fff;
       color: #111827;
       font-size: 13px;
@@ -609,7 +610,7 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
 
     <div class="header">
       <div class="brand-block">
-        <img class="brand-logo" src="${logoUrl}" alt="HubRegistrar" />
+        <img class="brand-logo" src="${logoUrl}" alt="Deltapreneur" />
       </div>
       <div class="invoice-meta">
         <div class="invoice-title">Tax Invoice</div>

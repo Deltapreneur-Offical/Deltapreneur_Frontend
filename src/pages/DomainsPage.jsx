@@ -1823,7 +1823,7 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               </div>
             ) : null}
             <p className="pt-2 text-xs leading-5 text-gray-600">
-              HubRegistrar deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout.
+              Deltapreneur deducts a {commissionBreakdown.commissionPercent}% marketplace commission from your payout.
               Buyers see the tax-inclusive price only — they are not shown this fee.
               {buyerPaysBreakdown ? ' Buyer pays includes applicable taxes.' : ''}
             </p>

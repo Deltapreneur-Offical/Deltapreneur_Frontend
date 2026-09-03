@@ -36,7 +36,6 @@ const sidebarItems = [
   { icon: Store, labelKey: 'storefront', to: '/storefront', isImage: false },
   { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },
   { icon: TechnologyIcon, labelKey: 'technology', to: '/technology', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
-  /* HIDDEN — Creators sidebar item temporarily disabled
   {
     icon: CreatorIcon,
     labelKey: 'creator',
@@ -44,7 +43,6 @@ const sidebarItems = [
     isImage: true,
     iconImgClass: 'app-sidebar-icon-img--creator',
   },
-  */
   { icon: Gavel, labelKey: 'auctions', to: '/auctions', isImage: false },
   { icon: ShoppingBag, labelKey: 'purchases', to: '/purchases', isImage: false },
   {
@@ -841,7 +839,7 @@ export default function AppLayout({ children }) {
               className={`brand-logo-interactive items-center shrink-0 ${
                 sidebarCollapsed ? 'flex app-layout-collapsed-brand' : 'flex lg:hidden app-layout-mobile-brand'
               }`}
-              aria-label="HubRegistrar home"
+              aria-label="Deltapreneur home"
             >
               <BrandNavLogo />
             </Link>

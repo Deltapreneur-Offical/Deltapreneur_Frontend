@@ -401,7 +401,7 @@ export default function CoCreationPage() {
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-2 border border-blue-100">
                     <Sparkles className="h-3.5 w-3.5" />
-                    {t('techServicesEnterpriseCatalogue', { defaultValue: 'HubRegistrar Enterprise Catalogue' })}
+                    {t('techServicesEnterpriseCatalogue', { defaultValue: 'Deltapreneur Enterprise Catalogue' })}
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
                     {t('techServicesTitle', { defaultValue: 'Technology Services' })}
@@ -1038,8 +1038,8 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
                   Subscription Revenue Policy
                 </div>
                 <ul className="list-disc pl-5 space-y-1 text-gray-600 text-xs leading-relaxed">
-                  <li>HubRegistrar retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
-                  <li>HubRegistrar charges <strong>no commission</strong> on renewal payments.</li>
+                  <li>Deltapreneur retains <strong>100%</strong> of the first subscription payment when a customer initially subscribes.</li>
+                  <li>Deltapreneur charges <strong>no commission</strong> on renewal payments.</li>
                   <li>The seller receives <strong>100%</strong> of all future subscription renewals.</li>
                 </ul>
               </div>
@@ -1276,7 +1276,7 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
 
 
-// ─── Buy Technology Modal ── UPGRADED with HubRegistrar opt-in + billing breakdown ─
+// ─── Buy Technology Modal ── UPGRADED with Deltapreneur opt-in + billing breakdown ─
 function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
   const { t } = useTranslation();
   const { currency, formatPrice } = useCurrency();
@@ -1366,7 +1366,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `${item.name}${coBrotherOptIn ? ' + HubRegistrar Help' : ''}`,
+        description: `${item.name}${coBrotherOptIn ? ' + Deltapreneur Help' : ''}`,
         themeColor: '#a06ec8',
         onSuccess: async (response) => {
           try {
@@ -1480,7 +1480,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
 
               <div className="flex flex-col gap-4">
                 <div className="text-sm font-extrabold text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Optional Services</div>
-                {/* ── HubRegistrar opt-in card only (no VA / Compliance) ── */}
+                {/* ── Deltapreneur opt-in card only (no VA / Compliance) ── */}
                 <div
                   onClick={() => setHubRegistrarOptIn(v => !v)}
                   className={`flex flex-col gap-3 p-5 cursor-pointer rounded-2xl border-2 transition-all duration-200 ${coBrotherOptIn ? 'bg-indigo-50/50 border-indigo-500 shadow-md' : 'bg-white border-gray-200 hover:border-indigo-300 shadow-sm'}`}
@@ -1499,7 +1499,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
                         </span>
                       </div>
                       <div className="text-gray-500 text-sm font-medium leading-relaxed pr-2">
-                        Get a dedicated HubRegistrar to help you set up, deploy, and get the most out of
+                        Get a dedicated Deltapreneur to help you set up, deploy, and get the most out of
                         this software. They'll reach out within 24 hours.
                       </div>
                     </div>
@@ -1587,7 +1587,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
 
               <div className="mt-5 p-4 sm:p-5 bg-amber-50/80 border border-amber-200/80 rounded-[20px] text-[0.8rem] text-amber-900 font-semibold shadow-sm leading-relaxed">
                 🔒 GitHub/Resources link will be shared after purchase verification.
-                {coBrotherOptIn && ' Your HubRegistrar will reach out within 24 hours.'}
+                {coBrotherOptIn && ' Your Deltapreneur will reach out within 24 hours.'}
               </div>
             </div>
           </div>

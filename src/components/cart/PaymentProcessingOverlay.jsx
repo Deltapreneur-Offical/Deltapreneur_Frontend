@@ -99,7 +99,7 @@ export default function PaymentProcessingOverlay({ open = false }) {
               transition={{ duration: 0.35, delay: 0.05 }}
             >
               <BrandLogoImage
-                alt="HubRegistrar"
+                alt="Deltapreneur"
                 className="mb-6 h-12 w-auto object-contain"
               />
               <div

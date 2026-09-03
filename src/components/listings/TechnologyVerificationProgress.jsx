@@ -8,7 +8,7 @@ function VerificationStepperOnly({ verified }) {
   const activeStep = verified ? 3 : 2;
 
   const steps = [
-    { label: t('techVerifyStepListed', 'Listed'), hint: t('techVerifyStepListedHint', 'Your technology is on HubRegistrar') },
+    { label: t('techVerifyStepListed', 'Listed'), hint: t('techVerifyStepListedHint', 'Your technology is on Deltapreneur') },
     { label: t('techVerifyStepReview', 'Under review'), hint: t('techVerifyStepReviewHint', 'Waiting period: 2–3 business days') },
     { label: t('techVerifyStepVerified', 'Verified'), hint: t('techVerifyStepVerifiedHint', 'Available to buyers') },
   ];

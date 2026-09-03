@@ -206,7 +206,7 @@ export default function DomainManagementCard({ domainManagement, compact = false
             <div className="text-center py-10">
               <Globe className="w-10 h-10 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-500 mb-4">
-                {t('dnsForwardingDesc', { defaultValue: 'Domain forwarding can be configured in the HubRegistrar domain control panel.' })}
+                {t('dnsForwardingDesc', { defaultValue: 'Domain forwarding can be configured in the Deltapreneur domain control panel.' })}
               </p>
             </div>
           )}

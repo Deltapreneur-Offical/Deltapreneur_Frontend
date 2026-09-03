@@ -10,7 +10,7 @@ import TechnologyPurchaseConfig from './TechnologyPurchaseConfig';
 
 const BUSINESS_KEYS = new Set(ADDON_SERVICES.map((s) => s.key));
 const SAVE_DELAY_MS = 450;
-/** Domain listing extras only — Technology cart config is HubRegistrar-only (no VA). */
+/** Domain listing extras only — Technology cart config is Deltapreneur-only (no VA). */
 const SHOW_VA_IN_CART = false;
 
 function splitAddonServices(all = [], vaCatalog = []) {
@@ -129,7 +129,7 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
         coBrotherOptIn: nextHubRegistrar,
       };
       if (nextPlan) body.selectedPlan = nextPlan;
-      // Do not send addonServices — leave VA/Compliance untouched; cart UI is HubRegistrar-only.
+      // Do not send addonServices — leave VA/Compliance untouched; cart UI is Deltapreneur-only.
       await updateItem(item.id, body);
       await onUpdated?.();
     } catch {

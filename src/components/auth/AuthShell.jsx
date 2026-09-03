@@ -47,7 +47,7 @@ export default function AuthShell({
           )}
 
           <BrandLogoImage
-            alt="HubRegistrar"
+            alt="Deltapreneur"
             className="auth-page__logo"
           />
 

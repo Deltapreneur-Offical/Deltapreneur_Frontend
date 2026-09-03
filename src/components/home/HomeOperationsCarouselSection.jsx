@@ -104,7 +104,6 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
     </HomePreviewCardShell>
   );
 
-  /* HIDDEN — Virtual Assistance section temporarily disabled
   if (isAssistanceSection) {
     if (vaFeatured.loading) {
       return (
@@ -137,7 +136,6 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
       </section>
     );
   }
-  */
 
   if (isOfficesSection) {
     const filteredOffices = offices.filter((office) => {
@@ -220,39 +218,6 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
               ))}
             </div>
           )}
-        </div>
-      </section>
-    );
-  }
-
-  if (isAssistanceSection) {
-    if (vaFeatured.loading) {
-      return (
-        <HomeSectionCardSkeleton
-          title={title}
-          to={viewAllPath}
-          accent={accent}
-          compact
-        />
-      );
-    }
-
-    return (
-      <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
-        <div className="w-full min-w-0">
-          <HomeSectionHeader
-            title={title}
-            to={viewAllPath}
-            accent={accent}
-            showViewAll={vaFeatured.count > 0}
-          />
-          <FeaturedVirtualAssistantsListing
-            layout="row"
-            pageSize={20}
-            cards={vaFeatured.cards}
-            loading={false}
-            ariaLabel={title}
-          />
         </div>
       </section>
     );

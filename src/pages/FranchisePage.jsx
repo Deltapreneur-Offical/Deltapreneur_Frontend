@@ -26,7 +26,7 @@ import BackToHomeButton from '../components/common/BackToHomeButton';
 import HomeFooter from '../components/common/HomeFooter';
 
 const BENEFITS = [
-  { icon: Building2, label: 'HubRegistrar Branding', desc: 'Operate under a trusted brand name' },
+  { icon: Building2, label: 'Deltapreneur Branding', desc: 'Operate under a trusted brand name' },
   { icon: GraduationCap, label: 'Training', desc: 'Complete training on processes & tools' },
   { icon: Monitor, label: 'Software / Dashboard', desc: 'Access to dashboard & management tools' },
   { icon: Megaphone, label: 'Marketing Support', desc: 'Marketing materials & guidance' },
@@ -130,7 +130,7 @@ export default function FranchisePage() {
           <div className="franchise-success-actions">
             <button onClick={() => navigate('/')} className="franchise-btn-primary">Back to Home</button>
             <a href="/operations" className="franchise-success-explore-btn">
-              Explore HubRegistrar Services <ArrowRight size={16} />
+              Explore Deltapreneur Services <ArrowRight size={16} />
             </a>
           </div>
           <div className="franchise-success-explore">
@@ -138,7 +138,7 @@ export default function FranchisePage() {
             <div className="franchise-success-explore-grid">
               <a href="/operations" className="franchise-success-explore-card">
                 <Briefcase size={20} />
-                <span>HubRegistrar Services</span>
+                <span>Deltapreneur Services</span>
               </a>
               <a href="/contact" className="franchise-success-explore-card">
                 <FileText size={20} />
@@ -181,7 +181,7 @@ export default function FranchisePage() {
             <h1 className="franchise-hero-title"><span className="text-amber-600">₹0</span> Franchise Fee</h1>
           </PageHeroItem>
           <PageHeroItem>
-            <p className="franchise-hero-subtitle">Join HubRegistrar as a certified franchise partner. Build your business with a trusted brand, complete support, and access to customer leads. Operating area: approximately 25-50 km per franchise, subject to availability.</p>
+            <p className="franchise-hero-subtitle">Join Deltapreneur as a certified franchise partner. Build your business with a trusted brand, complete support, and access to customer leads. Operating area: approximately 25-50 km per franchise, subject to availability.</p>
           </PageHeroItem>
           <PageHeroItem>
             <CtaButtonTag className="franchise-btn-primary" {...ctaButtonProps}>Apply Now <ArrowRight size={18} /></CtaButtonTag>
@@ -212,8 +212,8 @@ export default function FranchisePage() {
         <section className="franchise-section franchise-section-alt">
           <div className="franchise-container">
             <PageReveal>
-              <h2 className="franchise-section-title">HubRegistrar Services</h2>
-              <p className="franchise-section-subtitle">These are the services you will be able to offer as a HubRegistrar franchise partner.</p>
+              <h2 className="franchise-section-title">Deltapreneur Services</h2>
+              <p className="franchise-section-subtitle">These are the services you will be able to offer as a Deltapreneur franchise partner.</p>
             </PageReveal>
             <PageStagger className="franchise-services-grid" mount>
               {services.map((service) => (
@@ -378,7 +378,7 @@ export default function FranchisePage() {
               </div>
               <div className="franchise-field franchise-field-full">
                 <label>Reason for Applying</label>
-                <textarea name="reason_for_applying" value={form.reason_for_applying} onChange={handleChange} placeholder="Why do you want to become a HubRegistrar franchise partner?" rows={3} />
+                <textarea name="reason_for_applying" value={form.reason_for_applying} onChange={handleChange} placeholder="Why do you want to become a Deltapreneur franchise partner?" rows={3} />
               </div>
               <div className="franchise-field franchise-field-full">
                 <label>Additional Information</label>

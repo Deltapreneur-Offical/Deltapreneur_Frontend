@@ -97,7 +97,7 @@ export default function RenewalForm({ onClose, orders }) {
           ))}
         </select>
         {domainId && !isOpenProvider && (
-           <p className="text-xs text-rose-500 mt-1">This domain is not eligible for HubRegistrar managed services yet.</p>
+           <p className="text-xs text-rose-500 mt-1">This domain is not eligible for Deltapreneur managed services yet.</p>
         )}
       </div>
 

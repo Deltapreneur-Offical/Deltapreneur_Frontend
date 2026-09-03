@@ -24,9 +24,9 @@ export default function PrivacyPolicyPage() {
   const lastUpdated = '15th July 2026';
 
   useDocumentMeta({
-    title: 'Privacy Policy | HubRegistrar',
+    title: 'Privacy Policy | Deltapreneur',
     description:
-      'HubRegistrar Privacy Policy — how we collect, use, store, and protect personal data on hubregistrar.com.',
+      'Deltapreneur Privacy Policy — how we collect, use, store, and protect personal data on hubregistrar.com.',
   });
 
   const sections = [
@@ -94,7 +94,7 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
-              <span className="text-slate-800">HubRegistrar </span>
+              <span className="text-slate-800">Deltapreneur </span>
               <span className="text-indigo-600">{t('privacyPageTitle')}</span>
             </h1>
 

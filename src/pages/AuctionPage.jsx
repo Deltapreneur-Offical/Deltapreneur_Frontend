@@ -394,7 +394,8 @@ export default function AuctionPage() {
                   <h1
                     className="m-0 leading-none"
                     style={{
-                      fontFamily: "'Inter', sans-serif",
+                      fontFamily: "'Guild A Display', 'Guild A Display Regular', sans-serif",
+                      fontWeight: 400,
                       fontSize: 'clamp(2rem, 5vw, 2.75rem)',
                       fontWeight: 800,
                       color: '#f97316',

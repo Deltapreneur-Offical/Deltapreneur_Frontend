@@ -13,7 +13,7 @@ describe('buildShareMessage', () => {
     });
     expect(msg).toBe(
       [
-        '🚀 Check out donka.in on HubRegistrar!',
+        '🚀 Check out donka.in on Deltapreneur!',
         '',
         '🌐 Standard Domain',
         '✅ Available',
@@ -43,7 +43,7 @@ describe('buildShareMessage', () => {
       shareUrl,
       availability: { status: 'taken', is_premium: false, price_inr: null },
     });
-    expect(msg).toContain('🚀 Check out google.com on HubRegistrar!');
+    expect(msg).toContain('🚀 Check out google.com on Deltapreneur!');
     expect(msg).toContain('🌐 Domain');
     expect(msg).toContain('❌ Currently unavailable');
     expect(msg).not.toContain('✅ Available');
@@ -53,7 +53,7 @@ describe('buildShareMessage', () => {
   it('degrades gracefully when live availability is unknown', () => {
     const msg = buildShareMessage({ domain, shareUrl, availability: null });
     expect(msg).toBe(
-      ['🚀 Check out donka.in on HubRegistrar!', '', '🔗 https://cobrother.com/s/abc123'].join('\n'),
+      ['🚀 Check out donka.in on Deltapreneur!', '', '🔗 https://cobrother.com/s/abc123'].join('\n'),
     );
     expect(msg).not.toContain('Standard Domain');
     expect(msg).not.toContain('Premium Domain');

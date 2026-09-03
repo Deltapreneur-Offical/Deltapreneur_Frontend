@@ -127,8 +127,8 @@ export default function RegistrationsPage() {
 
   useDocumentMeta({
     title: selectedCategory
-      ? `${selectedCategory.label} | HubRegistrar`
-      : 'Registrations | HubRegistrar',
+      ? `${selectedCategory.label} | Deltapreneur`
+      : 'Registrations | Deltapreneur',
     description:
       'Browse Hub Registrar categories — from business entity and GST to FSSAI, MSME, aviation, and industry licences — then open the services that apply.',
   });

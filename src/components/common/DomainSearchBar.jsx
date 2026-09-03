@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Search, Loader2, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronRight } from 'lucide-react';
+import deltapreneurIcon from '../../assets/Deltapreneur_icon.png';
 import { domainAPI, domainStorefrontAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
 import { extractDomainList, normalizeDomainRecord } from '../../utils/domainApiAdapter';
@@ -408,16 +409,6 @@ function triggerLightningTail(host) {
   }, LIGHTNING_TAIL_MS);
 }
 
-function BrandSearchIcon() {
-  return (
-    <Search
-      className="domain-search-icon h-7 w-7 shrink-0 text-slate-900 transition-colors duration-200"
-      strokeWidth={2.25}
-      aria-hidden="true"
-    />
-  );
-}
-
 function BrandSearchSubmitButton({ label }) {
   const reduceMotion = useReducedMotion();
   const ButtonTag = reduceMotion ? 'button' : motion.button;
@@ -432,20 +423,14 @@ function BrandSearchSubmitButton({ label }) {
     <ButtonTag
       type="submit"
       aria-label={label}
-      className="domain-search-submit brand-search-submit grid h-11 w-11 shrink-0 place-items-center rounded-full border text-white transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-2"
+      className="brand-search-submit"
       {...motionProps}
     >
-      {reduceMotion ? (
-        <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
-      ) : (
-        <motion.span
-          className="grid place-items-center"
-          whileHover={{ x: 2 }}
-          transition={{ duration: 0.2, ease: HOME_EASE_OUT }}
-        >
-          <ArrowRight className="h-5 w-5 text-white" strokeWidth={2.4} />
-        </motion.span>
-      )}
+      <img
+        src={deltapreneurIcon}
+        alt=""
+        className="brand-search-submit-icon"
+      />
     </ButtonTag>
   );
 }
@@ -1417,16 +1402,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center gap-2 overflow-hidden rounded-2xl border bg-white py-2 pl-4 pr-2 transition-all duration-300 sm:pl-5 sm:rounded-full"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-2xl border bg-white py-2 pl-4 pr-0 transition-all duration-300 sm:pl-5 sm:rounded-full"
       >
-        <BrandSearchIcon />
         <input
           type="text"
-          className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
+          className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] font-normal text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-base"
           placeholder={placeholder}
           value={safeQuery}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <span className="brand-search-divider" aria-hidden="true" />
         <BrandSearchSubmitButton label={t('search')} />
       </form>
     </div>
@@ -1442,16 +1427,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] w-full flex flex-row items-center bg-white rounded-2xl sm:rounded-full border overflow-hidden px-4 sm:pl-6 sm:pr-3 py-2.5 gap-2 flex-1 transition-all duration-300"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-2xl border bg-white py-2.5 pl-4 pr-0 transition-all duration-300 sm:rounded-full sm:pl-6"
       >
-        <BrandSearchIcon />
         <input
           type="text"
-          className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-slate-900 text-base sm:text-lg placeholder:text-slate-400 py-2.5 sm:py-3 focus:ring-0"
+          className="w-full min-w-0 flex-1 border-none bg-transparent py-2.5 text-base font-normal text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:py-3 sm:text-lg"
           placeholder={placeholder}
           value={safeQuery}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <span className="brand-search-divider" aria-hidden="true" />
         <BrandSearchSubmitButton label={t('search')} />
       </form>
     </div>
@@ -1824,6 +1809,47 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
         }
 
+        .brand-search-divider {
+          width: 1px;
+          height: 1.75rem;
+          flex-shrink: 0;
+          align-self: center;
+          margin: 0 0.15rem 0 0.2rem;
+          background: rgba(56, 189, 248, 0.45);
+        }
+
+        .brand-search-submit {
+          display: block;
+          align-self: stretch;
+          height: 2.85rem;
+          width: auto;
+          aspect-ratio: 1945 / 1556;
+          flex-shrink: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
+          box-shadow: none;
+          cursor: pointer;
+          overflow: visible;
+        }
+
+        .brand-search-submit:hover,
+        .brand-search-submit:focus-visible {
+          background: transparent;
+          box-shadow: none;
+          outline: none;
+        }
+
+        .brand-search-submit-icon {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center right;
+        }
+
         /* Thick orange/red border comet — search bar + pills */
         .brand-lightning-host {
           position: relative;
@@ -1932,23 +1958,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           }
         }
 
-        .brand-search-submit {
-          background: #000000;
-          border-color: #000000;
-          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-        }
-
-        .brand-search-submit:hover,
-        .brand-search-submit:focus-visible {
-          background: #000000;
-          border-color: #000000;
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
-        }
-
-        .brand-search-submit:focus-visible {
-          --tw-ring-color: rgba(0, 0, 0, 0.25);
-        }
-
         .brand-search-tabs {
           border-color: rgba(0, 0, 0, 0.12);
           box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
@@ -2053,17 +2062,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             0 12px 34px -12px rgba(102, 204, 255, 0.45),
             0 0 0 1px rgba(102, 204, 255, 0.28),
             0 0 28px -9px rgba(102, 204, 255, 0.5);
-        }
-
-        .search-glow-focus:hover .domain-search-icon,
-        .search-glow-focus:focus-within .domain-search-icon {
-          color: var(--cobrother-brand-green);
-        }
-
-        .domain-search-submit:hover,
-        .domain-search-submit:focus-visible {
-          color: #ffffff;
-          outline: none;
         }
       `}</style>
     </div>

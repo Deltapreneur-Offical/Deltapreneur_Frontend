@@ -45,7 +45,7 @@ const BACK_RULES = [
   { test: (p) => p.startsWith('/purchases'), to: '/purchases', label: 'Purchases' },
   { test: (p) => p.startsWith('/fee-requests'), to: '/fee-requests', label: 'Fee requests' },
   { test: (p) => p.startsWith('/meetings'), to: '/meetings', label: 'Meetings' },
-  { test: (p) => p.startsWith('/notifications'), to: '/notifications', label: 'Notifications' },   { test: (p) => p.startsWith('/cobrother'), to: '/cobrother-dashboard', label: 'HubRegistrar' },
+  { test: (p) => p.startsWith('/notifications'), to: '/notifications', label: 'Notifications' },   { test: (p) => p.startsWith('/cobrother'), to: '/cobrother-dashboard', label: 'Deltapreneur' },
   { test: (p) => p.startsWith('/operations'), to: '/operations', label: 'Operations' },
   { test: (p) => p.startsWith('/dashboard'), to: '/dashboard', label: 'Dashboard' },
 ];

@@ -191,7 +191,7 @@ export default function PurchasesPage() {
             icon={<Cpu {...PURCHASES_STAT_ICON} />}
           />
           <StatCard
-            label={t('purchasesStatHubRegistrarActive', { defaultValue: 'HubRegistrar Active' })}
+            label={t('purchasesStatHubRegistrarActive', { defaultValue: 'Deltapreneur Active' })}
             value={completedTechnology.filter(p => p.coBrotherHelpPaid).length}
             icon={<BadgeCheck {...PURCHASES_STAT_ICON} />}
           />
@@ -634,7 +634,7 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
             )}
             {helpPaid && (
               <span className="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md tracking-wider">
-                ◆ HubRegistrar
+                ◆ Deltapreneur
               </span>
             )}
           </div>
@@ -711,11 +711,11 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
             </div>
           )}
 
-          {/* HubRegistrar status */}
+          {/* Deltapreneur status */}
           {helpPaid && (
             <div className="px-4 py-3.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-5 text-[0.85rem] text-emerald-800 font-medium shadow-sm flex items-start gap-2">
               <span className="text-emerald-500 text-lg leading-none mt-0.5">◆</span>
-              <span>HubRegistrar assigned — check your email for introduction details.</span>
+              <span>Deltapreneur assigned — check your email for introduction details.</span>
             </div>
           )}
 
@@ -782,7 +782,7 @@ function HubRegistrarHelpModal({ purchase, onClose, onSuccess }) {
       openRazorpayCheckout({
         orderData,
         user,
-        description: `HubRegistrar Help — ${sw.name}`,
+        description: `Deltapreneur Help — ${sw.name}`,
         themeColor: '#7c3aed',
         onSuccess: async (response) => {
           try {

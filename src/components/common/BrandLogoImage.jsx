@@ -1,19 +1,18 @@
 /**
- * HubRegistrar logo — uses official logo image.
- * Renders the brand logo image instead of the old text placeholder.
+ * Deltapreneur logo — uses official logo image.
  */
-import hubregistrarLogo from '../../assets/hubregistrarlogo_main.png';
+import deltapreneurLogo from '../../assets/Deltapreneur_main_logo.png';
 
 export default function BrandLogoImage({
   src: _src,
   className = '',
-  alt = 'HubRegistrar',
+  alt = 'Deltapreneur',
   'aria-hidden': ariaHidden = false,
   ...rest
 }) {
   return (
     <img
-      src={hubregistrarLogo}
+      src={deltapreneurLogo}
       alt={alt}
       className={className}
       aria-hidden={ariaHidden || undefined}

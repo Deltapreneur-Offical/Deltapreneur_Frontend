@@ -36,7 +36,7 @@ export default function TopNavbar({
           type="button"
           className={`home-top-nav-scroll-logo home-nav-logo-btn${isScrolled || showCompactLogo ? ' is-visible' : ''}`}
           onClick={handleLogoClick}
-          aria-label="HubRegistrar home"
+          aria-label="Deltapreneur home"
           tabIndex={isScrolled || showCompactLogo ? 0 : -1}
         >
           <BrandNavLogo className="home-top-nav-scroll-logo__mark" />

@@ -68,7 +68,7 @@ export default function PremiumCartConflictModal({
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
             Domains priced above <strong className="text-slate-900">₹5,00,000</strong> are not
-            available for instant online payment. HubRegistrar personally manages verification,
+            available for instant online payment. Deltapreneur personally manages verification,
             seller coordination, and secure transfer — so this domain must sit alone in your cart.
           </p>
 

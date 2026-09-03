@@ -72,7 +72,7 @@ export function sanitizeUserErrorMessage(raw, fallback, options = {}) {
   // Never surface registrar vendor names to end users.
   if (/open\s*provider|reseller\s*club|legacy_resellerclub/i.test(text)) {
     if (/dns|nameserver/i.test(text)) {
-      return 'DNS and nameserver management is not available for this domain yet. Please contact HubRegistrar support.';
+      return 'DNS and nameserver management is not available for this domain yet. Please contact Deltapreneur support.';
     }
     return baseFallback;
   }

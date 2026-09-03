@@ -1001,7 +1001,7 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
     } catch (err) {
       setDnsError(scrubRegistrarVendorNames(
         readApiError(err, 'Could not create DNS record. Make sure nameservers are set to default.'),
-        'Could not create DNS record. Make sure nameservers are set to HubRegistrar managed DNS.',
+        'Could not create DNS record. Make sure nameservers are set to Deltapreneur managed DNS.',
       ));
     } finally { setAddingRecord(false); }
   };
@@ -1070,8 +1070,8 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
             <p className="font-bold">Domain DNS setup required</p>
             <p className="mt-1 text-amber-800/90">
-              DNS and nameserver management for this domain is not fully enabled in HubRegistrar yet.
-              Please contact HubRegistrar support to finish setup.
+              DNS and nameserver management for this domain is not fully enabled in Deltapreneur yet.
+              Please contact Deltapreneur support to finish setup.
             </p>
           </div>
         )}
@@ -1202,7 +1202,7 @@ function DnsManagementSection({ orderId, nameservers, legacyResellerClub = false
                       </div>
                       <div>
                         <h4 className="text-xs font-bold text-indigo-900">System-managed DNS</h4>
-                        <p className="text-xs text-indigo-700 mt-0.5">Core DNS infrastructure is managed automatically by HubRegistrar.</p>
+                        <p className="text-xs text-indigo-700 mt-0.5">Core DNS infrastructure is managed automatically by Deltapreneur.</p>
                       </div>
                     </div>
                   )}

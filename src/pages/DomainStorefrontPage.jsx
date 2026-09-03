@@ -644,7 +644,7 @@ export default function DomainStorefrontPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <p className="text-[0.7rem] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md max-w-fit">
-                {t('storefrontHeaderEyebrow', { defaultValue: 'HubRegistrar Storefront' })}
+                {t('storefrontHeaderEyebrow', { defaultValue: 'Deltapreneur Storefront' })}
               </p>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{t('storefrontHeaderTitle', { defaultValue: 'Domain Storefront' })}</h1>
               <p className="text-sm text-gray-500">
@@ -1000,7 +1000,7 @@ export default function DomainStorefrontPage() {
                     transferSubMode === 'in' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
-                  {t('storefrontTransferInTab', { defaultValue: 'Transfer to HubRegistrar' })}
+                  {t('storefrontTransferInTab', { defaultValue: 'Transfer to Deltapreneur' })}
                 </button>
                 <button
                   onClick={() => setTransferSubMode('out')}
@@ -1016,9 +1016,9 @@ export default function DomainStorefrontPage() {
               {transferSubMode === 'in' && (
                 <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="space-y-1">
-                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">{t('storefrontTransferInTitle', { defaultValue: 'Transfer Domain in to HubRegistrar' })}</h2>
+                    <h2 className="text-sm font-bold text-gray-950 uppercase tracking-wider">{t('storefrontTransferInTitle', { defaultValue: 'Transfer Domain in to Deltapreneur' })}</h2>
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      {t('storefrontTransferInDesc', { defaultValue: 'Move your domain hosting and registrar management over to HubRegistrar. A 1-year registration extension is automatically applied upon successful EPP transfer.' })}
+                      {t('storefrontTransferInDesc', { defaultValue: 'Move your domain hosting and registrar management over to Deltapreneur. A 1-year registration extension is automatically applied upon successful EPP transfer.' })}
                     </p>
                   </div>
 

@@ -20,14 +20,14 @@ export default function ShippingAndExchangePage() {
       badgeIcon={Package}
       badge="Shipping & Exchange"
       titleAccent="Shipping & Exchange"
-      intro="HubRegistrar primarily sells digital products and services. This page explains how delivery (“shipping”) works for domains and digital goods, and our exchange rules for banking and payment compliance."
+      intro="Deltapreneur primarily sells digital products and services. This page explains how delivery (“shipping”) works for domains and digital goods, and our exchange rules for banking and payment compliance."
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          HubRegistrar does not operate a physical warehouse or ship parcels for standard storefront purchases.
-          Our products are delivered digitally through your HubRegistrar account, email, and/or registrar systems.
+          Deltapreneur does not operate a physical warehouse or ship parcels for standard storefront purchases.
+          Our products are delivered digitally through your Deltapreneur account, email, and/or registrar systems.
         </p>
       </PolicySection>
 
@@ -39,7 +39,7 @@ export default function ShippingAndExchangePage() {
           <li>Domain name registration and related digital domain services</li>
           <li>Marketplace domain and digital asset transactions</li>
           <li>Technology / software and other digital listings</li>
-          <li>Professional and platform services arranged through HubRegistrar</li>
+          <li>Professional and platform services arranged through Deltapreneur</li>
         </ul>
       </PolicySection>
 
@@ -50,7 +50,7 @@ export default function ShippingAndExchangePage() {
         <ul className="mt-2 list-disc pl-5 space-y-1 text-slate-600 text-sm sm:text-base leading-relaxed">
           <li>Domain registrations are provisioned with our registrar partner and appear under your Purchases / order page.</li>
           <li>Marketplace and technology purchases are fulfilled digitally as described on the product page and order confirmation.</li>
-          <li>Order status, DNS/management tools (where applicable), and receipts are available in your HubRegistrar account.</li>
+          <li>Order status, DNS/management tools (where applicable), and receipts are available in your Deltapreneur account.</li>
         </ul>
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed mt-3">
           If a rare offering involves physical media or on-site service, delivery terms will be stated clearly on that
@@ -70,7 +70,7 @@ export default function ShippingAndExchangePage() {
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
           Because domains and many digital products are unique or instantly provisioned, <strong>exchanges are
           generally not available</strong> after successful fulfillment. If you received the wrong digital item due
-          to a confirmed HubRegistrar error, contact support and we will correct the order or apply the Refund Policy
+          to a confirmed Deltapreneur error, contact support and we will correct the order or apply the Refund Policy
           as appropriate.
         </p>
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed mt-3">

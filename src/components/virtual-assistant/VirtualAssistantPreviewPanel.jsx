@@ -166,7 +166,7 @@ export default function VirtualAssistantPreviewPanel({
     const profilePath = getVirtualAssistantDetailPath(profile?.id, { intent: 'hire' });
     const profileUrl = `${PRODUCTION_APP_URL.replace(/\/$/, '')}${profilePath}`;
     const body =
-      `Hello HubRegistrar team,\n\nI would like to hire ${name} (${primaryRole}).\n\nProfile: ${profileUrl}\n\nThank you.`;
+      `Hello Deltapreneur team,\n\nI would like to hire ${name} (${primaryRole}).\n\nProfile: ${profileUrl}\n\nThank you.`;
     const gmailUrl =
       `https://mail.google.com/mail/?view=cm&fs=1` +
       `&to=${encodeURIComponent('support@hubregistrar.com')}` +
@@ -183,8 +183,8 @@ export default function VirtualAssistantPreviewPanel({
 
   const shareBase = PRODUCTION_APP_URL.replace(/\/$/, '');
   const shareUrl = `${shareBase}/operations/${profile?.id || ''}${user?.id ? `?ref=${user.id}` : ''}`;
-  const shareSubject = `Check out this virtual assistant on HubRegistrar: ${name}`;
-  const shareBody = `Check out this virtual assistant on HubRegistrar!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
+  const shareSubject = `Check out this virtual assistant on Deltapreneur: ${name}`;
+  const shareBody = `Check out this virtual assistant on Deltapreneur!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

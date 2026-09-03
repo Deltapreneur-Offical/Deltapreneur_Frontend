@@ -144,17 +144,17 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     stop(e);
 
     let relativePath = `/auctions?id=${auction?.id}`;
-    let shareCaption = "Check out this Auction Listing on HubRegistrar!";
+    let shareCaption = "Check out this Auction Listing on Deltapreneur!";
 
     if (category === 'domain') {
       relativePath = `/domains/auction/${auction?.id}`;
-      shareCaption = "Check out this Domain Auction on HubRegistrar!";
+      shareCaption = "Check out this Domain Auction on Deltapreneur!";
     } else if (category === 'community') {
       relativePath = `/community/auction/${auction?.id}`;
-      shareCaption = "Check out this Community Auction on HubRegistrar!";
+      shareCaption = "Check out this Community Auction on Deltapreneur!";
     } else if (category === 'technology' || category === 'software') {
       relativePath = `/technology/auction/${auction?.id}`;
-      shareCaption = "Check out this Technology Auction on HubRegistrar!";
+      shareCaption = "Check out this Technology Auction on Deltapreneur!";
     }
 
     const shareUrl =
@@ -163,7 +163,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}${user?.id ? `?ref=${user.id}` : ''}`;
 
     const auctionTitle = title || 'Auction';
-    const shareSubject = `Active Auction Listing on HubRegistrar: ${auctionTitle}`;
+    const shareSubject = `Active Auction Listing on Deltapreneur: ${auctionTitle}`;
 
     if (navigator.share) {
       try {
@@ -205,9 +205,9 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
       : `${APP_BASE_URL.replace(/\/$/, '')}${relativePath}${user?.id ? `?ref=${user.id}` : ''}`;
 
   const auctionTitle = title || 'Auction';
-  const shareSubject = `Active Auction Listing on HubRegistrar: ${auctionTitle}`;
-  const shareCaption = "Check out this Auction Listing on HubRegistrar!";
-  const shareBody = `Dear colleague / partner,\n\nI would like to share an active auction listing currently open on HubRegistrar.\n\n🌐 Auction: ${auctionTitle}\n📝 Description: ${shareCaption}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a premium marketplace offering secure acquisitions and partnerships through active bidding and auctions.\n\nBest regards,\n[Shared via HubRegistrar]`;
+  const shareSubject = `Active Auction Listing on Deltapreneur: ${auctionTitle}`;
+  const shareCaption = "Check out this Auction Listing on Deltapreneur!";
+  const shareBody = `Dear colleague / partner,\n\nI would like to share an active auction listing currently open on Deltapreneur.\n\n🌐 Auction: ${auctionTitle}\n📝 Description: ${shareCaption}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a premium marketplace offering secure acquisitions and partnerships through active bidding and auctions.\n\nBest regards,\n[Shared via Deltapreneur]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

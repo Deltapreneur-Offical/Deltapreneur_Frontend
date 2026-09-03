@@ -182,8 +182,8 @@ export default function DomainListingCard({
       ? `${window.location.origin}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = display.fullDomain;
-  const shareSubject = `Premium Domain Listing Available on HubRegistrar: ${domainName}`;
-  const shareText = `🚀 Check out ${domainName} on HubRegistrar!\n\n✦ Premium Domain\n✅ Available\n💰 ${formatPrice(priceAmount)}\n\nA premium domain name listed for sale on HubRegistrar.`;
+  const shareSubject = `Premium Domain Listing Available on Deltapreneur: ${domainName}`;
+  const shareText = `🚀 Check out ${domainName} on Deltapreneur!\n\n✦ Premium Domain\n✅ Available\n💰 ${formatPrice(priceAmount)}\n\nA premium domain name listed for sale on Deltapreneur.`;
   const shareBody = `${shareText}\n\n🔗 ${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;

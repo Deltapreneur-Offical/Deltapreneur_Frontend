@@ -119,7 +119,7 @@ export default function OperationsRequestModal({ service, onClose, onSuccess }) 
       openRazorpayCheckout({
         orderData,
         user,
-        description: `HubRegistrar - ${service.name}`,
+        description: `Deltapreneur - ${service.name}`,
         onSuccess: handlePaymentSuccess,
         onFailure: handlePaymentFailure,
         onDismiss: handlePaymentDismiss,

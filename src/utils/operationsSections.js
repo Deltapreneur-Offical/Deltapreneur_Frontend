@@ -1,6 +1,5 @@
 /** Public storefront sections on /operations. */
 export const OPERATIONS_SECTIONS = [
-  /* HIDDEN — Virtual Assistance section temporarily disabled
   {
     id: 'assistance',
     labelKey: 'operationsSectionVirtualAssistance',
@@ -11,7 +10,6 @@ export const OPERATIONS_SECTIONS = [
     serviceType: 'virtual_assistance',
     theme: 'assistance',
   },
-  */
   {
     id: 'offices',
     labelKey: 'operationsSectionOffices',

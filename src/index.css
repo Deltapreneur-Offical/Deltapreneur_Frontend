@@ -148,8 +148,8 @@
   --radius: 10px;
   --radius-lg: 18px;
   --shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
-  --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Guild A Display', 'Guild A Display Regular', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Guild A Display', 'Guild A Display Regular', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -7714,8 +7714,8 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
   transform: scale(0.96);
 }
 
-/* ─── HubRegistrar text wordmark (official logo asset pending) ───────────── */
-/* Brand text is always the exact word "HubRegistrar" (no ".com") and is never
+/* ─── Deltapreneur text wordmark (official logo asset pending) ───────────── */
+/* Brand text is always the exact word "Deltapreneur" (no ".com") and is never
    clipped: nowrap, explicit size per container, overflow visible. */
 .brand-text-logo {
   display: inline-flex;

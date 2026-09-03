@@ -212,8 +212,8 @@ export default function HomeRegistrationsSection() {
     e.preventDefault();
     e.stopPropagation();
     const url = window.location.origin + registrationsPathForCategory(cat.slug);
-    const title = cat.label || 'HubRegistrar';
-    const text = `Check out ${title} registrations on HubRegistrar!\n\n${url}`;
+    const title = cat.label || 'Deltapreneur';
+    const text = `Check out ${title} registrations on Deltapreneur!\n\n${url}`;
 
     // Use native share if available (mobile)
     if (navigator.share) {

@@ -24,9 +24,9 @@ export default function TermsAndConditionsPage() {
   const lastUpdated = '18 APRIL 2026';
 
   useDocumentMeta({
-    title: 'Terms and Conditions | HubRegistrar',
+    title: 'Terms and Conditions | Deltapreneur',
     description:
-      'HubRegistrar Terms and Conditions for using hubregistrar.com — domain registration, marketplace, technology, and related digital services.',
+      'Deltapreneur Terms and Conditions for using hubregistrar.com — domain registration, marketplace, technology, and related digital services.',
   });
 
   const sections = [
@@ -126,7 +126,7 @@ export default function TermsAndConditionsPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
                 <TermsSection id="acceptance" title={t('termsSection1Title')}>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    HubRegistrar {t('termsSection1Body')}
+                    Deltapreneur {t('termsSection1Body')}
                   </p>
                 </TermsSection>
                 <TermsSection id="services" title={t('termsSection2Title')}>
@@ -147,7 +147,7 @@ export default function TermsAndConditionsPage() {
                 </TermsSection>
                 <TermsSection id="intellectual-property" title={t('termsSection4Title')}>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    HubRegistrar {t('termsSection4Body')}
+                    Deltapreneur {t('termsSection4Body')}
                   </p>
                 </TermsSection>
                 <TermsSection id="payments" title={t('termsSection5Title')}>

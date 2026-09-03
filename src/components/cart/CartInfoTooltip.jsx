@@ -8,10 +8,10 @@ const GAP = 10;
 const CLOSE_DELAY_MS = 100;
 
 export const VA_FOLLOW_UP_TOOLTIP =
-  'This Virtual Assistant is requested as part of your order. A HubRegistrar team member will contact you after your purchase to understand your requirements, provide the final quotation, and collect payment separately if you choose to proceed.';
+  'This Virtual Assistant is requested as part of your order. A Deltapreneur team member will contact you after your purchase to understand your requirements, provide the final quotation, and collect payment separately if you choose to proceed.';
 
 export const SERVICE_FOLLOW_UP_TOOLTIP =
-  'This service is requested as part of your order. A HubRegistrar team member will contact you after your purchase to understand your requirements, provide the final quotation, and collect payment separately if you choose to proceed.';
+  'This service is requested as part of your order. A Deltapreneur team member will contact you after your purchase to understand your requirements, provide the final quotation, and collect payment separately if you choose to proceed.';
 
 /** @deprecated */
 export const VA_CHECKOUT_TOOLTIP = VA_FOLLOW_UP_TOOLTIP;

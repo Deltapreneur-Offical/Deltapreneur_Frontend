@@ -1,3 +1,9 @@
+# Deltapreneur Frontend
+
+GitHub: [Deltapreneur-Offical/Deltapreneur_Frontend](https://github.com/Deltapreneur-Offical/Deltapreneur_Frontend). Isolated copy — **do not push to CoBrother-Official**. Local env: `env.deltapreneur.example` → `.env` (never commit `.env`).
+
+---
+
 # CoBrother Frontend
 
 React + Vite single-page application for the CoBrother marketplace — domains, ventures, technology listings, auctions, and creator communities.
@@ -174,4 +180,4 @@ CoBrother_Frontend/
 
 ## License
 
-Private — CoBrother.
+Private — Deltapreneur copy of the CoBrother/HubRegistrar frontend.

@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './tailwind.css'
+import './styles/search-glow.css'
 import './index.css'
 import './styles/professional-ui.css'
 import './styles/listing-card-glow.css'

@@ -86,10 +86,6 @@
    CoBrother Design System — Dark Luxury / Editorial
    ═══════════════════════════════════════════════════════ */
 
-
-
-@import './styles/search-glow.css';
-
 @keyframes skeleton-shimmer {
   0% {
     background-position: 200% 0;

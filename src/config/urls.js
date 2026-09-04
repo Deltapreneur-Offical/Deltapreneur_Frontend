@@ -2,20 +2,17 @@
  * API / backend origin resolution.
  *
  * Runtime host mapping (production SPA):
- *   cobrother.com     → https://backend.cobrother.com
- *   hubregistrar.com  → https://backend.hubregistrar.com
+ *   deltapreneur.com / www.deltapreneur.com → https://api.deltapreneur.com
  *
  * Baked VITE_API_URL is only a fallback for unknown hosts / non-browser.
  * APP_BASE_URL follows window.location.origin in the browser.
  */
-export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
-export const PRODUCTION_HUB_API_ORIGIN = 'https://backend.hubregistrar.com';
-export const PRODUCTION_APP_URL = 'https://cobrother.com';
+export const PRODUCTION_API_ORIGIN = 'https://api.deltapreneur.com';
+export const PRODUCTION_APP_URL = 'https://deltapreneur.com';
 
-const COBROTHER_SPA_RE = /(^|\.)cobrother\.com$/i;
-const HUBREGISTRAR_SPA_RE = /(^|\.)hubregistrar\.com$/i;
+const DELTAPRENEUR_SPA_RE = /(^|\.)deltapreneur\.com$/i;
 const RETURN_ORIGIN_RE =
-  /^https:\/\/([a-z0-9-]+\.)*(cobrother|hubregistrar)\.com$/i;
+  /^https:\/\/([a-z0-9-]+\.)*deltapreneur\.com$/i;
 const DEV_RETURN_ORIGINS = new Set([
   'http://127.0.0.1:5173',
   'http://localhost:5173',
@@ -28,9 +25,8 @@ export function productionApiOriginForHost(hostname) {
     .split(':')[0]
     .trim()
     .toLowerCase();
-  if (!host || host.startsWith('backend.')) return null;
-  if (COBROTHER_SPA_RE.test(host)) return PRODUCTION_API_ORIGIN;
-  if (HUBREGISTRAR_SPA_RE.test(host)) return PRODUCTION_HUB_API_ORIGIN;
+  if (!host || host.startsWith('backend.') || host.startsWith('api.')) return null;
+  if (DELTAPRENEUR_SPA_RE.test(host)) return PRODUCTION_API_ORIGIN;
   return null;
 }
 
@@ -46,7 +42,7 @@ export function allowedReturnOrigin(value) {
     return null;
   }
   const host = new URL(origin).hostname.toLowerCase();
-  if (host.startsWith('backend.')) return null;
+  if (host.startsWith('backend.') || host.startsWith('api.')) return null;
   if (DEV_RETURN_ORIGINS.has(origin)) return origin;
   if (RETURN_ORIGIN_RE.test(origin)) return origin;
   return null;
@@ -91,7 +87,7 @@ const isLocalBackend =
   !remoteApiBase ||
   /^https?:\/\/(127\.0\.0\.1|localhost):8000(\/|$)/i.test(remoteApiBase);
 
-/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. backend.cobrother.com). */
+/** Dev: Vite proxies /api and /oauth2 to a remote backend (e.g. http://127.0.0.1:8000). */
 const usesViteRemoteProxy = import.meta.env.DEV && Boolean(devProxyTarget) && isLocalBackend;
 
 function isFrontendOrigin(url) {

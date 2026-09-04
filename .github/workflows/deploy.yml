@@ -1,129 +1,15 @@
-name: Deploy Frontend to EC2
+# Production frontend is deployed by Vercel Git integration.
+# The previous EC2 SSH job is disabled so Deltapreneur main cannot overwrite CoBrother.
+name: Frontend production note
 
 on:
   push:
     branches:
       - main
 
-env:
-  DEPLOY_ROOT: /opt/cobrother/frontend/dist
-
 jobs:
-  build-and-deploy:
+  vercel-handles-production:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Verify deploy secrets
-        run: |
-          missing=0
-          for name in EC2_HOST EC2_USER EC2_SSH_KEY; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret: ${name}. Add EC2_HOST, EC2_USER, and EC2_SSH_KEY in repository or organization secrets."
-              missing=1
-            fi
-          done
-          if [ -z "${TURNSTILE_SITE_KEY:-}" ]; then
-            echo "::warning::TURNSTILE_SITE_KEY not set — build will fetch Turnstile site key from backend at runtime (/api/v1/public/bot-protection)."
-          fi
-          exit "${missing}"
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install Dependencies & Build
-        env:
-          VITE_API_URL: https://backend.cobrother.com
-          VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
-          VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
-          VITE_TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-        run: |
-          npm ci
-          npm run build
-          test -f dist/index.html
-          grep -q 'padding-left:0' dist/assets/index-*.css
-
-      - name: Create deployment archive
-        run: tar -czf frontend-dist.tar.gz -C dist .
-
-      - name: Preflight SSH connectivity
-        run: |
-          set -euo pipefail
-          HOST="${EC2_HOST}"
-          PORT="${EC2_SSH_PORT:-22}"
-          echo "Testing TCP connectivity to ${HOST}:${PORT} ..."
-          for attempt in 1 2 3 4 5; do
-            if timeout 25 bash -c "exec 3<>/dev/tcp/${HOST}/${PORT}" 2>/dev/null; then
-              exec 3>&-
-              echo "Port ${PORT} reachable on attempt ${attempt}"
-              exit 0
-            fi
-            echo "Attempt ${attempt} failed; retrying in 20s..."
-            sleep 20
-          done
-          echo "::error::Cannot reach EC2 on port ${PORT} after 5 attempts."
-          echo "::error::Check (1) instance is running, (2) security group allows SSH from GitHub Actions, (3) EC2_HOST is the public/elastic IP, (4) no firewall/NACL blocks port ${PORT}."
-          exit 1
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_SSH_PORT: ${{ secrets.EC2_SSH_PORT }}
-
-      - name: Upload deployment files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_SSH_PORT || 22 }}
-          timeout: 120s
-          command_timeout: 30m
-          source: "frontend-dist.tar.gz,nginx-frontend.conf,scripts/update_nginx.py,scripts/deploy_nginx.sh"
-          target: /tmp
-
-      - name: Extract build and verify
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_SSH_PORT || 22 }}
-          timeout: 120s
-          command_timeout: 30m
-          script: |
-            set -euo pipefail
-            DEST=/opt/cobrother/frontend/dist
-
-            sudo mkdir -p "${DEST}"
-            sudo rm -rf "${DEST:?}"/*
-            sudo tar -xzf /tmp/frontend-dist.tar.gz -C "${DEST}"
-            sudo rm -f /tmp/frontend-dist.tar.gz
-            sudo chown -R ubuntu:ubuntu /opt/cobrother/frontend
-
-            test -f "${DEST}/index.html"
-            CSS_FILE="$(basename "$(grep -o '/assets/index-[^\"]*\.css' "${DEST}/index.html" | head -1 | tr -d '"')")"
-            test -f "${DEST}/assets/${CSS_FILE}"
-            grep -q 'home-auction-preview-card__bid-panel' "${DEST}/assets/${CSS_FILE}"
-
-      - name: Restart Nginx Web Server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_SSH_PORT || 22 }}
-          timeout: 120s
-          command_timeout: 10m
-          script: |
-            sudo bash /tmp/scripts/deploy_nginx.sh
-            sudo rm -rf /tmp/nginx-frontend.conf
-            sudo rm -rf /tmp/scripts
+      - name: Skip EC2 deploy
+        run: echo "Frontend production is Vercel only. EC2 / CoBrother deploy is disabled."

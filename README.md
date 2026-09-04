@@ -8,8 +8,8 @@ GitHub: [Deltapreneur-Offical/Deltapreneur_Frontend](https://github.com/Deltapre
 
 React + Vite single-page application for the CoBrother marketplace — domains, ventures, technology listings, auctions, and creator communities.
 
-**Production:** https://co-brother-frontend.vercel.app  
-**Backend API:** https://cobrother-backend.onrender.com
+**Production:** https://deltapreneur.com  
+**Backend API:** https://api.deltapreneur.com
 
 ---
 
@@ -59,8 +59,8 @@ Copy `.env.example` to `.env.local` (or `.env`). All frontend env vars use the `
 
 | Variable | Local | Production |
 |----------|-------|------------|
-| `VITE_API_URL` | `http://127.0.0.1:8000` | `https://backend.cobrother.com` |
-| `VITE_APP_URL` | `http://127.0.0.1:5173` | `https://cobrother.com` |
+| `VITE_API_URL` | `http://127.0.0.1:8000` | `https://api.deltapreneur.com` |
+| `VITE_APP_URL` | `http://127.0.0.1:5173` | `https://deltapreneur.com` |
 | `VITE_DEV_PROXY_TARGET` | `http://127.0.0.1:8000` | — (dev only) |
 
 **Important**

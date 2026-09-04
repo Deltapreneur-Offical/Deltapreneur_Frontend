@@ -28,8 +28,8 @@ jobs:
 
       - name: Build Frontend
         env:
-          VITE_API_URL: https://backend.cobrother.com
-          VITE_APP_URL: https://cobrother.com
+          VITE_API_URL: https://api.deltapreneur.com
+          VITE_APP_URL: https://deltapreneur.com
           VITE_REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE: 'true'
           VITE_TURNSTILE_SITE_KEY: test-site-key

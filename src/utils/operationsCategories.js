@@ -8,7 +8,7 @@ export const OPERATIONS_CATEGORY_OPTIONS = [
   { value: 'creative', label: 'Creative' },
   { value: 'growth', label: 'Growth' },
   { value: 'operations', label: 'Operations' },
-  { value: 'compliance', label: 'Hub Registrar' },
+  { value: 'compliance', label: 'Delta Registrar' },
 ];
 
 export const OPERATIONS_CATEGORY_LABELS = Object.fromEntries(
@@ -286,7 +286,7 @@ export function getHubRegistrarCategoryLabel(slug) {
   const value = String(slug || '').trim().toLowerCase();
   if (!value) return '';
   if (HUB_REGISTRAR_CATEGORY_LABELS[value]) return HUB_REGISTRAR_CATEGORY_LABELS[value];
-  if (value === 'compliance') return 'Hub Registrar';
+  if (value === 'compliance') return 'Delta Registrar';
   return humanizeHubRegistrarCategory(value);
 }
 

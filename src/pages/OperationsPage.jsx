@@ -375,7 +375,7 @@ export default function OperationsPage() {
         {
           count: services.length,
           defaultValue: isCompliance
-            ? '{{count}} Hub Registrar Available'
+            ? '{{count}} Delta Registrar Available'
             : '{{count}} Virtual Roles Available',
         },
       );
@@ -401,10 +401,10 @@ export default function OperationsPage() {
                 </h1>
                 <p className="mt-1.5 text-sm text-white/75 max-w-xl leading-relaxed">
                   {isOffices
-                    ? t('operationsSectionOfficesHint', { defaultValue: 'Find your nearest Hub Registrar office for in-person support.' })
+                    ? t('operationsSectionOfficesHint', { defaultValue: 'Find your nearest Delta Registrar office for in-person support.' })
                     : isCompliance
                     ? t('operationsComplianceSubtitle', {
-                        defaultValue: 'Registration, filings, and business services for your venture.',
+                        defaultValue: 'Registration, filings, and Delta registrar services for your venture.',
                       })
                     : t('operationsSubtitle', {
                         defaultValue: 'Hire skilled virtual professionals to run HR, finance, marketing, tech, and day-to-day operations.',
@@ -428,16 +428,16 @@ export default function OperationsPage() {
             <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
                 {isOffices
-                  ? t('operationsSectionOffices', { defaultValue: 'Hub Registrar Offices' })
+                  ? t('operationsSectionOffices', { defaultValue: 'Delta Registrar Offices' })
                   : isCompliance
-                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Hub Registrar' })
+                  ? t('operationsComplianceFindHeading', { defaultValue: 'Find Delta Registrar' })
                   : t('operationsFeaturedVaHeading', { defaultValue: 'Featured Virtual Assistants' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
                 {isOffices
-                  ? t('operationsSectionOfficesHint', { defaultValue: 'Find your nearest Hub Registrar office for in-person support.' })
+                  ? t('operationsSectionOfficesHint', { defaultValue: 'Find your nearest Delta Registrar office for in-person support.' })
                   : isCompliance
-                  ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and hub registrar support for your venture.' })
+                  ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and Delta registrar support for your venture.' })
                   : t('operationsFeaturedVaSubtitle', {
                       defaultValue: 'Published virtual assistants selected for the homepage and operations showcase.',
                     })}
@@ -493,7 +493,7 @@ export default function OperationsPage() {
                   {t('operationsNoOfficesAvailable', { defaultValue: 'No offices available yet' })}
                 </p>
                 <p className="text-sm text-gray-500 mb-4">
-                  {t('operationsNoOfficesHint', { defaultValue: 'Hub Registrar offices will appear here once added by the admin team.' })}
+                  {t('operationsNoOfficesHint', { defaultValue: 'Delta Registrar offices will appear here once added by the admin team.' })}
                 </p>
               </div>
             ) : (() => {
@@ -564,7 +564,7 @@ export default function OperationsPage() {
                   <p className="text-sm text-gray-500 mb-4">
                     {serviceFromUrl
                       ? t('operationsServiceComingSoonBody', {
-                          defaultValue: 'This Hub Registrar service is not live yet. Check back soon, or browse other services in this category.',
+                          defaultValue: 'This Delta Registrar service is not live yet. Check back soon, or browse other services in this category.',
                         })
                       : t('operationsComplianceEmptyBody', { defaultValue: 'Business solutions will appear here once added by the admin team.' })}
                   </p>
@@ -602,7 +602,7 @@ export default function OperationsPage() {
                 {t('operationsQuickActions', { defaultValue: 'Quick Actions' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
-                {t('operationsQuickActionsHint', { defaultValue: 'Quick ways to connect with Hub Registrar offices.' })}
+                {t('operationsQuickActionsHint', { defaultValue: 'Quick ways to connect with Delta Registrar offices.' })}
               </p>
             </div>
 

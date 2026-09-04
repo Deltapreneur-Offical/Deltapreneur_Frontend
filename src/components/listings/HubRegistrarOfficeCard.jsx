@@ -23,22 +23,22 @@ const HubRegistrarOfficeCard = ({ office, compact = false }) => {
       {/* Top Section */}
       <div className="hro-card-top">
         <div className="hro-card-office-icon">
-          <img src={OfficeIcon} alt="Hub Registrar Office" className="hro-office-img" />
+          <img src={OfficeIcon} alt="Delta Registrar Office" className="hro-office-img" />
         </div>
         <div className="hro-card-info">
-          <h3 className="hro-card-name">Hub Registrar</h3>
+          <h3 className="hro-card-name">Delta Registrar</h3>
           <div className="hro-card-subtitle-line">
             <span className="hro-card-dot"></span>
             <span className="hro-card-dot hro-card-dot-sm"></span>
           </div>
-          <p className="hro-card-type">Official Hub Registrar Office</p>
+          <p className="hro-card-type">Official Delta Registrar Office</p>
         </div>
         <div className="hro-card-verified-area">
           <div className="hro-card-verified-badge">
             <img src={VerifiedIcon} alt="Verified" className="hro-verified-icon" />
             <div className="hro-verified-text">
               <span className="hro-verified-label">VERIFIED</span>
-              <span className="hro-verified-sub">Hub Registrar</span>
+              <span className="hro-verified-sub">Delta Registrar</span>
             </div>
           </div>
           {office.zone > 0 && (

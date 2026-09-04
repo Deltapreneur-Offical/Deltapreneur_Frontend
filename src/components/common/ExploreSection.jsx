@@ -50,7 +50,7 @@ export default function ExploreSection() {
         <AuctionsSection />
       </LazySection>
 
-      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'Technology Register' })} to="/technology">
+      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Register' })} to="/technology">
         <TechnologySection />
       </LazySection>
 

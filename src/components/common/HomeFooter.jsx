@@ -107,7 +107,7 @@ const socialRowOne = [
 
   { id: 'facebook', href: 'https://www.facebook.com/hubregistrar', label: 'Facebook', Icon: FacebookIcon },
 
-  { id: 'instagram', href: 'https://instagram.com/hub_registrar/links', label: 'Instagram', Icon: InstagramIcon },
+  { id: 'instagram', href: 'https://www.instagram.com/deltapreneurs', label: 'Instagram', Icon: InstagramIcon },
 
 ];
 
@@ -231,7 +231,7 @@ export default function HomeFooter() {
 
             <ScrollLink to="/virtual-assistant" className={linkClass}>
 
-              {t('navVirtualAssistant', { defaultValue: 'Virtual Assistant' })}
+              {t('footerVirtualAssistant', { defaultValue: 'Delta Assistant' })}
 
             </ScrollLink>
 

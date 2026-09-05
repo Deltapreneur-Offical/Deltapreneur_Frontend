@@ -13,8 +13,8 @@ const STATUS_FILTERS = [
 
 const TIER_FILTERS = [
   { id: 'all', label: 'All tiers' },
-  { id: 'standard', label: 'Standard Domains' },
-  { id: 'premium', label: 'Premium Domains' },
+  { id: 'standard', label: 'Domains' },
+  { id: 'premium', label: 'Delta Domains' },
 ];
 
 const STATUS_ACTIONS = {

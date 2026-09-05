@@ -198,7 +198,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 >
                   <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
                   <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('co-venture')); }}>
-                    {t('venturesPageListCoVentureCta', { defaultValue: 'List Co-Venture' })}
+                    {t('venturesPageListCoVentureCta', { defaultValue: 'List Delta-Venture' })}
                   </DropdownLink>
                   <DropdownLink onClick={() => { if (!user) go('/login'); else go(ventureListChooseUrl('venture')); }}>{t('listVenture')}</DropdownLink>
                 </NavDropdown>

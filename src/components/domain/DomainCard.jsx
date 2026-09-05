@@ -176,9 +176,9 @@ export default function DomainCard({
             <span translate="no" className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
           </h2>
           {item.isPremium ? (
-            <p className="text-xs font-semibold text-amber-800/85">{t('domainCardPremiumDomain', { defaultValue: 'Premium Domain' })}</p>
+            <p className="text-xs font-semibold text-amber-800/85">{t('domainCardPremiumDomain', { defaultValue: 'DELTA' })}</p>
           ) : item.available ? (
-            <p className="text-xs font-semibold text-sky-800/85">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
+            <p className="text-xs font-semibold text-sky-800/85">{t('domainCardStandardDomain', { defaultValue: 'DOMAIN' })}</p>
           ) : null}
           {priceText ? (
             <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none" translate="no">
@@ -269,9 +269,9 @@ export default function DomainCard({
           <span translate="no" className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
         </h3>
         {item.isPremium ? (
-          <p className="text-[11px] font-semibold text-amber-800/80">{t('domainCardPremiumDomain', { defaultValue: 'Premium Domain' })}</p>
+          <p className="text-[11px] font-semibold text-amber-800/80">{t('domainCardPremiumDomain', { defaultValue: 'DELTA' })}</p>
         ) : item.available ? (
-          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
+          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'DOMAIN' })}</p>
         ) : null}
         {priceText ? (
           <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5" translate="no">

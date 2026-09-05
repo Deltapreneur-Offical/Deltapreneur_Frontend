@@ -182,8 +182,8 @@ export default function DomainListingCard({
       ? `${window.location.origin}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`
       : `${APP_BASE_URL.replace(/\/$/, '')}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = display.fullDomain;
-  const shareSubject = `Premium Domain Listing Available on Deltapreneur: ${domainName}`;
-  const shareText = `🚀 Check out ${domainName} on Deltapreneur!\n\n✦ Premium Domain\n✅ Available\n💰 ${formatPrice(priceAmount)}\n\nA premium domain name listed for sale on Deltapreneur.`;
+  const shareSubject = `Delta Domains Listing Available on Deltapreneur: ${domainName}`;
+  const shareText = `🚀 Check out ${domainName} on Deltapreneur!\n\n✦ Delta Domains\n✅ Available\n💰 ${formatPrice(priceAmount)}\n\nA Delta Domains listing available on Deltapreneur.`;
   const shareBody = `${shareText}\n\n🔗 ${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
@@ -476,7 +476,7 @@ export default function DomainListingCard({
           </p>
 
           {/* Standard Domain label */}
-          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
+          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'DOMAIN' })}</p>
 
           {priceText ? (
             <>

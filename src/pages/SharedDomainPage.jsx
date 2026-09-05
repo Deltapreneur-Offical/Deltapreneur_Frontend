@@ -329,11 +329,11 @@ export default function SharedDomainPage() {
                       </h1>
                       {isPremium ? (
                         <p className="mt-2 text-sm font-semibold text-amber-800/85">
-                          Premium Domain — premium registry pricing
+                          Delta Domains — premium registry pricing
                         </p>
                       ) : isAvailable ? (
                         <p className="mt-2 text-sm font-semibold text-sky-800/85">
-                          Standard Domain — available to register now
+                          Domains — available to register now
                         </p>
                       ) : null}
 

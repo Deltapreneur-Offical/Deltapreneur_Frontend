@@ -9,7 +9,7 @@ import {
 export default function HeroGlow() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
-  const headline = t('homeHeroHeadline', { defaultValue: 'The Intellectual Property Registrar' });
+  const headline = t('homeHeroHeadline', { defaultValue: 'The Delta Edition Of Entrepreneur!' });
 
   const textStack = reduceMotion ? (
     <div className="hero-text-stack relative z-20 w-full min-w-0">

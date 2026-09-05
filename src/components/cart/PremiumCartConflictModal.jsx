@@ -64,7 +64,7 @@ export default function PremiumCartConflictModal({
             id="premium-cart-conflict-title"
             className="font-display text-[1.55rem] font-extrabold leading-tight text-slate-900 pr-8"
           >
-            Premium domains need a dedicated priority checkout
+            Delta Domains need a dedicated priority checkout
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
             Domains priced above <strong className="text-slate-900">₹5,00,000</strong> are not
@@ -79,7 +79,7 @@ export default function PremiumCartConflictModal({
             </li>
             <li className="flex gap-2">
               <span className="mt-0.5 shrink-0 text-amber-600">2.</span>
-              <span>Add this premium domain alone and submit an acquisition request.</span>
+              <span>Add this Delta Domains listing alone and submit an acquisition request.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-0.5 shrink-0 text-amber-600">3.</span>

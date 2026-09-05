@@ -800,17 +800,17 @@ export default function DomainsPage() {
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <h2 className="font-display text-lg font-extrabold text-gray-900">
-                      Premium Domains
+                      Delta Domains
                     </h2>
                     <span className="text-xs text-gray-500">
-                      {showcaseDomains.length} premium domain{showcaseDomains.length === 1 ? '' : 's'} · prices subject to change
+                      {showcaseDomains.length} Delta Domain{showcaseDomains.length === 1 ? '' : 's'} · prices subject to change
                     </span>
                   </div>
                   {showcaseFilter.paginated.length === 0 ? (
                     <div className="text-center py-14 text-sm text-gray-500">
                       {activeFilterCount > 0
-                        ? 'No premium domains match your filters.'
-                        : 'No premium domains are currently showcased.'}
+                        ? 'No Delta Domains match your filters.'
+                        : 'No Delta Domains are currently showcased.'}
                     </div>
                   ) : (
                     <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -826,7 +826,7 @@ export default function DomainsPage() {
                 </div>
               ) : (
                 <div className="text-center py-14 text-sm text-gray-500">
-                  No premium domains are currently showcased.
+                  No Delta Domains are currently showcased.
                 </div>
               )
             ) : (
@@ -890,11 +890,11 @@ export default function DomainsPage() {
                 `}</style>
                 <div className="ventures-split__mobile-tabs" role="tablist" aria-label="Domain sections">
                   <button role="tab" type="button" aria-selected={splitMobilePanel === 'venture'} className={`ventures-split__mobile-tab ventures-split__mobile-tab--venture ${splitMobilePanel === 'venture' ? 'ventures-split__mobile-tab--active' : ''}`} onClick={() => setSplitMobilePanel('venture')}>
-                    Premium Domains
+                    Delta Domains
                     <span className="ventures-split__mobile-tab-count">{showcaseFilter.filtered.length}</span>
                   </button>
                   <button role="tab" type="button" aria-selected={splitMobilePanel === 'coventure'} className={`ventures-split__mobile-tab ventures-split__mobile-tab--coventure ${splitMobilePanel === 'coventure' ? 'ventures-split__mobile-tab--active' : ''}`} onClick={() => setSplitMobilePanel('coventure')}>
-                    Standard Domains
+                    Domains
                     <span className="ventures-split__mobile-tab-count">{marketplaceFilter.totalCount}</span>
                   </button>
                 </div>
@@ -905,7 +905,7 @@ export default function DomainsPage() {
                         <div className="ventures-split__header-main">
                           <span className="ventures-split__icon ventures-split__icon--venture" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
                           <div className="ventures-split__header-text">
-                            <h2 className="ventures-split__title">Premium Domains</h2>
+                            <h2 className="ventures-split__title">Delta Domains</h2>
                             <p className="ventures-split__subtitle">Showcase listings with premium pricing</p>
                           </div>
                         </div>
@@ -916,7 +916,7 @@ export default function DomainsPage() {
                       <div className="ventures-split__body">
                         {showcaseFilter.filtered.length === 0 ? (
                           <div className="ventures-split__empty ventures-split__empty--venture">
-                            <p>{activeFilterCount > 0 ? 'No premium domains match your filters.' : 'No premium domains are currently showcased.'}</p>
+                            <p>{activeFilterCount > 0 ? 'No Delta Domains match your filters.' : 'No Delta Domains are currently showcased.'}</p>
                           </div>
                         ) : (
                           <>
@@ -941,7 +941,7 @@ export default function DomainsPage() {
                         <div className="ventures-split__header-main">
                           <span className="ventures-split__icon ventures-split__icon--coventure" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
                           <div className="ventures-split__header-text">
-                            <h2 className="ventures-split__title">Standard Domains</h2>
+                            <h2 className="ventures-split__title">Domains</h2>
                             <p className="ventures-split__subtitle">Marketplace domain listings</p>
                           </div>
                         </div>
@@ -1008,10 +1008,10 @@ export default function DomainsPage() {
               <div className="mb-8">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <h2 className="font-display text-lg font-extrabold text-gray-900">
-                    Premium Domains
+                    Delta Domains
                   </h2>
                   <span className="text-xs text-gray-500">
-                    {showcaseFilter.filtered.length} premium domain{showcaseFilter.filtered.length === 1 ? '' : 's'} · prices subject to change
+                    {showcaseFilter.filtered.length} Delta Domain{showcaseFilter.filtered.length === 1 ? '' : 's'} · prices subject to change
                   </span>
                 </div>
                 <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

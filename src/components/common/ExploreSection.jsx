@@ -39,7 +39,7 @@ export default function ExploreSection() {
       <VenturesSection />
 
       <LazySection
-        title={t('homeCoVenturesRegister', { defaultValue: 'Delta Co-Ventures' })}
+        title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
         to="/ventures?mode=co-venture"
         compact
       >
@@ -50,7 +50,7 @@ export default function ExploreSection() {
         <AuctionsSection />
       </LazySection>
 
-      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Register' })} to="/technology">
+      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology">
         <TechnologySection />
       </LazySection>
 

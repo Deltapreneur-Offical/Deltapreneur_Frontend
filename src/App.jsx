@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import lightFavicon from './assets/Deltapreneur_icon.png';
-import darkFavicon from './assets/Deltapreneur_icon.png';
+import lightFavicon from './assets/Deltapreneur_favicon.png';
+import darkFavicon from './assets/Deltapreneur_favicon.png';
 import { applyThemeFavicon } from './utils/applyThemeFavicon';
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';

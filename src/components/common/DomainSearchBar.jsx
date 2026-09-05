@@ -1473,12 +1473,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         </div>
 
         {/* Mobile / tablet — search + tabs share one entrance so spacing never collapses */}
-        <HeroSearchStack animateHero={animateHero} className="lg:hidden">
-          <div className="flex flex-col items-stretch gap-3 sm:gap-4">
+        <HeroSearchStack animateHero={animateHero} className="w-full min-w-0 max-w-full lg:hidden">
+          <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 sm:gap-4">
             {mobileSearchForm}
           </div>
 
-          <div className="mt-3 flex justify-center pb-2 overflow-visible">
+          <div className="mt-3 flex w-full min-w-0 max-w-full justify-center pb-2 overflow-visible">
             <BrandSearchTabs
               searchMode={searchMode}
               onTabChange={handleTabChange}
@@ -1860,6 +1860,41 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           overflow: visible;
         }
 
+        @media (max-width: 639px) {
+          .brand-search-frame,
+          .brand-search-shell,
+          .brand-search-tabs-mobile,
+          .tld-price-marquee-mask {
+            width: min(100%, 20.5rem) !important;
+            max-width: 20.5rem !important;
+            min-width: 0 !important;
+          }
+
+          .brand-search-shell {
+            overflow: hidden;
+          }
+
+          .brand-search-shell input {
+            font-size: 0.92rem !important;
+          }
+
+          .brand-search-tabs-mobile > button {
+            flex: 0 1 calc(50% - 0.25rem) !important;
+            max-width: calc(50% - 0.25rem);
+          }
+        }
+
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .brand-search-frame,
+          .brand-search-shell,
+          .brand-search-tabs-mobile,
+          .tld-price-marquee-mask {
+            width: min(100%, 42rem) !important;
+            max-width: 42rem !important;
+            min-width: 0 !important;
+          }
+        }
+
         .brand-lightning-tail {
           pointer-events: none;
           position: absolute;
@@ -1967,7 +2002,20 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           border: 0;
           background: transparent;
           box-shadow: none;
+          min-width: 0;
           overflow: visible;
+        }
+
+        .brand-search-tabs-mobile > button {
+          min-width: 0;
+          white-space: normal;
+          overflow-wrap: break-word;
+        }
+
+        .brand-search-tabs-mobile > button > span:last-child {
+          display: block;
+          min-width: 0;
+          max-width: 100%;
         }
 
         .brand-search-tab-pill-fill {

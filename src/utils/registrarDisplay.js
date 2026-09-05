@@ -6,6 +6,11 @@
  */
 
 const PLATFORM_NS_ALIASES = {
+  // Deltapreneur vanity hosts — used for new registrations.
+  'ns1.deltapreneur.com': 'Deltapreneur DNS 1',
+  'ns2.deltapreneur.com': 'Deltapreneur DNS 2',
+  'ns3.deltapreneur.com': 'Deltapreneur DNS 3',
+  // Legacy HubRegistrar vanity hosts remain platform DNS.
   'ns1.hubregistrar.com': 'Deltapreneur DNS 1',
   'ns2.hubregistrar.com': 'Deltapreneur DNS 2',
   'ns3.hubregistrar.com': 'Deltapreneur DNS 3',
@@ -21,6 +26,10 @@ const PLATFORM_NS_ALIASES = {
 
 /** When user picks a friendly label, submit Deltapreneur vanity hosts (not CoBrother / legacy OP). */
 const ALIAS_TO_PLATFORM_NS = {
+  'deltapreneur dns 1': 'ns1.deltapreneur.com',
+  'deltapreneur dns 2': 'ns2.deltapreneur.com',
+  'deltapreneur dns 3': 'ns3.deltapreneur.com',
+  // Legacy labels kept so previously saved values still resolve to a real host.
   'hubregistrar dns 1': 'ns1.hubregistrar.com',
   'hubregistrar dns 2': 'ns2.hubregistrar.com',
   'hubregistrar dns 3': 'ns3.hubregistrar.com',

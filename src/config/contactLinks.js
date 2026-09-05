@@ -2,14 +2,14 @@ export const SUPPORT_PHONE_DISPLAY = '080 8575 8575';
 export const SUPPORT_PHONE_TEL = 'tel:+918085758575';
 export const WHATSAPP_PHONE_E164 = '918085758575';
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE_E164}`;
-export const SUPPORT_EMAIL = 'support@hubregistrar.com';
+export const SUPPORT_EMAIL = 'support@deltapreneur.com';
 export const SUPPORT_EMAIL_MAILTO = `mailto:${SUPPORT_EMAIL}`;
 
 /** Legal / invoice seller details — used on Contact + compliance pages. */
 export const BUSINESS_LEGAL_NAME = 'Aultum International';
 export const BUSINESS_BRAND_NAME = 'Deltapreneur';
 export const BUSINESS_GSTIN = '29DXMPA9959L2ZF';
-export const BUSINESS_WEBSITE = 'https://hubregistrar.com';
+export const BUSINESS_WEBSITE = 'https://www.deltapreneur.com';
 export const BUSINESS_ADDRESS_LINES = [
   'Third Floor TF 307 Marvel Artiza',
   'Pune Bangalore Road, Vidyanagar, Hubballi',

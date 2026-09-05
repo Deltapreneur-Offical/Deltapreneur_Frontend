@@ -130,7 +130,7 @@ export default function RegistrationsPage() {
       ? `${selectedCategory.label} | Deltapreneur`
       : 'Registrations | Deltapreneur',
     description:
-      'Browse Hub Registrar categories — from business entity and GST to FSSAI, MSME, aviation, and industry licences — then open the services that apply.',
+      'Browse Deltapreneur categories — from business entity and GST to FSSAI, MSME, aviation, and industry licences — then open the services that apply.',
   });
 
   useEffect(() => {

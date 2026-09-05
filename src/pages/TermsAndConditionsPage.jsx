@@ -26,7 +26,7 @@ export default function TermsAndConditionsPage() {
   useDocumentMeta({
     title: 'Terms and Conditions | Deltapreneur',
     description:
-      'Deltapreneur Terms and Conditions for using hubregistrar.com — domain registration, marketplace, technology, and related digital services.',
+      'Deltapreneur Terms and Conditions for using www.deltapreneur.com — domain registration, marketplace, technology, and related digital services.',
   });
 
   const sections = [
@@ -201,7 +201,7 @@ export default function TermsAndConditionsPage() {
                     <p className="text-sm text-slate-600 mt-2">
                       Contact Us:{' '}
                       <a href="/contact" className="font-medium text-indigo-600 hover:underline">
-                        https://hubregistrar.com/contact
+                        https://www.deltapreneur.com/contact
                       </a>
                     </p>
                   </div>

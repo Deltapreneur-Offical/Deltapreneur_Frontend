@@ -33,7 +33,7 @@ CATEGORY_KEYS = {
     'operationsCategoryEnvironmental': {'en': 'Environmental', 'zh': '\u73af\u5883'},
     'operationsCategoryDigitalServices': {'en': 'Digital Services', 'zh': '\u6570\u5b57\u670d\u52a1'},
     'operationsCategoryOther': {'en': 'Other', 'zh': '\u5176\u4ed6'},
-    'operationsCategoryHubRegistrar': {'en': 'Hub Registrar', 'zh': 'Hub Registrar'},
+    'operationsCategoryHubRegistrar': {'en': 'DELTA REGISTRAR', 'zh': 'DELTA REGISTRAR'},
     'operationsCategoryMarketing': {'en': 'Marketing', 'zh': '\u8425\u9500'},
     'operationsCategoryTechnology': {'en': 'Developers', 'zh': '\u5f00\u53d1\u8005'},
     'operationsCategorySales': {'en': 'Sales', 'zh': '\u9500\u552e'},

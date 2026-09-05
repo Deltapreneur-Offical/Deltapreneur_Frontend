@@ -57,7 +57,7 @@ export default function HomeRegistrationServiceCard({ categorySlug, service }) {
       <Link
         to={operationsPathForHubRegistrarService(categorySlug, service.slug)}
         className="reg-category-card reg-category-card--service"
-        aria-label={`${service.label} Hub Registrar service`}
+        aria-label={`${service.label} Deltapreneur service`}
       >
         <div className="reg-category-card__body">
           <p className="reg-category-card__kicker">{t('regCatalogCardService')}</p>

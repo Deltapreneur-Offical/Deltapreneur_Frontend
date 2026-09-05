@@ -11,9 +11,9 @@ import { formatInr } from './money';
 const SELLER = {
   legalName: 'Aultum International',
   gstin: '29DXMPA9959L2ZF',
-  email: 'support@hubregistrar.com',
+  email: 'support@deltapreneur.com',
   phone: '080 8575 8575',
-  website: 'www.hubregistrar.com',
+  website: 'www.deltapreneur.com',
   addressLines: [
     'TF 307, Marvel Artiza',
     'Hubballi, Karnataka (IN) 580021',

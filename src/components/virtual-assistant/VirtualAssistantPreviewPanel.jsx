@@ -169,13 +169,13 @@ export default function VirtualAssistantPreviewPanel({
       `Hello Deltapreneur team,\n\nI would like to hire ${name} (${primaryRole}).\n\nProfile: ${profileUrl}\n\nThank you.`;
     const gmailUrl =
       `https://mail.google.com/mail/?view=cm&fs=1` +
-      `&to=${encodeURIComponent('support@hubregistrar.com')}` +
+      `&to=${encodeURIComponent('support@deltapreneur.com')}` +
       `&su=${encodeURIComponent(subject)}` +
       `&body=${encodeURIComponent(body)}`;
     const opened = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
     if (!opened) {
       window.location.href =
-        `mailto:support@hubregistrar.com` +
+        `mailto:support@deltapreneur.com` +
         `?subject=${encodeURIComponent(subject)}` +
         `&body=${encodeURIComponent(body)}`;
     }

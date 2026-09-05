@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
   useDocumentMeta({
     title: 'Privacy Policy | Deltapreneur',
     description:
-      'Deltapreneur Privacy Policy — how we collect, use, store, and protect personal data on hubregistrar.com.',
+      'Deltapreneur Privacy Policy — how we collect, use, store, and protect personal data on www.deltapreneur.com.',
   });
 
   const sections = [
@@ -214,7 +214,7 @@ export default function PrivacyPolicyPage() {
                     <p className="text-sm text-slate-600 mt-2">
                       Contact Us:{' '}
                       <a href="/contact" className="font-medium text-indigo-600 hover:underline">
-                        https://hubregistrar.com/contact
+                        https://www.deltapreneur.com/contact
                       </a>
                     </p>
                   </div>

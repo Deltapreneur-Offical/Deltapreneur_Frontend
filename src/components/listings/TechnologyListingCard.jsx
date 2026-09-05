@@ -141,7 +141,7 @@ export default function TechnologyListingCard({
   const shareTechName = item.name || 'Technology Listing';
   const shareTechDesc = item.description || 'A premium software/technology listing on Deltapreneur.';
   const shareSubject = `Premium Technology Listing Available on Deltapreneur: ${shareTechName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium technology listing currently available on Deltapreneur.\n\n🌐 Technology: ${shareTechName}\n📝 Description: ${shareTechDesc}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a professional marketplace for digital assets, intellectual property, and software transactions.\n\nBest regards,\n[Shared via Deltapreneur]`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium technology listing currently available on Deltapreneur.\n\n🌐 Technology: ${shareTechName}\n📝 Description: ${shareTechDesc}\n🔗 View Listing:\n${shareUrl}\n\nDeltapreneur is a professional marketplace for digital assets, intellectual property, and software transactions.\n\nBest regards,\n[Shared via Deltapreneur]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

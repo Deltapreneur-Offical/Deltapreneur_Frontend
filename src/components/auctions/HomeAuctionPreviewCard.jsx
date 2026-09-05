@@ -207,7 +207,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
   const auctionTitle = title || 'Auction';
   const shareSubject = `Active Auction Listing on Deltapreneur: ${auctionTitle}`;
   const shareCaption = "Check out this Auction Listing on Deltapreneur!";
-  const shareBody = `Dear colleague / partner,\n\nI would like to share an active auction listing currently open on Deltapreneur.\n\n🌐 Auction: ${auctionTitle}\n📝 Description: ${shareCaption}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a premium marketplace offering secure acquisitions and partnerships through active bidding and auctions.\n\nBest regards,\n[Shared via Deltapreneur]`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share an active auction listing currently open on Deltapreneur.\n\n🌐 Auction: ${auctionTitle}\n📝 Description: ${shareCaption}\n🔗 View Listing:\n${shareUrl}\n\nDeltapreneur is a premium marketplace offering secure acquisitions and partnerships through active bidding and auctions.\n\nBest regards,\n[Shared via Deltapreneur]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

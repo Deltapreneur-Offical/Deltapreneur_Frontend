@@ -31,7 +31,7 @@ const SECTION_META = {
   compliance: {
     icon: ShieldCheck,
     titleKey: 'adminOperationsComplianceTitle',
-    defaultTitle: 'Hub Registrar',
+    defaultTitle: 'Deltapreneur',
     subtitleKey: 'adminOperationsComplianceSubtitle',
     defaultSubtitle: 'Manage one-time registration and hub registrar services.',
     addKey: 'adminOperationsAddComplianceService',
@@ -43,7 +43,7 @@ const SECTION_META = {
     emptyKey: 'adminOperationsEmptyCompliance',
     defaultEmpty: 'No hub registrar services match your filters.',
     modalTitleKey: 'adminOperationsModalTitleCompliance',
-    defaultModalTitle: 'Add / Edit Hub Registrar Service',
+    defaultModalTitle: 'Add / Edit Deltapreneur Service',
     namePlaceholderKey: 'adminOperationsFieldComplianceNamePlaceholder',
     defaultNamePlaceholder: 'GST Registration',
     priceHintKey: 'adminOperationsPriceHintCompliance',
@@ -958,7 +958,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     <ShieldCheck size={18} aria-hidden />
                   </span>
                   <div>
-                    <h3 className="operations-admin-section-title">Hub Registrar Categories</h3>
+                    <h3 className="operations-admin-section-title">Deltapreneur Categories</h3>
                     <p className="operations-admin-section-subtitle">Manage main categories displayed on the public website.</p>
                   </div>
                 </div>

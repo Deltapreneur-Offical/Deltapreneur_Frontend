@@ -231,7 +231,7 @@ export default function HomeFooter() {
 
             <ScrollLink to="/virtual-assistant" className={linkClass}>
 
-              {t('footerVirtualAssistant', { defaultValue: 'Delta Assistant' })}
+              Delta Operator
 
             </ScrollLink>
 

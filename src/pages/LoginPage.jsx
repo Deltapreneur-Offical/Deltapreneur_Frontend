@@ -50,7 +50,7 @@ export default function LoginPage() {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection();
+  } = useBotProtection({ action: 'login' });
 
   useEffect(() => {
     const prefilledEmail = location.state?.email;

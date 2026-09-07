@@ -42,7 +42,7 @@ const VirtualAssistantPage = () => {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection({ active: true });
+  } = useBotProtection({ active: true, action: 'virtual-assistant' });
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -309,17 +309,17 @@ const VirtualAssistantPage = () => {
         <PageHeroItem>
           <div className="va-app-badge">
             <span className="va-app-badge__dot" aria-hidden />
-            We're hiring Virtual Assistants
+            We're hiring Delta Operators
           </div>
         </PageHeroItem>
         <PageHeroItem>
           <h1 className="va-app-hero-title">
-            Become a Virtual Assistant
+            Become a Delta Operator
           </h1>
         </PageHeroItem>
         <PageHeroItem>
           <p className="va-app-hero-subtitle mb-8 sm:mb-10 md:mb-12">
-            Join Deltapreneur as a Virtual Assistant and help businesses thrive with your skills. Work flexibly, earn competitively, and grow with us.
+            Join Deltapreneur as a Delta Operator and help businesses thrive with your skills. Work flexibly, earn competitively, and grow with us.
           </p>
         </PageHeroItem>
       </PageHero>
@@ -466,7 +466,7 @@ const VirtualAssistantPage = () => {
                         value={formData.bio}
                         onChange={handleChange}
                         rows="4"
-                        placeholder="Tell us about yourself, your background, and what makes you a great Virtual Assistant..."
+                        placeholder="Tell us about yourself, your background, and what makes you a great Delta Operator..."
                         className={`va-app-textarea${textareaErrorClass(errors.bio)}`}
                       />
                       {errors.bio && <span className="va-app-error">{errors.bio}</span>}

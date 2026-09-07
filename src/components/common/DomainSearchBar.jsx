@@ -38,10 +38,10 @@ import {
 const PREMIUM_LOADING_MESSAGES = 3;
 const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
-  ai: { labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
-  new: { labelKey: 'searchTabNew', placeholderKey: 'searchPlaceholderNew' },
-  premium: { labelKey: 'searchTabPremium', placeholderKey: 'searchPlaceholderPremium' },
-  auction: { labelKey: 'searchTabAuction', placeholderKey: 'searchPlaceholderAuction' },
+  ai: { label: 'Delta Brand Names', labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
+  new: { label: 'Domain Names', labelKey: 'searchTabNew', placeholderKey: 'searchPlaceholderNew' },
+  premium: { label: 'Delta Domains', labelKey: 'searchTabPremium', placeholderKey: 'searchPlaceholderPremium' },
+  auction: { label: 'Domain Auctions', labelKey: 'searchTabAuction', placeholderKey: 'searchPlaceholderAuction' },
 };
 
 /** Preferred display order for hero TLD price pills (prices come from storefront API). */
@@ -481,7 +481,6 @@ function BrandSearchTabs({
   mobile = false,
   layoutId = 'brand-search-active-pill',
 }) {
-  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const useMotionPill = !reduceMotion;
 
@@ -530,7 +529,7 @@ function BrandSearchTabs({
         ) : null}
         <span className="brand-lightning-tail" aria-hidden="true" />
         <span className={`relative z-10 ${isActive ? 'text-orange-950' : ''}`}>
-          {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
+          {SEARCH_MODE_CONFIG[tabId].label}
         </span>
       </TabButtonTag>
     );

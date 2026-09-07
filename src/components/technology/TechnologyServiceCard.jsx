@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
-import deltaDLogo from '../../assets/delta-d-logo.png';
 import {
   Cpu,
   Layout,
@@ -146,36 +145,61 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
       </div>
 
       {/* Footer / Price & CTA */}
-      <div className="flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 pt-3.5 mt-2 min-w-0">
-        <div className="min-w-max shrink-0">
-          <span className="block text-[11px] text-gray-400 font-medium leading-none mb-1">{t('commonStartingAt', { defaultValue: 'Starting at' })}</span>
-          <div className="inline-flex items-baseline gap-1 whitespace-nowrap">
-            <span className="text-sm sm:text-base md:text-lg xl:text-xl font-extrabold text-gray-900 leading-none whitespace-nowrap">
-              {formatTechPrice(service.starting_price || 15)}
+      <div className="tech-service-card__footer flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 pt-3.5 mt-2 min-w-0">
+        {homeLayout ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardClick();
+            }}
+            aria-label={t('commonExploreService', { defaultValue: 'Explore Service' })}
+            className="tech-service-card__price-pill"
+          >
+            <span className="tech-service-card__price-text">
+              <span className="tech-service-card__price-label">{t('commonStartingAt', { defaultValue: 'Starting at' })}</span>
+              <span className="tech-service-card__price-row">
+                <span className="tech-service-card__price-amount">
+                  {formatTechPrice(service.starting_price || 15)}
+                </span>
+                <span className="tech-service-card__price-suffix">/{t('commonMo', { defaultValue: 'mo' })}</span>
+              </span>
             </span>
-            <span className="text-xs text-gray-500 font-semibold leading-none shrink-0 whitespace-nowrap">/{t('commonMo', { defaultValue: 'mo' })}</span>
-          </div>
-        </div>
+            <span className="tech-service-card__price-arrow" aria-hidden>
+              <svg
+                className="tech-service-card__price-play"
+                viewBox="0 0 64 34"
+                preserveAspectRatio="none"
+                focusable="false"
+              >
+                <path d="M2.8 0C1.25 0 0 1.12 0 2.5v29C0 32.88 1.25 34 2.8 34c1.06 0 2.1-.28 3.02-.8l37.12-14.65c2.75-1.56 2.75-3.54 0-5.1L5.82.8A6.2 6.2 0 0 0 2.8 0Z" />
+              </svg>
+            </span>
+          </button>
+        ) : (
+          <>
+            <div className="min-w-max shrink-0">
+              <span className="block text-[11px] text-gray-400 font-medium leading-none mb-1">{t('commonStartingAt', { defaultValue: 'Starting at' })}</span>
+              <div className="inline-flex items-baseline gap-1 whitespace-nowrap">
+                <span className="text-sm sm:text-base md:text-lg xl:text-xl font-extrabold text-gray-900 leading-none whitespace-nowrap">
+                  {formatTechPrice(service.starting_price || 15)}
+                </span>
+                <span className="text-xs text-gray-500 font-semibold leading-none shrink-0 whitespace-nowrap">/{t('commonMo', { defaultValue: 'mo' })}</span>
+              </div>
+            </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCardClick();
-          }}
-          aria-label={homeLayout ? t('commonExploreService', { defaultValue: 'Explore Service' }) : undefined}
-          className={homeLayout
-            ? 'inline-flex h-[2.2rem] w-[2.2rem] shrink-0 items-center justify-center border-0 bg-transparent p-0 transition-transform duration-200 ease-out hover:-translate-y-1 hover:scale-105'
-            : 'inline-flex shrink items-center gap-1 rounded-xl bg-gray-900 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-all duration-75 group-hover:bg-orange-800 group-hover:shadow-md group-hover:shadow-orange-800/30 whitespace-nowrap min-w-0 sm:gap-1.5 sm:px-3.5 sm:py-2 sm:text-xs'}
-        >
-          {homeLayout ? (
-            <img src={deltaDLogo} alt="" aria-hidden draggable="false" className="h-full w-auto object-contain" />
-          ) : (
-            <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardClick();
+              }}
+              className="inline-flex shrink items-center gap-1 rounded-xl bg-gray-900 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-all duration-75 group-hover:bg-orange-800 group-hover:shadow-md group-hover:shadow-orange-800/30 whitespace-nowrap min-w-0 sm:gap-1.5 sm:px-3.5 sm:py-2 sm:text-xs"
+            >
               <span className="truncate">{t('commonExploreService', { defaultValue: 'Explore Service' })}</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:translate-x-1" />
-            </>
-          )}
-        </button>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

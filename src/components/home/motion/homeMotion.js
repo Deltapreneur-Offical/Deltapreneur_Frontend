@@ -161,7 +161,7 @@ export const heroSearchStackEnter = {
 };
 
 export const heroSubmitHover = {
-  y: -2,
+  y: 0,
   scale: 1.045,
   transition: {
     duration: 0.22,

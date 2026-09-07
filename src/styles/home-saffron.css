@@ -258,24 +258,37 @@ body.home-page-body .tech-service-card:hover .tech-service-card__badge {
   border-color: #c2410c !important;
 }
 
-/* Dark saffron hover for the circular service icons in both home sections. */
-body.home-page-body .tech-service-card:hover .tech-service-card__icon,
+/* Light warm hover for the circular registrar service icons. */
 body.home-page-body .home-preview-card-border--operations:hover .home-operations-preview-card__avatar--fallback,
 body.home-page-body .home-preview-card-border--compliance:hover .home-operations-preview-card__avatar--fallback {
-  background: #c2410c !important;
-  color: #ffffff !important;
-  border-color: #c2410c !important;
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%) !important;
+  color: #ea580c !important;
+  border-color: #fb923c !important;
 }
 
-/* Keep Delta Registrar badges dark saffron while their homepage card is hovered. */
+/* Keep Delta Registrar badges light while their homepage card is hovered. */
 body.home-page-body .home-preview-card-border--operations:hover .home-operations-preview-card__category-badge,
 body.home-page-body .home-preview-card-border--operations:hover .home-operations-preview-card .creator-profile-card__badge,
 body.home-page-body .home-preview-card-border--compliance:hover .home-operations-preview-card__category-badge,
 body.home-page-body .home-preview-card-border--compliance:hover .home-operations-preview-card .creator-profile-card__badge,
 body.home-page-body .home-operations-preview-card__category-badge:hover {
-  background: #c2410c !important;
-  color: #ffffff !important;
-  border-color: #c2410c !important;
+  background: #fed7aa !important;
+  color: #c2410c !important;
+  border-color: #fb923c !important;
+}
+
+body.home-page-body .home-preview-card-border--operations:hover .home-feature-card-beam-spinner,
+body.home-page-body .home-preview-card-border--compliance:hover .home-feature-card-beam-spinner {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 72%,
+    rgba(255, 153, 51, 0.38) 80%,
+    #fb923c 87%,
+    #f97316 93%,
+    rgba(249, 115, 22, 0.32) 98%,
+    transparent 100%
+  ) !important;
 }
 
 /* Homepage card hover beam — saffron instead of cyan/purple */

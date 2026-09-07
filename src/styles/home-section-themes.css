@@ -125,8 +125,11 @@
 
 .home-preview-card-border--operations .home-operations-preview-card__price-box,
 .home-preview-card-border--compliance .home-operations-preview-card__price-box {
-  border-color: #fdba74 !important;
-  background: #ffedd5 !important;
+  height: 2.15rem;
+  padding: 0 0 0 0.8rem;
+  border: 1.25px solid rgba(249, 115, 22, 0.46) !important;
+  border-radius: 9999px !important;
+  background: #ffffff !important;
 }
 
 .home-preview-card-border--operations .home-operations-preview-card__skill-pills span,
@@ -143,9 +146,9 @@
 .home-preview-card-border--compliance:hover .home-operations-preview-card .creator-profile-card__badge,
 .home-preview-card-border--operations:hover .home-operations-preview-card__skill-pills span,
 .home-preview-card-border--compliance:hover .home-operations-preview-card__skill-pills span {
-  background: #c2410c !important;
-  color: #ffffff !important;
-  border-color: #c2410c !important;
+  background: #fed7aa !important;
+  color: #c2410c !important;
+  border-color: #fb923c !important;
 }
 
 .home-preview-card-border--operations .home-feature-card-beam-spinner,
@@ -156,8 +159,8 @@
     transparent 72%,
     rgba(255, 153, 51, 0.45) 80%,
     #ff9933 87%,
-    #c2410c 93%,
-    rgba(194, 65, 12, 0.4) 98%,
+    #f97316 93%,
+    rgba(249, 115, 22, 0.38) 98%,
     transparent 100%
   );
 }

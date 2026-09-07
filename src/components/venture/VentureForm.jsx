@@ -470,7 +470,7 @@ export default function VentureForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               { value: 'VENTURE', label: 'Venture', desc:'List your venture for acquisition or equity sale. Buyers can submit offers.', accent: 'blue' },
-              { value: 'CO_VENTURE', label: 'Co-Venture', desc: 'Find a co-founder or partner. Partners apply to join.', accent: 'teal' },
+              { value: 'CO_VENTURE', label: 'Delta-Ventures', desc: 'Find a co-founder or partner. Partners apply to join.', accent: 'teal' },
             ].map((opt) => {
               const selected = listingType === opt.value;
               const borderCls = opt.accent === 'teal'
@@ -818,13 +818,13 @@ export default function VentureForm({
 
       <section className="p-7 bg-white border border-gray-200 rounded-[14px] shadow-sm mb-5 flex flex-col gap-4">
         <h3 className={sectionHeadingCls}>Agreement</h3>
-        <label className="inline-flex items-center gap-3 text-sm text-gray-600 cursor-pointer max-w-full self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5">
+        <label className="relative inline-flex items-center gap-3 text-sm text-gray-600 cursor-pointer max-w-full self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5">
           <input
             type="checkbox"
             checked={form.agreement.terms}
             onChange={(e) => setForm((f) => ({ ...f, agreement: { ...f.agreement, terms: e.target.checked } }))}
             required
-            className="peer sr-only"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           />
           <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
             {form.agreement.terms && (

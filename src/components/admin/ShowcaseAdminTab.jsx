@@ -121,6 +121,7 @@ export default function ShowcaseAdminTab() {
   const [showAdvanced, setShowAdvanced] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const pollRef = useRef(null);
+  const pollInFlightRef = useRef(false);
   const inFlight = useRef(false);
   const generationIdRef = useRef(null);
   const abortRef = useRef(null);
@@ -235,6 +236,8 @@ export default function ShowcaseAdminTab() {
       if (mode === 'random' && tlds.length && !narrowTldPayload) payload.allowed_tlds = tlds;
 
       pollRef.current = setInterval(async () => {
+        if (pollInFlightRef.current) return;
+        pollInFlightRef.current = true;
         try {
           const res = await adminAPI.getShowcaseStatus(gid);
           const st = res.data?.status;
@@ -249,6 +252,8 @@ export default function ShowcaseAdminTab() {
           }
         } catch {
           // Status can 404 until the POST registers — keep polling.
+        } finally {
+          pollInFlightRef.current = false;
         }
       }, 1200);
 

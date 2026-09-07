@@ -1,9 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { authAPI, profileAPI } from '../api/services';
+import { ensureAccessTokenFromRefresh } from '../api/axios';
 import {
   clearAuthTokens,
   getStoredAccessToken,
-  hasCookieAuthSession,
   setStoredAccessToken,
 } from '../utils/authSession';
 
@@ -50,31 +50,48 @@ export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasAccessToken, setHasAccessToken] = useState(
-    () => Boolean(getAccessToken() || hasCookieAuthSession()),
+    () => Boolean(getAccessToken()),
   );
+  // Bumped on login/logout so a late /auth/me 401 cannot wipe a newer session.
+  const authEpochRef = useRef(0);
 
-  // ── fetchMe: reads token, hits /profile/me, normalises response ──────────
+  // ── fetchMe: restore access token if needed, then GET /auth/me ──────────
   const fetchMe = useCallback(async () => {
-    const token = getAccessToken();
-    const cookieSession = hasCookieAuthSession();
-    if (!token && !cookieSession) {
+    const epoch = authEpochRef.current;
+    let token = getAccessToken();
+    // csrf_token alone is not a session. Restore via refresh first, then /me.
+    if (!token) {
+      try {
+        await ensureAccessTokenFromRefresh();
+      } catch {
+        // Refresh cookie missing/unusable — stay logged out quietly.
+      }
+      if (epoch !== authEpochRef.current) return null;
+      token = getAccessToken();
+    }
+    if (!token) {
       setUser(null);
       setHasAccessToken(false);
       setLoading(false);
       return null;
     }
-    if (token || cookieSession) setHasAccessToken(true);
+    setHasAccessToken(true);
+    const tokenAtStart = token;
     try {
       // Prefer existing access cookie / memory token for /auth/me.
       // Do NOT refresh after a successful me call — overlapping refreshes
       // used to revoke the live session (backend now also guards this).
       const { data } = await profileAPI.getMe();
+      if (epoch !== authEpochRef.current) return null;
       // Backend may return FastAPI { data }, Java { user }, or the user object directly.
       const userData = normalizeUserPayload(data);
       setUser(userData);
       setHasAccessToken(true);
       return userData;
     } catch (err) {
+      if (epoch !== authEpochRef.current) return null;
+      const latest = getAccessToken();
+      if (latest && latest !== tokenAtStart) return null;
       const status = err?.response?.status;
       const serverMessage = String(
         err?.response?.data?.message ||
@@ -90,16 +107,20 @@ export function AuthProvider({ children }) {
         setUser(null);
         return null;
       }
-      // 401 = token invalid/expired — clear auth keys only (avoid wiping unrelated keys
-      // and racing OAuth callback which may have just written new tokens).
-      if (shouldClearAuth(err)) {
+      // 401 for this same token — clear. Do not wipe a newer login's token.
+      if (shouldClearAuth(err) && latest && latest === tokenAtStart) {
         clearAuthTokens();
+        setHasAccessToken(false);
+        setUser(null);
+      } else if (!latest) {
         setHasAccessToken(false);
         setUser(null);
       }
       return null;
     } finally {
-      setLoading(false);
+      if (epoch === authEpochRef.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -107,7 +128,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const syncAuthState = () => {
-      if (getAccessToken() || hasCookieAuthSession()) setHasAccessToken(true);
+      if (getAccessToken()) setHasAccessToken(true);
     };
 
     const onAuthCleared = () => {
@@ -129,6 +150,7 @@ export function AuthProvider({ children }) {
   // ── login: called from OAuthCallbackPage and password/OTP login ──────────
   // Access JWT stays in memory only. Refresh stays HttpOnly-cookie based.
   const login = useCallback((tokens, userData) => {
+    authEpochRef.current += 1;
     if (tokens?.accessToken) {
       setStoredAccessToken(tokens.accessToken);
       setHasAccessToken(true);
@@ -151,6 +173,7 @@ export function AuthProvider({ children }) {
         err?.response?.data || err?.message || err,
       );
     } finally {
+      authEpochRef.current += 1;
       clearAuthTokens();
       setHasAccessToken(false);
       setUser(null);

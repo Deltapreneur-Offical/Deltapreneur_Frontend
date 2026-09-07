@@ -66,7 +66,7 @@ export default function VenturesSplitColumns({
           onClick={() => setActiveMobileTab('venture')}
         >
           <Rocket size={14} strokeWidth={2} aria-hidden />
-          {t('venture', { defaultValue: 'Venture' })}
+          Ventures
           <span className="ventures-split__mobile-tab-count">{ventureRows.length}</span>
         </button>
         <button
@@ -80,7 +80,7 @@ export default function VenturesSplitColumns({
           onClick={() => setActiveMobileTab('coventure')}
         >
           <Handshake size={14} strokeWidth={2} aria-hidden />
-          {t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+          Delta-Ventures
           <span className="ventures-split__mobile-tab-count">{coVentureRows.length}</span>
         </button>
       </div>
@@ -99,7 +99,7 @@ export default function VenturesSplitColumns({
           >
             <SplitPanelHeader
               variant="venture"
-              title={t('venture')}
+              title="Ventures"
               subtitle={t('venturesSplitVentureHint', {
                 defaultValue: 'Acquisition, equity sale & ownership listings',
               })}
@@ -107,7 +107,7 @@ export default function VenturesSplitColumns({
               countLabel={ventureCountLabel}
             />
             <h2 id="ventures-split-venture-heading" className="sr-only">
-              {t('venture')}
+              Ventures
             </h2>
             <div className="ventures-split__body">
               {ventureRows.length === 0 ? (
@@ -136,7 +136,7 @@ export default function VenturesSplitColumns({
           >
             <SplitPanelHeader
               variant="coventure"
-              title={t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+              title="Delta-Ventures"
               subtitle={t('venturesSplitCoVentureHint', {
                 defaultValue: 'Partnership & co-founder opportunities',
               })}
@@ -144,7 +144,7 @@ export default function VenturesSplitColumns({
               countLabel={coVentureCountLabel}
             />
             <h2 id="ventures-split-coventure-heading" className="sr-only">
-              {t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })}
+              Delta-Ventures
             </h2>
             <div className="ventures-split__body">
               {coVentureRows.length === 0 ? (

@@ -66,7 +66,7 @@ export default function ExploreSection() {
 
       <HomeRegistrationsSection />
 
-      <LazySection title={t('disruptors')} to="/community" compact>
+      <LazySection title="Deltapreneur" to="/community" compact>
         <CommunitySection />
       </LazySection>
 

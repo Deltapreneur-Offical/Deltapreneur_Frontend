@@ -47,7 +47,7 @@ export default function FeedbackSection() {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection({ active: botProtectionActive });
+  } = useBotProtection({ active: botProtectionActive, action: 'feedback' });
 
   const handleFeedbackTypeClick = (type) => {
     setFeedbackType(type);

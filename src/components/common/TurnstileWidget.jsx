@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 const SCRIPT_ID = 'cf-turnstile-script';
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
@@ -56,13 +56,14 @@ export function prefetchTurnstileScript() {
 }
 
 const TurnstileWidget = forwardRef(function TurnstileWidget(
-  { siteKey, onToken, onExpire, theme = 'light' },
+  { siteKey, onToken, onExpire, theme = 'light', action },
   ref,
 ) {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
   const onTokenRef = useRef(onToken);
   const onExpireRef = useRef(onExpire);
+  const [loadError, setLoadError] = useState(false);
 
   onTokenRef.current = onToken;
   onExpireRef.current = onExpire;
@@ -79,6 +80,7 @@ const TurnstileWidget = forwardRef(function TurnstileWidget(
     if (!siteKey || !containerRef.current) return undefined;
 
     let cancelled = false;
+    setLoadError(false);
 
     prefetchTurnstileScript()
       .then((turnstile) => {
@@ -88,18 +90,26 @@ const TurnstileWidget = forwardRef(function TurnstileWidget(
           sitekey: siteKey,
           theme,
           size: 'normal',
-          callback: (token) => onTokenRef.current?.(token),
+          ...(action ? { action } : {}),
+          callback: (token) => {
+            setLoadError(false);
+            onTokenRef.current?.(token);
+          },
           'expired-callback': () => {
             onTokenRef.current?.('');
             onExpireRef.current?.();
           },
           'error-callback': () => {
+            setLoadError(true);
             onTokenRef.current?.('');
             onExpireRef.current?.();
           },
         });
       })
-      .catch(() => onTokenRef.current?.(''));
+      .catch(() => {
+        setLoadError(true);
+        onTokenRef.current?.('');
+      });
 
     return () => {
       cancelled = true;
@@ -108,11 +118,20 @@ const TurnstileWidget = forwardRef(function TurnstileWidget(
         widgetIdRef.current = null;
       }
     };
-  }, [siteKey, theme]);
+  }, [siteKey, theme, action]);
 
   if (!siteKey) return null;
 
-  return <div ref={containerRef} className="flex justify-center min-h-[65px]" />;
+  return (
+    <div className="flex flex-col items-center gap-2 min-h-[65px]">
+      <div ref={containerRef} className="flex justify-center" />
+      {loadError ? (
+        <p className="text-sm text-center text-red-600 max-w-sm">
+          Security check could not load. Refresh, or add localhost and 127.0.0.1 to the Turnstile widget hostnames.
+        </p>
+      ) : null}
+    </div>
+  );
 });
 
 export default TurnstileWidget;

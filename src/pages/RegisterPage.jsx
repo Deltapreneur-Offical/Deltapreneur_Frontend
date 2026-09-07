@@ -31,7 +31,7 @@ export default function RegisterPage() {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection();
+  } = useBotProtection({ action: 'register' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -3,17 +3,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 import { prefetchTurnstileScript } from '../components/common/TurnstileWidget';
 
-// Cloudflare Turnstile test site key — always passes on any hostname (local dev).
+// Cloudflare Turnstile test site key — always passes on any hostname (local DEV).
+// Production uses VITE_TURNSTILE_SITE_KEY or GET /api/v1/public/bot-protection.
 const TURNSTILE_TEST_SITE_KEY = '1x00000000000000000000AA';
 
 function resolveSiteKey() {
-  const configured = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
+  const configured = (import.meta.env.VITE_TURNSTILE_SITE_KEY || '').trim();
+  const useLiveInDev = import.meta.env.VITE_TURNSTILE_USE_LIVE === 'true';
+  // Live site keys only work on hostnames listed on the Cloudflare widget.
+  // Local DEV uses the always-pass dummy widget unless opted in.
+  if (import.meta.env.DEV && !useLiveInDev) return TURNSTILE_TEST_SITE_KEY;
   if (configured) return configured;
   if (import.meta.env.DEV) return TURNSTILE_TEST_SITE_KEY;
   return '';
 }
 
-export function useBotProtection({ active = true } = {}) {
+export function useBotProtection({ active = true, action } = {}) {
   const envSiteKey = resolveSiteKey();
   const [siteKey, setSiteKey] = useState(envSiteKey);
   const [enabled, setEnabled] = useState(Boolean(envSiteKey));
@@ -79,6 +84,7 @@ export function useBotProtection({ active = true } = {}) {
     turnstileRef,
     onTurnstileToken: setTurnstileToken,
     onTurnstileExpire: handleTurnstileExpire,
+    action,
   };
 
   const requiresTurnstile = enabled && !turnstileToken;

@@ -364,14 +364,14 @@
 
 /* Single Unified CoBrother Card Design Language Across ALL Home Sections */
 .home-preview-card-border {
-  --home-card-border: #fdba74;
-  --home-card-border-hover: #fb923c;
-  --home-card-shadow: rgba(255, 153, 51, 0.15);
-  --home-card-shadow-hover: rgba(255, 153, 51, 0.22);
-  --home-card-price-bg: #ffedd5;
-  --home-card-price-border: #fdba74;
-  --home-card-price-border-hover: #fb923c;
-  --home-card-price-shadow-hover: rgba(255, 153, 51, 0.12);
+  --home-card-border: #F6C98F;
+  --home-card-border-hover: #F59E0B;
+  --home-card-shadow: rgba(246, 201, 143, 0.12);
+  --home-card-shadow-hover: rgba(245, 158, 11, 0.18);
+  --home-card-price-bg: #FFFCF8;
+  --home-card-price-border: #F6C98F;
+  --home-card-price-border-hover: #F59E0B;
+  --home-card-price-shadow-hover: rgba(245, 158, 11, 0.10);
   --home-card-inner-radius: 1.5rem;
   position: relative;
   padding: 0;
@@ -380,7 +380,7 @@
   flex-direction: column;
   border-radius: 1.5rem;
   border: 1px solid var(--home-card-border) !important;
-  background: #ffffff !important;
+  background: #FFFCF8 !important;
   box-shadow:
     0 8px 24px var(--home-card-shadow) !important,
     inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
@@ -396,7 +396,7 @@
 .home-preview-card-border:hover {
     /* Card stays in exact position - no translateY to avoid layout shift */
   border: 1px solid var(--home-card-border-hover) !important;
-  background: #ffffff !important;
+  background: #FFF7ED !important;
   box-shadow:
     0 12px 28px var(--home-card-shadow-hover) !important,
     inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
@@ -464,7 +464,7 @@
 .home-preview-card-border .domain-listing-card__price-box--auction,
 .home-preview-card-border .home-operations-preview-card__price-box {
   border: 1px solid var(--home-card-price-border) !important;
-  background: var(--home-card-price-bg) !important;
+  background: #FFFCF8 !important;
   box-shadow: none !important;
   border-radius: 0.75rem;
   /* Remove conflicting transition - child elements inherit parent's instant hover */
@@ -520,7 +520,7 @@
   flex-direction: column;
   border-radius: inherit;
   overflow: hidden;
-  background: #ffffff;
+  background: #FFFCF8;
 }
 
 /* Domain / tech / creator previews — avoid h-full collapse inside auto-height rows */
@@ -1731,6 +1731,45 @@
   height: 5.5rem;
 }
 
+/* Venture and Delta Venture cards — flush play CTA matching Delta OS */
+.home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-box,
+.home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-box {
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0 0 0 0.95rem !important;
+  padding-right: 0 !important;
+  overflow: hidden;
+  border-radius: 9999px;
+}
+
+.home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta,
+.home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta {
+  width: 2.9rem;
+  min-width: 2.9rem;
+  height: 100% !important;
+  min-height: 100% !important;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  border-radius: 0 999px 999px 0 !important;
+  color: #f97316 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+.home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta svg,
+.home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
 .home-preview-row .home-creator-listing-card .domain-listing-card__body {
   flex: 1 1 auto;
   display: flex;
@@ -1950,15 +1989,15 @@
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Cool sections — match domain / co-venture saffron card border */
+/* Cool sections — match domain / co-venture warm champagne card border */
 .home-section-header--domain .home-section-header__view-all,
 .home-section-header--coventure .home-section-header__view-all,
 .home-section-header--technology .home-section-header__view-all,
 .home-section-header--operations .home-section-header__view-all,
 .home-section-header--community .home-section-header__view-all {
-  background: #ffedd5;
-  border-color: #fdba74;
-  color: #9a3412;
+  background: #FFFCF8;
+  border-color: #F6C98F;
+  color: #c2410c;
 }
 
 .home-section-header--domain .home-section-header__view-all:hover,
@@ -1971,27 +2010,27 @@
 .home-section-header--operations .home-section-header__view-all:focus-visible,
 .home-section-header--community .home-section-header__view-all:hover,
 .home-section-header--community .home-section-header__view-all:focus-visible {
-  background: #fed7aa;
-  border-color: #ff9933;
-  color: #9a3412;
-  box-shadow: 0 4px 14px rgba(255, 153, 51, 0.18);
+  background: #FFF7ED;
+  border-color: #F59E0B;
+  color: #c2410c;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12);
   transform: translateY(-1px);
   outline: none;
 }
 
-/* Ventures — light gold / yellow */
+/* Ventures — warm-white + champagne, matching Domains */
 .home-section-header--venture .home-section-header__view-all {
-  background: #fef3c7;
-  border-color: #fcd34d;
-  color: #92400e;
+  background: #FFFCF8;
+  border-color: #F6C98F;
+  color: #c2410c;
 }
 
 .home-section-header--venture .home-section-header__view-all:hover,
 .home-section-header--venture .home-section-header__view-all:focus-visible {
-  background: #fde68a;
-  border-color: #d97706;
-  color: #78350f;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.18);
+  background: #FFF7ED;
+  border-color: #F59E0B;
+  color: #c2410c;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12);
   transform: translateY(-1px);
   outline: none;
 }

@@ -23,8 +23,8 @@ function FeeInput({ fieldKey, label, hint, value, onChange, prefix, suffix, high
         gap: 6,
         padding: '14px 16px',
         borderRadius: 12,
-        border: highlight ? '1.5px solid #a78bfa' : '1px solid #e5e7eb',
-        background: highlight ? '#faf5ff' : '#f9fafb',
+        border: highlight ? '1.5px solid #fdba74' : '1px solid #e5e7eb',
+        background: highlight ? '#fff7ed' : '#f9fafb',
         transition: 'background 0.15s',
       }}
     >
@@ -61,7 +61,7 @@ function FeeInput({ fieldKey, label, hint, value, onChange, prefix, suffix, high
             outline: 'none',
             boxSizing: 'border-box',
           }}
-          onFocus={(e) => (e.target.style.borderColor = '#8b5cf6')}
+          onFocus={(e) => (e.target.style.borderColor = '#f97316')}
           onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
         />
         {suffix && (
@@ -121,13 +121,13 @@ function SharedFeeBadge({ label, description }) {
       gap: 10,
       padding: '10px 14px',
       borderRadius: 10,
-      background: '#f5f3ff',
-      border: '1px dashed #c4b5fd',
+      background: '#fff7ed',
+      border: '1px dashed #fed7aa',
     }}>
       <span style={{ fontSize: 14, marginTop: 1 }}>🔗</span>
       <div>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6d28d9' }}>{label}</p>
-        <p style={{ margin: 0, fontSize: 11, color: '#7c3aed', marginTop: 2, opacity: 0.8 }}>{description}</p>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#c2410c' }}>{label}</p>
+        <p style={{ margin: 0, fontSize: 11, color: '#c2410c', marginTop: 2, opacity: 0.8 }}>{description}</p>
       </div>
     </div>
   );
@@ -225,7 +225,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
-        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #ede9fe', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #ffedd5', borderTopColor: '#f97316', animation: 'spin 0.8s linear infinite' }} />
         <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>Loading configuration…</p>
       </div>
     );
@@ -277,7 +277,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
         emoji="🚀"
         title="Ventures"
         subtitle="Venture acquisition deals and equity transfers (VenturesPage)"
-        accentColor="#8b5cf6"
+        accentColor="#f97316"
       >
         <FeeInput
           fieldKey="ventureAcquisitionCommissionPercent"
@@ -448,7 +448,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
         {[
           { label: 'Domains Commission', value: `${fmt(fees.listingCommissionPercent, '')}%`, color: '#0ea5e9' },
           { label: 'Technology Commission', value: `${fmt(fees.softwareOnetimeCommissionPercent, '')}%`, color: '#10b981' },
-          { label: 'Venture Acquisition Commission', value: `${fmt(fees.ventureAcquisitionCommissionPercent, '')}%`, color: '#8b5cf6' },
+          { label: 'Venture Acquisition Commission', value: `${fmt(fees.ventureAcquisitionCommissionPercent, '')}%`, color: '#f97316' },
           { label: 'Auction Creation Fee', value: fmt(fees.auctionCreationFeeInr, '₹'), color: '#ef4444' },
           { label: 'Bid Placement Fee', value: fmt(fees.auctionBidFeeInr, '₹'), color: '#ef4444' },
           { label: 'Meeting Request Fee', value: fmt(fees.communityParticipationFeeInr, '₹'), color: '#f59e0b' },

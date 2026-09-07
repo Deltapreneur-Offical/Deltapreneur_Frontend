@@ -124,12 +124,12 @@ export default function CoCreationDashboardPage() {
                     icon={<IndianRupee size={18} />} color="#047857" />
           <StatCard label="Revenue" value={formatPrice(totalRevenue)}
                     icon={<IndianRupee size={18} />} color="#047857" />
-          <StatCard label="My Purchases" value={completedPurchases.length} icon={<ShoppingCart size={18} />} color="#6d28d9" />
+          <StatCard label="My Purchases" value={completedPurchases.length} icon={<ShoppingCart size={18} />} color="#c2410c" />
           <StatCard label="Total Spent" value={formatPrice(totalSpent)}
-                    icon={<CreditCard size={18} />} color="#1d4ed8" />
+                    icon={<CreditCard size={18} />} color="#c2410c" />
           {pendingConfirm > 0 && (
             <StatCard label="Awaiting Confirm" value={pendingConfirm}
-                      icon={<Clock3 size={18} />} color="#7e22ce" />
+                      icon={<Clock3 size={18} />} color="#c2410c" />
           )}
         </div>
 

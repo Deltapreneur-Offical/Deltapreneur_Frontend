@@ -626,7 +626,7 @@ function DomainRow({ domain, type, onVerify }) {
     DRAFT:    '#888',
     ACTIVE:   '#6ec896',
     EXTENDED: '#c8a96e',
-    ENDED:    '#a06ec8',
+    ENDED:    '#c2410c',
     UNSOLD:   '#c86e6e',
     CLOSED:   '#666',
   };
@@ -685,7 +685,7 @@ function DomainRow({ domain, type, onVerify }) {
             <OverflowMarqueeText text={`${domain.domainName}${domain.domainExtension}`} />
           </span>
           {isAuction && (
-            <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full shrink-0">
+            <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded-full shrink-0">
               <Gavel size={13} /> {t('domainsDashboardAuction', { defaultValue: 'Auction' })}
             </span>
           )}

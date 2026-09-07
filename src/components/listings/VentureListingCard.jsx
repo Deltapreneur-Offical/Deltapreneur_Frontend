@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel } from 'lucide-react';
+import { Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel } from 'lucide-react';
 
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -791,16 +791,16 @@ return (
 
                   type="button"
 
-                  className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${compact ? 'w-6 h-6' : ''
-                    }`}
+                  className="domain-listing-card__price-cta tech-service-card__price-arrow"
 
                   aria-label={t('listingCardViewDetails', 'View details')}
 
                   onClick={handleViewDetails}
 
                 >
-
-                  <ArrowRight size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden />
+                  <svg className="tech-service-card__price-play" viewBox="0 0 64 34" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+                    <path d="M2.8 0C1.25 0 0 1.12 0 2.5v29C0 32.88 1.25 34 2.8 34c1.06 0 2.1-.28 3.02-.8l37.12-14.65c2.75-1.56 2.75-3.54 0-5.1L5.82.8A6.2 6.2 0 0 0 2.8 0Z" />
+                  </svg>
 
                 </button>
 

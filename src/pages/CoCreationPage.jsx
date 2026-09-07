@@ -404,7 +404,7 @@ export default function CoCreationPage() {
                     {t('techServicesEnterpriseCatalogue', { defaultValue: 'Deltapreneur Enterprise Catalogue' })}
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-                    {t('techServicesTitle', { defaultValue: 'Technology Services' })}
+                    {t('techServicesTitle', { defaultValue: 'DeltaOs (Operating System)' })}
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
                     {t('techServicesSubtitle', { defaultValue: 'White-labelled provider-powered applications & cloud services.' })}

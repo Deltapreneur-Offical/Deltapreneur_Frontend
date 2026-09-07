@@ -49,7 +49,7 @@ export default function ExploreSection() {
         <AuctionsSection />
       </LazySection>
 
-      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Services' })} to="/technology">
+      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology">
         <TechnologySection />
       </LazySection>
 

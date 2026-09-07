@@ -75,7 +75,7 @@ export default function TechnologySection() {
   );
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Services' })} to="/technology" />;
+    return <HomeSectionCardSkeleton title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" />;
   }
 
   return (
@@ -85,9 +85,9 @@ export default function TechnologySection() {
         {/* 1. Marketplace Technology Listings */}
         {previewSoftwares.length > 0 && (
           <div>
-            <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Services' })} to="/technology" />
+            <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" />
             {shouldAutoScroll ? (
-              <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Services' })}>
+              <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}>
                 {previewSoftwares.map((item) => (
                   <HomeAutoScrollRowItem key={item.id}>
                     {renderTechnologyCard(item)}
@@ -115,7 +115,7 @@ export default function TechnologySection() {
                 {t('homeFeaturedServices', { defaultValue: 'Featured Deltapreneur Services' })}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                {t('homeTechnologyRegister', { defaultValue: 'Delta Technology Services' })}
+                {t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
               </h2>
             </div>
             <button

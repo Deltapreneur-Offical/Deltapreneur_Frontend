@@ -1,0 +1,293 @@
+/**
+ * Homepage-only: remap leftover sky/blue/cyan accents to saffron.
+ * Scoped to body.home-page-body so other routes stay unchanged.
+ */
+
+body.home-page-body {
+  --home-saffron: #ff9933;
+  --home-saffron-deep: #e67300;
+  --home-saffron-text: #c2410c;
+  --home-saffron-ink: #9a3412;
+  --home-saffron-50: #fff7ed;
+  --home-saffron-100: #ffedd5;
+  --home-saffron-200: #fed7aa;
+  --home-saffron-300: #fdba74;
+}
+
+/* ── Tailwind sky / blue / cyan / indigo utilities ── */
+body.home-page-body .bg-sky-50,
+body.home-page-body .bg-blue-50,
+body.home-page-body .bg-cyan-50,
+body.home-page-body .bg-indigo-50 { background-color: #fff7ed !important; }
+
+body.home-page-body .bg-sky-50\/50,
+body.home-page-body .bg-sky-50\/60,
+body.home-page-body .bg-blue-50\/40,
+body.home-page-body .bg-blue-50\/50,
+body.home-page-body .bg-blue-50\/60 { background-color: rgba(255, 247, 237, 0.7) !important; }
+
+body.home-page-body .bg-sky-100,
+body.home-page-body .bg-blue-100,
+body.home-page-body .bg-cyan-100 { background-color: #ffedd5 !important; }
+
+body.home-page-body .bg-sky-100\/80,
+body.home-page-body .bg-sky-100\/70 { background-color: rgba(255, 237, 213, 0.8) !important; }
+
+body.home-page-body .bg-blue-600 { background-color: #ff9933 !important; }
+body.home-page-body .hover\:bg-blue-700:hover { background-color: #e67300 !important; }
+body.home-page-body .hover\:bg-blue-100:hover,
+body.home-page-body .hover\:bg-blue-100\/80:hover { background-color: #ffedd5 !important; }
+body.home-page-body .hover\:bg-sky-50:hover { background-color: #fff7ed !important; }
+
+body.home-page-body .text-sky-950,
+body.home-page-body .text-sky-900,
+body.home-page-body .text-sky-900\/80,
+body.home-page-body .text-sky-900\/90,
+body.home-page-body .text-sky-800,
+body.home-page-body .text-sky-800\/85,
+body.home-page-body .text-sky-800\/80 { color: #9a3412 !important; }
+
+body.home-page-body .text-sky-700,
+body.home-page-body .text-blue-700,
+body.home-page-body .text-blue-800,
+body.home-page-body .hover\:text-blue-800:hover { color: #c2410c !important; }
+
+body.home-page-body .text-sky-600,
+body.home-page-body .text-blue-600,
+body.home-page-body .text-cyan-600 { color: #e67300 !important; }
+
+body.home-page-body .text-sky-500,
+body.home-page-body .text-blue-500,
+body.home-page-body .text-\[\#0284C7\],
+body.home-page-body .text-\[\#0284c7\] { color: #ff9933 !important; }
+
+body.home-page-body .border-sky-100,
+body.home-page-body .border-blue-100,
+body.home-page-body .border-sky-100\/80 { border-color: #ffedd5 !important; }
+
+body.home-page-body .border-sky-200,
+body.home-page-body .border-blue-200,
+body.home-page-body .border-cyan-200 { border-color: #fed7aa !important; }
+
+body.home-page-body .border-sky-300,
+body.home-page-body .border-blue-300 { border-color: #fdba74 !important; }
+
+body.home-page-body .border-blue-400,
+body.home-page-body .hover\:border-blue-400:hover,
+body.home-page-body .hover\:border-sky-200:hover { border-color: #fb923c !important; }
+
+body.home-page-body .ring-blue-50,
+body.home-page-body .ring-sky-100,
+body.home-page-body .ring-sky-200,
+body.home-page-body .ring-sky-200\/70,
+body.home-page-body .focus-visible\:ring-blue-200:focus-visible { --tw-ring-color: #fed7aa !important; }
+
+body.home-page-body .from-sky-50,
+body.home-page-body .from-sky-50\/40,
+body.home-page-body .from-sky-50\/50,
+body.home-page-body .from-sky-50\/60,
+body.home-page-body .from-sky-50\/80 { --tw-gradient-from: #fff7ed var(--tw-gradient-from-position) !important; }
+
+body.home-page-body .to-blue-50,
+body.home-page-body .to-blue-50\/95,
+body.home-page-body .to-cyan-50\/40 { --tw-gradient-to: #ffedd5 var(--tw-gradient-to-position) !important; }
+
+body.home-page-body .from-sky-500\/10 { --tw-gradient-from: rgb(255 153 51 / 0.1) var(--tw-gradient-from-position) !important; }
+body.home-page-body .to-blue-600\/10 { --tw-gradient-to: rgb(230 115 0 / 0.1) var(--tw-gradient-to-position) !important; }
+
+body.home-page-body .from-sky-600 { --tw-gradient-from: #e67300 var(--tw-gradient-from-position) !important; }
+body.home-page-body .via-blue-600 { --tw-gradient-via: #ff9933 var(--tw-gradient-via-position) !important; }
+body.home-page-body .to-blue-800 { --tw-gradient-to: #c2410c var(--tw-gradient-to-position) !important; }
+
+body.home-page-body .border-sky-300,
+body.home-page-body .border-t-sky-700 { border-top-color: #c2410c !important; }
+
+body.home-page-body .border-sky-300.border-t-sky-700,
+body.home-page-body .border-t-sky-700 { border-top-color: #c2410c !important; }
+
+/* ── Phone icon + nav hover (home chrome) ── */
+body.home-page-body .home-nav-call-btn,
+body.home-page-body .home-nav-call-btn:hover,
+body.home-page-body .home-nav-call-btn:focus-visible {
+  color: #ff9933 !important;
+}
+
+body.home-page-body .home-nav-pill:hover,
+body.home-page-body .home-nav-pill:focus-visible,
+body.home-page-body .home-nav-pill.is-open,
+body.home-page-body .home-nav-pill:hover svg,
+body.home-page-body .home-nav-pill:focus-visible svg,
+body.home-page-body .home-nav-pill.is-open svg {
+  color: #c2410c !important;
+}
+
+/* ── TLD price marquee ── */
+body.home-page-body .tld-price-marquee-pill,
+body.home-page-body .tld-price-marquee-skeleton-pill {
+  border-color: rgba(253, 186, 116, 0.95) !important;
+  background: rgba(255, 247, 237, 0.95) !important;
+  box-shadow: 0 1px 2px rgba(255, 153, 51, 0.1) !important;
+}
+
+body.home-page-body .tld-price-marquee-pill__tld,
+body.home-page-body .tld-price-marquee-skeleton-tld {
+  color: #7c2d12 !important;
+}
+
+body.home-page-body .tld-price-marquee-pill__price {
+  color: #ff9933 !important;
+}
+
+body.home-page-body .tld-price-marquee-pill__yr,
+body.home-page-body .tld-price-marquee-skeleton-yr {
+  color: #e67300 !important;
+}
+
+body.home-page-body .tld-price-marquee-skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(253, 186, 116, 0.28) 0%,
+    rgba(254, 215, 170, 0.75) 45%,
+    rgba(253, 186, 116, 0.28) 100%
+  ) !important;
+}
+
+/* ── Standard Domains — deep teal (do not remap to brand saffron) ── */
+body.home-page-body {
+  --home-standard: #0f766e;
+  --home-standard-bg: #f0fdfa;
+  --home-standard-border: #5eead4;
+}
+
+body.home-page-body .registry-segment-indicator--standard {
+  background: linear-gradient(135deg, #f0fdfa 0%, #f0fdfa 45%, #ccfbf1 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(94, 234, 212, 0.65),
+    0 4px 14px rgba(15, 118, 110, 0.12) !important;
+}
+
+body.home-page-body .registry-segment-btn--standard[aria-selected="true"],
+body.home-page-body [aria-label="Domain tier filter"] [role="tab"][aria-selected="true"]:not(.premium-domain-pill) {
+  color: #0f766e !important;
+}
+
+body.home-page-body .registry-standard-badge,
+body.home-page-body .registry-standard-badge__diamond {
+  color: #0f766e !important;
+}
+
+body.home-page-body .registry-standard-badge {
+  background: #f0fdfa !important;
+  background-image: none !important;
+  border-color: #5eead4 !important;
+  box-shadow: 0 0 10px rgba(15, 118, 110, 0.16) !important;
+}
+
+body.home-page-body .domain-search-card--standard,
+body.home-page-body .standard-results-stagger .domain-search-card {
+  border-color: #5eead4 !important;
+  background: #ffffff !important;
+  --tw-ring-color: rgba(94, 234, 212, 0.45) !important;
+  box-shadow:
+    0 0 0 1px rgba(94, 234, 212, 0.28),
+    0 8px 24px rgba(15, 118, 110, 0.08) !important;
+}
+
+body.home-page-body .domain-card-standard-label,
+body.home-page-body .domain-card-standard-tld {
+  color: #0f766e !important;
+}
+
+body.home-page-body .domain-tld-loader__pill {
+  border-color: rgba(94, 234, 212, 0.65) !important;
+}
+
+body.home-page-body .domain-tld-loader__icon {
+  background: #f0fdfa !important;
+  color: #0f766e !important;
+}
+
+/* ── Light-blue bullet ticks → saffron ── */
+body.home-page-body .reg-mini-card__bullet {
+  filter: hue-rotate(-165deg) saturate(1.35) brightness(1.05);
+}
+
+/* ── Shared listing-card indigo/sky wash on homepage cards ── */
+body.home-page-body .home-feature-card.card-glow-hover {
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%) !important;
+}
+
+body.home-page-body .home-preview-card-border .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card),
+body.home-page-body .home-preview-card-border .technology-listing-card.card-glow-hover,
+body.home-page-body .home-preview-card-border .creator-profile-card.community-listing-card.card-glow-hover:not(.virtual-assistant-listing-card) {
+  border-color: #fdba74 !important;
+  box-shadow:
+    0 0 0 1px rgba(253, 186, 116, 0.22),
+    0 8px 24px rgba(255, 153, 51, 0.12) !important;
+  background: #ffffff !important;
+}
+
+body.home-page-body .home-preview-card-border .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover,
+body.home-page-body .home-preview-card-border .technology-listing-card.card-glow-hover:hover,
+body.home-page-body .home-preview-card-border .creator-profile-card.community-listing-card.card-glow-hover:not(.virtual-assistant-listing-card):hover {
+  border-color: #ff9933 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fff7ed 40%, #ffedd5 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 153, 51, 0.28),
+    0 12px 32px rgba(230, 115, 0, 0.14) !important;
+}
+
+body.home-page-body .home-preview-card-border .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card)::after,
+body.home-page-body .home-preview-card-border .technology-listing-card.card-glow-hover::after {
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 247, 237, 0.55) 55%,
+      rgba(254, 215, 170, 0.65) 100%),
+    linear-gradient(135deg,
+      rgba(253, 186, 116, 0.18) 0%,
+      rgba(255, 153, 51, 0.1) 50%,
+      rgba(230, 115, 0, 0.14) 100%) !important;
+}
+
+/* Tech service badges — fill dark saffron + white on hover, matching the icon */
+body.home-page-body .tech-service-card:hover .tech-service-card__badge {
+  background-color: #c2410c !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #c2410c !important;
+}
+
+/* Dark saffron hover for the circular service icons in both home sections. */
+body.home-page-body .tech-service-card:hover .tech-service-card__icon,
+body.home-page-body .home-preview-card-border--operations:hover .home-operations-preview-card__avatar--fallback,
+body.home-page-body .home-preview-card-border--compliance:hover .home-operations-preview-card__avatar--fallback {
+  background: #c2410c !important;
+  color: #ffffff !important;
+  border-color: #c2410c !important;
+}
+
+/* Keep Delta Registrar badges dark saffron while their homepage card is hovered. */
+body.home-page-body .home-preview-card-border--operations:hover .home-operations-preview-card__category-badge,
+body.home-page-body .home-preview-card-border--operations:hover .home-operations-preview-card .creator-profile-card__badge,
+body.home-page-body .home-preview-card-border--compliance:hover .home-operations-preview-card__category-badge,
+body.home-page-body .home-preview-card-border--compliance:hover .home-operations-preview-card .creator-profile-card__badge,
+body.home-page-body .home-operations-preview-card__category-badge:hover {
+  background: #c2410c !important;
+  color: #ffffff !important;
+  border-color: #c2410c !important;
+}
+
+/* Homepage card hover beam — saffron instead of cyan/purple */
+body.home-page-body .home-preview-card-border .home-feature-card-beam-spinner {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 72%,
+    rgba(255, 153, 51, 0.45) 80%,
+    #ff9933 87%,
+    #c2410c 93%,
+    rgba(194, 65, 12, 0.4) 98%,
+    transparent 100%
+  );
+}

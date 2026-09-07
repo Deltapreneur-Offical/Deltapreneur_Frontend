@@ -7409,28 +7409,28 @@ body.home-page-body {
   --home-topbar-height: 2.85rem;
   --home-main-nav-height: 3.55rem;
   --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
-  --home-hero-glow-hue: 200;
+  --home-hero-glow-hue: 32;
   animation: home-hero-glow-hue-rotate 12s ease-in-out infinite;
 }
 
 @property --home-hero-glow-hue {
   syntax: '<number>';
-  initial-value: 200;
+  initial-value: 32;
   inherits: true;
 }
 
 @keyframes home-hero-glow-hue-rotate {
-  0% { --home-hero-glow-hue: 200; }
-  25% { --home-hero-glow-hue: 220; }
-  50% { --home-hero-glow-hue: 190; }
-  75% { --home-hero-glow-hue: 170; }
-  100% { --home-hero-glow-hue: 200; }
+  0% { --home-hero-glow-hue: 32; }
+  25% { --home-hero-glow-hue: 38; }
+  50% { --home-hero-glow-hue: 26; }
+  75% { --home-hero-glow-hue: 22; }
+  100% { --home-hero-glow-hue: 32; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   body.home-page-body {
     animation: none;
-    --home-hero-glow-hue: 200;
+    --home-hero-glow-hue: 32;
   }
 }
 
@@ -7438,9 +7438,9 @@ body.home-page-body {
 .glow-layer {
   background: radial-gradient(
     ellipse 90% 80% at 22% 0%,
-    hsl(var(--home-hero-glow-hue, 200), 70%, 66%, 0.42) 0%,
-    hsl(var(--home-hero-glow-hue, 200), 62%, 64%, 0.22) 40%,
-    hsl(var(--home-hero-glow-hue, 200), 58%, 62%, 0.1) 65%,
+    hsl(var(--home-hero-glow-hue, 32), 92%, 62%, 0.38) 0%,
+    hsl(var(--home-hero-glow-hue, 32), 86%, 60%, 0.2) 40%,
+    hsl(var(--home-hero-glow-hue, 32), 80%, 58%, 0.1) 65%,
     transparent 82%
   );
 }
@@ -7448,7 +7448,7 @@ body.home-page-body {
 @supports (-webkit-touch-callout: none) {
   body.home-page-body {
     animation: none;
-    --home-hero-glow-hue: 200;
+    --home-hero-glow-hue: 32;
   }
 }
 

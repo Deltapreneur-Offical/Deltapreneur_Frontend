@@ -282,7 +282,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
             {user ? (
               <>
                 <div className="px-3 py-2 border-b border-gray-100">
-                  <p className="text-sm font-bold bg-gradient-to-r from-sky-600 via-blue-600 to-blue-800 bg-clip-text text-transparent truncate">
+                  <p className="text-sm font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-700 bg-clip-text text-transparent truncate">
                     {displayName}
                   </p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>

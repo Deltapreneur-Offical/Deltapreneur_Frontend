@@ -1,0 +1,23 @@
+/* Technology Services page: saffron base theme without changing card behavior. */
+.technology-services-catalogue .tech-service-card:not(:hover) {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
+  box-shadow:
+    0 0 0 1px rgba(253, 186, 116, 0.2),
+    0 8px 24px rgba(230, 115, 0, 0.08);
+}
+
+.technology-services-catalogue .tech-service-card:not(:hover) .tech-service-card__icon {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: #e67300;
+}
+
+.technology-services-catalogue .tech-service-card:not(:hover) .tech-service-card__accent-glow {
+  background: linear-gradient(135deg, rgba(255, 153, 51, 0.1), rgba(230, 115, 0, 0.1));
+}
+
+.technology-services-catalogue .tech-service-card:not(:hover) .tech-service-card__badge:first-child {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}

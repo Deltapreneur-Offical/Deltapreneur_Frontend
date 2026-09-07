@@ -4,37 +4,37 @@ import './domain-extensions-loader.css';
 function SkeletonBone({ className = '' }) {
   return (
     <div
-      className={`animate-pulse rounded bg-sky-100/80 ${className}`.trim()}
+      className={`animate-pulse rounded bg-teal-100/80 ${className}`.trim()}
       aria-hidden="true"
     />
   );
 }
 
-/** Compact card skeleton — sky theme for Standard Domains (search-bar border palette). */
+/** Compact card skeleton — deep teal theme for Standard Domains. */
 export function DomainCardSkeleton({ featured = false }) {
   if (featured) {
     return (
       <div
-        className="domain-search-card domain-search-card--featured rounded-2xl border border-sky-100/80 bg-gradient-to-br from-sky-50/60 via-white to-white p-4 sm:p-5 shadow-[0_6px_24px_rgba(2,132,199,0.06)] animate-pulse"
+        className="domain-search-card domain-search-card--featured domain-search-card--standard rounded-2xl border border-teal-300 bg-white p-4 sm:p-5 shadow-[0_6px_24px_rgba(15,118,110,0.06)] animate-pulse"
         aria-hidden="true"
       >
-        <SkeletonBone className="mb-2.5 h-5 w-24 rounded-full bg-sky-100" />
-        <SkeletonBone className="mb-2.5 h-8 w-2/3 max-w-sm bg-sky-100/70" />
-        <SkeletonBone className="mb-3.5 h-7 w-28 bg-sky-50" />
-        <SkeletonBone className="h-10 w-[30%] min-w-[7.5rem] max-w-[9.5rem] rounded-lg bg-sky-100/80" />
+        <SkeletonBone className="mb-2.5 h-5 w-24 rounded-full bg-teal-100" />
+        <SkeletonBone className="mb-2.5 h-8 w-2/3 max-w-sm bg-teal-100/70" />
+        <SkeletonBone className="mb-3.5 h-7 w-28 bg-teal-50" />
+        <SkeletonBone className="h-10 w-[30%] min-w-[7.5rem] max-w-[9.5rem] rounded-lg bg-teal-100/80" />
       </div>
     );
   }
 
   return (
     <div
-      className="domain-search-card flex flex-col rounded-2xl border border-sky-100/80 bg-gradient-to-br from-sky-50/50 via-white to-white p-4 shadow-[0_4px_16px_rgba(2,132,199,0.05)] animate-pulse"
+      className="domain-search-card domain-search-card--standard flex flex-col rounded-2xl border border-teal-300 bg-white p-4 shadow-[0_4px_16px_rgba(15,118,110,0.05)] animate-pulse"
       aria-hidden="true"
     >
-      <SkeletonBone className="mb-1.5 h-4 w-20 rounded-full bg-sky-100" />
-      <SkeletonBone className="mb-1.5 h-6 w-40 bg-sky-100/70" />
-      <SkeletonBone className="mb-3 h-5 w-24 bg-sky-50" />
-      <SkeletonBone className="h-9 w-[30%] min-w-[7rem] max-w-[9rem] rounded-lg bg-sky-100/80" />
+      <SkeletonBone className="mb-1.5 h-4 w-20 rounded-full bg-teal-100" />
+      <SkeletonBone className="mb-1.5 h-6 w-40 bg-teal-100/70" />
+      <SkeletonBone className="mb-3 h-5 w-24 bg-teal-50" />
+      <SkeletonBone className="h-9 w-[30%] min-w-[7rem] max-w-[9rem] rounded-lg bg-teal-100/80" />
     </div>
   );
 }
@@ -64,7 +64,7 @@ function ThreeDotLoader() {
 }
 
 /**
- * Standard Domains loading strip — sky theme (mirrors premium gold loader).
+ * Standard Domains loading strip — deep teal theme (mirrors premium gold loader).
  * Rotating messages + skeleton cards; unmounts when loading ends.
  */
 export default function DomainExtensionsLoader({
@@ -105,10 +105,10 @@ export default function DomainExtensionsLoader({
       aria-busy="true"
       aria-label={activeMessage}
     >
-      <div className="flex items-center gap-2.5 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50/80 to-cyan-50/40 px-4 py-3">
-        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-sky-300 border-t-sky-700" />
+      <div className="flex items-center gap-2.5 rounded-xl border border-teal-300 bg-teal-50 px-4 py-3">
+        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-teal-300 border-t-teal-700" />
         <p
-          className={`text-sm font-semibold text-sky-900/90 transition-opacity duration-300 ${
+          className={`text-sm font-semibold text-teal-700 transition-opacity duration-300 ${
             phase === 'out' ? 'opacity-0' : 'opacity-100'
           }`}
         >

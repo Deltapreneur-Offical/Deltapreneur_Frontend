@@ -61,18 +61,22 @@ export default function RegistryPremiumSegment({
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute top-1 bottom-1 rounded-lg shadow-sm transition-all duration-300 ease-out"
+        className={`pointer-events-none absolute top-1 bottom-1 rounded-lg shadow-sm transition-all duration-300 ease-out ${
+          value === REGISTRY_PREMIUM_SEGMENT.PREMIUM
+            ? 'registry-segment-indicator--premium'
+            : 'registry-segment-indicator--standard'
+        }`}
         style={{
           left: indicator.left,
           width: indicator.width,
           background:
             value === REGISTRY_PREMIUM_SEGMENT.PREMIUM
               ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 45%, #fde68a 100%)'
-              : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%)',
+              : 'linear-gradient(135deg, #f0fdfa 0%, #f0fdfa 45%, #ccfbf1 100%)',
           boxShadow:
             value === REGISTRY_PREMIUM_SEGMENT.PREMIUM
               ? '0 0 0 1px rgba(217, 119, 6, 0.22), 0 4px 14px rgba(180, 83, 9, 0.12)'
-              : '0 0 0 1px rgba(14, 165, 233, 0.22), 0 4px 14px rgba(2, 132, 199, 0.12)',
+              : '0 0 0 1px rgba(94, 234, 212, 0.65), 0 4px 14px rgba(15, 118, 110, 0.12)',
         }}
       />
       {options.map((opt) => {
@@ -88,12 +92,12 @@ export default function RegistryPremiumSegment({
             }}
             onClick={() => onChange(opt.id)}
             className={`relative z-[1] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors duration-300 whitespace-nowrap select-none min-w-0 ${
-              opt.sparkle ? 'premium-domain-pill' : ''
+              opt.sparkle ? 'premium-domain-pill' : 'registry-segment-btn--standard'
             } ${
               active
                 ? opt.sparkle
                   ? 'text-amber-950'
-                  : 'text-sky-950'
+                  : 'text-teal-700'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -101,7 +105,7 @@ export default function RegistryPremiumSegment({
             {opt.sparkle ? <span aria-hidden="true">✦</span> : null}
             <span className={`truncate ${opt.sparkle ? 'premium-domain-pill__label' : ''}`}>{opt.label}</span>
             {opt.loading ? (
-              <span className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${opt.sparkle ? 'border-amber-300 border-t-amber-700' : 'border-sky-300 border-t-sky-700'}`} />
+              <span className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${opt.sparkle ? 'border-amber-300 border-t-amber-700' : 'border-teal-300 border-t-teal-700'}`} />
             ) : typeof opt.count === 'number' ? (
               <span className="text-[11px] font-bold tabular-nums text-gray-400">{opt.count}</span>
             ) : null}

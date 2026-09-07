@@ -6,16 +6,16 @@ import BotProtectionFields from '../common/BotProtectionFields';
 import { useBotProtection } from '../../hooks/useBotProtection';
 
 const CONFETTI_PIECES = [
-  { left: '5%', delay: '0ms', duration: '2600ms', color: '#3b82f6', rotate: '18deg' },
+  { left: '5%', delay: '0ms', duration: '2600ms', color: '#ff9933', rotate: '18deg' },
   { left: '13%', delay: '180ms', duration: '2800ms', color: '#f59e0b', rotate: '52deg' },
   { left: '23%', delay: '70ms', duration: '2700ms', color: '#ec4899', rotate: '94deg' },
-  { left: '34%', delay: '310ms', duration: '2900ms', color: '#6366f1', rotate: '135deg' },
+  { left: '34%', delay: '310ms', duration: '2900ms', color: '#f97316', rotate: '135deg' },
   { left: '45%', delay: '120ms', duration: '2650ms', color: '#22c55e', rotate: '175deg' },
   { left: '56%', delay: '390ms', duration: '2850ms', color: '#f97316', rotate: '215deg' },
-  { left: '67%', delay: '40ms', duration: '2750ms', color: '#2563eb', rotate: '255deg' },
-  { left: '77%', delay: '260ms', duration: '2600ms', color: '#06b6d4', rotate: '295deg' },
+  { left: '67%', delay: '40ms', duration: '2750ms', color: '#e67300', rotate: '255deg' },
+  { left: '77%', delay: '260ms', duration: '2600ms', color: '#fb923c', rotate: '295deg' },
   { left: '87%', delay: '150ms', duration: '2880ms', color: '#eab308', rotate: '335deg' },
-  { left: '95%', delay: '340ms', duration: '2720ms', color: '#0284c7', rotate: '375deg' },
+  { left: '95%', delay: '340ms', duration: '2720ms', color: '#e67300', rotate: '375deg' },
 ];
 
 const HAPPY_EMOJIS = [
@@ -89,7 +89,7 @@ export default function FeedbackSection() {
 
   return (
     <section className="bg-white py-8 md:py-10">
-      <div className="relative isolate w-full overflow-hidden p-4 md:p-5 bg-gradient-to-r from-sky-50 to-blue-50 border border-blue-100 rounded-2xl">
+      <div className="relative isolate w-full overflow-hidden p-4 md:p-5 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-2xl">
         {feedbackSubmitted && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
             {feedbackType === 'like' ? (
@@ -166,7 +166,7 @@ export default function FeedbackSection() {
                 </>
               ) : null
             ) : (
-              <p className="text-xs md:text-sm font-medium text-blue-600">
+              <p className="text-xs md:text-sm font-medium text-orange-600">
                 {feedbackType === 'like' ? t('feedbackPositive') : t('feedbackNegative')}
               </p>
             )}

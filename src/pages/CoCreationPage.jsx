@@ -396,7 +396,7 @@ export default function CoCreationPage() {
             )}
 
             {/* Technology Services Catalogue */}
-            <div className="mt-16 pt-12 border-t border-gray-200">
+            <div className="technology-services-catalogue mt-16 pt-12 border-t border-gray-200">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500/10 to-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600 mb-2 border border-blue-100">

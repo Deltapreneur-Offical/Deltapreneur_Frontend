@@ -153,15 +153,23 @@ export function filterFeaturedListings(items, type = 'domain') {
 /** Homepage hero rows: admin-featured listings only. */
 export const HOMEPAGE_PREVIEW_LIMIT = 6;
 
+function isOpenProviderShowcaseRow(item) {
+  return item?.source === 'openprovider_showcase' || Boolean(item?.showcaseId);
+}
+
 export function pickHomepagePreviewListings(
   items,
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
 ) {
-  return asArray(items)
-    .filter((item) => (
-      isHomepageFeaturedListing(item, type)
-      && isHomepageVerifiedListing(item, type)
-    ))
-    .slice(0, limit);
+  const eligible = asArray(items).filter((item) => (
+    isHomepageFeaturedListing(item, type)
+    && isHomepageVerifiedListing(item, type)
+  ));
+  if (type !== 'domain') {
+    return eligible.slice(0, limit);
+  }
+  const showcase = eligible.filter(isOpenProviderShowcaseRow);
+  const rest = eligible.filter((item) => !isOpenProviderShowcaseRow(item));
+  return [...showcase, ...rest].slice(0, limit);
 }

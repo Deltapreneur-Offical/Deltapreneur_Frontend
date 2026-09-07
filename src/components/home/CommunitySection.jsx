@@ -54,14 +54,14 @@ export default function CommunitySection() {
   };
 
   if (loading) {
-    return <HomeSectionCardSkeleton title={t('disruptors')} to="/community" accent="community" compact />;
+    return <HomeSectionCardSkeleton title="Deltapreneur" to="/community" accent="community" compact />;
   }
 
   return (
     <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 overflow-visible">
       <div className="w-full">
         <HomeSectionHeader
-          title={t('disruptors')}
+          title="Deltapreneur"
           to="/community"
           accent="community"
           showViewAll={previewCommunities.length > 0}

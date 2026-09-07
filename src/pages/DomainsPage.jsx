@@ -730,14 +730,14 @@ export default function DomainsPage() {
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors md:text-sm ${activeTab === 'premium' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
                 onClick={() => { setActiveTab('premium'); setShowForm(false); setEditTarget(null); }}
               >
-                Premium
+                Delta
               </button>
               <button
                 type="button"
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors md:text-sm ${activeTab === 'standard' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
                 onClick={() => { setActiveTab('standard'); setShowForm(false); setEditTarget(null); }}
               >
-                Standard
+                Domain
               </button>
               <button
                 type="button"

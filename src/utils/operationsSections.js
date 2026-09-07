@@ -4,7 +4,7 @@ export const OPERATIONS_SECTIONS = [
     id: 'assistance',
     labelKey: 'operationsSectionVirtualAssistance',
     defaultLabel: 'Delta Assistance',
-    homeLabel: 'Delta Assistance',
+    homeLabel: 'DeltaOp (Operators)',
     hintKey: 'operationsSectionVaHint',
     defaultHint: 'Monthly virtual roles & business support',
     serviceType: 'virtual_assistance',

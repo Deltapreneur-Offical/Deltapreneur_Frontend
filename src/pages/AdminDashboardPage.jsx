@@ -661,7 +661,7 @@ export default function AdminDashboardPage() {
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar, disabled: true },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
-    { id: 'hub-registrar-office', label: 'Hub Registrar Offices', icon: null, Icon: Briefcase },
+    { id: 'hub-registrar-office', label: 'Deltapreneur Offices', icon: null, Icon: Briefcase },
     { id: 'franchise-applications', label: 'Franchise Applications', icon: null, Icon: Users },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
@@ -3550,7 +3550,7 @@ function AdminPendingCard({ icon: Icon, label, hint, count, accent, loading, onC
 function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, total, onJump }) {
   const platformStats = [
     { key: 'totalUsers',        Icon: UsersRound,   label: 'Users',       value: stats?.totalUsers,        accent: 'indigo'  },
-    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'HubRegistrars',  value: stats?.totalCoBrothers,   accent: 'violet'  },
+    { key: 'totalCoBrothers',   Icon: Sparkles,     label: 'Deltapreneurs',  value: stats?.totalCoBrothers,   accent: 'violet'  },
     { key: 'totalVentures',     Icon: Briefcase,    label: 'Ventures',    value: stats?.totalVentures,     accent: 'emerald' },
     { key: 'totalDomains',      Icon: Globe,        label: 'Domains',     value: stats?.totalDomains,      accent: 'sky'     },
     { key: 'totalTechnologies', Icon: Cpu,          label: 'Technology',  value: stats?.totalTechnologies, accent: 'rose'    },

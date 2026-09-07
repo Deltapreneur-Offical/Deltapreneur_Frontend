@@ -81,7 +81,7 @@ export default function DataDeletionPage() {
                     <p className="text-sm text-slate-600">Send an email request from your registered email address.</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <span className="text-sm font-semibold text-slate-900">support@hubregistrar.com</span>
+                    <span className="text-sm font-semibold text-slate-900">support@deltapreneur.com</span>
                     <p className="text-xs text-slate-500 mt-1">Resolution within 24-48 business hours</p>
                   </div>
                 </div>

@@ -194,7 +194,7 @@ export function PolicyContactCard() {
         <p className="text-sm text-slate-600 mt-2">
           Contact page:{' '}
           <a href="/contact" className="font-medium text-indigo-600 hover:underline">
-            https://hubregistrar.com/contact
+            https://www.deltapreneur.com/contact
           </a>
         </p>
       </div>

@@ -44,7 +44,7 @@ export default function CoVenturesSection() {
     navigateToListingDetail(navigate, 'venture', ventureId);
   };
 
-  const sectionTitle = t('homeCoVenturesRegister', { defaultValue: 'Delta Co-Ventures' });
+  const sectionTitle = t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' });
   const shouldAutoScroll = useShouldAutoScroll(ventures.length);
 
   const renderCoVentureCard = (venture) => (

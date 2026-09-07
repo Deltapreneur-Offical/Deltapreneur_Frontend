@@ -14,8 +14,8 @@ export default function PartnershipTimelineCard({ ventureName, partnerName }) {
           </p>
           <div className="text-sm bg-white/80 border border-teal-100 rounded-lg px-4 py-3">
             <div className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">Deltapreneur support</div>
-            <a href="mailto:support@hubregistrar.com" className="text-teal-900 font-medium hover:underline">
-              support@hubregistrar.com
+            <a href="mailto:support@deltapreneur.com" className="text-teal-900 font-medium hover:underline">
+              support@deltapreneur.com
             </a>
           </div>
         </div>

@@ -24,15 +24,15 @@ export default function RefundPolicyPage() {
       badgeIcon={RefreshCcw}
       badge="Refund Policy"
       titleAccent="Refund Policy"
-      intro={`This Refund Policy explains when and how ${BUSINESS_LEGAL_NAME} (Deltapreneur) issues refunds for payments made in INR on hubregistrar.com for domain registrations, marketplace purchases, technology products, and related digital services.`}
+      intro={`This Refund Policy explains when and how ${BUSINESS_LEGAL_NAME} (Deltapreneur) issues refunds for payments made in INR on www.deltapreneur.com for domain registrations, marketplace purchases, technology products, and related digital services.`}
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
       documentTitle="Refund Policy | Deltapreneur"
-      documentDescription="Deltapreneur Refund Policy — eligibility, timelines (5-7 business days), how to request refunds, and grievance contact for hubregistrar.com."
+      documentDescription="Deltapreneur Refund Policy — eligibility, timelines (5-7 business days), how to request refunds, and grievance contact for www.deltapreneur.com."
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          Deltapreneur is operated by {BUSINESS_LEGAL_NAME}. Payments on hubregistrar.com are processed securely through
+          Deltapreneur is operated by {BUSINESS_LEGAL_NAME}. Payments on www.deltapreneur.com are processed securely through
           authorized payment partners (including Razorpay and HDFC Bank SmartGateway / other RBI-regulated payment
           aggregators or banks enabled on our checkout). This policy applies to all purchases completed on our website
           and related checkout flows.

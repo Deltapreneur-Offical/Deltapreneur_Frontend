@@ -9,7 +9,7 @@ import {
 export default function HeroGlow() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
-  const headline = t('homeHeroHeadline', { defaultValue: 'The Intellectual Property Registrar' });
+  const headline = t('homeHeroHeadline', { defaultValue: 'The Delta Edition Of Entrepreneur!' });
 
   const textStack = reduceMotion ? (
     <div className="hero-text-stack relative z-20 w-full min-w-0">
@@ -47,24 +47,56 @@ export default function HeroGlow() {
         .hero-text-stack {
           display: block;
           width: 100%;
+          max-width: calc(100vw - 4rem);
+          min-width: 0;
         }
 
         .hero-headline {
           display: block;
-          width: 100%;
+          width: min(100%, calc(100vw - 4rem));
+          max-width: 100%;
           margin: 0;
           line-height: 1.25;
           font-family: var(--font-body), system-ui, sans-serif;
           font-size: clamp(1.02rem, 3.2vw, 1.22rem);
-          font-weight: 600;
+          font-weight: 500;
           letter-spacing: 0;
           color: #050505;
+          white-space: normal;
+          overflow-wrap: break-word;
+          word-break: normal;
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
         }
 
-        @media (min-width: 640px) {
+        @media (max-width: 639px) {
+          .hero-text-stack,
           .hero-headline {
+            width: min(100%, 20.5rem) !important;
+            max-width: 20.5rem !important;
+          }
+
+          .hero-headline {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+        }
+
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .hero-text-stack,
+          .hero-headline {
+            width: min(100%, 42rem) !important;
+            max-width: 42rem !important;
+          }
+        }
+
+        @media (min-width: 640px) {
+          .hero-text-stack {
+            max-width: 100%;
+          }
+
+          .hero-headline {
+            width: 100%;
             font-size: clamp(1.12rem, 1.85vw, 1.3rem);
           }
         }

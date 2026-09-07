@@ -881,11 +881,11 @@ export default function DomainStorefrontPage() {
                                 {tldLoadingMore ? (
                                   <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    {t('domainSearchLoadingPremiumDomains', { defaultValue: 'Loading Premium Domains...' })}
+                                    {t('domainSearchLoadingPremiumDomains', { defaultValue: 'Loading Delta Domains...' })}
                                   </>
                                 ) : (
                                   <>
-                                    {t('domainSearchLoadMorePremiumDomains', { defaultValue: 'Load More Premium Domains' })}
+                                    {t('domainSearchLoadMorePremiumDomains', { defaultValue: 'Load More Delta Domains' })}
                                     <ChevronRight className="w-4 h-4" />
                                   </>
                                 )}
@@ -909,8 +909,8 @@ export default function DomainStorefrontPage() {
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                             ? (premiumLoading
                               ? t('domainSearchSearchingPremiumMarketplace', { defaultValue: 'Searching premium marketplace...' })
-                              : t('domainSearchNoPremiumDomains', { defaultValue: 'No premium domains found. Try another keyword.' }))
-                            : t('domainSearchNoStandardDomains', { defaultValue: 'No standard domains in these results. Try Premium Domains.' })}
+                              : t('domainSearchNoPremiumDomains', { defaultValue: 'No Delta Domains found. Try another keyword.' }))
+                            : t('domainSearchNoStandardDomains', { defaultValue: 'No domains in these results. Try Delta Domains.' })}
                         </div>
                       )}
                     </div>

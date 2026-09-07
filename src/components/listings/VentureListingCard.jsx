@@ -265,7 +265,7 @@ export default function VentureListingCard({
   const typeLabel = isCoVenture ? 'Co-Venture' : 'Venture';
   const desc = b.description || b.tagline || 'No description provided.';
   const shareSubject = `Exciting ${typeLabel} Opportunity on Deltapreneur: ${brandName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share an exciting business opportunity currently listed on Deltapreneur.\n\n🌐 Venture: ${brandName} (${typeLabel})\n📝 Description: ${desc}\n🔗 View Listing:\n${shareUrl}\n\nHubRegistrar is a professional marketplace and community for business partnerships, co-venturing, and acquisitions.\n\nBest regards,\n[Shared via Deltapreneur]`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share an exciting business opportunity currently listed on Deltapreneur.\n\n🌐 Venture: ${brandName} (${typeLabel})\n📝 Description: ${desc}\n🔗 View Listing:\n${shareUrl}\n\nDeltapreneur is a professional marketplace and community for business partnerships, co-venturing, and acquisitions.\n\nBest regards,\n[Shared via Deltapreneur]`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
 

@@ -8,7 +8,7 @@ export default function RegistryStandardBadge({ className = '' }) {
       className={`registry-standard-badge inline-flex w-fit items-center gap-1 rounded-full border border-teal-300 bg-teal-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700 ${className}`}
     >
       <span className="registry-standard-badge__diamond" aria-hidden="true">◆</span>
-      Standard
+      Domain
       <style>{`
         @keyframes registryStandardBadgeIn {
           from { opacity: 0; transform: translateY(4px) scale(0.92); }

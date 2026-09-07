@@ -15,7 +15,7 @@ export default function AIDomainLoader({ stage, progress = 0, compact = false })
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-sky-900/90">{statusText}</p>
             <p className="mt-0.5 text-xs font-medium text-sky-700/70">
-              Building premium domain opportunities
+              Building Delta Domains opportunities
             </p>
           </div>
         </div>

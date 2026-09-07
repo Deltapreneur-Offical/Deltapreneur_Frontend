@@ -38,7 +38,7 @@ export default function ExploreSection() {
       <VenturesSection />
 
       <LazySection
-        title={t('homeCoVenturesRegister', { defaultValue: 'Delta Co-Ventures' })}
+        title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
         to="/ventures?mode=co-venture"
         compact
       >

@@ -57,7 +57,7 @@ const QUICK_STARTS_BY_MODE = {
     {
       icon: Globe2,
       text: 'How do I buy a domain?',
-      prompt: 'How do I buy a premium domain on Deltapreneur?',
+      prompt: 'How do I buy Delta Domains on Deltapreneur?',
     },
     {
       icon: Globe2,

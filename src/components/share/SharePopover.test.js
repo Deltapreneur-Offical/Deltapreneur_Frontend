@@ -15,7 +15,7 @@ describe('buildShareMessage', () => {
       [
         '🚀 Check out donka.in on Deltapreneur!',
         '',
-        '🌐 Standard Domain',
+        '🌐 Domains',
         '✅ Available',
         '💰 ₹550/yr',
         '',
@@ -30,7 +30,7 @@ describe('buildShareMessage', () => {
       shareUrl,
       availability: { status: 'available', is_premium: true, price_inr: 1250000.5 },
     });
-    expect(msg).toContain('✦ Premium Domain');
+    expect(msg).toContain('✦ Delta Domains');
     expect(msg).toContain('✅ Available');
     expect(msg).toContain('💰 ₹12,50,000.50 (1st Year)');
     expect(msg).toContain('🔗 https://cobrother.com/s/abc123');
@@ -76,7 +76,7 @@ describe('buildSocialLinks', () => {
     const [wa] = buildSocialLinks(shareUrl, domain, availability).filter((l) => l.label === 'WhatsApp');
     expect(wa.href).toMatch(/^https:\/\/wa\.me\/\?text=/);
     expect(decodeURIComponent(wa.href)).toContain(richText);
-    expect(decodeURIComponent(wa.href)).toContain('🌐 Standard Domain');
+    expect(decodeURIComponent(wa.href)).toContain('🌐 Domains');
   });
 
   it('prefills X with the rich message', () => {

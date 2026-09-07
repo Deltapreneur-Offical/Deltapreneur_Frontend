@@ -28,7 +28,7 @@ export default function CancellationPolicyPage() {
       lastUpdated={LAST_UPDATED}
       sections={SECTIONS}
       documentTitle="Cancellation Policy | Deltapreneur"
-      documentDescription="Deltapreneur Cancellation Policy — cancel before or after payment, timelines, refunds within 5-7 business days, and contact details for hubregistrar.com."
+      documentDescription="Deltapreneur Cancellation Policy — cancel before or after payment, timelines, refunds within 5-7 business days, and contact details for www.deltapreneur.com."
     >
       <PolicySection id="overview" title="1. Overview">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
@@ -114,7 +114,7 @@ export default function CancellationPolicyPage() {
 
       <PolicySection id="how-to" title="8. How to cancel or request help">
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-          Email <span className="font-medium text-slate-900">support@hubregistrar.com</span> or use the Contact page with
+          Email <span className="font-medium text-slate-900">support@deltapreneur.com</span> or use the Contact page with
           your order/payment reference, registered email or phone, and what you want cancelled. We will confirm next
           steps by email within <strong>2 business days</strong>.
         </p>

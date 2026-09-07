@@ -606,8 +606,8 @@ function DomainRow({ domain, type, onVerify }) {
   const shareBase = APP_BASE_URL.replace(/\/$/, '');
   const shareUrl = `${shareBase}/domains/${domain.id}${user?.id ? `?ref=${user.id}` : ''}`;
   const domainName = `${domain.domainName}${domain.domainExtension}`;
-  const shareSubject = `Premium Domain Listing Available on Deltapreneur: ${domainName}`;
-  const shareBody = `Dear colleague / partner,\n\nI would like to share a premium domain listing currently available on Deltapreneur.\n\n🌐 Domain: ${domainName}\n📝 Description: A premium domain name listed for sale on Deltapreneur, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via Deltapreneur]`;
+  const shareSubject = `Delta Domains Listing Available on Deltapreneur: ${domainName}`;
+  const shareBody = `Dear colleague / partner,\n\nI would like to share a Delta Domains listing currently available on Deltapreneur.\n\n🌐 Domain: ${domainName}\n📝 Description: A Delta Domains listing on Deltapreneur, offering a prime branding opportunity.\n🔗 View Listing:\n${shareUrl}\n\nThis platform facilitates secure transactions and connections for digital assets, technologies, and ventures.\n\nBest regards,\n[Shared via Deltapreneur]`;
   const shareText = t('domainsDashboardShareText', { name: `${domain.domainName}${domain.domainExtension}` });
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;

@@ -388,7 +388,7 @@ export default function AboutUsPage() {
                 num: '02', icon: Palette, title: 'Domains',
                 sub: 'Your domain, your identity',
                 body: "In today's digital market, a strong domain is your foundation. Our Domains pillar helps you register, manage, and leverage domains to build a distinct, market-ready presence — while Deltapreneur powers the engine behind the scenes. You leverage our ecosystem. You own your domain — completely.",
-                points: ['Premium domain registration', 'Domain management systems', 'Identity-ready domains', 'Complete ownership & control'],
+                points: ['Delta Domains registration', 'Domain management systems', 'Identity-ready domains', 'Complete ownership & control'],
                 accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
               {

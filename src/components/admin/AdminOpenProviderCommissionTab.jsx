@@ -547,7 +547,7 @@ export default function AdminOpenProviderCommissionTab() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <CommissionInput
               id="global-registration"
-              label="Standard Registration"
+              label="Domains Registration"
               hint="Markup for normal (non-premium) domain creates"
               value={config.registration.default}
               onChange={(val) => handleGlobalRateChange('registration', val)}
@@ -555,8 +555,8 @@ export default function AdminOpenProviderCommissionTab() {
             />
             <CommissionInput
               id="global-premium-registration"
-              label="Premium Registration"
-              hint="Separate markup for OpenProvider registry-premium domains — not mixed with Standard"
+              label="Delta Domains Registration"
+              hint="Separate markup for OpenProvider registry-premium domains — not mixed with Domains"
               value={config.premium_registration?.default ?? ''}
               onChange={(val) => handleGlobalRateChange('premium_registration', val)}
               highlight

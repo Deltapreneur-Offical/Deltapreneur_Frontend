@@ -21,9 +21,9 @@ export function buildShareMessage({ domain, shareUrl, availability }) {
 
   const details = [];
   if (isPremium) {
-    details.push('✦ Premium Domain');
+    details.push('✦ Delta Domains');
   } else if (isAvailable) {
-    details.push('🌐 Standard Domain');
+    details.push('🌐 Domains');
   } else if (status) {
     details.push('🌐 Domain');
   }

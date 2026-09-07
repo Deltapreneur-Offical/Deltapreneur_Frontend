@@ -21,14 +21,14 @@ export default function RegistryPremiumSegment({
   const options = [
     {
       id: REGISTRY_PREMIUM_SEGMENT.STANDARD,
-      label: 'Standard Domains',
+      label: 'Domains',
       count: standardCount,
       diamond: true,
       loading: standardLoading,
     },
     {
       id: REGISTRY_PREMIUM_SEGMENT.PREMIUM,
-      label: 'Premium Domains',
+      label: 'Delta Domains',
       count: premiumCount,
       sparkle: true,
       loading: premiumLoading,

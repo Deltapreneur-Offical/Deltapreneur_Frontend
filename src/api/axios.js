@@ -81,6 +81,41 @@ function canAttemptRefresh() {
   return Boolean(getStoredRefreshToken()) || hasCookieAuthSession();
 }
 
+function readAuthorizationHeader(headers) {
+  if (!headers) return null;
+  let raw = headers.Authorization ?? headers.authorization;
+  if (raw == null && typeof headers.get === 'function') {
+    raw = headers.get('Authorization') ?? headers.get('authorization');
+  }
+  if (Array.isArray(raw)) raw = raw[0];
+  if (raw != null && typeof raw !== 'string') {
+    raw = String(raw);
+  }
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  return trimmed.replace(/^Bearer\s+/i, '').trim() || null;
+}
+
+/**
+ * True when this 401 used a missing/older Bearer than the token now in memory.
+ * Login revokes prior sessions, so an in-flight pre-login request must not
+ * refresh or log out the session that just replaced it.
+ */
+function isStaleAuthRequest(config) {
+  const current = getStoredAccessToken();
+  if (!current) return false;
+  const used = readAuthorizationHeader(config?.headers);
+  return used !== current;
+}
+
+/** True only when this request carried the access token currently in memory. */
+function requestUsedCurrentAccessToken(config) {
+  const current = getStoredAccessToken();
+  if (!current) return false;
+  return readAuthorizationHeader(config?.headers) === current;
+}
+
 function notifyAuthCleared() {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event('auth:cleared'));
@@ -107,6 +142,7 @@ function isPublicAuthRequest(config) {
 function shouldAttemptRefresh(error, original) {
   if (original?._retry) return false;
   if (isPublicAuthRequest(original)) return false;
+  if (isStaleAuthRequest(original)) return false;
   if (!canAttemptRefresh()) return false;
   const status = error.response?.status;
   // Only expired/invalid access JWTs. 403 is CSRF or role denial — not refreshable.
@@ -208,6 +244,7 @@ async function performHttpRefresh() {
       baseURL: refreshBaseURL(),
       headers: { ...csrfHeader() },
       withCredentials: true,
+      timeout: 8_000,
     },
   );
   const payload = extractAuthPayload(data);
@@ -251,13 +288,20 @@ export async function ensureAccessTokenFromRefresh() {
   return refreshAccessToken();
 }
 
+/** Prevent parallel 401s from stacking duplicate logout/redirects. */
+let logoutInProgress = false;
+
 function forceLogoutToLogin() {
+  if (logoutInProgress) return;
+  logoutInProgress = true;
   clearAuthTokens();
   notifyAuthCleared();
   const path = typeof window !== 'undefined' ? window.location.pathname : '';
   if (!isPublicBrowsePath(path)) {
     window.location.href = '/login';
+    return;
   }
+  logoutInProgress = false;
 }
 
 // Attach access token to every request; refresh proactively near expiry.
@@ -294,6 +338,21 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
+    if (
+      error.response?.status === 401
+      && original
+      && !original._retryStale
+      && !isPublicAuthRequest(original)
+      && isStaleAuthRequest(original)
+    ) {
+      const current = getStoredAccessToken();
+      if (current) {
+        original._retryStale = true;
+        original.headers = original.headers || {};
+        original.headers.Authorization = `Bearer ${current}`;
+        return api(original);
+      }
+    }
     if (shouldAttemptRefresh(error, original)) {
       original._retry = true;
       try {
@@ -302,7 +361,12 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch (refreshErr) {
-        if (isHardRefreshAuthFailure(refreshErr)) {
+        // Guest/boot 401s (no Bearer, leftover csrf) must not destroy a session
+        // that was never attached to this request — or log the user out falsely.
+        if (
+          isHardRefreshAuthFailure(refreshErr)
+          && requestUsedCurrentAccessToken(original)
+        ) {
           forceLogoutToLogin();
         }
         if (isVaPublicRequest(original)) {

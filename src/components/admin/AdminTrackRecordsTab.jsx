@@ -24,7 +24,13 @@ import {
   Save,
 } from 'lucide-react';
 import { adminAPI } from '../../api/services';
+import { getStoredAccessToken } from '../../utils/authSession';
 import { formatInr } from '../../utils/money';
+
+/** Only treat a 401 as expiry when the interceptor has already dropped the live token. */
+export function isTrackRecordsCurrentSessionLost(err) {
+  return err?.response?.status === 401 && !getStoredAccessToken();
+}
 
 const CATEGORIES = [
   'All Categories',
@@ -86,8 +92,6 @@ export default function AdminTrackRecordsTab() {
   const [invoiceSavedMsg, setInvoiceSavedMsg] = useState({});
   const [invoiceErrorById, setInvoiceErrorById] = useState({});
 
-  const isSessionExpiredError = (err) => err?.response?.status === 401;
-
   const fetchTrackRecords = useCallback(async () => {
     setLoading(true);
     setFetchError('');
@@ -98,13 +102,9 @@ export default function AdminTrackRecordsTab() {
       // sync as a background task and returns instantly.
       if (!authExpiredRef.current) {
         adminAPI.syncTrackRecords().catch((syncErr) => {
-          if (isSessionExpiredError(syncErr)) {
-            authExpiredRef.current = true;
-            setAuthExpired(true);
-            setFetchError('Session expired. Please sign in again to load Track Records.');
-          } else {
-            console.warn('Track Records sync skipped:', syncErr);
-          }
+          // Background sync must not paint a session-expired banner; the list
+          // request is the source of truth for whether this tab can load.
+          console.warn('Track Records sync skipped:', syncErr);
         });
       }
 
@@ -135,7 +135,7 @@ export default function AdminTrackRecordsTab() {
       }
     } catch (err) {
       console.error('Failed to fetch Track Records:', err);
-      if (isSessionExpiredError(err)) {
+      if (isTrackRecordsCurrentSessionLost(err)) {
         authExpiredRef.current = true;
         setAuthExpired(true);
         setFetchError('Session expired. Please sign in again to load Track Records.');

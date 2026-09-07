@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import bulletpointTick from '../../assets/bulletpointtick.png';
-import cardTickLightBlue from '../../assets/cardticklightblue.png';
+import deltaDLogo from '../../assets/delta-d-logo.png';
 import {
   Briefcase, Building2, Car, Clapperboard, Copyright, Cpu,
   Factory, FlaskConical, Globe, GraduationCap, HardHat, HeartPulse,
@@ -277,13 +277,15 @@ export default function HomeRegistrationsSection() {
           aria-label={`${cat.label} registrations`}
           onClick={(e) => handleCardClick(e, cat)}
         >
-        <img
-          src={cardTickLightBlue}
-          alt=""
-          aria-hidden
-          draggable="false"
+        <svg
           className="reg-mini-card__watermark"
-        />
+          viewBox="0 0 236 206"
+          preserveAspectRatio="none"
+          aria-hidden
+          focusable="false"
+        >
+          <polygon points="0,10 0,196 168,103" fill="#f3c2ae" />
+        </svg>
         <div className="reg-mini-card__top">
           <h3 className="reg-mini-card__title">{displayName}</h3>
           {displayDesc && (
@@ -313,7 +315,7 @@ export default function HomeRegistrationsSection() {
         <div className="reg-mini-card__footer">            <span className="reg-mini-card__price-pill">
             <span className="reg-mini-card__price">{priceNumeric > 0 ? formatPrice(priceNumeric) : '₹999'}</span>
             <span className="reg-mini-card__price-arrow" aria-hidden>
-              <ArrowRight size={18} strokeWidth={2.5} />
+              <img src={deltaDLogo} alt="" draggable="false" className="reg-mini-card__price-play" />
             </span>
           </span>
         </div>

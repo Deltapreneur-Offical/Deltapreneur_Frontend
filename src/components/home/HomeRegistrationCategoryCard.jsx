@@ -13,11 +13,11 @@ import { registrationsPathForCategory } from '../../utils/operationsSections';
 import '../../styles/registrations-catalog.css';
 
 const CATEGORY_TONES = [
-  { bg: 'linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%)', border: '#bfdbfe', fg: '#1d4ed8' },
-  { bg: 'linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%)', border: '#99f6e4', fg: '#0f766e' },
-  { bg: 'linear-gradient(180deg, #eef2ff 0%, #e0e7ff 100%)', border: '#c7d2fe', fg: '#4338ca' },
   { bg: 'linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%)', border: '#fed7aa', fg: '#c2410c' },
-  { bg: 'linear-gradient(180deg, #fdf4ff 0%, #fae8ff 100%)', border: '#f5d0fe', fg: '#a21caf' },
+  { bg: 'linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%)', border: '#fed7aa', fg: '#c2410c' },
+  { bg: 'linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%)', border: '#99f6e4', fg: '#0f766e' },
+  { bg: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)', border: '#fde68a', fg: '#b45309' },
+  { bg: 'linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%)', border: '#fed7aa', fg: '#c2410c' },
 ];
 
 function toneForSlug(slug) {

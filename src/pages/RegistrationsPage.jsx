@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Building2, ChevronRight, LayoutGrid, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Building2, ChevronRight, LayoutGrid, Search, ShieldCheck, X } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
@@ -130,7 +130,7 @@ export default function RegistrationsPage() {
       ? `${selectedCategory.label} | Deltapreneur`
       : 'Registrations | Deltapreneur',
     description:
-      'Browse Deltapreneur categories — from business entity and GST to FSSAI, MSME, aviation, and industry licences — then open the services that apply.',
+      'Browse Delta Registrations categories — from business entity and GST to FSSAI, MSME, aviation, and industry licences — then open the services that apply.',
   });
 
   useEffect(() => {
@@ -198,18 +198,12 @@ export default function RegistrationsPage() {
       />
 
       <div className="reg-catalog-shell">
-        <div className="pointer-events-none absolute inset-0 z-0 glow-layer" aria-hidden />
-        <div className="reg-catalog-hero-orb reg-catalog-hero-orb--tr" aria-hidden />
-        <div className="reg-catalog-hero-orb reg-catalog-hero-orb--bl" aria-hidden />
-        <div className="reg-catalog-hero-dots" aria-hidden />
-
         <section className={showingServices ? 'reg-catalog-hero reg-catalog-hero--service' : 'reg-catalog-hero reg-catalog-hero--browse'}>
         <div className="reg-catalog-hero-inner">
           <div className={showingServices ? undefined : 'reg-catalog-hero-main'}>
           <div className="reg-catalog-hero-copy">
             <p className="reg-catalog-kicker">
-              <Sparkles size={13} strokeWidth={2.4} aria-hidden />
-              {t('regCatalogKicker')}
+              {t('regCatalogKicker', { defaultValue: 'Delta Registrations' })}
             </p>
             <h1 className="reg-catalog-title">
               {showingServices ? selectedCategory.label : (
@@ -219,9 +213,6 @@ export default function RegistrationsPage() {
                   </span>
                   <span className="reg-catalog-title__accent">
                     {t('regCatalogHeroTitleAccent')}
-                  </span>
-                  <span className="reg-catalog-title__spark" aria-hidden>
-                    ✦
                   </span>
                 </>
               )}
@@ -280,10 +271,12 @@ export default function RegistrationsPage() {
             <aside className="reg-catalog-hero-aside" aria-label={t('regCatalogStatCategories')}>
               <div className="reg-catalog-float">
                 <div className="reg-catalog-float__body">
-                  <p className="reg-catalog-float__eyebrow">{t('regCatalogKicker')}</p>
+                  <p className="reg-catalog-float__eyebrow">
+                    {t('regCatalogKicker', { defaultValue: 'Delta Registrations' })}
+                  </p>
                   <ul className="reg-catalog-float__list">
                     <li className="reg-catalog-float__row">
-                      <div className="reg-catalog-float__icon reg-catalog-float__icon--blue" aria-hidden>
+                      <div className="reg-catalog-float__icon reg-catalog-float__icon--saffron" aria-hidden>
                         <LayoutGrid size={18} strokeWidth={2} />
                       </div>
                       <div>
@@ -293,7 +286,7 @@ export default function RegistrationsPage() {
                       <ChevronRight className="reg-catalog-float__chevron" size={18} strokeWidth={2.25} aria-hidden />
                     </li>
                     <li className="reg-catalog-float__row">
-                      <div className="reg-catalog-float__icon reg-catalog-float__icon--purple" aria-hidden>
+                      <div className="reg-catalog-float__icon reg-catalog-float__icon--amber" aria-hidden>
                         <Building2 size={18} strokeWidth={2} />
                       </div>
                       <div>
@@ -303,7 +296,7 @@ export default function RegistrationsPage() {
                       <ChevronRight className="reg-catalog-float__chevron" size={18} strokeWidth={2.25} aria-hidden />
                     </li>
                     <li className="reg-catalog-float__row">
-                      <div className="reg-catalog-float__icon reg-catalog-float__icon--green" aria-hidden>
+                      <div className="reg-catalog-float__icon reg-catalog-float__icon--teal" aria-hidden>
                         <ShieldCheck size={18} strokeWidth={2} />
                       </div>
                       <div>

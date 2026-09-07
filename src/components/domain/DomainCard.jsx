@@ -146,7 +146,7 @@ export default function DomainCard({
           item.available
             ? item.isPremium
               ? 'border-amber-300 ring-1 ring-amber-200/70 bg-gradient-to-br from-amber-50/50 via-white to-white shadow-[0_0_0_1px_rgba(251,191,36,0.2),0_8px_28px_rgba(180,83,9,0.1),0_0_24px_rgba(251,191,36,0.12)]'
-              : 'border-sky-300 ring-1 ring-sky-200/70 bg-gradient-to-br from-sky-50/50 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.22),0_8px_28px_rgba(2,132,199,0.1),0_0_24px_rgba(56,189,248,0.14)]'
+              : 'domain-search-card--standard border-teal-300 ring-1 ring-teal-200/70 bg-white shadow-[0_0_0_1px_rgba(94,234,212,0.28),0_8px_28px_rgba(15,118,110,0.08)]'
             : 'border-gray-200 bg-white shadow-[0_6px_24px_rgba(15,23,42,0.06)]'
         } ${className}`}
       >
@@ -173,12 +173,12 @@ export default function DomainCard({
           ) : null}
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-950 leading-tight">
             <span translate="no">{item.name}</span>
-            <span translate="no" className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
+            <span translate="no" className={item.isPremium ? 'text-amber-700' : 'domain-card-standard-tld text-teal-700'}>.{item.tld}</span>
           </h2>
           {item.isPremium ? (
             <p className="text-xs font-semibold text-amber-800/85">{t('domainCardPremiumDomain', { defaultValue: 'DELTA' })}</p>
           ) : item.available ? (
-            <p className="text-xs font-semibold text-sky-800/85">{t('domainCardStandardDomain', { defaultValue: 'DOMAIN' })}</p>
+            <p className="domain-card-standard-label text-xs font-semibold text-teal-700">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
           ) : null}
           {priceText ? (
             <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none" translate="no">
@@ -239,7 +239,7 @@ export default function DomainCard({
         item.available
           ? item.isPremium
             ? 'border-amber-200 ring-1 ring-amber-100 bg-gradient-to-br from-amber-50/40 via-white to-white shadow-[0_0_0_1px_rgba(251,191,36,0.18),0_8px_24px_rgba(180,83,9,0.08),0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_0_0_1px_rgba(251,191,36,0.28),0_10px_28px_rgba(180,83,9,0.12),0_0_28px_rgba(251,191,36,0.16)]'
-            : 'border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]'
+            : 'domain-search-card--standard border-teal-300 ring-1 ring-teal-200/70 bg-white shadow-[0_0_0_1px_rgba(94,234,212,0.22),0_8px_24px_rgba(15,118,110,0.07)] hover:shadow-[0_0_0_1px_rgba(94,234,212,0.4),0_10px_28px_rgba(15,118,110,0.12)]'
           : 'border-gray-200 bg-white opacity-70 shadow-[0_4px_16px_rgba(15,23,42,0.05)]'
       } ${className}`}
     >
@@ -266,12 +266,12 @@ export default function DomainCard({
         ) : null}
         <h3 className="text-lg font-extrabold tracking-tight text-gray-950 leading-snug">
           <span translate="no">{item.name}</span>
-          <span translate="no" className={item.isPremium ? 'text-amber-700' : 'text-sky-700'}>.{item.tld}</span>
+          <span translate="no" className={item.isPremium ? 'text-amber-700' : 'domain-card-standard-tld text-teal-700'}>.{item.tld}</span>
         </h3>
         {item.isPremium ? (
           <p className="text-[11px] font-semibold text-amber-800/80">{t('domainCardPremiumDomain', { defaultValue: 'DELTA' })}</p>
         ) : item.available ? (
-          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'DOMAIN' })}</p>
+          <p className="domain-card-standard-label text-[11px] font-semibold text-teal-700">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
         ) : null}
         {priceText ? (
           <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5" translate="no">

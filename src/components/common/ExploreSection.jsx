@@ -34,7 +34,6 @@ export default function ExploreSection() {
 
   return (
     <>
-      <HomeRegistrationsSection />
       <DomainsSection />
       <VenturesSection />
 
@@ -50,7 +49,7 @@ export default function ExploreSection() {
         <AuctionsSection />
       </LazySection>
 
-      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology">
+      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'Delta Technology Services' })} to="/technology">
         <TechnologySection />
       </LazySection>
 
@@ -64,6 +63,8 @@ export default function ExploreSection() {
           <HomeOperationsCarouselSection sectionId={section.id} />
         </LazySection>
       ))}
+
+      <HomeRegistrationsSection />
 
       <LazySection title={t('disruptors')} to="/community" compact>
         <CommunitySection />

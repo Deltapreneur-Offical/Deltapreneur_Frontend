@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
@@ -411,6 +411,8 @@ function triggerLightningTail(host) {
 
 function BrandSearchSubmitButton({ label }) {
   const reduceMotion = useReducedMotion();
+  const reactId = useId();
+  const gradId = `brand-search-play-${reactId.replace(/:/g, '')}`;
   const ButtonTag = reduceMotion ? 'button' : motion.button;
   const motionProps = reduceMotion
     ? {}
@@ -426,11 +428,29 @@ function BrandSearchSubmitButton({ label }) {
       className="brand-search-submit"
       {...motionProps}
     >
-      <img
-        src={deltapreneurIcon}
-        alt=""
+      <svg
+        viewBox="4.2 3.9 15 16.4"
         className="brand-search-submit-icon"
-      />
+        aria-hidden="true"
+      >
+        <defs>
+                          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ff9933" />
+            <stop offset="55%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#fb923c" />
+          </linearGradient>
+        </defs>
+        <path
+          fill={`url(#${gradId})`}
+          stroke={`url(#${gradId})`}
+          strokeWidth="0.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M6.8 4.25C5.45 3.5 4.2 4.28 4.2 5.8v12.4c0 1.52 1.25 2.3 2.6 1.55l10.3-5.7c.8-.44 1.45-.83 1.45-2.05s-.65-1.61-1.45-2.05L6.8 4.25Z"
+        />
+      </svg>
     </ButtonTag>
   );
 }
@@ -503,13 +523,13 @@ function BrandSearchTabs({
         {useMotionPill && isActive ? (
           <motion.span
             layoutId={layoutId}
-            className="absolute inset-0 rounded-full brand-search-tab-pill-fill shadow-[0_0_0_1px_rgba(14,165,233,0.22),0_4px_14px_rgba(2,132,199,0.12)]"
+            className="absolute inset-0 rounded-full brand-search-tab-pill-fill shadow-[0_0_0_1px_rgba(255,153,51,0.28),0_4px_14px_rgba(230,115,0,0.12)]"
             transition={heroTabSpring}
             aria-hidden="true"
           />
         ) : null}
         <span className="brand-lightning-tail" aria-hidden="true" />
-        <span className={`relative z-10 ${isActive ? 'text-sky-950' : ''}`}>
+        <span className={`relative z-10 ${isActive ? 'text-orange-950' : ''}`}>
           {t(SEARCH_MODE_CONFIG[tabId].labelKey)}
         </span>
       </TabButtonTag>
@@ -1395,14 +1415,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const desktopSearchForm = (
     <div
       ref={desktopSearchFrameRef}
-      className="brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-2xl sm:rounded-full"
+      className="brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-full"
       onClick={onSearchFrameInteract}
       onFocusCapture={onSearchFrameInteract}
     >
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-2xl border bg-white py-2 pl-4 pr-0 transition-all duration-300 sm:pl-5 sm:rounded-full"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-full border bg-white py-2 pl-4 pr-0 transition-all duration-300 sm:pl-5"
       >
         <input
           type="text"
@@ -1420,14 +1440,14 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   const mobileSearchForm = (
     <div
       ref={mobileSearchFrameRef}
-      className={`brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-2xl sm:rounded-full ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
+      className={`brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-full ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
       onClick={onSearchFrameInteract}
       onFocusCapture={onSearchFrameInteract}
     >
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-2xl border bg-white py-2.5 pl-4 pr-0 transition-all duration-300 sm:rounded-full sm:pl-6"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-full border bg-white py-2.5 pl-4 pr-0 transition-all duration-300 sm:pl-6"
       >
         <input
           type="text"
@@ -1618,7 +1638,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                     className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
                       registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                         ? 'text-amber-900/80 bg-amber-50/50 border-amber-100'
-                        : 'text-sky-900/80 bg-sky-50/50 border-sky-100'
+                        : 'text-teal-800/80 bg-teal-50/50 border-teal-300'
                     }`}
                   >
                     {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
@@ -1655,9 +1675,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 .standard-results-stagger .domain-search-card {
                   animation: registryResultsEnter 300ms ease-out both;
                   box-shadow:
-                    0 0 0 1px rgba(125, 211, 252, 0.22),
-                    0 8px 28px rgba(2, 132, 199, 0.1),
-                    0 0 24px rgba(56, 189, 248, 0.14);
+                    0 0 0 1px rgba(94, 234, 212, 0.28),
+                    0 8px 28px rgba(15, 118, 110, 0.08);
                 }
                 .standard-results-stagger .domain-search-card--featured {
                   animation-delay: 40ms;
@@ -1717,15 +1736,15 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               {filteredPremiumDomains.map((item) => (
                 <div
                   key={item.id}
-                  className="domain-search-card bg-white border border-blue-200 ring-1 ring-blue-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
+                  className="domain-search-card bg-white border border-orange-200 ring-1 ring-orange-50 rounded-2xl p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
                 >
-                  <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-blue-100 text-blue-700">
+                  <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 bg-orange-100 text-orange-700">
                     {t('domainSearchListedDomainBadge', { defaultValue: 'Listed Domain' })}
                   </span>
                   <h2 className="text-xl font-extrabold mb-3 text-gray-900 truncate" title={`${item.domainName || ''}${item.domainExtension || ''}`}>
-                    <span translate="no">{item.domainName}</span><span translate="no" className="text-blue-600">{item.domainExtension}</span>
+                    <span translate="no">{item.domainName}</span><span translate="no" className="text-orange-600">{item.domainExtension}</span>
                   </h2>
-                  <p className="text-blue-600 text-sm font-semibold mb-1 truncate tabular-nums" title={formatPrice(listingBuyerPayable(item))}>
+                  <p className="text-orange-600 text-sm font-semibold mb-1 truncate tabular-nums" title={formatPrice(listingBuyerPayable(item))}>
                     {formatPrice(listingBuyerPayable(item))}
                   </p>
                   <p className="text-[11px] font-medium text-gray-400 mb-4">
@@ -1734,7 +1753,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                   <button
                     type="button"
                     onClick={() => navigate(`/domains?highlight=${item.id}`)}
-                    className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-blue-600 text-white hover:bg-blue-700"
+                    className="px-5 py-2 rounded-lg font-bold text-sm transition-all bg-orange-500 text-white hover:bg-orange-600"
                   >
                     {t('domainSearchViewOnMarketplace', { defaultValue: 'View on Marketplace' })} →
                   </button>
@@ -1806,48 +1825,45 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           border: 2px solid transparent;
           background:
             linear-gradient(#ffffff, #ffffff) padding-box,
-            linear-gradient(90deg, #7dd3fc 0%, #66ccff 50%, #38bdf8 100%) border-box;
+            linear-gradient(90deg, #ff9933 0%, #f97316 50%, #fb923c 100%) border-box;
         }
 
         .brand-search-divider {
-          width: 1px;
-          height: 1.75rem;
-          flex-shrink: 0;
-          align-self: center;
-          margin: 0 0.15rem 0 0.2rem;
-          background: rgba(56, 189, 248, 0.45);
+          display: none;
         }
 
         .brand-search-submit {
-          display: block;
-          align-self: stretch;
-          height: 2.85rem;
-          width: auto;
-          aspect-ratio: 1945 / 1556;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
-          margin: 0;
+          align-self: stretch;
+          width: 3.05rem;
+          min-width: 3.05rem;
+          height: auto;
+          margin: -0.28rem 0.85rem -0.28rem 0.05rem;
           padding: 0;
-          border: 0;
-          border-radius: 0;
+          border: none;
+          border-radius: 9999px;
           background: transparent;
           box-shadow: none;
           cursor: pointer;
           overflow: visible;
+          transition: opacity 0.2s ease;
         }
 
         .brand-search-submit:hover,
         .brand-search-submit:focus-visible {
-          background: transparent;
-          box-shadow: none;
+          opacity: 0.88;
           outline: none;
         }
 
         .brand-search-submit-icon {
           display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          object-position: center right;
+          height: calc(100% - 0.45rem);
+          width: auto;
+          aspect-ratio: 15 / 16.4;
         }
 
         /* Thick orange/red border comet — search bar + pills */
@@ -2019,16 +2035,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         }
 
         .brand-search-tab-pill-fill {
-          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
+          background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 45%, #fed7aa 100%);
         }
 
         .brand-search-tab-active {
-          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
-          color: #0c4a6e;
+          background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 45%, #fed7aa 100%);
+          color: #9a3412;
           box-shadow:
-            0 0 0 1px rgba(14, 165, 233, 0.22),
-            0 4px 14px rgba(2, 132, 199, 0.12);
-          border: 1px solid rgba(125, 211, 252, 0.85);
+            0 0 0 1px rgba(255, 153, 51, 0.28),
+            0 4px 14px rgba(230, 115, 0, 0.12);
+          border: 1px solid rgba(253, 186, 116, 0.95);
           overflow: visible;
           transition:
             background 0.48s cubic-bezier(0.22, 1, 0.36, 1),
@@ -2052,12 +2068,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-tab-active:hover,
         .brand-search-tab-active:focus-visible {
-          background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
-          color: #0c4a6e;
-          border-color: rgba(56, 189, 248, 0.9);
+          background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 50%, #fdba74 100%);
+          color: #9a3412;
+          border-color: rgba(255, 153, 51, 0.9);
           box-shadow:
-            0 0 0 1px rgba(14, 165, 233, 0.28),
-            0 6px 16px rgba(2, 132, 199, 0.16);
+            0 0 0 1px rgba(255, 153, 51, 0.32),
+            0 6px 16px rgba(230, 115, 0, 0.16);
         }
 
         .brand-search-tab-idle {
@@ -2075,12 +2091,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-tab-idle:hover,
         .brand-search-tab-idle:focus-visible {
-          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 45%, #bae6fd 100%);
-          color: #0c4a6e;
-          border-color: rgba(125, 211, 252, 0.85);
+          background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 45%, #fed7aa 100%);
+          color: #9a3412;
+          border-color: rgba(253, 186, 116, 0.95);
           box-shadow:
-            0 0 0 1px rgba(14, 165, 233, 0.22),
-            0 4px 14px rgba(2, 132, 199, 0.12);
+            0 0 0 1px rgba(255, 153, 51, 0.28),
+            0 4px 14px rgba(230, 115, 0, 0.12);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -2099,17 +2115,17 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .search-glow-focus {
           box-shadow:
-            0 10px 30px -12px rgba(102, 204, 255, 0.35),
-            0 0 0 1px rgba(102, 204, 255, 0.2),
-            0 0 24px -10px rgba(102, 204, 255, 0.4);
+            0 10px 30px -12px rgba(249, 115, 22, 0.25),
+            0 0 0 1px rgba(239, 68, 68, 0.1),
+            0 0 24px -10px rgba(249, 115, 22, 0.3);
         }
 
         .search-glow-focus:hover,
         .search-glow-focus:focus-within {
           box-shadow:
-            0 12px 34px -12px rgba(102, 204, 255, 0.45),
-            0 0 0 1px rgba(102, 204, 255, 0.28),
-            0 0 28px -9px rgba(102, 204, 255, 0.5);
+            0 12px 34px -12px rgba(249, 115, 22, 0.35),
+            0 0 0 1px rgba(239, 68, 68, 0.15),
+            0 0 28px -9px rgba(249, 115, 22, 0.4);
         }
       `}</style>
     </div>

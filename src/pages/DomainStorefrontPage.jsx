@@ -903,7 +903,7 @@ export default function DomainStorefrontPage() {
                           className={`flex items-center gap-2.5 text-xs rounded-xl border p-4 ${
                             registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
                               ? 'text-amber-900/80 bg-amber-50/50 border-amber-100'
-                              : 'text-sky-900/80 bg-sky-50/50 border-sky-100'
+                              : 'text-teal-800/80 bg-teal-50/50 border-teal-300'
                           }`}
                         >
                           {registrySegment === REGISTRY_PREMIUM_SEGMENT.PREMIUM
@@ -940,9 +940,8 @@ export default function DomainStorefrontPage() {
                       .standard-results-stagger .domain-search-card {
                         animation: registryResultsEnter 300ms ease-out both;
                         box-shadow:
-                          0 0 0 1px rgba(125, 211, 252, 0.22),
-                          0 8px 28px rgba(2, 132, 199, 0.1),
-                          0 0 24px rgba(56, 189, 248, 0.14);
+                          0 0 0 1px rgba(94, 234, 212, 0.28),
+                          0 8px 28px rgba(15, 118, 110, 0.08);
                       }
                       .standard-results-stagger .domain-search-card--featured {
                         animation-delay: 40ms;

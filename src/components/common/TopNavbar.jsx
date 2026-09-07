@@ -48,11 +48,11 @@ export default function TopNavbar({
       </div>
 
       {homeMobileMenu && mobileMenuOpen && (
-        <div className="absolute inset-x-0 top-full border-b border-blue-100 bg-gradient-to-b from-sky-50 to-blue-50/95 px-4 py-3 md:hidden">
+        <div className="absolute inset-x-0 top-full border-b border-orange-100 bg-gradient-to-b from-orange-50 to-amber-50/95 px-4 py-3 md:hidden">
           <div className="flex w-full flex-col gap-2">
             <a
               href="/"
-              className="rounded px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-blue-100/80"
+              className="rounded px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-orange-100/80"
               onClick={() => setMobileMenuOpen(false)}
             >
               {t('topNavHome')}

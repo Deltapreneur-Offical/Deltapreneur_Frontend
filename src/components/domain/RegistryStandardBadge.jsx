@@ -1,11 +1,11 @@
 /**
- * Registry standard badge — sky/cyan counterpart to RegistryPremiumBadge
- * (matches search-bar border: #7dd3fc → #38bdf8). Diamond icon stays static.
+ * Registry standard badge — deep teal counterpart to RegistryPremiumBadge.
+ * Diamond icon stays static.
  */
 export default function RegistryStandardBadge({ className = '' }) {
   return (
     <span
-      className={`registry-standard-badge inline-flex w-fit items-center gap-1 rounded-full border border-sky-200 bg-gradient-to-r from-sky-50 to-cyan-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-800 ${className}`}
+      className={`registry-standard-badge inline-flex w-fit items-center gap-1 rounded-full border border-teal-300 bg-teal-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700 ${className}`}
     >
       <span className="registry-standard-badge__diamond" aria-hidden="true">◆</span>
       Domain
@@ -16,12 +16,16 @@ export default function RegistryStandardBadge({ className = '' }) {
         }
         .registry-standard-badge {
           animation: registryStandardBadgeIn 320ms ease-out;
-          box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+          color: #0f766e;
+          background: #f0fdfa;
+          border-color: #5eead4;
+          box-shadow: 0 0 10px rgba(15, 118, 110, 0.16);
         }
         .registry-standard-badge__diamond {
           display: inline-block;
           font-size: 0.65em;
           line-height: 1;
+          color: #0f766e;
         }
       `}</style>
     </span>

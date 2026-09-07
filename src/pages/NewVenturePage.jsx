@@ -82,7 +82,7 @@ export default function NewVenturePage() {
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">{createdListingMode === 'CO_VENTURE' ? '🤝' : '🚀'}</div>
             <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">
-              {createdListingMode === 'CO_VENTURE' ? 'Co-Venture listed' : t('newVenturePublished')}
+              {createdListingMode === 'CO_VENTURE' ? 'Delta-Ventures listed' : t('newVenturePublished')}
             </h2>
             <p className="text-sm text-gray-500">
               {t('newVentureRedirecting')} Your listing is visible under My Ventures and will appear in All Ventures after admin approval.
@@ -95,7 +95,7 @@ export default function NewVenturePage() {
         <ListingBackLink to="/ventures" label={t('listingBackToVentures')} />
         <div className="mb-8">
           <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">
-            {currentListingType === 'CO_VENTURE' ? 'List a New Co-Venture' : 'List a New Venture'}
+            {currentListingType === 'CO_VENTURE' ? 'List a New Delta-Venture' : 'List a New Venture'}
           </h1>
           <p className="text-gray-600">{t('newVentureSubtitle')}</p>
         </div>

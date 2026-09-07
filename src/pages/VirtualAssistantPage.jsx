@@ -42,7 +42,7 @@ const VirtualAssistantPage = () => {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection({ active: true });
+  } = useBotProtection({ active: true, action: 'virtual-assistant' });
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',

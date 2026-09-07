@@ -86,7 +86,16 @@
       rgba(15, 23, 42, 0.18) 100%);
 }
 
-.domain-listing-card-shell::before,
+.domain-listing-card-shell::before {
+  background: linear-gradient(90deg,
+      rgba(246, 201, 143, 0.14) 0%,
+      rgba(246, 201, 143, 0.06) 20%,
+      transparent 42%,
+      transparent 58%,
+      rgba(246, 201, 143, 0.06) 80%,
+      rgba(246, 201, 143, 0.14) 100%);
+}
+
 .technology-listing-card-shell::before,
 .listing-card-glow-shell:has(.technology-listing-card)::before {
   background: linear-gradient(90deg,
@@ -264,37 +273,22 @@
 }
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card) {
-  border: 1px solid #7dd3fc !important;
+  border: 1px solid #F6C98F !important;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.2),
-    0 8px 24px rgba(2, 132, 199, 0.08),
-    0 0 20px rgba(56, 189, 248, 0.12);
-  background: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.08) !important;
+  background: #FFFCF8 !important;
 }
 
-/* Kill shared purple ::after wash — Standard Domains sky wash */
+/* Kill shared purple/blue ::after wash — warm saffron wash for domains */
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card)::after {
-  background:
-    linear-gradient(180deg,
-      rgba(255, 255, 255, 0.2) 0%,
-      rgba(240, 249, 255, 0.55) 55%,
-      rgba(186, 230, 253, 0.65) 100%),
-    linear-gradient(135deg,
-      rgba(125, 211, 252, 0.18) 0%,
-      rgba(56, 189, 248, 0.1) 50%,
-      rgba(14, 165, 233, 0.14) 100%) !important;
+  background: none !important;
 }
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover:not(.creator-profile-card) {
-  border-color: #38bdf8 !important;
-  background-color: #ffffff !important;
-  box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
-    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+  border-color: #F59E0B !important;
+  background-color: #FFF7ED !important;
+  box-shadow: 0 12px 32px rgba(245, 158, 11, 0.12) !important;
 }
 
 .home-feature-card.card-glow-hover {
@@ -305,13 +299,9 @@
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover {
   transform: translateY(-3px) translateZ(0);
-  border-color: #38bdf8 !important;
-  background: linear-gradient(165deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 100%) !important;
-  box-shadow:
-    0 0 0 1px rgba(14, 165, 233, 0.28),
-    0 12px 32px rgba(2, 132, 199, 0.14),
-    0 0 32px rgba(56, 189, 248, 0.22),
-    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+  border-color: #F59E0B !important;
+  background: linear-gradient(165deg, #FFFCF8 0%, #FFF7ED 40%, #FFF7ED 100%) !important;
+  box-shadow: 0 12px 32px rgba(245, 158, 11, 0.12) !important;
 }
 
 .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover .domain-listing-card__body,
@@ -342,19 +332,40 @@
     0 8px 26px rgba(15, 23, 42, 0.08);
 }
 
-/* Venture cards — keep same colors on hover (no blue/indigo wash) */
+/* Venture & Delta Venture cards — keep same warm colors on hover (no blue/indigo/purple wash) */
 .venture-listing-card--venture.card-glow-hover:hover,
-.venture-listing-card--venture.card-glow-hover:hover:not(.creator-profile-card) {
+.venture-listing-card--venture.card-glow-hover:hover:not(.creator-profile-card),
+.venture-listing-card--coventure.card-glow-hover:hover,
+.venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-2px) translateZ(0);
-  border-color: #fcd34d !important;
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  border-color: #F59E0B !important;
+  background: #FFF7ED !important;
+  background-color: #FFF7ED !important;
   background-image: none !important;
-  box-shadow: 0 12px 28px rgba(217, 119, 6, 0.22) !important;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.12) !important;
+}
+
+/* Body stays pure white on hover — only the banner tints warm */
+.venture-listing-card--venture.card-glow-hover:hover .domain-listing-card__body,
+.venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__body {
+  background: #FFFFFF !important;
+}
+
+.venture-listing-card--venture.card-glow-hover:hover .domain-listing-card__price-box,
+.venture-listing-card--venture.card-glow-hover:hover .domain-listing-card__price-box--venture,
+.venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box,
+.venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box--coventure {
+  background: #FFFFFF !important;
+}
+
+.venture-listing-card--coventure.card-glow-hover:hover .venture-listing-card__equity-badge {
+  background: #FFFFFF !important;
 }
 
 .venture-listing-card--venture.card-glow-hover::after,
-.venture-listing-card--venture.card-glow-hover:hover::after {
+.venture-listing-card--venture.card-glow-hover:hover::after,
+.venture-listing-card--coventure.card-glow-hover::after,
+.venture-listing-card--coventure.card-glow-hover:hover::after {
   content: none !important;
   opacity: 0 !important;
   background: none !important;
@@ -366,7 +377,6 @@
   padding-top: 0.5rem;
 }
 
-/* Homepage preview cards — outer shell owns hover; inner listing cards stay clean */
 /* Homepage preview cards — outer shell owns hover; inner listing cards stay clean */
 .home-preview-card-border .venture-listing-card,
 .home-preview-card-border .technology-listing-card,
@@ -386,7 +396,7 @@
   transform: none !important;
   box-shadow: none !important;
   border: none !important;
-  background: #ffffff !important;
+  background: #FFFCF8 !important;
 }
 
 /* Domain homepage cards — transparent so outer premium-gold shell shows through */

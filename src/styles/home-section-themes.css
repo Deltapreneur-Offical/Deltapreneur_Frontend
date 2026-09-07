@@ -14,57 +14,58 @@
 .home-preview-card-border--operations,
 .home-preview-card-border--compliance,
 .home-preview-card-border--community {
-  --home-card-border: #fdba74;
-  --home-card-border-hover: #ff9933;
-  --home-card-shadow: rgba(255, 153, 51, 0.15);
-  --home-card-shadow-hover: rgba(255, 153, 51, 0.22);
-  --home-card-price-bg: #ffedd5;
-  --home-card-price-border: #fdba74;
-  --home-card-price-border-hover: #ff9933;
-  --home-card-price-shadow-hover: rgba(255, 153, 51, 0.12);
+  --home-card-border: #F6C98F;
+  --home-card-border-hover: #F59E0B;
+  --home-card-shadow: rgba(246, 201, 143, 0.10);
+  --home-card-shadow-hover: rgba(245, 158, 11, 0.15);
+  --home-card-price-bg: #FFFCF8;
+  --home-card-price-border: #F6C98F;
+  --home-card-price-border-hover: #F59E0B;
+  --home-card-price-shadow-hover: rgba(245, 158, 11, 0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   WARM PREMIUM THEME — shared tokens (gold / amber)
+   WARM PREMIUM THEME — shared tokens (warm-white + champagne)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .home-preview-card-border--venture,
 .home-preview-card-border--auction,
 .home-preview-card-border--assistance,
 .home-preview-card-border--essentials {
-  --home-card-border: #fcd34d;
-  --home-card-border-hover: #d97706;
-  --home-card-shadow: rgba(217, 119, 6, 0.15);
-  --home-card-shadow-hover: rgba(217, 119, 6, 0.22);
-  --home-card-price-bg: #fffbeb;
-  --home-card-price-border: #fcd34d;
-  --home-card-price-border-hover: #d97706;
-  --home-card-price-shadow-hover: rgba(217, 119, 6, 0.12);
+  --home-card-border: #F6C98F;
+  --home-card-border-hover: #F59E0B;
+  --home-card-shadow: rgba(246, 201, 143, 0.10);
+  --home-card-shadow-hover: rgba(245, 158, 11, 0.15);
+  --home-card-price-bg: #FFFCF8;
+  --home-card-price-border: #F6C98F;
+  --home-card-price-border-hover: #F59E0B;
+  --home-card-price-shadow-hover: rgba(245, 158, 11, 0.08);
 }
 
-/* ─── 1. Domains — UNCHANGED (finalized saffron premium) ─── */
+/* ─── 1. Domains — elegant warm-white + champagne theme ─── */
 .home-preview-card-border--domain {
-  --home-card-border: #fdba74;
-  --home-card-border-hover: #ff9933;
-  --home-card-shadow: rgba(255, 153, 51, 0.15);
-  --home-card-shadow-hover: rgba(255, 153, 51, 0.22);
-  --home-card-price-bg: #ffedd5;
-  --home-card-price-border: #fdba74;
-  --home-card-price-border-hover: #ff9933;
-  --home-card-price-shadow-hover: rgba(255, 153, 51, 0.12);
+  --home-card-border: #F6C98F;
+  --home-card-border-hover: #F59E0B;
+  --home-card-shadow: rgba(246, 201, 143, 0.12);
+  --home-card-shadow-hover: rgba(245, 158, 11, 0.18);
+  --home-card-price-bg: #FFFCF8;
+  --home-card-price-border: #F6C98F;
+  --home-card-price-border-hover: #F59E0B;
+  --home-card-price-shadow-hover: rgba(245, 158, 11, 0.10);
+  background: #FFFCF8;
 }
 
 .home-preview-card-border--domain .domain-listing-card__cover-fallback {
-  background: linear-gradient(180deg, #f8fafc 0%, #ffedd5 100%) !important;
+  background: linear-gradient(180deg, #FFFCF8 0%, #FFF7ED 100%) !important;
 }
 
 .home-preview-card-border--domain .domain-listing-card__cover-fallback-domain {
-  color: #e67300 !important;
+  color: #c2410c !important;
 }
 
-/* ─── 2. Co-Ventures — saffron premium, very light header ─── */
+/* ─── 2. Co-Ventures (Delta Ventures) — warm banner + white body, matching Domains ─── */
 .home-preview-card-border--coventure .venture-listing-card__cover-fallback {
-  background: linear-gradient(180deg, #f8fafc 0%, #ffedd5 100%) !important;
+  background: linear-gradient(180deg, #FFFCF8 0%, #FFF7ED 100%) !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
@@ -77,20 +78,48 @@
   opacity: 0.12 !important;
 }
 
+.home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__body {
+  background: #FFFFFF !important;
+}
+
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--premium,
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badge {
-  border-color: #fed7aa !important;
-  background: #fff7ed !important;
+  border-color: #F6C98F !important;
+  background: #FFFCF8 !important;
   color: #c2410c !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
-  border-color: #fdba74 !important;
+  border-color: #F6C98F !important;
+  background: #FFFFFF !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--role {
   color: #c2410c !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge {
+  border-color: #F6C98F !important;
+  background: #FFFFFF !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge-icon,
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge-value {
+  color: #c2410c !important;
+}
+
+.home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__body {
+  background: #FFFFFF !important;
+}
+
+.home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
+.home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
+  background: #FFFFFF !important;
+}
+
+.home-preview-card-border--coventure:hover .venture-listing-card--coventure .venture-listing-card__equity-badge {
+  background: #FFFFFF !important;
 }
 
 /* ─── 3. Technologies — saffron premium (shell tokens only) ─── */
@@ -190,35 +219,49 @@
   color: #e67300 !important;
 }
 
-/* ─── 6. Ventures — warm premium, very light header ─── */
+/* ─── 6. Ventures — warm banner + white body, matching Domains ─── */
 .home-preview-card-border--venture .venture-listing-card__cover-fallback {
-  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%) !important;
+  background: linear-gradient(180deg, #FFFCF8 0%, #FFF7ED 100%) !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
-  color: #b45309 !important;
+  color: #c2410c !important;
   text-shadow: none !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card__cover-fallback > .absolute svg {
-  color: #f59e0b !important;
+  color: #fb923c !important;
   opacity: 0.12 !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__body {
+  background: #FFFFFF !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__metric--premium,
 .home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__badge {
-  border-color: #fcd34d !important;
-  background: #fffbeb !important;
-  color: #92400e !important;
+  border-color: #F6C98F !important;
+  background: #FFFCF8 !important;
+  color: #c2410c !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box,
 .home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box--venture {
-  border-color: #fcd34d !important;
+  border-color: #F6C98F !important;
+  background: #FFFFFF !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__metric--role {
-  color: #b45309 !important;
+  color: #c2410c !important;
+}
+
+.home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__body {
+  background: #FFFFFF !important;
+}
+
+.home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box,
+.home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box--venture {
+  background: #FFFFFF !important;
 }
 
 /* Venture homepage — no color change on hover (elevation/shadow only) */

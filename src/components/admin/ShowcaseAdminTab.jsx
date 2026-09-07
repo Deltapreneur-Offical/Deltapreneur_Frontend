@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminAPI } from '../../api/services';
 import useCurrency from '../../context/CurrencyContext';
+import {
+  buildShowcaseLookupPayload,
+  showcaseLookupCardModel,
+  showcaseLookupTickDisabled,
+} from '../../utils/showcaseAdminLookup';
 
 const SORTS = [
   { id: 'newest', label: 'Newest first' },
@@ -23,16 +28,6 @@ const DEFAULT_FILTERS = {
   with_hyphen: false,
 };
 
-const REASON_LABELS = {
-  taken: 'Not available',
-  not_premium: 'Not Premium',
-  tld_excluded: 'TLD excluded',
-  marketplace_listed: 'Already on Marketplace',
-  no_price: 'No valid price',
-  invalid: 'Invalid',
-  below_managed_threshold: 'Below ₹5L managed threshold',
-};
-
 function Badge({ children, className = 'bg-indigo-50 text-indigo-800 ring-indigo-200' }) {
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${className}`}>
@@ -50,20 +45,6 @@ function SourceBadge({ source }) {
     );
   }
   return null;
-}
-
-function ReasonsList({ reasons }) {
-  const rows = Object.entries(reasons || {}).filter(([, n]) => Number(n) > 0);
-  if (!rows.length) return null;
-  return (
-    <div className="mt-2 flex flex-wrap gap-1.5">
-      {rows.map(([k, n]) => (
-        <span key={k} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
-          {n} × {REASON_LABELS[k] || k}
-        </span>
-      ))}
-    </div>
-  );
 }
 
 function buildParams(filters, sort, page, pageSize) {
@@ -90,11 +71,6 @@ const inputCls =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100';
 const labelCls = 'block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1';
 
-function newGenerationId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return `gen-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 export default function ShowcaseAdminTab() {
   const { formatPrice } = useCurrency();
   const [config, setConfig] = useState(null);
@@ -106,40 +82,23 @@ export default function ShowcaseAdminTab() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [genCount, setGenCount] = useState('20');
   const [draft, setDraft] = useState(null);
   const [notice, setNotice] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectedItems, setSelectedItems] = useState([]);
-
-  const [mode, setMode] = useState('random');
-  const [keyword, setKeyword] = useState('');
-  const [genStatus, setGenStatus] = useState(null);
-  const [lastResult, setLastResult] = useState(null);
+  const [lookupName, setLookupName] = useState('');
+  const [lookupTld, setLookupTld] = useState('com');
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupResult, setLookupResult] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const pollRef = useRef(null);
-  const pollInFlightRef = useRef(false);
   const inFlight = useRef(false);
-  const generationIdRef = useRef(null);
-  const abortRef = useRef(null);
-  const foundCountRef = useRef(0);
 
   const notify = useCallback((type, msg) => {
     setNotice({ type, msg });
     window.setTimeout(() => setNotice((n) => (n && n.msg === msg ? null : n)), 4500);
   }, []);
-
-  const stopPoll = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => stopPoll, [stopPoll]);
 
   const load = useCallback(async (silent, overrides = {}, isRetry = false) => {
     if (inFlight.current) {
@@ -203,129 +162,30 @@ export default function ShowcaseAdminTab() {
     }
   }, [load, notify]);
 
-  const generate = async () => {
-    if (readOnly || generating) return;
-    setGenerating(true);
-    foundCountRef.current = 0;
-    setGenStatus({ state: 'running', phase: 'Starting OpenProvider search…', candidatesFound: 0 });
-    setLastResult(null);
-    stopPoll();
-    const gid = newGenerationId();
-    generationIdRef.current = gid;
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const lookup = async () => {
+    if (readOnly || lookupBusy) return;
+    const payload = buildShowcaseLookupPayload(lookupName, lookupTld);
+    if (payload.error) {
+      notify('error', payload.error);
+      return;
+    }
+    setLookupBusy(true);
+    setLookupResult(null);
     try {
-      const payload = { count: Number(genCount) || 1, mode, generation_id: gid };
-      if (mode === 'keyword') {
-        const labels = String(keyword || '')
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (labels.length) payload.seed_labels = labels;
-      }
-      const tlds = String(draft?.allowed_tlds || '')
-        .split(',')
-        .map((t) => t.trim().replace(/^\./, ''))
-        .filter(Boolean);
-      const narrowTldPayload = tlds.length > 0 && tlds.every((t) => ['com', 'net', 'org'].includes(t));
-      // Suggest names: do not send a .com-only limit (backend also expands it).
-      // Search by name still honours the filter the admin typed.
-      // Always send allowed_tlds for keyword mode so the backend can
-      // distinguish "user cleared the field" ([]) from "not provided" (None).
-      if (mode === 'keyword') payload.allowed_tlds = tlds;
-      if (mode === 'random' && tlds.length && !narrowTldPayload) payload.allowed_tlds = tlds;
-
-      pollRef.current = setInterval(async () => {
-        if (pollInFlightRef.current) return;
-        pollInFlightRef.current = true;
-        try {
-          const res = await adminAPI.getShowcaseStatus(gid);
-          const st = res.data?.status;
-          if (st) {
-            if (typeof st.candidatesFound === 'number') {
-              foundCountRef.current = st.candidatesFound;
-            }
-            setGenStatus(st);
-            if (st.state === 'complete' || st.state === 'failed' || st.state === 'cancelled') {
-              stopPoll();
-            }
-          }
-        } catch {
-          // Status can 404 until the POST registers — keep polling.
-        } finally {
-          pollInFlightRef.current = false;
-        }
-      }, 1200);
-
-      const res = await adminAPI.generateShowcaseCandidates(payload, { signal: controller.signal });
+      const res = await adminAPI.lookupShowcaseDomain(payload);
       const data = res.data || {};
-      stopPoll();
-      if (typeof data.candidates_added === 'number') {
-        foundCountRef.current = data.candidates_added;
-      }
-      setGenStatus((prev) => ({
-        ...(prev || {}),
-        state: data.cancelled ? 'cancelled' : 'complete',
-        phase: data.cancelled ? 'Stopped.' : 'Generation complete.',
-        candidatesFound: data.candidates_added ?? prev?.candidatesFound ?? foundCountRef.current,
-      }));
-      setLastResult(data);
-      if (data.cancelled) {
-        notify('success', data.message || 'Stopped. Found names stay in the pool until you Tick them.');
-      } else if ((data.candidates_added ?? 0) > 0) {
-        notify('success', `${data.candidates_added} name(s) added to the pool. Tick a row to put it on the Marketplace.`);
+      setLookupResult(data);
+      if (data.eligible) {
+        notify('success', `${data.live?.domainName || 'Domain'} is ready to Tick.`);
+        await load(true);
       } else if (data.message) {
         notify('error', data.message);
-      } else {
-        notify('error', 'No Premium names found. Try Search by name, or clear the extension limit in Advanced settings.');
       }
-      await load(false);
     } catch (e) {
-      stopPoll();
-      const aborted = e?.code === 'ERR_CANCELED' || e?.name === 'CanceledError';
-      if (aborted) {
-        setGenStatus((prev) => ({
-          ...(prev || {}),
-          state: 'cancelled',
-          phase: 'Stopped.',
-        }));
-        setLastResult({
-          cancelled: true,
-          candidates_added: foundCountRef.current,
-          message: 'Stopped. Names already found stay in the pool (not published).',
-        });
-        notify('success', 'Stopped. Names already found stay in the pool (not published).');
-        await load(true);
-      } else if (e.response?.status === 409) {
-        setGenStatus(null);
-        notify(
-          'error',
-          e.response?.data?.error ||
-            'A search or live-card recheck is already running. Try again shortly.'
-        );
-        await load(true);
-      } else {
-        setGenStatus((prev) => ({ ...(prev || {}), state: 'failed', phase: 'Generation failed.' }));
-        notify('error', e.response?.data?.error || 'Search failed.');
-      }
+      notify('error', e.response?.data?.error || 'Search failed.');
     } finally {
-      stopPoll();
-      setGenerating(false);
-      abortRef.current = null;
-      generationIdRef.current = null;
+      setLookupBusy(false);
     }
-  };
-
-  const cancelGenerate = async () => {
-    const gid = generationIdRef.current;
-    if (!gid) return;
-    stopPoll();
-    try {
-      await adminAPI.cancelShowcaseGeneration(gid);
-    } catch {
-      // Still abort the waiting POST so the UI unblocks.
-    }
-    abortRef.current?.abort();
   };
 
   const toggleSelect = async (row, wantSelected) => {
@@ -335,6 +195,11 @@ export default function ShowcaseAdminTab() {
       if (wantSelected) {
         await adminAPI.selectShowcaseDomain(row.id);
         notify('success', `${row.domainName} published to the showcase.`);
+        setLookupResult((prev) => (
+          prev?.item?.id === row.id
+            ? { ...prev, canSelect: false, alreadySelected: true, item: { ...prev.item, isSelected: true } }
+            : prev
+        ));
       } else {
         await adminAPI.unselectShowcaseDomain(row.id);
         notify('success', `${row.domainName} unpublished.`);
@@ -471,28 +336,15 @@ export default function ShowcaseAdminTab() {
 
   const setF = (patch) => applyFilters({ ...filters, ...patch });
 
-  const running = generating || genStatus?.state === 'running';
-
-  const draftTlds = (Array.isArray(draft?.allowed_tlds) ? draft.allowed_tlds : [])
-    .map((t) => String(t || '').trim().replace(/^\./, '').toLowerCase())
-    .filter(Boolean);
-  const narrowTlds = draftTlds.length > 0 && draftTlds.every((t) => ['com', 'net', 'org'].includes(t));
-  const savedKeywords = (Array.isArray(draft?.seed_labels) ? draft.seed_labels : [])
-    .map((s) => String(s || '').trim())
-    .filter(Boolean);
-
-  const fmtClock = (sec) => {
-    const s = Math.max(0, Math.round(sec || 0));
-    const m = Math.floor(s / 60);
-    return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
-  };
+  const lookupCard = showcaseLookupCardModel(lookupResult);
+  const lookupTickBlocked = showcaseLookupTickDisabled(lookupResult);
 
   return (
     <div className="space-y-6">
       {readOnly && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <strong>Read-only preview.</strong> The showcase table is not applied on this database, so
-          nothing can be saved here (Find names / Tick / Untick / Recheck live cards / Settings are disabled).
+          nothing can be saved here (Search / Tick / Untick / Recheck live cards / Settings are disabled).
           No data has been or can be modified.
         </div>
       )}
@@ -511,193 +363,105 @@ export default function ShowcaseAdminTab() {
 
       {/* --------------------------------------------------------- header */}
       <div>
-        <h2 className="text-lg font-bold text-slate-900">OpenProvider Premium inventory</h2>
+        <h2 className="text-lg font-bold text-slate-900">OpenProvider Premium Showcase</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Find names into the pool, Tick a row to put it on the Marketplace, Untick to hide it.
+          Look up one premium domain you already found on OpenProvider, then Tick to publish.
           Nothing goes live until you Tick it.
         </p>
         <ol className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-slate-600">
-          <li className="rounded-full bg-slate-100 px-3 py-1">1. Find</li>
+          <li className="rounded-full bg-slate-100 px-3 py-1">1. Search exact domain</li>
           <li className="rounded-full bg-slate-100 px-3 py-1">2. Tick to publish</li>
           <li className="rounded-full bg-slate-100 px-3 py-1">3. Live on Marketplace</li>
         </ol>
       </div>
 
-      {narrowTlds && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <p className="font-semibold">Limit extensions is {draftTlds.map((t) => `.${t}`).join(', ')} only</p>
-          <p className="mt-1 text-amber-800">
-            Registry Premium almost never matches invented names on .com. Suggest names now uses popular
-            extensions (com, net, org, io, ai, co) anyway. For Search by name, clear this limit or use a
-            real word like hustler, mint, or nova.
-          </p>
-          <button
-            type="button"
-            onClick={() => setDraft({ ...draft, allowed_tlds: [] })}
-            disabled={readOnly}
-            className="mt-2 rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-50"
-          >
-            Clear extension limit
-          </button>
-        </div>
-      )}
-
-      {/* ------------------------------------------------- main find/generate */}
+      {/* ------------------------------------------------- exact-domain lookup */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">Find Premium names</h3>
-
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => setMode('random')}
-            disabled={generating || readOnly}
-            className={`rounded-xl border px-4 py-3 text-left transition disabled:opacity-50 ${
-              mode === 'random'
-                ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-200'
-                : 'border-slate-200 bg-white hover:bg-slate-50'
-            }`}
-          >
-            <span className={`text-sm font-semibold ${mode === 'random' ? 'text-indigo-800' : 'text-slate-800'}`}>
-              Suggest names
-            </span>
-            <span className="mt-0.5 block text-xs text-slate-500">
-              Scans your Keywords first, then brandable roots across popular extensions.
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('keyword')}
-            disabled={generating || readOnly}
-            className={`rounded-xl border px-4 py-3 text-left transition disabled:opacity-50 ${
-              mode === 'keyword'
-                ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-200'
-                : 'border-slate-200 bg-white hover:bg-slate-50'
-            }`}
-          >
-            <span className={`text-sm font-semibold ${mode === 'keyword' ? 'text-indigo-800' : 'text-slate-800'}`}>
-              Search by name
-            </span>
-            <span className="mt-0.5 block text-xs text-slate-500">
-              Best hit rate. Type a real word OpenProvider can look up (hustler, mint, nova).
-            </span>
-          </button>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          {mode === 'keyword' && (
-            <label className="min-w-[16rem] flex-1">
-              <span className={labelCls}>Word to look up</span>
-              <input
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="hustler, mint, nova"
-                className={inputCls}
-              />
-              <span className="mt-1 block text-[11px] text-slate-400">
-                {keyword.trim()
-                  ? 'OpenProvider will search this word across extensions.'
-                  : savedKeywords.length
-                    ? `Empty → uses saved Keywords: ${savedKeywords.join(', ')}`
-                    : 'Empty → uses saved Keywords below. Add real words, not invented brands.'}
-              </span>
-            </label>
-          )}
-
-          <label className="flex flex-col">
-            <span className={labelCls}>How many to find?</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">Search premium domain</h3>
+        <p className="mt-1 text-xs text-slate-500">
+          Checks only the exact name + TLD you enter. Does not scan other extensions.
+        </p>
+        <form
+          className="mt-4 flex flex-wrap items-end gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            lookup();
+          }}
+        >
+          <label className="min-w-[12rem] flex-1">
+            <span className={labelCls}>Domain name</span>
             <input
-              type="number"
-              min={1}
-              max={100}
-              value={genCount}
-              onChange={(e) => setGenCount(e.target.value.replace(/^0+(?=\d)/, ''))}
-              className={`${inputCls} w-28`}
-              placeholder="e.g. 20"
-              title="How many Premium names to try to add to the pool"
+              value={lookupName}
+              onChange={(e) => setLookupName(e.target.value)}
+              placeholder="example"
+              className={inputCls}
+              autoComplete="off"
+            />
+          </label>
+          <label className="w-32">
+            <span className={labelCls}>TLD</span>
+            <input
+              value={lookupTld}
+              onChange={(e) => setLookupTld(e.target.value)}
+              placeholder=".com"
+              className={inputCls}
+              autoComplete="off"
             />
           </label>
           <button
-            type="button"
-            onClick={generate}
-            disabled={generating || loading || readOnly}
+            type="submit"
+            disabled={lookupBusy || readOnly}
             title={readOnly ? 'Disabled — read-only preview' : undefined}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {generating ? 'Searching…' : `Find ${genCount || 0}`}
+            {lookupBusy ? 'Searching…' : 'Search'}
           </button>
-          {running && (
-            <button
-              type="button"
-              onClick={cancelGenerate}
-              disabled={readOnly}
-              className="rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
+        </form>
 
-        {/* live progress */}
-        {genStatus && running && (
-          <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-indigo-800">
-              <span className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-700" />
-              <span className="min-w-0 flex-1">{genStatus.phase || 'Searching OpenProvider...'}</span>
-              {(genStatus.elapsedMs ?? 0) > 0 && (
-                <span className="shrink-0 text-xs font-normal text-indigo-500">
-                  working {fmtClock(genStatus.elapsedMs / 1000)}
-                  {genStatus.etaSeconds != null && ` · ~${fmtClock(genStatus.etaSeconds)} left`}
-                </span>
-              )}
-            </div>
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-indigo-100">
-              {genStatus.progressPct != null ? (
-                <div
-                  className="h-full rounded-full bg-indigo-600 transition-all duration-500"
-                  style={{ width: `${Math.min(100, Math.max(2, genStatus.progressPct))}%` }}
-                />
-              ) : (
-                <div className="h-full w-1/3 animate-pulse rounded-full bg-indigo-400" />
-              )}
-            </div>
-            <p className="mt-1.5 text-xs text-indigo-600">
-              In the pool so far:{' '}
-              <span className="font-semibold">{genStatus.candidatesFound ?? 0}</span>
-              {genStatus.targetCount ? ` of ${genStatus.targetCount}` : ''}
-              {' · '}checking OpenProvider Premium names (not published until you Tick)
-            </p>
-            <ReasonsList reasons={genStatus.reasons} />
-          </div>
-        )}
-
-        {/* final result */}
-        {lastResult && (
-          <div
-            className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
-              (lastResult.candidates_added ?? 0) > 0
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                : 'border-amber-200 bg-amber-50 text-amber-800'
-            }`}
-          >
-            <p className="font-semibold">
-              {lastResult.cancelled
-                ? 'Search stopped'
-                : lastResult.mode === 'random'
-                  ? 'Suggested-name search complete'
-                  : 'Search-by-name complete'}
-              {' — '}
-              {lastResult.candidates_added ?? 0} added to the pool
-              {lastResult.skipped_existing ? ` (${lastResult.skipped_existing} already in the pool)` : ''}.
-            </p>
-            {lastResult.message && (lastResult.shortfall || lastResult.cancelled) && (
-              <p className="mt-1">{lastResult.message}</p>
-            )}
-            {!lastResult.shortfall && !lastResult.cancelled && (
-              <p className="mt-1 text-xs opacity-80">
-                Review the pool below. Tick puts a name on the Marketplace; Untick takes it off.
+        {lookupCard && (
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="truncate text-sm font-semibold text-slate-900">{lookupCard.domainName}</p>
+                {lookupCard.isPremium ? (
+                  <Badge>Premium</Badge>
+                ) : (
+                  <Badge className="bg-slate-100 text-slate-600 ring-slate-200">Not premium</Badge>
+                )}
+                <SourceBadge source={lookupCard.source} />
+              </div>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {lookupCard.available ? 'Available' : 'Unavailable'}
+                {' · '}
+                {lookupCard.createPriceInr ? formatPrice(lookupCard.createPriceInr) : 'No live price'}
+                {lookupCard.renewalPriceInr ? ` · renewal ${formatPrice(lookupCard.renewalPriceInr)}` : ''}
               </p>
-            )}
-            <ReasonsList reasons={lastResult.reasons} />
+              {lookupCard.message && !lookupCard.canSelect && (
+                <p className="mt-1 text-xs text-amber-800">{lookupCard.message}</p>
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              {lookupCard.isSelected ? (
+                <button
+                  type="button"
+                  onClick={() => toggleSelect({ id: lookupCard.id, domainName: lookupCard.domainName }, false)}
+                  disabled={busy || readOnly || !lookupCard.id}
+                  className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Untick
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => toggleSelect({ id: lookupCard.id, domainName: lookupCard.domainName }, true)}
+                  disabled={busy || readOnly || !lookupCard.canSelect}
+                  title={lookupTickBlocked || 'Publish to Marketplace (revalidated live before publishing)'}
+                  className="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  Tick
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -739,9 +503,8 @@ export default function ShowcaseAdminTab() {
                 </button>
               </div>
               <p className="mt-2 text-[12px] leading-relaxed text-slate-600">
-                Real words OpenProvider can look up — not invented brands.
-                Used when Search by name is empty, by Suggest names (first), and by the overnight refill.
-                Good examples: hustler, mint, nova, sage, harbor. Save after editing.
+                Optional. Used only by the overnight selected-card refill job, not by Admin Search.
+                Save after editing.
               </p>
             </div>
 
@@ -770,8 +533,7 @@ export default function ShowcaseAdminTab() {
                   placeholder="Leave blank (recommended)"
                 />
                 <span className="mt-1 block text-[11px] text-slate-400">
-                  Blank is best. Applies strictly to Search by name. Suggest names ignores a .com-only limit.
-                  Example if you need one: ai, io, co
+                  Optional. Left blank is recommended. Not used by exact-domain Search.
                 </span>
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -825,7 +587,7 @@ export default function ShowcaseAdminTab() {
             <button
               type="button"
               onClick={() => refresh(true)}
-              disabled={busy || generating || loading || readOnly}
+              disabled={busy || lookupBusy || loading || readOnly}
               title="Re-check live Marketplace cards with OpenProvider (prices and availability). Does not find new names."
               className="rounded-md border border-emerald-200 bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
             >
@@ -945,7 +707,7 @@ export default function ShowcaseAdminTab() {
           </div>
         ) : items.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-400">
-            No names in the pool yet. Use Find {genCount || 0} to search OpenProvider Premium inventory.
+            No names in the pool yet. Search an exact premium domain above, then Tick it.
           </p>
         ) : (
           <div className="overflow-x-auto">

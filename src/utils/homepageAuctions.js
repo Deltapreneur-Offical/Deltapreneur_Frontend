@@ -410,7 +410,7 @@ export function resolveHomeAuctionDetails(auction) {
     const full = domain.fullDomain || domain.full_domain || '';
     const pricing = domain.pricingDemand ?? domain.pricing_demand;
     return {
-      subtitle: full || (domain.domainName && ext ? `${domain.domainName}${ext}` : 'Premium domain'),
+      subtitle: full || (domain.domainName && ext ? `${domain.domainName}${ext}` : 'Delta Domains'),
       detail: pricing ? String(pricing).replace(/_/g, ' ') : 'Domain auction listing',
     };
   }

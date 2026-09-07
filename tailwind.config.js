@@ -28,10 +28,10 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Guild A Display"', '"Guild A Display Regular"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        display: ['"Guild A Display"', '"Guild A Display Regular"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        body: ['"Guild A Display"', '"Guild A Display Regular"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        sans: ['Newsreader', 'serif'],
+        display: ['Newsreader', 'serif'],
+        body: ['Newsreader', 'serif'],
+        mono: ['Newsreader', 'serif'],
       },
       borderRadius: {
         'DEFAULT': '10px',

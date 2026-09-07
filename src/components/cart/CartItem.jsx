@@ -137,7 +137,7 @@ export default function CartItem({
           {item.productName || t('unknownItem', { defaultValue: 'Unknown Item' })}
         </h4>
         {isDomainReg && (item.metadata?.isPremium === true) && (
-          <p className="mt-0.5 text-xs font-semibold text-amber-800">{t('domainCardPremiumDomain', { defaultValue: 'Premium Domain' })}</p>
+          <p className="mt-0.5 text-xs font-semibold text-amber-800">{t('domainCardPremiumDomain', { defaultValue: 'Delta Domains' })}</p>
         )}
         {(item.basePrice > 0 || item.addonAmount > 0 || item.coBrotherFee > 0 || item.selectedPlan || isDomainReg) && (
           <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-xs text-gray-500">

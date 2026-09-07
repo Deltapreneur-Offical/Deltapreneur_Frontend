@@ -69,7 +69,7 @@ export default function VentureListingTypeCards({ ventureCardRef, coVentureCardR
         subtitle="Find a partner to build with"
         description="Choose this if you want a business partner, co-founder, or collaborator to grow the company together — not sell out."
         scenarios={COVENTURE_SCENARIOS}
-        ctaLabel="List Co-Venture"
+        ctaLabel="List Delta-Venture"
         ctaTo="/ventures/new?type=co-venture"
       />
     </div>

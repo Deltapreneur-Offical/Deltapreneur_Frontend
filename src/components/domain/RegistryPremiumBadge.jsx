@@ -8,7 +8,7 @@ export default function RegistryPremiumBadge({ className = '' }) {
       className={`registry-premium-badge inline-flex w-fit items-center gap-1 rounded-full border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ${className}`}
     >
       <span className="registry-premium-badge__spark" aria-hidden="true">✦</span>
-      Premium
+      Delta
       <style>{`
         @keyframes registryPremiumBadgeIn {
           from { opacity: 0; transform: translateY(4px) scale(0.92); }

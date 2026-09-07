@@ -14,7 +14,7 @@ export default function VentureListingQuickActions({ className = '' }) {
         to={ventureListChooseUrl('co-venture')}
         className="btn-glow btn-glow-sm whitespace-nowrap"
       >
-        {t('venturesPageListCoVentureCta', { defaultValue: 'List Co-Venture' })}
+        {t('venturesPageListCoVentureCta', { defaultValue: 'List Delta-Venture' })}
       </Link>
     </div>
   );

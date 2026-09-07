@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useDynamicCategoryName } from '../../context/CategoryContext';
-import { ArrowRight, Lightbulb } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
 import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../utils/operationsCategories';
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
@@ -168,7 +168,15 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
             ? t('operationsBookSlot', { defaultValue: 'Book Your Slot' })
             : t('operationsHire', { defaultValue: 'Hire' })}
         >
-          <ArrowRight size={16} strokeWidth={2.5} aria-hidden />
+          <svg
+            className="home-operations-preview-card__cta-play"
+            viewBox="0 0 64 34"
+            preserveAspectRatio="none"
+            focusable="false"
+            aria-hidden
+          >
+            <path d="M2.8 0C1.25 0 0 1.12 0 2.5v29C0 32.88 1.25 34 2.8 34c1.06 0 2.1-.28 3.02-.8l37.12-14.65c2.75-1.56 2.75-3.54 0-5.1L5.82.8A6.2 6.2 0 0 0 2.8 0Z" />
+          </svg>
         </button>
       </div>
 

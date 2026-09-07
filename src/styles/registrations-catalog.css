@@ -1218,13 +1218,13 @@
   min-height: 0;
   padding: 0.75rem 0.8rem 0.6rem;
   border-radius: 20px;
-  border: 1.5px solid #fed7aa;
-  background: #ffffff;
+  border: 1.5px solid #f1e6da;
+  background: #fffefd;
   color: #0f172a;
   text-decoration: none;
   overflow: hidden;
   transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-  box-shadow: 0 0 0 1px rgba(253, 186, 116, 0.2), 0 8px 24px rgba(230, 115, 0, 0.08), 0 0 20px rgba(255, 153, 51, 0.12);
+  box-shadow: 0 0 0 1px rgba(241, 230, 218, 0.45), 0 8px 24px rgba(15, 23, 42, 0.045);
 }
 
 .reg-mini-card__watermark {
@@ -1236,14 +1236,24 @@
   overflow: hidden;
   pointer-events: none;
   user-select: none;
-  opacity: 0.55;
+  opacity: 0.34;
+}
+
+.reg-mini-card__watermark polygon {
+  fill: #fde8dd;
 }
 
 .reg-mini-card:hover,
 .reg-mini-card:focus-visible {
   transform: translateY(-4px);
-  border-color: #fdba74;
-  box-shadow: 0 0 0 1px rgba(253, 186, 116, 0.3), 0 10px 28px rgba(230, 115, 0, 0.12), 0 0 28px rgba(255, 153, 51, 0.18);
+  border-color: #f8dbc1;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(248, 219, 193, 0.4), 0 10px 24px rgba(15, 23, 42, 0.055);
+}
+
+.reg-mini-card:hover .reg-mini-card__watermark,
+.reg-mini-card:focus-visible .reg-mini-card__watermark {
+  opacity: 0.28;
 }
 
 .home-preview-row__item .reg-mini-card-wrapper,
@@ -1360,49 +1370,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  width: auto;
+  width: 100%;
   min-width: 8.75rem;
   max-width: 100%;
-  height: 2.45rem;
+  height: 2.15rem;
   padding: 0 0 0 0.8rem;
   overflow: hidden;
   border-radius: 9999px;
-  border: none;
+  border: 1.25px solid rgba(249, 115, 22, 0.46);
   background: #ffffff;
-  box-shadow:
-    0 0 0 1px rgba(253, 186, 116, 0.22),
-    0 8px 18px rgba(230, 115, 0, 0.07),
-    0 0 18px rgba(255, 153, 51, 0.12);
+  box-shadow: none;
   color: #c2410c;
   box-sizing: border-box;
 }
 
-/* Saffron ring only — interior stays open so the card mark shows through. */
-.reg-mini-card__price-pill::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 2px;
-  background: linear-gradient(90deg, #fdba74 0%, #fb923c 50%, #fb923c 100%);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 2;
-}
-
 .reg-mini-card:hover .reg-mini-card__price-pill,
 .reg-mini-card:focus-visible .reg-mini-card__price-pill {
-  box-shadow:
-    0 0 0 1px rgba(255, 153, 51, 0.28),
-    0 10px 20px rgba(230, 115, 0, 0.12),
-    0 0 22px rgba(255, 153, 51, 0.16);
+  border-color: rgba(249, 115, 22, 0.42);
+  box-shadow: none;
 }
 
 .reg-mini-card__price {
@@ -1421,12 +1406,12 @@
   position: relative;
   z-index: 1;
   display: inline-flex;
-  align-items: stretch;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   align-self: stretch;
-  width: auto;
-  height: auto;
+  width: 2.7rem;
+  height: 100%;
   margin: 0;
   padding: 0;
   border: none;
@@ -1436,14 +1421,11 @@
 
 .reg-mini-card__price-play {
   display: block;
-  width: auto;
+  width: 100%;
   height: 100%;
-  aspect-ratio: 42 / 38;
-  object-fit: contain;
-  object-position: right center;
+  fill: #f97316;
   pointer-events: none;
   user-select: none;
-  background: transparent;
 }
 
 .reg-mini-card--skeleton {
@@ -1525,16 +1507,16 @@
   }
 
   .reg-mini-card__price-pill {
-    height: 2.2rem;
+    height: 2rem;
   }
 
   .reg-mini-card__price-arrow {
-    width: auto;
-    height: auto;
+    width: 2.45rem;
+    height: 100%;
   }
 
   .reg-mini-card__price-play {
-    width: auto;
+    width: 100%;
     height: 100%;
   }
 

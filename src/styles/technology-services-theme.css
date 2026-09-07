@@ -21,3 +21,152 @@
   color: #c2410c;
   border-color: #fed7aa;
 }
+
+.tech-service-card__footer {
+  width: 100%;
+}
+
+.tech-service-card__price-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  height: 2.35rem;
+  margin: 0;
+  padding: 0 0 0 0.95rem;
+  overflow: hidden;
+  border: 1.25px solid rgba(249, 115, 22, 0.46);
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #c2410c;
+  box-shadow: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.tech-service-card:hover .tech-service-card__price-pill,
+.tech-service-card__price-pill:focus-visible {
+  border-color: #fb923c;
+  background: #fff7ed;
+  outline: none;
+}
+
+.tech-service-card__price-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.tech-service-card__price-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.tech-service-card__price-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.tech-service-card__price-amount {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tech-service-card__price-suffix {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tech-service-card__price-arrow {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 2.9rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tech-service-card__price-play {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #f97316;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tech-service-card:hover {
+  border-color: #fdba74 !important;
+  background: linear-gradient(165deg, #ffffff 0%, #fff7ed 42%, #ffedd5 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(253, 186, 116, 0.26),
+    0 12px 30px rgba(230, 115, 0, 0.12) !important;
+}
+
+.tech-service-card:hover h3 {
+  color: #111827 !important;
+}
+
+.tech-service-card:hover .tech-service-card__accent-glow {
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.55), rgba(253, 186, 116, 0.22)) !important;
+}
+
+body.home-page-body .tech-service-card:hover .tech-service-card__badge,
+.tech-service-card:hover .tech-service-card__badge {
+  background: #fed7aa !important;
+  background-image: none !important;
+  color: #c2410c !important;
+  border-color: #fdba74 !important;
+}
+
+body.home-page-body .tech-service-card:hover .tech-service-card__icon,
+.tech-service-card:hover .tech-service-card__icon {
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%) !important;
+  color: #ea580c !important;
+  border-color: #fdba74 !important;
+}
+
+@media (max-width: 639px) {
+  .tech-service-card__price-pill {
+    height: 2.15rem;
+  }
+
+  .tech-service-card__price-arrow {
+    width: 2.65rem;
+  }
+
+  .tech-service-card__price-amount {
+    font-size: 0.98rem;
+  }
+}

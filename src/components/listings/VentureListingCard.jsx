@@ -17,6 +17,7 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 
 import {
 
@@ -798,9 +799,7 @@ return (
                   onClick={handleViewDetails}
 
                 >
-                  <svg className="tech-service-card__price-play" viewBox="0 0 64 34" preserveAspectRatio="none" focusable="false" aria-hidden="true">
-                    <path d="M2.8 0C1.25 0 0 1.12 0 2.5v29C0 32.88 1.25 34 2.8 34c1.06 0 2.1-.28 3.02-.8l37.12-14.65c2.75-1.56 2.75-3.54 0-5.1L5.82.8A6.2 6.2 0 0 0 2.8 0Z" />
-                  </svg>
+                  <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
 
                 </button>
 

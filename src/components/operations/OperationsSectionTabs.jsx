@@ -1,6 +1,6 @@
 import { Headset, ShieldCheck, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
+import { PUBLIC_OPERATIONS_SECTIONS } from '../../utils/operationsSections';
 
 const SECTION_ICONS = {
   assistance: Headset,
@@ -31,7 +31,7 @@ export default function OperationsSectionTabs({
         role="tablist"
         aria-label={ariaLabel || t('operationsPartitionLabel', { defaultValue: 'Operations sections' })}
       >
-        {OPERATIONS_SECTIONS.map((section) => {
+        {PUBLIC_OPERATIONS_SECTIONS.map((section) => {
           const isActive = activeSectionId === section.id;
           const TabIcon = SECTION_ICONS[section.id] || Headset;
           const count = counts[section.id];

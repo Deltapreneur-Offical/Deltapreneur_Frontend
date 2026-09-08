@@ -127,8 +127,12 @@
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
-  border-color: #F6C98F !important;
-  background: #FFFFFF !important;
+  border: 2.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--role {
@@ -162,8 +166,11 @@
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
-  background: #FFFFFF !important;
-  border-color: #F59E0B !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .venture-listing-card__equity-badge {
@@ -203,11 +210,16 @@
 
 .home-preview-card-border--operations .home-operations-preview-card__price-box,
 .home-preview-card-border--compliance .home-operations-preview-card__price-box {
-  height: 2.15rem;
-  padding: 0 0 0 0.8rem;
-  border: 2px solid rgba(249, 115, 22, 0.46) !important;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0 0 0 0.95rem;
+  border: 2.5px solid transparent !important;
   border-radius: 9999px !important;
-  background: #ffffff !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 
 .home-preview-card-border--operations .home-operations-preview-card__skill-pills span,
@@ -329,8 +341,12 @@
 
 .home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box,
 .home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box--venture {
-  border-color: #F6C98F !important;
-  background: #FFFFFF !important;
+  border: 2.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__metric--role {
@@ -343,7 +359,11 @@
 
 .home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box,
 .home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box--venture {
-  background: #FFFFFF !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 
 /* Venture homepage — no color change on hover (elevation/shadow only) */

@@ -233,7 +233,7 @@ export default function OperationRoleModal({
                       }));
                     }}
                   >
-                    {OPERATIONS_SECTIONS.map((section) => (
+                    {OPERATIONS_SECTIONS.filter((section) => !section.publicHidden).map((section) => (
                       <option key={section.serviceType} value={section.serviceType}>
                         {t(section.labelKey, { defaultValue: section.defaultLabel })}
                       </option>

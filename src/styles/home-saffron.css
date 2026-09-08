@@ -621,3 +621,34 @@ body.home-page-body .home-preview-card-border .home-feature-card-beam-spinner {
     transparent 100%
   );
 }
+
+/* Homepage card price numerals only — match DeltaOs .tech-service-card__price-amount */
+body.home-page-body .tech-service-card__price-amount,
+body.home-page-body .home-operations-preview-card__price-amount,
+body.home-page-body .reg-mini-card__price,
+body.home-page-body .creator-expected-rate__value,
+body.home-page-body .domain-listing-card__price-value,
+body.home-page-body .venture-listing-card .domain-listing-card__price-value,
+body.home-page-body .venture-listing-card--compact .domain-listing-card__price-value,
+body.home-page-body .venture-listing-card__price-value--compact,
+body.home-page-body .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value,
+body.home-page-body .home-auction-preview-card__current-bid-value,
+body.home-page-body .home-auction-preview-card__live-bid-value,
+body.home-page-body .home-preview-row .venture-listing-card--home-preview .venture-listing-card__price-value--compact,
+body.home-page-body .home-auto-scroll-row .venture-listing-card--home-preview .venture-listing-card__price-value--compact,
+body.home-page-body .home-preview-row .home-auction-preview-card--home-preview .venture-listing-card__price-value--compact,
+body.home-page-body .home-auto-scroll-row .home-auction-preview-card--home-preview .venture-listing-card__price-value--compact,
+body.home-page-body .home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-value,
+body.home-page-body .home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-value,
+body.home-page-body .home-preview-row .home-preview-browse-card .domain-listing-card__price-value,
+body.home-page-body .home-auto-scroll-row .home-preview-browse-card .domain-listing-card__price-value,
+body.home-page-body .home-preview-row .home-creator-listing-card .domain-listing-card__price-value,
+body.home-page-body .home-auto-scroll-row .home-creator-listing-card .domain-listing-card__price-value,
+body.home-page-body .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__value {
+  font-family: var(--font-display, 'Newsreader', Georgia, serif) !important;
+  font-size: 1.08rem !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+}

@@ -9,7 +9,7 @@ import CommunitySection from '../home/CommunitySection';
 import AuctionsSection from '../home/AuctionsSection';
 import FeedbackSection from '../home/FeedbackSection';
 import HomeOperationsCarouselSection from '../home/HomeOperationsCarouselSection';
-import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
+import { PUBLIC_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
 
 function LazySection({ title, to, variant = 'browse', compact = false, children }) {
@@ -53,7 +53,7 @@ export default function ExploreSection() {
         <TechnologySection />
       </LazySection>
 
-      {OPERATIONS_SECTIONS.map((section) => (
+      {PUBLIC_OPERATIONS_SECTIONS.map((section) => (
         <LazySection
           key={section.id}
           title={section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel })}

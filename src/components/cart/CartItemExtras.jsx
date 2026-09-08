@@ -3,26 +3,31 @@ import { technologyAPI } from '../../api/services';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useCart } from '../../context/CartContext';
 import AddonSections from '../addon/AddonSections';
-import { ADDON_SERVICES } from '../addon/AddonSelector';
+import { useOperationsServicesCatalog } from '../../hooks/useOperationsServicesCatalog';
 import { useVirtualAssistantCatalog } from '../../hooks/useVirtualAssistantCatalog';
 import { getEnabledPricingPlans } from '../../utils/technologyPricingPlans';
 import TechnologyPurchaseConfig from './TechnologyPurchaseConfig';
 
-const BUSINESS_KEYS = new Set(ADDON_SERVICES.map((s) => s.key));
 const SAVE_DELAY_MS = 450;
 /** Domain listing extras only — Technology cart config is Deltapreneur-only (no VA). */
 const SHOW_VA_IN_CART = false;
 
-function splitAddonServices(all = [], vaCatalog = []) {
+function splitAddonServices(all = [], vaCatalog = [], businessCatalog = []) {
   const vaIds = new Set(vaCatalog.map((s) => String(s.id)));
+  const businessIds = new Set();
+  businessCatalog.forEach((service) => {
+    if (service?.id) businessIds.add(String(service.id));
+    if (service?.key) businessIds.add(String(service.key));
+    if (service?.skills) businessIds.add(String(service.skills));
+  });
   const business = [];
   const va = [];
   (all || []).forEach((key) => {
     const id = String(key);
     if (vaIds.has(id)) va.push(id);
-    else if (BUSINESS_KEYS.has(key)) business.push(key);
+    else if (businessIds.has(id)) business.push(id);
     else if (/^\d+$/.test(id) || id.includes('-')) va.push(id);
-    else business.push(key);
+    else business.push(id);
   });
   return { business, va };
 }
@@ -39,6 +44,12 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
   const { formatPrice } = useCurrency();
   const { updateItem } = useCart();
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
+  const {
+    services: businessServices,
+    categories: businessCategories,
+    loading: businessLoading,
+    error: businessError,
+  } = useOperationsServicesCatalog({ enabled: item.productType === 'DOMAIN_LISTING' });
   const saveTimerRef = useRef(null);
   const autoPlanSavedRef = useRef(null);
   const [saving, setSaving] = useState(false);
@@ -51,8 +62,8 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
   const supported = isTechnology || isDomainListing;
 
   const split = useMemo(
-    () => splitAddonServices(item.addonServices || [], vaServices),
-    [item.addonServices, vaServices],
+    () => splitAddonServices(item.addonServices || [], vaServices, businessServices),
+    [item.addonServices, vaServices, businessServices],
   );
 
   const [coBrotherOptIn, setHubRegistrarOptIn] = useState(Boolean(item.coBrotherOptIn));
@@ -100,12 +111,12 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
   }, [isTechnology, item.productId, item.id, item.selectedPlan, item.coBrotherOptIn]);
 
   useEffect(() => {
-    const nextSplit = splitAddonServices(item.addonServices || [], vaServices);
+    const nextSplit = splitAddonServices(item.addonServices || [], vaServices, businessServices);
     setHubRegistrarOptIn(Boolean(item.coBrotherOptIn));
     setBusinessAddons(nextSplit.business);
     setVaAddons(nextSplit.va);
     setSelectedPlan(item.selectedPlan || null);
-  }, [item.id, item.addonServices, item.coBrotherOptIn, item.selectedPlan, vaServices]);
+  }, [item.id, item.addonServices, item.coBrotherOptIn, item.selectedPlan, vaServices, businessServices]);
 
   const requiresPlan = isTechnology && enabledPlans.length > 0;
   const hasPlan = Boolean(selectedPlan);
@@ -230,6 +241,10 @@ export default function CartItemExtras({ item, onUpdated, onConfigStatus, collap
         <AddonSections
           businessSelected={businessAddons}
           onBusinessChange={handleBusinessChange}
+          businessServices={businessServices}
+          businessCategories={businessCategories}
+          businessLoading={businessLoading}
+          businessError={businessError}
           vaSelected={vaAddons}
           onVaChange={handleVaChange}
           vaServices={vaServices}

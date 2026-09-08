@@ -764,7 +764,7 @@ export default function CartPage() {
           </motion.div>
         </div>
       )}
-      <div className="max-w-6xl mx-auto px-4 pt-5 sm:pt-6 pb-12 sm:pb-14 lg:pb-16">
+      <div className="cart-page-shell max-w-6xl mx-auto px-4 pt-5 sm:pt-6 pb-12 sm:pb-14 lg:pb-16">
         <div className="relative mb-8 overflow-hidden rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 px-4 py-4 sm:px-6 sm:py-6">
           <div className="relative z-10 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="flex min-w-0 flex-1 items-center gap-3">

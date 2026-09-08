@@ -66,18 +66,18 @@ function StatCard({ label, value, colorClass, isActive, onClick }) {
       className={`
         bg-white rounded-2xl border shadow-sm p-4 flex items-center gap-3 transition-all text-left
         ${isActive
-          ? 'border-purple-500 ring-2 ring-purple-500/30 shadow-md shadow-purple-200'
+          ? '!bg-[#C2410C] border-[#C2410C] text-white ring-2 ring-[#C2410C]/30 shadow-md shadow-orange-100'
           : 'border-gray-100 hover:border-purple-300 hover:shadow-md'
         }
       `}
       aria-pressed={isActive}
     >
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-transparent' : colorClass}`}>
         <Users size={16} className="text-white" />
       </div>
       <div>
-        <p className="text-xl font-bold text-gray-900 leading-tight">{value ?? 0}</p>
-        <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{label}</p>
+        <p className={`text-xl font-bold leading-tight ${isActive ? 'text-white' : 'text-gray-900'}`}>{value ?? 0}</p>
+        <p className={`text-[11px] mt-0.5 font-medium ${isActive ? 'text-white' : 'text-gray-400'}`}>{label}</p>
       </div>
     </button>
   );
@@ -253,7 +253,7 @@ function VirtualAssistantApplicationsAdminPage({ embedded = false }) {
             onClick={() => setShowFilters(!showFilters)}
             className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border transition-all ${
               showFilters || hasActiveFilters
-                ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-200'
+                ? 'bg-[#C2410C] border-[#C2410C] text-white shadow-md shadow-orange-100'
                 : 'bg-white border-gray-200 text-gray-700 hover:border-purple-400 hover:text-purple-700'
             }`}
           >

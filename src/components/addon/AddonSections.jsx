@@ -7,6 +7,10 @@ import VirtualAssistantSelector from './VirtualAssistantSelector';
 export default function AddonSections({
   businessSelected = [],
   onBusinessChange,
+  businessServices = null,
+  businessCategories = null,
+  businessLoading = false,
+  businessError = '',
   vaSelected = [],
   onVaChange,
   vaServices = null,
@@ -19,6 +23,10 @@ export default function AddonSections({
       <AddonSelector
         selected={businessSelected}
         onChange={onBusinessChange}
+        services={businessServices}
+        categories={businessCategories}
+        loading={businessLoading}
+        error={businessError}
         className="mt-0 min-w-0"
       />
       {showVirtualAssistant && (

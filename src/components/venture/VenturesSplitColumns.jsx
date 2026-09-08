@@ -52,7 +52,7 @@ export default function VenturesSplitColumns({
   const coVentureCountLabel = t('venturesPageResultsFound', { count: coVentureRows.length });
 
   return (
-    <div className="ventures-split">
+    <div className="ventures-split ventures-split--dashboard-active">
       {/* ── Mobile-only segmented tab bar ─────────────────────────────── */}
       <div className="ventures-split__mobile-tabs" role="tablist" aria-label={t('venture')}>
         <button

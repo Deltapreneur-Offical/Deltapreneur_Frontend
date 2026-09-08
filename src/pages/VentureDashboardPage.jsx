@@ -160,7 +160,7 @@ export default function VentureDashboardPage() {
             <button
               key={id}
               type="button"
-              className={`btn-glow btn-glow-sm relative ${activeTab === id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              className={`btn-glow btn-glow-sm relative ${activeTab === id ? 'dashboard-active-control' : ''}`}
               onClick={() => setActiveTab(id)}
             >
               {label}

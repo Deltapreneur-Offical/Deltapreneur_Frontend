@@ -3948,7 +3948,7 @@ function AdminReviewQueueSection({ counts, loading: countsLoading, onJump, onRef
                 className={[
                   'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
                   isActive
-                    ? 'bg-gray-900 text-white shadow-sm'
+                    ? 'bg-[#C2410C] text-white ring-1 ring-[#C2410C] shadow-sm'
                     : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100',
                 ].join(' ')}
               >

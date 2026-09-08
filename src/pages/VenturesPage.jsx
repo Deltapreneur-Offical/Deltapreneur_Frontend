@@ -268,7 +268,7 @@ export default function VenturesPage() {
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">
             {listingModeFilter === 'CO_VENTURE'
-              ? t('coVentureSectionTitle', { defaultValue: 'Co-Venture' })
+              ? t('coVentureSectionTitle', { defaultValue: 'Delta-Ventures' })
               : listingModeFilter === 'VENTURE'
                 ? t('venture')
                 : t('coVentures')}
@@ -281,7 +281,7 @@ export default function VenturesPage() {
               : listingModeFilter === 'VENTURE'
                 ? t('venturesPageSubtitle')
                 : t('venturesPageSplitSubtitle', {
-                  defaultValue: 'Browse venture sales and co-venture partnerships side by side.',
+                  defaultValue: 'Browse venture sales and Delta-Ventures partnerships side by side.',
                 })}
           </p>
         </div>

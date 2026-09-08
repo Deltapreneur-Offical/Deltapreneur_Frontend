@@ -6,7 +6,7 @@ const INVALID_LINKEDIN_PROFILE_RE =
   /linkedin\.com\/(?:oauth|login|uas|checkpoint|legal|help|authwall|sharing)(?:\/|$|\?)/i;
 
 const CREATOR_FIELD_REQUIREMENTS = {
-  name: { key: 'name', aliases: ['name'], label: 'Creator name' },
+  name: { key: 'name', aliases: ['name'], label: 'Deltapreneur name' },
   about: { key: 'about', aliases: ['about', 'aboutMe', 'about_me'], label: 'About' },
   headline: { key: 'headline', aliases: ['headline'], label: 'Professional Headline' },
   role: { key: 'role', aliases: ['role'], label: 'Role' },

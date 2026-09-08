@@ -64,7 +64,7 @@ function CreatorAvatar({ imageUrl, name, profile }) {
       {showImage ? (
         <img
           src={imageUrl}
-          alt={name || 'Creator'}
+          alt={name || 'Deltapreneur'}
           className="creator-profile-card__avatar"
           onError={() => setFailedUrl(imageUrl)}
         />

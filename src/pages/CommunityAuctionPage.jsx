@@ -278,7 +278,7 @@ export default function CommunityAuctionPage() {
         auctionId: auction.id,
         bidAmount: amountInr,
         user,
-        description: 'Creator auction bid fee',
+        description: 'Deltapreneur auction bid fee',
       });
       await placeBid({
         amount: amountInr,
@@ -1372,7 +1372,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
             Re-Auction
           </div>
           <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Start a New Auction</h2>
-          <p className="text-sm text-gray-500">Set new parameters for your creator profile auction.</p>
+          <p className="text-sm text-gray-500">Set new parameters for your Deltapreneur profile auction.</p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">

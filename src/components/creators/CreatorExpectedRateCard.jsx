@@ -47,7 +47,7 @@ export default function CreatorExpectedRateCard({
           <button
             type="button"
             className="domain-listing-card__price-cta"
-            aria-label={onHire ? hireLabel : 'View creator details'}
+            aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
             onClick={action}
           >
             <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
@@ -75,7 +75,7 @@ export default function CreatorExpectedRateCard({
         <button
           type="button"
           className="creator-expected-rate__cta"
-          aria-label={onHire ? hireLabel : 'View creator details'}
+          aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
           onClick={action}
         >
           <ArrowRight size={14} strokeWidth={2.25} aria-hidden />

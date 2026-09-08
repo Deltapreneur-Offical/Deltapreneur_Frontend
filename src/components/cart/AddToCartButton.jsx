@@ -388,7 +388,7 @@ export default function AddToCartButton({
         >
           <p className="text-sm font-semibold text-gray-900">{t('addedToCart', { defaultValue: 'Added to cart' })}</p>
           <p className="mt-1 text-xs text-gray-500">
-            {t('addToCartReviewOptions', { defaultValue: 'Review pricing plan and Co-Creator options before checkout.' })}
+            {t('addToCartReviewOptions', { defaultValue: 'Review pricing plan and Co-Deltapreneur options before checkout.' })}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button

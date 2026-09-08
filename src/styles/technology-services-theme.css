@@ -37,7 +37,7 @@
   margin: 0;
   padding: 0 0 0 0.95rem;
   overflow: hidden;
-  border: 1.25px solid rgba(249, 115, 22, 0.46);
+  border: 2px solid rgba(249, 115, 22, 0.46);
   border-radius: 9999px;
   background: #ffffff;
   color: #c2410c;
@@ -85,7 +85,7 @@
 
 .tech-service-card__price-amount {
   font-size: 1.08rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
   line-height: 1;
   white-space: nowrap;

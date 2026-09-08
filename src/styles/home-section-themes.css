@@ -9,7 +9,19 @@
    COOL PREMIUM THEME — shared tokens (matches finalized Domains styling)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.home-preview-card-border--coventure,
+/* Co-Ventures (Delta Ventures) — teal border + orange price box + teal badges */
+.home-preview-card-border--coventure {
+  --home-card-border: #0F766E;
+  --home-card-border-hover: #0F766E;
+  --home-card-shadow: rgba(15, 118, 110, 0.10);
+  --home-card-shadow-hover: rgba(15, 118, 110, 0.18);
+  --home-card-price-bg: #FFFFFF;
+  --home-card-price-border: #F6C98F;
+  --home-card-price-border-hover: #F59E0B;
+  --home-card-price-shadow-hover: rgba(245, 158, 11, 0.08);
+}
+
+/* Other cool theme sections */
 .home-preview-card-border--technology,
 .home-preview-card-border--operations,
 .home-preview-card-border--compliance,
@@ -63,13 +75,13 @@
   color: #c2410c !important;
 }
 
-/* ─── 2. Co-Ventures (Delta Ventures) — warm banner + white body, matching Domains ─── */
+/* ─── 2. Co-Ventures (Delta Ventures) — deep teal banner + white body ─── */
 .home-preview-card-border--coventure .venture-listing-card__cover-fallback {
-  background: linear-gradient(180deg, #FFFCF8 0%, #FFF7ED 100%) !important;
+  background: linear-gradient(180deg, #E6F5F3 0%, #D1EDE9 100%) !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
-  color: #c2410c !important;
+  color: #0F766E !important;
   text-shadow: none !important;
 }
 
@@ -82,11 +94,35 @@
   background: #FFFFFF !important;
 }
 
-.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--premium,
-.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badge {
-  border-color: #F6C98F !important;
-  background: #FFFCF8 !important;
-  color: #c2410c !important;
+/* Force badges onto a single line */
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badges {
+  flex-wrap: nowrap !important;
+  gap: 0.35rem !important;
+  min-height: auto !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badges > span,
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badges span {
+  border-color: #0F766E !important;
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+  font-size: 0.65rem !important;
+  padding: 0.2rem 0.6rem !important;
+  height: 1.5rem !important;
+  white-space: nowrap !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  border-width: 1px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
@@ -100,13 +136,24 @@
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge {
-  border-color: #F6C98F !important;
-  background: #FFFFFF !important;
+  border-color: #0F766E !important;
+  background: #F0FDFA !important;
+  color: #0F766E !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge-icon,
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge-value {
-  color: #c2410c !important;
+  color: #0F766E !important;
+}
+
+/* Equity badge size */
+.home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge {
+  font-size: 0.6rem !important;
+  padding: 0.25rem 0.6rem !important;
+}
+
+.home-preview-card-border--coventure:hover {
+  border-color: #0F766E !important;
 }
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__body {
@@ -116,10 +163,12 @@
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
   background: #FFFFFF !important;
+  border-color: #F59E0B !important;
 }
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .venture-listing-card__equity-badge {
   background: #FFFFFF !important;
+  border-color: #0F766E !important;
 }
 
 /* ─── 3. Technologies — saffron premium (shell tokens only) ─── */
@@ -156,7 +205,7 @@
 .home-preview-card-border--compliance .home-operations-preview-card__price-box {
   height: 2.15rem;
   padding: 0 0 0 0.8rem;
-  border: 1.25px solid rgba(249, 115, 22, 0.46) !important;
+  border: 2px solid rgba(249, 115, 22, 0.46) !important;
   border-radius: 9999px !important;
   background: #ffffff !important;
 }
@@ -243,6 +292,39 @@
   border-color: #F6C98F !important;
   background: #FFFCF8 !important;
   color: #c2410c !important;
+}
+
+/* Ventures homepage — single-line badges + compact equity pill to match Delta Ventures card size */
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__badges {
+  flex-wrap: nowrap !important;
+  gap: 0.35rem !important;
+  min-height: auto !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__badges > span,
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__badges span {
+  font-size: 0.65rem !important;
+  padding: 0.2rem 0.6rem !important;
+  height: 1.5rem !important;
+  white-space: nowrap !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  border-width: 1px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+}
+
+.home-preview-card-border--venture .venture-listing-card--venture .venture-listing-card__equity-badge {
+  font-size: 0.6rem !important;
+  padding: 0.25rem 0.6rem !important;
 }
 
 .home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box,

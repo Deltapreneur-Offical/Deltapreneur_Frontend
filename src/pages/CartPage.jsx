@@ -884,7 +884,7 @@ export default function CartPage() {
                             <span>
                               {expanded
                                 ? t('hideConfiguration', { defaultValue: 'Hide configuration' })
-                                : t('configurePlanCoCreator', { defaultValue: 'Configure plan & Co-Creator' })}
+                                : t('configurePlanCoCreator', { defaultValue: 'Configure plan & Co-Deltapreneur' })}
                               {needsConfig ? t('planRequiredSuffix', { defaultValue: ' - Plan required' }) : ''}
                             </span>
                             <ChevronDown

@@ -16,8 +16,8 @@ function CommissionInput({ id, label, hint, value, onChange, highlight }) {
         gap: 6,
         padding: '14px 16px',
         borderRadius: 12,
-        border: highlight ? '1.5px solid #a78bfa' : '1px solid #e5e7eb',
-        background: highlight ? '#faf5ff' : '#f9fafb',
+        border: highlight ? '1.5px solid #fdba74' : '1px solid #e5e7eb',
+        background: highlight ? '#fff7ed' : '#f9fafb',
         transition: 'all 0.15s ease',
       }}
     >
@@ -49,7 +49,7 @@ function CommissionInput({ id, label, hint, value, onChange, highlight }) {
             outline: 'none',
             boxSizing: 'border-box',
           }}
-          onFocus={(e) => (e.target.style.borderColor = '#8b5cf6')}
+          onFocus={(e) => (e.target.style.borderColor = '#f97316')}
           onBlur={(e) => (e.target.style.borderColor = '#d1d5db')}
         />
         <span style={{
@@ -84,16 +84,16 @@ function TldOverrideInput({ defaultValue, value, onChange }) {
           width: '100%',
           padding: '6px 28px 6px 10px',
           borderRadius: 6,
-          border: isUsingDefault ? '1px dashed #d1d5db' : '1px solid #8b5cf6',
-          background: isUsingDefault ? '#f9fafb' : '#f5f3ff',
+          border: isUsingDefault ? '1px dashed #d1d5db' : '1px solid #f97316',
+          background: isUsingDefault ? '#f9fafb' : '#fff7ed',
           fontSize: 12,
           fontWeight: isUsingDefault ? 500 : 700,
-          color: isUsingDefault ? '#6b7280' : '#6d28d9',
+          color: isUsingDefault ? '#6b7280' : '#c2410c',
           outline: 'none',
         }}
       />
       <span style={{
-        position: 'absolute', right: 8, fontSize: 10, color: isUsingDefault ? '#9ca3af' : '#7c3aed', fontWeight: 600, pointerEvents: 'none',
+        position: 'absolute', right: 8, fontSize: 10, color: isUsingDefault ? '#9ca3af' : '#c2410c', fontWeight: 600, pointerEvents: 'none',
       }}>
         %
       </span>
@@ -205,9 +205,9 @@ function FilterChip({ active, onClick, children }) {
       style={{
         padding: '5px 12px',
         borderRadius: 999,
-        border: active ? '1.5px solid #7c3aed' : '1px solid #cbd5e1',
-        background: active ? '#ede9fe' : '#fff',
-        color: active ? '#6d28d9' : '#475569',
+        border: active ? '1.5px solid #f97316' : '1px solid #cbd5e1',
+        background: active ? '#fff7ed' : '#fff',
+        color: active ? '#c2410c' : '#475569',
         fontSize: 11,
         fontWeight: 700,
         cursor: 'pointer',
@@ -509,7 +509,7 @@ export default function AdminOpenProviderCommissionTab() {
   if (loading || tldsLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
-        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #ede9fe', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #ffedd5', borderTopColor: '#f97316', animation: 'spin 0.8s linear infinite' }} />
         <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>Loading commission config…</p>
       </div>
     );
@@ -890,7 +890,7 @@ export default function AdminOpenProviderCommissionTab() {
             </span>
             <span style={{ color: '#cbd5e1' }}>|</span>
             <span>
-              <strong style={{ color: '#7c3aed' }}>{overrideCount}</strong> margin set
+              <strong style={{ color: '#c2410c' }}>{overrideCount}</strong> margin set
             </span>
             <span style={{ color: '#cbd5e1' }}>|</span>
             <span>
@@ -1003,8 +1003,8 @@ export default function AdminOpenProviderCommissionTab() {
                                   style={{
                                     fontSize: 10,
                                     fontWeight: 700,
-                                    color: '#7c3aed',
-                                    background: '#ede9fe',
+                                    color: '#c2410c',
+                                    background: '#fff7ed',
                                     padding: '2px 6px',
                                     borderRadius: 4,
                                   }}

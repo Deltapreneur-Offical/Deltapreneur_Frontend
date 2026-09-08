@@ -216,6 +216,13 @@ export default function AppLayout({ children }) {
   const profileMenuRef = useRef(null);
   const notifFetchRef = useRef(0);
 
+  useEffect(() => {
+    document.body.classList.add('app-layout-body');
+    return () => {
+      document.body.classList.remove('app-layout-body');
+    };
+  }, []);
+
   const updateProfileMenuPosition = useCallback(() => {
     if (!profileRef.current) return;
     const rect = profileRef.current.getBoundingClientRect();
@@ -510,7 +517,7 @@ export default function AppLayout({ children }) {
 
   // ─── AUTHENTICATED DASHBOARD LAYOUT ───────────────────────────────────────
   return (
-    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-gray-50">
+    <div className={`app-layout-root flex h-dvh max-h-dvh flex-col overflow-hidden bg-gray-50${location.pathname === '/ventures/new' ? ' app-layout--new-venture' : ''}`}>
       <div className="app-layout-workspace flex w-full flex-1 items-stretch">
       {/* Desktop Left Sidebar â€” workspace only; ends above full-width footer */}
       <aside
@@ -818,8 +825,8 @@ export default function AppLayout({ children }) {
         </>
       )}
 
-      {/* Main column: header + page content (footer is outside workspace) */}
-      <div className="app-layout-main-column flex min-w-0 flex-1 flex-col">
+      {/* Main column: header + page content */}
+      <div className="app-layout-main-column flex min-w-0 min-h-0 flex-1 flex-col">
         {/* Top Header */}
         <header className={`app-layout-header z-30 shrink-0 border-b border-gray-200 bg-white/95 px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible backdrop-blur-md${headerScrolled ? ' is-scrolled' : ''}`}>
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden sm:gap-3">

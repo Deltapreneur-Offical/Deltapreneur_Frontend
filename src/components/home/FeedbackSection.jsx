@@ -241,7 +241,7 @@ export default function FeedbackSection() {
             line-height: 1;
             animation: feedbackEmojiFall 4.6s ease-in-out forwards;
             animation-iteration-count: 4;
-            filter: drop-shadow(0 2px 3px rgba(76, 29, 149, 0.15));
+            filter: drop-shadow(0 2px 3px rgba(194, 65, 12, 0.15));
           }
 
           .feedback-happy-emoji {

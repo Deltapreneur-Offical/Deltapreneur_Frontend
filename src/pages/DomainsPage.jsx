@@ -1893,13 +1893,16 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
         </div>
 
         {!isEdit && (
-          <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
+          <label
+            className="relative inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full"
+            onMouseDown={(e) => e.preventDefault()}
+          >
             <input
               type="checkbox"
               checked={form.agreement.terms}
               onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
               required
-              className="peer sr-only"
+              className="absolute left-3.5 top-2.5 h-5 w-5 cursor-pointer opacity-0"
             />
             <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
               {form.agreement.terms && (

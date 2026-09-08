@@ -65,7 +65,7 @@ export default function VentureListingTypeCards({ ventureCardRef, coVentureCardR
       <VentureCard
         cardRef={coVentureCardRef}
         variant="co-venture"
-        title="Co-Venture Listing"
+        title="Delta-Venture Listing"
         subtitle="Find a partner to build with"
         description="Choose this if you want a business partner, co-founder, or collaborator to grow the company together — not sell out."
         scenarios={COVENTURE_SCENARIOS}

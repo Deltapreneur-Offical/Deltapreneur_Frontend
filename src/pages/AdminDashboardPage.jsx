@@ -661,7 +661,7 @@ export default function AdminDashboardPage() {
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
-    { id: 'hub-registrar-office', label: 'Deltapreneur Offices', icon: null, Icon: Briefcase },
+    { id: 'hub-registrar-office', label: 'Deltapreneur Offices', icon: null, Icon: Briefcase, disabled: true },
     { id: 'franchise-applications', label: 'Franchise Applications', icon: null, Icon: Users },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
@@ -760,7 +760,12 @@ export default function AdminDashboardPage() {
                   ) : (
                     <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
                   )}
-                  <span className="admin-dashboard-tab-label">{tabItem.label}</span>
+                  <span className="admin-dashboard-tab-label">
+                    {tabItem.label}
+                    {tabItem.disabled ? (
+                      <span className="admin-dashboard-tab-hidden-flag">Hidden</span>
+                    ) : null}
+                  </span>
                   {isPrimary && badgeValue ? (
                     <span
                       aria-label={`${badgeValue} pending`}

@@ -364,7 +364,12 @@
 .venture-listing-card--venture.card-glow-hover:hover .domain-listing-card__price-box--venture,
 .venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box,
 .venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box--coventure {
-  background: #FFFFFF !important;
+  border: 2.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
 }
 
 .venture-listing-card--coventure.card-glow-hover:hover .venture-listing-card__equity-badge {

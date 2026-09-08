@@ -301,6 +301,11 @@ label,
   overflow: hidden;
 }
 
+html:has(.app-layout-root),
+body:has(.app-layout-root) {
+  overflow-y: hidden;
+}
+
 html:has(.app-layout--new-venture),
 body:has(.app-layout--new-venture) {
   overflow-y: hidden;
@@ -2026,6 +2031,20 @@ input[type="checkbox"] {
   border-color: #e5e7eb !important;
   background: #f9fafb !important;
   color: #9ca3af !important;
+}
+
+.admin-dashboard-tab-hidden-flag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.08rem 0.35rem;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 .admin-dashboard-tab-icon {
@@ -5200,7 +5219,7 @@ input[type="checkbox"] {
 .app-sidebar-footer {
   flex-shrink: 0;
   margin-top: 0.75rem;
-  padding: 0.375rem 0.5rem 0.625rem;
+  padding: 0.375rem 0.5rem 12rem;
   border-top: 1px solid var(--sidebar-border);
   background: transparent;
 }
@@ -5472,6 +5491,11 @@ input[type="checkbox"] {
   min-height: auto;
   flex: 1 0 auto;
   box-sizing: border-box;
+}
+
+.app-main-content--domains {
+  flex: 0 0 auto;
+  padding-bottom: 0 !important;
 }
 
 .app-dashboard {

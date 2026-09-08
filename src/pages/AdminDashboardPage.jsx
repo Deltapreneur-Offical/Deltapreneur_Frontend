@@ -2086,7 +2086,7 @@ function CommunityAuctionsAdminTable({ auctions, onRefresh, onTakeDown, onRestor
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
-        <span className="text-sm font-semibold text-gray-700">Filter Creator Auctions:</span>
+        <span className="text-sm font-semibold text-gray-700">Filter Deltapreneur Auctions:</span>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -2103,7 +2103,7 @@ function CommunityAuctionsAdminTable({ auctions, onRefresh, onTakeDown, onRestor
       </div>
 
       {!filteredAuctions.length ? (
-        <div className="text-center py-10 text-gray-500">No creator auctions found matching this status.</div>
+        <div className="text-center py-10 text-gray-500">No Deltapreneur auctions found matching this status.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredAuctions.map((item) => {
@@ -3554,7 +3554,7 @@ function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, tota
     { key: 'totalVentures',     Icon: Briefcase,    label: 'Ventures',    value: stats?.totalVentures,     accent: 'emerald' },
     { key: 'totalDomains',      Icon: Globe,        label: 'Domains',     value: stats?.totalDomains,      accent: 'sky'     },
     { key: 'totalTechnologies', Icon: Cpu,          label: 'Technology',  value: stats?.totalTechnologies, accent: 'rose'    },
-    { key: 'totalCreators',     Icon: UsersRound,   label: 'Creators',    value: stats?.totalCreators,     accent: 'amber'   },
+    { key: 'totalCreators',     Icon: UsersRound,   label: 'Deltapreneurs',    value: stats?.totalCreators,     accent: 'amber'   },
   ];
 
   const pendingCards = [

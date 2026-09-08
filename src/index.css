@@ -262,6 +262,34 @@ label,
   font-weight: 500 !important;
 }
 
+#root .currency-display,
+#root .domain-listing-card__price-value,
+#root .domain-search-card__price,
+#root .domain-search-card__price-value,
+#root .domain-row-price,
+#root .pricing-amount,
+#root .tld-price-marquee-pill__price,
+#root .tech-service-card__price-amount,
+#root .home-operations-preview-card__price-amount,
+#root .home-operations-preview-card__price-amount--muted,
+#root .home-auction-preview-card__bid-value,
+#root .home-auction-preview-card__current-bid-value,
+#root .home-auction-preview-card__live-bid-value,
+#root .creator-expected-rate__value,
+#root .reg-category-card__price,
+#root .reg-mini-card__price,
+#root .admin-price-amount,
+#root .operations-request-modal-service-price,
+#root .operations-my-requests-price,
+#root .operations-admin-price {
+  font-weight: 600 !important;
+}
+
+#root .tech-service-card__price-suffix,
+#root .home-operations-preview-card__price-suffix {
+  font-weight: 700 !important;
+}
+
 #root {
   overflow-x: clip;
   max-width: 100%;

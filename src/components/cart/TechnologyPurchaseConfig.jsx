@@ -60,7 +60,7 @@ export default function TechnologyPurchaseConfig({
           </div>
           <div className="min-w-0">
             <p className={`text-sm font-semibold ${coBrotherOptIn ? 'text-purple-900' : 'text-gray-800'}`}>
-              Co-Creator Assistance
+              Co-Deltapreneur Assistance
               <span className={`ml-2 font-display ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-500'}`}>
                 +{formatPrice(COBROTHER_ASSISTANCE_FEE_INR)}
               </span>

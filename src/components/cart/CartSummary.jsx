@@ -248,7 +248,7 @@ function ProductRow({ product, formatPrice, t }) {
               </div>
               {product.coBrotherFee > 0 && (
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-gray-500">{t('coCreator', { defaultValue: 'Co-Creator' })}</span>
+                  <span className="text-gray-500">{t('coCreator', { defaultValue: 'Co-Deltapreneur' })}</span>
                   <span className="text-gray-700 tabular-nums font-medium">{formatPrice(product.coBrotherFee)}</span>
                 </div>
               )}

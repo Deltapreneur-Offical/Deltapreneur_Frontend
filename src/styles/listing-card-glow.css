@@ -332,17 +332,26 @@
     0 8px 26px rgba(15, 23, 42, 0.08);
 }
 
-/* Venture & Delta Venture cards — keep same warm colors on hover (no blue/indigo/purple wash) */
+/* Venture cards — warm saffron hover */
 .venture-listing-card--venture.card-glow-hover:hover,
-.venture-listing-card--venture.card-glow-hover:hover:not(.creator-profile-card),
-.venture-listing-card--coventure.card-glow-hover:hover,
-.venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card) {
+.venture-listing-card--venture.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-2px) translateZ(0);
   border-color: #F59E0B !important;
   background: #FFF7ED !important;
   background-color: #FFF7ED !important;
   background-image: none !important;
   box-shadow: 0 12px 28px rgba(245, 158, 11, 0.12) !important;
+}
+
+/* Delta Venture cards — deep teal hover */
+.venture-listing-card--coventure.card-glow-hover:hover,
+.venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card) {
+  transform: translateY(-2px) translateZ(0);
+  border-color: #0F766E !important;
+  background: #F0FDFA !important;
+  background-color: #F0FDFA !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.15) !important;
 }
 
 /* Body stays pure white on hover — only the banner tints warm */
@@ -360,6 +369,12 @@
 
 .venture-listing-card--coventure.card-glow-hover:hover .venture-listing-card__equity-badge {
   background: #FFFFFF !important;
+  border-color: #0F766E !important;
+}
+
+.venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box,
+.venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box--coventure {
+  border-color: #F59E0B !important;
 }
 
 .venture-listing-card--venture.card-glow-hover::after,

@@ -230,8 +230,8 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
 
   const shareBase = PRODUCTION_APP_URL.replace(/\/$/, '');
   const shareUrl = `${shareBase}/creator/${community.id || ''}${user?.id ? `?ref=${user.id}` : ''}`;
-  const shareSubject = `Check out this creator profile on Deltapreneur: ${name}`;
-  const shareBody = `Check out this creator profile on Deltapreneur!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
+  const shareSubject = `Check out this Deltapreneur profile on Deltapreneur: ${name}`;
+  const shareBody = `Check out this Deltapreneur profile on Deltapreneur!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -308,7 +308,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Creator preview"
+        aria-label="Deltapreneur preview"
         className="relative flex h-[85vh] w-full max-w-[850px] flex-col overflow-x-hidden overflow-y-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_32px_96px_-16px_rgba(15,23,42,0.16)]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -378,7 +378,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
             type="button"
             onClick={close}
             className="rounded-full p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
-            aria-label="Close creator preview"
+            aria-label="Close Deltapreneur preview"
           >
             <X size={24} strokeWidth={1.5} />
           </button>

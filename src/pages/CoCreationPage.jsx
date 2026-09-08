@@ -1493,7 +1493,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
                     </div>
                     <div>
                       <div className={`font-extrabold text-base mb-1 flex flex-wrap items-center gap-2 ${coBrotherOptIn ? 'text-indigo-950' : 'text-gray-900'}`}>
-                        <span>Co-Creator Assistance</span>
+                        <span>Co-Deltapreneur Assistance</span>
                         <span className={`font-display text-[0.95rem] font-black ${coBrotherOptIn ? 'text-indigo-700' : 'text-gray-500'}`}>
                           +{formatPrice(1000)}
                         </span>
@@ -1520,7 +1520,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
                   <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
                     value={formatPrice(basePrice)} />
                   {coBrotherOptIn && (
-                    <BillingLine label="Co-Creator Assistance" value={formatPrice(1000)} accent />
+                    <BillingLine label="Co-Deltapreneur Assistance" value={formatPrice(1000)} accent />
                   )}
                 </div>
 

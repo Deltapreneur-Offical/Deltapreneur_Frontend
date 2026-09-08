@@ -336,18 +336,18 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
       {/* ── 4. CREATOR AUCTIONS ─────────────────────────────────────────── */}
       <ProductCard
         emoji="🎨"
-        title="Creator Auctions"
-        subtitle="Creators listing themselves for acquisition or collaboration (CommunityPage → AuctionPage)"
+        title="Deltapreneur Auctions"
+        subtitle="Deltapreneurs listing themselves for acquisition or collaboration (CommunityPage → AuctionPage)"
         accentColor="#f59e0b"
       >
         <SharedFeeBadge
           label="Uses the platform-wide Auction Creation Fee and Bid Fee"
-          description="Creator auctions share the same fee structure as all other auctions. Configure those amounts in the 'Platform-Wide Auction Fees' section below."
+          description="Deltapreneur auctions share the same fee structure as all other auctions. Configure those amounts in the 'Platform-Wide Auction Fees' section below."
         />
         <FeeInput
           fieldKey="communityParticipationFeeInr"
           label="Meeting Request Fee"
-          hint="A company pays this fee when requesting a 1-on-1 meeting or consultation with a creator through their auction profile. This is separate from bidding — it covers the creator's time for a scheduled meeting."
+          hint="A company pays this fee when requesting a 1-on-1 meeting or consultation with a Deltapreneur through their auction profile. This is separate from bidding — it covers the Deltapreneur's time for a scheduled meeting."
           value={fees.communityParticipationFeeInr}
           onChange={handleFieldChange}
           prefix="₹"
@@ -356,7 +356,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
         <InfoRow
           emoji="💡"
           label="Who pays the Meeting Request Fee?"
-          description="The company (requester) pays this fee upfront when submitting a meeting request. It does not affect the creator's earnings from the auction itself."
+          description="The company (requester) pays this fee upfront when submitting a meeting request. It does not affect the Deltapreneur's earnings from the auction itself."
         />
       </ProductCard>
 
@@ -364,7 +364,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
       <ProductCard
         emoji="🔨"
         title="Platform-Wide Auction Fees"
-        subtitle="These apply to ALL auction types: Domain Auctions, Technology Auctions, and Creator Auctions"
+        subtitle="These apply to ALL auction types: Domain Auctions, Technology Auctions, and Deltapreneur Auctions"
         accentColor="#ef4444"
       >
         <div style={{
@@ -378,7 +378,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
           lineHeight: 1.6,
         }}>
           ⚠️ <strong>Important:</strong> Changing these fees affects <em>every</em> auction category simultaneously
-          — Domains, Technology, and Creator auctions all use the same values set here.
+          — Domains, Technology, and Deltapreneur auctions all use the same values set here.
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
@@ -431,7 +431,7 @@ export default function AdminFeesAndChargesTab({ toast } = {}) {
           ✅ <strong>Applies to:</strong><br />
           • <strong>Domain Auctions</strong> — listed on DomainsPage / AuctionPage<br />
           • <strong>Technology Auctions</strong> — listed via SoftwareAuctionRequestModal<br />
-          • <strong>Creator Auctions</strong> — listed on CommunityPage / CommunityAuctionPage
+          • <strong>Deltapreneur Auctions</strong> — listed on CommunityPage / CommunityAuctionPage
         </div>
       </ProductCard>
 

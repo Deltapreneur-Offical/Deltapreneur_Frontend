@@ -54,10 +54,7 @@ export function CartProvider({ children }) {
       applyCartSnapshot(data);
       return data;
     } catch {
-      if (!silent) {
-        setCart(null);
-        setCount(0);
-      }
+      // A failed refresh must not look like an empty cart (optimistic add / last snapshot).
       return null;
     } finally {
       if (!silent) setLoading(false);

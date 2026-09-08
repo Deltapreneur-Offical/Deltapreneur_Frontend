@@ -301,6 +301,11 @@ label,
   overflow: hidden;
 }
 
+html:has(.app-layout-root),
+body:has(.app-layout-root) {
+  overflow-y: hidden;
+}
+
 html:has(.app-layout--new-venture),
 body:has(.app-layout--new-venture) {
   overflow-y: hidden;
@@ -5472,6 +5477,11 @@ input[type="checkbox"] {
   min-height: auto;
   flex: 1 0 auto;
   box-sizing: border-box;
+}
+
+.app-main-content--domains {
+  flex: 0 0 auto;
+  padding-bottom: 0 !important;
 }
 
 .app-dashboard {

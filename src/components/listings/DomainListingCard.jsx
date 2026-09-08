@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Gavel, Trash2, Share2, MoreVertical } from 'lucide-react';
+import { Gavel, Trash2, Share2, MoreVertical } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +12,7 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 import AddToCartButton from '../cart/AddToCartButton';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 import RegistryStandardBadge from '../domain/RegistryStandardBadge';
 import '../../styles/domain-listing-cards.css';
 
@@ -74,7 +75,7 @@ function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel, au
           aria-label={viewLabel}
           onClick={onViewDetails}
         >
-          <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+          <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
         </button>
       ) : null}
     </div>

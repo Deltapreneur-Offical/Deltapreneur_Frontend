@@ -190,6 +190,7 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #8B4513;
+  font-family: var(--font-display, 'Newsreader', Georgia, serif);
 }
 
 .virtual-assistant-listing-card .va-listing-card__compensation-period {

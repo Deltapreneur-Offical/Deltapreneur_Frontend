@@ -20,6 +20,7 @@ export const OPERATIONS_SECTIONS = [
     serviceType: 'offices',
     theme: 'offices',
     isPlaceholder: false,
+    publicHidden: true,
   },
   {
     id: 'compliance',
@@ -59,9 +60,13 @@ const SECTION_ALIASES = {
   va: 'virtual-assistants',
 };
 
+export const PUBLIC_OPERATIONS_SECTIONS = OPERATIONS_SECTIONS.filter((section) => !section.publicHidden);
+
 export function resolveOperationsSection(sectionId) {
   const normalized = SECTION_ALIASES[sectionId] || sectionId;
-  return OPERATIONS_SECTIONS.find((s) => s.id === normalized) || OPERATIONS_SECTIONS[0];
+  const match = OPERATIONS_SECTIONS.find((s) => s.id === normalized);
+  if (!match || match.publicHidden) return OPERATIONS_SECTIONS.find((s) => !s.publicHidden) || OPERATIONS_SECTIONS[0];
+  return match;
 }
 
 export function operationsPathForSection(sectionId) {

@@ -2033,6 +2033,20 @@ input[type="checkbox"] {
   color: #9ca3af !important;
 }
 
+.admin-dashboard-tab-hidden-flag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.08rem 0.35rem;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 .admin-dashboard-tab-icon {
   width: 28px;
   height: 28px;

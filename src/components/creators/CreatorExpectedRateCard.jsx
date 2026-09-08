@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 import useCurrency from '../../context/CurrencyContext';
 import { readCreatorExpectedRate, parseCreatorExpectedRate } from '../../utils/creatorExpectedRate';
 
@@ -50,7 +50,7 @@ export default function CreatorExpectedRateCard({
             aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
             onClick={action}
           >
-            <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+            <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
           </button>
         ) : null}
       </div>
@@ -78,7 +78,7 @@ export default function CreatorExpectedRateCard({
           aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
           onClick={action}
         >
-          <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+          <PriceSectionIcon />
         </button>
       )}
     </div>

@@ -203,7 +203,7 @@ export default function PurchasesPage() {
               <button
                 key={tabItem.id}
                 type="button"
-                className={`btn-glow btn-glow-sm ${tab === tabItem.id ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                className={`btn-glow btn-glow-sm ${tab === tabItem.id ? 'dashboard-active-control' : ''}`}
                 onClick={() => setTab(tabItem.id)}
               >
                 {tabItem.label}

@@ -135,11 +135,11 @@ export default function CoCreationDashboardPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm ${tab === 'listings' ? 'dashboard-active-control' : ''}`}
             onClick={() => setTab('listings')}>
             My Listings ({listings.length})
           </button>
-          <button className={`btn-glow btn-glow-sm relative ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm relative ${tab === 'purchases' ? 'dashboard-active-control' : ''}`}
             onClick={() => setTab('purchases')}>
             My Purchases ({completedPurchases.length})
             {pendingConfirm > 0 && (
@@ -148,11 +148,11 @@ export default function CoCreationDashboardPage() {
               </span>
             )}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'dashboard-active-control' : ''}`}
             onClick={() => setTab('sold')}>
             Sold Listings ({soldTransfers.length})
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'services' ? 'bg-indigo-600 text-white border-indigo-600' : ''}`}
+          <button className={`btn-glow btn-glow-sm ${tab === 'services' ? 'dashboard-active-control' : ''}`}
             onClick={() => setTab('services')}>
             My Technologies (Services)
           </button>

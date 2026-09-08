@@ -229,8 +229,8 @@ body.app-layout-body .app-sidebar {
   --sidebar-border: var(--app-chrome-border);
   --sidebar-hover-bg: rgba(249, 115, 22, 0.055);
   --sidebar-active-bg: var(--home-saffron-50);
-  --sidebar-active-border: var(--home-saffron-200);
-  --sidebar-accent: var(--home-saffron);
+  --sidebar-active-border: #C2410C;
+  --sidebar-accent: #C2410C;
   --sidebar-accent-soft: rgba(249, 115, 22, 0.12);
 }
 
@@ -244,7 +244,7 @@ body.app-layout-body .app-sidebar-link.is-admin:hover {
 
 body.app-layout-body .app-sidebar-link.is-active:not(.is-admin)::before,
 body.app-layout-body .app-sidebar-link.is-admin.is-active::before {
-  background: linear-gradient(180deg, var(--home-saffron) 0%, var(--home-saffron-text) 100%);
+  background: #C2410C;
 }
 
 body.app-layout-body .app-sidebar-link:not(.is-admin):hover .app-sidebar-icon-slot svg,
@@ -364,4 +364,132 @@ body.app-layout-body .dash-card.card-glow-hover:hover {
     inset 0 -18px 30px rgba(249, 115, 22, 0.08),
     0 0 28px rgba(249, 115, 22, 0.12),
     0 20px 44px rgba(15, 23, 42, 0.12) !important;
+}
+
+body.app-layout-body .dashboard-welcome-hero {
+  background: linear-gradient(135deg, #C2410C 0%, #9A3412 52%, #7C2D12 100%) !important;
+}
+
+body.app-layout-body .dashboard-welcome-hero__badge-dot--role,
+body.app-layout-body .dashboard-welcome-hero__badge-dot--pending {
+  background: #FFEDD5 !important;
+}
+
+body.app-layout-body .dashboard-welcome-hero__badge-dot--complete {
+  background: #FED7AA !important;
+}
+
+body.app-layout-body .dashboard-module-card {
+  background: #ffffff !important;
+  border-color: #FED7AA !important;
+}
+
+body.app-layout-body .dashboard-admin-header__badge,
+body.app-layout-body .dashboard-module-card__cta,
+body.app-layout-body .dashboard-module-card__arrow,
+body.app-layout-body .dashboard-quick-action:hover {
+  background: #FFF7ED !important;
+  color: #C2410C !important;
+}
+
+body.app-layout-body .dashboard-module-card__icon--ventures,
+body.app-layout-body .dashboard-module-card__icon--creators,
+body.app-layout-body .dashboard-module-card__icon--technology,
+body.app-layout-body .dashboard-module-card__icon--auctions,
+body.app-layout-body .dashboard-module-card__icon--purchases,
+body.app-layout-body .dashboard-stat-card__icon--ventures,
+body.app-layout-body .dashboard-stat-card__icon--technologies,
+body.app-layout-body .dashboard-stat-card__icon--creators,
+body.app-layout-body .dashboard-quick-action__icon--venture,
+body.app-layout-body .dashboard-quick-action__icon--creators,
+body.app-layout-body .dashboard-quick-action__icon--technology {
+  background: #FFF7ED !important;
+  color: #C2410C !important;
+}
+
+body.app-layout-body .dashboard-module-card__icon--domains,
+body.app-layout-body .dashboard-stat-card__icon--domains,
+body.app-layout-body .dashboard-quick-action__icon--domains {
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+}
+
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) {
+  border-color: #99F6E4 !important;
+}
+
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__cta,
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__arrow {
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+}
+
+body.app-layout-body .dashboard-module-card__cta:hover,
+body.app-layout-body .dashboard-module-card__arrow:hover {
+  border-color: #FED7AA !important;
+  background: #FFEDD5 !important;
+  color: #C2410C !important;
+}
+
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__cta:hover,
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__arrow:hover {
+  border-color: #99F6E4 !important;
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+}
+
+body.app-layout-body .btn-glow.dashboard-active-control,
+body.app-layout-body .dashboard-active-control {
+  background: #C2410C !important;
+  border-color: #C2410C !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px rgba(194, 65, 12, 0.18), 0 4px 12px rgba(194, 65, 12, 0.10) !important;
+}
+
+body.app-layout-body .btn-glow.dashboard-active-control svg,
+body.app-layout-body .dashboard-active-control svg {
+  color: #ffffff !important;
+}
+
+body.app-layout-body .dashboard-admin-header__btn.is-active {
+  background: #C2410C !important;
+  border-color: #C2410C !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px rgba(194, 65, 12, 0.18), 0 4px 12px rgba(194, 65, 12, 0.10) !important;
+}
+
+body.app-layout-body .dashboard-admin-header__btn.is-active svg {
+  color: #ffffff !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active {
+  background: #C2410C !important;
+  border-color: #C2410C !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(194, 65, 12, 0.12) !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active .operations-section-tab-accent {
+  background: linear-gradient(180deg, #F97316 0%, #C2410C 100%) !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active .operations-section-tab-icon-wrap {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active .operations-section-tab-count {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+body.app-layout-body .admin-dashboard-tab.active {
+  color: #ffffff !important;
+  border-color: #C2410C !important;
+  background: #C2410C !important;
+  box-shadow: 0 12px 28px rgba(194, 65, 12, 0.12), 0 4px 10px rgba(194, 65, 12, 0.08) !important;
+}
+
+body.app-layout-body .admin-dashboard-tab.active .admin-dashboard-tab-lucide-icon {
+  color: #ffffff !important;
 }

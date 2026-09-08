@@ -78,6 +78,12 @@
   box-shadow: 0 1px 4px rgba(13, 148, 136, 0.2), 0 0 0 1px #99f6e4;
 }
 
+.ventures-split--dashboard-active .ventures-split__mobile-tab--active {
+  background: #C2410C;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(194, 65, 12, 0.12), 0 0 0 1px #C2410C;
+}
+
 .ventures-split__mobile-tab-count {
   display: inline-flex;
   align-items: center;

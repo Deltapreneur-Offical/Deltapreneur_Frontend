@@ -247,7 +247,7 @@ export default function DomainsDashboardPage() {
         ) : null}
 
         <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm relative ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('listings')}>
+          <button className={`btn-glow btn-glow-sm relative ${tab === 'listings' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('listings')}>
             {t('domainsDashboardTabListings', { count: listings.length })}
             {pendingVerificationCount > 0 ? (
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
@@ -255,13 +255,13 @@ export default function DomainsDashboardPage() {
               </span>
             ) : null}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('purchases')}>
+          <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('purchases')}>
             {t('domainsDashboardTabPurchases', { count: purchaseCount, defaultValue: `My Purchases (${purchaseCount})` })}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('sold')}>
+          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('sold')}>
             {t('domainsDashboardTabSoldTransfers', { count: soldTransfers.length, defaultValue: `Sold transfers (${soldTransfers.length})` })}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'acquisitions' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('acquisitions')}>
+          <button className={`btn-glow btn-glow-sm ${tab === 'acquisitions' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('acquisitions')}>
             My Acquisition Orders ({acquisitions.length})
           </button>
         </div>

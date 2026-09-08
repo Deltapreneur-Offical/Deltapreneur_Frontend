@@ -123,7 +123,7 @@ export default function VentureAnalyticsPage() {
                 onClick={() => setSelected(v.id)}
                 className={`btn-glow btn-glow-sm ${
                   selected === v.id
-                    ? 'bg-gray-900 text-white border-gray-900'
+                    ? 'dashboard-active-control'
                     : ''
                 }`}
               >

@@ -79,7 +79,7 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
             return (
               <label
                 key={service.key}
-                className={`flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${checked ? 'bg-[#EFF6FF]' : 'bg-white hover:bg-gray-50/80'
+                className={`relative flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${checked ? 'bg-[#EFF6FF]' : 'bg-white hover:bg-gray-50/80'
                   }`}
               >
                 <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${checked ? 'bg-[#1D4ED8] border-[#1D4ED8]' : 'border-gray-300'
@@ -93,7 +93,7 @@ export default function AddonSelector({ selected = [], onChange, className = 'mt
 
                 <input
                   type="checkbox"
-                  className="sr-only"
+                  className="absolute left-4 top-3.5 h-5 w-5 cursor-pointer opacity-0"
                   checked={checked}
                   onChange={() => toggle(service.key)}
                 />

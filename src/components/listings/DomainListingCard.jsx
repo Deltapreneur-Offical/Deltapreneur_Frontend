@@ -397,9 +397,9 @@ export default function DomainListingCard({
   // MARKETPLACE VARIANT: Render flat card layout matching Premium DomainCard
   // Blue theme (sky) instead of amber — same structure as DomainCard
   // ═══════════════════════════════════════════════════════════════════════════
-  if (marketplace) {
+    if (marketplace) {
     const priceText = priceAmount > 0 ? formatPrice(priceAmount) : null;
-    const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0;
+    const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0 && !isOwner;
 
     return (
       <div
@@ -505,6 +505,20 @@ export default function DomainListingCard({
             >
               <Gavel size={13} className="shrink-0" /> {t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })} →
             </button>
+          ) : isOwner ? (
+            onEdit ? (
+              <button
+                type="button"
+                className="inline-flex w-fit min-w-[8.5rem] items-center justify-center px-4 py-2.5 rounded-lg font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-colors whitespace-nowrap"
+                onClick={(e) => { stop(e); onEdit(); }}
+              >
+                {t('edit')}
+              </button>
+            ) : (
+              <span className="inline-flex w-fit min-w-[8.5rem] items-center justify-center px-4 py-2.5 rounded-lg font-bold text-sm bg-slate-100 text-slate-500 whitespace-nowrap">
+                {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+              </span>
+            )
           ) : canBuy ? (
             <AddToCartButton
               productType="DOMAIN_LISTING"

@@ -327,4 +327,5 @@ export {
   getHubRegistrarSubcategory,
   serviceMatchesHubRegistrarSubcategory,
   matchServicePriceFromApi,
+  mapApiServiceToRegistrationCard,
 } from './hubRegistrarSubcategories';

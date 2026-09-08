@@ -636,9 +636,9 @@ export default function DomainStorefrontPage() {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gray-50/50 pb-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-8 space-y-8">
           
-          <ListingBackLink />
+          <ListingBackLink className="-ml-8 sm:-ml-10 lg:-ml-12" />
 
           {/* Header info */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

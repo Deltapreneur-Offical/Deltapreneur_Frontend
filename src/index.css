@@ -5200,7 +5200,7 @@ input[type="checkbox"] {
 .app-sidebar-footer {
   flex-shrink: 0;
   margin-top: 0.75rem;
-  padding: 0.375rem 0.5rem 0.625rem;
+  padding: 0.375rem 0.5rem 12rem;
   border-top: 1px solid var(--sidebar-border);
   background: transparent;
 }

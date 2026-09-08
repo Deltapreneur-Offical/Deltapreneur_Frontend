@@ -59,6 +59,7 @@ export default function AddToCartButton({
   const [conflictOpen, setConflictOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [goToCartOpen, setGoToCartOpen] = useState(false);
+  const [addError, setAddError] = useState('');
   const pendingRetryRef = useRef(null);
   const btnRef = useRef(null);
 
@@ -147,6 +148,7 @@ export default function AddToCartButton({
     }
 
     setJustAdded(true);
+    setAddError('');
     setLoading(true);
     try {
       await addItem(productType, productId, payload);
@@ -162,7 +164,13 @@ export default function AddToCartButton({
         pendingRetryRef.current = { productType, productId, payload };
         setConflictOpen(true);
       } else {
-        console.error('[AddToCart]', err?.response?.data?.detail || err?.response?.data?.message || err?.message);
+        const msg = err?.response?.data?.detail
+          || err?.response?.data?.message
+          || err?.response?.data?.error
+          || err?.message
+          || t('addToCartFailed', { defaultValue: 'Could not add this item to cart.' });
+        setAddError(String(msg));
+        console.error('[AddToCart]', msg);
       }
     } finally {
       setLoading(false);
@@ -366,6 +374,11 @@ export default function AddToCartButton({
           </button>
         )}
       </div>
+      {addError ? (
+        <p className="mt-1.5 max-w-[16rem] text-[11px] font-medium leading-snug text-rose-600" role="alert">
+          {addError}
+        </p>
+      ) : null}
       {flyRect && <CartFlyAnimation fromRect={flyRect} onComplete={handleAnimComplete} />}
       {conflictModal}
       {goToCartOpen && (

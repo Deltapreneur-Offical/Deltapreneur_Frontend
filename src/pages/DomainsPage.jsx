@@ -576,6 +576,9 @@ export default function DomainsPage() {
               .domains-split-premium .ventures-split__body .listing-card-glow-shell {
                 transition: transform 0.22s ease, box-shadow 0.22s ease;
               }
+              .domains-page-wrap .domain-showcase-card-shell .domain-search-card {
+                min-height: 15.875rem;
+              }
               .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover {
                 transform: translateY(-4px);
               }
@@ -815,8 +818,8 @@ export default function DomainsPage() {
                   ) : (
                     <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {showcaseFilter.paginated.map((d) => (
-                        <ListingCardShell key={d.showcaseId}>
-                          <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
+                          <ListingCardShell key={d.showcaseId} className="domain-showcase-card-shell">
+                          <ShowcaseDomainCard item={d} stackPremiumBadge shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                         </ListingCardShell>
                       ))}
                     </div>
@@ -922,8 +925,8 @@ export default function DomainsPage() {
                           <>
                             <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
                               {showcaseFilter.paginated.map((d) => (
-                                <ListingCardShell key={d.showcaseId}>
-                                  <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
+                                <ListingCardShell key={d.showcaseId} className="domain-showcase-card-shell">
+                                  <ShowcaseDomainCard item={d} stackPremiumBadge shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                                 </ListingCardShell>
                               ))}
                             </div>
@@ -1016,8 +1019,8 @@ export default function DomainsPage() {
                 </div>
                 <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {showcaseFilter.paginated.map((d) => (
-                    <ListingCardShell key={d.showcaseId}>
-                      <ShowcaseDomainCard item={d} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
+                    <ListingCardShell key={d.showcaseId} className="domain-showcase-card-shell">
+                      <ShowcaseDomainCard item={d} stackPremiumBadge shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
                     </ListingCardShell>
                   ))}
                 </div>

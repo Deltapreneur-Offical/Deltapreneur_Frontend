@@ -153,46 +153,45 @@ export default function AddonSelector({
           )}
         </div>
 
-        <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto overflow-x-hidden">
-          {ADDON_SERVICES.map((service) => {
-            const checked = selected.includes(service.key);
-            return (
-              <label
-                key={service.key}
-                className={`relative flex min-w-0 items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors duration-150 ${checked ? 'bg-[#EFF6FF]' : 'bg-white hover:bg-gray-50/80'
-                  }`}
-              >
-                <span className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${checked ? 'bg-[#1D4ED8] border-[#1D4ED8]' : 'border-gray-300'
-                  }`}>
-                  {checked && (
-                    <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </span>
-
-                <input
-                  type="checkbox"
-                  className="absolute left-4 top-3.5 h-5 w-5 cursor-pointer opacity-0"
-                  checked={checked}
-                  onChange={() => toggle(service.key)}
-                />
-
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 leading-snug">
-                    {t(service.labelKey)}
-                  </div>
-                  {service.contactOnly && (
-                    <div className="text-xs text-[#1D4ED8] mt-0.5">{t('addonSelectorContactNote')}</div>
-                  )}
-                </div>
-
-                <div className="flex-shrink-0 text-right">
-                  {service.contactOnly ? (
-                    <span className="text-xs font-semibold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-full">{t('addonSelectorContact')}</span>
-                  ) : (
-                    <span className="text-sm font-bold text-gray-900">
-                      {formatPrice(service.price)}
+        {dynamicMode ? (
+          <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto overflow-x-hidden">
+            {loading && (
+              <div className="px-4 py-3.5 text-sm text-gray-500 bg-white">
+                Loading business registration services...
+              </div>
+            )}
+            {!loading && error && (
+              <div className="px-4 py-3.5 text-sm text-red-600 bg-white">
+                {error}
+              </div>
+            )}
+            {!loading && !error && availableServices.length === 0 && (
+              <div className="px-4 py-3.5 text-sm text-gray-500 bg-white">
+                No business registration services are currently available.
+              </div>
+            )}
+            {!loading && !error && availableServices.length > 0 && categories.length === 0 && (
+              <div className="px-4 py-3.5 text-sm text-gray-500 bg-white">
+                No business registration services are currently available.
+              </div>
+            )}
+            {!loading && !error && availableServices.length > 0 && categories.map((category) => {
+              const categoryServices = servicesByCategory.get(category.slug) || [];
+              const isCategoryOpen = openCategories.has(category.slug);
+              return (
+                <div key={category.id || category.slug} className="bg-white">
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(category.slug)}
+                    className="flex w-full min-w-0 items-center justify-between gap-3 px-4 py-3.5 text-left bg-white hover:bg-gray-50/80 transition-colors duration-150"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-gray-900 leading-snug">
+                        {category.name}
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-0.5">
+                        {categoryServices.length} services
+                      </span>
                     </span>
                     <svg
                       className={`h-4 w-4 flex-shrink-0 text-gray-500 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`}

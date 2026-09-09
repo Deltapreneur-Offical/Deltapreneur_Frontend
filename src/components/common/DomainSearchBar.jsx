@@ -18,6 +18,12 @@ import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
 import RegistryPremiumLoader from '../domain/RegistryPremiumLoader';
 import { isRegistryPremium, REGISTRY_PREMIUM_SEGMENT } from '../../utils/registryPremium';
 import {
+  readTldMarqueeCache,
+  TLD_MARQUEE_INVALIDATED_AT_KEY,
+  TLD_MARQUEE_REFRESH_EVENT,
+  writeTldMarqueeCache,
+} from '../../utils/tldPriceMarqueeCache';
+import {
   getCachedPremiumItems,
   premiumCacheKey,
   setCachedPremiumItems,
@@ -46,7 +52,6 @@ const SEARCH_MODE_CONFIG = {
 
 /** Preferred display order for hero TLD price pills (prices come from storefront API). */
 const TLD_MARQUEE_ORDER = ['.com', '.in', '.net', '.org', '.co', '.io', '.ai'];
-const TLD_MARQUEE_CACHE_KEY = 'cb-tld-marquee-registration-prices';
 
 function normalizeTldKey(raw) {
   const text = String(raw || '').trim().toLowerCase();
@@ -70,34 +75,6 @@ function tldPricesFromByTldMap(byTld) {
     .sort((a, b) => a.localeCompare(b));
 
   return [...known, ...extras].map((tld) => ({ tld, price: normalized[tld] }));
-}
-
-function readTldMarqueeCache() {
-  if (typeof sessionStorage === 'undefined') return [];
-  try {
-    const raw = sessionStorage.getItem(TLD_MARQUEE_CACHE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((item) => {
-        const tld = normalizeTldKey(item?.tld);
-        const price = Number(item?.price);
-        return tld && Number.isFinite(price) && price > 0 ? { tld, price } : null;
-      })
-      .filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
-function writeTldMarqueeCache(items) {
-  if (typeof sessionStorage === 'undefined' || !Array.isArray(items) || items.length === 0) return;
-  try {
-    sessionStorage.setItem(TLD_MARQUEE_CACHE_KEY, JSON.stringify(items));
-  } catch {
-    /* quota / private mode */
-  }
 }
 
 function useMinWidthLg() {
@@ -132,6 +109,7 @@ function TldPriceMarquee() {
 
   useEffect(() => {
     let isCancelled = false;
+    let refreshSequence = 0;
 
     const applyItems = (items) => {
       if (isCancelled || !items.length) return;
@@ -145,40 +123,60 @@ function TldPriceMarquee() {
       setIsLoading(false);
     };
 
-    const fromStorefront = domainStorefrontAPI
-      .getPrices()
-      .then(({ data }) => {
-        const payload = data?.data ?? data;
-        return tldPricesFromByTldMap(payload?.registration?.byTld);
-      })
-      .catch(() => []);
+    const refreshPrices = ({ discardDisplayed = false } = {}) => {
+      const requestSequence = ++refreshSequence;
+      if (discardDisplayed) {
+        setTldPrices([]);
+        setIsLoading(true);
+      }
 
-    const fromSearchTlds = fetchAvailableTlds('domain', { force: true })
-      .then((fetchedItems) => {
-        if (!Array.isArray(fetchedItems) || fetchedItems.length === 0) return [];
-        const byTld = {};
-        fetchedItems.forEach((it) => {
-          const tld = normalizeTldKey(it?.tld);
-          const price = Number(it?.registrationPrice ?? it?.unitPrice ?? it?.price);
-          if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
-        });
-        return tldPricesFromByTldMap(byTld);
-      })
-      .catch(() => []);
+      const fromStorefront = domainStorefrontAPI
+        .getPrices()
+        .then(({ data }) => {
+          const payload = data?.data ?? data;
+          return tldPricesFromByTldMap(payload?.registration?.byTld);
+        })
+        .catch(() => []);
 
-    fromSearchTlds.then((items) => {
-      if (isCancelled || !items.length) return;
-      setTldPrices((prev) => (prev.length > 0 ? prev : items));
-      if (items.length) setIsLoading(false);
-    });
+      const fromSearchTlds = fetchAvailableTlds('domain', { force: true })
+        .then((fetchedItems) => {
+          if (!Array.isArray(fetchedItems) || fetchedItems.length === 0) return [];
+          const byTld = {};
+          fetchedItems.forEach((it) => {
+            const tld = normalizeTldKey(it?.tld);
+            const price = Number(it?.registrationPrice ?? it?.unitPrice ?? it?.price);
+            if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
+          });
+          return tldPricesFromByTldMap(byTld);
+        })
+        .catch(() => []);
 
-    fromStorefront.then((items) => {
-      if (items.length) applyItems(items);
-      else if (!isCancelled) setIsLoading(false);
-    });
+      fromSearchTlds.then((items) => {
+        if (isCancelled || requestSequence !== refreshSequence || !items.length) return;
+        setTldPrices((prev) => (prev.length > 0 ? prev : items));
+        setIsLoading(false);
+      });
+
+      fromStorefront.then((items) => {
+        if (isCancelled || requestSequence !== refreshSequence) return;
+        if (items.length) applyItems(items);
+        else if (!isCancelled) setIsLoading(false);
+      });
+    };
+
+    const handleCommissionUpdate = () => refreshPrices({ discardDisplayed: true });
+    const handleStorageUpdate = (event) => {
+      if (event.key === TLD_MARQUEE_INVALIDATED_AT_KEY) handleCommissionUpdate();
+    };
+
+    refreshPrices();
+    window.addEventListener(TLD_MARQUEE_REFRESH_EVENT, handleCommissionUpdate);
+    window.addEventListener('storage', handleStorageUpdate);
 
     return () => {
       isCancelled = true;
+      window.removeEventListener(TLD_MARQUEE_REFRESH_EVENT, handleCommissionUpdate);
+      window.removeEventListener('storage', handleStorageUpdate);
     };
   }, []);
 

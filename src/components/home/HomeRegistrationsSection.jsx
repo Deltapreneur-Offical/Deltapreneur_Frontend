@@ -284,7 +284,7 @@ export default function HomeRegistrationsSection() {
           aria-hidden
           focusable="false"
         >
-          <polygon points="0,10 0,196 168,103" fill="#f3c2ae" />
+          <polygon points="0,10 0,196 168,103" fill="#f9d9c8" />
         </svg>
         <div className="reg-mini-card__top">
           <h3 className="reg-mini-card__title">{displayName}</h3>

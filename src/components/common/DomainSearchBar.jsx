@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo, useId } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
@@ -32,6 +32,7 @@ import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
 import DomainExtensionsLoader from './DomainExtensionsLoader';
+import PriceSectionIcon from './PriceSectionIcon';
 import {
   heroSearchStackEnter,
   heroSubmitHover,
@@ -409,8 +410,6 @@ function triggerLightningTail(host) {
 
 function BrandSearchSubmitButton({ label }) {
   const reduceMotion = useReducedMotion();
-  const reactId = useId();
-  const gradId = `brand-search-play-${reactId.replace(/:/g, '')}`;
   const ButtonTag = reduceMotion ? 'button' : motion.button;
   const motionProps = reduceMotion
     ? {}
@@ -426,28 +425,7 @@ function BrandSearchSubmitButton({ label }) {
       className="brand-search-submit"
       {...motionProps}
     >
-      <svg
-        viewBox="4.2 3.9 15 16.4"
-        className="brand-search-submit-icon"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#fc6b09" />
-            <stop offset="100%" stopColor="#fc6b09" />
-          </linearGradient>
-        </defs>
-        <path
-          fill={`url(#${gradId})`}
-          stroke={`url(#${gradId})`}
-          strokeWidth="0.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M6.8 3.9C5.45 3.15 4.2 3.93 4.2 5.45v13.3c0 1.52 1.25 2.3 2.6 1.55l10.35-5.72c.92-.51 1.48-1.12 1.48-1.93s-.56-1.42-1.48-1.93L6.8 3.9Z"
-        />
-      </svg>
+      <PriceSectionIcon className="brand-search-submit-icon" />
     </ButtonTag>
   );
 }
@@ -1418,7 +1396,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-5"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-5"
       >
         <input
           type="text"
@@ -1443,7 +1421,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-6"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-6"
       >
         <input
           type="text"
@@ -1821,6 +1799,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           border: 3px solid rgba(252, 106, 9, 0.8);
           box-shadow: 0 0 0 1px rgba(252, 106, 9, 0.14);
           background: #ffffff;
+          overflow: hidden;
         }
 
         .brand-search-divider {
@@ -1830,22 +1809,22 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         .brand-search-submit {
           position: relative;
           display: flex;
-          align-items: center;
-          justify-content: center;
+          align-items: stretch;
+          justify-content: flex-end;
           flex-shrink: 0;
           align-self: stretch;
-          width: 3.05rem;
-          min-width: 3.05rem;
+          width: 3.45rem;
+          min-width: 3.45rem;
           height: auto;
-          margin: 0 0.65rem 0 -0.35rem;
+          margin: 0;
           padding: 0;
           border: none;
-          border-radius: 9999px;
+          border-radius: 0 999px 999px 0;
           background: transparent;
           box-shadow: none;
           cursor: pointer;
-          overflow: visible;
-          transform: translateX(-0.35rem);
+          overflow: hidden;
+          transform: none;
           transition: opacity 0.2s ease;
         }
 
@@ -1855,14 +1834,23 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           outline: none;
         }
 
-        .brand-search-submit-icon {
-          display: block;
-          width: 100%;
-          height: 100%;
-          margin-top: 0;
-          margin-bottom: 0;
-          aspect-ratio: 15 / 16.4;
-          transform: translateX(-0.28rem);
+        .brand-search-submit .price-section-v-icon,
+        .brand-search-submit .brand-search-submit-icon {
+          position: absolute;
+          top: -5px;
+          right: 0.78rem;
+          bottom: -5px;
+          left: auto;
+          height: calc(100% + 10px) !important;
+          width: auto !important;
+          max-width: none !important;
+          max-height: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          transform: none !important;
+          object-fit: fill !important;
+          object-position: center right !important;
+          aspect-ratio: auto;
         }
 
         /* Thick orange/red border comet — search bar + pills */

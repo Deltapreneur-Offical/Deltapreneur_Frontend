@@ -35,6 +35,38 @@
   transform: none !important;
 }
 
+/* Hero search submit — same PNG play, flush to the search-bar top/bottom border */
+.brand-search-submit:has(.price-section-v-icon) {
+  position: relative !important;
+  width: 3.45rem !important;
+  min-width: 3.45rem !important;
+  max-width: 3.45rem !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  transform: none !important;
+}
+
+.brand-search-submit:has(.price-section-v-icon) .price-section-v-icon {
+  position: absolute !important;
+  top: -5px !important;
+  right: 0.78rem !important;
+  bottom: -5px !important;
+  left: auto !important;
+  height: calc(100% + 10px) !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: fill !important;
+}
+
 /* DeltaOs / Delta Registrars / Delta Registrations — same slot as venture */
 .tech-service-card__price-arrow,
 .home-operations-preview-card__cta,
@@ -122,4 +154,21 @@ body.home-page-body .home-preview-card-border--coventure .venture-listing-card--
 
 body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon {
   filter: brightness(0) saturate(100%) invert(75%) sepia(48%) saturate(749%) hue-rotate(118deg) brightness(89%) contrast(90%) !important;
+}
+
+/* Homepage: slightly darken the play arrow when hovering the card */
+body.home-page-body .home-preview-row__item:hover .price-section-v-icon,
+body.home-page-body .home-auto-scroll-row__item:hover .price-section-v-icon,
+body.home-page-body .home-preview-card-shell:hover .price-section-v-icon,
+body.home-page-body .home-preview-card-border:hover .price-section-v-icon,
+body.home-page-body .tech-service-card:hover .price-section-v-icon,
+body.home-page-body .reg-mini-card:hover .price-section-v-icon,
+body.home-page-body .home-operations-preview-card:hover .price-section-v-icon {
+  filter: brightness(0.78) saturate(1.08) contrast(1.06) !important;
+}
+
+body.home-page-body .home-preview-card-border--coventure:hover .venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-preview-row__item:hover .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-auto-scroll-row__item:hover .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(48%) saturate(749%) hue-rotate(118deg) brightness(70%) contrast(95%) !important;
 }

@@ -7,6 +7,7 @@ import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 import { resolveAfterAuthNavigation } from '../utils/authSession';
 import { startGoogleOAuth, startLinkedInOAuth } from '../utils/socialOAuth';
+import { readApiError, isSafeUserFacingMessage } from '../utils/apiError';
 import AuthShell from '../components/auth/AuthShell';
 import AuthMethodToggle from '../components/auth/AuthMethodToggle';
 import AuthAlert from '../components/auth/AuthAlert';
@@ -99,13 +100,12 @@ export default function RegisterPage() {
     } catch (err) {
       resetProtection();
       const status = err.response?.status;
-      const body = err.response?.data;
       if (status === 409) {
         setEmailConflict(true);
         setError(t('emailAlreadyRegistered'));
       } else {
         setEmailConflict(false);
-        setError(body?.error || body?.message || t('failedToSendOtp', 'Failed to send verification code.'));
+        setError(readApiError(err, t('failedToSendOtp', 'Failed to send verification code.')));
       }
     } finally {
       setLoading(false);
@@ -129,8 +129,7 @@ export default function RegisterPage() {
       await handleLoginSuccess(data);
     } catch (err) {
       resetProtection();
-      const body = err.response?.data;
-      setError(body?.error || body?.message || t('invalidOtp', 'Invalid verification code.'));
+      setError(readApiError(err, t('invalidOtp', 'Invalid verification code.')));
     } finally {
       setLoading(false);
     }
@@ -146,12 +145,12 @@ export default function RegisterPage() {
     }
     try {
       const { data } = await authAPI.resendRegisterOtp(form.email, getProtectionPayload());
-      setInfo(data?.message || `${t('otpSentTo')} ${form.email}`);
+      const fallback = `${t('otpSentTo')} ${form.email}`;
+      setInfo(isSafeUserFacingMessage(data?.message) ? data.message : fallback);
       resetProtection();
     } catch (err) {
       resetProtection();
-      const body = err.response?.data;
-      setError(body?.error || body?.message || t('failedToSendOtp', 'Failed to send verification code.'));
+      setError(readApiError(err, t('failedToSendOtp', 'Failed to send verification code.')));
     } finally {
       setLoading(false);
     }

@@ -4,9 +4,35 @@ import {
   getLinkedInProfileUrl,
   hasLinkedInAccount,
   isCreatorProfileComplete,
+  isCreatorProfileVisible,
+  readCreatorCallbackProfileId,
+  readCreatorProfileId,
+  unwrapCreatorProfile,
 } from './creatorProfile';
 
 describe('creatorProfile', () => {
+  it('does not treat a successful empty /my payload as a profile', () => {
+    expect(unwrapCreatorProfile({
+      success: true,
+      message: 'My creator profile fetched successfully',
+      data: null,
+    })).toBeNull();
+    expect(readCreatorProfileId({ success: true, message: 'ok', data: null })).toBe('');
+  });
+
+  it('reads a UUID out of a LinkedIn callback profileId', () => {
+    const id = '1b5d5a2c-1111-4111-8111-2fc6c879259f';
+    expect(readCreatorCallbackProfileId(id)).toBe(id);
+    expect(readCreatorCallbackProfileId(`${id}_extra`)).toBe(id);
+    expect(readCreatorCallbackProfileId('not-an-id')).toBe('');
+  });
+
+  it('unwraps nested creator profile payloads', () => {
+    const profile = { id: '11111111-1111-4111-8111-111111111111', name: 'Ada' };
+    expect(unwrapCreatorProfile({ success: true, data: profile })).toEqual(profile);
+    expect(readCreatorProfileId({ data: { communityId: profile.id } })).toBe(profile.id);
+  });
+
   it('normalizes LinkedIn profile URLs', () => {
     expect(getLinkedInProfileUrl({ linked_in_profile_url: 'https://linkedin.com/in/jane' })).toBe('https://linkedin.com/in/jane');
     expect(getLinkedInProfileUrl({ linkedInProfileUrl: 'https://linkedin.com/oauth/foo' })).toBe('');
@@ -86,5 +112,13 @@ describe('creatorProfile', () => {
     const summary = evaluateCreatorProfileCompletion({ name: 'Jane', skills: 'React' });
     expect(summary.isComplete).toBe(false);
     expect(summary.missingFields.length).toBeGreaterThan(0);
+  });
+
+  it('treats admin profileComplete as visible without extra fields', () => {
+    expect(isCreatorProfileVisible({
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'StartUptobe',
+      profileComplete: true,
+    })).toBe(true);
   });
 });

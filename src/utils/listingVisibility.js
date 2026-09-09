@@ -74,6 +74,9 @@ export function isListingVerified(item, type = 'domain') {
     return status === 'APPROVED';
   }
   if (listingType === 'community') {
+    if (item.profileComplete === true || item.isApproved === true || item.is_approved === true) {
+      return isActiveListing(item, 'community');
+    }
     return isCommunityProfilePublic(item);
   }
   if (listingType === 'virtual-assistant') {

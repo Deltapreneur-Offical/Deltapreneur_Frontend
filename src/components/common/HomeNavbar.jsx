@@ -211,6 +211,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                   <DropdownLink onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</DropdownLink>
                   <DropdownLink onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</DropdownLink>
                   <DropdownLink onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</DropdownLink>
+                  <DropdownLink onClick={() => go('/auctions')}>{t('auctionDeltapreneur')}</DropdownLink>
                 </NavDropdown>
 
                 <NavDropdown
@@ -309,6 +310,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=domains')}>{t('auctionDomain')}</button>
                 <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=ventures')}>{t('auctionVenture')}</button>
                 <button type="button" className="home-mobile-link" onClick={() => go('/auctions?section=technology')}>{t('auctionTechnology')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('auctionDeltapreneur')}</button>
               </MobileAccordion>
 
               <MobileAccordion

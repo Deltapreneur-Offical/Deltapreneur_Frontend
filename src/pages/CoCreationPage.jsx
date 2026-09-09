@@ -1235,8 +1235,8 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
 
         {/* ── Terms Agreement ── */}
         {!isEdit && (
-          <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-blue-100 bg-blue-50/60 px-3.5 py-2.5 max-w-full">
-            <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
+          <label className="relative inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-blue-100 bg-blue-50/60 px-3.5 py-2.5 max-w-full">
+            <input type="checkbox" className="absolute left-3.5 top-2.5 h-5 w-5 cursor-pointer opacity-0" checked={form.agreement.terms}
               onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
               required />
             <span className="relative w-5 h-5 rounded-[7px] border-2 border-blue-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#2563eb' : 'white', borderColor: form.agreement.terms ? '#2563eb' : '#bfdbfe' }}>

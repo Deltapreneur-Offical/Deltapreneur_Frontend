@@ -59,7 +59,7 @@ import { formatOperationsPrice, isComplianceService } from '../../utils/operatio
  * Reused by both the Operations page and the Home page Operations section so
  * the role list renders identically in both places (no duplicated markup).
  */
-export default function OperationsServiceCard({ service, onHire }) {
+export default function OperationsServiceCard({ service, onHire, className = '' }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
 
@@ -73,18 +73,35 @@ export default function OperationsServiceCard({ service, onHire }) {
     ? t(HUB_REG_I18N_KEY[service.category], { defaultValue: dynamicName })
     : t(CATEGORY_I18N_KEY[service.category], { defaultValue: OPERATIONS_CATEGORY_LABELS[service.category] ?? service.category });
   const priceInfo = formatOperationsPrice(service, { t, formatPrice });
+  const tone = cardCompliance
+    ? {
+        article: 'hover:border-[#99F6E4] hover:shadow-[0_14px_30px_rgba(15,118,110,0.12)]',
+        icon: 'bg-[#F0FDFA] text-[#0F766E] border-[#CCFBF1] shadow-[#CCFBF1] group-hover:bg-[#CCFBF1]',
+        badge: 'text-[#0F766E] bg-[#F0FDFA] border-[#CCFBF1]',
+        price: 'border-[#CCFBF1] bg-[#F0FDFA]/70',
+        priceText: 'text-[#0F766E]',
+        button: 'bg-[#0F766E] shadow-[0_2px_8px_rgba(15,118,110,0.18)] hover:bg-[#115E59] hover:shadow-[0_8px_18px_rgba(15,118,110,0.22)]',
+      }
+    : {
+        article: 'hover:border-[#FED7AA] hover:shadow-[0_14px_30px_rgba(249,115,22,0.12)]',
+        icon: 'bg-[#FFF7ED] text-[#C2410C] border-[#FFEDD5] shadow-[#FFEDD5] group-hover:bg-[#FFEDD5]',
+        badge: 'text-[#C2410C] bg-[#FFF7ED] border-[#FFEDD5]',
+        price: 'border-[#FFEDD5] bg-[#FFF7ED]/70',
+        priceText: 'text-[#C2410C]',
+        button: 'bg-[#C2410C] shadow-[0_2px_8px_rgba(194,65,12,0.18)] hover:bg-[#9A3412] hover:shadow-[0_8px_18px_rgba(194,65,12,0.22)]',
+      };
 
   return (
     <>
     <article
       key={service.id}
-      className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg"
+      className={`group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 ${tone.article} ${className}`.trim()}
     >
       <div className="flex items-start justify-between gap-3 mb-3.5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-sm shadow-indigo-100 group-hover:bg-indigo-100 transition-colors">
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border shadow-sm transition-colors ${tone.icon}`}>
           <Icon size={20} strokeWidth={2} aria-hidden />
         </div>
-        <span className="max-w-[calc(100%-4rem)] text-[9px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full whitespace-normal break-words">
+        <span className={`max-w-[calc(100%-4rem)] text-[9px] font-bold uppercase tracking-wider border px-2 py-0.5 rounded-full whitespace-normal break-words ${tone.badge}`}>
           {catLabel}
         </span>
       </div>
@@ -106,13 +123,13 @@ export default function OperationsServiceCard({ service, onHire }) {
       <div className="mt-auto pt-3 border-t border-gray-100">
         <div className="flex items-end justify-between gap-3">
           {cardCompliance && !priceInfo.showPrice ? (
-            <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 px-3 py-1.5 min-h-[2.25rem] overflow-hidden">
-              <p className="text-[11px] font-semibold text-indigo-700 whitespace-nowrap">
+            <div className={`rounded-lg border px-3 py-1.5 min-h-[2.25rem] overflow-hidden ${tone.price}`}>
+              <p className={`text-[11px] font-semibold whitespace-nowrap ${tone.priceText}`}>
                 {t('operationsContactForPricing', { defaultValue: 'Contact for pricing' })}
               </p>
             </div>
           ) : priceInfo.showPrice ? (
-            <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 px-3 py-1.5">
+            <div className={`rounded-lg border px-3 py-1.5 ${tone.price}`}>
               <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">
                 {t('operationsFrom', { defaultValue: 'Starting at' })}
               </p>
@@ -128,7 +145,7 @@ export default function OperationsServiceCard({ service, onHire }) {
           )}
           <button
             type="button"
-            className="shrink-0 text-sm px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-200 hover:bg-indigo-700 hover:shadow-md transition-all duration-200 inline-flex items-center justify-center gap-1"
+            className={`shrink-0 text-sm px-4 py-2 rounded-lg text-white font-bold transition-all duration-200 inline-flex items-center justify-center gap-1 ${tone.button}`}
             onClick={() => onHire(service)}
           >
             {cardCompliance

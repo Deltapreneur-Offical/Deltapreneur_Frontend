@@ -130,7 +130,7 @@
   border: 2px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
+    linear-gradient(90deg, #0F766E 0%, #0F766E 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: none !important;
@@ -143,6 +143,12 @@
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:hover,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
   color: #134E4A !important;
+}
+
+.home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta,
+.home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:hover,
+.home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
+  color: #0F766E !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--role {
@@ -178,7 +184,7 @@
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
+    linear-gradient(90deg, #0F766E 0%, #0F766E 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.22), 0 6px 16px rgba(15, 118, 110, 0.16) !important;

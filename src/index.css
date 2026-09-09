@@ -14,6 +14,16 @@
   font-display: swap;
 }
 
+/* Use one clean system glyph for the Indian rupee sign everywhere. */
+@font-face {
+  font-family: 'Deltapreneur Rupee';
+  src: local('Arial'), local('Arial Unicode MS'), local('Noto Sans');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+20B9;
+}
+
 .premium-domain-pill {
   isolation: isolate;
   overflow: visible;
@@ -160,9 +170,9 @@
   --radius: 10px;
   --radius-lg: 18px;
   --shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
-  --font-display: 'Newsreader', serif;
-  --font-body: 'Newsreader', serif;
-  --font-mono: 'Newsreader', serif;
+  --font-display: 'Deltapreneur Rupee', 'Newsreader', serif;
+  --font-body: 'Deltapreneur Rupee', 'Newsreader', serif;
+  --font-mono: 'Deltapreneur Rupee', 'Newsreader', serif;
 }
 
 /* ─── Reset ─────────────────────────────────────────── */

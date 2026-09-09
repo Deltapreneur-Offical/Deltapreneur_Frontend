@@ -4,6 +4,7 @@ import { ensureAccessTokenFromRefresh } from '../api/axios';
 import {
   clearAuthTokens,
   getStoredAccessToken,
+  hasCookieAuthSession,
   setStoredAccessToken,
 } from '../utils/authSession';
 
@@ -36,6 +37,10 @@ function shouldClearAuth(error) {
     error.response?.data?.error ||
     '',
   ).toLowerCase();
+  if (typeof document !== 'undefined' && hasCookieAuthSession()) {
+    return false;
+  }
+
   return (
     detail.includes('session expired') ||
     detail.includes('invalid token') ||

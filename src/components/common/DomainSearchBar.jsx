@@ -448,7 +448,7 @@ function BrandSearchSubmitButton({ label }) {
           strokeLinejoin="round"
           fillRule="evenodd"
           clipRule="evenodd"
-          d="M6.8 4.25C5.45 3.5 4.2 4.28 4.2 5.8v12.4c0 1.52 1.25 2.3 2.6 1.55l10.3-5.7c.8-.44 1.45-.83 1.45-2.05s-.65-1.61-1.45-2.05L6.8 4.25Z"
+          d="M6.8 3.9C5.45 3.15 4.2 3.93 4.2 5.45v13.3c0 1.52 1.25 2.3 2.6 1.55l10.35-5.72c.92-.51 1.48-1.12 1.48-1.93s-.56-1.42-1.48-1.93L6.8 3.9Z"
         />
       </svg>
     </ButtonTag>
@@ -1821,7 +1821,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
       <style>{`
         .brand-search-shell {
-          border: 2px solid transparent;
+          border: 1.25px solid transparent;
           background:
             linear-gradient(#ffffff, #ffffff) padding-box,
             linear-gradient(90deg, #ff9933 0%, #f97316 50%, #fb923c 100%) border-box;
@@ -1841,7 +1841,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           width: 3.05rem;
           min-width: 3.05rem;
           height: auto;
-          margin: -0.28rem 0.85rem -0.28rem 0.05rem;
+          margin: 0 1.5rem 0 0.05rem;
           padding: 0;
           border: none;
           border-radius: 9999px;
@@ -1860,7 +1860,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-submit-icon {
           display: block;
-          height: calc(100% - 0.45rem);
+          height: calc(100% + 1.3rem);
+          margin-top: -0.65rem;
+          margin-bottom: -0.65rem;
           width: auto;
           aspect-ratio: 15 / 16.4;
         }

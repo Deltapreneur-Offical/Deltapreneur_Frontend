@@ -4,11 +4,18 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ventureAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { readApiError } from '../utils/apiError';
-import { clearAuthTokens } from '../utils/authSession';
+import { getStoredAccessToken } from '../utils/authSession';
 import AppLayout from '../components/layout/AppLayout';
 import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
 import Confetti from '../components/common/Confetti';
+
+/** 403 is authorization, not expiry. 401 must not clear a token the interceptor kept. */
+export function shouldClearSessionOnVentureApiError(status, currentAccessToken) {
+  if (status === 403) return false;
+  if (status !== 401) return false;
+  return !currentAccessToken;
+}
 
 export default function NewVenturePage() {
   const { t } = useTranslation();
@@ -24,9 +31,7 @@ export default function NewVenturePage() {
 
   const readVentureApiError = (err) => readApiError(err, t('newVentureCreateFailed'));
 
-  const clearAuthAndGoLogin = () => {
-    clearAuthTokens();
-    window.dispatchEvent(new Event('auth:cleared'));
+  const goLoginToCreate = () => {
     const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
     navigate('/login', { state: { from: { pathname: '/ventures/new', search } }, replace: true });
   };
@@ -34,7 +39,7 @@ export default function NewVenturePage() {
   const handleSubmit = async (form, imageFile, pendingVerificationFiles = []) => {
     if (!hasAccessToken) {
       setError(t('newVentureSignInRequired'));
-      clearAuthAndGoLogin();
+      goLoginToCreate();
       return;
     }
     setLoading(true); setError('');
@@ -59,9 +64,9 @@ export default function NewVenturePage() {
         setTimeout(() => navigate('/ventures'), 2200);
       } catch (err) {
           const status = err.response?.status;
-          if (status === 401 || status === 403) {
+          if (shouldClearSessionOnVentureApiError(status, getStoredAccessToken())) {
             setError(t('newVentureSessionExpired'));
-            clearAuthAndGoLogin();
+            goLoginToCreate();
             return;
           }
           setError(readVentureApiError(err));

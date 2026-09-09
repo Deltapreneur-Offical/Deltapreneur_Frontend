@@ -1,0 +1,495 @@
+/* Dashboard-only saffron theme overrides. Keep this import after shared styles. */
+body.app-layout-body {
+  --home-saffron: #ff9933;
+  --home-saffron-deep: #e67300;
+  --home-saffron-text: #c2410c;
+  --home-saffron-ink: #9a3412;
+  --home-saffron-50: #fff7ed;
+  --home-saffron-100: #ffedd5;
+  --home-saffron-200: #fed7aa;
+  --home-saffron-300: #fdba74;
+  --brand: var(--home-saffron);
+  --brand-hover: var(--home-saffron-text);
+  --brand-soft: var(--home-saffron-50);
+  --brand-border: var(--home-saffron-200);
+  --cobrother-hover-color: var(--home-saffron-text);
+  --app-chrome-base: #fffaf5;
+  --app-chrome-gradient: linear-gradient(to bottom, #ffffff 0%, #fffaf5 48%, #fff7ed 100%);
+  --app-chrome-overlay:
+    radial-gradient(ellipse 80% 60% at 18% 0%, rgba(249, 115, 22, 0.06), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 86% 20%, rgba(194, 65, 12, 0.045), transparent 50%);
+  --app-chrome-border: rgba(249, 115, 22, 0.16);
+}
+
+body.app-layout-body .bg-indigo-50,
+body.app-layout-body .bg-purple-50,
+body.app-layout-body .bg-violet-50,
+body.app-layout-body .hover\:bg-indigo-50:hover,
+body.app-layout-body .hover\:bg-purple-50:hover,
+body.app-layout-body .hover\:bg-violet-50:hover {
+  background-color: var(--home-saffron-50) !important;
+}
+
+body.app-layout-body .bg-indigo-100,
+body.app-layout-body .bg-purple-100,
+body.app-layout-body .bg-violet-100,
+body.app-layout-body .hover\:bg-indigo-100:hover,
+body.app-layout-body .hover\:bg-purple-100:hover,
+body.app-layout-body .hover\:bg-violet-100:hover {
+  background-color: var(--home-saffron-100) !important;
+}
+
+body.app-layout-body .bg-indigo-400,
+body.app-layout-body .bg-indigo-500,
+body.app-layout-body .bg-indigo-600,
+body.app-layout-body .bg-purple-500,
+body.app-layout-body .bg-purple-600,
+body.app-layout-body .bg-violet-500,
+body.app-layout-body .bg-violet-600,
+body.app-layout-body .hover\:bg-indigo-400:hover,
+body.app-layout-body .hover\:bg-indigo-500:hover,
+body.app-layout-body .hover\:bg-indigo-600:hover,
+body.app-layout-body .hover\:bg-purple-500:hover,
+body.app-layout-body .hover\:bg-purple-600:hover,
+body.app-layout-body .hover\:bg-violet-500:hover,
+body.app-layout-body .hover\:bg-violet-600:hover {
+  background-color: var(--home-saffron) !important;
+}
+
+body.app-layout-body .hover\:bg-indigo-700:hover,
+body.app-layout-body .hover\:bg-purple-700:hover,
+body.app-layout-body .hover\:bg-violet-700:hover {
+  background-color: var(--home-saffron-text) !important;
+}
+
+body.app-layout-body .bg-indigo-500\/10,
+body.app-layout-body .bg-purple-500\/10,
+body.app-layout-body .bg-violet-500\/10 {
+  background-color: rgba(249, 115, 22, 0.1) !important;
+}
+
+body.app-layout-body .bg-indigo-500\/15,
+body.app-layout-body .bg-purple-500\/15,
+body.app-layout-body .bg-violet-500\/15 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+}
+
+body.app-layout-body .text-indigo-300,
+body.app-layout-body .text-indigo-400,
+body.app-layout-body .text-indigo-500,
+body.app-layout-body .text-purple-300,
+body.app-layout-body .text-purple-400,
+body.app-layout-body .text-purple-500,
+body.app-layout-body .text-violet-300,
+body.app-layout-body .text-violet-400,
+body.app-layout-body .text-violet-500 {
+  color: var(--home-saffron-300) !important;
+}
+
+body.app-layout-body .text-indigo-600,
+body.app-layout-body .text-indigo-700,
+body.app-layout-body .text-indigo-800,
+body.app-layout-body .text-indigo-900,
+body.app-layout-body .text-purple-600,
+body.app-layout-body .text-purple-700,
+body.app-layout-body .text-purple-800,
+body.app-layout-body .text-violet-600,
+body.app-layout-body .text-violet-700,
+body.app-layout-body .hover\:text-indigo-600:hover,
+body.app-layout-body .hover\:text-indigo-700:hover,
+body.app-layout-body .hover\:text-indigo-800:hover,
+body.app-layout-body .hover\:text-purple-600:hover,
+body.app-layout-body .hover\:text-purple-700:hover,
+body.app-layout-body .hover\:text-purple-800:hover,
+body.app-layout-body .hover\:text-violet-600:hover,
+body.app-layout-body .hover\:text-violet-700:hover {
+  color: var(--home-saffron-text) !important;
+}
+
+body.app-layout-body .border-indigo-100,
+body.app-layout-body .border-purple-100,
+body.app-layout-body .border-violet-100,
+body.app-layout-body .ring-indigo-100,
+body.app-layout-body .ring-purple-100,
+body.app-layout-body .ring-violet-100 {
+  border-color: var(--home-saffron-100) !important;
+  --tw-ring-color: var(--home-saffron-100) !important;
+}
+
+body.app-layout-body .border-indigo-200,
+body.app-layout-body .border-purple-200,
+body.app-layout-body .border-violet-200,
+body.app-layout-body .ring-indigo-200,
+body.app-layout-body .ring-purple-200,
+body.app-layout-body .ring-violet-200 {
+  border-color: var(--home-saffron-200) !important;
+  --tw-ring-color: var(--home-saffron-200) !important;
+}
+
+body.app-layout-body .border-indigo-300,
+body.app-layout-body .border-purple-300,
+body.app-layout-body .border-violet-300,
+body.app-layout-body .border-indigo-400,
+body.app-layout-body .border-purple-400,
+body.app-layout-body .border-violet-400,
+body.app-layout-body .border-indigo-500,
+body.app-layout-body .border-purple-500,
+body.app-layout-body .border-violet-500,
+body.app-layout-body .border-indigo-600,
+body.app-layout-body .border-purple-600,
+body.app-layout-body .border-violet-600,
+body.app-layout-body .focus\:border-indigo-300:focus,
+body.app-layout-body .focus\:border-indigo-400:focus,
+body.app-layout-body .focus\:border-indigo-500:focus,
+body.app-layout-body .focus\:border-indigo-600:focus,
+body.app-layout-body .focus\:border-purple-400:focus,
+body.app-layout-body .focus\:border-purple-500:focus,
+body.app-layout-body .focus\:border-violet-500:focus,
+body.app-layout-body .hover\:border-indigo-300:hover,
+body.app-layout-body .hover\:border-indigo-400:hover,
+body.app-layout-body .hover\:border-indigo-500:hover,
+body.app-layout-body .hover\:border-purple-500:hover,
+body.app-layout-body .hover\:border-violet-500:hover {
+  border-color: var(--home-saffron) !important;
+}
+
+body.app-layout-body .border-indigo-500\/20,
+body.app-layout-body .border-purple-500\/20,
+body.app-layout-body .border-violet-500\/20,
+body.app-layout-body .border-indigo-500\/30,
+body.app-layout-body .border-purple-500\/30,
+body.app-layout-body .border-violet-500\/30 {
+  border-color: rgba(249, 115, 22, 0.28) !important;
+}
+
+body.app-layout-body .ring-indigo-50,
+body.app-layout-body .ring-purple-50,
+body.app-layout-body .ring-violet-50 {
+  --tw-ring-color: var(--home-saffron-50) !important;
+}
+
+body.app-layout-body .focus\:ring-indigo-100:focus,
+body.app-layout-body .focus\:ring-purple-100:focus,
+body.app-layout-body .focus\:ring-violet-100:focus,
+body.app-layout-body .focus-visible\:ring-indigo-200:focus-visible,
+body.app-layout-body .focus-visible\:ring-purple-200:focus-visible,
+body.app-layout-body .focus-visible\:ring-violet-200:focus-visible,
+body.app-layout-body .focus\:ring-indigo-500:focus,
+body.app-layout-body .focus\:ring-purple-500:focus,
+body.app-layout-body .focus\:ring-violet-500:focus,
+body.app-layout-body .focus-visible\:ring-indigo-400:focus-visible,
+body.app-layout-body .focus-visible\:ring-indigo-500:focus-visible,
+body.app-layout-body .focus-visible\:ring-indigo-600:focus-visible,
+body.app-layout-body .focus-visible\:ring-purple-400:focus-visible,
+body.app-layout-body .focus-visible\:ring-purple-500:focus-visible,
+body.app-layout-body .focus-visible\:ring-violet-400:focus-visible {
+  --tw-ring-color: var(--home-saffron-200) !important;
+}
+
+body.app-layout-body .focus\:ring-indigo-500\/20:focus {
+  --tw-ring-color: rgba(249, 115, 22, 0.2) !important;
+}
+
+body.app-layout-body .from-indigo-500,
+body.app-layout-body .from-indigo-600,
+body.app-layout-body .from-purple-500,
+body.app-layout-body .from-purple-600,
+body.app-layout-body .from-violet-500,
+body.app-layout-body .from-violet-600 {
+  --tw-gradient-from: var(--home-saffron) var(--tw-gradient-from-position) !important;
+}
+
+body.app-layout-body .via-indigo-500,
+body.app-layout-body .via-purple-600 {
+  --tw-gradient-via: var(--home-saffron-text) var(--tw-gradient-via-position) !important;
+}
+
+body.app-layout-body .to-indigo-600,
+body.app-layout-body .to-indigo-950,
+body.app-layout-body .to-purple-600,
+body.app-layout-body .to-violet-600,
+body.app-layout-body .to-blue-600 {
+  --tw-gradient-to: var(--home-saffron-text) var(--tw-gradient-to-position) !important;
+}
+
+body.app-layout-body .from-indigo-900\/90 {
+  --tw-gradient-from: rgba(124, 45, 18, 0.92) var(--tw-gradient-from-position) !important;
+}
+
+body.app-layout-body .to-indigo-950\/95 {
+  --tw-gradient-to: rgba(67, 20, 7, 0.96) var(--tw-gradient-to-position) !important;
+}
+
+body.app-layout-body .shadow-indigo-600\/20,
+body.app-layout-body .hover\:shadow-indigo-500\/30:hover {
+  --tw-shadow-color: rgba(249, 115, 22, 0.24) !important;
+}
+
+body.app-layout-body .app-sidebar {
+  --sidebar-border: var(--app-chrome-border);
+  --sidebar-hover-bg: rgba(249, 115, 22, 0.055);
+  --sidebar-active-bg: var(--home-saffron-50);
+  --sidebar-active-border: #C2410C;
+  --sidebar-accent: #C2410C;
+  --sidebar-accent-soft: rgba(249, 115, 22, 0.12);
+}
+
+body.app-layout-body .app-sidebar-link.is-active:not(.is-admin),
+body.app-layout-body .app-sidebar-link.is-admin.is-active,
+body.app-layout-body .app-sidebar-link.is-admin:hover {
+  color: var(--home-saffron-text);
+  background: var(--home-saffron-50);
+  border-color: var(--home-saffron-200);
+}
+
+body.app-layout-body .app-sidebar-link.is-active:not(.is-admin)::before,
+body.app-layout-body .app-sidebar-link.is-admin.is-active::before {
+  background: #C2410C;
+}
+
+body.app-layout-body .app-sidebar-link:not(.is-admin):hover .app-sidebar-icon-slot svg,
+body.app-layout-body .app-sidebar-link.is-active:not(.is-admin) .app-sidebar-icon-slot svg,
+body.app-layout-body .app-sidebar-link.is-admin,
+body.app-layout-body .app-sidebar-link.is-admin .app-sidebar-icon-slot svg {
+  color: var(--home-saffron-text);
+}
+
+body.app-layout-body .home-nav-util-btn {
+  border-color: var(--home-saffron-200) !important;
+  background: var(--home-saffron-50) !important;
+  color: var(--home-saffron-text) !important;
+}
+
+body.app-layout-body .home-nav-util-btn:hover,
+body.app-layout-body .home-nav-util-btn:focus,
+body.app-layout-body .home-nav-util-btn:focus-visible,
+body.app-layout-body .home-nav-util-btn:active,
+body.app-layout-body .home-nav-util-btn[aria-expanded='true'] {
+  border-color: var(--home-saffron) !important;
+  background: var(--home-saffron-100) !important;
+  color: var(--home-saffron-text) !important;
+  box-shadow: none !important;
+}
+
+body.app-layout-body .home-nav-util-panel button:hover,
+body.app-layout-body .home-nav-util-panel button:focus,
+body.app-layout-body .home-nav-util-panel button:focus-visible,
+body.app-layout-body .home-nav-util-panel button:active,
+body.app-layout-body .home-nav-util-panel button[aria-selected='true'],
+body.app-layout-body .home-nav-util-panel button:hover span,
+body.app-layout-body .home-nav-util-panel button:focus span,
+body.app-layout-body .home-nav-util-panel button:focus-visible span,
+body.app-layout-body .home-nav-util-panel button:active span,
+body.app-layout-body .home-nav-util-panel button[aria-selected='true'] span {
+  color: var(--home-saffron-text) !important;
+}
+
+body.app-layout-body .app-profile-avatar-btn,
+body.app-layout-body .home-profile-flip-face--back {
+  background: linear-gradient(to bottom right, var(--home-saffron), var(--home-saffron-text)) !important;
+  border-color: var(--home-saffron-200) !important;
+}
+
+body.app-layout-body .app-profile-avatar-btn:hover,
+body.app-layout-body .app-profile-avatar-btn:focus,
+body.app-layout-body .app-profile-avatar-btn:focus-visible,
+body.app-layout-body .app-profile-avatar-btn:active,
+body.app-layout-body .app-profile-avatar-btn[aria-expanded='true'] {
+  border-color: var(--home-saffron) !important;
+  --tw-ring-color: var(--home-saffron-200) !important;
+}
+
+body.app-layout-body .btn-primary {
+  background: var(--home-saffron);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+}
+
+body.app-layout-body .btn-primary:hover {
+  background: var(--home-saffron-text);
+  box-shadow: 0 4px 14px rgba(194, 65, 12, 0.24);
+}
+
+body.app-layout-body .btn-secondary {
+  color: var(--home-saffron-text);
+  border-color: var(--home-saffron-200);
+}
+
+body.app-layout-body .btn-secondary:hover {
+  background: var(--home-saffron-50);
+  color: var(--home-saffron-ink);
+}
+
+body.app-layout-body .btn-glow:not(.btn-glow-danger):not(.bg-gray-900),
+body.app-layout-body .btn-professional,
+body.app-layout-body .btn-professional-sm,
+body.app-layout-body .btn-professional-lg,
+body.app-layout-body .btn-professional-outline-sm {
+  border-color: var(--home-saffron-200) !important;
+  background: #ffffff !important;
+  color: var(--home-saffron-text) !important;
+}
+
+body.app-layout-body .btn-glow:not(.btn-glow-danger):not(.bg-gray-900):hover,
+body.app-layout-body .btn-glow:not(.btn-glow-danger):not(.bg-gray-900):focus-visible,
+body.app-layout-body .btn-professional:hover,
+body.app-layout-body .btn-professional-sm:hover,
+body.app-layout-body .btn-professional-lg:hover,
+body.app-layout-body .btn-professional-outline-sm:hover {
+  border-color: var(--home-saffron) !important;
+  background: var(--home-saffron-50) !important;
+  color: var(--home-saffron-ink) !important;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.14) !important;
+  outline-color: var(--home-saffron) !important;
+}
+
+body.app-layout-body .btn-glow.bg-indigo-600,
+body.app-layout-body .btn-glow.bg-purple-600,
+body.app-layout-body .btn-glow.bg-violet-600 {
+  background: var(--home-saffron) !important;
+  border-color: var(--home-saffron) !important;
+  color: #ffffff !important;
+}
+
+body.app-layout-body .card-glow-hover::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 247, 237, 0.54) 56%, rgba(255, 237, 213, 0.72) 100%),
+    linear-gradient(135deg, rgba(249, 115, 22, 0.09) 0%, rgba(255, 153, 51, 0.07) 52%, rgba(194, 65, 12, 0.08) 100%) !important;
+}
+
+body.app-layout-body .card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card),
+body.app-layout-body .dash-card.card-glow-hover:hover {
+  border-color: rgba(249, 115, 22, 0.24) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -18px 30px rgba(249, 115, 22, 0.08),
+    0 0 28px rgba(249, 115, 22, 0.12),
+    0 20px 44px rgba(15, 23, 42, 0.12) !important;
+}
+
+body.app-layout-body .dashboard-welcome-hero {
+  background: linear-gradient(135deg, #C2410C 0%, #9A3412 52%, #7C2D12 100%) !important;
+}
+
+body.app-layout-body .dashboard-welcome-hero__badge-dot--role,
+body.app-layout-body .dashboard-welcome-hero__badge-dot--pending {
+  background: #FFEDD5 !important;
+}
+
+body.app-layout-body .dashboard-welcome-hero__badge-dot--complete {
+  background: #FED7AA !important;
+}
+
+body.app-layout-body .dashboard-module-card {
+  background: #ffffff !important;
+  border-color: #FED7AA !important;
+}
+
+body.app-layout-body .dashboard-admin-header__badge,
+body.app-layout-body .dashboard-module-card__cta,
+body.app-layout-body .dashboard-module-card__arrow,
+body.app-layout-body .dashboard-quick-action:hover {
+  background: #FFF7ED !important;
+  color: #C2410C !important;
+}
+
+body.app-layout-body .dashboard-module-card__icon--ventures,
+body.app-layout-body .dashboard-module-card__icon--creators,
+body.app-layout-body .dashboard-module-card__icon--technology,
+body.app-layout-body .dashboard-module-card__icon--auctions,
+body.app-layout-body .dashboard-module-card__icon--purchases,
+body.app-layout-body .dashboard-stat-card__icon--ventures,
+body.app-layout-body .dashboard-stat-card__icon--technologies,
+body.app-layout-body .dashboard-stat-card__icon--creators,
+body.app-layout-body .dashboard-quick-action__icon--venture,
+body.app-layout-body .dashboard-quick-action__icon--creators,
+body.app-layout-body .dashboard-quick-action__icon--technology {
+  background: #FFF7ED !important;
+  color: #C2410C !important;
+}
+
+body.app-layout-body .dashboard-module-card__icon--domains,
+body.app-layout-body .dashboard-stat-card__icon--domains,
+body.app-layout-body .dashboard-quick-action__icon--domains {
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+}
+
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) {
+  border-color: #99F6E4 !important;
+}
+
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__cta,
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__arrow {
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+}
+
+body.app-layout-body .dashboard-module-card__cta:hover,
+body.app-layout-body .dashboard-module-card__arrow:hover {
+  border-color: #FED7AA !important;
+  background: #FFEDD5 !important;
+  color: #C2410C !important;
+}
+
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__cta:hover,
+body.app-layout-body .dashboard-module-card:has(.dashboard-module-card__icon--domains) .dashboard-module-card__arrow:hover {
+  border-color: #99F6E4 !important;
+  background: #F0FDFA !important;
+  color: #0F766E !important;
+}
+
+body.app-layout-body .btn-glow.dashboard-active-control,
+body.app-layout-body .dashboard-active-control {
+  background: #C2410C !important;
+  border-color: #C2410C !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px rgba(194, 65, 12, 0.18), 0 4px 12px rgba(194, 65, 12, 0.10) !important;
+}
+
+body.app-layout-body .btn-glow.dashboard-active-control svg,
+body.app-layout-body .dashboard-active-control svg {
+  color: #ffffff !important;
+}
+
+body.app-layout-body .dashboard-admin-header__btn.is-active {
+  background: #C2410C !important;
+  border-color: #C2410C !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px rgba(194, 65, 12, 0.18), 0 4px 12px rgba(194, 65, 12, 0.10) !important;
+}
+
+body.app-layout-body .dashboard-admin-header__btn.is-active svg {
+  color: #ffffff !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active {
+  background: #C2410C !important;
+  border-color: #C2410C !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(194, 65, 12, 0.12) !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active .operations-section-tab-accent {
+  background: linear-gradient(180deg, #F97316 0%, #C2410C 100%) !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active .operations-section-tab-icon-wrap {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+body.app-layout-body .operations-section-tab.is-active .operations-section-tab-count {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+body.app-layout-body .admin-dashboard-tab.active {
+  color: #ffffff !important;
+  border-color: #C2410C !important;
+  background: #C2410C !important;
+  box-shadow: 0 12px 28px rgba(194, 65, 12, 0.12), 0 4px 10px rgba(194, 65, 12, 0.08) !important;
+}
+
+body.app-layout-body .admin-dashboard-tab.active .admin-dashboard-tab-lucide-icon {
+  color: #ffffff !important;
+}

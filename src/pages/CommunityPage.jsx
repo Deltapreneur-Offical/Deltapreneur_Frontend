@@ -248,7 +248,7 @@ export default function CommunityPage() {
       applyProfilesList(list, { preferProfile: preferProfile || myFromApi || ownedInList });
       return list;
     } catch (err) {
-      setLinkedInError(apiErrorMessage(err, 'Could not load creator profiles. Please refresh the page.'));
+      setLinkedInError(apiErrorMessage(err, 'Could not load Deltapreneur profiles. Please refresh the page.'));
       throw err;
     }
   };
@@ -924,7 +924,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
           auctionType: 'COMMUNITY',
           user,
           referenceId: communityId,
-          description: 'Creator auction creation fee',
+          description: 'Deltapreneur auction creation fee',
         });
       }
       const payload = {
@@ -991,7 +991,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
                   <div className="text-sm font-semibold text-slate-900">
                     {formatCreatorExpectedRate({ expectedRate: profileExpectedRate }, formatPrice) || profileExpectedRate}
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 m-0">From your creator profile</p>
+                  <p className="text-xs text-slate-500 mt-1 m-0">From your Deltapreneur profile</p>
                 </div>
               ) : null}
 

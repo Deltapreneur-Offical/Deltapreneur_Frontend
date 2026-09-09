@@ -313,6 +313,17 @@
   color: #4338ca;
 }
 
+.admin-dashboard-tab.active {
+  color: #ffffff;
+  border-color: #C2410C;
+  background: #C2410C;
+  box-shadow: 0 12px 28px rgba(194, 65, 12, 0.12), 0 4px 10px rgba(194, 65, 12, 0.08);
+}
+
+.admin-dashboard-tab.active .admin-dashboard-tab-lucide-icon {
+  color: #ffffff;
+}
+
 .admin-dashboard-tab--domains.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--ventures.active .admin-dashboard-tab-label,
 .admin-dashboard-tab--cocreations.active .admin-dashboard-tab-label,

@@ -1,6 +1,6 @@
 /**
  * Static viewport edge glow.
- * Matches the search bar's cyan / rose / purple glow without moving sweep lines.
+ * Static frame glow; homepage overrides remap it to the saffron theme.
  */
 export default function SiteGradientBorder() {
   return (
@@ -37,6 +37,16 @@ export default function SiteGradientBorder() {
               rgba(255, 48, 108, 0.46) 86%,
               rgba(0, 195, 255, 0.48) 100%);
           box-shadow: 0 0 18px rgba(76, 29, 149, 0.22);
+        }
+
+        body.home-page-body .site-static-border::before {
+          background:
+            linear-gradient(135deg,
+              var(--home-saffron-200) 0%,
+              var(--home-saffron) 38%,
+              var(--home-saffron-text) 70%,
+              var(--home-saffron-300) 100%);
+          box-shadow: 0 0 18px rgba(194, 65, 12, 0.18);
         }
       `}</style>
     </>

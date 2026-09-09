@@ -17,6 +17,7 @@ import {
 } from '../../utils/technologyAuctionUi';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 import '../../styles/domain-listing-cards.css';
 
 function resolveSoftwareStatusDotClass(status) {
@@ -580,7 +581,7 @@ export default function TechnologyListingCard({
                 aria-label={t('listingCardViewDetails', 'View details')}
                 onClick={handleViewDetails}
               >
-                <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+                <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
               </button>
             ) : null}
           </div>

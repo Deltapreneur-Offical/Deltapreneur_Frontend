@@ -9,18 +9,26 @@ export async function checkBackendDatabaseReady(options = {}) {
 
   const retries = Number(options.retries ?? 10);
   const delayMs = Number(options.delayMs ?? 1500);
+  const timeoutMs = Number(options.timeoutMs ?? 3000);
 
   for (let attempt = 0; attempt < retries; attempt += 1) {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller
+      ? window.setTimeout(() => controller.abort(), timeoutMs)
+      : null;
     try {
       const response = await fetch('/ready', {
         credentials: 'include',
         cache: 'no-store',
+        signal: controller?.signal,
       });
       if (response.ok) {
         return true;
       }
     } catch {
-      // retry
+      // retry (including abort/timeout)
+    } finally {
+      if (timer) window.clearTimeout(timer);
     }
 
     if (attempt < retries - 1) {

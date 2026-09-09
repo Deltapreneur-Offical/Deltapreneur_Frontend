@@ -75,7 +75,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
   return (
     <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-fadeIn">
       <div className="relative my-auto w-full max-w-[520px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp">
-        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-orange-100/30 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 p-5 pb-4 sm:p-8 sm:pb-6">
           <h2 className="font-display text-2xl font-bold text-gray-900 m-0 mb-2">{t('updateProfile')}</h2>
@@ -95,7 +95,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
                 placeholder="e.g. Rahul"
                 autoFocus
                 required
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-orange-500 focus:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -108,7 +108,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
                 onChange={handleChange}
                 placeholder="e.g. Sharma"
                 required
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-orange-500 focus:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]"
               />
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               placeholder="e.g. 9876543210"
               maxLength={10}
               required
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-orange-500 focus:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]"
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               onChange={handleChange}
               placeholder="e.g. Jayanagar, Bengaluru"
               maxLength={150}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-orange-500 focus:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]"
             />
           </div>
 
@@ -181,7 +181,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               disabled={loading}
             >
               {loading ? (
-                <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
               ) : (
                 t('profileCompletionSubmit')
               )}
@@ -191,7 +191,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
           <div className="border-t border-gray-200 pt-4">
             <Link
               to="/security/password"
-              className="block text-center text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors"
+              className="block text-center text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
             >
               Forgot password? Don&apos;t worry — manage it here
             </Link>

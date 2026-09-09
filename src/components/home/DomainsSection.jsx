@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
+import { isListingOwner } from '../../utils/listingVisibility';
+import { useAuth } from '../../context/AuthContext';
 import { useLikes } from '../../hooks/useLikes';
 import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
@@ -19,6 +21,7 @@ import '../../styles/domain-listing-cards.css';
 export default function DomainsSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [previewDomains, setPreviewDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasFetchedDomains, setHasFetchedDomains] = useState(false);
@@ -68,6 +71,7 @@ export default function DomainsSection() {
         domain={domain}
         browseMode={true}
         marketplace
+        isOwner={isListingOwner(domain, user, 'domain')}
         likeState={getLike(domain.id)}
         onLike={() => toggleLike(domain.id)}
         onView={() => handleViewDetails(domain.id)}
@@ -80,7 +84,7 @@ export default function DomainsSection() {
   }
 
   return (
-    <section className="bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-domains-section bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={t('homeDomainRegister', { defaultValue: 'Domains' })}

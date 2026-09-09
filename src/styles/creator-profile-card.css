@@ -371,10 +371,11 @@
 
 .creator-profile-card:not(.virtual-assistant-listing-card) .creator-expected-rate__value {
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #0284c7 !important;
   line-height: 1.1;
   white-space: nowrap;
+  font-family: var(--font-display, 'Newsreader', Georgia, serif);
 }
 
 .creator-expected-rate__period {
@@ -1170,7 +1171,7 @@
 
   .creator-profile-card.community-listing-card:not(.virtual-assistant-listing-card) .creator-expected-rate__value {
     font-size: 1rem !important;
-    font-weight: 800 !important;
+    font-weight: 600 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;

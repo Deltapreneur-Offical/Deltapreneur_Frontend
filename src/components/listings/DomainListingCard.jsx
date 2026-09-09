@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Gavel, Trash2, Share2, MoreVertical } from 'lucide-react';
+import { Gavel, Trash2, Share2, MoreVertical } from 'lucide-react';
 import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +12,7 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 import AddToCartButton from '../cart/AddToCartButton';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 import RegistryStandardBadge from '../domain/RegistryStandardBadge';
 import '../../styles/domain-listing-cards.css';
 
@@ -74,7 +75,7 @@ function DomainListingPriceBox({ amount, isAuction, onViewDetails, viewLabel, au
           aria-label={viewLabel}
           onClick={onViewDetails}
         >
-          <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+          <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
         </button>
       ) : null}
     </div>
@@ -397,9 +398,9 @@ export default function DomainListingCard({
   // MARKETPLACE VARIANT: Render flat card layout matching Premium DomainCard
   // Blue theme (sky) instead of amber — same structure as DomainCard
   // ═══════════════════════════════════════════════════════════════════════════
-  if (marketplace) {
+    if (marketplace) {
     const priceText = priceAmount > 0 ? formatPrice(priceAmount) : null;
-    const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0;
+    const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0 && !isOwner;
 
     return (
       <div
@@ -505,6 +506,20 @@ export default function DomainListingCard({
             >
               <Gavel size={13} className="shrink-0" /> {t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })} →
             </button>
+          ) : isOwner ? (
+            onEdit ? (
+              <button
+                type="button"
+                className="inline-flex w-fit min-w-[8.5rem] items-center justify-center px-4 py-2.5 rounded-lg font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-colors whitespace-nowrap"
+                onClick={(e) => { stop(e); onEdit(); }}
+              >
+                {t('edit')}
+              </button>
+            ) : (
+              <span className="inline-flex w-fit min-w-[8.5rem] items-center justify-center px-4 py-2.5 rounded-lg font-bold text-sm bg-slate-100 text-slate-500 whitespace-nowrap">
+                {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+              </span>
+            )
           ) : canBuy ? (
             <AddToCartButton
               productType="DOMAIN_LISTING"

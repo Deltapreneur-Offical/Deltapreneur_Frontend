@@ -387,7 +387,13 @@ export default function OperationsPage() {
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 min-w-0">
         <ListingBackLink />
         <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-          <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 px-5 py-5 sm:px-7 sm:py-6 text-white">
+          <div
+            className="px-5 py-5 sm:px-7 sm:py-6 text-white"
+            style={{
+              background:
+                'radial-gradient(circle at 0% 50%, rgba(255, 122, 0, 0.34) 0%, rgba(255, 122, 0, 0.18) 34%, transparent 68%), linear-gradient(135deg, #EA580C 0%, #F97316 48%, #FB923C 100%)',
+            }}
+          >
             <div className="flex items-start gap-3.5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 border border-white/20">
                 <SectionIcon size={22} strokeWidth={2} aria-hidden />

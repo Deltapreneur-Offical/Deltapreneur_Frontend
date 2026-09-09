@@ -125,7 +125,7 @@ const trackedAuctionTitle = (auction) => {
   if (auction?.software || auction?.name || String(auction?.auctionType || '').toUpperCase() === 'TECHNOLOGY') {
     return auction.auctionTitle || auction.name || auction.software?.name || 'Technology auction';
   }
-  return auction.auctionTitle || auction.community?.name || 'Creator auction';
+  return auction.auctionTitle || auction.community?.name || 'Deltapreneur auction';
 };
 
 const trackedTypeMeta = (auction) => {
@@ -134,7 +134,7 @@ const trackedTypeMeta = (auction) => {
     return { label: 'Technology', icon: TechnologyIcon, tone: 'indigo' };
   }
   if (type === 'CREATOR' || auction?.community || auction?.communityId || auction?.community_id) {
-    return { label: 'Creator', icon: CreatorIcon, tone: 'violet' };
+    return { label: 'Deltapreneur', icon: CreatorIcon, tone: 'violet' };
   }
   return { label: 'Domain', icon: DomainsIcon, tone: 'blue' };
 };
@@ -723,8 +723,8 @@ export default function AuctionsPage() {
               <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">Sign in to track</h3>
               <p className="text-gray-600 mb-6">
                 {view === 'yours'
-                  ? 'Your listed Domain, Technology, and Creator auctions appear here after you sign in.'
-                  : 'Auctions you bid on across Domains, Technology, and Creators appear here after you sign in.'}
+                  ? 'Your listed Domain, Technology, and Deltapreneur auctions appear here after you sign in.'
+                  : 'Auctions you bid on across Domains, Technology, and Deltapreneurs appear here after you sign in.'}
               </p>
               <button className="btn-glow btn-glow-sm" type="button" onClick={() => navigate('/login')}>
                 Sign in →
@@ -740,7 +740,7 @@ export default function AuctionsPage() {
               </h3>
               <p className="text-gray-600 mb-6">
                 {view === 'yours'
-                  ? 'When you put a Domain, Technology, or Creator listing into auction, it shows up here with live status.'
+                  ? 'When you put a Domain, Technology, or Deltapreneur listing into auction, it shows up here with live status.'
                   : 'When you bid on any live auction, it shows up here so you can track leading / outbid / payment pending.'}
               </p>
               <button className="btn-glow btn-glow-sm" type="button" onClick={() => setView('browse')}>
@@ -849,7 +849,7 @@ export default function AuctionsPage() {
                 <div className="auctions-page-section-head">
                   <h2 className="text-base font-bold text-teal-600 m-0 inline-flex items-center gap-2">
                     <AuctionCategoryIcon src={CreatorIcon} className="w-5 h-5 object-contain" />
-                    Creator Profiles
+                    Deltapreneur Profiles
                   </h2>
                   <span className="text-xs text-gray-500 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
                     {shownCommunity.length} live

@@ -36,10 +36,10 @@ export const HUB_REGISTRAR_SUBCATEGORIES = {
     item('GST Registration', ['gst']),
     item('GST Amendment', ['gst update']),
     item('GST Cancellation'),
-    item('GST Return Filing', ['gst returns', 'gstr']),
+    item('GST Return Filing', ['gst returns', 'gstr', 'gst return filling']),
     item('Professional Tax Registration', ['professional tax', 'pt registration']),
     item('Tax Identification Services'),
-    item('Other Tax Compliance Services', ['other tax']),
+    item('Other Tax Compliance Services', ['other tax', 'other tax compilance services']),
   ],
   local_licences: [
     item('Shop & Establishment Registration', ['shops and establishments', 'shop and establishment', 'shops act']),
@@ -265,12 +265,28 @@ export function serviceMatchesHubRegistrarSubcategory(service, categorySlug, sub
   const isUncategorized = !storedCategory || storedCategory === 'compliance';
   if (!isUncategorized && storedCategory !== categorySlug) return false;
 
+  const wanted = slugifyServiceName(subcategorySlug);
+  const nameSlug = slugifyServiceName(service.name);
+  if (nameSlug === wanted || slugsRelated(nameSlug, wanted)) return true;
+
   const sub = getHubRegistrarSubcategory(categorySlug, subcategorySlug);
   if (!sub) return false;
-
-  const nameSlug = slugifyServiceName(service.name);
   if (slugsRelated(nameSlug, sub.slug)) return true;
   return (sub.aliases || []).some((alias) => slugsRelated(nameSlug, alias) || nameSlug === alias);
+}
+
+export function mapApiServiceToRegistrationCard(svc) {
+  return {
+    id: String(svc?.id ?? ''),
+    slug: slugifyServiceName(svc?.name),
+    label: svc?.name || '',
+    price: Number(svc?.price ?? 0) || 0,
+    governmentFeesApplicable: svc?.governmentFeesApplicable ?? svc?.government_fees_applicable ?? false,
+    governmentFeeText: svc?.governmentFeeText ?? svc?.government_fee_text,
+    description: svc?.description || '',
+    icon: svc?.icon || null,
+    displayOrder: Number(svc?.displayOrder ?? svc?.display_order ?? 0) || 0,
+  };
 }
 
 /**

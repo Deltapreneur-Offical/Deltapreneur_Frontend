@@ -248,7 +248,7 @@ function ProductRow({ product, formatPrice, t }) {
               </div>
               {product.coBrotherFee > 0 && (
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-gray-500">{t('coCreator', { defaultValue: 'Co-Creator' })}</span>
+                  <span className="text-gray-500">{t('coCreator', { defaultValue: 'Co-Deltapreneur' })}</span>
                   <span className="text-gray-700 tabular-nums font-medium">{formatPrice(product.coBrotherFee)}</span>
                 </div>
               )}
@@ -355,7 +355,6 @@ function RequestCard({
                 )}
                 <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 border-t border-gray-200/60">
                   <span><span className="text-gray-400">{t('linkedProductPrefix', { defaultValue: 'Linked product - ' })}</span><span translate="no">{productName}</span></span>
-                  <span><span className="text-gray-400">{t('billingPrefix', { defaultValue: 'Billing - ' })}</span>{t('notChargedToday', { defaultValue: 'Not charged today' })}</span>
                   <span>
                     <span className="text-gray-400">{t('estimatePrefix', { defaultValue: 'Estimate - ' })}</span>
                     {pricePrefix}{priceLabel}{monthly && priceLabel !== t('onRequest', { defaultValue: 'On request' }) ? t('monthlyParenthetical', { defaultValue: ' (monthly)' }) : ''}

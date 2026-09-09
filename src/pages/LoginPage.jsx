@@ -50,7 +50,7 @@ export default function LoginPage() {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection();
+  } = useBotProtection({ action: 'login' });
 
   useEffect(() => {
     const prefilledEmail = location.state?.email;
@@ -143,7 +143,7 @@ export default function LoginPage() {
     if (!import.meta.env.DEV) return undefined;
 
     let cancelled = false;
-    checkBackendDatabaseReady({ retries: 12, delayMs: 2000 }).then((ready) => {
+    checkBackendDatabaseReady({ retries: 2, delayMs: 1000, timeoutMs: 3000 }).then((ready) => {
       if (!ready && !cancelled) {
         setInfo(databaseUnavailableMessage);
       } else if (ready && !cancelled) {
@@ -303,25 +303,11 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (import.meta.env.DEV) {
-      const ready = await checkBackendDatabaseReady();
-      if (!ready) {
-        setError(databaseUnavailableMessage);
-        return;
-      }
-    }
+  const handleGoogleLogin = () => {
     startGoogleOAuth(localStorage.getItem('redirectAfterLogin') || from);
   };
 
-  const handleLinkedInLogin = async () => {
-    if (import.meta.env.DEV) {
-      const ready = await checkBackendDatabaseReady();
-      if (!ready) {
-        setError(databaseUnavailableMessage);
-        return;
-      }
-    }
+  const handleLinkedInLogin = () => {
     startLinkedInOAuth(localStorage.getItem('redirectAfterLogin') || from);
   };
 
@@ -357,8 +343,8 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) return null;
-
+  // Keep the form visible while session restore runs. A hung DB/refresh
+  // must not blank the page — Google login has to stay clickable.
   return (
     <AuthShell
       title={t('welcomeToHubRegistrar')}

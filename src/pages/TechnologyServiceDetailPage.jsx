@@ -225,7 +225,7 @@ export default function TechnologyServiceDetailPage() {
     return (
       <AppLayout>
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-4" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-600 border-t-transparent mb-4" />
           <p className="text-sm font-semibold text-gray-700">Loading Deltapreneur Technology Service...</p>
           <p className="text-xs text-gray-400 mt-1">Connecting to Deltapreneur REST API...</p>
         </div>
@@ -246,7 +246,7 @@ export default function TechnologyServiceDetailPage() {
           </p>
           <button
             onClick={() => navigate('/technology', { replace: true })}
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition-colors"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-orange-800 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Return to Technologies Catalogue
@@ -263,9 +263,9 @@ export default function TechnologyServiceDetailPage() {
       <div className="bg-gray-50 min-h-screen pb-16">
         
         {/* Top Header / Hero */}
-        <div className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white pt-10 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-          <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 h-96 w-96 rounded-full bg-purple-500/10 blur-3xl" />
+        <div className="bg-gradient-to-b from-[#431407] via-[#7c2d12] to-[#431407] text-white pt-10 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+          <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-orange-400/15 blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 h-96 w-96 rounded-full bg-amber-300/10 blur-3xl" />
 
           <div className="mx-auto max-w-7xl relative z-10">
             {/* Back Link */}
@@ -280,11 +280,11 @@ export default function TechnologyServiceDetailPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div className="max-w-3xl">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md text-indigo-400 border border-white/10 shadow-lg">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md text-orange-200 border border-orange-200/20 shadow-lg">
                     <IconComponent className="h-8 w-8" />
                   </div>
                   <div>
-                    <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
+                    <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-bold text-orange-100 border border-orange-300/30 uppercase tracking-wider">
                       {service.category}
                     </span>
                     {service.badge && (
@@ -316,7 +316,7 @@ export default function TechnologyServiceDetailPage() {
                     </p>
                     <button
                       onClick={() => navigate('/dashboard?tab=my-technologies')}
-                      className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5"
+                      className="w-full rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-orange-700 hover:to-amber-700 transition-all transform hover:-translate-y-0.5"
                     >
                       Manage Subscription
                     </button>
@@ -333,7 +333,7 @@ export default function TechnologyServiceDetailPage() {
                     </p>
                     <a
                       href="#pricing-plans"
-                      className="inline-block w-full rounded-xl bg-indigo-500 px-5 py-3 text-sm font-bold text-white shadow-lg hover:bg-indigo-600 transition-all transform hover:-translate-y-0.5"
+                      className="inline-block w-full rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white shadow-lg hover:bg-orange-700 transition-all transform hover:-translate-y-0.5"
                     >
                       View Pricing Plans
                     </a>
@@ -351,13 +351,13 @@ export default function TechnologyServiceDetailPage() {
           {service.features && service.features.length > 0 && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Zap className="h-6 w-6 text-indigo-600" />
+                <Zap className="h-6 w-6 text-orange-600" />
                 Key Features & Capabilities
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {service.features.map((feat, idx) => (
                   <div key={idx} className="flex items-start gap-4 rounded-2xl bg-white p-5 shadow-sm border border-gray-100">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
                       <CheckCircle2 className="h-5 w-5" />
                     </div>
                     <div>
@@ -374,7 +374,7 @@ export default function TechnologyServiceDetailPage() {
           {service.plans && service.plans.length > 0 && (
             <div id="pricing-plans" className="scroll-mt-10">
               <div className="text-center max-w-2xl mx-auto mb-10">
-                <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 mb-2">
+                <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 mb-2">
                   <Sparkles className="h-3.5 w-3.5" />
                   Transparent Pricing
                 </span>
@@ -399,7 +399,7 @@ export default function TechnologyServiceDetailPage() {
                     onClick={() => setBillingCycle('annually')}
                     className={`rounded-full px-5 py-2 text-xs font-bold transition-all flex items-center gap-1.5 ${
                       billingCycle === 'annually'
-                        ? 'bg-indigo-600 text-white shadow-md'
+                        ? 'bg-orange-600 text-white shadow-md'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -422,12 +422,12 @@ export default function TechnologyServiceDetailPage() {
                       key={plan.code}
                       className={`relative flex flex-col justify-between rounded-3xl bg-white p-8 transition-all duration-300 ${
                         isPro
-                          ? 'border-2 border-indigo-600 shadow-2xl scale-105 z-10'
+                          ? 'border-2 border-orange-600 shadow-2xl scale-105 z-10'
                           : 'border border-gray-200 shadow-sm hover:shadow-lg'
                       }`}
                     >
                       {isPro && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-1 text-xs font-bold text-white shadow-md">
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-orange-700 to-amber-600 px-4 py-1 text-xs font-bold text-white shadow-md">
                           MOST POPULAR
                         </div>
                       )}
@@ -464,8 +464,8 @@ export default function TechnologyServiceDetailPage() {
                         }}
                         className={`mt-8 w-full rounded-xl py-3 text-sm font-bold shadow-md transition-all ${
                           isPro
-                            ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/30'
-                            : 'bg-gray-900 text-white hover:bg-gray-800'
+                            ? 'bg-orange-700 text-white hover:bg-orange-800 shadow-orange-600/30'
+                            : 'bg-orange-950 text-white hover:bg-orange-900'
                         }`}
                       >
                         Select {plan.name} Plan
@@ -521,7 +521,7 @@ export default function TechnologyServiceDetailPage() {
               Confirm Subscription
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              You are subscribing to <strong className="text-gray-900">{service.name}</strong> on the <strong className="text-indigo-600">{purchasingPlan.name}</strong> plan.
+              You are subscribing to <strong className="text-gray-900">{service.name}</strong> on the <strong className="text-orange-700">{purchasingPlan.name}</strong> plan.
             </p>
 
             {String(service.slug || '').toLowerCase() === 'business-phone' && (
@@ -537,7 +537,7 @@ export default function TechnologyServiceDetailPage() {
                     setInputError(null);
                   }}
                   placeholder="e.g. 415"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Your Business Phone number will be assigned to this area code.
@@ -558,7 +558,7 @@ export default function TechnologyServiceDetailPage() {
                     setInputError(null);
                   }}
                   placeholder="e.g. example.com"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   This domain will be used to create your hosting account (e.g. example.com → cpanel username 'example').
@@ -587,7 +587,7 @@ export default function TechnologyServiceDetailPage() {
               </div>
               <div className="flex justify-between text-gray-600 pt-2 border-t border-gray-200 font-bold text-gray-900">
                 <span>Total Due Today:</span>
-                <span className="text-indigo-600 text-base">
+                <span className="text-orange-700 text-base">
                   {formatTechPrice(
                     billingCycle === 'annually' ? purchasingPlan.price_annually : purchasingPlan.price_monthly
                   )}
@@ -606,7 +606,7 @@ export default function TechnologyServiceDetailPage() {
               <button
                 onClick={handleSubscribe}
                 disabled={submitting}
-                className="w-1/2 rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white shadow-md hover:bg-indigo-700 flex items-center justify-center gap-2"
+                className="w-1/2 rounded-xl bg-orange-700 py-3 text-sm font-bold text-white shadow-md hover:bg-orange-800 flex items-center justify-center gap-2"
               >
                 {submitting ? t('techDetailProvisioning', { defaultValue: 'Provisioning...' }) : t('techDetailConfirmPay', { defaultValue: 'Confirm & Pay' })}
               </button>
@@ -629,7 +629,7 @@ export default function TechnologyServiceDetailPage() {
 
             <div className="bg-gray-50 rounded-2xl p-4 my-6 text-left space-y-2 border border-gray-100 text-xs text-gray-600">
               <div><strong>Status:</strong> <span className="text-emerald-600 font-bold">ACTIVE</span></div>
-              <div><strong>Workspace URL:</strong> <a href={purchasedSuccess.credentials?.access_url} target="_blank" rel="noreferrer" className="text-indigo-600 underline font-mono break-all">{purchasedSuccess.credentials?.access_url}</a></div>
+              <div><strong>Workspace URL:</strong> <a href={purchasedSuccess.credentials?.access_url} target="_blank" rel="noreferrer" className="text-orange-700 underline font-mono break-all">{purchasedSuccess.credentials?.access_url}</a></div>
               <div><strong>Username:</strong> <span className="font-mono text-gray-800">{purchasedSuccess.credentials?.username}</span></div>
             </div>
 
@@ -638,7 +638,7 @@ export default function TechnologyServiceDetailPage() {
                 setPurchasedSuccess(null);
                 navigate('/dashboard?tab=my-technologies');
               }}
-              className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white shadow-md hover:bg-indigo-700"
+              className="w-full rounded-xl bg-orange-700 py-3 text-sm font-bold text-white shadow-md hover:bg-orange-800"
             >
               Go to My Technologies Dashboard
             </button>

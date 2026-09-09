@@ -4,7 +4,7 @@ import { LayoutDashboard, BarChart3 } from 'lucide-react';
 
 const navBtnCls =
   'btn-glow btn-glow-sm flex items-center justify-center gap-1.5 text-sm py-2.5 px-3 sm:px-4 min-h-[44px] whitespace-nowrap';
-const activeCls = 'bg-gray-900 text-white border-gray-900';
+const activeCls = 'dashboard-active-control';
 
 /**
  * Shared venture section navigation: Dashboard, Analytics, All Ventures, My Ventures.

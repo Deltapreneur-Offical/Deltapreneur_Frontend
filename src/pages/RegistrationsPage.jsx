@@ -10,10 +10,7 @@ import HomeRegistrationServiceCard from '../components/home/HomeRegistrationServ
 import buildingsSkyline from '../assets/buildingssss.png';
 import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 import useDocumentMeta from '../hooks/useDocumentMeta';
-import {
-  getHubRegistrarSubcategories,
-  matchServicePriceFromApi,
-} from '../utils/operationsCategories';
+import { mapApiServiceToRegistrationCard } from '../utils/hubRegistrarSubcategories';
 import { operationsAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
 import { usePublicHubRegistrarCategories } from '../context/CategoryContext';
@@ -115,12 +112,11 @@ export default function RegistrationsPage() {
   const services = useMemo(
     () => {
       if (!selectedCategory) return [];
-      const subs = getHubRegistrarSubcategories(selectedCategory.slug);
-      if (apiServices.length === 0) return subs;
-      return subs.map((sub) => {
-        const match = matchServicePriceFromApi(sub, apiServices);
-        return match ? { ...sub, price: match.price, governmentFeesApplicable: match.governmentFeesApplicable, governmentFeeText: match.governmentFeeText } : sub;
-      });
+      return apiServices
+        .filter((svc) => String(svc.category || '').trim().toLowerCase() === selectedCategory.slug)
+        .filter((svc) => (svc.isAvailable ?? svc.is_available) !== false)
+        .map(mapApiServiceToRegistrationCard)
+        .sort((a, b) => (a.displayOrder - b.displayOrder) || a.label.localeCompare(b.label));
     },
     [selectedCategory, apiServices],
   );
@@ -172,8 +168,9 @@ export default function RegistrationsPage() {
     const query = categoryFilter.trim().toLowerCase();
     if (!query) return services;
     return services.filter((service) => (
-      service.label.toLowerCase().includes(query)
-      || service.slug.toLowerCase().includes(query)
+      (service.label || '').toLowerCase().includes(query)
+      || (service.slug || '').toLowerCase().includes(query)
+      || (service.description || '').toLowerCase().includes(query)
     ));
   }, [categoryFilter, services]);
 
@@ -344,7 +341,7 @@ export default function RegistrationsPage() {
             <div className="reg-catalog-grid reg-catalog-grid--services">
               {filteredServices.map((service) => (
                 <HomeRegistrationServiceCard
-                  key={service.slug}
+                  key={service.id || service.slug}
                   categorySlug={selectedCategory.slug}
                   service={service}
                 />

@@ -247,7 +247,7 @@ export default function DomainsDashboardPage() {
         ) : null}
 
         <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm relative ${tab === 'listings' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('listings')}>
+          <button className={`btn-glow btn-glow-sm relative ${tab === 'listings' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('listings')}>
             {t('domainsDashboardTabListings', { count: listings.length })}
             {pendingVerificationCount > 0 ? (
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
@@ -255,13 +255,13 @@ export default function DomainsDashboardPage() {
               </span>
             ) : null}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('purchases')}>
+          <button className={`btn-glow btn-glow-sm ${tab === 'purchases' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('purchases')}>
             {t('domainsDashboardTabPurchases', { count: purchaseCount, defaultValue: `My Purchases (${purchaseCount})` })}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('sold')}>
+          <button className={`btn-glow btn-glow-sm ${tab === 'sold' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('sold')}>
             {t('domainsDashboardTabSoldTransfers', { count: soldTransfers.length, defaultValue: `Sold transfers (${soldTransfers.length})` })}
           </button>
-          <button className={`btn-glow btn-glow-sm ${tab === 'acquisitions' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setTab('acquisitions')}>
+          <button className={`btn-glow btn-glow-sm ${tab === 'acquisitions' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('acquisitions')}>
             My Acquisition Orders ({acquisitions.length})
           </button>
         </div>
@@ -626,7 +626,7 @@ function DomainRow({ domain, type, onVerify }) {
     DRAFT:    '#888',
     ACTIVE:   '#6ec896',
     EXTENDED: '#c8a96e',
-    ENDED:    '#a06ec8',
+    ENDED:    '#c2410c',
     UNSOLD:   '#c86e6e',
     CLOSED:   '#666',
   };
@@ -685,7 +685,7 @@ function DomainRow({ domain, type, onVerify }) {
             <OverflowMarqueeText text={`${domain.domainName}${domain.domainExtension}`} />
           </span>
           {isAuction && (
-            <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full shrink-0">
+            <span className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded-full shrink-0">
               <Gavel size={13} /> {t('domainsDashboardAuction', { defaultValue: 'Auction' })}
             </span>
           )}

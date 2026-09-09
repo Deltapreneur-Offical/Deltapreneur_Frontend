@@ -1,0 +1,101 @@
+/* Shared orange play asset used in price pills. Size/position match the tuned venture card. */
+.price-section-v-icon {
+  display: block;
+  height: calc(100% + 3px) !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: -1.5px 0.62rem -1.5px 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  filter: none !important;
+  pointer-events: none;
+  user-select: none;
+}
+
+.domain-listing-card__price-cta:has(.price-section-v-icon),
+.tech-service-card__price-arrow:has(.price-section-v-icon),
+.reg-mini-card__price-arrow:has(.price-section-v-icon),
+.home-operations-preview-card__cta:has(.price-section-v-icon) {
+  position: relative !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  transform: none !important;
+}
+
+/* DeltaOs / Delta Registrars / Delta Registrations — same slot as venture */
+.tech-service-card__price-arrow,
+.home-operations-preview-card__cta,
+.reg-mini-card__price-arrow {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  align-self: stretch !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+.tech-service-card__price-arrow .price-section-v-icon,
+.home-operations-preview-card__cta .price-section-v-icon,
+.reg-mini-card__price-arrow .price-section-v-icon {
+  height: calc(100% + 3px) !important;
+  width: auto !important;
+  margin: -1.5px 0.62rem -1.5px 0 !important;
+}
+
+/*
+  Same asking-price chrome as venture cards:
+  white fill, 2.5px red→orange ring, PNG play on the right.
+*/
+.tech-service-card__price-pill,
+.home-operations-preview-card__price-box,
+.reg-mini-card__price-pill,
+.home-preview-card-border--operations .home-operations-preview-card__price-box,
+.home-preview-card-border--compliance .home-operations-preview-card__price-box {
+  height: 2.35rem !important;
+  min-height: 2.35rem !important;
+  padding: 0 0 0 0.95rem !important;
+  overflow: hidden !important;
+  border-radius: 9999px !important;
+  border: 2.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: none !important;
+}
+
+.tech-service-card:hover .tech-service-card__price-pill,
+.tech-service-card__price-pill:focus-visible,
+.home-operations-preview-card:hover .home-operations-preview-card__price-box,
+.home-preview-card-border--operations:hover .home-operations-preview-card__price-box,
+.home-preview-card-border--compliance:hover .home-operations-preview-card__price-box,
+.reg-mini-card:hover .reg-mini-card__price-pill,
+.reg-mini-card:focus-visible .reg-mini-card__price-pill {
+  border: 2.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: none !important;
+  outline: none;
+}

@@ -76,7 +76,7 @@ const JoinForm = () => {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection();
+  } = useBotProtection({ action: 'join' });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

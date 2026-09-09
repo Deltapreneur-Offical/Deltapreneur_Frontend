@@ -303,9 +303,9 @@ export default function CoCreationPage() {
             </div>
 
             <div className="flex gap-2 mb-6">
-              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'dashboard-active-control' : ''}`}
                 onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allTechnology')}</button>
-              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'dashboard-active-control' : ''}`}
                 onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
             </div>
 
@@ -1493,7 +1493,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
                     </div>
                     <div>
                       <div className={`font-extrabold text-base mb-1 flex flex-wrap items-center gap-2 ${coBrotherOptIn ? 'text-indigo-950' : 'text-gray-900'}`}>
-                        <span>Co-Creator Assistance</span>
+                        <span>Co-Deltapreneur Assistance</span>
                         <span className={`font-display text-[0.95rem] font-black ${coBrotherOptIn ? 'text-indigo-700' : 'text-gray-500'}`}>
                           +{formatPrice(1000)}
                         </span>
@@ -1520,7 +1520,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
                   <BillingLine label={`${item.name}${activePlan ? ` (${activePlan.label})` : ''}`}
                     value={formatPrice(basePrice)} />
                   {coBrotherOptIn && (
-                    <BillingLine label="Co-Creator Assistance" value={formatPrice(1000)} accent />
+                    <BillingLine label="Co-Deltapreneur Assistance" value={formatPrice(1000)} accent />
                   )}
                 </div>
 

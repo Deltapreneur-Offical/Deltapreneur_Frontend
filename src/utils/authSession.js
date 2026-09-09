@@ -30,6 +30,9 @@ export function clearAuthTokens() {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
+
+  const cookieOptions = 'expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
+  document.cookie = `csrf_token=; ${cookieOptions}`;
 }
 
 /**
@@ -74,7 +77,15 @@ export function isAccessTokenFresh(token = memoryAccessToken, skewMs = 90_000) {
 /** Readable CSRF cookie is set alongside HttpOnly refresh/access cookies. */
 export function hasCookieAuthSession() {
   if (typeof document === 'undefined') return false;
-  return /(?:^|; )csrf_token=([^;]*)/.test(document.cookie);
+  const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+  if (!match?.[1]) return false;
+  const value = match[1].trim();
+  if (!value) return false;
+  try {
+    return decodeURIComponent(value).trim().length > 0;
+  } catch {
+    return value.length > 0;
+  }
 }
 
 /** Paths that should never force-redirect to /login when a session expires. */

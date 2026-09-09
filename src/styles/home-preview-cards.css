@@ -2002,12 +2002,6 @@
   flex: 0 1 auto;
   align-self: flex-end;
   padding-bottom: 0.12rem;
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.02em;
-  color: #111827;
 }
 
 .home-section-header__view-all {
@@ -2181,13 +2175,6 @@
   }
 }
 
-@media (min-width: 640px) {
-  .home-section-header__title {
-    font-size: 1.25rem;
-    line-height: 1.4;
-  }
-}
-
 @media (min-width: 768px) {
   .home-section-header {
     margin-bottom: 1.125rem;
@@ -2195,10 +2182,6 @@
 
   .home-section-header__top {
     padding-bottom: 0.32rem;
-  }
-
-  .home-section-header__title {
-    font-size: 1.375rem;
   }
 
   .home-section-header__view-all {

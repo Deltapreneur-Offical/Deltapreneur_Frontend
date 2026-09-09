@@ -14,7 +14,7 @@ import DomainCard from '../domain/DomainCard';
  * marketplace escrow). Managed Acquisition (>₹5L) messaging renders through
  * the shared DomainCard when the flag is set.
  */
-export default function ShowcaseDomainCard({ item, shareContext = null }) {
+export default function ShowcaseDomainCard({ item, shareContext = null, stackPremiumBadge = false }) {
   const fullDomain = String(item.domainName || '').toLowerCase().trim();
   const tld = String(
     item.tld ||
@@ -24,6 +24,7 @@ export default function ShowcaseDomainCard({ item, shareContext = null }) {
 
   return (
     <DomainCard
+      stackPremiumBadge={stackPremiumBadge}
       item={{
         domain: fullDomain,
         name: item.name,

@@ -10,6 +10,7 @@ export default function BotProtectionFields({
   turnstileRef,
   onTurnstileToken,
   onTurnstileExpire,
+  action,
 }) {
   return (
     <div className={className}>
@@ -18,6 +19,7 @@ export default function BotProtectionFields({
         <TurnstileWidget
           ref={turnstileRef}
           siteKey={siteKey}
+          action={action}
           onToken={onTurnstileToken}
           onExpire={onTurnstileExpire}
         />

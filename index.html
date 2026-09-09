@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="./src/assets/Deltapreneur_favicon.png" media="(prefers-color-scheme: dark)" />
-  <link rel="icon" type="image/png" href="./src/assets/Deltapreneur_favicon.png" media="(prefers-color-scheme: light)" />
+  <link rel="icon" type="image/png" href="/Deltapreneur_favicon.png" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" type="image/png" href="/Deltapreneur_favicon.png" media="(prefers-color-scheme: light)" />
   <script>
     (function () {
       var darkHref = '/Deltapreneur_favicon.png';
@@ -23,7 +23,7 @@
         link.id = 'dynamic-favicon';
         link.rel = 'icon';
         link.type = 'image/png';
-        link.href = isDark ? darkHref : lightHref;
+        link.href = (isDark ? darkHref : lightHref) + '?v=' + Date.now();
         document.head.appendChild(link);
       }
 

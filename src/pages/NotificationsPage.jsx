@@ -209,10 +209,10 @@ export default function NotificationsPage() {
 
         <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
           <div className="flex gap-2">
-            <button className={`btn-glow btn-glow-sm ${filter === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setFilter('all')}>
+            <button className={`btn-glow btn-glow-sm ${filter === 'all' ? 'dashboard-active-control' : ''}`} onClick={() => setFilter('all')}>
               {t('notificationsPageFilterAll', { count: notifications.length })}
             </button>
-            <button className={`btn-glow btn-glow-sm ${filter === 'unread' ? 'bg-gray-900 text-white border-gray-900' : ''}`} onClick={() => setFilter('unread')}>
+            <button className={`btn-glow btn-glow-sm ${filter === 'unread' ? 'dashboard-active-control' : ''}`} onClick={() => setFilter('unread')}>
               {t('notificationsPageFilterUnread', { count: unread.length })}
             </button>
           </div>

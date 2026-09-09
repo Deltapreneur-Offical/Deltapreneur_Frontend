@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useDynamicCategoryName } from '../../context/CategoryContext';
-import { ArrowRight, Lightbulb } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import { resolveOperationsIcon } from '../../utils/operationsIcons';
 import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../utils/operationsCategories';
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
@@ -10,6 +10,7 @@ import LikeButton from '../common/LikeButton';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
 import { useIsCarouselClone } from './HomeAutoScrollRow';
 import TruncatedItemsTooltip from '../common/TruncatedItemsTooltip';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 
 function resolveSkills(service) {
   if (Array.isArray(service.skills)) return service.skills;
@@ -168,7 +169,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
             ? t('operationsBookSlot', { defaultValue: 'Book Your Slot' })
             : t('operationsHire', { defaultValue: 'Hire' })}
         >
-          <ArrowRight size={16} strokeWidth={2.5} aria-hidden />
+          <PriceSectionIcon />
         </button>
       </div>
 

@@ -40,7 +40,7 @@ const BACK_RULES = [
   { test: (p) => p.startsWith('/technology/auction') || p.startsWith('/software-auction'), to: '/auctions?section=technology', label: 'Auctions' },
   { test: (p) => (p.startsWith('/technology') || p.startsWith('/cocreation')) && !p.includes('/auction/'), to: '/technology', label: 'Technology' },
   { test: (p) => p.startsWith('/creator-auction') || p.startsWith('/community-auction'), to: '/auctions', label: 'Auctions' },
-  { test: (p) => p.startsWith('/creator') || p.startsWith('/community'), to: '/creator', label: 'Creators' },
+  { test: (p) => p.startsWith('/creator') || p.startsWith('/community'), to: '/creator', label: 'Deltapreneurs' },
   { test: (p) => p.startsWith('/admin'), to: '/admin', label: 'Admin' },
   { test: (p) => p.startsWith('/purchases'), to: '/purchases', label: 'Purchases' },
   { test: (p) => p.startsWith('/fee-requests'), to: '/fee-requests', label: 'Fee requests' },

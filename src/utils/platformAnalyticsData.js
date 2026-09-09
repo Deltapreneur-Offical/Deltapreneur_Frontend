@@ -98,7 +98,7 @@ function normalizeCreator(row) {
   const completion = evaluateCreatorProfileCompletion(row);
   return {
     id: String(row.id),
-    name: row.name ?? 'Creator',
+    name: row.name ?? 'Deltapreneur',
     status: completion.isComplete ? 'Complete' : 'Incomplete',
     role: row.role ?? '—',
     industry: row.industry ?? '—',

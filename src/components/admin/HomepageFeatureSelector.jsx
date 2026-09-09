@@ -60,7 +60,7 @@ function getTitle(item, type) {
     return item.brandDetails?.brandName || `${type === 'coventure' ? 'Co-Venture' : 'Venture'} #${item.id}`;
   }
   if (type === 'software') return item.name || `Software #${item.id}`;
-  if (type === 'community') return item.name || `Creator #${item.id}`;
+  if (type === 'community') return item.name || `Deltapreneur #${item.id}`;
   if (type === 'virtual-assistant') return item.fullName || `Virtual Assistant #${item.id}`;
   return '';
 }

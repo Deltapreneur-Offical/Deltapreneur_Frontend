@@ -110,8 +110,8 @@ function VerificationBadge({ verified, verifiedLabel, unverifiedLabel }) {
 }
 
 const DOMAIN_LISTING_TYPE_BADGE = {
-  domain_auction: { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', labelKey: 'adminDomainBadgeAuction' },
-  normal_domain:  { color: '#0369a1', bg: 'rgba(3,105,161,0.1)', labelKey: 'adminDomainBadgeNormal' },
+  domain_auction: { color: '#c2410c', bg: 'rgba(249,115,22,0.12)', labelKey: 'adminDomainBadgeAuction' },
+  normal_domain:  { color: '#0f766e', bg: 'rgba(15,118,110,0.1)', labelKey: 'adminDomainBadgeNormal' },
   premium_domain: { color: '#ffffff', bg: '#dc2626', labelKey: 'adminDomainBadgePremium' },
 };
 
@@ -175,9 +175,9 @@ function DomainListingBadges({ item }) {
 const STATUS_COLORS = {
   PENDING:           '#b45309',
   PAYMENT_PENDING:   '#b45309',
-  PAYMENT_COMPLETED: '#0369a1',
+  PAYMENT_COMPLETED: '#0f766e',
   COMPLETED:         '#059669',
-  FORWARDED:         '#7c3aed',
+  FORWARDED:         '#c2410c',
   ACCEPTED:          '#059669',
   REJECTED:          '#dc2626',
   CANCELLED:         '#4b5563',
@@ -661,7 +661,7 @@ export default function AdminDashboardPage() {
     { id: 'venture-deals',   label: 'Venture Deals',   icon: AuctionIcon    },
     { id: 'meetings',           label: t('adminTabMeetings'),          icon: null, Icon: Calendar },
     { id: 'operations',         label: t('adminTabOperations', { defaultValue: 'Operations' }), icon: null, Icon: Headset },
-    { id: 'hub-registrar-office', label: 'Deltapreneur Offices', icon: null, Icon: Briefcase },
+    { id: 'hub-registrar-office', label: 'Deltapreneur Offices', icon: null, Icon: Briefcase, disabled: true },
     { id: 'franchise-applications', label: 'Franchise Applications', icon: null, Icon: Users },
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
@@ -760,7 +760,12 @@ export default function AdminDashboardPage() {
                   ) : (
                     <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
                   )}
-                  <span className="admin-dashboard-tab-label">{tabItem.label}</span>
+                  <span className="admin-dashboard-tab-label">
+                    {tabItem.label}
+                    {tabItem.disabled ? (
+                      <span className="admin-dashboard-tab-hidden-flag">Hidden</span>
+                    ) : null}
+                  </span>
                   {isPrimary && badgeValue ? (
                     <span
                       aria-label={`${badgeValue} pending`}
@@ -1169,7 +1174,7 @@ function VentureAdminRow({
           <div className="admin-record-title flex items-center gap-2 flex-wrap">
             {title}
             {venture.saleType === 'AUCTION' && (
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#7c3aed', background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#c2410c', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.25)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
                 {t('adminAuction')}
               </span>
             )}
@@ -1190,7 +1195,7 @@ function VentureAdminRow({
               </span>
             )}
             {applicationCount > 0 && (
-              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#4f46e5', background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#c2410c', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)', padding: '0.15rem 0.45rem', borderRadius: 4 }}>
                 {isCoVentureListing
                   ? t('adminCoVentureApps', { count: applicationCount })
                   : `${applicationCount} bid${applicationCount !== 1 ? 's' : ''}`}
@@ -1715,8 +1720,8 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePer
 
           {tabType === 'domains' && item.auction && (
             <div style={{ fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.75rem',
-                          background: 'rgba(124,58,237,0.06)', borderRadius: 8,
-                          border: '1px solid rgba(124,58,237,0.15)' }}>
+                          background: 'rgba(249,115,22,0.06)', borderRadius: 8,
+                          border: '1px solid rgba(249,115,22,0.15)' }}>
               <div className="admin-field-label" style={{ marginBottom: '0.5rem' }}>{t('adminDomainAuctionDetails')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem' }}>
                 <div><span className="admin-field-meta">{t('adminDomainAuctionStatus')}</span><br />{item.auction.status}</div>
@@ -2044,7 +2049,7 @@ function AuctionAdminRow({ auction, bids }) {
                     <span style={{ color: '#111827', fontWeight: 500 }}>
                       {bid.bidderName || bid.bidder_name}
                     </span>
-                    <span style={{ color: (bid.isWinningBid || bid.is_winning_bid) ? '#059669' : '#7c3aed',
+                    <span style={{ color: (bid.isWinningBid || bid.is_winning_bid) ? '#059669' : '#c2410c',
                                    fontWeight: 600 }}>
                       {formatPrice(bid.amount)}
                       {(bid.isWinningBid || bid.is_winning_bid) && ' 🏆'}
@@ -2086,7 +2091,7 @@ function CommunityAuctionsAdminTable({ auctions, onRefresh, onTakeDown, onRestor
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
-        <span className="text-sm font-semibold text-gray-700">Filter Creator Auctions:</span>
+        <span className="text-sm font-semibold text-gray-700">Filter Deltapreneur Auctions:</span>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -2103,7 +2108,7 @@ function CommunityAuctionsAdminTable({ auctions, onRefresh, onTakeDown, onRestor
       </div>
 
       {!filteredAuctions.length ? (
-        <div className="text-center py-10 text-gray-500">No creator auctions found matching this status.</div>
+        <div className="text-center py-10 text-gray-500">No Deltapreneur auctions found matching this status.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredAuctions.map((item) => {
@@ -2250,7 +2255,7 @@ function CommunityAuctionAdminRow({ auction, bids, community, onRefresh, onTakeD
                     <span style={{ color: '#111827', fontWeight: 500 }}>
                       {bid.bidderName || bid.bidder_name}
                     </span>
-                    <span style={{ color: (bid.winningBid || bid.winning_bid) ? '#059669' : '#7c3aed',
+                    <span style={{ color: (bid.winningBid || bid.winning_bid) ? '#059669' : '#c2410c',
                                    fontWeight: 600 }}>
                       {formatPrice(bid.amount)}
                       {(bid.winningBid || bid.winning_bid) && ' 🏆'}
@@ -2307,11 +2312,11 @@ function CommunityAuctionAdminRow({ auction, bids, community, onRefresh, onTakeD
 
 const DOMAIN_ENQUIRY_STATUS_COLORS = {
   PENDING: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' },
-  IN_PROGRESS: { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' },
+  IN_PROGRESS: { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' },
   ACCEPTED: { bg: '#dcfce7', text: '#15803d', border: '#86efac' },
   COMPLETED: { bg: '#d1fae5', text: '#059669', border: '#6ee7b7' },
   DECLINED: { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
-  FORWARDED: { bg: '#ede9fe', text: '#7c3aed', border: '#c4b5fd' },
+  FORWARDED: { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' },
 };
 
 const DOMAIN_ENQUIRY_FILTER_TABS = [
@@ -2984,7 +2989,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
 
           <div className="flex gap-3">
             <button 
-              className="flex-1 py-3.5 px-4 bg-[#a78bfa] hover:bg-[#8b5cf6] text-white text-[15px] font-semibold rounded-[12px] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-3.5 px-4 bg-[#f97316] hover:bg-[#c2410c] text-white text-[15px] font-semibold rounded-[12px] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               onClick={handleSubmit}
               disabled={loading || noCoBrothers || !selectedCoBrother || alreadyAccepted || pendingPayment}
             >
@@ -3310,9 +3315,9 @@ function AddonOrderRow({ order, statusColor }) {
           <div className="admin-record-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             #{order.id} — {order.buyerName || order.buyerEmail || '—'}
             <span style={{ fontSize: '0.68rem', fontWeight: 700,
-                           color: order.purchaseType === 'DOMAIN' ? '#0369a1' : '#7c3aed',
-                           background: order.purchaseType === 'DOMAIN' ? 'rgba(3,105,161,0.08)' : 'rgba(124,58,237,0.08)',
-                           border: `1px solid ${order.purchaseType === 'DOMAIN' ? 'rgba(3,105,161,0.25)' : 'rgba(124,58,237,0.25)'}`,
+                           color: order.purchaseType === 'DOMAIN' ? '#0f766e' : '#c2410c',
+                           background: order.purchaseType === 'DOMAIN' ? 'rgba(15,118,110,0.08)' : 'rgba(249,115,22,0.08)',
+                           border: `1px solid ${order.purchaseType === 'DOMAIN' ? 'rgba(15,118,110,0.25)' : 'rgba(249,115,22,0.25)'}`,
                            padding: '0.15rem 0.45rem', borderRadius: 4 }}>
               {order.purchaseType}
             </span>
@@ -3379,8 +3384,8 @@ function AddonOrderRow({ order, statusColor }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
                 {serviceLabels.map((label, index) => (
                   <span key={`${label}-${index}`} style={{ fontSize: '0.75rem', fontWeight: 600,
-                                           background: '#eef2ff', color: '#4338ca',
-                                           border: '1px solid #c7d2fe',
+                                           background: '#fff7ed', color: '#c2410c',
+                                           border: '1px solid #fed7aa',
                                            padding: '0.2rem 0.6rem', borderRadius: 6 }}>
                     {label}
                   </span>
@@ -3554,7 +3559,7 @@ function AdminOverviewSection({ stats, statsLoading, counts, countsLoading, tota
     { key: 'totalVentures',     Icon: Briefcase,    label: 'Ventures',    value: stats?.totalVentures,     accent: 'emerald' },
     { key: 'totalDomains',      Icon: Globe,        label: 'Domains',     value: stats?.totalDomains,      accent: 'sky'     },
     { key: 'totalTechnologies', Icon: Cpu,          label: 'Technology',  value: stats?.totalTechnologies, accent: 'rose'    },
-    { key: 'totalCreators',     Icon: UsersRound,   label: 'Creators',    value: stats?.totalCreators,     accent: 'amber'   },
+    { key: 'totalCreators',     Icon: UsersRound,   label: 'Deltapreneurs',    value: stats?.totalCreators,     accent: 'amber'   },
   ];
 
   const pendingCards = [
@@ -3943,7 +3948,7 @@ function AdminReviewQueueSection({ counts, loading: countsLoading, onJump, onRef
                 className={[
                   'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
                   isActive
-                    ? 'bg-gray-900 text-white shadow-sm'
+                    ? 'bg-[#C2410C] text-white ring-1 ring-[#C2410C] shadow-sm'
                     : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100',
                 ].join(' ')}
               >

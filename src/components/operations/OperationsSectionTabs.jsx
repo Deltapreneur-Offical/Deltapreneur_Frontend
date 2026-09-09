@@ -1,6 +1,6 @@
 import { Headset, ShieldCheck, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
+import { PUBLIC_OPERATIONS_SECTIONS } from '../../utils/operationsSections';
 
 const SECTION_ICONS = {
   assistance: Headset,
@@ -31,7 +31,7 @@ export default function OperationsSectionTabs({
         role="tablist"
         aria-label={ariaLabel || t('operationsPartitionLabel', { defaultValue: 'Operations sections' })}
       >
-        {OPERATIONS_SECTIONS.map((section) => {
+        {PUBLIC_OPERATIONS_SECTIONS.map((section) => {
           const isActive = activeSectionId === section.id;
           const TabIcon = SECTION_ICONS[section.id] || Headset;
           const count = counts[section.id];
@@ -49,20 +49,20 @@ export default function OperationsSectionTabs({
                 // Offices theme — inactive
                 section.theme === 'offices' && !isActive && '!bg-gradient-to-b !from-[#f0f9ff] !to-[#e0f2fe] !border-[#bae6fd] !text-[#0369a1] hover:!border-[#7dd3fc] hover:!shadow-[0_4px_14px_rgba(14,165,233,0.12)]',
                 // Offices theme — active
-                section.theme === 'offices' && isActive && '!bg-white !border-[#0284c7] !text-[#0c4a6e] !shadow-[0_8px_22px_rgba(14,165,233,0.18)]',
+                section.theme === 'offices' && isActive && '!bg-[#C2410C] !border-[#C2410C] !text-white !shadow-[0_8px_22px_rgba(194,65,12,0.12)]',
               ].filter(Boolean).join(' ')}
               onClick={() => onChange(section.id)}
             >
               <span 
                 className="operations-section-tab-accent" 
                 aria-hidden 
-                style={section.theme === 'offices' ? { background: 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)' } : undefined}
+                style={section.theme === 'offices' ? { background: 'linear-gradient(180deg, #F97316 0%, #C2410C 100%)' } : undefined}
               />
               <span className="operations-section-tab-main">
                 <span className={[
                   'operations-section-tab-icon-wrap',
                   section.theme === 'offices' && !isActive && '!bg-[rgba(14,165,233,0.12)] !text-[#0284c7]',
-                  section.theme === 'offices' && isActive && '!bg-[#e0f2fe] !text-[#0369a1]',
+                  section.theme === 'offices' && isActive && '!bg-white/15 !text-white',
                 ].filter(Boolean).join(' ')}>
                   <TabIcon size={18} strokeWidth={2} aria-hidden />
                 </span>

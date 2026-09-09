@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { ArrowRight, Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel } from 'lucide-react';
+import { Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel } from 'lucide-react';
 
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -17,6 +17,7 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 
 import {
 
@@ -791,16 +792,14 @@ return (
 
                   type="button"
 
-                  className={`domain-listing-card__price-cta flex items-center justify-center transition-all ${compact ? 'w-6 h-6' : ''
-                    }`}
+                  className="domain-listing-card__price-cta tech-service-card__price-arrow"
 
                   aria-label={t('listingCardViewDetails', 'View details')}
 
                   onClick={handleViewDetails}
 
                 >
-
-                  <ArrowRight size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden />
+                  <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
 
                 </button>
 

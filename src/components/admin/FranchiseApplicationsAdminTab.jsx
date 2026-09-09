@@ -9,8 +9,8 @@ const STATUS_OPTIONS = ['PENDING', 'REVIEWED', 'IN_PROGRESS', 'APPROVED', 'REJEC
 
 const STATUS_CONFIG = {
   PENDING:     { label: 'Pending',     color: '#f59e0b', bg: '#fffbeb',  border: '#fde68a' },
-  REVIEWED:    { label: 'Reviewed',    color: '#3b82f6', bg: '#eff6ff',  border: '#bfdbfe' },
-  IN_PROGRESS: { label: 'In Progress', color: '#6366f1', bg: '#eef2ff',  border: '#c7d2fe' },
+  REVIEWED:    { label: 'Reviewed',    color: '#0f766e', bg: '#f0fdfa',  border: '#99f6e4' },
+  IN_PROGRESS: { label: 'In Progress', color: '#c2410c', bg: '#fff7ed',  border: '#fed7aa' },
   APPROVED:    { label: 'Approved',    color: '#10b981', bg: '#ecfdf5',  border: '#a7f3d0' },
   REJECTED:    { label: 'Rejected',    color: '#ef4444', bg: '#fef2f2',  border: '#fecaca' },
 };

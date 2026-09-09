@@ -1,37 +1,65 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { operationsAPI } from '../api/services';
+import { hubRegistrarCategoryAPI, operationsAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
-import { OPERATIONS_SERVICES_CATALOG } from '../utils/operationsServicesCatalog';
 
 function normalizeService(row) {
+  const id = String(row?.id ?? '');
   return {
-    id: String(row?.id ?? ''),
+    id,
+    key: id,
     name: row?.name || '',
+    category: row?.category || '',
     price: Number(row?.price ?? 0) || 0,
     skills: row?.skills || '',
     icon: row?.icon || null,
     description: row?.description || '',
     serviceType: row?.serviceType ?? row?.service_type ?? 'compliance',
     isAvailable: row?.isAvailable ?? row?.is_available ?? true,
+    displayOrder: Number(row?.displayOrder ?? row?.display_order ?? 0) || 0,
+    contactOnly: (Number(row?.price ?? 0) || 0) <= 0,
+  };
+}
+
+function normalizeCategory(row) {
+  return {
+    id: String(row?.id ?? ''),
+    slug: row?.slug || '',
+    name: row?.name || '',
+    description: row?.description || '',
+    icon: row?.icon || null,
+    displayOrder: Number(row?.displayOrder ?? row?.display_order ?? 0) || 0,
+    isActive: row?.isActive ?? row?.is_active ?? true,
   };
 }
 
 export function useOperationsServicesCatalog({ enabled = true } = {}) {
   const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(Boolean(enabled));
+  const [error, setError] = useState('');
 
   const refresh = useCallback(async () => {
     if (!enabled) return [];
     setLoading(true);
+    setError('');
     try {
-      const { data } = await operationsAPI.list({ serviceType: 'compliance' });
-      const rows = asArray(data)
+      const [servicesResponse, categoriesResponse] = await Promise.all([
+        operationsAPI.list({ serviceType: 'compliance' }),
+        hubRegistrarCategoryAPI.list(),
+      ]);
+      const rows = asArray(servicesResponse.data)
         .map(normalizeService)
         .filter((row) => row.isAvailable !== false);
+      const categoryRows = asArray(categoriesResponse.data)
+        .map(normalizeCategory)
+        .filter((row) => row.isActive !== false);
       setServices(rows);
+      setCategories(categoryRows);
       return rows;
     } catch {
       setServices([]);
+      setCategories([]);
+      setError('Could not load business registration services. Please try again.');
       return [];
     } finally {
       setLoading(false);
@@ -42,6 +70,8 @@ export function useOperationsServicesCatalog({ enabled = true } = {}) {
     if (!enabled) {
       setLoading(false);
       setServices([]);
+      setCategories([]);
+      setError('');
       return undefined;
     }
     refresh();
@@ -51,23 +81,12 @@ export function useOperationsServicesCatalog({ enabled = true } = {}) {
   const priceByAddonKey = useMemo(() => {
     const map = new Map();
     services.forEach((svc) => {
+      if (svc.id) map.set(svc.id, svc);
+      if (svc.key) map.set(svc.key, svc);
       if (svc.skills) map.set(svc.skills, svc);
-    });
-    OPERATIONS_SERVICES_CATALOG.forEach((item) => {
-      if (!map.has(item.key)) {
-        map.set(item.key, {
-          id: item.key,
-          name: item.defaultName,
-          price: item.price,
-          skills: item.key,
-          icon: item.icon,
-          description: item.defaultDescription,
-          fromCatalog: true,
-        });
-      }
     });
     return map;
   }, [services]);
 
-  return { services, priceByAddonKey, loading, refresh };
+  return { services, categories, priceByAddonKey, loading, error, refresh };
 }

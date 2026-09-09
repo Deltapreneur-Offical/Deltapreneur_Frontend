@@ -216,6 +216,13 @@ export default function AppLayout({ children }) {
   const profileMenuRef = useRef(null);
   const notifFetchRef = useRef(0);
 
+  useEffect(() => {
+    document.body.classList.add('app-layout-body');
+    return () => {
+      document.body.classList.remove('app-layout-body');
+    };
+  }, []);
+
   const updateProfileMenuPosition = useCallback(() => {
     if (!profileRef.current) return;
     const rect = profileRef.current.getBoundingClientRect();

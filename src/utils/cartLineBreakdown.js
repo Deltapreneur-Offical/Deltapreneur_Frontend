@@ -1,43 +1,19 @@
-import { ADDON_SERVICES } from '../components/addon/AddonSelector';
-import { OPERATIONS_SERVICES_CATALOG } from './operationsServicesCatalog';
 import { planLabelForKey } from './technologyPricingPlans';
-
-const BUSINESS_KEYS = new Set(ADDON_SERVICES.map((s) => s.key));
-const STATIC_CATALOG_BY_KEY = new Map(OPERATIONS_SERVICES_CATALOG.map((item) => [item.key, item]));
-
-function addonDisplayLabel(key, translate) {
-  const svc = ADDON_SERVICES.find((s) => s.key === key);
-  if (!svc) return key;
-  return translate ? translate(svc.labelKey) : svc.labelKey;
-}
-
-function catalogFallback(key) {
-  return STATIC_CATALOG_BY_KEY.get(key);
-}
 
 function isVaKey(key, vaCatalog) {
   const id = String(key);
   const vaIds = new Set(vaCatalog.map((s) => String(s.id)));
-  return vaIds.has(id) || (!BUSINESS_KEYS.has(key) && (id.includes('-') || /^\d+$/.test(id)));
+  return vaIds.has(id);
 }
 
-function resolveOperationsService(key, operationsPriceByKey, translate) {
+function resolveOperationsService(key, operationsPriceByKey) {
   const op = operationsPriceByKey?.get?.(key);
-  const fallback = catalogFallback(key);
-  if (op) {
-    return {
-      label: op.name || addonDisplayLabel(key, translate),
-      estimatedPrice: Number(op.price) || 0,
-      iconKey: op.icon || fallback?.icon || 'ShieldCheck',
-      description: op.description || fallback?.defaultDescription || '',
-    };
-  }
-  const svc = ADDON_SERVICES.find((s) => s.key === key);
+  if (!op) return null;
   return {
-    label: addonDisplayLabel(key, translate),
-    estimatedPrice: svc ? Number(svc.price) || 0 : 0,
-    iconKey: fallback?.icon || 'ShieldCheck',
-    description: fallback?.defaultDescription || '',
+    label: op.name || key,
+    estimatedPrice: Number(op.price) || 0,
+    iconKey: op.icon || 'ShieldCheck',
+    description: op.description || '',
   };
 }
 
@@ -47,6 +23,20 @@ export function resolveCartItemAddonLines(item, vaCatalog = [], operationsPriceB
 
   keys.forEach((key) => {
     const id = String(key);
+    const operationsService = resolveOperationsService(id, operationsPriceByKey);
+
+    if (operationsService) {
+      lines.push({
+        key: id,
+        label: operationsService.label,
+        estimatedPrice: operationsService.estimatedPrice,
+        iconKey: operationsService.iconKey,
+        description: operationsService.description,
+        isVirtualAssistant: false,
+        isServiceAddon: true,
+      });
+      return;
+    }
 
     if (isVaKey(key, vaCatalog)) {
       const va = vaCatalog.find((s) => String(s.id) === id);
@@ -57,20 +47,6 @@ export function resolveCartItemAddonLines(item, vaCatalog = [], operationsPriceB
         description: va?.description || '',
         isVirtualAssistant: true,
         isServiceAddon: false,
-      });
-      return;
-    }
-
-    if (BUSINESS_KEYS.has(key) || ADDON_SERVICES.find((s) => s.key === key)) {
-      const { label, estimatedPrice, iconKey, description } = resolveOperationsService(key, operationsPriceByKey, translate);
-      lines.push({
-        key,
-        label,
-        estimatedPrice,
-        iconKey,
-        description,
-        isVirtualAssistant: false,
-        isServiceAddon: true,
       });
     }
   });

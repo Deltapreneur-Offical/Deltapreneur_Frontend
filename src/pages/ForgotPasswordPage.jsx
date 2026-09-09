@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
     getProtectionPayload,
     resetProtection,
     botProtectionProps,
-  } = useBotProtection();
+  } = useBotProtection({ action: 'forgot-password' });
 
   const onSubmit = async (e) => {
     e.preventDefault();

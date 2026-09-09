@@ -1,4 +1,10 @@
 /** Chrome ignores href updates on an existing favicon link. Replace the tag. */
+function withDevCacheBust(href) {
+  if (!href || !import.meta.env.DEV) return href;
+  const join = href.includes('?') ? '&' : '?';
+  return `${href}${join}v=${Date.now()}`;
+}
+
 export function applyThemeFavicon(lightHref, darkHref) {
   if (typeof document === 'undefined') return;
 
@@ -11,6 +17,6 @@ export function applyThemeFavicon(lightHref, darkHref) {
   link.id = 'dynamic-favicon';
   link.rel = 'icon';
   link.type = 'image/png';
-  link.href = isDark ? darkHref : lightHref;
+  link.href = withDevCacheBust(isDark ? darkHref : lightHref);
   document.head.appendChild(link);
 }

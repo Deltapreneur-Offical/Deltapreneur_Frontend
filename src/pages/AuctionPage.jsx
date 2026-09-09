@@ -397,7 +397,6 @@ export default function AuctionPage() {
                       fontFamily: "'Guild A Display', 'Guild A Display Regular', sans-serif",
                       fontWeight: 400,
                       fontSize: 'clamp(2rem, 5vw, 2.75rem)',
-                      fontWeight: 800,
                       color: '#f97316',
                       letterSpacing: '-0.025em',
                       textTransform: 'lowercase',

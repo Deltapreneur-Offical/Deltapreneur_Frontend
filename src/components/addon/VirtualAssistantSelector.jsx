@@ -51,13 +51,18 @@ function AssistantPlanCard({ service, checked, onToggle, formatPrice, t }) {
 
   return (
     <label
-      className={`group block min-w-0 cursor-pointer rounded-[10px] border p-3 transition-all duration-200 ease-out ${
+      className={`group relative block min-w-0 cursor-pointer rounded-[10px] border p-3 transition-all duration-200 ease-out ${
         checked
           ? 'border-[#1D4ED8] bg-[#EFF6FF] shadow-[0_2px_10px_rgba(29,78,216,0.1)]'
           : 'border-gray-200/90 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(15,23,42,0.05)]'
       }`}
     >
-      <input type="checkbox" className="sr-only" checked={checked} onChange={onToggle} />
+      <input
+        type="checkbox"
+        className="absolute left-3 top-3 h-4 w-4 cursor-pointer opacity-0"
+        checked={checked}
+        onChange={onToggle}
+      />
 
       <div className="flex items-start gap-2">
         <span

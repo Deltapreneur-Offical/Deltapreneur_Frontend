@@ -299,11 +299,13 @@ label,
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
+  background: #f8fafc;
 }
 
 html:has(.app-layout-root),
 body:has(.app-layout-root) {
   overflow-y: hidden;
+  background: #f8fafc;
 }
 
 html:has(.app-layout--new-venture),
@@ -5493,8 +5495,9 @@ input[type="checkbox"] {
   box-sizing: border-box;
 }
 
-.app-main-content--domains {
-  flex: 0 0 auto;
+.app-main-content--normal-flow {
+  flex: 0 0 auto !important;
+  min-height: 0;
   padding-bottom: 0 !important;
 }
 

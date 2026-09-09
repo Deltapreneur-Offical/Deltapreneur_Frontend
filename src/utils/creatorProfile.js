@@ -2,6 +2,52 @@
 
 import { getVisibleCreatorFields } from './creatorRoleFields';
 
+function isApiEnvelope(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+  return Object.prototype.hasOwnProperty.call(payload, 'success')
+    || (
+      Object.prototype.hasOwnProperty.call(payload, 'message')
+      && Object.prototype.hasOwnProperty.call(payload, 'data')
+    );
+}
+
+/** Stable creator-profile id from camelCase, snake_case, or nested API envelopes. */
+export function readCreatorProfileId(profile) {
+  if (!profile || typeof profile !== 'object') return '';
+  const nested = profile.data && typeof profile.data === 'object' && !Array.isArray(profile.data)
+    ? profile.data
+    : null;
+  const raw = profile.id
+    ?? profile.communityId
+    ?? profile.community_id
+    ?? nested?.id
+    ?? nested?.communityId
+    ?? nested?.community_id;
+  const id = raw != null ? String(raw).trim() : '';
+  if (!id || id === 'undefined' || id === 'null') return '';
+  return id;
+}
+
+const CREATOR_UUID_RE =
+  /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+/** First UUID in a LinkedIn callback profileId query value. */
+export function readCreatorCallbackProfileId(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return '';
+  const match = text.match(CREATOR_UUID_RE);
+  return match ? match[0] : '';
+}
+
+/** Pull a real creator profile out of ApiResponse wrappers. Null `data` is not a profile. */
+export function unwrapCreatorProfile(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  const inner = isApiEnvelope(payload) ? payload.data : payload;
+  if (!inner || typeof inner !== 'object' || Array.isArray(inner)) return null;
+  if (!readCreatorProfileId(inner)) return null;
+  return inner;
+}
+
 const INVALID_LINKEDIN_PROFILE_RE =
   /linkedin\.com\/(?:oauth|login|uas|checkpoint|legal|help|authwall|sharing)(?:\/|$|\?)/i;
 
@@ -184,6 +230,13 @@ const VISIBILITY_REQUIRED_FIELDS = [
 
 export function isCreatorProfileVisible(profile) {
   if (!profile) return false;
+  if (
+    profile.profileComplete === true
+    || profile.isApproved === true
+    || profile.is_approved === true
+  ) {
+    return true;
+  }
   return VISIBILITY_REQUIRED_FIELDS.every((field) => {
     if (field.key === 'linked_in_id') {
       return hasLinkedInAccount(profile);

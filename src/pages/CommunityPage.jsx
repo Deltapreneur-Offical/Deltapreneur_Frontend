@@ -26,6 +26,9 @@ import {
   hasLinkedInAccount,
   isCreatorProfileComplete,
   isCreatorProfileVisible,
+  readCreatorCallbackProfileId,
+  readCreatorProfileId,
+  unwrapCreatorProfile,
 } from '../utils/creatorProfile';
 import { getVisibleCreatorFields } from '../utils/creatorRoleFields';
 import { roleWaivesAuctionPlatformFees } from '../utils/adminRoles';
@@ -114,6 +117,15 @@ function readQueryParamValue(value) {
   }
 }
 
+function readLinkedInAuthRedirectUrl(payload) {
+  const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
+  if (typeof parsed === 'string' && /^https?:\/\//i.test(parsed)) return parsed;
+  if (!parsed || typeof parsed !== 'object') return null;
+  const nested = parsed.data && typeof parsed.data === 'object' ? parsed.data : null;
+  const url = parsed.url ?? parsed.authUrl ?? nested?.url ?? nested?.authUrl;
+  return typeof url === 'string' && /^https?:\/\//i.test(url) ? url : null;
+}
+
 const LINKEDIN_OAUTH_SESSION_KEY = 'cobrother.linkedin.oauth';
 
 function clearLinkedInOAuthSession() {
@@ -162,6 +174,7 @@ export default function CommunityPage() {
   const [profileNotice, setProfileNotice] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const pendingDeleteProfileIdRef = useRef('');
   const [showSyncPhotoModal, setShowSyncPhotoModal] = useState(false);
   const [syncPhotoLoading, setSyncPhotoLoading] = useState(false);
   const [syncPhotoSuccess, setSyncPhotoSuccess] = useState('');
@@ -177,8 +190,10 @@ export default function CommunityPage() {
       ...buildAuctionsMapFromProfiles(list),
       ...prev,
     }));
-    const mine = preferProfile
-      || (user ? list.find((p) => isListingOwner(p, user, 'community')) : null);
+    const mine = unwrapCreatorProfile(preferProfile)
+      || (user
+        ? list.find((p) => isListingOwner(p, user, 'community') && readCreatorProfileId(p))
+        : null);
     if (mine) {
       setMyProfile(mine);
       setProfileNotice('');
@@ -203,6 +218,9 @@ export default function CommunityPage() {
           .catch(() => setMyAuction(null));
         return;
       }
+      setMyAuction(null);
+    } else {
+      setMyProfile(null);
       setMyAuction(null);
     }
   };
@@ -232,11 +250,9 @@ export default function CommunityPage() {
 
       const [allRes, myRes] = await Promise.all(requests);
       const list = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.data ?? []);
-      const myFromApi = myRes
-        ? (myRes.data?.data ?? myRes.data ?? null)
-        : null;
+      const myFromApi = unwrapCreatorProfile(myRes?.data) || unwrapCreatorProfile(myRes?.data?.data);
       const ownedInList = user
-        ? list.find((p) => isListingOwner(p, user, 'community'))
+        ? list.find((p) => isListingOwner(p, user, 'community') && readCreatorProfileId(p))
         : null;
 
       if (!myFromApi && !ownedInList && !preferProfile && myLoadNotice) {
@@ -269,11 +285,12 @@ export default function CommunityPage() {
   });
 
   const ownedProfileInList = useMemo(
-    () => profiles.find((p) => isListingOwner(p, user, 'community')) ?? null,
+    () => profiles.find((p) => isListingOwner(p, user, 'community') && readCreatorProfileId(p)) ?? null,
     [profiles, user],
   );
 
-  const effectiveMyProfile = myProfile ?? ownedProfileInList;
+  const effectiveMyProfile = unwrapCreatorProfile(myProfile) ?? unwrapCreatorProfile(ownedProfileInList);
+  const hasOwnedCreatorProfile = Boolean(readCreatorProfileId(effectiveMyProfile));
 
   const profilesForDisplay = useMemo(() => {
     const publicProfiles = filteredProfiles.filter((profile) => isCreatorProfileVisible(profile));
@@ -320,7 +337,7 @@ export default function CommunityPage() {
   // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
     const status = searchParams.get('linkedin');
-    const profileId = searchParams.get('profileId');
+    const profileId = readCreatorCallbackProfileId(searchParams.get('profileId'));
     const errMsg = searchParams.get('linkedin_error');
 
     if (!status && !errMsg) return;
@@ -345,7 +362,7 @@ export default function CommunityPage() {
       // Refresh only this creator card without a full page reload.
       communityAPI.getOne(profileId)
         .then(({ data }) => {
-          const profile = data?.data ?? data;
+          const profile = unwrapCreatorProfile(data) || unwrapCreatorProfile(data?.data);
           if (!profile) return;
           setMyProfile(profile);
           setProfiles(prev => prev.map(p =>
@@ -365,7 +382,8 @@ export default function CommunityPage() {
       setLinkedInError('');
       communityAPI.getOne(profileId)
         .then(async ({ data }) => {
-          const profile = data?.data ?? data;
+          const profile = unwrapCreatorProfile(data) || unwrapCreatorProfile(data?.data);
+          if (!profile) throw new Error('Missing creator profile');
           setMyProfile(profile);
           setShowForm(true);
           const hasUrl = Boolean(getLinkedInProfileUrl(profile));
@@ -460,9 +478,8 @@ export default function CommunityPage() {
     setLinkedInRedirecting(true);
     try {
       const { data } = await communityAPI.linkedInAuthUrl();
-      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      const url = parsed?.url ?? parsed?.authUrl ?? parsed;
-      if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
+      const url = readLinkedInAuthRedirectUrl(data);
+      if (!url) throw new Error('Invalid auth URL');
       window.location.assign(url);
     } catch {
       setLinkedInRedirecting(false);
@@ -478,9 +495,8 @@ export default function CommunityPage() {
     setShowSyncPhotoModal(false);
     try {
       const { data } = await communityAPI.syncPhotoAuthUrl();
-      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      const url = parsed?.url ?? parsed?.authUrl ?? parsed;
-      if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
+      const url = readLinkedInAuthRedirectUrl(data);
+      if (!url) throw new Error('Invalid auth URL');
       window.location.assign(url);
     } catch {
       setSyncPhotoLoading(false);
@@ -512,23 +528,49 @@ export default function CommunityPage() {
   };
 
   const handleDeleteProfile = async () => {
-    if (!effectiveMyProfile?.id) return;
+    if (deleteLoading) return;
+    const profileId = pendingDeleteProfileIdRef.current || readCreatorProfileId(effectiveMyProfile);
     setDeleteLoading(true);
     setLinkedInError('');
     try {
-      await communityAPI.delete(effectiveMyProfile.id);
-      setProfiles(prev => prev.filter(p => p.id !== effectiveMyProfile.id));
+      try {
+        await communityAPI.deleteMy();
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 404) {
+          // Already removed on the server.
+        } else if (profileId) {
+          try {
+            await communityAPI.delete(String(profileId));
+          } catch (byIdErr) {
+            if (byIdErr?.response?.status !== 404) throw byIdErr;
+          }
+        } else if (status === 405 || status === 422) {
+          // No server profile and no id — this was a ghost empty /my payload.
+        } else {
+          throw err;
+        }
+      }
+
+      pendingDeleteProfileIdRef.current = '';
+      setProfiles((prev) => prev.filter((p) => String(p.id) !== String(profileId)));
       setMyProfile(null);
       setMyAuction(null);
       setShowForm(false);
       setShowDeleteConfirm(false);
       setLinkedInSuccess('');
+      setLinkedInError('');
       clearLinkedInOAuthSession();
       setSearchParams({}, { replace: true });
       closeListingDetail();
+      setProfileNotice('Your Deltapreneur profile was deleted. Connect with LinkedIn to create a new one.');
+      try {
+        await reloadProfiles();
+      } catch {
+        /* UI already cleared */
+      }
     } catch (err) {
       setLinkedInError(apiErrorMessage(err, 'Failed to delete profile. Please try again.'));
-      setShowDeleteConfirm(false);
     } finally {
       setDeleteLoading(false);
     }
@@ -565,7 +607,8 @@ export default function CommunityPage() {
 
   return (
     <AppLayout>
-      <div>
+        <div>
+        {hasOwnedCreatorProfile ? (
         <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 text-sm font-medium mb-6 leading-relaxed flex items-start gap-3 shadow-sm">
           <span className="text-lg leading-none select-none" aria-hidden>✨</span>
           <div className="flex-1">
@@ -574,11 +617,12 @@ export default function CommunityPage() {
               : 'Please complete 100% of your profile until it is completed to unlock your verified badge, establish credibility, and make it publicly visible.'}
           </div>
         </div>
+        ) : null}
 
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
-        {profileNotice && !effectiveMyProfile && !linkedInError && (
+        {profileNotice && !hasOwnedCreatorProfile && !linkedInError && (
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 mb-6">{profileNotice}</div>
         )}
         {syncPhotoSuccess && (
@@ -591,7 +635,7 @@ export default function CommunityPage() {
             <LinkedInIcon size={16} /> {linkedInSuccess}
           </div>
         )}
-        {showForm && effectiveMyProfile ? (
+        {showForm && hasOwnedCreatorProfile ? (
           <>
             <ListingBackLink
               label={t('listingBackToCreators')}
@@ -601,7 +645,10 @@ export default function CommunityPage() {
               initial={effectiveMyProfile}
               onSaved={handleProfileSaved}
               onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
-              onDelete={() => setShowDeleteConfirm(true)}
+              onDelete={() => {
+                pendingDeleteProfileIdRef.current = readCreatorProfileId(effectiveMyProfile);
+                setShowDeleteConfirm(true);
+              }}
             />
           </>
         ) : (
@@ -614,7 +661,7 @@ export default function CommunityPage() {
                 <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
               </div>
               <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-                {effectiveMyProfile ? (
+                {hasOwnedCreatorProfile ? (
                   <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
                     {/* Auction status / button */}
                     {auctionBadge ? (
@@ -679,7 +726,10 @@ export default function CommunityPage() {
                     <button
                       type="button"
                       className="btn-glow btn-glow-sm btn-glow-danger !px-3 !py-2"
-                      onClick={() => setShowDeleteConfirm(true)}
+                      onClick={() => {
+                        pendingDeleteProfileIdRef.current = readCreatorProfileId(effectiveMyProfile);
+                        setShowDeleteConfirm(true);
+                      }}
                       disabled={deleteLoading}
                     >
                       Delete Profile
@@ -716,7 +766,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            {effectiveMyProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
+            {hasOwnedCreatorProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
               <div className="mb-6 w-full min-w-0 max-w-full overflow-visible">
                 <CreatorProfileCompletionBanner
                   profile={effectiveMyProfile}
@@ -749,8 +799,8 @@ export default function CommunityPage() {
               </div>
             ) : profilesForDisplay.length > 0 ? (
               <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
-                {profilesForDisplay.map(p => (
-                  <ListingCardShell key={p.id} className="community-listing-card-shell">
+                {profilesForDisplay.map((p, idx) => (
+                  <ListingCardShell key={p.id ? String(p.id) : `creator-${idx}`} className="community-listing-card-shell">
                     <CommunityListingCard
                       profile={p}
                       isMe={isListingOwner(p, user, 'community')}
@@ -784,11 +834,12 @@ export default function CommunityPage() {
         message={t('communityPageDeleteMessage')}
         confirmLabel={deleteLoading ? t('communityPageDeleting') : t('communityPageDeletePermanently')}
         danger
+        loading={deleteLoading}
         onConfirm={handleDeleteProfile}
         onCancel={() => !deleteLoading && setShowDeleteConfirm(false)}
       />
 
-      {showAuctionModal && effectiveMyProfile && (
+      {showAuctionModal && hasOwnedCreatorProfile && (
         <CreateAuctionModal
           communityId={effectiveMyProfile.id}
           profileName={effectiveMyProfile.name}

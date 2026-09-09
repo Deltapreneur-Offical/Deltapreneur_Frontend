@@ -2813,6 +2813,11 @@
   animation-play-state: paused !important;
 }
 
+/* Hovering any card in the row also pauses, even if JS pause lags */
+.home-auto-scroll-row:hover .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
+  animation-play-state: paused !important;
+}
+
 /* When user is interacting (touch/wheel) the viewport becomes scrollable */
 .home-auto-scroll-row__viewport--scrollable {
   overflow-x: auto;

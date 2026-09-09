@@ -381,17 +381,19 @@ export default function OperationsPage() {
       );
 
   const SectionIcon = isCompliance ? ShieldCheck : Building2;
+  const heroBackground = isCompliance
+    ? 'radial-gradient(circle at 0% 50%, rgba(20, 184, 166, 0.32) 0%, rgba(15, 118, 110, 0.18) 34%, transparent 68%), linear-gradient(135deg, #0F766E 0%, #0D9488 52%, #14B8A6 100%)'
+    : 'radial-gradient(circle at 0% 50%, rgba(255, 122, 0, 0.34) 0%, rgba(255, 122, 0, 0.18) 34%, transparent 68%), linear-gradient(135deg, #EA580C 0%, #F97316 48%, #FB923C 100%)';
 
   return (
     <AppLayout>
-      <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 min-w-0">
+      <div className="operations-page w-full max-w-7xl mx-auto flex flex-col gap-4 min-w-0">
         <ListingBackLink />
         <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
           <div
             className="px-5 py-5 sm:px-7 sm:py-6 text-white"
             style={{
-              background:
-                'radial-gradient(circle at 0% 50%, rgba(255, 122, 0, 0.34) 0%, rgba(255, 122, 0, 0.18) 34%, transparent 68%), linear-gradient(135deg, #EA580C 0%, #F97316 48%, #FB923C 100%)',
+              background: heroBackground,
             }}
           >
             <div className="flex items-start gap-3.5">
@@ -581,6 +583,7 @@ export default function OperationsPage() {
                     <OperationsServiceCard
                       key={service.id}
                       service={service}
+                      className="operations-service-card"
                       onHire={() => {
                         if (!user) {
                           // Build redirect URL that preserves section/category/service context

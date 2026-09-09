@@ -152,7 +152,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
         <div className="w-full min-w-0">
           <header className="home-section-header home-section-header--operations">
             <div className="home-section-header__top">
-              <h2 className="home-section-header__title">{title}</h2>
+              <h2 className="home-section-header__title text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
               <div className="hro-header-right">
                 <div className="hro-city-filter-wrap">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hro-city-filter-icon">

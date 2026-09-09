@@ -159,14 +159,14 @@
   box-shadow: none;
 }
 
-/* Footer hearts — light red on all marketplace cards */
+/* Footer hearts — dark saffron on all marketplace cards */
 .listing-card-stats-footer .listing-like-btn__icon--idle,
 .creator-profile-card__stat-group .listing-like-btn__icon--idle,
 .domain-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
 .technology-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
 .venture-listing-card .listing-card-stats-footer .listing-like-btn__icon--idle,
 .home-auction-preview-card .listing-card-stats-footer .listing-like-btn__icon--idle {
-  color: #60a5fa;
+  color: #c2410c !important;
 }
 
 .listing-card-stats-footer .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
@@ -185,11 +185,11 @@
 .virtual-assistant-listing-card .listing-card-stats-footer .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle,
 .virtual-assistant-listing-card .creator-profile-card__stat-group .listing-like-btn--interactive:hover .listing-like-btn__icon--idle,
 .virtual-assistant-listing-card .creator-profile-card__stat-group .listing-like-btn--interactive:focus-visible .listing-like-btn__icon--idle {
-  color: #3b82f6;
+  color: #9a3412 !important;
 }
 
 .home-auction-preview-card .listing-card-stats-footer .listing-like-btn__icon--active {
-  color: #2563eb;
+  color: #9a3412 !important;
 }
 
 .listing-card-stats-footer .listing-like-btn__count,

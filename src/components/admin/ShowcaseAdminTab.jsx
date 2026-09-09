@@ -162,6 +162,23 @@ export default function ShowcaseAdminTab() {
     }
   }, [load, notify]);
 
+  const backfillRenewals = useCallback(async () => {
+    if (inFlight.current || readOnly) return;
+    setBusy(true);
+    try {
+      const res = await adminAPI.backfillShowcaseRenewals();
+      notify(
+        'success',
+        `Renewal prices updated: ${res.data?.backfilled ?? 0} filled · ${res.data?.missing ?? 0} still unavailable.`
+      );
+      await load(true);
+    } catch (e) {
+      notify('error', e.response?.data?.error || 'Renewal price refresh failed.');
+    } finally {
+      setBusy(false);
+    }
+  }, [load, notify, readOnly]);
+
   const lookup = async () => {
     if (readOnly || lookupBusy) return;
     const payload = buildShowcaseLookupPayload(lookupName, lookupTld);
@@ -643,6 +660,14 @@ export default function ShowcaseAdminTab() {
             Inventory pool ({total})
           </h3>
           <div className="flex items-center gap-3">
+            <button
+              onClick={backfillRenewals}
+              disabled={busy || lookupBusy || loading || readOnly}
+              title="Fetch missing renewal prices from OpenProvider without changing price, payable, availability, or checked time."
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 disabled:opacity-50"
+            >
+              Refresh renewals
+            </button>
             <button
               onClick={() => setShowFilters((v) => !v)}
               className="text-xs font-semibold text-slate-500 hover:text-slate-700"

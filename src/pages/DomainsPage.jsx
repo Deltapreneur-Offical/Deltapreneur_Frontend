@@ -836,163 +836,222 @@ export default function DomainsPage() {
             <>
 
             {activeTab === 'all' && showcaseDomains.length > 0 && marketplaceFilter.totalCount > 0 ? (
-              /* ── Side-by-side: Premium Domains | Standard Domains ── */
-              <div className="ventures-split domains-split-premium">
+              <div className="domains-sync-layout">
                 <style>{`
-                  /* ── Refined Premium Domains theme: subtle cream + muted amber accents ── */
-                  .domains-split-premium .ventures-split__mobile-tab--venture.ventures-split__mobile-tab--active {
-                    background: #ffffff;
-                    color: #7A5A00;
-                    box-shadow: 0 1px 4px rgba(180,140,40,0.15), 0 0 0 1px rgba(217,154,0,0.3);
+                  .domains-sync-layout {
+                    display: grid;
+                    gap: 1rem;
+                    align-items: start;
                   }
-                  .domains-split-premium .ventures-split__panel--venture {
-                    background: linear-gradient(180deg, #FFFBF2 0%, #FFFCF5 100%);
+                  .domains-sync-layout__headers {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 1rem;
+                    align-items: stretch;
+                  }
+                  .domains-sync-layout__header {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 0.75rem;
+                    min-height: 7rem;
+                    padding: 1rem 1rem 1.1rem;
+                    border-radius: 1.25rem 1.25rem 0 0;
+                    border: 1px solid rgba(148, 163, 184, 0.22);
+                    border-bottom: none;
+                    background: rgba(255,255,255,0.62);
+                    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+                  }
+                  .domains-sync-layout__header--left {
+                    background: linear-gradient(180deg, #FFFBF2 0%, #FFF8EC 100%);
                     border-color: #EDE5D3;
                   }
-                  .domains-split-premium .ventures-split__panel--venture::before {
-                    background: linear-gradient(90deg, #D99A00 0%, #C8932A 50%, #E8C86A 100%);
-                    height: 3px;
+                  .domains-sync-layout__header--right {
+                    background: linear-gradient(180deg, #F1FFFD 0%, #EEFDFC 100%);
+                    border-color: #C7F5EE;
                   }
-                  .domains-split-premium .ventures-split__header--venture::before,
-                  .domains-split-premium .ventures-split__header--venture::after {
-                    background: rgba(180,140,40,0.12);
+                  .domains-sync-layout__header-main {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.8rem;
+                    min-width: 0;
+                    flex: 1 1 auto;
                   }
-                  .domains-split-premium .ventures-split__icon--venture {
+                  .domains-sync-layout__icon {
+                    flex-shrink: 0;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    border-radius: 0.8rem;
+                    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+                  }
+                  .domains-sync-layout__icon--left {
                     color: #9A6700;
                     background: linear-gradient(145deg, #FFF8EC 0%, #FDF3E0 100%);
-                    border: 1px solid rgba(217,154,0,0.25);
+                    border: 1px solid rgba(217, 154, 0, 0.25);
                   }
-                  .domains-split-premium .ventures-split__count--venture {
+                  .domains-sync-layout__icon--right {
+                    color: #0f766e;
+                    background: linear-gradient(145deg, #ecfdf5 0%, #ccfbf1 100%);
+                    border: 1px solid #99f6e4;
+                  }
+                  .domains-sync-layout__header-copy {
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.2rem;
+                  }
+                  .domains-sync-layout__title {
+                    margin: 0;
+                    font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+                    font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+                    line-height: 1.08;
+                    letter-spacing: -0.03em;
+                    font-weight: 700;
+                    color: #0f172a;
+                  }
+                  .domains-sync-layout__subtitle {
+                    margin: 0;
+                    color: #64748b;
+                    font-size: 0.875rem;
+                    line-height: 1.35;
+                  }
+                  .domains-sync-layout__count {
+                    flex-shrink: 0;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0.32rem 0.75rem;
+                    border-radius: 999px;
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    white-space: nowrap;
+                  }
+                  .domains-sync-layout__count--left {
+                    background: rgba(217, 154, 0, 0.08);
                     color: #8A6A10;
-                    background: rgba(217,154,0,0.08);
-                    border: 1px solid rgba(217,154,0,0.15);
+                    border: 1px solid rgba(217, 154, 0, 0.15);
                   }
-                  .domains-split-premium .ventures-split__empty--venture {
-                    border-color: rgba(180,140,40,0.2);
+                  .domains-sync-layout__count--right {
+                    background: rgba(20, 184, 166, 0.12);
+                    color: #0f766e;
+                    border: 1px solid rgba(20, 184, 166, 0.24);
                   }
-                  /* ── Premium cards: white with neutral warm-gray border ── */
-                  .domains-split-premium .ventures-split__body .listing-card-glow-shell {
-                    padding: 10px;
+                  .domains-sync-layout__rows {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                    align-items: stretch;
                   }
-                  .domains-split-premium .ventures-split__body .domain-listing-card.card-glow-hover,
-                  .domains-split-premium .ventures-split__body .domain-listing-card {
-                    background: #ffffff !important;
-                    border: 1px solid #E7E1D5 !important;
-                    border-radius: 0.85rem;
-                    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+                  .domains-sync-layout__row {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 1rem;
+                    align-items: stretch;
                   }
-                  .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover .domain-listing-card,
-                  .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover .domain-listing-card.card-glow-hover {
-                    transform: translateY(-3px);
-                    border-color: rgba(217,154,0,0.35) !important;
-                    box-shadow: 0 8px 28px rgba(180,140,40,0.13), 0 2px 8px rgba(0,0,0,0.04) !important;
+                  .domains-sync-layout__cell {
+                    display: flex;
+                    min-width: 0;
+                    min-height: 100%;
                   }
-                  .domains-split-premium .ventures-split__body .listing-card-glow-shell::before {
-                    background: linear-gradient(135deg, rgba(217,154,0,0.12), rgba(217,154,0,0.04)) !important;
+                  .domains-sync-layout__cell > * {
+                    width: 100%;
+                  }
+                  .domains-sync-layout__placeholder {
+                    display: block;
+                    width: 100%;
+                    min-height: 19rem;
+                    border-radius: 1.1rem;
+                    border: 1px dashed rgba(148, 163, 184, 0.2);
+                    background: rgba(248, 250, 252, 0.2);
+                  }
+                  @media (max-width: 1023px) {
+                    .domains-sync-layout__headers {
+                      display: none;
+                    }
+                    .domains-sync-layout__row {
+                      grid-template-columns: 1fr;
+                    }
+                    .domains-sync-layout__cell {
+                      width: 100%;
+                    }
                   }
                 `}</style>
-                <div className="ventures-split__mobile-tabs" role="tablist" aria-label="Domain sections">
-                  <button role="tab" type="button" aria-selected={splitMobilePanel === 'venture'} className={`ventures-split__mobile-tab ventures-split__mobile-tab--venture ${splitMobilePanel === 'venture' ? 'ventures-split__mobile-tab--active' : ''}`} onClick={() => setSplitMobilePanel('venture')}>
-                    Delta Domains
-                    <span className="ventures-split__mobile-tab-count">{showcaseFilter.filtered.length}</span>
-                  </button>
-                  <button role="tab" type="button" aria-selected={splitMobilePanel === 'coventure'} className={`ventures-split__mobile-tab ventures-split__mobile-tab--coventure ${splitMobilePanel === 'coventure' ? 'ventures-split__mobile-tab--active' : ''}`} onClick={() => setSplitMobilePanel('coventure')}>
-                    Domains
-                    <span className="ventures-split__mobile-tab-count">{marketplaceFilter.totalCount}</span>
-                  </button>
-                </div>
-                <div className="ventures-split__mobile-viewport">
-                  <div className={`ventures-split__mobile-track ${splitMobilePanel === 'coventure' ? 'ventures-split__mobile-track--coventure' : ''}`}>
-                    <section className="ventures-split__panel ventures-split__panel--venture ventures-split__mobile-panel">
-                      <header className="ventures-split__header ventures-split__header--venture">
-                        <div className="ventures-split__header-main">
-                          <span className="ventures-split__icon ventures-split__icon--venture" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
-                          <div className="ventures-split__header-text">
-                            <h2 className="ventures-split__title">Delta Domains</h2>
-                            <p className="ventures-split__subtitle">Showcase listings with premium pricing</p>
-                          </div>
-                        </div>
-                        <span className="ventures-split__count ventures-split__count--venture">
-                          {showcaseFilter.filtered.length} premium
-                        </span>
-                      </header>
-                      <div className="ventures-split__body">
-                        {showcaseFilter.filtered.length === 0 ? (
-                          <div className="ventures-split__empty ventures-split__empty--venture">
-                            <p>{activeFilterCount > 0 ? 'No Delta Domains match your filters.' : 'No Delta Domains are currently showcased.'}</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2">
-                              {showcaseFilter.paginated.map((d) => (
-                                <ListingCardShell key={d.showcaseId} className="domain-showcase-card-shell">
-                                  <ShowcaseDomainCard item={d} stackPremiumBadge shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
-                                </ListingCardShell>
-                              ))}
-                            </div>
-                            <Pagination page={showcaseFilter.page} totalPages={showcaseFilter.totalPages}
-                              onPage={handleShowcasePageChange} totalCount={showcaseFilter.totalCount} pageSize={20} />
-                          </>
-                        )}
+
+                <div className="domains-sync-layout__headers">
+                  <header className="domains-sync-layout__header domains-sync-layout__header--left">
+                    <div className="domains-sync-layout__header-main">
+                      <span className="domains-sync-layout__icon domains-sync-layout__icon--left" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
+                      <div className="domains-sync-layout__header-copy">
+                        <h2 className="domains-sync-layout__title">Delta Domains</h2>
+                        <p className="domains-sync-layout__subtitle">Showcase listings with premium pricing</p>
                       </div>
-                    </section>
-                    <div className="ventures-split__divider ventures-split__mobile-divider" aria-hidden="true">
-                      <span className="ventures-split__divider-line" />
                     </div>
-                    <section className="ventures-split__panel ventures-split__panel--coventure ventures-split__mobile-panel">
-                      <header className="ventures-split__header ventures-split__header--coventure">
-                        <div className="ventures-split__header-main">
-                          <span className="ventures-split__icon ventures-split__icon--coventure" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
-                          <div className="ventures-split__header-text">
-                            <h2 className="ventures-split__title">Domains</h2>
-                            <p className="ventures-split__subtitle">Marketplace domain listings</p>
-                          </div>
-                        </div>
-                        <span className="ventures-split__count ventures-split__count--coventure">
-                          {marketplaceFilter.totalCount} listed
-                        </span>
-                      </header>
-                      <div className="ventures-split__body">
-                        {loading ? (
-                          <PageContentSkeleton variant="cards" rows={4} />
-                        ) : marketplaceFilter.paginated.length === 0 ? (
-                          <div className="ventures-split__empty ventures-split__empty--coventure">
-                            <p>{activeFilterCount > 0 ? 'No marketplace domains match your filters.' : 'No marketplace domains found.'}</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="listing-card-glow-grid domain-listing-grid domain-listing-grid--standard grid grid-cols-1 sm:grid-cols-2">
-                              {marketplaceFilter.paginated.map(d => (
-                                <ListingCardShell key={d.id}>
-                                  <DomainListingCard
-                                    domain={d}
-                                    marketplace
-                                    isOwner={isListingOwner(d, user, 'domain')}
-                                    likeState={getLike(d.id)}
-                                    onLike={() => toggleLike(d.id)}
-                                    onView={() => openDetailIfAllowed(d)}
-                                    onEdit={() => { setEditTarget(d); setShowForm(false); }}
-                                    onBuy={() => {
-                                      if (!user) {
-                                        navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
-                                        return;
-                                      }
-                                      setBuyTarget(d);
-                                    }}
-                                    onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
-                                    onDelete={() => setDeleteTarget(d.id)}
-                                    onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
-                                  />
-                                </ListingCardShell>
-                              ))}
-                            </div>
-                            <Pagination page={marketplaceFilter.page} totalPages={marketplaceFilter.totalPages}
-                              onPage={handlePageChange} totalCount={marketplaceFilter.totalCount} pageSize={20} />
-                          </>
-                        )}
+                    <span className="domains-sync-layout__count domains-sync-layout__count--left">{showcaseFilter.filtered.length} premium</span>
+                  </header>
+
+                  <header className="domains-sync-layout__header domains-sync-layout__header--right">
+                    <div className="domains-sync-layout__header-main">
+                      <span className="domains-sync-layout__icon domains-sync-layout__icon--right" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
+                      <div className="domains-sync-layout__header-copy">
+                        <h2 className="domains-sync-layout__title">Domains</h2>
+                        <p className="domains-sync-layout__subtitle">Marketplace domain listings</p>
                       </div>
-                    </section>
-                  </div>
+                    </div>
+                    <span className="domains-sync-layout__count domains-sync-layout__count--right">{marketplaceFilter.totalCount} listed</span>
+                  </header>
+                </div>
+
+                <div className="domains-sync-layout__rows">
+                  {Array.from({ length: Math.max(showcaseFilter.paginated.length, marketplaceFilter.paginated.length) }, (_, index) => {
+                    const premiumCard = showcaseFilter.paginated[index];
+                    const marketplaceCard = marketplaceFilter.paginated[index];
+
+                    return (
+                      <div className="domains-sync-layout__row" key={`domain-row-${index}`}>
+                        <div className="domains-sync-layout__cell">
+                          {premiumCard ? (
+                            <ListingCardShell key={premiumCard.showcaseId}>
+                              <ShowcaseDomainCard item={premiumCard} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: premiumCard.domainName || premiumCard.name }} />
+                            </ListingCardShell>
+                          ) : (
+                            <div className="domains-sync-layout__placeholder" aria-hidden="true" />
+                          )}
+                        </div>
+
+                        <div className="domains-sync-layout__cell">
+                          {marketplaceCard ? (
+                            <ListingCardShell key={marketplaceCard.id}>
+                              <DomainListingCard
+                                domain={marketplaceCard}
+                                marketplace
+                                isOwner={isListingOwner(marketplaceCard, user, 'domain')}
+                                likeState={getLike(marketplaceCard.id)}
+                                onLike={() => toggleLike(marketplaceCard.id)}
+                                onView={() => openDetailIfAllowed(marketplaceCard)}
+                                onEdit={() => { setEditTarget(marketplaceCard); setShowForm(false); }}
+                                onBuy={() => {
+                                  if (!user) {
+                                    navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                                    return;
+                                  }
+                                  setBuyTarget(marketplaceCard);
+                                }}
+                                onViewAuction={() => navigate(marketplaceCard.auction?.id ? `/auction/${marketplaceCard.auction.id}` : '/auctions')}
+                                onDelete={() => setDeleteTarget(marketplaceCard.id)}
+                                onPutForAuction={isListingOwner(marketplaceCard, user, 'domain') && marketplaceCard.saleType !== 'AUCTION' ? () => setAuctionTarget(marketplaceCard) : undefined}
+                              />
+                            </ListingCardShell>
+                          ) : (
+                            <div className="domains-sync-layout__placeholder" aria-hidden="true" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (

@@ -493,3 +493,204 @@ body.app-layout-body .admin-dashboard-tab.active {
 body.app-layout-body .admin-dashboard-tab.active .admin-dashboard-tab-lucide-icon {
   color: #ffffff !important;
 }
+
+/* Operations page: saffron Assistance + teal Delta Registrar. */
+body.app-layout-body .operations-page {
+  --operations-saffron: #F97316;
+  --operations-saffron-dark: #C2410C;
+  --operations-saffron-50: #FFF7ED;
+  --operations-saffron-100: #FFEDD5;
+  --operations-saffron-200: #FED7AA;
+  --operations-teal: #0F766E;
+  --operations-teal-dark: #115E59;
+  --operations-teal-50: #F0FDFA;
+  --operations-teal-100: #CCFBF1;
+  --operations-teal-200: #99F6E4;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--assistance .operations-section-tab-accent,
+body.app-layout-body .operations-page .operations-section-tab.is-active.operations-section-tab--assistance .operations-section-tab-accent {
+  background: linear-gradient(180deg, var(--operations-saffron) 0%, var(--operations-saffron-dark) 100%) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--assistance:not(.is-active) {
+  background: linear-gradient(180deg, #ffffff 0%, var(--operations-saffron-50) 100%) !important;
+  border-color: var(--operations-saffron-200) !important;
+  color: var(--operations-saffron-dark) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--assistance:hover:not(.is-active) {
+  border-color: var(--operations-saffron) !important;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.12) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--assistance .operations-section-tab-icon-wrap,
+body.app-layout-body .operations-page .operations-section-tab--assistance .operations-section-tab-count {
+  background: var(--operations-saffron-50) !important;
+  color: var(--operations-saffron-dark) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab.is-active.operations-section-tab--assistance {
+  background: var(--operations-saffron-dark) !important;
+  border-color: var(--operations-saffron-dark) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(194, 65, 12, 0.14) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--compliance .operations-section-tab-accent,
+body.app-layout-body .operations-page .operations-section-tab.is-active.operations-section-tab--compliance .operations-section-tab-accent {
+  background: linear-gradient(180deg, #14B8A6 0%, var(--operations-teal) 100%) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--compliance:not(.is-active) {
+  background: linear-gradient(180deg, #ffffff 0%, var(--operations-teal-50) 100%) !important;
+  border-color: var(--operations-teal-100) !important;
+  color: var(--operations-teal) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--compliance:hover:not(.is-active) {
+  border-color: var(--operations-teal-200) !important;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.12) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab--compliance .operations-section-tab-icon-wrap,
+body.app-layout-body .operations-page .operations-section-tab--compliance .operations-section-tab-count {
+  background: var(--operations-teal-50) !important;
+  color: var(--operations-teal) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab.is-active.operations-section-tab--compliance {
+  background: var(--operations-teal) !important;
+  border-color: var(--operations-teal) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(15, 118, 110, 0.14) !important;
+}
+
+body.app-layout-body .operations-page .operations-section-tab.is-active .operations-section-tab-icon-wrap,
+body.app-layout-body .operations-page .operations-section-tab.is-active .operations-section-tab-count {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+body.app-layout-body .operations-page input:focus,
+body.app-layout-body .operations-page textarea:focus,
+body.app-layout-body .operations-page select:focus {
+  border-color: var(--operations-teal) !important;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14) !important;
+}
+
+body.app-layout-body .operations-page .filter-category-select option:hover,
+body.app-layout-body .operations-page .filter-category-select option:focus,
+body.app-layout-body .operations-page .filter-category-select option:active,
+body.app-layout-body .operations-page .filter-category-select option:checked {
+  background: var(--operations-teal-50) !important;
+  box-shadow: 0 0 0 100vmax var(--operations-teal-50) inset !important;
+  color: #0f172a !important;
+}
+
+body.app-layout-body .operations-page .operations-my-requests-action--hire {
+  color: var(--operations-saffron-dark);
+  background: var(--operations-saffron-50);
+  border-color: var(--operations-saffron-200);
+}
+
+body.app-layout-body .operations-page .operations-my-requests-action--booking {
+  color: var(--operations-teal);
+  background: var(--operations-teal-50);
+  border-color: var(--operations-teal-100);
+}
+
+body.app-layout-body .operations-page .operations-my-requests-status--contacted {
+  color: var(--operations-teal);
+  background: var(--operations-teal-50);
+  border-color: var(--operations-teal-100);
+}
+
+body.app-layout-body .operations-page .hro-card:hover {
+  border-color: var(--operations-teal-200);
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.10);
+}
+
+body.app-layout-body .operations-page .hro-card-dot,
+body.app-layout-body .operations-page .hro-card-dot-sm {
+  background: var(--operations-teal);
+}
+
+body.app-layout-body .operations-page .hro-address-icon {
+  background: var(--operations-teal-50);
+}
+
+body.app-layout-body .operations-page .hro-pin-icon,
+body.app-layout-body .operations-page .hro-trust-badge,
+body.app-layout-body .operations-page .hro-secure-badge,
+body.app-layout-body .operations-page .hro-badge-icon-blue {
+  color: var(--operations-teal);
+}
+
+body.app-layout-body .operations-page .hro-zone-badge {
+  background: var(--operations-teal-50);
+  color: var(--operations-teal);
+  border-color: var(--operations-teal-200);
+}
+
+body.app-layout-body .operations-page .hro-city-filter-wrap:focus-within {
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12), 0 4px 12px rgba(15, 118, 110, 0.10);
+}
+
+body.app-layout-body .operations-page .hro-city-filter-icon,
+body.app-layout-body .operations-page .hro-no-results-icon {
+  color: var(--operations-teal);
+}
+
+body.app-layout-body .operations-page .hro-action-call,
+body.app-layout-body .operations-page .hro-quick-action-icon-call {
+  background: var(--operations-saffron-50);
+  color: var(--operations-saffron-dark);
+}
+
+body.app-layout-body .operations-page .hro-action-call:hover:not(:disabled),
+body.app-layout-body .operations-page .hro-action-icon-call,
+body.app-layout-body .operations-page .hro-quick-action-call:hover {
+  background: var(--operations-saffron-100);
+}
+
+body.app-layout-body .operations-page .hro-action-call .hro-action-title,
+body.app-layout-body .operations-page .hro-action-call .hro-action-subtitle,
+body.app-layout-body .operations-page .hro-action-call .hro-action-svg,
+body.app-layout-body .operations-page .hro-action-call .hro-action-arrow {
+  color: var(--operations-saffron-dark);
+}
+
+body.app-layout-body .operations-page .hro-action-map,
+body.app-layout-body .operations-page .hro-action-icon-map,
+body.app-layout-body .operations-page .hro-quick-action-icon-find {
+  background: var(--operations-teal-50);
+  color: var(--operations-teal);
+}
+
+body.app-layout-body .operations-page .hro-action-map:hover:not(:disabled),
+body.app-layout-body .operations-page .hro-quick-action-find:hover {
+  background: var(--operations-teal-50);
+  border-color: var(--operations-teal-200);
+}
+
+body.app-layout-body .operations-page .hro-action-map .hro-action-title,
+body.app-layout-body .operations-page .hro-action-map .hro-action-subtitle,
+body.app-layout-body .operations-page .hro-action-map .hro-action-svg,
+body.app-layout-body .operations-page .hro-action-map .hro-action-arrow {
+  color: var(--operations-teal);
+}
+
+body.app-layout-body .operations-page .hro-quick-action-call:hover {
+  border-color: var(--operations-saffron-200);
+}
+
+body.app-layout-body .operations-page .hro-quick-action-icon-report {
+  background: #FFFBEB;
+  color: #B45309;
+}
+
+body.app-layout-body .operations-page .hro-quick-action-report:hover {
+  border-color: #FCD34D;
+  background: #FFFBEB;
+}

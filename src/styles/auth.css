@@ -23,7 +23,7 @@
   right: -6rem;
   width: 22rem;
   height: 22rem;
-  background: rgba(80, 191, 120, 0.14);
+  background: rgba(15, 118, 110, 0.14);
 }
 
 .auth-page__glow--bottom {
@@ -161,7 +161,7 @@
 }
 
 .auth-page__footer a {
-  color: var(--cobrother-brand-green-dark);
+  color: #0f766e;
   font-weight: 600;
   text-decoration: none;
 }
@@ -181,7 +181,7 @@
   width: 2.75rem;
   height: 2.75rem;
   border: 3px solid #e2e8f0;
-  border-top-color: var(--cobrother-brand-green);
+  border-top-color: #0f766e;
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }
@@ -231,9 +231,9 @@
 }
 
 .auth-alert--info {
-  background: var(--cobrother-brand-green-soft);
-  border: 1px solid rgba(80, 191, 120, 0.28);
-  color: #166534;
+  background: #f0fdfa;
+  border: 1px solid rgba(15, 118, 110, 0.24);
+  color: #0f766e;
 }
 
 /* Buttons */
@@ -300,9 +300,9 @@
 }
 
 .btn-oauth:hover {
-  border-color: rgba(80, 191, 120, 0.55);
-  background: #f8fffb;
-  box-shadow: 0 8px 24px rgba(80, 191, 120, 0.12);
+  border-color: rgba(15, 118, 110, 0.42);
+  background: #f0fdfa;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.10);
 }
 
 /* Form */
@@ -341,8 +341,8 @@
 }
 
 .auth-form-input:focus {
-  border-color: var(--cobrother-brand-green);
-  box-shadow: 0 0 0 3px rgba(80, 191, 120, 0.16);
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
 }
 
 /* ── Password show/hide wrapper ───────────────────────────────────────────── */
@@ -380,7 +380,7 @@
 }
 
 .auth-password-toggle:focus-visible {
-  outline: 2px solid var(--cobrother-brand-green);
+  outline: 2px solid #0f766e;
   outline-offset: 2px;
 }
 
@@ -415,7 +415,7 @@
 
 .auth-form-links a:hover,
 .auth-form-link-btn:hover:not(:disabled) {
-  color: var(--cobrother-brand-green-dark);
+  color: #0f766e;
 }
 
 .auth-form-link-btn:disabled {
@@ -445,7 +445,7 @@
 }
 
 .auth-otp-switch:hover {
-  color: var(--cobrother-brand-green-dark);
+  color: #0f766e;
 }
 
 .auth-recover-actions {
@@ -469,7 +469,7 @@
 .auth-recover-actions-links a {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--cobrother-brand-green-dark);
+  color: #0f766e;
   text-decoration: none;
 }
 

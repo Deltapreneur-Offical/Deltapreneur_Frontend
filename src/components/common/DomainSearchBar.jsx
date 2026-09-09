@@ -434,10 +434,9 @@ function BrandSearchSubmitButton({ label }) {
         aria-hidden="true"
       >
         <defs>
-                          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff9933" />
-            <stop offset="55%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#fb923c" />
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#fc6b09" />
+            <stop offset="100%" stopColor="#fc6b09" />
           </linearGradient>
         </defs>
         <path
@@ -1421,7 +1420,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-full border bg-white py-2 pl-4 pr-0 transition-all duration-300 sm:pl-5"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-5"
       >
         <input
           type="text"
@@ -1446,7 +1445,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-full border bg-white py-2.5 pl-4 pr-0 transition-all duration-300 sm:pl-6"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-6"
       >
         <input
           type="text"
@@ -1821,10 +1820,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
       <style>{`
         .brand-search-shell {
-          border: 1.25px solid transparent;
-          background:
-            linear-gradient(#ffffff, #ffffff) padding-box,
-            linear-gradient(90deg, #ff9933 0%, #f97316 50%, #fb923c 100%) border-box;
+          border: 3px solid rgba(252, 106, 9, 0.8);
+          box-shadow: 0 0 0 1px rgba(252, 106, 9, 0.14);
+          background: #ffffff;
         }
 
         .brand-search-divider {
@@ -1841,7 +1839,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           width: 3.05rem;
           min-width: 3.05rem;
           height: auto;
-          margin: 0 1.5rem 0 0.05rem;
+          margin: 0 0.65rem 0 -0.35rem;
           padding: 0;
           border: none;
           border-radius: 9999px;
@@ -1849,6 +1847,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           box-shadow: none;
           cursor: pointer;
           overflow: visible;
+          transform: translateX(-0.35rem);
           transition: opacity 0.2s ease;
         }
 
@@ -1860,11 +1859,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-submit-icon {
           display: block;
-          height: calc(100% + 1.3rem);
-          margin-top: -0.65rem;
-          margin-bottom: -0.65rem;
-          width: auto;
+          width: 100%;
+          height: 100%;
+          margin-top: 0;
+          margin-bottom: 0;
           aspect-ratio: 15 / 16.4;
+          transform: translateX(-0.28rem);
         }
 
         /* Thick orange/red border comet — search bar + pills */
@@ -1910,6 +1910,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             max-width: 42rem !important;
             min-width: 0 !important;
           }
+
         }
 
         .brand-lightning-tail {

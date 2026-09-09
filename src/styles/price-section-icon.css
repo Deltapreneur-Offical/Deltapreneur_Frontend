@@ -62,7 +62,7 @@
 
 /*
   Same asking-price chrome as venture cards:
-  white fill, 2.5px red→orange ring, PNG play on the right.
+  white fill, light red→orange ring, PNG play on the right.
 */
 .tech-service-card__price-pill,
 .home-operations-preview-card__price-box,
@@ -74,7 +74,7 @@
   padding: 0 0 0 0.95rem !important;
   overflow: hidden !important;
   border-radius: 9999px !important;
-  border: 2.5px solid transparent !important;
+  border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
@@ -90,12 +90,36 @@
 .home-preview-card-border--compliance:hover .home-operations-preview-card__price-box,
 .reg-mini-card:hover .reg-mini-card__price-pill,
 .reg-mini-card:focus-visible .reg-mini-card__price-pill {
-  border: 2.5px solid transparent !important;
+  border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16) !important;
   outline: none;
+}
+
+/* Homepage Delta Ventures only: match the teal card theme. */
+body.home-page-body .home-preview-row .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-auto-scroll-row .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-preview-row .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-auto-scroll-row .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box {
+  border: 2.5px solid #2DD4BF !important;
+  border-color: #2DD4BF !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  background-origin: initial !important;
+  background-clip: border-box !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta,
+body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:hover,
+body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
+  color: #2DD4BF !important;
+}
+
+body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(48%) saturate(749%) hue-rotate(118deg) brightness(89%) contrast(90%) !important;
 }

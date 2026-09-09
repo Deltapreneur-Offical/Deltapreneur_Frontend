@@ -369,6 +369,7 @@ export const adminAPI = {
   removeShowcaseDomain: (id) =>
     api.delete(`/api/v1/admin/showcase/${id}`),
   refreshShowcase: () => api.post('/api/v1/admin/showcase/refresh'),
+  backfillShowcaseRenewals: () => api.post('/api/v1/admin/showcase/renewals/backfill'),
   updateShowcaseConfig: (data) =>
     api.put('/api/v1/admin/showcase/config', data),
   getTrackRecords: (params) => api.get('/api/v1/admin/track-records', { params }),

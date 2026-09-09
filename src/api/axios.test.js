@@ -330,9 +330,46 @@ describe('api axios client', () => {
     expect(getStoredAccessToken()).toBeNull();
   });
 
-  it('does not log out when a 401 had no Bearer and no current access token', async () => {
+  it('does not force logout while a valid csrf cookie session still exists', async () => {
     const { getStoredAccessToken } = await import('../utils/authSession');
     document.cookie = 'csrf_token=csrf-abc; path=/';
+    mocks.postMock.mockRejectedValue({
+      response: {
+        status: 401,
+        data: { detail: 'Not authenticated.' },
+      },
+    });
+
+    const hrefDescriptor = Object.getOwnPropertyDescriptor(window, 'location');
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, href: 'http://127.0.0.1:5173/admin', pathname: '/admin' },
+    });
+
+    const error = {
+      config: {
+        url: '/api/v1/auth/me',
+        method: 'get',
+        headers: {},
+      },
+      response: {
+        status: 401,
+        data: { detail: 'Not authenticated.' },
+      },
+    };
+
+    await expect(responseErrorHandler(error)).rejects.toBeTruthy();
+    expect(getStoredAccessToken()).toBeNull();
+    expect(window.location.href).toContain('/admin');
+
+    if (hrefDescriptor) {
+      Object.defineProperty(window, 'location', hrefDescriptor);
+    }
+  });
+
+  it('does not log out when a 401 had no Bearer and no current access token', async () => {
+    const { getStoredAccessToken } = await import('../utils/authSession');
+    document.cookie = 'csrf_token=; Max-Age=0; path=/';
     mocks.postMock.mockRejectedValue({
       response: {
         status: 401,

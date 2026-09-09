@@ -291,17 +291,24 @@ export async function ensureAccessTokenFromRefresh() {
 /** Prevent parallel 401s from stacking duplicate logout/redirects. */
 let logoutInProgress = false;
 
-function forceLogoutToLogin() {
+function forceLogoutToLogin({ ignoreCookieSession = false } = {}) {
   if (logoutInProgress) return;
-  logoutInProgress = true;
-  clearAuthTokens();
-  notifyAuthCleared();
-  const path = typeof window !== 'undefined' ? window.location.pathname : '';
-  if (!isPublicBrowsePath(path)) {
-    window.location.href = '/login';
+  if (!ignoreCookieSession && hasCookieAuthSession()) {
     return;
   }
-  logoutInProgress = false;
+
+  logoutInProgress = true;
+  try {
+    clearAuthTokens();
+    notifyAuthCleared();
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    if (!isPublicBrowsePath(path)) {
+      window.location.href = '/login';
+      return;
+    }
+  } finally {
+    logoutInProgress = false;
+  }
 }
 
 // Attach access token to every request; refresh proactively near expiry.
@@ -367,7 +374,7 @@ api.interceptors.response.use(
           isHardRefreshAuthFailure(refreshErr)
           && requestUsedCurrentAccessToken(original)
         ) {
-          forceLogoutToLogin();
+          forceLogoutToLogin({ ignoreCookieSession: true });
         }
         if (isVaPublicRequest(original)) {
           return Promise.reject(refreshErr);

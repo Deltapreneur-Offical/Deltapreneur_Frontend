@@ -31,7 +31,7 @@ export default function HomeSectionHeader({ title, to, accent, showViewAll = tru
       {...headerProps}
     >
       <div className="home-section-header__top">
-        <h2 className="home-section-header__title">{title}</h2>
+        <h2 className="home-section-header__title text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
         {showLink ? (
           <Link to={to} className="home-section-header__view-all">
             <span>{t('viewAll')}</span>

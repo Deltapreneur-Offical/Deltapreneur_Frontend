@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useLayoutEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -39,9 +39,11 @@ export default function HomeRegistrationsSection() {
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
   const { categories: allCategories, fetched } = usePublicHubRegistrarCategories();
   const rowWrapRef = useRef(null);
   const suppressCardClickRef = useRef(false);
+  const scrollTargetRef = useRef(null);
   const navigate = useNavigate();
   const waitingForCategories = !fetched && allCategories.length === 0;
 
@@ -62,13 +64,13 @@ export default function HomeRegistrationsSection() {
 
   const getPageStep = useCallback((el) => {
     const item = el.querySelector('.home-preview-row__item');
-    if (!item) return Math.round(el.clientWidth * 0.75);
+    if (!item) return Math.max(1, Math.round(el.clientWidth * 0.8));
     const styles = getComputedStyle(el);
     const gap = parseFloat(styles.columnGap || styles.gap) || 24;
     const pad = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
     const cardWidth = item.getBoundingClientRect().width;
     const stride = cardWidth + gap;
-    if (stride <= 0) return Math.round(el.clientWidth * 0.75);
+    if (stride <= 0) return Math.max(1, Math.round(el.clientWidth * 0.8));
     const usable = Math.max(0, el.clientWidth - pad);
     const visibleCount = Math.max(1, Math.floor((usable + gap) / stride));
     return visibleCount * stride;
@@ -80,11 +82,14 @@ export default function HomeRegistrationsSection() {
     if (!el) {
       setCanScrollLeft(false);
       setCanScrollRight(false);
+      setHasOverflow(false);
       return;
     }
     const max = el.scrollWidth - el.clientWidth;
-    setCanScrollLeft(el.scrollLeft > 2);
-    setCanScrollRight(max > 2 && el.scrollLeft < max - 2);
+    const overflows = max > 2;
+    setHasOverflow(overflows);
+    setCanScrollLeft(overflows && el.scrollLeft > 2);
+    setCanScrollRight(overflows && el.scrollLeft < max - 2);
 
     if (wrap) {
       const wrapRect = wrap.getBoundingClientRect();
@@ -94,9 +99,8 @@ export default function HomeRegistrationsSection() {
         const center = cardRect.top - wrapRect.top + cardRect.height / 2;
         wrap.style.setProperty('--reg-nav-center', `${Math.round(center)}px`);
       }
-      const edgeGap = 28;
-      wrap.style.setProperty('--reg-nav-inset-left', `${Math.round(edgeGap - wrapRect.left)}px`);
-      wrap.style.setProperty('--reg-nav-inset-right', `${Math.round(wrapRect.right - window.innerWidth + edgeGap)}px`);
+      wrap.style.removeProperty('--reg-nav-inset-left');
+      wrap.style.removeProperty('--reg-nav-inset-right');
     }
   }, [getPreviewRow]);
 
@@ -104,19 +108,30 @@ export default function HomeRegistrationsSection() {
     const el = getPreviewRow();
     if (!el) return;
     const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
-    const next = Math.min(maxScroll, Math.max(0, el.scrollLeft + dir * getPageStep(el)));
+    if (maxScroll <= 2) return;
+    const from = scrollTargetRef.current == null ? el.scrollLeft : scrollTargetRef.current;
+    const next = Math.min(maxScroll, Math.max(0, from + dir * getPageStep(el)));
+    scrollTargetRef.current = next;
     el.scrollTo({ left: next, behavior: 'smooth' });
+    setCanScrollLeft(next > 2);
+    setCanScrollRight(next < maxScroll - 2);
   }, [getPreviewRow, getPageStep]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = getPreviewRow();
     if (!el) return undefined;
 
     updateNavState();
     const rafId = requestAnimationFrame(updateNavState);
+    scrollTargetRef.current = null;
 
     const onScroll = () => updateNavState();
+    const onScrollEnd = () => {
+      scrollTargetRef.current = el.scrollLeft;
+      updateNavState();
+    };
     el.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('scrollend', onScrollEnd);
     const resizeObserver = typeof ResizeObserver !== 'undefined'
       ? new ResizeObserver(updateNavState)
       : null;
@@ -158,6 +173,7 @@ export default function HomeRegistrationsSection() {
         try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
       }
       el.scrollLeft = startScroll - dx;
+      scrollTargetRef.current = el.scrollLeft;
     };
 
     const onPointerUp = (e) => {
@@ -186,6 +202,7 @@ export default function HomeRegistrationsSection() {
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
       e.preventDefault();
       el.scrollLeft += e.deltaX;
+      scrollTargetRef.current = el.scrollLeft;
     };
 
     el.addEventListener('pointerdown', onPointerDown);
@@ -197,6 +214,7 @@ export default function HomeRegistrationsSection() {
     return () => {
       cancelAnimationFrame(rafId);
       el.removeEventListener('scroll', onScroll);
+      el.removeEventListener('scrollend', onScrollEnd);
       resizeObserver?.disconnect();
       window.removeEventListener('resize', updateNavState);
       el.removeEventListener('pointerdown', onPointerDown);
@@ -377,22 +395,20 @@ export default function HomeRegistrationsSection() {
           <p className="text-center text-gray-500 py-4">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
         ) : (
           <div
-            className={[
-              'reg-cards-row-wrap',
-              canScrollLeft ? 'reg-cards-row-wrap--fade-left' : '',
-              canScrollRight ? 'reg-cards-row-wrap--fade-right' : '',
-            ].filter(Boolean).join(' ')}
+            className={`reg-cards-row-wrap${hasOverflow ? '' : ' reg-cards-row-wrap--no-overflow'}`}
             ref={rowWrapRef}
           >
-            <button
-              type="button"
-              className="reg-cards-nav reg-cards-nav--prev"
-              onClick={() => scrollCards(-1)}
-              disabled={!canScrollLeft}
-              aria-label="Scroll registration cards left"
-            >
-              <ChevronLeft size={22} strokeWidth={2.25} aria-hidden />
-            </button>
+            {hasOverflow ? (
+              <button
+                type="button"
+                className="reg-cards-nav reg-cards-nav--prev"
+                onClick={() => scrollCards(-1)}
+                disabled={!canScrollLeft}
+                aria-label="Scroll registration cards left"
+              >
+                <ChevronLeft size={22} strokeWidth={2.25} aria-hidden />
+              </button>
+            ) : null}
             <HomePreviewRow className="reg-cards-preview-row">
               {filteredCategories.map((cat) => (
                 <HomePreviewRowItem key={cat.slug}>
@@ -400,15 +416,17 @@ export default function HomeRegistrationsSection() {
                 </HomePreviewRowItem>
               ))}
             </HomePreviewRow>
-            <button
-              type="button"
-              className="reg-cards-nav reg-cards-nav--next"
-              onClick={() => scrollCards(1)}
-              disabled={!canScrollRight}
-              aria-label="Scroll registration cards right"
-            >
-              <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
-            </button>
+            {hasOverflow ? (
+              <button
+                type="button"
+                className="reg-cards-nav reg-cards-nav--next"
+                onClick={() => scrollCards(1)}
+                disabled={!canScrollRight}
+                aria-label="Scroll registration cards right"
+              >
+                <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
+              </button>
+            ) : null}
           </div>
         )}
       </div>

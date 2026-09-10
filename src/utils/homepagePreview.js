@@ -215,27 +215,57 @@ export async function fetchHomepageSectionPreview(
   limit = HOMEPAGE_PREVIEW_LIMIT,
   options = {},
 ) {
-  const { filterFn, featuredQuery } = options;
+  const { filterFn, featuredQuery, fillCatalog = true } = options;
 
-  if (featuredQuery) {
-    try {
-      const { items } = await fetchListPage(requestFn, {
-        page: 1,
-        pageSize: limit,
+  if (!featuredQuery) {
+    return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+  }
+
+  try {
+    const featuredMerged = [];
+    const maxPages = 8;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const { items, total } = await fetchListPage(requestFn, {
+        page,
+        pageSize: HOME_PREVIEW_PAGE_SIZE,
         featured_only: true,
         ...featuredQuery,
       });
-      const featuredRows = resolveHomepageSectionItems(items, type, limit, {
-        filterFn,
-        treatAllAsFeatured: true,
-      });
-      return featuredRows;
-    } catch {
-      return [];
+      if (!items.length) break;
+      featuredMerged.push(...asArray(items));
+      const keptCount = typeof filterFn === 'function'
+        ? featuredMerged.filter(filterFn).length
+        : featuredMerged.length;
+      // featured_only also prepends showcase rows. Do not stop at `limit` mixed
+      // items or marketplace featured cards get dropped before they are fetched.
+      if (fillCatalog) {
+        if (featuredMerged.length >= limit) break;
+      } else if (keptCount >= limit) {
+        break;
+      }
+      const reportedTotal = Number(total);
+      if (
+        items.length < HOME_PREVIEW_PAGE_SIZE
+        || (Number.isFinite(reportedTotal) && featuredMerged.length >= reportedTotal)
+      ) {
+        break;
+      }
     }
-  }
 
-  return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+    const featuredRows = resolveHomepageSectionItems(featuredMerged, type, limit, {
+      filterFn,
+      treatAllAsFeatured: true,
+    });
+    if (!fillCatalog) return featuredRows;
+
+    const catalog = await fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+    const seen = new Set(featuredRows.map((row) => row?.id).filter((id) => id != null));
+    const extra = catalog.filter((row) => row?.id != null && !seen.has(row.id));
+    return [...featuredRows, ...extra].slice(0, limit);
+  } catch {
+    if (!fillCatalog) return [];
+    return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+  }
 }
 
 /** Venture / co-venture homepage rows — featured API first, then public catalog fallback. */

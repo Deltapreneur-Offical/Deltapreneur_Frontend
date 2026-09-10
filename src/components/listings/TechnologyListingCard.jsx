@@ -283,9 +283,10 @@ export default function TechnologyListingCard({
         type="button"
         className={OWNER_ACTION_BTN_EDIT}
         onClick={(e) => { stop(e); onEdit(); }}
+        aria-label={t('edit')}
+        title={t('edit')}
       >
-        <EditIcon size={14} />
-        <span className="truncate">{t('edit')}</span>
+        <EditIcon size={15} />
       </button>
     ) : (
       <span className={OWNER_ACTION_BTN_MUTED}>
@@ -305,7 +306,7 @@ export default function TechnologyListingCard({
           }}
         >
           <Gavel size={14} className="shrink-0" aria-hidden />
-          <span className="truncate">{t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })}</span>
+          <span>{t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })}</span>
         </button>
       );
     } else if (isTechnologyAuctionAwaitingWinner(item, auctionStatus) && liveId) {
@@ -319,7 +320,7 @@ export default function TechnologyListingCard({
           }}
         >
           <Gavel size={14} className="shrink-0" aria-hidden />
-          <span className="truncate">{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
+          <span>{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
         </button>
       );
     } else if (isTechnologyAuctionPending(item, auctionStatus)) {
@@ -336,7 +337,7 @@ export default function TechnologyListingCard({
           onClick={(e) => { stop(e); onAuction(); }}
         >
           <Gavel size={14} className="shrink-0" aria-hidden />
-          <span className="truncate">{t('listingCardPutToAuction')}</span>
+          <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
         </button>
       );
     } else {

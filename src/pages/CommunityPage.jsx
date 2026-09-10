@@ -19,6 +19,7 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import { useScrollAppLayoutToTopWhen } from '../components/common/ScrollToTop';
 import { useTranslation } from 'react-i18next';
 import {
   evaluateCreatorProfileCompletion,
@@ -166,6 +167,8 @@ export default function CommunityPage() {
   const [myProfile, setMyProfile] = useState(null);
   const [myAuction, setMyAuction] = useState(null);
   const [detailProfile, setDetailProfile] = useState(null);
+
+  useScrollAppLayoutToTopWhen(showForm);
 
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInRedirecting, setLinkedInRedirecting] = useState(false);

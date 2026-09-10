@@ -34,6 +34,7 @@ import FormSelect from '../components/common/FormSelect';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import { DEFAULT_LISTING_CURRENCY, CURRENCY_LABELS } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
+import { useScrollAppLayoutToTopWhen } from '../components/common/ScrollToTop';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
@@ -43,7 +44,7 @@ import ListingOwnerActionPair, {
   OWNER_ACTION_BTN_EDIT,
   OWNER_ACTION_BTN_MUTED,
 } from '../components/listings/ListingOwnerActionPair';
-import EditActionLabel from '../components/common/EditActionLabel';
+import { EditIcon } from '../components/common/EditActionLabel';
 import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS, HARDWARE_CATEGORIES, HARDWARE_CATEGORY_OPTIONS } from '../constants/listingCategories';
 import TechnologyDemoVideoSection, { isValidDemoVideoUrl } from '../components/technology/TechnologyDemoVideoSection';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
@@ -87,6 +88,8 @@ export default function CoCreationPage() {
   const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
   const [techServices, setTechServices] = useState([]);
   const [serviceCategory, setServiceCategory] = useState('All');
+
+  useScrollAppLayoutToTopWhen(Boolean(showForm || editTarget));
 
   useEffect(() => {
     technologyServicesAPI.getServices()
@@ -1938,15 +1941,15 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                     <ListingOwnerActionPair
                       className="w-full"
                       left={onEdit ? (
-                        <button type="button" className={OWNER_ACTION_BTN_EDIT} onClick={onEdit}>
-                          <EditActionLabel iconSize={14}>Edit listing</EditActionLabel>
+                        <button type="button" className={OWNER_ACTION_BTN_EDIT} onClick={onEdit} aria-label={t('edit')} title={t('edit')}>
+                          <EditIcon size={15} />
                         </button>
                       ) : null}
                       right={
                         canRequestTechnologyAuction(d, auctionStatus) && onAuction ? (
                           <button type="button" className={OWNER_ACTION_BTN_AUCTION} onClick={onAuction}>
                             <Gavel size={14} className="shrink-0" />
-                            {t('listingCardPutToAuction', { defaultValue: 'List for auction' })}
+                            {t('putAuction', { defaultValue: 'Put Auction' })}
                           </button>
                         ) : isTechnologyAuctionPending(d, auctionStatus) ? (
                           <span className={OWNER_ACTION_BTN_MUTED}>

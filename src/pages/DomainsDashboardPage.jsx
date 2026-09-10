@@ -782,9 +782,9 @@ function DomainRow({ domain, type, onVerify, onPutForAuction }) {
             type="button"
             className="btn-glow btn-glow-sm"
             onClick={onPutForAuction}
-            title={t('startAuction', { defaultValue: 'Start Auction' })}
+            title={t('putAuction', { defaultValue: 'Put Auction' })}
           >
-            <Gavel size={13} /> {t('startAuction', { defaultValue: 'Start Auction' })}
+            <Gavel size={13} /> {t('putAuction', { defaultValue: 'Put Auction' })}
           </button>
         )}
 

@@ -319,10 +319,10 @@ export default function DomainListingCard({
                   stop(e);
                   onPutForAuction();
                 }}
-                title={t('startAuction', { defaultValue: 'Start Auction' })}
+                title={t('putAuction', { defaultValue: 'Put Auction' })}
               >
                 <Gavel size={13} className="shrink-0" />
-                <span className="truncate">{t('startAuction', { defaultValue: 'Start Auction' })}</span>
+                <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
               </button>
             )}
             {isAuction && (
@@ -506,7 +506,7 @@ export default function DomainListingCard({
           )}
         </div>
 
-        {/* Bottom: owner Edit | Start Auction stay equal-width side by side */}
+        {/* Bottom: pencil | Put Auction (auction label gets remaining width) */}
         <div className="mt-auto pt-3">
           {isOwner ? (
             <ListingOwnerActionPair
@@ -516,9 +516,10 @@ export default function DomainListingCard({
                     type="button"
                     className={OWNER_ACTION_BTN_EDIT}
                     onClick={(e) => { stop(e); onEdit(); }}
+                    aria-label={t('edit')}
+                    title={t('edit')}
                   >
-                    <EditIcon size={14} className="shrink-0" />
-                    <span className="truncate">{t('edit')}</span>
+                    <EditIcon size={15} />
                   </button>
                 ) : (
                   <span className={OWNER_ACTION_BTN_MUTED}>
@@ -535,7 +536,7 @@ export default function DomainListingCard({
                     title={t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}
                   >
                     <Gavel size={14} className="shrink-0" />
-                    <span className="truncate">{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
+                    <span>{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
                   </button>
                 ) : isLiveAuction ? (
                   <button
@@ -547,7 +548,7 @@ export default function DomainListingCard({
                       : t('inAuction', { defaultValue: 'In Auction' })}
                   >
                     <Gavel size={14} className="shrink-0" />
-                    <span className="truncate">
+                    <span>
                       {auctionLive
                         ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
                         : t('inAuction', { defaultValue: 'In Auction' })}
@@ -558,10 +559,10 @@ export default function DomainListingCard({
                     type="button"
                     className={OWNER_ACTION_BTN_AUCTION}
                     onClick={(e) => { stop(e); onPutForAuction(); }}
-                    title={t('startAuction', { defaultValue: 'Start Auction' })}
+                    title={t('putAuction', { defaultValue: 'Put Auction' })}
                   >
                     <Gavel size={14} className="shrink-0" />
-                    <span className="truncate">{t('startAuction', { defaultValue: 'Start Auction' })}</span>
+                    <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
                   </button>
                 ) : (
                   <span className={OWNER_ACTION_BTN_MUTED}>

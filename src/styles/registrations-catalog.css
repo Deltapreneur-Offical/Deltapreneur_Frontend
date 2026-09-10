@@ -1394,7 +1394,7 @@
   border: 1.5px solid transparent;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box;
+    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box;
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16);
@@ -1589,31 +1589,14 @@
 .reg-cards-row-wrap {
   position: relative;
   min-width: 0;
+  overflow: visible;
+  padding-inline: 3.15rem;
 }
 
-.reg-cards-row-wrap::before,
-.reg-cards-row-wrap::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1.1rem;
-  z-index: 5;
-  pointer-events: none;
-  opacity: 0;
+.reg-cards-row-wrap--no-overflow {
+  padding-inline: 0;
 }
 
-.reg-cards-row-wrap--fade-left::before {
-  left: 0;
-  opacity: 1;
-  background: linear-gradient(to right, #fff 0%, rgba(255, 255, 255, 0.45) 55%, rgba(255, 255, 255, 0));
-}
-
-.reg-cards-row-wrap--fade-right::after {
-  right: 0;
-  opacity: 1;
-  background: linear-gradient(to left, #fff 0%, rgba(255, 255, 255, 0.45) 55%, rgba(255, 255, 255, 0));
-}
 
 .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row {
   cursor: grab;
@@ -1622,7 +1605,8 @@
   margin-right: 0 !important;
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
-  padding-inline: 0.55rem !important;
+  padding-inline: 0 !important;
+  justify-content: flex-start !important;
   scroll-snap-type: none !important;
   scroll-behavior: auto;
 }
@@ -1701,11 +1685,11 @@
 }
 
 .reg-cards-nav--prev {
-  left: var(--reg-nav-inset-left, 0.35rem);
+  left: 0.2rem;
 }
 
 .reg-cards-nav--next {
-  right: var(--reg-nav-inset-right, 0.35rem);
+  right: 0.2rem;
 }
 
 .reg-cards-nav svg {
@@ -1750,13 +1734,16 @@
 }
 
 @media (max-width: 767px) {
-  .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row {
-    padding-inline: 0.45rem !important;
+  .reg-cards-row-wrap {
+    padding-inline: 2.7rem;
   }
 
-  .reg-cards-row-wrap::before,
-  .reg-cards-row-wrap::after {
-    width: 0.85rem;
+  .reg-cards-row-wrap--no-overflow {
+    padding-inline: 0;
+  }
+
+  .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row {
+    padding-inline: 0 !important;
   }
 
   .reg-cards-nav {

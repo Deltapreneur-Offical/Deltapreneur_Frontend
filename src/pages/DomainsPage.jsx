@@ -4,7 +4,7 @@ import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown, Eye, Globe } from 'lucide-react';
-import EditActionLabel from '../components/common/EditActionLabel';
+import { EditIcon } from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
 import '../styles/ventures-split-columns.css';
@@ -49,7 +49,8 @@ import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import FormSelect from '../components/common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
-import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
+import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll, scheduleScrollAppLayoutToTop } from '../utils/preserveAppLayoutScroll';
+import { useScrollAppLayoutToTopWhen } from '../components/common/ScrollToTop';
 import { asArray } from '../utils/asArray';
 import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
@@ -171,6 +172,8 @@ export default function DomainsPage() {
   const [auctionTarget, setAuctionTarget] = useState(null);
   const { pendingVerificationCount } = useDomainPendingVerification();
 
+  useScrollAppLayoutToTopWhen(Boolean(showForm || editTarget));
+
   useReferralTracker(detailTarget?.id, 'domain');
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
@@ -267,12 +270,12 @@ export default function DomainsPage() {
 
   const handlePageChange = (newPage) => {
     marketplaceFilter.setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scheduleScrollAppLayoutToTop();
   };
 
   const handleShowcasePageChange = (newPage) => {
     showcaseFilter.setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scheduleScrollAppLayoutToTop();
   };
 
   useEffect(() => {
@@ -2506,14 +2509,14 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
                 {isOwner ? (
                   <ListingOwnerActionPair
                     left={onEdit ? (
-                      <button type="button" className={OWNER_ACTION_BTN_EDIT} onClick={onEdit}>
-                        <EditActionLabel iconSize={14}>{t('domainsPageEditListing')}</EditActionLabel>
+                      <button type="button" className={OWNER_ACTION_BTN_EDIT} onClick={onEdit} aria-label={t('edit')} title={t('edit')}>
+                        <EditIcon size={15} />
                       </button>
                     ) : null}
                     right={!isAuction && onPutForAuction ? (
                       <button type="button" className={OWNER_ACTION_BTN_AUCTION} onClick={onPutForAuction}>
                         <Gavel size={14} className="shrink-0" />
-                        {t('startAuction', { defaultValue: 'Start Auction' })}
+                        {t('putAuction', { defaultValue: 'Put Auction' })}
                       </button>
                     ) : isAuction ? (
                       <button type="button" className={OWNER_ACTION_BTN_AUCTION} onClick={onViewAuction}>

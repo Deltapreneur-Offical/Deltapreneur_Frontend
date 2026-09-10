@@ -9,7 +9,7 @@ import { isListingOwner } from '../../utils/listingVisibility';
 import { useAuth } from '../../context/AuthContext';
 import { useLikes } from '../../hooks/useLikes';
 import HomeCardsNavRow from './HomeCardsNavRow';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 import HomePreviewCardSkeleton from './HomePreviewCardSkeleton';
 import DomainListingCard from '../listings/DomainListingCard';
 import HomeSectionHeader from './HomeSectionHeader';
@@ -71,13 +71,13 @@ export default function FeaturedDomainsSection() {
           showViewAll={!loading && previewDomains.length > 0}
         />
         {loading ? (
-          <HomePreviewRow>
+          <HomeCardsNavRow accent="domain" ariaLabel={title}>
             {Array.from({ length: 5 }).map((_, i) => (
               <HomePreviewRowItem key={i}>
                 <HomePreviewCardSkeleton variant="browse" />
               </HomePreviewRowItem>
             ))}
-          </HomePreviewRow>
+          </HomeCardsNavRow>
         ) : previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : (

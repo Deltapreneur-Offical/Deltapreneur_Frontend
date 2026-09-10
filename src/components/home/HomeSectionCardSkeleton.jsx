@@ -1,6 +1,7 @@
 import HomePreviewCardSkeleton from './HomePreviewCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeCardsNavRow from './HomeCardsNavRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 
 const SKELETON_COUNT = 5;
 
@@ -18,13 +19,13 @@ export default function HomeSectionCardSkeleton({
         {!hideHeader && title ? (
           <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />
         ) : null}
-        <HomePreviewRow>
+        <HomeCardsNavRow accent={accent || 'domain'} ariaLabel={title}>
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
             <HomePreviewRowItem key={i}>
               <HomePreviewCardSkeleton variant={variant} compact={compact} />
             </HomePreviewRowItem>
           ))}
-        </HomePreviewRow>
+        </HomeCardsNavRow>
       </div>
     </section>
   );

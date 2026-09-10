@@ -1,11 +1,16 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Children, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HomePreviewRow from './HomePreviewRow';
 import '../../styles/home-cards-nav.css';
 
+function readRowOverflow(el) {
+  const max = el.scrollWidth - el.clientWidth;
+  return { overflows: max > 2, max: Math.max(0, max) };
+}
+
 /**
  * Homepage card strip with left/right paging — same control as Delta Registrations.
- * Arrows render only when cards overflow the visible row.
+ * Side arrows stay visible whenever the row has more than one card.
  * @param {string} [accent] section theme: domain | venture | coventure | auction | technology | operations | community | assistance
  */
 export default function HomeCardsNavRow({
@@ -17,7 +22,8 @@ export default function HomeCardsNavRow({
 }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [hasOverflow, setHasOverflow] = useState(false);
+  const itemCount = Children.toArray(children).length;
+  const showArrows = itemCount > 1;
   const wrapRef = useRef(null);
   const scrollTargetRef = useRef(null);
   const navRafRef = useRef(0);
@@ -52,18 +58,15 @@ export default function HomeCardsNavRow({
           navFlagsRef.current = { left: false, right: false, overflow: false };
           setCanScrollLeft(false);
           setCanScrollRight(false);
-          setHasOverflow(false);
         }
         return;
       }
-      const max = el.scrollWidth - el.clientWidth;
-      const overflows = max > 2;
+      const { overflows, max } = readRowOverflow(el);
       const left = overflows && el.scrollLeft > 2;
       const right = overflows && el.scrollLeft < max - 2;
       const prev = navFlagsRef.current;
       if (prev.left !== left || prev.right !== right || prev.overflow !== overflows) {
         navFlagsRef.current = { left, right, overflow: overflows };
-        setHasOverflow(overflows);
         setCanScrollLeft(left);
         setCanScrollRight(right);
       }
@@ -206,13 +209,13 @@ export default function HomeCardsNavRow({
       className={[
         'home-cards-nav-wrap',
         `home-cards-nav-wrap--${accent}`,
-        hasOverflow ? '' : 'home-cards-nav-wrap--no-overflow',
+        showArrows ? '' : 'home-cards-nav-wrap--no-overflow',
         className,
       ].filter(Boolean).join(' ')}
       role="region"
       aria-label={ariaLabel}
     >
-      {hasOverflow ? (
+      {showArrows ? (
         <button
           type="button"
           className="home-cards-nav home-cards-nav--prev"
@@ -226,7 +229,7 @@ export default function HomeCardsNavRow({
       <HomePreviewRow className={`home-cards-nav-row${rowClassName ? ` ${rowClassName}` : ''}`}>
         {children}
       </HomePreviewRow>
-      {hasOverflow ? (
+      {showArrows ? (
         <button
           type="button"
           className="home-cards-nav home-cards-nav--next"

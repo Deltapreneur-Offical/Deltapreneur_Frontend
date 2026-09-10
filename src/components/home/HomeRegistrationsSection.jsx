@@ -39,7 +39,6 @@ export default function HomeRegistrationsSection() {
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [hasOverflow, setHasOverflow] = useState(false);
   const { categories: allCategories, fetched } = usePublicHubRegistrarCategories();
   const rowWrapRef = useRef(null);
   const suppressCardClickRef = useRef(false);
@@ -89,7 +88,6 @@ export default function HomeRegistrationsSection() {
           navFlagsRef.current = { left: false, right: false, overflow: false };
           setCanScrollLeft(false);
           setCanScrollRight(false);
-          setHasOverflow(false);
         }
         return;
       }
@@ -100,7 +98,6 @@ export default function HomeRegistrationsSection() {
       const prev = navFlagsRef.current;
       if (prev.left !== left || prev.right !== right || prev.overflow !== overflows) {
         navFlagsRef.current = { left, right, overflow: overflows };
-        setHasOverflow(overflows);
         setCanScrollLeft(left);
         setCanScrollRight(right);
       }
@@ -412,10 +409,10 @@ export default function HomeRegistrationsSection() {
           <p className="text-center text-gray-500 py-4">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
         ) : (
           <div
-            className={`reg-cards-row-wrap${hasOverflow ? '' : ' reg-cards-row-wrap--no-overflow'}`}
+            className={`reg-cards-row-wrap${filteredCategories.length > 1 ? '' : ' reg-cards-row-wrap--no-overflow'}`}
             ref={rowWrapRef}
           >
-            {hasOverflow ? (
+            {filteredCategories.length > 1 ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--prev"
@@ -433,7 +430,7 @@ export default function HomeRegistrationsSection() {
                 </HomePreviewRowItem>
               ))}
             </HomePreviewRow>
-            {hasOverflow ? (
+            {filteredCategories.length > 1 ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--next"

@@ -137,7 +137,7 @@ export default function LoginPage() {
     if (!import.meta.env.DEV) return undefined;
 
     let cancelled = false;
-    checkBackendDatabaseReady({ retries: 2, delayMs: 1000, timeoutMs: 3000 }).then((ready) => {
+    checkBackendDatabaseReady({ retries: 4, delayMs: 1500, timeoutMs: 20000 }).then((ready) => {
       if (!ready && !cancelled) {
         setInfo(databaseUnavailableMessage);
       } else if (ready && !cancelled) {

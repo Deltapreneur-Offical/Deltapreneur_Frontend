@@ -4,6 +4,10 @@ import { matchUserId } from './auctionLister';
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
 
+function softwareListingStatus(item) {
+  return String(item?.softwareStatus ?? item?.software_status ?? '').toUpperCase();
+}
+
 /** True when the logged-in user created this technology listing. */
 export function isTechnologyListingOwner(item, user) {
   if (!item || !user?.id) return false;
@@ -31,7 +35,6 @@ export function isTechnologyAuctionPending(item, auctionStatus) {
   return (
     meta?.approvalStatus === 'PENDING_APPROVAL'
     || item?.auctionApprovalStatus === 'PENDING_APPROVAL'
-    || item?.softwareStatus === 'PENDING'
   );
 }
 
@@ -49,20 +52,28 @@ export function isTechnologyAuctionLive(item, auctionStatus) {
 }
 
 export function canRequestTechnologyAuction(item, auctionStatus) {
-  if (!item || item.softwareStatus === 'SOLD') return false;
+  const status = softwareListingStatus(item);
+  if (!item || status === 'SOLD') return false;
   if (isTechnologyAuctionPending(item, auctionStatus)) return false;
   if (isTechnologyAuctionLive(item, auctionStatus)) return false;
+  if (isTechnologyAuctionAwaitingWinner(item, auctionStatus)) return false;
 
   const meta = resolveTechnologyAuctionMeta(item, auctionStatus);
   const approval = String(meta?.approvalStatus || item?.auctionApprovalStatus || '').toUpperCase();
   if (approval === 'REJECTED') return true;
 
   const ended = String(meta?.status || item?.auctionStatus || '').toUpperCase();
-  if (approval === 'APPROVED' && ['UNSOLD', 'ENDED', 'CLOSED'].includes(ended)) {
+  if (approval === 'APPROVED' && ['UNSOLD', 'CLOSED'].includes(ended)) {
     return true;
   }
 
-  return item.softwareStatus === 'AVAILABLE' && !approval;
+  return (status === 'AVAILABLE' || status === '') && !approval;
+}
+
+export function isTechnologyAuctionAwaitingWinner(item, auctionStatus) {
+  const meta = resolveTechnologyAuctionMeta(item, auctionStatus);
+  const status = String(meta?.status || item?.auctionStatus || '').toUpperCase();
+  return ['ENDED', 'PAYMENT_PENDING', 'COMPLETED'].includes(status);
 }
 
 export function technologyAuctionId(item, auctionStatus) {

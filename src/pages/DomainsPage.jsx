@@ -4,11 +4,15 @@ import { flushSync } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown, Eye, Globe } from 'lucide-react';
-import EditActionLabel from '../components/common/EditActionLabel';
+import { EditIcon } from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
 import '../styles/ventures-split-columns.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
+import ListingOwnerActionPair, {
+  OWNER_ACTION_BTN_AUCTION,
+  OWNER_ACTION_BTN_EDIT,
+} from '../components/listings/ListingOwnerActionPair';
 import ShowcaseDomainCard from '../components/listings/ShowcaseDomainCard';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import ListingCardShell from '../components/listings/ListingCardShell';
@@ -24,6 +28,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload, convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import { formatAuctionDateTime } from '../utils/auctionDate';
+import { listingAuctionPhase } from '../utils/listingAuctionPhase';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
@@ -44,7 +49,8 @@ import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import SearchableCurrencySelect from '../components/common/SearchableCurrencySelect';
 import FormSelect from '../components/common/FormSelect';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
-import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
+import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll, scheduleScrollAppLayoutToTop } from '../utils/preserveAppLayoutScroll';
+import { useScrollAppLayoutToTopWhen } from '../components/common/ScrollToTop';
 import { asArray } from '../utils/asArray';
 import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
@@ -166,6 +172,8 @@ export default function DomainsPage() {
   const [auctionTarget, setAuctionTarget] = useState(null);
   const { pendingVerificationCount } = useDomainPendingVerification();
 
+  useScrollAppLayoutToTopWhen(Boolean(showForm || editTarget));
+
   useReferralTracker(detailTarget?.id, 'domain');
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
@@ -182,6 +190,15 @@ export default function DomainsPage() {
     });
   }, [allDomains]);
   const visibleDomains = resolveMarketplaceListingRows(domainRows, { tab: activeTab, user, type: 'domain' });
+  const isMineTab = activeTab === 'mine';
+  const canStartDomainAuction = (domain) => {
+    if (!domain) return false;
+    if (String(domain.domainStatus || '').toUpperCase() === 'SOLD') return false;
+    if (domain.takenDown) return false;
+    if (listingAuctionPhase(domain) !== 'idle') return false;
+    if (isMineTab) return Boolean(user);
+    return isListingOwner(domain, user, 'domain');
+  };
 
   const marketplaceFilter = useFilterSort(visibleDomains, {
     searchFields: ['domainName', 'domainExtension'],
@@ -253,12 +270,12 @@ export default function DomainsPage() {
 
   const handlePageChange = (newPage) => {
     marketplaceFilter.setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scheduleScrollAppLayoutToTop();
   };
 
   const handleShowcasePageChange = (newPage) => {
     showcaseFilter.setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scheduleScrollAppLayoutToTop();
   };
 
   useEffect(() => {
@@ -1028,7 +1045,7 @@ export default function DomainsPage() {
                               <DomainListingCard
                                 domain={marketplaceCard}
                                 marketplace
-                                isOwner={isListingOwner(marketplaceCard, user, 'domain')}
+                                isOwner={isMineTab || isListingOwner(marketplaceCard, user, 'domain')}
                                 likeState={getLike(marketplaceCard.id)}
                                 onLike={() => toggleLike(marketplaceCard.id)}
                                 onView={() => openDetailIfAllowed(marketplaceCard)}
@@ -1042,7 +1059,7 @@ export default function DomainsPage() {
                                 }}
                                 onViewAuction={() => navigate(marketplaceCard.auction?.id ? `/auction/${marketplaceCard.auction.id}` : '/auctions')}
                                 onDelete={() => setDeleteTarget(marketplaceCard.id)}
-                                onPutForAuction={isListingOwner(marketplaceCard, user, 'domain') && marketplaceCard.saleType !== 'AUCTION' ? () => setAuctionTarget(marketplaceCard) : undefined}
+                                onPutForAuction={canStartDomainAuction(marketplaceCard) ? () => setAuctionTarget(marketplaceCard) : undefined}
                               />
                             </ListingCardShell>
                           ) : (
@@ -1130,7 +1147,7 @@ export default function DomainsPage() {
                       <DomainListingCard
                         domain={d}
                         marketplace
-                        isOwner={isListingOwner(d, user, 'domain')}
+                        isOwner={isMineTab || isListingOwner(d, user, 'domain')}
                         likeState={getLike(d.id)}
                         onLike={() => toggleLike(d.id)}
                         onView={() => openDetailIfAllowed(d)}
@@ -1144,7 +1161,7 @@ export default function DomainsPage() {
                         }}
                         onViewAuction={() => navigate(d.auction?.id ? `/auction/${d.auction.id}` : '/auctions')}
                         onDelete={() => setDeleteTarget(d.id)}
-                        onPutForAuction={isListingOwner(d, user, 'domain') && d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
+                        onPutForAuction={canStartDomainAuction(d) ? () => setAuctionTarget(d) : undefined}
                       />
                     </ListingCardShell>
                   ))}
@@ -1184,7 +1201,7 @@ export default function DomainsPage() {
       {detailTarget && (
         <DomainDetailModal
           domain={detailTarget}
-          isOwner={isListingOwner(detailTarget, user, 'domain')}
+          isOwner={isMineTab || isListingOwner(detailTarget, user, 'domain')}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onViewsUpdated={(id, views) => {
@@ -1207,6 +1224,10 @@ export default function DomainsPage() {
             setShowForm(false);
             closeListingDetail();
           }}
+          onPutForAuction={canStartDomainAuction(detailTarget) ? () => {
+            setAuctionTarget(detailTarget);
+            closeListingDetail();
+          } : undefined}
         />
       )}
 
@@ -1237,7 +1258,7 @@ export default function DomainsPage() {
 }
 
 // ─── Put for Auction Modal ─────────────────────────────────────────────────────
-function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
+export function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
   const { t } = useTranslation();
   const { currency: navCurrency, convertToInr, ratesMeta } = useCurrency();
   const display = resolveDomainDisplay(domain);
@@ -2257,7 +2278,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
 
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
 function DomainDetailModal({ domain, isOwner, onClose, onBuy,
-  onViewAuction, onEdit, likeState, onLike, onViewsUpdated }) {
+  onViewAuction, onEdit, onPutForAuction, likeState, onLike, onViewsUpdated }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
@@ -2484,12 +2505,27 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
               )}
 
               {/* Action Buttons */}
-              <div className="mt-auto pt-3 flex gap-3 flex-col sm:flex-row items-center border-t border-gray-100">
-                {isOwner && onEdit && (
-                  <button type="button" className="btn-glow w-full sm:flex-1 py-3 justify-center shadow-sm" onClick={onEdit}>
-                    <EditActionLabel iconSize={16}>{t('domainsPageEditListing')}</EditActionLabel>
-                  </button>
-                )}
+              <div className="mt-auto space-y-3 pt-3 border-t border-gray-100">
+                {isOwner ? (
+                  <ListingOwnerActionPair
+                    left={onEdit ? (
+                      <button type="button" className={OWNER_ACTION_BTN_EDIT} onClick={onEdit} aria-label={t('edit')} title={t('edit')}>
+                        <EditIcon size={15} />
+                      </button>
+                    ) : null}
+                    right={!isAuction && onPutForAuction ? (
+                      <button type="button" className={OWNER_ACTION_BTN_AUCTION} onClick={onPutForAuction}>
+                        <Gavel size={14} className="shrink-0" />
+                        {t('putAuction', { defaultValue: 'Put Auction' })}
+                      </button>
+                    ) : isAuction ? (
+                      <button type="button" className={OWNER_ACTION_BTN_AUCTION} onClick={onViewAuction}>
+                        <Gavel size={14} className="shrink-0" />
+                        {auctionLive ? t('domainsPageGoToAuction') : t('domainsPageViewAuction')}
+                      </button>
+                    ) : null}
+                  />
+                ) : null}
                 {!isOwner && (
                   isAuction ? (
                     <button

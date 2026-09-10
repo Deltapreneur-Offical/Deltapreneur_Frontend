@@ -528,7 +528,7 @@ export default function CommunityAuctionPage() {
               <div className="p-5 bg-amber-50 border border-amber-200 rounded-[12px]">
                 <div className="font-semibold text-amber-700 mb-2">Auction ended with no bids</div>
                 <p className="text-gray-500 text-[0.875rem] mb-4">
-                  You can re-auction with new settings, or take the listing down.
+                  No bids were placed. Your expected rate is unchanged. You can put the profile to auction again when you are ready.
                 </p>
                 <div className="flex gap-3">
                   <button className="btn-glow" onClick={() => setReAuctionModal(true)}>

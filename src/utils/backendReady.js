@@ -44,7 +44,7 @@ export async function checkBackendDatabaseReady(options = {}) {
 
 /** Local-dev-only. Stripped to empty in production builds. */
 export const DATABASE_UNAVAILABLE_HINT = import.meta.env.DEV
-  ? 'Database is not reachable. For local dev, ensure PostgreSQL is running and DATABASE_URL in CoBrother_Backend/.env is correct, then restart the backend (run_dev.ps1). For production data, run .\\run_rds_tunnel.ps1 and point DATABASE_URL at 127.0.0.1:5433.'
+  ? 'Database is not reachable. Start the Deltapreneur backend, confirm PostgreSQL is running, and check DATABASE_URL in Deltapreneur_Backend/.env.'
   : '';
 
 export const DATABASE_UNAVAILABLE_PUBLIC =

@@ -43,6 +43,8 @@ describe('checkBackendDatabaseReady', () => {
     vi.stubEnv('DEV', true);
     const { getDatabaseUnavailableMessage, DATABASE_UNAVAILABLE_HINT } = await import('./backendReady');
     expect(getDatabaseUnavailableMessage()).toBe(DATABASE_UNAVAILABLE_HINT);
+    expect(DATABASE_UNAVAILABLE_HINT).toMatch(/Deltapreneur_Backend/);
+    expect(DATABASE_UNAVAILABLE_HINT).not.toMatch(/CoBrother_Backend|run_rds_tunnel|5433/i);
   });
 
   it('never returns local tunnel instructions in production builds', async () => {

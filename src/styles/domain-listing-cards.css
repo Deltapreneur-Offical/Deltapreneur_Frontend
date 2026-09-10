@@ -1458,6 +1458,62 @@
   opacity: 0.12 !important;
 }
 
+/* Lower-content triangular watermark — Venture / Delta Venture only (not cover/header). */
+.venture-listing-card--venture .domain-listing-card__body,
+.venture-listing-card--coventure .domain-listing-card__body {
+  position: relative;
+  isolation: isolate;
+}
+
+.venture-listing-card__body-watermark {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.22;
+}
+
+.venture-listing-card .domain-listing-card__body > :not(.venture-listing-card__body-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+.venture-listing-card--venture .venture-listing-card__body-watermark polygon {
+  fill: #f8dccf;
+}
+
+.venture-listing-card--coventure .venture-listing-card__body-watermark polygon {
+  fill: #cceee8;
+}
+
+.venture-listing-card--venture .domain-listing-card__body::before,
+.venture-listing-card--coventure .domain-listing-card__body::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 70%;
+  z-index: 0;
+  pointer-events: none;
+  clip-path: polygon(0 4%, 0 96%, 100% 50%);
+}
+
+.venture-listing-card--venture .domain-listing-card__body::before {
+  background: #fff1e8;
+  opacity: 0.42;
+}
+
+.venture-listing-card--coventure .domain-listing-card__body::before {
+  background: #e7f8f4;
+  opacity: 0.45;
+}
+
 .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain,
 .home-auction-preview-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
   position: relative;

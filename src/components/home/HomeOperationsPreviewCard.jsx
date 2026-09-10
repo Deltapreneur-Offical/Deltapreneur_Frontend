@@ -72,7 +72,7 @@ export default function HomeOperationsPreviewCard({ service, onHire }) {
     : t('operationsFrom', { defaultValue: 'STARTING AT' });
 
   return (
-    <article className="home-operations-preview-card">
+    <article className={`home-operations-preview-card${cardCompliance ? ' home-operations-preview-card--compliance' : ''}`}>
       <div className="home-operations-preview-card__top">
         <div className="home-operations-preview-card__avatar-wrap">
           {imageUrl && !isCarouselClone ? (

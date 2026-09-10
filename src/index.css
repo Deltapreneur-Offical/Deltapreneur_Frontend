@@ -5930,19 +5930,20 @@ input[type="checkbox"] {
 
 .dashboard-module-grid {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 22rem));
+  justify-content: start;
+  gap: 0.875rem;
 }
 
 @media (min-width: 768px) {
   .dashboard-module-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 22rem));
   }
 }
 
 @media (min-width: 1280px) {
   .dashboard-module-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 22rem));
   }
 }
 
@@ -5950,9 +5951,10 @@ input[type="checkbox"] {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 1.25rem;
-  min-height: 11.5rem;
-  padding: 1.125rem;
+  gap: 0.95rem;
+  min-height: 9.25rem;
+  max-width: 22rem;
+  padding: 1rem;
   border: 1px solid #d1d5db;
   border-radius: 1rem;
   background: #ffffff;
@@ -6014,8 +6016,8 @@ input[type="checkbox"] {
 
 .dashboard-module-card__copy p {
   margin: 0.35rem 0 0;
-  font-size: 0.875rem;
-  line-height: 1.45;
+  font-size: 0.8125rem;
+  line-height: 1.35;
   color: #6b7280;
 }
 

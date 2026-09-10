@@ -576,9 +576,6 @@ export default function DomainsPage() {
               .domains-split-premium .ventures-split__body .listing-card-glow-shell {
                 transition: transform 0.22s ease, box-shadow 0.22s ease;
               }
-              .domains-page-wrap .domain-showcase-card-shell .domain-search-card {
-                min-height: 15.875rem;
-              }
               .domains-split-premium .ventures-split__body .listing-card-glow-shell:hover {
                 transform: translateY(-4px);
               }
@@ -601,6 +598,13 @@ export default function DomainsPage() {
               /* Standard domain cards: badges wrap on narrow cards */
               .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
                 flex-wrap: wrap !important;
+              }
+              /* Dashboard-only: stack AVAILABLE + DOMAIN on normal Domain cards. */
+              .domains-page-wrap .domain-listing-grid--standard .listing-card-glow-shell .pr-9 > .flex:first-child {
+                flex-direction: column;
+                flex-wrap: nowrap !important;
+                align-items: flex-start;
+                gap: 0.25rem;
               }
 
               /* Add-to-Cart buttons: subtle brand hover */
@@ -653,6 +657,13 @@ export default function DomainsPage() {
               /* Standard domain cards: badges wrap on narrow cards */
               .domain-listing-grid .listing-card-glow-shell .pr-9 .flex.flex-wrap {
                 flex-wrap: wrap !important;
+              }
+              /* Dashboard-only: stack AVAILABLE + DOMAIN on normal Domain cards. */
+              .domains-page-wrap .domain-listing-grid--standard .listing-card-glow-shell .pr-9 > .flex:first-child {
+                flex-direction: column;
+                flex-wrap: nowrap !important;
+                align-items: flex-start;
+                gap: 0.25rem;
               }
               /* Nest Hub Max: keep premium split cards 1-col. Standard marketplace uses auto-fill. */
               @media (min-width: 1024px) and (max-width: 1400px) {
@@ -942,28 +953,130 @@ export default function DomainsPage() {
                   }
                   .domains-sync-layout__rows {
                     display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 1rem;
-                    align-items: stretch;
-                  }
-                  .domains-sync-layout__row {
-                    display: grid;
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                     gap: 1rem;
-                    align-items: stretch;
+                    align-items: start;
                   }
                   .domains-sync-layout__cell {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 16rem));
+                    gap: 0.85rem;
+                    align-items: start;
+                    align-content: start;
+                    justify-content: center;
+                    justify-items: center;
+                    width: 100%;
+                    min-width: 0;
+                    min-height: 0;
+                  }
+                  .domains-sync-layout__section {
                     display: flex;
                     min-width: 0;
-                    min-height: 100%;
+                    flex-direction: column;
+                    align-items: center;
                   }
-                  .domains-sync-layout__cell > * {
-                    width: 100%;
+                  .domains-sync-layout__section > .flex.flex-col {
+                    align-items: center !important;
+                    margin-top: 1.5rem !important;
+                    margin-left: 0 !important;
+                  }
+                  .domains-sync-layout__item {
+                    display: flex;
+                    min-width: 0;
+                    min-height: 0;
+                    align-items: flex-start;
+                  }
+                  .domains-sync-layout__item > * {
+                    width: min(100%, 16rem);
+                    max-width: 16rem;
+                  }
+                  .domains-sync-layout .listing-card-glow-shell {
+                    width: 100% !important;
+                    max-width: 16rem !important;
+                    height: auto !important;
+                    min-height: 0 !important;
+                    flex: 0 0 auto !important;
+                  }
+                  /* Dashboard-only: Delta and Domain cards share the same box size. */
+                  .domains-sync-layout .domain-search-card {
+                    width: 100% !important;
+                    max-width: 16rem !important;
+                    min-height: 14.75rem !important;
+                    height: 14.75rem !important;
+                    flex: 0 0 auto !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    box-sizing: border-box !important;
+                    padding: 0.85rem !important;
+                    background-clip: border-box !important;
+                    background-origin: border-box !important;
+                  }
+                  /* Dashboard-only: full-card Delta gold tint (same family as section header). */
+                  .domains-sync-layout__cell--delta .domain-search-card {
+                    --tw-gradient-from: #FFFBF2 !important;
+                    --tw-gradient-to: #FFF8EC !important;
+                    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+                    background-color: #FFF8EC !important;
+                    background-image: linear-gradient(180deg, #FFFBF2 0%, #FFF8EC 100%) !important;
+                  }
+                  .domains-sync-layout__cell--delta .domain-search-card:hover,
+                  .domains-sync-layout__cell--delta .domain-search-card:focus-visible {
+                    background-color: #FFF8EC !important;
+                    background-image: linear-gradient(180deg, #FFFBF2 0%, #FFF8EC 100%) !important;
+                  }
+                  /* Dashboard-only: full-card Domain cyan tint (same family as section header). */
+                  .domains-sync-layout__cell--standard .domain-search-card {
+                    --tw-gradient-from: #F1FFFD !important;
+                    --tw-gradient-to: #EEFDFC !important;
+                    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+                    background-color: #EEFDFC !important;
+                    background-image: linear-gradient(180deg, #F1FFFD 0%, #EEFDFC 100%) !important;
+                  }
+                  .domains-sync-layout__cell--standard .domain-search-card:hover,
+                  .domains-sync-layout__cell--standard .domain-search-card:focus-visible {
+                    background-color: #EEFDFC !important;
+                    background-image: linear-gradient(180deg, #F1FFFD 0%, #EEFDFC 100%) !important;
+                  }
+                  .domains-sync-layout .domain-search-card h3,
+                  .domains-sync-layout .domain-search-card .domain-search-card__name {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
+                  .domains-sync-layout .domain-search-card .pr-9,
+                  .domains-sync-layout .domain-search-card .space-y-1\\.5 {
+                    padding-right: 2.25rem !important;
+                    row-gap: 0.25rem !important;
+                  }
+                  .domains-sync-layout .domain-search-card .absolute.top-2\\.5.right-2\\.5 button,
+                  .domains-sync-layout .domain-search-card .absolute.top-2\\.5.right-2\\.5 [role='button'] {
+                    width: 2rem !important;
+                    height: 2rem !important;
+                  }
+                  .domains-sync-layout .domain-search-card > .mt-3 {
+                    margin-top: auto !important;
+                  }
+                  .domains-sync-layout .domain-search-card > .mt-3 button,
+                  .domains-sync-layout .domain-search-card > .mt-3 a {
+                    min-width: 7.25rem !important;
+                    padding: 0.55rem 0.85rem !important;
+                    font-size: 0.8rem !important;
+                  }
+                  .domains-sync-layout__cell--delta .domain-search-card .pr-9 > .flex:first-child {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.25rem;
+                  }
+                  /* Dashboard-only: stack AVAILABLE + DOMAIN on normal Domain cards. */
+                  .domains-sync-layout__cell--standard .domain-search-card .pr-9 > .flex:first-child {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.25rem;
                   }
                   .domains-sync-layout__placeholder {
                     display: block;
                     width: 100%;
-                    min-height: 19rem;
+                    min-height: 0;
                     border-radius: 1.1rem;
                     border: 1px dashed rgba(148, 163, 184, 0.2);
                     background: rgba(248, 250, 252, 0.2);
@@ -972,11 +1085,20 @@ export default function DomainsPage() {
                     .domains-sync-layout__headers {
                       display: none;
                     }
-                    .domains-sync-layout__row {
+                    .domains-sync-layout__rows {
                       grid-template-columns: 1fr;
                     }
                     .domains-sync-layout__cell {
+                      grid-template-columns: repeat(2, minmax(0, 16rem));
                       width: 100%;
+                    }
+                    .domains-sync-layout__section > .flex.flex-col {
+                      margin-left: 0 !important;
+                    }
+                  }
+                  @media (max-width: 639px) {
+                    .domains-sync-layout__cell {
+                      grid-template-columns: minmax(0, 16rem);
                     }
                   }
                 `}</style>
@@ -1006,52 +1128,61 @@ export default function DomainsPage() {
                 </div>
 
                 <div className="domains-sync-layout__rows">
-                  {Array.from({ length: Math.max(showcaseFilter.paginated.length, marketplaceFilter.paginated.length) }, (_, index) => {
-                    const premiumCard = showcaseFilter.paginated[index];
-                    const marketplaceCard = marketplaceFilter.paginated[index];
-
-                    return (
-                      <div className="domains-sync-layout__row" key={`domain-row-${index}`}>
-                        <div className="domains-sync-layout__cell">
-                          {premiumCard ? (
-                            <ListingCardShell key={premiumCard.showcaseId}>
-                              <ShowcaseDomainCard item={premiumCard} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: premiumCard.domainName || premiumCard.name }} />
-                            </ListingCardShell>
-                          ) : (
-                            <div className="domains-sync-layout__placeholder" aria-hidden="true" />
-                          )}
+                  <div className="domains-sync-layout__section">
+                    <div className="domains-sync-layout__cell domains-sync-layout__cell--delta">
+                      {showcaseFilter.paginated.map((premiumCard) => (
+                        <div className="domains-sync-layout__item" key={premiumCard.showcaseId}>
+                          <ListingCardShell>
+                            <ShowcaseDomainCard item={premiumCard} shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: premiumCard.domainName || premiumCard.name }} />
+                          </ListingCardShell>
                         </div>
+                      ))}
+                    </div>
+                    <Pagination
+                      page={showcaseFilter.page}
+                      totalPages={showcaseFilter.totalPages}
+                      onPage={handleShowcasePageChange}
+                      totalCount={showcaseFilter.totalCount}
+                      pageSize={20}
+                    />
+                  </div>
 
-                        <div className="domains-sync-layout__cell">
-                          {marketplaceCard ? (
-                            <ListingCardShell key={marketplaceCard.id}>
-                              <DomainListingCard
-                                domain={marketplaceCard}
-                                marketplace
-                                isOwner={isListingOwner(marketplaceCard, user, 'domain')}
-                                likeState={getLike(marketplaceCard.id)}
-                                onLike={() => toggleLike(marketplaceCard.id)}
-                                onView={() => openDetailIfAllowed(marketplaceCard)}
-                                onEdit={() => { setEditTarget(marketplaceCard); setShowForm(false); }}
-                                onBuy={() => {
-                                  if (!user) {
-                                    navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
-                                    return;
-                                  }
-                                  setBuyTarget(marketplaceCard);
-                                }}
-                                onViewAuction={() => navigate(marketplaceCard.auction?.id ? `/auction/${marketplaceCard.auction.id}` : '/auctions')}
-                                onDelete={() => setDeleteTarget(marketplaceCard.id)}
-                                onPutForAuction={isListingOwner(marketplaceCard, user, 'domain') && marketplaceCard.saleType !== 'AUCTION' ? () => setAuctionTarget(marketplaceCard) : undefined}
-                              />
-                            </ListingCardShell>
-                          ) : (
-                            <div className="domains-sync-layout__placeholder" aria-hidden="true" />
-                          )}
+                  <div className="domains-sync-layout__section">
+                    <div className="domains-sync-layout__cell domains-sync-layout__cell--standard">
+                      {marketplaceFilter.paginated.map((marketplaceCard) => (
+                        <div className="domains-sync-layout__item" key={marketplaceCard.id}>
+                          <ListingCardShell>
+                            <DomainListingCard
+                              domain={marketplaceCard}
+                              marketplace
+                              isOwner={isListingOwner(marketplaceCard, user, 'domain')}
+                              likeState={getLike(marketplaceCard.id)}
+                              onLike={() => toggleLike(marketplaceCard.id)}
+                              onView={() => openDetailIfAllowed(marketplaceCard)}
+                              onEdit={() => { setEditTarget(marketplaceCard); setShowForm(false); }}
+                              onBuy={() => {
+                                if (!user) {
+                                  navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+                                  return;
+                                }
+                                setBuyTarget(marketplaceCard);
+                              }}
+                              onViewAuction={() => navigate(marketplaceCard.auction?.id ? `/auction/${marketplaceCard.auction.id}` : '/auctions')}
+                              onDelete={() => setDeleteTarget(marketplaceCard.id)}
+                              onPutForAuction={isListingOwner(marketplaceCard, user, 'domain') && marketplaceCard.saleType !== 'AUCTION' ? () => setAuctionTarget(marketplaceCard) : undefined}
+                            />
+                          </ListingCardShell>
                         </div>
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                    <Pagination
+                      page={marketplaceFilter.page}
+                      totalPages={marketplaceFilter.totalPages}
+                      onPage={handlePageChange}
+                      totalCount={marketplaceFilter.totalCount}
+                      pageSize={20}
+                    />
+                  </div>
                 </div>
               </div>
             ) : (

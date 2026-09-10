@@ -1264,6 +1264,27 @@
   box-shadow: 0 12px 28px rgba(255, 153, 51, 0.22) !important;
 }
 
+/* Home Delta Registrars cards — light cream triangle across the full card. */
+.home-operations-preview-card--compliance {
+  isolation: isolate;
+}
+
+.home-operations-preview-card--compliance::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #fff1e8;
+  opacity: 0.42;
+  clip-path: polygon(0 4%, 0 96%, 72% 50%);
+}
+
+.home-operations-preview-card--compliance > * {
+  position: relative;
+  z-index: 1;
+}
+
 @supports (-webkit-touch-callout: none) {
   .home-preview-card-border,
   .home-operations-preview-card {

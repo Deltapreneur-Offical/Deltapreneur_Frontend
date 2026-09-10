@@ -629,6 +629,15 @@ return (
             ? 'justify-between gap-2.5 p-3.5'
             : 'justify-between gap-2.5 p-4'
         }`}>
+        <svg
+          className="venture-listing-card__body-watermark"
+          viewBox="0 0 236 206"
+          preserveAspectRatio="none"
+          aria-hidden
+          focusable="false"
+        >
+          <polygon points="0,10 0,196 168,103" />
+        </svg>
 
         <div className="flex flex-col gap-2.5">
 

@@ -183,3 +183,23 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
     font-size: 0.98rem;
   }
 }
+
+/* Home DeltaOs cards — light cream triangle across the full card. */
+.tech-service-card--home {
+  isolation: isolate;
+}
+
+.tech-service-card--home::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #fff1e8;
+  opacity: 0.42;
+  clip-path: polygon(0 4%, 0 96%, 72% 50%);
+}
+
+.tech-service-card--home > * {
+  z-index: 1;
+}

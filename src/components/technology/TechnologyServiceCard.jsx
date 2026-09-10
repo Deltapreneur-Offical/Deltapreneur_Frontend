@@ -74,7 +74,7 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
   return (
     <div
       onClick={handleCardClick}
-      className="tech-service-card group relative flex flex-col justify-between rounded-2xl border border-blue-200 bg-white p-6 shadow-sm transition-[transform,border-color,box-shadow] duration-[120ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-800/15 cursor-pointer overflow-hidden"
+      className={`tech-service-card group relative flex flex-col justify-between rounded-2xl border border-blue-200 bg-white p-6 shadow-sm transition-[transform,border-color,box-shadow] duration-[120ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-800/15 cursor-pointer overflow-hidden${homeLayout ? ' tech-service-card--home' : ''}`}
     >
       {/* Top Accent Glow */}
       <div className="tech-service-card__accent-glow absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-600/10 blur-xl transition-all duration-75 group-hover:scale-150 group-hover:from-orange-600/25 group-hover:to-orange-800/25" />

@@ -9,15 +9,11 @@ import { isListingOwner } from '../../utils/listingVisibility';
 import { useAuth } from '../../context/AuthContext';
 import { useLikes } from '../../hooks/useLikes';
 import HomeCardsNavRow from './HomeCardsNavRow';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 import HomePreviewCardSkeleton from './HomePreviewCardSkeleton';
 import DomainListingCard from '../listings/DomainListingCard';
 import HomeSectionHeader from './HomeSectionHeader';
 import '../../styles/domain-listing-cards.css';
-
-function isMarketplaceFeaturedRow(item) {
-  return Boolean(item?.featured) && !isOpenProviderShowcaseRow(item);
-}
 
 /**
  * Homepage "Domains" — marketplace listings the admin toggled on in
@@ -36,7 +32,7 @@ export default function FeaturedDomainsSection() {
     const fetchDomains = async () => {
       try {
         setLoading(true);
-        let rows = await fetchHomepageSectionPreview(
+        const rows = await fetchHomepageSectionPreview(
           (params) => domainAPI.getAll(params),
           'domain',
           undefined,
@@ -46,14 +42,6 @@ export default function FeaturedDomainsSection() {
             filterFn: (item) => !isOpenProviderShowcaseRow(item),
           },
         );
-        if (!rows.length) {
-          rows = await fetchHomepageSectionPreview(
-            (params) => domainAPI.getAll(params),
-            'domain',
-            undefined,
-            { filterFn: isMarketplaceFeaturedRow },
-          );
-        }
         if (!cancelled) setPreviewDomains(rows);
       } catch {
         if (!cancelled) setPreviewDomains([]);
@@ -83,13 +71,13 @@ export default function FeaturedDomainsSection() {
           showViewAll={!loading && previewDomains.length > 0}
         />
         {loading ? (
-          <HomePreviewRow animate={false}>
+          <HomeCardsNavRow accent="domain" ariaLabel={title}>
             {Array.from({ length: 5 }).map((_, i) => (
               <HomePreviewRowItem key={i}>
                 <HomePreviewCardSkeleton variant="browse" />
               </HomePreviewRowItem>
             ))}
-          </HomePreviewRow>
+          </HomeCardsNavRow>
         ) : previewDomains.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
         ) : (

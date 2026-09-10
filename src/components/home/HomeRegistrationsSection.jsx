@@ -39,11 +39,12 @@ export default function HomeRegistrationsSection() {
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [hasOverflow, setHasOverflow] = useState(false);
   const { categories: allCategories, fetched } = usePublicHubRegistrarCategories();
   const rowWrapRef = useRef(null);
   const suppressCardClickRef = useRef(false);
   const scrollTargetRef = useRef(null);
+  const navRafRef = useRef(0);
+  const navFlagsRef = useRef({ left: false, right: false, overflow: false });
   const navigate = useNavigate();
   const waitingForCategories = !fetched && allCategories.length === 0;
 
@@ -77,31 +78,42 @@ export default function HomeRegistrationsSection() {
   }, []);
 
   const updateNavState = useCallback(() => {
-    const el = getPreviewRow();
-    const wrap = rowWrapRef.current;
-    if (!el) {
-      setCanScrollLeft(false);
-      setCanScrollRight(false);
-      setHasOverflow(false);
-      return;
-    }
-    const max = el.scrollWidth - el.clientWidth;
-    const overflows = max > 2;
-    setHasOverflow(overflows);
-    setCanScrollLeft(overflows && el.scrollLeft > 2);
-    setCanScrollRight(overflows && el.scrollLeft < max - 2);
-
-    if (wrap) {
-      const wrapRect = wrap.getBoundingClientRect();
-      const card = wrap.querySelector('.reg-mini-card');
-      if (card) {
-        const cardRect = card.getBoundingClientRect();
-        const center = cardRect.top - wrapRect.top + cardRect.height / 2;
-        wrap.style.setProperty('--reg-nav-center', `${Math.round(center)}px`);
+    if (navRafRef.current) return;
+    navRafRef.current = window.requestAnimationFrame(() => {
+      navRafRef.current = 0;
+      const el = getPreviewRow();
+      const wrap = rowWrapRef.current;
+      if (!el) {
+        if (navFlagsRef.current.overflow || navFlagsRef.current.left || navFlagsRef.current.right) {
+          navFlagsRef.current = { left: false, right: false, overflow: false };
+          setCanScrollLeft(false);
+          setCanScrollRight(false);
+        }
+        return;
       }
-      wrap.style.removeProperty('--reg-nav-inset-left');
-      wrap.style.removeProperty('--reg-nav-inset-right');
-    }
+      const max = el.scrollWidth - el.clientWidth;
+      const overflows = max > 2;
+      const left = overflows && el.scrollLeft > 2;
+      const right = overflows && el.scrollLeft < max - 2;
+      const prev = navFlagsRef.current;
+      if (prev.left !== left || prev.right !== right || prev.overflow !== overflows) {
+        navFlagsRef.current = { left, right, overflow: overflows };
+        setCanScrollLeft(left);
+        setCanScrollRight(right);
+      }
+
+      if (wrap) {
+        const wrapRect = wrap.getBoundingClientRect();
+        const card = wrap.querySelector('.reg-mini-card');
+        if (card) {
+          const cardRect = card.getBoundingClientRect();
+          const center = cardRect.top - wrapRect.top + cardRect.height / 2;
+          wrap.style.setProperty('--reg-nav-center', `${Math.round(center)}px`);
+        }
+        wrap.style.removeProperty('--reg-nav-inset-left');
+        wrap.style.removeProperty('--reg-nav-inset-right');
+      }
+    });
   }, [getPreviewRow]);
 
   const scrollCards = useCallback((dir) => {
@@ -213,6 +225,8 @@ export default function HomeRegistrationsSection() {
 
     return () => {
       cancelAnimationFrame(rafId);
+      cancelAnimationFrame(navRafRef.current);
+      navRafRef.current = 0;
       el.removeEventListener('scroll', onScroll);
       el.removeEventListener('scrollend', onScrollEnd);
       resizeObserver?.disconnect();
@@ -395,10 +409,10 @@ export default function HomeRegistrationsSection() {
           <p className="text-center text-gray-500 py-4">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
         ) : (
           <div
-            className={`reg-cards-row-wrap${hasOverflow ? '' : ' reg-cards-row-wrap--no-overflow'}`}
+            className={`reg-cards-row-wrap${filteredCategories.length > 1 ? '' : ' reg-cards-row-wrap--no-overflow'}`}
             ref={rowWrapRef}
           >
-            {hasOverflow ? (
+            {filteredCategories.length > 1 ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--prev"
@@ -416,7 +430,7 @@ export default function HomeRegistrationsSection() {
                 </HomePreviewRowItem>
               ))}
             </HomePreviewRow>
-            {hasOverflow ? (
+            {filteredCategories.length > 1 ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--next"

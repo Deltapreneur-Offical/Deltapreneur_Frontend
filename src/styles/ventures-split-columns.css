@@ -74,8 +74,8 @@
 
 .ventures-split__mobile-tab--coventure.ventures-split__mobile-tab--active {
   background: #ffffff;
-  color: #0f766e;
-  box-shadow: 0 1px 4px rgba(13, 148, 136, 0.2), 0 0 0 1px #99f6e4;
+  color: #147A43;
+  box-shadow: 0 1px 4px rgba(30, 216, 145, 0.22), 0 0 0 1px #BEF38A;
 }
 
 .ventures-split--dashboard-active .ventures-split__mobile-tab--active {
@@ -183,12 +183,12 @@
 }
 
 .ventures-split__panel--coventure {
-  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 42%);
-  border-color: #99f6e4;
+  background: linear-gradient(180deg, #F3FDE8 0%, #ffffff 42%);
+  border-color: #BEF38A;
 }
 
 .ventures-split__panel--coventure::before {
-  background: linear-gradient(90deg, #0d9488 0%, #14b8a6 55%, #5eead4 100%);
+  background: linear-gradient(90deg, #BEF38A 0%, #6EE68B 55%, #1ED891 100%);
 }
 
 @media (min-width: 1024px) {
@@ -280,7 +280,7 @@
 
 .ventures-split__header--coventure::before,
 .ventures-split__header--coventure::after {
-  background: rgba(20, 184, 166, 0.22);
+  background: rgba(30, 216, 145, 0.22);
 }
 
 .ventures-split__header--coventure::after {
@@ -323,9 +323,9 @@
 }
 
 .ventures-split__icon--coventure {
-  color: #0f766e;
-  background: linear-gradient(145deg, #ecfdf5 0%, #ccfbf1 100%);
-  border: 1px solid #99f6e4;
+  color: #147A43;
+  background: linear-gradient(145deg, #F3FDE8 0%, #E7F9D6 100%);
+  border: 1px solid #BEF38A;
 }
 
 .ventures-split__header-text {
@@ -374,9 +374,9 @@
 }
 
 .ventures-split__count--coventure {
-  color: #0f766e;
-  background: rgba(20, 184, 166, 0.12);
-  border: 1px solid rgba(20, 184, 166, 0.24);
+  color: #147A43;
+  background: rgba(30, 216, 145, 0.12);
+  border: 1px solid rgba(30, 216, 145, 0.28);
 }
 
 .ventures-split__body {
@@ -506,5 +506,5 @@
 }
 
 .ventures-split__empty--coventure {
-  border-color: rgba(20, 184, 166, 0.35);
+  border-color: rgba(30, 216, 145, 0.38);
 }

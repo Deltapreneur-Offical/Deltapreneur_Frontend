@@ -29,7 +29,7 @@ export default function VentureDealRow({ deal, formatPrice, user, onPayNow }) {
             <span
               className={`rounded border px-2 py-0.5 text-xs font-bold ${
                 isPartnership
-                  ? 'border-teal-200 bg-teal-100 text-teal-800'
+                  ? 'border-[#BEF38A] bg-[#F3FDE8] text-[#147A43]'
                   : 'border-violet-200 bg-violet-100 text-violet-800'
               }`}
             >

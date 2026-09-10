@@ -18,7 +18,7 @@ export default function HomeSectionCardSkeleton({
         {!hideHeader && title ? (
           <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />
         ) : null}
-        <HomePreviewRow animate={false}>
+        <HomePreviewRow>
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
             <HomePreviewRowItem key={i}>
               <HomePreviewCardSkeleton variant={variant} compact={compact} />

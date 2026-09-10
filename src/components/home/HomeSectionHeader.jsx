@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { motion, useReducedMotion } from 'framer-motion';
-import { homeHeaderReveal, homeViewport } from './motion/homeMotion';
 
 /**
  * Homepage section title + optional View All.
@@ -11,25 +9,11 @@ import { homeHeaderReveal, homeViewport } from './motion/homeMotion';
  */
 export default function HomeSectionHeader({ title, to, accent, showViewAll = true }) {
   const { t } = useTranslation();
-  const reduceMotion = useReducedMotion();
-  const HeaderTag = reduceMotion ? 'header' : motion.header;
-  const headerProps = reduceMotion
-    ? {}
-    : {
-        initial: 'hidden',
-        whileInView: 'visible',
-        viewport: homeViewport,
-        variants: homeHeaderReveal,
-      };
-
   const showLink = Boolean(to) && showViewAll !== false;
   const accentClass = accent ? ` home-section-header--${accent}` : '';
 
   return (
-    <HeaderTag
-      className={`home-section-header${accentClass}`.trim()}
-      {...headerProps}
-    >
+    <header className={`home-section-header${accentClass}`.trim()}>
       <div className="home-section-header__top">
         <h2 className="home-section-header__title text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
         {showLink ? (
@@ -39,6 +23,6 @@ export default function HomeSectionHeader({ title, to, accent, showViewAll = tru
           </Link>
         ) : null}
       </div>
-    </HeaderTag>
+    </header>
   );
 }

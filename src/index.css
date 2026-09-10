@@ -190,6 +190,12 @@ html {
   max-width: 100%;
 }
 
+/* Public home-style pages: native wheel/trackpad scroll. CSS smooth on the
+   document interpolates every wheel tick and feels stuck on a heavy page. */
+html.home-page-html {
+  scroll-behavior: auto;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -8013,6 +8019,16 @@ body.home-page-body {
   --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
   --home-hero-glow-hue: 32;
   animation: home-hero-glow-hue-rotate 12s ease-in-out infinite;
+}
+
+body.home-page-body.is-scrolling {
+  animation: none;
+}
+
+body.home-page-body.is-scrolling .cb-overflow-marquee__track,
+body.home-page-body.is-scrolling .home-feature-card-beam-spinner,
+body.home-page-body.is-scrolling .tld-price-marquee-track--auto {
+  animation-play-state: paused !important;
 }
 
 @property --home-hero-glow-hue {

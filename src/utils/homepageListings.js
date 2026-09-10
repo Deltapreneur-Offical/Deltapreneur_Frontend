@@ -150,8 +150,8 @@ export function filterFeaturedListings(items, type = 'domain') {
   return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
 }
 
-/** Homepage carousel: featured first, then remaining public listings. */
-export const HOMEPAGE_PREVIEW_LIMIT = 48;
+/** Homepage carousel: enough cards to page, without mounting a full catalog. */
+export const HOMEPAGE_PREVIEW_LIMIT = 16;
 
 export function isOpenProviderShowcaseRow(item) {
   return item?.source === 'openprovider_showcase' || Boolean(item?.showcaseId);

@@ -1,31 +1,35 @@
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import LazyWhenVisible from './LazyWhenVisible';
 import DomainsSection from '../home/DomainsSection';
 import FeaturedDomainsSection from '../home/FeaturedDomainsSection';
-import HomeRegistrationsSection from '../home/HomeRegistrationsSection';
-import VenturesSection from '../home/VenturesSection';
-import CoVenturesSection from '../home/CoVenturesSection';
-import TechnologySection from '../home/TechnologySection';
-import CommunitySection from '../home/CommunitySection';
-import AuctionsSection from '../home/AuctionsSection';
-import FeedbackSection from '../home/FeedbackSection';
-import HomeOperationsCarouselSection from '../home/HomeOperationsCarouselSection';
 import { PUBLIC_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
 
+const VenturesSection = lazy(() => import('../home/VenturesSection'));
+const CoVenturesSection = lazy(() => import('../home/CoVenturesSection'));
+const AuctionsSection = lazy(() => import('../home/AuctionsSection'));
+const TechnologySection = lazy(() => import('../home/TechnologySection'));
+const HomeOperationsCarouselSection = lazy(() => import('../home/HomeOperationsCarouselSection'));
+const HomeRegistrationsSection = lazy(() => import('../home/HomeRegistrationsSection'));
+const CommunitySection = lazy(() => import('../home/CommunitySection'));
+const FeedbackSection = lazy(() => import('../home/FeedbackSection'));
+
 function LazySection({ title, to, variant = 'browse', compact = false, children }) {
+  const fallback = (
+    <HomeSectionCardSkeleton
+      title={title}
+      to={to}
+      variant={variant}
+      compact={compact}
+    />
+  );
+
   return (
-    <LazyWhenVisible
-      fallback={(
-        <HomeSectionCardSkeleton
-          title={title}
-          to={to}
-          variant={variant}
-          compact={compact}
-        />
-      )}
-    >
-      {children}
+    <LazyWhenVisible fallback={fallback}>
+      <Suspense fallback={fallback}>
+        {children}
+      </Suspense>
     </LazyWhenVisible>
   );
 }
@@ -37,7 +41,10 @@ export default function ExploreSection() {
     <>
       <DomainsSection />
       <FeaturedDomainsSection />
-      <VenturesSection />
+
+      <LazySection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
+        <VenturesSection />
+      </LazySection>
 
       <LazySection
         title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
@@ -66,14 +73,22 @@ export default function ExploreSection() {
         </LazySection>
       ))}
 
-      <HomeRegistrationsSection />
+      <LazySection
+        title={t('homeRegistrationsTitle', { defaultValue: 'Delta Registrations' })}
+        to="/registrations"
+        compact
+      >
+        <HomeRegistrationsSection />
+      </LazySection>
 
       <LazySection title="Deltapreneur" to="/community" compact>
         <CommunitySection />
       </LazySection>
 
       <LazyWhenVisible>
-        <FeedbackSection />
+        <Suspense fallback={null}>
+          <FeedbackSection />
+        </Suspense>
       </LazyWhenVisible>
     </>
   );

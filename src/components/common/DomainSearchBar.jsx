@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo, useId } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
@@ -18,6 +18,12 @@ import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
 import RegistryPremiumLoader from '../domain/RegistryPremiumLoader';
 import { isRegistryPremium, REGISTRY_PREMIUM_SEGMENT } from '../../utils/registryPremium';
 import {
+  readTldMarqueeCache,
+  TLD_MARQUEE_INVALIDATED_AT_KEY,
+  TLD_MARQUEE_REFRESH_EVENT,
+  writeTldMarqueeCache,
+} from '../../utils/tldPriceMarqueeCache';
+import {
   getCachedPremiumItems,
   premiumCacheKey,
   setCachedPremiumItems,
@@ -26,6 +32,7 @@ import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
 import DomainExtensionsLoader from './DomainExtensionsLoader';
+import PriceSectionIcon from './PriceSectionIcon';
 import {
   heroSearchStackEnter,
   heroSubmitHover,
@@ -46,7 +53,6 @@ const SEARCH_MODE_CONFIG = {
 
 /** Preferred display order for hero TLD price pills (prices come from storefront API). */
 const TLD_MARQUEE_ORDER = ['.com', '.in', '.net', '.org', '.co', '.io', '.ai'];
-const TLD_MARQUEE_CACHE_KEY = 'cb-tld-marquee-registration-prices';
 
 function normalizeTldKey(raw) {
   const text = String(raw || '').trim().toLowerCase();
@@ -70,34 +76,6 @@ function tldPricesFromByTldMap(byTld) {
     .sort((a, b) => a.localeCompare(b));
 
   return [...known, ...extras].map((tld) => ({ tld, price: normalized[tld] }));
-}
-
-function readTldMarqueeCache() {
-  if (typeof sessionStorage === 'undefined') return [];
-  try {
-    const raw = sessionStorage.getItem(TLD_MARQUEE_CACHE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((item) => {
-        const tld = normalizeTldKey(item?.tld);
-        const price = Number(item?.price);
-        return tld && Number.isFinite(price) && price > 0 ? { tld, price } : null;
-      })
-      .filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
-function writeTldMarqueeCache(items) {
-  if (typeof sessionStorage === 'undefined' || !Array.isArray(items) || items.length === 0) return;
-  try {
-    sessionStorage.setItem(TLD_MARQUEE_CACHE_KEY, JSON.stringify(items));
-  } catch {
-    /* quota / private mode */
-  }
 }
 
 function useMinWidthLg() {
@@ -132,6 +110,7 @@ function TldPriceMarquee() {
 
   useEffect(() => {
     let isCancelled = false;
+    let refreshSequence = 0;
 
     const applyItems = (items) => {
       if (isCancelled || !items.length) return;
@@ -145,40 +124,60 @@ function TldPriceMarquee() {
       setIsLoading(false);
     };
 
-    const fromStorefront = domainStorefrontAPI
-      .getPrices()
-      .then(({ data }) => {
-        const payload = data?.data ?? data;
-        return tldPricesFromByTldMap(payload?.registration?.byTld);
-      })
-      .catch(() => []);
+    const refreshPrices = ({ discardDisplayed = false } = {}) => {
+      const requestSequence = ++refreshSequence;
+      if (discardDisplayed) {
+        setTldPrices([]);
+        setIsLoading(true);
+      }
 
-    const fromSearchTlds = fetchAvailableTlds('domain', { force: true })
-      .then((fetchedItems) => {
-        if (!Array.isArray(fetchedItems) || fetchedItems.length === 0) return [];
-        const byTld = {};
-        fetchedItems.forEach((it) => {
-          const tld = normalizeTldKey(it?.tld);
-          const price = Number(it?.registrationPrice ?? it?.unitPrice ?? it?.price);
-          if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
-        });
-        return tldPricesFromByTldMap(byTld);
-      })
-      .catch(() => []);
+      const fromStorefront = domainStorefrontAPI
+        .getPrices()
+        .then(({ data }) => {
+          const payload = data?.data ?? data;
+          return tldPricesFromByTldMap(payload?.registration?.byTld);
+        })
+        .catch(() => []);
 
-    fromSearchTlds.then((items) => {
-      if (isCancelled || !items.length) return;
-      setTldPrices((prev) => (prev.length > 0 ? prev : items));
-      if (items.length) setIsLoading(false);
-    });
+      const fromSearchTlds = fetchAvailableTlds('domain', { force: true })
+        .then((fetchedItems) => {
+          if (!Array.isArray(fetchedItems) || fetchedItems.length === 0) return [];
+          const byTld = {};
+          fetchedItems.forEach((it) => {
+            const tld = normalizeTldKey(it?.tld);
+            const price = Number(it?.registrationPrice ?? it?.unitPrice ?? it?.price);
+            if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
+          });
+          return tldPricesFromByTldMap(byTld);
+        })
+        .catch(() => []);
 
-    fromStorefront.then((items) => {
-      if (items.length) applyItems(items);
-      else if (!isCancelled) setIsLoading(false);
-    });
+      fromSearchTlds.then((items) => {
+        if (isCancelled || requestSequence !== refreshSequence || !items.length) return;
+        setTldPrices((prev) => (prev.length > 0 ? prev : items));
+        setIsLoading(false);
+      });
+
+      fromStorefront.then((items) => {
+        if (isCancelled || requestSequence !== refreshSequence) return;
+        if (items.length) applyItems(items);
+        else if (!isCancelled) setIsLoading(false);
+      });
+    };
+
+    const handleCommissionUpdate = () => refreshPrices({ discardDisplayed: true });
+    const handleStorageUpdate = (event) => {
+      if (event.key === TLD_MARQUEE_INVALIDATED_AT_KEY) handleCommissionUpdate();
+    };
+
+    refreshPrices();
+    window.addEventListener(TLD_MARQUEE_REFRESH_EVENT, handleCommissionUpdate);
+    window.addEventListener('storage', handleStorageUpdate);
 
     return () => {
       isCancelled = true;
+      window.removeEventListener(TLD_MARQUEE_REFRESH_EVENT, handleCommissionUpdate);
+      window.removeEventListener('storage', handleStorageUpdate);
     };
   }, []);
 
@@ -411,8 +410,6 @@ function triggerLightningTail(host) {
 
 function BrandSearchSubmitButton({ label }) {
   const reduceMotion = useReducedMotion();
-  const reactId = useId();
-  const gradId = `brand-search-play-${reactId.replace(/:/g, '')}`;
   const ButtonTag = reduceMotion ? 'button' : motion.button;
   const motionProps = reduceMotion
     ? {}
@@ -428,28 +425,7 @@ function BrandSearchSubmitButton({ label }) {
       className="brand-search-submit"
       {...motionProps}
     >
-      <svg
-        viewBox="4.2 3.9 15 16.4"
-        className="brand-search-submit-icon"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#fc6b09" />
-            <stop offset="100%" stopColor="#fc6b09" />
-          </linearGradient>
-        </defs>
-        <path
-          fill={`url(#${gradId})`}
-          stroke={`url(#${gradId})`}
-          strokeWidth="0.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M6.8 3.9C5.45 3.15 4.2 3.93 4.2 5.45v13.3c0 1.52 1.25 2.3 2.6 1.55l10.35-5.72c.92-.51 1.48-1.12 1.48-1.93s-.56-1.42-1.48-1.93L6.8 3.9Z"
-        />
-      </svg>
+      <PriceSectionIcon className="brand-search-submit-icon" />
     </ButtonTag>
   );
 }
@@ -1420,7 +1396,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-center rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-5"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-5"
       >
         <input
           type="text"
@@ -1445,7 +1421,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-center rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-6"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-6"
       >
         <input
           type="text"
@@ -1823,6 +1799,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           border: 3px solid rgba(252, 106, 9, 0.8);
           box-shadow: 0 0 0 1px rgba(252, 106, 9, 0.14);
           background: #ffffff;
+          overflow: hidden;
         }
 
         .brand-search-divider {
@@ -1832,22 +1809,22 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         .brand-search-submit {
           position: relative;
           display: flex;
-          align-items: center;
-          justify-content: center;
+          align-items: stretch;
+          justify-content: flex-end;
           flex-shrink: 0;
           align-self: stretch;
-          width: 3.05rem;
-          min-width: 3.05rem;
+          width: 3.45rem;
+          min-width: 3.45rem;
           height: auto;
-          margin: 0 0.65rem 0 -0.35rem;
+          margin: 0;
           padding: 0;
           border: none;
-          border-radius: 9999px;
+          border-radius: 0 999px 999px 0;
           background: transparent;
           box-shadow: none;
           cursor: pointer;
-          overflow: visible;
-          transform: translateX(-0.35rem);
+          overflow: hidden;
+          transform: none;
           transition: opacity 0.2s ease;
         }
 
@@ -1857,14 +1834,23 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           outline: none;
         }
 
-        .brand-search-submit-icon {
-          display: block;
-          width: 100%;
-          height: 100%;
-          margin-top: 0;
-          margin-bottom: 0;
-          aspect-ratio: 15 / 16.4;
-          transform: translateX(-0.28rem);
+        .brand-search-submit .price-section-v-icon,
+        .brand-search-submit .brand-search-submit-icon {
+          position: absolute;
+          top: -5px;
+          right: 0.78rem;
+          bottom: -5px;
+          left: auto;
+          height: calc(100% + 10px) !important;
+          width: auto !important;
+          max-width: none !important;
+          max-height: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          transform: none !important;
+          object-fit: fill !important;
+          object-position: center right !important;
+          aspect-ratio: auto;
         }
 
         /* Thick orange/red border comet — search bar + pills */

@@ -303,7 +303,7 @@
 }
 
 .home-preview-card-border--venture .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
-  color: #c2410c !important;
+  color: #fc6b09 !important;
   text-shadow: none !important;
 }
 
@@ -378,10 +378,10 @@
 .home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box--venture {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box !important;
+    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16) !important;
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.18), 0 6px 16px rgba(251, 146, 60, 0.12) !important;
 }
 
 /* Venture homepage — no color change on hover (elevation/shadow only) */
@@ -425,10 +425,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box !important;
+    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16) !important;
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.18), 0 6px 16px rgba(251, 146, 60, 0.12) !important;
 }
 
 /* ─── 7. Auctions — warm premium ─── */

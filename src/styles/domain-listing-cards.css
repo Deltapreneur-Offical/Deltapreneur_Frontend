@@ -347,7 +347,7 @@
 .domain-listing-card__price-cta:focus-visible {
   background: transparent;
   border-color: transparent;
-  color: #c2410c;
+  color: #fb923c;
   transform: translateY(-2px);
   box-shadow: none;
 }
@@ -1434,7 +1434,7 @@
 }
 
 .venture-listing-card--venture .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
-  color: #c2410c;
+  color: #fc6b09;
   text-shadow: none;
 }
 
@@ -1840,14 +1840,24 @@
   color: #0f766e !important;
 }
 
+.venture-listing-card__price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  width: 100%;
+}
+
 .venture-listing-card__price-label {
   font-family: var(--font-body, 'Inter', system-ui, sans-serif);
   font-size: 0.56rem;
   font-weight: 600;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.06em;
   color: #94a3b8;
   max-width: 100%;
   white-space: nowrap;
+  padding-left: 0.15rem;
+  line-height: 1;
 }
 
 .venture-listing-card__price-value--compact {
@@ -1862,10 +1872,10 @@
 }
 
 .venture-listing-card .domain-listing-card__price-text {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.15rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
   line-height: 1.2;
 }
 
@@ -1953,7 +1963,7 @@
 .venture-listing-card--coventure .domain-listing-card__price-box--coventure .domain-listing-card__price-cta:focus-visible .price-section-v-icon,
 .venture-listing-card--coventure .domain-listing-card__price-box .domain-listing-card__price-cta:hover .price-section-v-icon,
 .venture-listing-card--coventure .domain-listing-card__price-box .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(25%) sepia(26%) saturate(1685%) hue-rotate(132deg) brightness(91%) contrast(91%) !important;
+  filter: brightness(0) saturate(100%) invert(31%) sepia(35%) saturate(1322%) hue-rotate(130deg) brightness(105%) contrast(88%) !important;
 }
 
 .venture-listing-card .domain-listing-card__price-box--venture .domain-listing-card__price-cta-icon,

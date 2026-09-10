@@ -34,7 +34,7 @@ export default function HeroGlow() {
   );
 
   return (
-    <section className="hero-glow-section relative overflow-y-visible border-b-0 bg-transparent pb-2 pl-4 pr-4 pt-5 sm:pl-6 sm:pr-5 sm:pt-6 md:pl-10 md:pt-7 lg:pl-20 lg:pr-8 lg:pt-7">
+    <section className="hero-glow-section relative overflow-y-visible border-b-0 bg-transparent px-4 pb-2 pt-5 sm:px-6 sm:pt-6 md:px-8 md:pt-7 lg:px-8 lg:pt-7">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">

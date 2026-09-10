@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { operationsAPI, hubRegistrarOfficeAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
-import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import FeaturedVirtualAssistantsListing, {
   useFeaturedVirtualAssistants,
@@ -13,8 +12,8 @@ import HubRegistrarOfficeCard from '../listings/HubRegistrarOfficeCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeOperationsPreviewCard from './HomeOperationsPreviewCard';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeCardsNavRow from './HomeCardsNavRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 import OperationsRequestModal from '../operations/OperationsRequestModal';
 import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
 
@@ -36,7 +35,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const [requestTarget, setRequestTarget] = useState(null);
   const [requestSuccess, setRequestSuccess] = useState(null);
 
-  const vaFeatured = useFeaturedVirtualAssistants(20, { enabled: isAssistanceSection });
+  const vaFeatured = useFeaturedVirtualAssistants(48, { enabled: isAssistanceSection });
   const [offices, setOffices] = useState([]);
   const [officesLoading, setOfficesLoading] = useState(false);
   const [cityFilter, setCityFilter] = useState('');
@@ -80,7 +79,6 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   }, [isAssistanceSection, isOfficesSection, section.serviceType]);
 
   const title = section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel });
-  const shouldAutoScroll = useShouldAutoScroll(services.length);
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
 
@@ -247,22 +245,14 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
           <p className="text-center text-gray-500 py-8">
             {t('operationsHomeEmpty', { defaultValue: 'No services available yet.' })}
           </p>
-        ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={sectionId === 'compliance' ? 500 : 50} ariaLabel={title}>
-            {services.map((service) => (
-              <HomeAutoScrollRowItem key={service.id}>
-                {renderServiceCard(service)}
-              </HomeAutoScrollRowItem>
-            ))}
-          </HomeAutoScrollRow>
         ) : (
-          <HomePreviewRow>
+          <HomeCardsNavRow accent="operations" ariaLabel={title}>
             {services.map((service) => (
               <HomePreviewRowItem key={service.id}>
                 {renderServiceCard(service)}
               </HomePreviewRowItem>
             ))}
-          </HomePreviewRow>
+          </HomeCardsNavRow>
         )}
       </div>
 

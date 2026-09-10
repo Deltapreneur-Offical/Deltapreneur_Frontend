@@ -35,6 +35,38 @@
   transform: none !important;
 }
 
+/* Hero search submit — same PNG play, flush to the search-bar top/bottom border */
+.brand-search-submit:has(.price-section-v-icon) {
+  position: relative !important;
+  width: 3.45rem !important;
+  min-width: 3.45rem !important;
+  max-width: 3.45rem !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  transform: none !important;
+}
+
+.brand-search-submit:has(.price-section-v-icon) .price-section-v-icon {
+  position: absolute !important;
+  top: -5px !important;
+  right: 0.78rem !important;
+  bottom: -5px !important;
+  left: auto !important;
+  height: calc(100% + 10px) !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: fill !important;
+}
+
 /* DeltaOs / Delta Registrars / Delta Registrations — same slot as venture */
 .tech-service-card__price-arrow,
 .home-operations-preview-card__cta,
@@ -58,6 +90,14 @@
   height: calc(100% + 3px) !important;
   width: auto !important;
   margin: -1.5px 0.62rem -1.5px 0 !important;
+}
+
+.home-auction-preview-card__nav-cta .price-section-v-icon {
+  height: calc(100% + 3px) !important;
+  width: auto !important;
+  max-width: 2.15rem !important;
+  max-height: 2.6rem !important;
+  margin: -1.5px 0.45rem -1.5px 0 !important;
 }
 
 /*
@@ -93,10 +133,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box !important;
+    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16) !important;
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.18), 0 6px 16px rgba(251, 146, 60, 0.12) !important;
   outline: none;
 }
 
@@ -122,4 +162,38 @@ body.home-page-body .home-preview-card-border--coventure .venture-listing-card--
 
 body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon {
   filter: brightness(0) saturate(100%) invert(75%) sepia(48%) saturate(749%) hue-rotate(118deg) brightness(89%) contrast(90%) !important;
+}
+
+/* Homepage / dashboard: slightly brighter orange play arrow on hover — never darker red/brown */
+.home-preview-row__item:hover .price-section-v-icon,
+.home-auto-scroll-row__item:hover .price-section-v-icon,
+.home-preview-card-shell:hover .price-section-v-icon,
+.home-preview-card-border:hover .price-section-v-icon,
+.tech-service-card:hover .price-section-v-icon,
+.reg-mini-card:hover .price-section-v-icon,
+.home-operations-preview-card:hover .price-section-v-icon,
+.home-auction-preview-card:hover .price-section-v-icon,
+.home-auction-preview-card__nav-cta:hover .price-section-v-icon,
+.home-auction-preview-card__nav-cta:focus-visible .price-section-v-icon,
+.listing-card-glow-shell:hover .price-section-v-icon,
+.domain-listing-card:hover .price-section-v-icon,
+.venture-listing-card:not(.venture-listing-card--coventure):hover .price-section-v-icon,
+.technology-listing-card:hover .price-section-v-icon,
+.community-listing-card:hover .price-section-v-icon,
+.virtual-assistant-listing-card:hover .price-section-v-icon,
+.domain-listing-card__price-cta:hover .price-section-v-icon,
+.domain-listing-card__price-cta:focus-visible .price-section-v-icon,
+.tech-service-card__price-arrow:hover .price-section-v-icon,
+.reg-mini-card__price-arrow:hover .price-section-v-icon,
+.home-operations-preview-card__cta:hover .price-section-v-icon {
+  filter: brightness(1.14) saturate(1.05) !important;
+}
+
+body.home-page-body .home-preview-card-border--coventure:hover .venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-preview-row__item:hover .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-auto-scroll-row__item:hover .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon,
+.venture-listing-card--coventure:hover .price-section-v-icon,
+.venture-listing-card--coventure .domain-listing-card__price-cta:hover .price-section-v-icon,
+.venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(48%) saturate(749%) hue-rotate(118deg) brightness(102%) contrast(90%) !important;
 }

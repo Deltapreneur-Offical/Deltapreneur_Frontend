@@ -101,6 +101,7 @@ export const creatorAPI = {
   getOne:           (id)      => api.get(`/api/v1/creator/${id}`),
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
+  deleteMy:         ()        => api.delete('/api/v1/creator/my'),
   linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth', {
     params: typeof window !== 'undefined' ? { return_origin: window.location.origin } : undefined,
   }),

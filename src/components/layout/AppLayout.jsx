@@ -518,8 +518,13 @@ export default function AppLayout({ children }) {
   // ─── AUTHENTICATED DASHBOARD LAYOUT ───────────────────────────────────────
   return (
     <div className={`app-layout-root flex h-dvh max-h-dvh flex-col overflow-hidden bg-gray-50${location.pathname === '/ventures/new' ? ' app-layout--new-venture' : ''}`}>
-      <div className="app-layout-workspace flex w-full flex-1 items-stretch">
-      {/* Desktop Left Sidebar â€” workspace only; ends above full-width footer */}
+      <div
+        ref={layoutScrollRef}
+        data-app-layout-scroll
+        className="app-layout-scroll-body min-h-0 flex-1 overflow-y-auto bg-gray-50"
+      >
+      <div className="app-layout-workspace flex min-h-full w-full items-stretch">
+      {/* Desktop left sidebar — ends with page content; footer is full-width below */}
       <aside
         className={`app-chrome-panel app-layout-sidebar app-sidebar hidden lg:flex min-h-full flex-col flex-shrink-0 self-stretch ${
           sidebarCollapsed ? 'is-collapsed w-[4.75rem]' : 'w-[15.5rem]'
@@ -826,9 +831,9 @@ export default function AppLayout({ children }) {
       )}
 
       {/* Main column: header + page content */}
-      <div className="app-layout-main-column flex min-w-0 min-h-0 flex-1 flex-col">
+      <div className="app-layout-main-column flex min-h-full min-w-0 flex-1 flex-col">
         {/* Top Header */}
-        <header className={`app-layout-header z-30 shrink-0 border-b border-gray-200 bg-white/95 px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible backdrop-blur-md${headerScrolled ? ' is-scrolled' : ''}`}>
+        <header className={`app-layout-header sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white/95 px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible backdrop-blur-md${headerScrolled ? ' is-scrolled' : ''}`}>
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden sm:gap-3">
             <button
               onClick={() => setMobileOpen(true)}
@@ -1039,17 +1044,12 @@ export default function AppLayout({ children }) {
           </div>
         </header>
 
-        <div
-          ref={layoutScrollRef}
-          data-app-layout-scroll
-          className="app-layout-scroll-body flex min-h-0 flex-1 flex-col overflow-y-auto bg-gray-50 min-w-0"
-        >
-          <div className={`app-main-content min-w-0 max-w-[100%] flex-1 px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:p-5 lg:p-6 xl:p-8${['/domains', '/cart', '/technology'].includes(location.pathname) ? ' app-main-content--normal-flow' : ''}`}>
+        <div className="app-main-content min-w-0 max-w-[100%] px-4 pt-5 pb-10 sm:px-5 sm:pt-5 sm:pb-12 lg:px-6 lg:pt-6 lg:pb-14 xl:px-8 xl:pt-8 xl:pb-16">
             {children}
           </div>
-          <HomeFooter />
-        </div>
       </div>
+      </div>
+      <HomeFooter />
       </div>
 
       {/* Logout Confirmation Dialog */}

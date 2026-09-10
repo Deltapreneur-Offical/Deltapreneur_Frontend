@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, Clock, Gavel, Sparkles, Share2 } from 'lucide-react';
+import { Clock, Gavel, Sparkles, Share2 } from 'lucide-react';
+import PriceSectionIcon from '../common/PriceSectionIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -460,11 +461,11 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
 
             <button
               type="button"
-              className="domain-listing-card__price-cta home-auction-preview-card__nav-cta flex items-center justify-center self-center transition-all w-8 h-8 shrink-0 aspect-square rounded-full bg-black text-white hover:bg-neutral-900 shadow-sm"
+              className="home-auction-preview-card__nav-cta"
               aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
               onClick={handleArrowClick}
             >
-              <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
+              <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
             </button>
           </div>
         </div>

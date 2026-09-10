@@ -42,6 +42,17 @@ describe('listingVisibility', () => {
     expect(filterMyListings(rows, { id: 'u1' })).toHaveLength(2);
   });
 
+  it('treats admin creator rows with profileComplete as public', () => {
+    expect(isCommunityProfilePublic({
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'StartUptobe',
+      role: 'FOUNDER_CO_FOUNDER',
+      industry: 'TECH',
+      profileComplete: true,
+      featured: false,
+    })).toBe(true);
+  });
+
   it('considers completed creator profiles public', () => {
     const profile = {
       active: true,

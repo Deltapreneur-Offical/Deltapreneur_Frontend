@@ -21,12 +21,11 @@ import {
 import { unwrapApiData } from '../../utils/apiResponse';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
-import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeCardsNavRow from './HomeCardsNavRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/home-preview-cards.css';
 
@@ -238,8 +237,6 @@ export default function AuctionsSection() {
     navigate(resolveHomeAuctionPath(auction));
   };
 
-  const shouldAutoScroll = useShouldAutoScroll(displayAuctions.length);
-
   if (loading) {
     return <HomeSectionCardSkeleton title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" accent="auction" variant="auction" />;
   }
@@ -255,21 +252,11 @@ export default function AuctionsSection() {
         />
         {displayAuctions.length === 0 ? (
           <p className="text-center text-gray-500 py-4">{t('noAuctions')}</p>
-        ) : shouldAutoScroll ? (
-          <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}>
-            {displayAuctions.map((auction) => (
-              <HomeAutoScrollRowItem key={`${auction.category}-${auction.id}`}>
-                <AuctionPreviewCard
-                  auction={auction}
-                  onView={() => handleViewAuction(auction)}
-                  likeState={getAuctionLike(auction)}
-                  onLike={() => toggleAuctionLike(auction)}
-                />
-              </HomeAutoScrollRowItem>
-            ))}
-          </HomeAutoScrollRow>
         ) : (
-          <HomePreviewRow>
+          <HomeCardsNavRow
+            accent="auction"
+            ariaLabel={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}
+          >
             {displayAuctions.map((auction) => (
               <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>
                 <AuctionPreviewCard
@@ -280,7 +267,7 @@ export default function AuctionsSection() {
                 />
               </HomePreviewRowItem>
             ))}
-          </HomePreviewRow>
+          </HomeCardsNavRow>
         )}
       </div>
     </section>

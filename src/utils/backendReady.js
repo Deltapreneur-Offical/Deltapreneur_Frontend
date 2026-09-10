@@ -1,5 +1,6 @@
 /**
- * Probe backend DB readiness in dev (via Vite proxy to /ready).
+ * Probe backend DB readiness in local Vite only (via proxy to /ready).
+ * Never run this in production builds.
  * Retries so a slow tunnel/backend startup does not flash a false error.
  */
 export async function checkBackendDatabaseReady(options = {}) {
@@ -41,5 +42,14 @@ export async function checkBackendDatabaseReady(options = {}) {
   return false;
 }
 
-export const DATABASE_UNAVAILABLE_HINT =
-  'Database is not reachable. For local dev, ensure PostgreSQL is running and DATABASE_URL in CoBrother_Backend/.env is correct, then restart the backend (run_dev.ps1). For production data, run .\\run_rds_tunnel.ps1 and point DATABASE_URL at 127.0.0.1:5433.';
+/** Local-dev-only. Stripped to empty in production builds. */
+export const DATABASE_UNAVAILABLE_HINT = import.meta.env.DEV
+  ? 'Database is not reachable. Start the Deltapreneur backend, confirm PostgreSQL is running, and check DATABASE_URL in Deltapreneur_Backend/.env.'
+  : '';
+
+export const DATABASE_UNAVAILABLE_PUBLIC =
+  'Service temporarily unavailable. Please try again shortly.';
+
+export function getDatabaseUnavailableMessage() {
+  return import.meta.env.DEV ? DATABASE_UNAVAILABLE_HINT : DATABASE_UNAVAILABLE_PUBLIC;
+}

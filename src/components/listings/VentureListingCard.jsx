@@ -753,6 +753,14 @@ return (
           {/* Price Box */}
 
           {showPriceBox && (
+            <div className="venture-listing-card__price-block">
+              {!isAuction && showPriceText ? (
+                <span className="venture-listing-card__price-label uppercase leading-none">
+                  {isHomePreview
+                    ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
+                    : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
+                </span>
+              ) : null}
 
             <div
 
@@ -772,16 +780,7 @@ return (
                 </div>
               ) : showPriceText ? (
 
-                <div className="domain-listing-card__price-text min-w-0 flex flex-col">
-
-                  <span className="venture-listing-card__price-label uppercase leading-none">
-
-                    {isHomePreview
-                      ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
-                      : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
-
-                  </span>
-
+                <div className="domain-listing-card__price-text min-w-0">
                   <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''
                     }`}>
 
@@ -815,7 +814,7 @@ return (
               ) : null}
 
             </div>
-
+            </div>
           )}
 
 

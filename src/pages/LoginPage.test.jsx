@@ -26,6 +26,7 @@ vi.mock('../context/AuthContext', () => ({
 
 vi.mock('../utils/backendReady', () => ({
   checkBackendDatabaseReady: vi.fn(async () => true),
+  getDatabaseUnavailableMessage: () => 'Database is not reachable.',
   DATABASE_UNAVAILABLE_HINT: 'Database is not reachable.',
 }));
 

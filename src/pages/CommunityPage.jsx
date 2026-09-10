@@ -586,11 +586,10 @@ export default function CommunityPage() {
     if (display === 'DRAFT' || s === 'PAYMENT_PENDING') {
       return { text: '⏳ Auction draft', color: 'amber' };
     }
-    if (s === 'ENDED') return { text: '🏆 Auction ended', color: 'purple' };
-    if (s === 'COMPLETED') return { text: '✅ Auction completed', color: 'purple' };
-    if (s === 'UNSOLD') return { text: 'Auction ended — no bids', color: 'red' };
-    if (s === 'CLOSED') return { text: 'Auction closed', color: 'red' };
-    if (display === 'ENDED') return { text: '🏆 Auction ended', color: 'purple' };
+    if (s === 'UNSOLD' || s === 'CLOSED' || s === 'CANCELLED') return null;
+    if (s === 'ENDED' || s === 'COMPLETED' || display === 'ENDED') {
+      return { text: '🏆 Auction ended — view winner', color: 'purple' };
+    }
     return null;
   };
   const auctionBadge = auctionStatusLabel();

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Share2, MoreVertical, Trash2, Gavel, ShoppingCart, Pencil, CircleUser } from 'lucide-react';
+import { ArrowRight, Share2, MoreVertical, Trash2, Gavel, ShoppingCart, CircleUser } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
@@ -10,11 +10,19 @@ import ListingCardStatsFooter from './ListingCardStatsFooter';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
   canRequestTechnologyAuction,
+  isTechnologyAuctionAwaitingWinner,
   isTechnologyAuctionLive,
   isTechnologyAuctionPending,
   isTechnologyListingOwner,
   technologyAuctionId,
 } from '../../utils/technologyAuctionUi';
+import ListingOwnerActionPair, {
+  OWNER_ACTION_BTN_AUCTION,
+  OWNER_ACTION_BTN_AUCTION_SOFT,
+  OWNER_ACTION_BTN_EDIT,
+  OWNER_ACTION_BTN_MUTED,
+} from './ListingOwnerActionPair';
+import { EditIcon } from '../common/EditActionLabel';
 import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import PriceSectionIcon from '../common/PriceSectionIcon';
@@ -211,33 +219,6 @@ export default function TechnologyListingCard({
 
   const buildOwnerMenuItems = () => {
     const items = [];
-    if (onEdit) {
-      items.push({
-        key: 'edit',
-        icon: Pencil,
-        label: t('listingCardEditListing', { defaultValue: 'Edit listing' }),
-        onClick: onEdit,
-      });
-    }
-    if (canRequestTechnologyAuction(item, auctionStatus) && onAuction) {
-      items.push({
-        key: 'auction',
-        icon: Gavel,
-        label: t('listingCardPutToAuction'),
-        onClick: onAuction,
-      });
-    }
-    if ((auctionStatus?.approvalStatus === 'APPROVED' || item.auctionApprovalStatus === 'APPROVED')
-      && technologyAuctionId(item, auctionStatus)) {
-      items.push({
-        key: 'view-auction',
-        icon: Gavel,
-        label: isTechnologyAuctionLive(item, auctionStatus)
-          ? t('listingCardViewLiveAuction')
-          : t('listingCardViewAuction'),
-        onClick: () => navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`),
-      });
-    }
     if (onDelete) {
       items.push({
         key: 'remove',
@@ -295,31 +276,83 @@ export default function TechnologyListingCard({
     );
   };
 
+  const renderOwnerActionPair = () => {
+    const liveId = technologyAuctionId(item, auctionStatus);
+    const editBtn = onEdit ? (
+      <button
+        type="button"
+        className={OWNER_ACTION_BTN_EDIT}
+        onClick={(e) => { stop(e); onEdit(); }}
+      >
+        <EditIcon size={14} />
+        <span className="truncate">{t('edit')}</span>
+      </button>
+    ) : (
+      <span className={OWNER_ACTION_BTN_MUTED}>
+        {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+      </span>
+    );
+
+    let auctionBtn;
+    if (isTechnologyAuctionLive(item, auctionStatus) && liveId) {
+      auctionBtn = (
+        <button
+          type="button"
+          className={OWNER_ACTION_BTN_AUCTION_SOFT}
+          onClick={(e) => {
+            stop(e);
+            navigate(`/technology/auction/${liveId}`);
+          }}
+        >
+          <Gavel size={14} className="shrink-0" aria-hidden />
+          <span className="truncate">{t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })}</span>
+        </button>
+      );
+    } else if (isTechnologyAuctionAwaitingWinner(item, auctionStatus) && liveId) {
+      auctionBtn = (
+        <button
+          type="button"
+          className={OWNER_ACTION_BTN_AUCTION_SOFT}
+          onClick={(e) => {
+            stop(e);
+            navigate(`/technology/auction/${liveId}`);
+          }}
+        >
+          <Gavel size={14} className="shrink-0" aria-hidden />
+          <span className="truncate">{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
+        </button>
+      );
+    } else if (isTechnologyAuctionPending(item, auctionStatus)) {
+      auctionBtn = (
+        <span className={OWNER_ACTION_BTN_MUTED}>
+          {t('listingCardAuctionPending')}
+        </span>
+      );
+    } else if (canRequestTechnologyAuction(item, auctionStatus) && onAuction) {
+      auctionBtn = (
+        <button
+          type="button"
+          className={OWNER_ACTION_BTN_AUCTION}
+          onClick={(e) => { stop(e); onAuction(); }}
+        >
+          <Gavel size={14} className="shrink-0" aria-hidden />
+          <span className="truncate">{t('listingCardPutToAuction')}</span>
+        </button>
+      );
+    } else {
+      auctionBtn = (
+        <span className={OWNER_ACTION_BTN_MUTED}>
+          {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+        </span>
+      );
+    }
+
+    return <ListingOwnerActionPair left={editBtn} right={auctionBtn} className="flex-1" />;
+  };
+
   const renderPrimaryAction = () => {
     if (owner) {
-      if (isTechnologyAuctionLive(item, auctionStatus) && technologyAuctionId(item, auctionStatus)) {
-        return (
-          <button
-            type="button"
-            className={primaryBtn}
-            onClick={(e) => {
-              stop(e);
-              navigate(`/technology/auction/${technologyAuctionId(item, auctionStatus)}`);
-            }}
-          >
-            <Gavel size={13} aria-hidden />
-            <span>🟢 On Live Auction</span>
-          </button>
-        );
-      }
-      if (isTechnologyAuctionPending(item, auctionStatus)) {
-        return (
-          <span className={statusChip}>
-            {t('listingCardAuctionPending')}
-          </span>
-        );
-      }
-      return renderOwnerListingChip();
+      return renderOwnerActionPair();
     }
 
     if (isTechnologyAuctionLive(item, auctionStatus)) {
@@ -389,7 +422,18 @@ export default function TechnologyListingCard({
   const adminMenuItems = !owner && ['ADMIN', 'SUPER_ADMIN', 'AUCTION_MODERATOR'].includes(user?.role) ? buildAdminMenuItems() : [];
   const menuItems = ownerMenuItems.length ? ownerMenuItems : adminMenuItems;
 
-  const actionButtons = (
+  const actionButtons = owner ? (
+    <div className="flex w-full min-w-0 items-stretch gap-2" onClick={stop} role="presentation">
+      {menuItems.length > 0 ? (
+        <div className="shrink-0 self-center">
+          {optionsMenu(menuItems)}
+        </div>
+      ) : null}
+      <div className="min-w-0 flex-1">
+        {primaryAction}
+      </div>
+    </div>
+  ) : (
     <div className="domain-listing-card__actions-bar" onClick={stop} role="presentation">
       {menuItems.length > 0 ? (
         <div className="domain-listing-card__actions-leading">

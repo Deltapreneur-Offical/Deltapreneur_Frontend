@@ -593,7 +593,11 @@ export default function AuctionPage() {
               {isOwner && auction.status === 'UNSOLD' && (
                 <div className="p-5 bg-amber-50 border border-amber-200 rounded-xl">
                   <div className="font-semibold text-amber-700 mb-2">{t('auctionDetailEndedNoBids')}</div>
-                  <p className="text-gray-500 text-[0.875rem] mb-4">{t('auctionDetailEndedNoBidsTakeDown')}</p>
+                  <p className="text-gray-500 text-[0.875rem] mb-4">
+                    {t('auctionDetailEndedNoBidsRestorePrice', {
+                      defaultValue: 'No bids were placed. This listing is back at its original asking price. You can sell it as usual or start a new auction.',
+                    })}
+                  </p>
                   <div className="flex gap-3">
                     <button className="btn-glow" onClick={() => setReAuctionModal(true)}>
                       {t('auctionDetailReAuctionBtn')}

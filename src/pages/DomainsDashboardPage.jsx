@@ -19,6 +19,7 @@ import {
   isDomainPendingVerification,
 } from '../utils/domainVerification';
 import { notifyDomainVerificationChanged } from '../utils/domainVerificationEvents';
+import { PutForAuctionModal } from './DomainsPage';
 
 const UNDER_PROGRESS_STATUSES = new Set(['PENDING', 'IN_PROGRESS', 'ACCEPTED']);
 
@@ -111,6 +112,9 @@ export default function DomainsDashboardPage() {
   const [loading, setLoading]       = useState(true);
   const [verifyTarget, setVerifyTarget] = useState(null);
   const [soldTransfers, setSoldTransfers] = useState([]);
+  const [auctionTarget, setAuctionTarget] = useState(null);
+  const [auctionNotice, setAuctionNotice] = useState('');
+  const { user } = useAuth();
 
   const purchaseCount = purchases.length + regOrders.length;
   const underProgress = acquisitions.filter((a) => UNDER_PROGRESS_STATUSES.has(String(a.status || '').toUpperCase()));
@@ -266,6 +270,12 @@ export default function DomainsDashboardPage() {
           </button>
         </div>
 
+        {auctionNotice ? (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            {auctionNotice}
+          </div>
+        ) : null}
+
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
         ) : tab === 'acquisitions' ? (
@@ -355,6 +365,7 @@ export default function DomainsDashboardPage() {
                   domain={d}
                   type="listing"
                   onVerify={() => setVerifyTarget(d)}
+                  onPutForAuction={d.saleType !== 'AUCTION' ? () => setAuctionTarget(d) : undefined}
                 />
               ))}
             </div>
@@ -517,6 +528,18 @@ export default function DomainsDashboardPage() {
           }}
         />
       )}
+      {auctionTarget && (
+        <PutForAuctionModal
+          domain={auctionTarget}
+          user={user}
+          onClose={() => setAuctionTarget(null)}
+          onSuccess={(updatedDomain) => {
+            setAuctionTarget(null);
+            setListings((prev) => prev.map((x) => (x.id === updatedDomain.id ? { ...x, ...updatedDomain } : x)));
+            setAuctionNotice('Your domain has been put for auction successfully!');
+          }}
+        />
+      )}
     </AppLayout>
   );
 }
@@ -526,7 +549,7 @@ const SHARE_MENU_HEIGHT = 210;
 const SHARE_MENU_GAP = 8;
 const SHARE_MENU_VIEWPORT_PAD = 12;
 
-function DomainRow({ domain, type, onVerify }) {
+function DomainRow({ domain, type, onVerify, onPutForAuction }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
@@ -752,6 +775,17 @@ function DomainRow({ domain, type, onVerify }) {
           <span className="text-[0.75rem] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
             {t('domainsDashboardTransferWithin24')}
           </span>
+        )}
+
+        {type === 'listing' && !isAuction && onPutForAuction && domain.domainStatus !== 'SOLD' && !domain.takenDown && (
+          <button
+            type="button"
+            className="btn-glow btn-glow-sm"
+            onClick={onPutForAuction}
+            title={t('startAuction', { defaultValue: 'Start Auction' })}
+          >
+            <Gavel size={13} /> {t('startAuction', { defaultValue: 'Start Auction' })}
+          </button>
         )}
 
         {type === 'listing' && isAuction && auctionId && (

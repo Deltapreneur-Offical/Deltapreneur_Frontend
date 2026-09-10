@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Plus, CircleUser, ShoppingCart, ArrowLeft, Gavel } from 'lucide-react';
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import { technologyAPI } from '../api/services';
 import { technologyServicesAPI } from '../api/technologyServicesApi';
@@ -37,11 +37,19 @@ import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
+import ListingOwnerActionPair, {
+  OWNER_ACTION_BTN_AUCTION,
+  OWNER_ACTION_BTN_AUCTION_SOFT,
+  OWNER_ACTION_BTN_EDIT,
+  OWNER_ACTION_BTN_MUTED,
+} from '../components/listings/ListingOwnerActionPair';
+import EditActionLabel from '../components/common/EditActionLabel';
 import { TECHNOLOGY_CATEGORIES, TECHNOLOGY_CATEGORY_OPTIONS, HARDWARE_CATEGORIES, HARDWARE_CATEGORY_OPTIONS } from '../constants/listingCategories';
 import TechnologyDemoVideoSection, { isValidDemoVideoUrl } from '../components/technology/TechnologyDemoVideoSection';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
 import {
   canRequestTechnologyAuction,
+  isTechnologyAuctionAwaitingWinner,
   isTechnologyAuctionLive,
   isTechnologyAuctionPending,
   isTechnologyListingOwner,
@@ -1926,30 +1934,40 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
             <div className="flex gap-3 mt-6 flex-wrap items-center w-full">
               {!showPricing ? (
                 <>
-                  {isOwner && onEdit && (
-                    <button type="button" className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={onEdit}>
-                      Edit listing
-                    </button>
-                  )}
-                  {isOwner && canRequestTechnologyAuction(d, auctionStatus) && onAuction && (
-                    <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={onAuction}>
-                      🔨 List for auction
-                    </button>
-                  )}
-                  {isOwner && isTechnologyAuctionPending(d, auctionStatus) && (
-                    <span className="text-sm font-semibold text-amber-700 px-3 py-3 bg-amber-50 border border-amber-200 rounded-lg flex-1 text-center">
-                      ⏳ Auction pending admin review
-                    </span>
-                  )}
-                  {isOwner && (auctionStatus?.approvalStatus === 'APPROVED' || d.auctionApprovalStatus === 'APPROVED')
-                    && technologyAuctionId(d, auctionStatus) && (
-                      <button
-                        className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center cursor-pointer"
-                        onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
-                      >
-                        {isTechnologyAuctionLive(d, auctionStatus) ? '🟢 On Live Auction' : 'View Auction →'}
-                      </button>
-                    )}
+                  {isOwner ? (
+                    <ListingOwnerActionPair
+                      className="w-full"
+                      left={onEdit ? (
+                        <button type="button" className={OWNER_ACTION_BTN_EDIT} onClick={onEdit}>
+                          <EditActionLabel iconSize={14}>Edit listing</EditActionLabel>
+                        </button>
+                      ) : null}
+                      right={
+                        canRequestTechnologyAuction(d, auctionStatus) && onAuction ? (
+                          <button type="button" className={OWNER_ACTION_BTN_AUCTION} onClick={onAuction}>
+                            <Gavel size={14} className="shrink-0" />
+                            {t('listingCardPutToAuction', { defaultValue: 'List for auction' })}
+                          </button>
+                        ) : isTechnologyAuctionPending(d, auctionStatus) ? (
+                          <span className={OWNER_ACTION_BTN_MUTED}>
+                            {t('listingCardAuctionPending', { defaultValue: 'Auction pending admin review' })}
+                          </span>
+                        ) : (isTechnologyAuctionLive(d, auctionStatus) || isTechnologyAuctionAwaitingWinner(d, auctionStatus))
+                          && technologyAuctionId(d, auctionStatus) ? (
+                          <button
+                            type="button"
+                            className={OWNER_ACTION_BTN_AUCTION_SOFT}
+                            onClick={() => window.location.assign(`/technology/auction/${technologyAuctionId(d, auctionStatus)}`)}
+                          >
+                            <Gavel size={14} className="shrink-0" />
+                            {isTechnologyAuctionLive(d, auctionStatus)
+                              ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
+                              : t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}
+                          </button>
+                        ) : null
+                      }
+                    />
+                  ) : null}
                   {!isOwner
                     && d.softwareStatus === 'AVAILABLE'
                     && d.purchaseType !== 'AUCTION'

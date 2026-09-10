@@ -8583,7 +8583,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 
 .home-nav-phone-number:hover,
 .home-nav-phone-number:focus-visible {
-  color: #0369a1;
+  color: var(--home-saffron-text, #c2410c);
 }
 
 /* Premium inline locale + currency controls (1st navbar) */
@@ -9325,13 +9325,13 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .home-nav-pill:focus-visible,
 .home-nav-pill.is-open {
   background: transparent;
-  color: #0369a1;
+  color: var(--home-saffron-text, #c2410c);
 }
 
 .home-nav-pill:hover svg,
 .home-nav-pill:focus-visible svg,
 .home-nav-pill.is-open svg {
-  color: #0369a1;
+  color: var(--home-saffron-text, #c2410c);
 }
 
 .home-nav-call-btn,
@@ -9502,7 +9502,7 @@ body.home-page-body.scrolled .home-top-nav-scroll-logo,
 .home-nav-dropdown-link:focus-visible,
 .home-nav-dropdown-link[aria-current='page'] {
   background: transparent;
-  color: #0369a1 !important;
+  color: var(--home-saffron-text, #c2410c) !important;
 }
 
 .home-nav-overlay {
@@ -9662,12 +9662,12 @@ body.home-menu-open {
 .home-mobile-accordion-trigger:hover,
 .home-mobile-accordion-trigger:focus-visible {
   background: transparent;
-  color: #0369a1 !important;
+  color: var(--home-saffron-text, #c2410c) !important;
 }
 
 .home-mobile-accordion-trigger:hover svg,
 .home-mobile-accordion-trigger:focus-visible svg {
-  color: #0369a1 !important;
+  color: var(--home-saffron-text, #c2410c) !important;
 }
 
 .home-mobile-accordion-panel {
@@ -9694,7 +9694,7 @@ body.home-menu-open {
 .home-mobile-link:hover,
 .home-mobile-link:focus-visible {
   background: transparent;
-  color: #0369a1 !important;
+  color: var(--home-saffron-text, #c2410c) !important;
 }
 
 /* ─── Navbar (legacy) ─────────────────────────────────────────────────────── */

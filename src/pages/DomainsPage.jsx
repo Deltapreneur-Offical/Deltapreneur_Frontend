@@ -1162,32 +1162,42 @@ export default function DomainsPage() {
                     margin-top: 0.4rem !important;
                     flex-shrink: 0 !important;
                     padding-top: 0 !important;
-                    width: 100% !important;
+                    width: auto !important;
                     max-width: 100% !important;
                     min-width: 0 !important;
                     box-sizing: border-box !important;
                   }
-                  /* Keep In Cart + delete row inside the card (do not widen the trash button). */
+                  /* Add to Cart stays content-sized; In Cart + delete still fit inside the card. */
                   .domains-sync-layout .domain-search-card > .mt-3 > div,
                   .domains-sync-layout .domain-search-card > .mt-3\\.5 > div,
                   .domains-sync-layout .domain-search-card > .mt-auto > div {
                     display: inline-flex !important;
                     align-items: stretch !important;
                     gap: 0.35rem !important;
-                    width: 100% !important;
+                    width: auto !important;
                     max-width: 100% !important;
                     min-width: 0 !important;
                     box-sizing: border-box !important;
                   }
+                  .domains-sync-layout .domain-search-card > .mt-3 > div:has(> button:nth-child(2)),
+                  .domains-sync-layout .domain-search-card > .mt-3\\.5 > div:has(> button:nth-child(2)),
+                  .domains-sync-layout .domain-search-card > .mt-auto > div:has(> button:nth-child(2)) {
+                    width: 100% !important;
+                  }
                   .domains-sync-layout .domain-search-card > .mt-3 > div > button:first-child,
                   .domains-sync-layout .domain-search-card > .mt-3\\.5 > div > button:first-child,
                   .domains-sync-layout .domain-search-card > .mt-auto > div > button:first-child {
-                    flex: 1 1 auto !important;
+                    flex: 0 1 auto !important;
                     min-width: 0 !important;
-                    max-width: 100% !important;
                     width: auto !important;
-                    padding: 0.55rem 0.65rem !important;
+                    max-width: 100% !important;
+                    padding: 0.55rem 0.85rem !important;
                     font-size: 0.8rem !important;
+                  }
+                  .domains-sync-layout .domain-search-card > .mt-3 > div:has(> button:nth-child(2)) > button:first-child,
+                  .domains-sync-layout .domain-search-card > .mt-3\\.5 > div:has(> button:nth-child(2)) > button:first-child,
+                  .domains-sync-layout .domain-search-card > .mt-auto > div:has(> button:nth-child(2)) > button:first-child {
+                    flex: 1 1 auto !important;
                   }
                   .domains-sync-layout .domain-search-card > .mt-3 > div > button:not(:first-child),
                   .domains-sync-layout .domain-search-card > .mt-3\\.5 > div > button:not(:first-child),
